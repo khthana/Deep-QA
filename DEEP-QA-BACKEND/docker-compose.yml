@@ -1,0 +1,29 @@
+##docker-compose.yml
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: deep-qa-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - DOCKER_ENV: "true"  
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    container_name: deep-qa-db
+    restart: always
+    environment:
+      - POSTGRES_USER=db.user.admin
+      - POSTGRES_PASSWORD=deep-qa.db.password
+      - POSTGRES_DB=deep-qa
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

@@ -1,0 +1,25 @@
+meta {
+  name: create-department
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/department/create-department
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "department_id":"29",
+      "department_name_en":"Artificial Intelligence Engineering",
+      "department_name_th":"วิศวกรรมแมคคาทรอ",
+      "faculty_id":"0001"
+  
+  }
+}
+
+settings {
+  encodeUrl: true
+}

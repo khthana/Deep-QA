@@ -1,0 +1,31 @@
+meta {
+  name: update-section-teachers
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/coursSections/update-section-teachers
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "data": [ 
+      {
+        "section_id": 181,
+        "new_section_number": "1",
+        "teacher_emails": [
+          "khthana@kmitl.ac.th", //ถ้าไม่อยู่ในlist นี้จะถูกลบหมด
+          "tech0004@kmitl.ac.th"
+        ]
+      }
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

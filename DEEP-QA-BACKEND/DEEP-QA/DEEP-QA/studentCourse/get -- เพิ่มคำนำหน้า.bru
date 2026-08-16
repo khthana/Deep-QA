@@ -1,0 +1,19 @@
+meta {
+  name: get // เพิ่มคำนำหน้า
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BaseURL}}/api/studentCourse/get/173
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: 
+}
+
+settings {
+  encodeUrl: true
+}

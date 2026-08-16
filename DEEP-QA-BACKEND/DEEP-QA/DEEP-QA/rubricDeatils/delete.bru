@@ -1,0 +1,21 @@
+meta {
+  name: delete
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BaseURL}}/api/rubricDetails/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "id":67
+  }
+}
+
+settings {
+  encodeUrl: true
+}

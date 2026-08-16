@@ -1,0 +1,15 @@
+meta {
+  name: getActivity subId,ProID
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BaseURL}}/api/activity/01076105/0501
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

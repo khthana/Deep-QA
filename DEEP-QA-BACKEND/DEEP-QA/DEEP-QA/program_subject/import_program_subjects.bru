@@ -1,0 +1,20 @@
+meta {
+  name: import_program_subjects
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/program_subjects/import-program-subject
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/tarho/OneDrive/เดสก์ท็อป/program_subjects_list.xlsx)
+  program_id: 0502
+}
+
+settings {
+  encodeUrl: true
+}

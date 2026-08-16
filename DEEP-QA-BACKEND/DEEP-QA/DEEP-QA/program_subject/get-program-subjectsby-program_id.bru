@@ -1,0 +1,21 @@
+meta {
+  name: get-program-subjectsby-program_id
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BaseURL}}/api/program_subjects/get-program-subjectsby-program_id
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "program_id": "0501"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

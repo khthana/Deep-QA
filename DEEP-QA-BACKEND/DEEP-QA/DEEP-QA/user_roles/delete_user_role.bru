@@ -1,0 +1,23 @@
+meta {
+  name: delete_user_role
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BaseURL}}/api/user_roles/delete_user_role
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "narongrit133@kmitl.ac.th",
+    "role_id":"STUDENT",
+    "scope_id":"0501"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

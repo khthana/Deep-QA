@@ -1,0 +1,15 @@
+meta {
+  name: get section ปีเก่า
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BaseURL}}/api/scoreEva/section/173/other-years
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

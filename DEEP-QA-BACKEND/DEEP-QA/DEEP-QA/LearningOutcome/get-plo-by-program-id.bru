@@ -1,0 +1,21 @@
+meta {
+  name: get-plo-by-program-id
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/plo/get-plo-by-program-id
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "program_id":"0501"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

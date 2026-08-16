@@ -1,0 +1,23 @@
+meta {
+  name: getTeacherCourse
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/teacher/getTeacherCourse
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      // "user_id":"tech0004",
+      "academic_year":"2568",
+      "semester":"2"  // 1,2,all
+  }
+}
+
+settings {
+  encodeUrl: true
+}

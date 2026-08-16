@@ -1,0 +1,22 @@
+meta {
+  name: delete-group
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{BaseURL}}/api/studentGroup/delete-group
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "group_id": 120,
+    "performed_by": "tech0004"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

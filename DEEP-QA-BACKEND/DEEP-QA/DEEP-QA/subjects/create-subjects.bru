@@ -1,0 +1,29 @@
+meta {
+  name: create-subjects
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/subjects/create-subjects
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "subject_id": "CE101",
+    "subject_name_en": "Introduction to Computer Engineering",
+    "subject_name_th": "พื้นฐานวิศวกรรมคอมพิวเตอร์",
+    "credits": 3,
+    "description_th": "รายวิชาเบื้องต้นเกี่ยวกับวิศวกรรมคอมพิวเตอร์",
+    "description_en": "Basic concepts of computer engineering",
+    "email":"66015095",
+    "department_id":"05"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

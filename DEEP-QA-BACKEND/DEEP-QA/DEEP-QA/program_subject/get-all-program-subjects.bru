@@ -1,0 +1,15 @@
+meta {
+  name: get-all-program-subjects
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BaseURL}}/api/program_subjects/get-all-program-subjects
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

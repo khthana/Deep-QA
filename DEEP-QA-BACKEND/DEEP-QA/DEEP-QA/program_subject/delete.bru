@@ -1,0 +1,22 @@
+meta {
+  name: delete
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BaseURL}}/api/program_subjects/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "program_id":"0503",
+      "subject_id": "01076103"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

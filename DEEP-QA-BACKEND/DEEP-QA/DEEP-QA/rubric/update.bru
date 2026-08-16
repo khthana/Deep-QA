@@ -1,0 +1,27 @@
+meta {
+  name: update
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/rubrics/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {   
+      "id":"83",
+      "rubric_code":"RUB05022",
+      "rubric_name_en":"Update testing 3",
+      "rubric_name_th":"ทดสอบอัพเดต 3",
+      "display_order":"1",
+      "email":"66015095@kmitl.ac.th"
+     
+  }
+}
+
+settings {
+  encodeUrl: true
+}

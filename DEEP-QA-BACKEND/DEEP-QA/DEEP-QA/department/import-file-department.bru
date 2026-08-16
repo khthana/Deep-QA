@@ -1,0 +1,20 @@
+meta {
+  name: import-file-department
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BaseURL}}/api/department/import-departments
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/tarho/OneDrive/เดสก์ท็อป/DEPT_LIST.xlsx)
+  scope: 0001
+}
+
+settings {
+  encodeUrl: true
+}

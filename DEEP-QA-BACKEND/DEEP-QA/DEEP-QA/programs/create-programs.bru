@@ -1,0 +1,26 @@
+meta {
+  name: create-programs
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/programs/create-programs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "program_id": "1603",
+    "program_name_en": "IoT and Information Engineering 1",
+    "program_name_th": "วิศวกรรมไอโอทีและสารสนเทศ 1",
+    "department_id": "16",
+    "year": "2569"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

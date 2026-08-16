@@ -1,0 +1,35 @@
+meta {
+  name: userLog
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BaseURL}}/api/user/log
+  body: json
+  auth: inherit
+}
+
+body:json {
+  // USER_LOG
+  // ACTIVITY =
+  // 		"LOGIN"
+  // 		"LOGOUT"
+  // 		"GOOGLE_LOGIN"
+  // 		"UPDATE_PROFILE"
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  USER_LOG  
+  ACTIVITY =  
+  "LOGIN"  
+  "LOGOUT"  
+  "GOOGLE_LOGIN"  
+  "UPDATE_PROFILE"
+}

@@ -1,0 +1,25 @@
+meta {
+  name: import
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BaseURL}}/api/subjectScore/import
+  body: multipartForm
+  auth: inherit
+}
+
+params:query {
+  ~section_id: 153
+  ~file: 
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/tarho/OneDrive/เดสก์ท็อป/subject_score_ratio.xlsx)
+  section_id: 178
+}
+
+settings {
+  encodeUrl: true
+}

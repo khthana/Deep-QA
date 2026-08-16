@@ -1,0 +1,24 @@
+meta {
+  name: import
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BaseURL}}/api/activityScore/import
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  section_id: 173
+  activity_id: 125
+  score_type: clo
+  group: false
+  file: @file(C:\Users\tarho\OneDrive\เดสก์ท็อป\activity_score.xlsx)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

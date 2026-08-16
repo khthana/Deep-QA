@@ -1,0 +1,21 @@
+meta {
+  name: get-subject-by-department_id
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BaseURL}}/api/subjects/get-subject-by-department_id
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "department_id":"05"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

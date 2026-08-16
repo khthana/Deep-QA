@@ -1,0 +1,36 @@
+meta {
+  name: Upsert //รายคน กระจาย
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/activityScore/upsert
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "section_id": 153,
+    "activity_id": 38,
+    "score_type": "average",
+    "group": false,
+    "clo": [1, 2, 53], //clo_id นะ
+    "list_student": [
+      {
+        "id": "66015001",
+        "list_score": [10]
+      },
+      {
+        "id": "66015003",
+        "list_score": [20]
+      }
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,22 @@
+meta {
+  name: get-mapping-in-subject
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/plo-mapping/get-mapping-in-subject
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "subject_id": "01076105",
+    "program_id": "0501"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

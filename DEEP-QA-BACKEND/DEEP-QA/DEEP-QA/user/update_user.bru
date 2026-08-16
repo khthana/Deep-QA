@@ -1,0 +1,28 @@
+meta {
+  name: update_user
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BaseURL}}/api/user/update_user
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "65010999@kmitl.com",
+    "phone": "0812345678",
+    "title_th": "นางสาว",
+    "first_name_th": "อัพเดต 2/3/68",
+    "last_name_th": "เชื้อแหลม",
+    "title_en": "Mrs.",
+    "first_name_en": "๊ยกฟะำ 2/3/68",
+    "last_name_en": "Chueilham"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

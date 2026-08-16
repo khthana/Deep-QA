@@ -1,0 +1,15 @@
+meta {
+  name: getStudentInGroup //เพิ่มคำนำหน้า
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BaseURL}}/api/studentGroup/get-students-in-group/146
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,101 @@
+meta {
+  name: upsert
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/plo-mapping/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "program_id": "0501",
+    "email": "tech0004@kmitl.ac.th",
+    "plo_detail": [
+      {
+        "subject_id": "01076103",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "I" },
+          { "mapping_id": null, "outcome_id": 70, "mapping_level": "D" },
+          { "mapping_id": null, "outcome_id": 249, "mapping_level": "P" }
+        ]
+      },
+      {
+        "subject_id": "01076105",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "I" },
+          { "mapping_id": null, "outcome_id": 70, "mapping_level": "P" },
+          { "mapping_id": null, "outcome_id": 71, "mapping_level": "A" },
+          { "mapping_id": null, "outcome_id": 249, "mapping_level": "P" }
+        ]
+      },
+      {
+        "subject_id": "01076106",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "D" },
+          { "mapping_id": null, "outcome_id": 70, "mapping_level": "I" },
+          { "mapping_id": null, "outcome_id": 71, "mapping_level": "P" },
+          { "mapping_id": null, "outcome_id": 72, "mapping_level": "P" }
+        ]
+      },
+      {
+        "subject_id": "01076110",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "I" },
+          { "mapping_id": null, "outcome_id": 72, "mapping_level": "D" },
+          { "mapping_id": null, "outcome_id": 248, "mapping_level": "A" }
+        ]
+      },
+      {
+        "subject_id": "01076112",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 66, "mapping_level": "P" },
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "I" }
+        ]
+      },
+      {
+        "subject_id": "01076113",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 66, "mapping_level": "A" },
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "P" }
+        ]
+      },
+      {
+        "subject_id": "01076114",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "I" },
+          { "mapping_id": null, "outcome_id": 72, "mapping_level": "D" }
+        ]
+      },
+      {
+        "subject_id": "01076115",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "D" },
+          { "mapping_id": null, "outcome_id": 71, "mapping_level": "P" },
+          { "mapping_id": null, "outcome_id": 72, "mapping_level": "P" }
+        ]
+      },
+      {
+        "subject_id": "01076116",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 67, "mapping_level": "P" },
+          { "mapping_id": null, "outcome_id": 72, "mapping_level": "P" }
+        ]
+      },
+      {
+        "subject_id": "01076117",
+        "subject_map_list": [
+          { "mapping_id": null, "outcome_id": 368, "mapping_level": "E" }
+        ]
+      }
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,15 @@
+meta {
+  name: get clo plan ทุก Section ใช้รายวิชาในการดึง
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BaseURL}}/api/cloPLan/semester-course/173
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

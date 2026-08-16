@@ -1,0 +1,42 @@
+meta {
+  name: upsert
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/subjectScore/upsert
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "section_id":181,
+      "subject_score":[
+          {
+              "score_ratio_id":null, //null =  create
+              "sequence_order": 1,
+              "score_category": "การบ้าน",
+              "weight": 25
+          },
+          {
+              "score_ratio_id":null,
+              "sequence_order": 2,
+              "score_category": "แบบฝึกหัด",
+              "weight": 25
+          },
+          {
+              "score_ratio_id":null, //null =  create
+              "sequence_order": 3,
+              "score_category": "สอบกลางภาค",
+              "weight": 50
+          }
+      ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

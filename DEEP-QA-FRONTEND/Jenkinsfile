@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "deep-qa-frontend:latest"
+        CONTAINER_NAME = "deep-qa-frontend"
+        NETWORK_NAME = "deep-qa-network"
+        FIXED_IP = "172.9.0.20"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'production', url: 'https://github.com/Narongrit159/DEEP-QA-FRONTEND.git',
+                credentialsId: 'GIT_CREDENTIAL'
+            }
+        }
+
+        stage('List Files') {
+            steps {
+                sh 'ls -la'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker image prune -f
+                    docker build -t $IMAGE_NAME .
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
+
+                    docker run -d --name $CONTAINER_NAME \
+                        --network $NETWORK_NAME \
+                        -p 5000:5000 \
+                        $IMAGE_NAME
+                '''
+            }
+        }
+    }
+}

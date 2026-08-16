@@ -1,0 +1,21 @@
+meta {
+  name: Replace
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{BaseURL}}/api/envidence/21/replace
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/tarho/Downloads/deep-qa ER.png)
+  description: ตัวอย่าง class diagram ที่มีการออกแบบอย่างถูกต้องและครบถ้วน อัพเดต
+  evidence_type: 2
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,22 @@
+meta {
+  name: create_roles
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BaseURL}}/api/roles/create_roles
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "role_name": "GUEST",
+    "priority": 7
+  }
+}
+
+settings {
+  encodeUrl: true
+}

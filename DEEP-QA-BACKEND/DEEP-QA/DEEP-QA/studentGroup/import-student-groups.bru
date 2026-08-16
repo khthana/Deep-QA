@@ -1,0 +1,20 @@
+meta {
+  name: import-student-groups
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BaseURL}}/api/studentGroup/import-student-groups
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/tarho/OneDrive/เดสก์ท็อป/student_group.xlsx)
+  section_id: 181
+}
+
+settings {
+  encodeUrl: true
+}

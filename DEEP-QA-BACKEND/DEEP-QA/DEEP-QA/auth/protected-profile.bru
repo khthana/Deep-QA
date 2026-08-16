@@ -1,0 +1,25 @@
+meta {
+  name: protected/profile
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BaseURL}}/api/protected/profile
+  body: none
+  auth: bearer
+}
+
+headers {
+  Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjYwMTUwOTUiLCJlbWFpbCI6IjY2MDE1MDk1QGttaXRsLmFjLnRoIiwiZmlyc3RfbmFtZV9lbiI6IlRlZXJhY2hhdCIsImxhc3RfbmFtZV9lbiI6IlN1dHRoaSIsImZpcnN0X25hbWVfdGgiOiLguJjguLXguKPguInguLHguJXguKMiLCJsYXN0X25hbWVfdGgiOiLguKrguLjguJfguJjguLQiLCJwcm9maWxlX3BpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NMWmVVS0hvTGJod3VHTFNPTFFFeE4yVEktZ0xFcnotRDU1UF84SUFscDg4NUdwa3pBPXM5Ni1jIiwiaWF0IjoxNzczMzg0MzI3LCJleHAiOjE3NzMzODYxMjd9.LLlPzn5hKb-utKftNNFVTOkZvimqMSENgs2kR3I98v4
+  ~Referer: https://deep-core.net
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjc3MWEyZWIiLCJlbWFpbCI6ImtodGhhbmFAa21pdGwuYWMudGgiLCJ0aXRsZV90aCI6IuC4nOC4qC4iLCJmaXJzdF9uYW1lX2VuIjoiVGhhbmEiLCJsYXN0X25hbWVfZW4iOiJIb25nc3V3YW4iLCJmaXJzdF9uYW1lX3RoIjoi4LiY4LiZ4LiyIiwibGFzdF9uYW1lX3RoIjoi4Lir4LiH4Lip4LmM4Liq4Li44Lin4Lij4Lij4LiTLeC4reC4teC5gOC4oeC4peC5gOC4geC5iOC4siIsImlhdCI6MTc3MzY0MDY3NCwiZXhwIjoxNzczNjQyNDc0fQ.uOM4KoTaW3fWbBx2A_9CyD8y2k2ivko0e_2qAO2TQ7w
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

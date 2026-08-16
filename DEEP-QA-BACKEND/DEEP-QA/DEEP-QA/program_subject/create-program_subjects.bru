@@ -1,0 +1,25 @@
+meta {
+  name: create-program_subjects
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/program_subjects/create-program_subjects
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "66015095@kmitl.ac.th",
+    "program_id": "0501",
+    "subject_id": "01076117",
+    "subject_type": "required" // enum required กับ elective
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

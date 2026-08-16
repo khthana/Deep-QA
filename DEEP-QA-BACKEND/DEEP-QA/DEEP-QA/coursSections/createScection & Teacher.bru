@@ -1,0 +1,27 @@
+meta {
+  name: createScection & Teacher
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/coursSections/create-section-teacher
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "semester_course_id": 174,
+    "section_number": "1",
+    "teacher_emails": [
+      "khthana@kmitl.ac.th",
+      "tech0002@kmitl.ac.th"
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

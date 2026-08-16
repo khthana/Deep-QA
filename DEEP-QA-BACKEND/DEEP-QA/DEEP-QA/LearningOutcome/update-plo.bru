@@ -1,0 +1,26 @@
+meta {
+  name: update-plo
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/plo/update-plo
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "program_id": "0501",
+    "outcome_code": "PLO-13",
+    "outcome_title": "จริยธรรม (Ethics) ++ ",
+    "outcome_description": "ผู้เรียนสามารถทำงานร่วมกับผู้อื่น แสดงภาวะผู้นำ และมีความรับผิดชอบต่อหน้าที่",
+    "email":"narongrit133@kmitl.ac.th"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

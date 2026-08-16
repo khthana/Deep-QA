@@ -1,0 +1,23 @@
+meta {
+  name: copy
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BaseURL}}/api/semesterCourses/copy
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "academic_year_now": "2570",
+    "academic_year_old": "2568",
+    "semester": 1   // หรือ 2 หรือ null null คือเอาทั้ง 2 เทอม
+  }
+}
+
+settings {
+  encodeUrl: true
+}

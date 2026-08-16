@@ -1,0 +1,21 @@
+meta {
+  name: delete
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/semesterCourses/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "semester_course_id": 166
+  }
+}
+
+settings {
+  encodeUrl: true
+}

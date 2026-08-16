@@ -1,0 +1,23 @@
+meta {
+  name: swap-status
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BaseURL}}/api/user/swap-status
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "user_id":"69331313",
+      "status":"inactive"// active , inactive
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,15 @@
+meta {
+  name: New Request
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BaseURL}}/api/auth/google-login
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

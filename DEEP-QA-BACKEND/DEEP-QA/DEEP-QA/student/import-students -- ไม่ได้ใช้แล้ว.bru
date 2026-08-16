@@ -1,0 +1,19 @@
+meta {
+  name: import-students // ไม่ได้ใช้แล้ว
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/student/import-students
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/tarho/OneDrive/เดสก์ท็อป/student_list.xlsx)
+}
+
+settings {
+  encodeUrl: true
+}

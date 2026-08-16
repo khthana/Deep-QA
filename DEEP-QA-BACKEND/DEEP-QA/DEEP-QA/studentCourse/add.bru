@@ -1,0 +1,23 @@
+meta {
+  name: add
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/studentCourse/add
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "student_id": "66015095",
+      "section_id":181
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

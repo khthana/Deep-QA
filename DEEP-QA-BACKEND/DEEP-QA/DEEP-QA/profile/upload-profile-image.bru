@@ -1,0 +1,19 @@
+meta {
+  name: upload-profile-image
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://10.240.68.135:3000/api/user/upload-profile-image
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  image: @file()
+}
+
+settings {
+  encodeUrl: true
+}

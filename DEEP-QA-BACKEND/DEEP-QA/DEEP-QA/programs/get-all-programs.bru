@@ -1,0 +1,15 @@
+meta {
+  name: get-all-programs
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BaseURL}}/api/programs/get-all-programs
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

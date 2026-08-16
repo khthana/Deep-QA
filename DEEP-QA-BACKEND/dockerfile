@@ -1,0 +1,17 @@
+##dockerfile
+
+FROM node:20
+WORKDIR /app
+
+# copy package.json และติดตั้ง dependencies
+COPY package*.json ./
+RUN npm install
+
+# copy source code ทั้งหมด
+COPY . .
+
+# expose port
+EXPOSE 3000
+
+# run app
+CMD ["npm", "start"]

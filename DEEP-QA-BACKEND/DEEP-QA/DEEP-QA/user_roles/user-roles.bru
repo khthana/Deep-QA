@@ -1,0 +1,25 @@
+meta {
+  name: user-roles
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/user_roles/user-roles
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "email":"khthana@kmitl.ac.th",
+      "role_id":"FACULTY_ADMIN",
+      "scope_id":"0001"
+      
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

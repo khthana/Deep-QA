@@ -1,0 +1,16 @@
+meta {
+  name: getStudentByAdmissionYear
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BaseURL}}/api/student/get-by-admission-year/2567
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

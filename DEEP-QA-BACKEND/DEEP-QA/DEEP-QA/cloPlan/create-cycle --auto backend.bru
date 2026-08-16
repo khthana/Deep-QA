@@ -1,0 +1,22 @@
+meta {
+  name: create-cycle //auto backend
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/cloPLan/create-cycle
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "semester_course_id": 162
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

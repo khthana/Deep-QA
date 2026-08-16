@@ -1,0 +1,20 @@
+meta {
+  name: import users
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/user/import-users
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/tarho/OneDrive/เดสก์ท็อป/user_list.xlsx)
+  assigned_by: FULL_ADMIN
+}
+
+settings {
+  encodeUrl: true
+}

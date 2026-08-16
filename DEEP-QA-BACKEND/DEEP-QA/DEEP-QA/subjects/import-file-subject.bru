@@ -1,0 +1,21 @@
+meta {
+  name: import-file-subject
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/subjects/import-subject
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(C:\Users\tarho\OneDrive\Documents\subject-template(1).xlsx)
+  department_id: 05
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,32 @@
+meta {
+  name: upsert
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/studentGroup/upsert
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "group_id":null,
+      "section_id":173,
+      "group_name": "มินิโปรเจค D",
+      "performed_by": "tech0004",
+      "students": [ 
+          {
+              "student_id":"66015095"
+          },
+          {
+              "student_id":"66015096"
+          }
+      ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

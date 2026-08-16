@@ -1,0 +1,23 @@
+meta {
+  name: login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "thana.ho@kmitl.ac.th",
+    "password": "ce.kmitl.P@ssw0rd!"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

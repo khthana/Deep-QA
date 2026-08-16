@@ -1,0 +1,21 @@
+meta {
+  name: get-by-code
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/rubricDetails/get-by-code
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "rubric_code":"RUB001"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

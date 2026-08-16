@@ -1,0 +1,23 @@
+meta {
+  name: assignable-roles##เช็คว่าให้Role Role อะไรได้บ้าง
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/user_roles/assignable-roles
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "role":"FACULTY_ADMIN",
+      "targetUserEmail":"khthana@kmitl.ac.th"//target user email
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

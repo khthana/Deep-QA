@@ -1,0 +1,21 @@
+meta {
+  name: delete-department
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BaseURL}}/api/department/delete-department
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "department_id":"08"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

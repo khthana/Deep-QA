@@ -1,0 +1,28 @@
+meta {
+  name: deleteByCourseSyllabus_ID
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{BaseURL}}/api/courseSyllabus/delete/6
+  body: text
+  auth: inherit
+}
+
+body:text {
+  {
+      "course_syllabus_id":6 ,// null = create
+      "section_id": 153,
+      "week_no": 1,
+      "title": "Introduction",
+      "description": "ตาต้าทดสอบการอัพเดต",
+      "remark": "",
+      "created_by": "2771a2eb"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

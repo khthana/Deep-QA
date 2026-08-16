@@ -1,0 +1,27 @@
+meta {
+  name: create //แก้ไขแล้ว
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{address_port_api}}/subjectClo/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "section_id": 181,
+    "clo_number": "CLO-2", //ถ้าส่ง "4" จะเก็บ 4 ถ้าส่ง CLO-4 จะเก้บ CLO-4
+    "clo_detail": "สอบ",
+    "teaching_method": "- Lecture\n- Group discussion\n- Lab exercise",
+    "assessment_method": "- Quiz\n- Assignment\n- Final exam",
+    "plo_id": 1
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

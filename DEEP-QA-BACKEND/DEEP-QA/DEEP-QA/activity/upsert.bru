@@ -1,0 +1,47 @@
+meta {
+  name: upsert
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/activity/upsert
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "activity": {
+      "activity_id": 115,
+      "section_id": 182,
+      "score_ratio_id": 150,
+      "activity_type": "individual",
+      "activity_name": "ข้อสอบกลางภาคข้อ 1.1",
+      "description": "ให้ Code แล้วระบุว่าพบหลักการของ OOP ใดบ้าง "
+    },
+    "clo_mappings": [
+      {
+        "activity_clo_map_id": 157,
+        "sequence_order": 1,
+        "detail": null,
+        "clo_id": 30,
+        "weight": 50,
+        "score": 10.11
+      },
+          {
+        "activity_clo_map_id": 168,
+        "sequence_order": 2,
+        "detail": null,
+        "clo_id": 31,
+        "weight": 50,
+        "score": 10.22
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

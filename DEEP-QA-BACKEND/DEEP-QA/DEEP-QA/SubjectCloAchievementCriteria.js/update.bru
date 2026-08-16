@@ -1,0 +1,25 @@
+meta {
+  name: update
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/subjectCloAch/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 51,
+    "achievement_level": "ต้องปรับปรุง",
+    "criteria_detail": "ทดสอบการอัพเดต2",
+    "criteria_description": "ทดสอบอัพเดต"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

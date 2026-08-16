@@ -1,0 +1,34 @@
+meta {
+  name: create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/rubricDetails/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_code": "RUB05031",
+    "email": "66015095@kmitl.ac.th",
+    "detail": [
+      {
+        "criteria_name_en": "Content",
+        "criteria_name_th": "เนื้อหา",
+        "level_4_description": "Excellent content",
+        "level_3_description": "Very good content",
+        "level_2_description": "Average content",
+        "level_1_description": "Needs improvement",
+        "weight": 1.50,
+        "display_order": 1
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

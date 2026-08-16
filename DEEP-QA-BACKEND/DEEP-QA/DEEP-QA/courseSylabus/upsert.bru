@@ -1,0 +1,28 @@
+meta {
+  name: upsert
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/courseSyllabus/upsert
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "course_syllabus_id":null ,// null = create
+      "section_id": 153,
+      "week_no": 1,
+      "title": "Introduction",
+      "description": "ตาต้าทดสอบการอัพเดต",
+      "remark": "",
+      "created_by": "2771a2eb" //ถ้ามี user_id ใส่มาเลย ถ้าไม่มีให้ใส่ email มา
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

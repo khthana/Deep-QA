@@ -1,0 +1,32 @@
+meta {
+  name: Upsert // กลุ่ม CLO
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/activityScore/upsert
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "section_id": 153,
+    "activity_id": 38,
+    "score_type": "clo",
+    "group": true,
+    "clo": [1, 2, 53],
+    "list_student": [
+      {
+        "id": 83,
+        "list_score": [10, 5, 5]
+      }
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

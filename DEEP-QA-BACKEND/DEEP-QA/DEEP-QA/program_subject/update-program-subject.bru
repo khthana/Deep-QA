@@ -1,0 +1,25 @@
+meta {
+  name: update-program-subject
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/program_subjects/update-program-subject
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "66015095@kmitl.ac.th",
+    "program_id": "0501",
+    "subject_id": "01076016",
+    "subject_type": "required"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

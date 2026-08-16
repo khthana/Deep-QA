@@ -1,0 +1,32 @@
+meta {
+  name: create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/semesterCourses/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "academic_year": "2567",
+    "semester": 1,
+    "subject_id": "01076105",
+    "program_id":"0501"
+  }
+  
+  
+  // {
+  //   "academic_year_now": "2568",
+  //   "academic_year_old": "2567"
+  //   "semester": 1, // ตรงนี้ให้รับได้ 1 , 2 และ null null  คือให้สร้างในเทอมเดียวกันกับต้นฉบับเลย
+    
+  // }
+}
+
+settings {
+  encodeUrl: true
+}

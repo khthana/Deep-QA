@@ -1,0 +1,21 @@
+meta {
+  name: get-by-program
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/student/get-by-program
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "program_id":"0501"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

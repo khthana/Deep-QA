@@ -1,0 +1,21 @@
+meta {
+  name: get-subject-by-id
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BaseURL}}/api/subjects/get-subject-by-id
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "subjects_id": "CS102"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

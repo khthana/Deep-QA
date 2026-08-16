@@ -1,0 +1,24 @@
+meta {
+  name: delete-plo
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BaseURL}}/api/plo/delete-plo
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "program_id": "0502",
+    "outcome_code": "PLO-8"
+  
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

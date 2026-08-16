@@ -1,0 +1,58 @@
+meta {
+  name: update
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/rubricDetails/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "66015095@kmitl.ac.th",
+    "rubric_code": "RUB001",
+    "detail": [
+      {
+        "id": 13,
+        "criteria_name_en": "Content",
+        "criteria_name_th": "เนื้อหาTEST UPDATE",
+        "level_4_description": "Excellent content",
+        "level_3_description": "Very good content",
+        "level_2_description": "Average content",
+        "level_1_description": "Needs improvement",
+        "weight": 1.50,
+        "display_order": 1
+      },
+      {
+        "id": 14,
+        "criteria_name_en": "Organization",
+        "criteria_name_th": "โครงสร้างTEST UPDATE",
+        "level_4_description": "Excellent content",
+        "level_3_description": "Very good content",
+        "level_2_description": "Average content",
+        "level_1_description": "Needs improvement",
+        "weight": 1.50,
+        "display_order": 2
+      }
+          {
+        "id": 14,
+        "criteria_name_en": "Organization",
+        "criteria_name_th": "โครงสร้างTEST UPDATE",
+        "level_4_description": "Excellent content",
+        "level_3_description": "Very good content",
+        "level_2_description": "Average content",
+        "level_1_description": "Needs improvement",
+        "weight": 1.50,
+        "display_order": 2
+      }
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

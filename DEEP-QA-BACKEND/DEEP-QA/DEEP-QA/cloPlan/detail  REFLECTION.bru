@@ -1,0 +1,30 @@
+meta {
+  name: detail  REFLECTION
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BaseURL}}/api/cloPLan/detail/upsert
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "plan_detail_id" :  null ,// = null = create 
+      "cycle_id": 1,
+      "clo_id": 29,
+      "detailType": "REFLECTION",
+      "detail": "นักศึกษายังสับสนเรื่องการออกแบบ class",
+      "year": null
+  }
+  
+  
+  //detail TYPE   =   "SUMMARY"  ,  "NEXT_PLAN" ,    "REFLECTION"   ,  "IMPROVEMENT"    
+  
+}
+
+settings {
+  encodeUrl: true
+}

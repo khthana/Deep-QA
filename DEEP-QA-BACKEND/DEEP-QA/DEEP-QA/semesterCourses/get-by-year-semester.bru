@@ -1,0 +1,24 @@
+meta {
+  name: get-by-year-semester
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/semesterCourses/get-by-year-semester
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "academic_year": "2568",
+    "semester": 2,
+    "program_id":"0501"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

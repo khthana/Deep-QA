@@ -1,0 +1,19 @@
+meta {
+  name: get
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BaseURL}}/api/user/profile
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  image: @file(/C:/Users/tarho/Downloads/ChatGPT Image 26 ม.ค. 2569 17_49_38.png)
+}
+
+settings {
+  encodeUrl: true
+}

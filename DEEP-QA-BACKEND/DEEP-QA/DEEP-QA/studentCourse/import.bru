@@ -1,0 +1,20 @@
+meta {
+  name: import
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/studentCourse/import
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  section_id: 181
+  file: @file(/C:/Users/tarho/OneDrive/เดสก์ท็อป/student_course.xlsx)
+}
+
+settings {
+  encodeUrl: true
+}

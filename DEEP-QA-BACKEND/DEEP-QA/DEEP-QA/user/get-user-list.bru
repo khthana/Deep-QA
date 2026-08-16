@@ -1,0 +1,23 @@
+meta {
+  name: get-user-list
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/user/get-user-list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "role_id":"FULL_ADMIN",
+      "scope_id":"05"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

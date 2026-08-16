@@ -1,0 +1,32 @@
+meta {
+  name: add_user
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseURL}}/api/user/add_user
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "RJARN@kmitl.com",
+    "phone": "0812345678",
+    "title_th": "นางสาว",
+    "first_name_th": "อาจาร9",
+    "last_name_th": "เพิ่ม",
+    "title_en": "Mrs.",
+    "first_name_en": "Rjarn9",
+    "last_name_en": "Perm",
+    "password": "StrongPassw0rd!",
+    "role_id": "FACULTY_ADMIN",
+    "scope_id": "0001"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

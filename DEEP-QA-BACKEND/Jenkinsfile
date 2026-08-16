@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "deep-qa-backend:latest"
+        CONTAINER_NAME = "deep-qa-backend"
+        NETWORK_NAME = "deep-qa-network"
+        FIXED_IP = "172.18.0.10"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'jenkins', url: 'https://github.com/Narongrit159/DEEP-QA-BACKEND.git',
+                credentialsId: 'GIT_CREDENTIAL'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    # stop old container if exists
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
+
+                    # run new container on deepqa-net
+                    docker run -d --name $CONTAINER_NAME \
+                        --network $NETWORK_NAME \
+                        --ip $FIXED_IP \
+                        -p 3000:3000 \
+                        -v evidence_data:/data/evidence \
+                        --env-file .env \
+                        $IMAGE_NAME
+
+                    # clean dangling images
+                    docker image prune -f
+                '''
+            }
+        }
+    }
+}

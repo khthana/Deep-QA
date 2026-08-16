@@ -1,0 +1,15 @@
+meta {
+  name: delete
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{BaseURL}}/api/envidence/22/delete
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

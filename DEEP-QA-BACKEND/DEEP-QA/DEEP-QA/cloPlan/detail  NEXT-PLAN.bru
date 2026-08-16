@@ -1,0 +1,30 @@
+meta {
+  name: detail  NEXT-PLAN
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/cloPLan/detail/upsert
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "plan_detail_id" :  null ,// = null = create 
+      "clo_course_cycle_id": 10,
+      "clo_id": 29,
+      "detailType": "NEXT_PLAN",
+      "detail": "เพิ่ม mini project และ peer review",
+      "year": 2567
+  }
+  
+  
+  //detail TYPE   =   "SUMMARY"  ,  "NEXT_PLAN" ,    "REFLECTION"   ,  "IMPROVEMENT"    
+  
+}
+
+settings {
+  encodeUrl: true
+}

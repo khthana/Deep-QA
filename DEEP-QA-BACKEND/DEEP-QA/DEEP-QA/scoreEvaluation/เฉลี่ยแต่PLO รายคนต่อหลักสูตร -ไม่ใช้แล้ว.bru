@@ -1,0 +1,16 @@
+meta {
+  name: เฉลี่ยแต่PLO รายคนต่อหลักสูตร /ไม่ใช้แล้ว
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{BaseURL}}/api/scoreEva/program/0501/year/2566/studentAll
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

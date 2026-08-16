@@ -1,0 +1,101 @@
+meta {
+  name: เอาไว้ดูสื่อๆ
+  type: http
+  seq: 7
+}
+
+get {
+  url: 
+  body: json
+  auth: inherit
+}
+
+body:json {
+  // 1) GET คะแนนรายบุคคล แบบ Average
+  {
+    "section_id": 153,
+    "activity_id": 20,
+    "score_type": "average",
+    "group": false,
+    "list_student": [
+      {
+        "id": "66015001",
+        "first_name":"ทดสอบ",
+        "last_name":"ทดสอบ",
+        "list_score": { "total": 90 }
+      },
+      {
+        "id": "66015003",
+        "list_score": { "total": 90 }
+      }
+    ]
+  }
+  
+  // 2) GET คะแนนรายบุคคล แบบแยกตาม CLO
+  {
+    "section_id": 153,
+    "activity_id": 20,
+    "score_type": "clo",
+    "group": false,
+    "list_student": [
+      {
+        "id": "66015001",
+        "first_name":"ทดสอบ",
+        "last_name":"ทดสอบ",
+        "list_score": {
+          "CLO-1": 15,  // "CLO-1 == clo_number "
+          "CLO-2": 20,
+          "CLO-3": 20
+        }
+      },
+      {
+        "id": "66015003",
+        "first_name":"ทดสอบ",
+        "last_name":"ทดสอบ",
+        "list_score": {
+          "CLO-1": 15,
+          "CLO-2": 20,
+          "CLO-3": 35
+        }
+      }
+    ]
+  }
+  
+  // 3) GET คะแนนแบบ Group + Average
+  {
+    "section_id": 153,
+    "activity_id": 20,
+    "score_type": "average",
+    "group": true,
+    "list_student": [
+      {
+        "id": "83",
+        "list_score": { 
+          "total": 80 
+          }
+      }
+    ]
+  }
+  
+  // 4) GET คะแนนแบบ Group + แยก CLO
+  {
+    "section_id": 153,
+    "activity_id": 20,
+    "score_type": "clo",
+    "group": true,
+    "list_student": [
+      {
+        "id": "78",
+        "group_name": "โปรเจค D",
+        "list_score": {
+          "CLO-1": 15,
+          "CLO-2": 20
+        }
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,30 @@
+meta {
+  name: get // รายคน แยก CLO
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BaseURL}}/api/activityScore/get
+  body: json
+  auth: inherit
+}
+
+body:json {
+  
+  // GET คะแนนรายบุคคล แบบแยกตาม CLO
+  {
+    "section_id": 173,
+    "activity_id": 131,
+    "score_type": "clo",
+    "group": false
+  }
+  
+  
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,29 @@
+meta {
+  name: update-subjects
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BaseURL}}/api/subjects/update-subjects
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "subject_id": "01076035",
+    "subject_name_en": "Database System",
+    "subject_name_th": "ระบบฐานข้อมูล",
+    "credits": 3,
+    "description_th": "ทดสอบการอัพเดต ทดสอบอีกครั้ง",
+    "description_en": "Update testing ",
+    "email": "66015095@kmitl.ac.th",
+    "department":"05"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

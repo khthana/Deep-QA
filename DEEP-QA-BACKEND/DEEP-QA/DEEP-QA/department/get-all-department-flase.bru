@@ -1,0 +1,25 @@
+meta {
+  name: get-all-department-flase
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BaseURL}}/api/department/get-all-department-flase
+  body: text
+  auth: inherit
+}
+
+body:text {
+  {
+      "department_id":"01",
+      "department_name_en":"Telecommunication Engineering",
+      "department_name_th":"วิศวกรรมโทรคมนาคม",
+      "faculty_id":"0001"
+  
+  }
+}
+
+settings {
+  encodeUrl: true
+}

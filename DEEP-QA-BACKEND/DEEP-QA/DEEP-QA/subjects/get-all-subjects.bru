@@ -1,0 +1,20 @@
+meta {
+  name: get-all-subjects
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BaseURL}}/api/subjects/get-all-subjects
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/tarho/OneDrive/เดสก์ท็อป/subjects_list.xlsx)
+  email: 66015095@kmitl.ac.th
+}
+
+settings {
+  encodeUrl: true
+}

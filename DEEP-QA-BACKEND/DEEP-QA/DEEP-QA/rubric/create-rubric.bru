@@ -1,0 +1,27 @@
+meta {
+  name: create-rubric
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseURL}}/api/rubrics/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {   
+      "rubric_code":"RUB05022",
+      "rubric_name_en":"test",
+      "rubric_name_th":"test",
+      "display_order":1,
+      "email":"66015095@kmitl.ac.th",
+      "program_id":"0502"
+     
+  }
+}
+
+settings {
+  encodeUrl: true
+}

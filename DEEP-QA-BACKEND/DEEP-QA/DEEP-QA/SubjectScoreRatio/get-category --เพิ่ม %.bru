@@ -1,0 +1,15 @@
+meta {
+  name: get-category //เพิ่ม %
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BaseURL}}/api/subjectScore/get-category/181
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

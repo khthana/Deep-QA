@@ -1,0 +1,25 @@
+meta {
+  name: update
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BaseURL}}/api/subjectBe/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 26,
+    "learning_activity": "แบบฝึกหัด/การบ้าน",
+    "behavior_detail": "1. ทำแบบทดสอบบทที่ 1\n2. ทำแบบทดสอบบทที่ 2\n3. แบบทดสอบสรุปท้ายบท",
+    "cognitive_level": "เข้าใจ"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

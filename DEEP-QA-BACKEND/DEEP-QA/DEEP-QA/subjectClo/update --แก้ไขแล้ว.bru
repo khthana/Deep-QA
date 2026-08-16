@@ -1,0 +1,26 @@
+meta {
+  name: update //แก้ไขแล้ว
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{address_port_api}}/subjectClo/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "clo_id": 59,
+    "clo_detail": "จริยะ 1 ++",
+    "teaching_method": "- Lecture\n- Group discussion\n- Lab exercise",
+    "assessment_method": "- Quiz\n- Assignment\n- Final exam",
+    "plo_id": 368
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}
