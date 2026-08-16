@@ -14,6 +14,10 @@ dist/
 uploads/
 DEEP-QA-BACKEND/uploads/
 
+# Local-only material. Travels with a folder copy, never with a clone.
+# See _local/README.md for what lives here.
+_local/
+
 # Logs and OS noise
 *.log
 npm-debug.log*
