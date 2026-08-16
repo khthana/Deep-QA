@@ -1,0 +1,220 @@
+@@@TICKET@@@
+Teacher dashboard and Section context
+## Parent
+#1
+
+## What to build
+A Teacher signs in and sees the Sections they teach this semester. Choosing one puts it in context, and only then do the Section-specific menu entries appear — because every one of them is meaningless without knowing which Section is meant.
+
+The chosen Section is what every subsequent Teacher screen works from. A Teacher who is not assigned to a Section cannot reach it, whether or not it appears in their list.
+
+## Acceptance criteria
+- [ ] A Teacher sees exactly the Sections they are assigned to for the current year and semester
+- [ ] A Teacher assigned to nothing sees an empty state explaining why rather than an error
+- [ ] Choosing a Section puts it in context and reveals the Section-specific menu entries
+- [ ] The Section-specific menu entries are absent before a Section is chosen
+- [ ] The chosen Section survives a page reload
+- [ ] Requesting data for a Section the caller does not teach is refused at the server
+- [ ] A Teacher who also holds an administrator role can still switch to that role and back
+- [ ] Tests prove the cross-Section refusal using a seeded Teacher who teaches nothing
+
+## Blocked by
+- #23 Offerings and Sections
+@@@TICKET@@@
+Section enrolment
+## Parent
+#1
+
+## What to build
+A Teacher builds the class list for their Section: adding enrolled students individually or importing a spreadsheet of them, and removing anyone enrolled by mistake.
+
+A student must already exist in the central register. A code that is not there is refused with a message saying so, rather than creating a half-formed student record — this is what keeps marks from ever attaching to an unknown person.
+
+## Acceptance criteria
+- [ ] The screen lists students enrolled in the Section and paginates beyond ten rows
+- [ ] A Teacher can enrol a student by code and they appear in the list
+- [ ] A student not present in the central register is refused, naming the register as the place to add them
+- [ ] Enrolling the same student twice is rejected rather than duplicated
+- [ ] A Teacher can remove an enrolment, with confirmation first
+- [ ] The import template downloads from the screen
+- [ ] A valid spreadsheet enrols every listed student
+- [ ] A spreadsheet containing an unknown student code reports that row and applies nothing
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+
+## Blocked by
+- #24 Teacher dashboard and Section context
+- #17 Central student register
+@@@TICKET@@@
+Work Groups
+## Parent
+#1
+
+## What to build
+A Teacher organises their Section into Work Groups for group assessment, and can see how the groups changed over time when a student claims they were moved.
+
+Two rules hold and are enforced on the server: a group holds at most ten students, and a student belongs to at most one group within a Section.
+
+## Acceptance criteria
+- [ ] A Teacher can create, rename and delete Work Groups within their Section
+- [ ] Students can be added to and removed from a group
+- [ ] Adding an eleventh student to a group is refused, naming the limit
+- [ ] Adding a student who is already in another group of the same Section is refused, naming the other group
+- [ ] Moving a student between groups is possible and is recorded as a move, not as a delete and an add
+- [ ] The change history shows creations, deletions, additions, removals and moves, with who did it and when
+- [ ] Import works through the shared module, with template download and per-row error reporting
+- [ ] Deletion asks for confirmation first
+- [ ] Tests cover both limits with requests crafted directly against the server
+
+## Blocked by
+- #25 Section enrolment
+@@@TICKET@@@
+Course Learning Outcomes
+## Parent
+#1
+
+## What to build
+A Teacher defines what their Subject teaches towards for this academic year: the CLO set, each with its detail, teaching method and assessment method, and each linked to a PLO of the Program.
+
+Per ADR-0003 the CLO set belongs to the Program, Subject and academic year — not to a Section. Every Section of the Offering shares it, so students taking the same Subject in different groups are held to the same outcomes, and each year's set is frozen once marks exist against it. Teachers of different Sections co-edit one set, so the screen records who last changed each CLO.
+
+Only PLOs already mapped to this Subject may be linked, so the CLO ladder cannot bypass the coverage grid.
+
+## Acceptance criteria
+- [ ] A Teacher can add, edit and remove CLOs for the Subject and year of their Section
+- [ ] A CLO can be linked to a PLO, and only PLOs mapped to this Subject are offered
+- [ ] The CLO set is identical when viewed from any Section of the same Offering
+- [ ] Editing a CLO from one Section is visible from another
+- [ ] A different academic year of the same Subject has its own independent CLO set
+- [ ] CLO code is unique within the Program, Subject and year, and the same code may exist for a different year
+- [ ] Each CLO shows who last changed it and when
+- [ ] A CLO with recorded marks against it cannot be deleted outright
+- [ ] Removal asks for confirmation first
+- [ ] Tests prove the shared-across-Sections and frozen-per-year behaviours
+
+## Blocked by
+- #24 Teacher dashboard and Section context
+- #19 Programme Learning Outcomes
+@@@TICKET@@@
+Measurable Behaviors
+## Parent
+#1
+
+## What to build
+A Teacher records, for each CLO, the observable behaviours that evidence it — what a student actually does that shows the outcome was reached — each tagged with a cognitive level and the kind of learning activity it belongs to.
+
+## Acceptance criteria
+- [ ] Behaviours can be added, edited and removed under a chosen CLO
+- [ ] Each behaviour carries a sequence number, a detail, a cognitive level and an activity type
+- [ ] Cognitive level offers the six permitted values and rejects anything else
+- [ ] Activity type offers the permitted values and rejects anything else
+- [ ] Behaviours follow the CLO, so they are shared across Sections of the Offering and independent per year
+- [ ] Removal asks for confirmation first
+- [ ] A Teacher is refused on a CLO outside their Sections, enforced at the server
+
+## Blocked by
+- #27 Course Learning Outcomes
+@@@TICKET@@@
+Achievement Criteria
+## Parent
+#1
+
+## What to build
+A Teacher defines, for each CLO, what performance looks like at each of the four bands, so that a raw mark can be translated into an attainment level rather than judged ad hoc.
+
+## Acceptance criteria
+- [ ] Criteria can be added, edited and removed under a chosen CLO
+- [ ] Each criterion carries a sequence number, a band, a detail and an optional description
+- [ ] The band is restricted to the four permitted values
+- [ ] A CLO can carry a criterion for each of the four bands
+- [ ] Criteria follow the CLO, so they are shared across Sections of the Offering and independent per year
+- [ ] Removal asks for confirmation first
+- [ ] A Teacher is refused on a CLO outside their Sections, enforced at the server
+
+## Blocked by
+- #27 Course Learning Outcomes
+@@@TICKET@@@
+Weighting scheme
+## Parent
+#1
+
+## What to build
+A Teacher sets out how the Subject's marks are divided — for example project forty, midterm thirty, final thirty — so that Activities can be filed under a category and marks can roll up.
+
+The weights must total one hundred, and a scheme that does not is refused rather than saved and warned about. Per ADR-0003 the scheme belongs to the Program, Subject and year, so every Section of the Offering shares one basis; Teachers keep full freedom over what Activities sit inside each category.
+
+## Acceptance criteria
+- [ ] A Teacher can add, edit and remove weighting categories
+- [ ] Saving is refused when the weights do not total one hundred, and the message states the current total
+- [ ] Saving succeeds when the weights total one hundred
+- [ ] The scheme is identical when viewed from any Section of the same Offering
+- [ ] A different academic year of the same Subject has its own independent scheme
+- [ ] A category with Activities against it cannot be deleted outright
+- [ ] Import works through the shared module, with template download and per-row error reporting
+- [ ] Removal asks for confirmation first
+- [ ] Tests prove the hundred-total rule against a request crafted directly against the server
+
+## Blocked by
+- #24 Teacher dashboard and Section context
+@@@TICKET@@@
+Teaching plan
+## Parent
+#1
+
+## What to build
+A Teacher records the week-by-week plan for their Section — topic, detail and remarks per week — so that Activities can later be tied to the week they belong to.
+
+## Acceptance criteria
+- [ ] Weeks can be added, edited and removed for the Section
+- [ ] Each week carries a number, a title, a description and a remark
+- [ ] Weeks display in order
+- [ ] The plan belongs to the Section, so two Sections of one Offering may differ
+- [ ] A week referenced by an Activity cannot be deleted outright
+- [ ] Removal asks for confirmation first
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+
+## Blocked by
+- #24 Teacher dashboard and Section context
+@@@TICKET@@@
+Activity list
+## Parent
+#1
+
+## What to build
+A Teacher sees every piece of assessed work in their Section, grouped by weighting category, with its full mark and dates, and can remove one that was created in error. Creating and editing happens on the editor screen that follows.
+
+## Acceptance criteria
+- [ ] Activities are listed grouped by their weighting category
+- [ ] Each entry shows its name, type, full mark, and announcement and due dates
+- [ ] An Activity can be deleted, with confirmation first
+- [ ] An Activity with recorded marks cannot be deleted outright
+- [ ] The list is empty with an explanatory state when the Section has no Activities
+- [ ] Activities belong to the Section, so two Sections of one Offering may differ
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+
+## Blocked by
+- #30 Weighting scheme
+- #31 Teaching plan
+@@@TICKET@@@
+Activity editor
+## Parent
+#1
+
+## What to build
+A Teacher creates or edits a piece of assessed work: its name, whether it is done individually or in a group, its full mark, its announcement and due dates, the week of the teaching plan it belongs to, and its weighting category. They then attribute it to outcomes by adding one row per CLO with the share of the mark that CLO accounts for.
+
+This attribution is what makes every later attainment figure possible; an Activity with no CLO rows contributes to no outcome.
+
+## Acceptance criteria
+- [ ] An Activity can be created and edited with name, type, full mark, dates, teaching-plan week and weighting category
+- [ ] Type is restricted to individual or group
+- [ ] CLO rows can be added and removed, each naming one CLO and its weight
+- [ ] Only CLOs of this Subject and year are offered
+- [ ] The same CLO cannot be added twice to one Activity
+- [ ] Editing an existing Activity loads its current CLO rows rather than starting empty
+- [ ] Saving twice updates the Activity rather than creating a duplicate
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+- [ ] Tests cover the duplicate-CLO rejection and the update-not-duplicate behaviour
+
+## Blocked by
+- #32 Activity list
+- #27 Course Learning Outcomes

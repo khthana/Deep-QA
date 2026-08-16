@@ -1,0 +1,138 @@
+@@@TICKET@@@
+Local PostgreSQL and migration runner
+## Parent
+#1
+
+## What to build
+A developer clones the repository, runs one compose command and one script, and has an empty but correctly configured DEEP-Core database running locally. Nothing in the application depends on this yet — the ticket exists so every later ticket has somewhere to put its tables.
+
+Migrations are numbered SQL files applied in order by a small runner. No ORM or migration framework is introduced; the data layer is hand-written SQL over a connection pool and stays that way. The schema name is set once on the connection search path so queries never name it, which also makes pointing tests at a separate schema a configuration change rather than a code change.
+
+## Acceptance criteria
+- [ ] A compose file brings up PostgreSQL 16 with a named volume that survives a restart
+- [ ] A reset script drops and recreates the schema from scratch
+- [ ] A migrate script applies pending migrations in order and is safe to run twice
+- [ ] The connection pool sets the search path, so a query naming a bare table resolves correctly
+- [ ] Connection settings come from environment variables, with an example file listing every required name
+- [ ] The README explains bringing the database up from nothing
+
+## Blocked by
+None — can start immediately.
+@@@TICKET@@@
+Schema: identity and organisation
+## Parent
+#1
+
+## What to build
+The tables describing who exists and how the institution is structured: Faculty, Department, Program, Subject, Program Subject, the central student register, and the user, role, role-grant and activity-log tables.
+
+Keys follow ADR-0001. Faculty, Department, Program, Subject, user and student rows are keyed by their real-world codes. Program Subject and role grants drop their surrogate identifier in favour of the composite natural key.
+
+Column types are recovered from the SQL the inherited models actually issue, not from the thesis tables, which disagree with the code in several places — two tables are named differently and one is undocumented.
+
+## Acceptance criteria
+- [ ] Migrations create faculty, departments, programs, subjects, program_subjects, student, users, roles, user_roles and user_log
+- [ ] Reference tables use their real-world code as the primary key, with no surrogate identifier
+- [ ] Program Subject and role grants use composite natural primary keys
+- [ ] Type mismatches noted in the schema document are resolved to one consistent type per concept, chosen to match how the code uses the column
+- [ ] Foreign keys are declared and enforced, with deliberate delete behaviour on each
+- [ ] Rows that may later be referenced carry an active flag rather than relying on deletion
+- [ ] Enum types exist for account status, student status and subject type
+- [ ] Reset and migrate succeed on an empty database
+
+## Blocked by
+- #2 Local PostgreSQL and migration runner
+@@@TICKET@@@
+Schema: offerings and learning outcomes
+## Parent
+#1
+
+## What to build
+The tables describing what is taught and what it should achieve: Offerings and their Sections, Section teaching assignments, the weekly teaching plan, PLOs and their mapping to Subjects, and CLOs with their Measurable Behaviors and Achievement Criteria.
+
+CLOs sit at the (Program, Subject, academic year) grain per ADR-0003, not on a Section, and their child tables follow. The continuous-improvement cycle tables already sit at that grain in the inherited design and now reference CLOs coherently.
+
+The inherited schema made Section number, CLO code and PLO code globally unique, which permits exactly one "Section 1" and one "PLO1" across the whole institution. Each is scoped to its parent here.
+
+## Acceptance criteria
+- [ ] Migrations create semester_courses, course_sections, course_sections_teacher, course_syllabus, learning_outcomes, subject_plo_mapping, subject_clo, subject_clo_measurable_behavior, subject_clo_achievement_criteria and the two continuous-improvement tables
+- [ ] Section number is unique within its Offering, CLO code within its Program-Subject-year, and PLO code within its Program
+- [ ] CLO and its child tables carry no Section reference
+- [ ] PLOs support a parent-child tree with depth and display order
+- [ ] The Subject-to-PLO mapping level is constrained to the five permitted values and defaults to empty
+- [ ] Cognitive level, learning activity type and achievement band are constrained to their permitted values
+- [ ] Reset and migrate succeed on an empty database
+
+## Blocked by
+- #3 Schema: identity and organisation
+@@@TICKET@@@
+Schema: assessment, scores and rubrics
+## Parent
+#1
+
+## What to build
+The tables recording what students did and how they were marked: Section enrolment, Work Groups and their change history, the weighting scheme, Activities and their CLO links, marks, assessment Evidence, and Rubrics with their criteria.
+
+The weighting scheme moves to the (Program, Subject, academic year) grain alongside CLOs per ADR-0003, so attainment summed across Sections is computed on one basis. Activities, marks and Evidence stay Section-level.
+
+Only the tables the inherited code actually queries are built. The roughly eighteen tables appearing in the thesis ER diagram with no code touching them are not created.
+
+## Acceptance criteria
+- [ ] Migrations create student_course, student_group, student_group_member, student_group_change_log, subject_score_ratio, activities, activity_clo_mapping, activity_scores, activity_evidence, rubrics and rubric_details
+- [ ] The weighting scheme is unique per Program-Subject-year-category
+- [ ] A mark is unique per student, Activity and CLO, so re-saving updates rather than duplicates
+- [ ] Enrolment and group membership use composite natural primary keys
+- [ ] Evidence rows carry a soft-delete flag, uploader and file metadata
+- [ ] Group change history records the action, the student, and both the old and new group
+- [ ] Rubric criteria carry a weight and a description for each of the four levels
+- [ ] Reset and migrate succeed on an empty database
+
+## Blocked by
+- #4 Schema: offerings and learning outcomes
+@@@TICKET@@@
+Seed dataset for development and acceptance
+## Parent
+#1
+
+## What to build
+A seed script that fills an empty database with one coherent, complete scenario, so every screen has something real to show from the first ticket that renders one. Without it early screens are empty and the later analytics screens cannot be accepted at all.
+
+The dataset follows the test data already specified in the test-case document: one Department, one Program, one Subject opened for one year and semester, its enrolled cohort, a full PLO tree and CLO set, a weighting scheme, Activities and marks. It also creates the named accounts the acceptance checklists refer to, including deliberately negative ones — an account scoped to a different Department, a Teacher who teaches nothing — so permission rules can be verified rather than assumed.
+
+Marks are seeded for a completed prior year as well as the current one, so the year-over-year comparison screens have two points to compare.
+
+## Acceptance criteria
+- [ ] A seed script populates an empty database in one command and is safe to re-run after a reset
+- [ ] The dataset covers one Department, one Program, one Subject, one Offering with more than one Section, and the enrolled cohort
+- [ ] A complete PLO tree with sub-outcomes, and a CLO set with Measurable Behaviors and Achievement Criteria, are present
+- [ ] A weighting scheme totalling 100, Activities linked to CLOs, and marks for every enrolled student are present
+- [ ] Work Groups exist, within the size limit and with no student in two groups
+- [ ] A second academic year of completed marks exists for the same Subject
+- [ ] Named accounts exist for each role, including one scoped to a different Department and one Teacher with no Sections
+- [ ] Every seeded password is documented in the README for use during acceptance
+
+## Blocked by
+- #5 Schema: assessment, scores and rubrics
+@@@TICKET@@@
+Backend skeleton and test harness
+## Parent
+#1
+
+## What to build
+The scaffolding every later ticket's tests rely on. The inherited backend builds its application and starts listening in one file with no export, so nothing can exercise it in-process; it is split into a module that builds and returns the configured application and a thin entry point that listens.
+
+On top of that split: a test runner, a way to point tests at a separate schema, helpers that reset and seed between files, and fixture builders that make a scenario cheap to express. Tests use the platform built-in runner and an HTTP assertion library, adding no framework.
+
+This ticket delivers no user-facing behaviour. It ends with one smoke test proving the seam works end to end.
+
+## Acceptance criteria
+- [ ] The application is importable and testable without binding a port
+- [ ] The entry point still starts the server exactly as before
+- [ ] A test command runs the suite against a dedicated schema, leaving development data untouched
+- [ ] Helpers reset and re-seed the test schema between test files
+- [ ] Fixture builders exist for the core chain — Program, Subject, Offering, Section, enrolment, CLO, Activity, marks — so a scenario is a few lines
+- [ ] A smoke test issues a request to the running application and asserts the response
+- [ ] The README documents how to run the suite
+
+## Blocked by
+- #2 Local PostgreSQL and migration runner

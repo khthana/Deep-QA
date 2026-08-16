@@ -1,0 +1,180 @@
+@@@TICKET@@@
+Activity marks
+## Parent
+#1
+
+## What to build
+A Teacher records what each student scored. The screen adapts to how the work was actually marked: a toggle switches between one mark per Activity and a separate mark per CLO, and another switches between entering marks per student and per Work Group, where a group's mark applies to all its members.
+
+Marks can also be imported from the Teacher's own spreadsheet. Because a misaligned sheet would silently corrupt the record, an import is checked before anything is applied: the number of students, the student codes, the names, and the CLO columns must all agree with the Section.
+
+Re-saving corrects a mark rather than adding a second one.
+
+## Acceptance criteria
+- [ ] Marks can be entered and saved for every enrolled student
+- [ ] The per-CLO toggle switches between one input per Activity and one per linked CLO, and both persist correctly
+- [ ] The group toggle switches between per-student and per-group entry, and a group mark applies to every member
+- [ ] Re-saving a mark updates it rather than creating a duplicate
+- [ ] A mark above the Activity full mark is refused
+- [ ] The import template downloads and reflects the current toggle state
+- [ ] An import is rejected when the student count, any student code, any name, or the CLO columns disagree with the Section, and the message says which
+- [ ] A rejected import applies nothing
+- [ ] A valid import records every mark
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+- [ ] Tests cover both toggles, the four import checks and the update-not-duplicate behaviour
+
+## Blocked by
+- #33 Activity editor
+- #25 Section enrolment
+- #26 Work Groups
+@@@TICKET@@@
+Assessment evidence
+## Parent
+#1
+
+## What to build
+A Teacher attaches the evidence that makes an assessment defensible at accreditation: the brief itself, and a sample of student work at each of the four achievement bands. Files can be replaced or removed as better examples appear.
+
+Two security defects in the inherited implementation are fixed here rather than deferred. The upload middleware enforces a size limit but performs no file type check of any kind, so the PDF-only requirement is enforced nowhere on either side. And the evidence directory is served as static files with no authentication, so any document is retrievable by anyone who knows or guesses its path — including student work belonging to another Section.
+
+## Acceptance criteria
+- [ ] Evidence can be uploaded against an Activity under each of the five types
+- [ ] A non-PDF upload is refused by the server, whatever the file is named or claims to be
+- [ ] A file exceeding the size limit is refused with a clear message
+- [ ] An uploaded file can be replaced, and the previous file stops being retrievable
+- [ ] Evidence can be removed, and no longer appears
+- [ ] Retrieving an evidence file requires an authenticated caller entitled to that Section
+- [ ] An unauthenticated request for a known evidence path is refused
+- [ ] A Teacher is refused on a Section they do not teach, both for listing and for retrieval
+- [ ] Tests cover the type check against a mislabelled file and the unauthenticated retrieval refusal
+
+## Blocked by
+- #33 Activity editor
+@@@TICKET@@@
+Section results
+## Parent
+#1
+
+## What to build
+A Teacher sees how their Section performed against its outcomes: a radar chart of CLO attainment, the same Section compared against previous years, and the headline figures — mean score, pass rate and student count — beside it.
+
+The hook that fetches the Section's student list is rewritten here. In the inherited code it calls an endpoint that does not exist and then discards its result unconditionally, so this screen and the individual-results screen receive an empty list in every case.
+
+CLO scores are normalised to a five-point scale so outcomes assessed out of different totals can be compared, and a CLO counts as passed when more than sixty per cent of students meet its criterion.
+
+## Acceptance criteria
+- [ ] A radar chart shows attainment for every CLO of the Section
+- [ ] Scores are normalised to a five-point scale
+- [ ] Mean score, pass rate and student count are shown and agree with the underlying marks
+- [ ] A CLO is reported as passed when more than sixty per cent of students meet its criterion, and not at exactly sixty
+- [ ] Previous years of the same Subject can be selected and appear on the same chart
+- [ ] The screen renders an explanatory empty state when no marks exist yet
+- [ ] The student list loads correctly, replacing the broken inherited hook
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+- [ ] Tests seed known marks and assert the resulting figures, including the boundary at sixty per cent
+
+## Blocked by
+- #34 Activity marks
+- #20 Outcome-to-Subject mapping
+@@@TICKET@@@
+Individual student results
+## Parent
+#1
+
+## What to build
+A Teacher picks a student and sees their outcome attainment on a radar chart, with the Section average behind it for context, and can put several students on one chart to see the spread.
+
+## Acceptance criteria
+- [ ] Selecting a student shows their attainment across the Section's CLOs
+- [ ] The Section average is shown alongside the individual for comparison
+- [ ] Several students can be selected and compared on one chart
+- [ ] The chart shows at most ten CLOs, and states so when there are more
+- [ ] Scores use the same five-point normalisation as the Section results
+- [ ] A student with no recorded marks renders an explanatory state rather than a broken chart
+- [ ] The student list loads correctly, using the rewritten hook
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+
+## Blocked by
+- #34 Activity marks
+@@@TICKET@@@
+Learning detail heatmap
+## Parent
+#1
+
+## What to build
+A Teacher sees every student against every CLO as a heatmap, so weak outcomes and struggling students stand out at a glance, together with the figures behind it and an explicit list of the CLOs that need attention.
+
+Bands are coloured on the five ranges specified in the business rules, with anything below three flagged.
+
+## Acceptance criteria
+- [ ] A heatmap shows every enrolled student against every CLO
+- [ ] Cells are coloured on the five specified ranges, with below three distinctly flagged
+- [ ] Mean score, pass rate and student count are shown and agree with the underlying marks
+- [ ] The CLOs needing attention are listed explicitly rather than left to be read off the colours
+- [ ] The heatmap scrolls horizontally rather than forcing the page to
+- [ ] An empty state appears when no marks exist yet
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+- [ ] Tests assert the band boundaries with seeded marks placed on each edge
+
+## Blocked by
+- #34 Activity marks
+@@@TICKET@@@
+Outcome-to-Activity map
+## Parent
+#1
+
+## What to build
+A Teacher sees which Activities assess which CLOs as a flow diagram, so an outcome that is barely assessed, or one that carries far too much of the marking load, becomes obvious. Counts and a detail table sit beside it.
+
+## Acceptance criteria
+- [ ] A flow diagram links CLOs to the Activities that assess them, with band widths reflecting weight
+- [ ] The counts of CLOs, Activities and links are shown
+- [ ] The mean score per CLO is shown
+- [ ] A detail table lists each link with its weight and mark
+- [ ] A CLO with no Activity linked to it is visible rather than silently absent
+- [ ] An empty state appears when the Section has no Activities
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+
+## Blocked by
+- #34 Activity marks
+@@@TICKET@@@
+CLO assessment report
+## Parent
+#1
+
+## What to build
+A Teacher sees the formal assessment table for the Section — each CLO, its criterion, the proportion of students meeting it, and whether it passed — and exports it as a PDF for the course file.
+
+## Acceptance criteria
+- [ ] A table lists every CLO with its achievement criterion and the proportion of students meeting it
+- [ ] Pass or fail is shown per CLO on the sixty per cent rule
+- [ ] Scores use the same five-point normalisation as the other results screens
+- [ ] The table exports to PDF with Thai characters rendering correctly
+- [ ] The exported PDF names the Subject, Section, year and semester
+- [ ] An empty state appears when no marks exist yet
+- [ ] A Teacher is refused on a Section they do not teach, enforced at the server
+- [ ] Tests assert the pass determination against seeded marks at and either side of the threshold
+
+## Blocked by
+- #34 Activity marks
+- #29 Achievement Criteria
+@@@TICKET@@@
+Continuous improvement plan
+## Parent
+#1
+
+## What to build
+A Teacher records the improvement cycle for the Subject each year: what the results showed, what they make of it, what was changed following last year's reflection, and what they intend to do next. This is the narrative an accreditation panel reads alongside the numbers.
+
+The cycle belongs to the Program, Subject and academic year, matching the grain of the CLOs it discusses.
+
+## Acceptance criteria
+- [ ] Entries can be recorded under each of the four types for a chosen CLO and year
+- [ ] An entry can be edited and removed, with confirmation before removal
+- [ ] The cycle for a year is created on demand rather than requiring separate setup
+- [ ] The previous year's entries are visible for reference when writing this year's
+- [ ] Entries are shared across Sections of the Offering, matching the CLO grain
+- [ ] A Teacher is refused on a Subject they do not teach, enforced at the server
+
+## Blocked by
+- #27 Course Learning Outcomes

@@ -1,0 +1,142 @@
+@@@TICKET@@@
+Sign in
+## Parent
+#1
+
+## What to build
+A member of staff opens DEEP-Core, signs in with their KMITL Google account, and arrives in the area matching their highest-priority role. A Central Admin or External Assessor signs in with a username and password instead. Anyone whose email is outside the KMITL domain, or who has no role recorded in the system, is refused with a message explaining which.
+
+In development only, password sign-in is opened to every role, so that each role's screens can be exercised without provisioning Google credentials per test account. In production the inherited rule stands: password sign-in is for Central Admin and External Assessor, and every other role is directed to Google.
+
+A successful sign-in issues a session in an HttpOnly cookie and records the event in the activity log. Signing out clears it and records that too.
+
+## Acceptance criteria
+- [ ] Google sign-in succeeds for a KMITL account that has a role, and lands the user in the area for their highest-priority role
+- [ ] Google sign-in is refused for an email outside the KMITL domain, with a message naming the domain requirement
+- [ ] Sign-in is refused for a KMITL account with no role in the system, with a distinct message
+- [ ] Password sign-in succeeds for Central Admin and External Assessor in every environment
+- [ ] Password sign-in succeeds for all roles when running in development, and is refused for non-admin roles otherwise
+- [ ] An External Assessor outside their validity window is refused
+- [ ] The session cookie is HttpOnly and is cleared on sign-out
+- [ ] Sign-in and sign-out are both recorded in the activity log
+- [ ] Passwords are stored hashed, never in plain text
+- [ ] Tests cover each acceptance path above against the seeded accounts
+
+## Blocked by
+- #6 Seed dataset for development and acceptance
+- #7 Backend skeleton and test harness
+@@@TICKET@@@
+Server-side authorisation
+## Parent
+#1
+
+## What to build
+Every request is checked against the role grants recorded for the caller in the database, so that access no longer depends on what the browser claims. This is the defect described in ADR-0002: today the session proves identity only, four of thirty-two controllers look at privileges, and those read the caller's role and scope from the request body.
+
+Middleware loads the caller's active grants on each request and exposes them to handlers. Route declarations state the role and the scope each endpoint requires. Role and scope are removed from request bodies entirely — the server derives them. Grants are read per request rather than embedded in the session, so revoking a role takes effect immediately rather than at token expiry.
+
+The inherited origin-header gate is not carried forward: it passes everything outside production and is trivially forged within it.
+
+This ticket delivers the mechanism and applies it to the endpoints that already exist. Every later ticket declares its own requirements using it.
+
+## Acceptance criteria
+- [ ] Middleware attaches the caller's active role grants, read from the database, to every authenticated request
+- [ ] A guard rejects a caller lacking the required role with a 403 that names neither internal details nor other users
+- [ ] A guard rejects a caller whose scope does not contain the target record, with the same shape of response
+- [ ] No endpoint reads a role or scope from a request body or query string
+- [ ] Revoking a grant takes effect on the caller's very next request, without re-authentication
+- [ ] An unauthenticated request to any endpoint other than sign-in is rejected with a 401
+- [ ] The origin-header gate is removed and nothing depends on it
+- [ ] Tests prove that each seeded role reaches what it should and is refused what it should not, using real sign-in rather than a stubbed session
+
+## Blocked by
+- #8 Sign in
+@@@TICKET@@@
+Application shell, role switching and sidebar
+## Parent
+#1
+
+## What to build
+A signed-in user sees the application frame: a navigation bar, a sidebar whose menu entries match the role they are currently acting as, breadcrumbs, and the page itself. A user holding several roles picks which one they are acting as from a control at the top, defaulting to their highest-priority role. Switching changes the sidebar and what the user may reach.
+
+The session expires after a period without activity, and the user is told rather than silently failing. A user can change their own password from the navigation bar.
+
+Central Admin sees only the user-management menu. This is deliberate and matches both the thesis and the inherited configuration: that role administers accounts and grants and has no access to curriculum data.
+
+## Acceptance criteria
+- [ ] The shell renders navigation, sidebar, breadcrumb and content for a signed-in user
+- [ ] Sidebar entries match the acting role, and each role sees the set specified in the requirements
+- [ ] A user with several roles can switch between them, defaulting to the highest-priority one
+- [ ] Switching role changes both the sidebar and what the server permits, not the sidebar alone
+- [ ] Central Admin sees only the user-management menu
+- [ ] An idle session expires and the user is shown an explanation rather than an unexplained failure
+- [ ] A user can change their own password, and the new password works on the next sign-in
+- [ ] Tests prove that hiding a menu entry is not the only thing preventing access to it
+
+## Blocked by
+- #9 Server-side authorisation
+@@@TICKET@@@
+User accounts
+## Parent
+#1
+
+## What to build
+A Central Admin manages who may use DEEP-Core: adding accounts one at a time or importing a spreadsheet of them, editing details, deactivating an account without deleting it, and creating External Assessor accounts that stop working after a stated date.
+
+The import follows the pattern every import screen uses: download the template the system provides, upload a completed file, and receive a per-row report naming what failed and why, with nothing partially applied.
+
+Administrators below Central Admin see this screen too, but only the users within their own scope.
+
+## Acceptance criteria
+- [ ] The user list is filterable and paginates beyond ten rows
+- [ ] A Central Admin can add an account and it can immediately sign in
+- [ ] An account can be deactivated and reactivated, and a deactivated account cannot sign in
+- [ ] An External Assessor account can be created with a validity period, and is refused outside it
+- [ ] The import template can be downloaded from the screen
+- [ ] Importing a valid spreadsheet creates every row
+- [ ] Importing a spreadsheet with bad rows reports each failure with its row and reason, and applies nothing
+- [ ] An administrator sees and may edit only users within their own scope
+- [ ] Tests cover the scope restriction and the partial-import rejection
+
+## Blocked by
+- #10 Application shell, role switching and sidebar
+@@@TICKET@@@
+Role grants
+## Parent
+#1
+
+## What to build
+An administrator opens a user and manages what that person may do: their personal details, and the list of roles granted to them, each confined to a Faculty, Department or Program. One person can hold several roles at once — commonly Curriculum Committee for one Program and Teacher for the Sections they teach.
+
+The rule that matters is that a grant may never exceed the granter's own scope. A Department Admin cannot mint a Faculty Admin, and cannot grant anything scoped to another Department. This is checked on the server, not by filtering the dropdown.
+
+## Acceptance criteria
+- [ ] An administrator can edit a user's personal details
+- [ ] An administrator can grant a role with a scope, and the grantee gains that access on their next request
+- [ ] An administrator can revoke a grant, and the grantee loses that access on their next request
+- [ ] A user may hold several roles simultaneously and can act as each
+- [ ] The scopes offered are limited to those within the granter's own scope
+- [ ] A grant exceeding the granter's scope is refused by the server even when the request is crafted directly
+- [ ] The grant records who made it and when
+- [ ] Tests prove the escalation attempt is refused at the server, not merely absent from the interface
+
+## Blocked by
+- #11 User accounts
+@@@TICKET@@@
+User activity history
+## Parent
+#1
+
+## What to build
+An administrator selects a user and reads what that account has done — sign-ins, sign-outs and record views — so that a question about who saw or changed something can be answered.
+
+## Acceptance criteria
+- [ ] The screen lists activity for a selected user, most recent first
+- [ ] Entries record the action and the time in the Bangkok timezone
+- [ ] The list is filterable by user and paginates beyond ten rows
+- [ ] An administrator sees history only for users within their own scope
+- [ ] Sign-in and sign-out events recorded by the sign-in ticket appear here
+- [ ] Tests cover the scope restriction
+
+## Blocked by
+- #11 User accounts

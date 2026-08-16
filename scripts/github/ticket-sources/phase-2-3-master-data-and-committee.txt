@@ -1,0 +1,226 @@
+@@@TICKET@@@
+Departments
+## Parent
+#1
+
+## What to build
+A Faculty Admin maintains the list of Departments in the faculty: adding, editing and removing them, or importing a spreadsheet of them. A Department Admin does not see this screen and, more importantly, cannot reach the endpoints behind it.
+
+This is the first screen with a spreadsheet import, so the shared import module is extracted here rather than invented separately on each of the ten screens that follow. Its shape is fixed by the business rules: the system provides the template, the screen offers it for download, and a failed import reports every bad row with its reason and applies nothing.
+
+## Acceptance criteria
+- [ ] A Faculty Admin can add, edit and remove a Department
+- [ ] Removal asks for confirmation first
+- [ ] A Department that is referenced by a Program cannot be silently destroyed
+- [ ] The list paginates beyond ten rows
+- [ ] The import template downloads from the screen and matches what the importer accepts
+- [ ] A valid spreadsheet imports every row
+- [ ] A spreadsheet with bad rows reports each failure with its row and reason, and applies nothing
+- [ ] A Department Admin is refused by the server on every endpoint on this screen, not merely denied the menu entry
+- [ ] The import module is reusable and is consumed by this screen rather than duplicated
+
+## Blocked by
+- #10 Application shell, role switching and sidebar
+@@@TICKET@@@
+Programs
+## Parent
+#1
+
+## What to build
+An administrator maintains the degree Programs on offer: adding, editing and removing them within a Department, or importing a spreadsheet. A Faculty Admin manages every Department's Programs; a Department Admin manages only their own.
+
+A Program that is already referenced — by Program Subjects, PLOs, students or Offerings — is deactivated rather than deleted, so historical records stay readable.
+
+## Acceptance criteria
+- [ ] An administrator can add, edit and remove a Program under a chosen Department
+- [ ] A Faculty Admin can manage Programs in any Department of the faculty
+- [ ] A Department Admin can manage only their own Department's Programs, enforced at the server
+- [ ] A referenced Program becomes inactive instead of being deleted, and stops appearing in selection lists
+- [ ] An inactive Program's historical records remain readable
+- [ ] Removal asks for confirmation first
+- [ ] Import works through the shared module, with template download and per-row error reporting
+- [ ] The list paginates beyond ten rows
+- [ ] Tests cover the cross-Department refusal and the deactivate-instead-of-delete rule
+
+## Blocked by
+- #14 Departments
+@@@TICKET@@@
+Subjects
+## Parent
+#1
+
+## What to build
+An administrator maintains the Subject catalogue: code, credits, Thai and English names, and description. Subjects belong to the Department that owns them and exist independently of any Program or year, so a Subject can later be placed into several Programs.
+
+## Acceptance criteria
+- [ ] An administrator can add, edit and remove a Subject with code, credits, both names and description
+- [ ] Subject code is unique and a duplicate is rejected with a clear message
+- [ ] A Faculty Admin can manage Subjects in any Department; a Department Admin only their own, enforced at the server
+- [ ] A Subject referenced by a Program Subject or Offering becomes inactive instead of being deleted
+- [ ] Removal asks for confirmation first
+- [ ] Import works through the shared module, with template download and per-row error reporting
+- [ ] The list is filterable by Department and paginates beyond ten rows
+- [ ] Tests cover the duplicate-code rejection and the cross-Department refusal
+
+## Blocked by
+- #14 Departments
+@@@TICKET@@@
+Central student register
+## Parent
+#1
+
+## What to build
+An administrator browses the students recorded in the system, filtered by Department and Program, and adds them — one at a time or by importing a spreadsheet.
+
+The add and import capability is the point of this ticket. The inherited screen renders both buttons but wires neither, while the endpoints behind them exist and are never called. Because a student must exist centrally before a Teacher can enrol them in a Section, the system as delivered has no way to obtain student data at all, and the whole Teacher and assessment half of the application is unreachable without this.
+
+Admission year is derived from the student code rather than entered.
+
+## Acceptance criteria
+- [ ] The register lists students filtered by Department and Program, and paginates beyond ten rows
+- [ ] An administrator can add a student individually and it appears in the list
+- [ ] The import template downloads from the screen
+- [ ] A valid spreadsheet imports every student
+- [ ] A spreadsheet with bad rows reports each failure with its row and reason, and applies nothing
+- [ ] Importing a student code that already exists updates rather than duplicating
+- [ ] Admission year is derived from the student code and is not editable
+- [ ] An administrator sees only students within their own scope, enforced at the server
+- [ ] Tests prove a student added here is subsequently available for Section enrolment
+
+## Blocked by
+- #15 Programs
+@@@TICKET@@@
+Program Subjects
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member builds the structure of their Program by placing Subjects into it and marking each required or elective. Faculty and Department Admins can do the same within their scope.
+
+Only Subjects already in the catalogue may be placed — a code that does not exist is refused rather than created implicitly. A Program Subject that is already referenced by an Offering or by CLOs becomes inactive rather than being deleted.
+
+## Acceptance criteria
+- [ ] A Curriculum Committee member can place a Subject into their own Program and mark it required or elective
+- [ ] The type can be changed afterwards
+- [ ] A Subject code not present in the catalogue is refused, with a message saying so
+- [ ] The same Subject cannot be placed into the same Program twice
+- [ ] A referenced Program Subject becomes inactive instead of being deleted
+- [ ] Removal asks for confirmation first
+- [ ] Import works through the shared module, with template download and per-row error reporting
+- [ ] A Curriculum Committee member is refused on another Program, enforced at the server
+- [ ] The list paginates beyond ten rows
+
+## Blocked by
+- #15 Programs
+- #16 Subjects
+@@@TICKET@@@
+Programme Learning Outcomes
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member defines what a graduate of their Program should be able to do: a tree of main outcomes and sub-outcomes, each typed as knowledge, skills, ethics or character, in a stated display order.
+
+Each Program owns its own outcome codes, so two Programs may each have a PLO1. The inherited schema made these globally unique, which prevented exactly that.
+
+## Acceptance criteria
+- [ ] A Curriculum Committee member can add, edit and remove PLOs for their own Program
+- [ ] A PLO can be created as a child of another, and the tree renders with its nesting visible
+- [ ] Each PLO carries one of the four permitted types
+- [ ] Display order is settable and respected
+- [ ] Two different Programs can each define a PLO with the same code
+- [ ] A PLO referenced by a Subject mapping or a CLO becomes inactive instead of being deleted
+- [ ] Removal asks for confirmation first
+- [ ] Faculty and Department Admins can manage PLOs within their scope; a Curriculum Committee member only for their own Program, enforced at the server
+- [ ] Tests cover the per-Program code uniqueness and the cross-Program refusal
+
+## Blocked by
+- #15 Programs
+@@@TICKET@@@
+Outcome-to-Subject mapping
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member records how strongly each Subject in the Program serves each PLO, choosing one of five levels — Introduced, Developed, Practiced, Assessed, or Empty. The result is the coverage grid the accreditation submission is built from, and it exports as a PDF with Thai text rendering correctly.
+
+A PLO must already exist before it can be mapped; the grid does not create outcomes implicitly.
+
+## Acceptance criteria
+- [ ] The grid shows every Program Subject against every PLO of the Program
+- [ ] A cell can be set to any of the five levels and the change persists
+- [ ] Saving an already-set cell updates it rather than creating a second mapping
+- [ ] Cells default to empty for a newly placed Subject or newly created PLO
+- [ ] The grid exports to PDF with Thai characters rendering correctly
+- [ ] A Curriculum Committee member is refused on another Program, enforced at the server
+- [ ] Tests cover the five permitted levels and the update-not-duplicate behaviour
+
+## Blocked by
+- #18 Program Subjects
+- #19 Programme Learning Outcomes
+@@@TICKET@@@
+Rubrics
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member maintains the Program's reusable scoring guides, so that Teachers assess consistently rather than each inventing their own scale. Each Rubric has a code, Thai and English names, and a display order.
+
+## Acceptance criteria
+- [ ] A Curriculum Committee member can add, edit and remove Rubrics for their own Program
+- [ ] Rubric code is unique and a duplicate is rejected with a clear message
+- [ ] Both Thai and English names are required
+- [ ] Display order is settable and respected
+- [ ] Each Rubric offers a way to open its criteria
+- [ ] Removal asks for confirmation first
+- [ ] Faculty and Department Admins can manage Rubrics within their scope; a Curriculum Committee member only for their own Program, enforced at the server
+- [ ] The list paginates beyond ten rows
+
+## Blocked by
+- #15 Programs
+@@@TICKET@@@
+Rubric criteria
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member opens a Rubric and defines the criteria it scores on. Each criterion carries a weight and a description of what performance looks like at each of the four bands, so a marker can tell the difference between excellent and adequate work.
+
+## Acceptance criteria
+- [ ] Criteria can be added, edited and removed within a Rubric
+- [ ] Each criterion carries Thai and English names and a weight
+- [ ] Each criterion carries a description for all four bands
+- [ ] Display order is settable and respected
+- [ ] Removal asks for confirmation first
+- [ ] A Curriculum Committee member is refused on another Program's Rubric, enforced at the server
+- [ ] Tests cover the scope refusal and the four-band completeness
+
+## Blocked by
+- #21 Rubrics
+@@@TICKET@@@
+Offerings and Sections
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member opens Subjects for teaching: choosing an academic year and semester, selecting which of the Program's Subjects run, splitting each into Sections, and assigning Teachers to those Sections. They can copy an entire semester's arrangement from a previous year and semester rather than rebuilding it.
+
+This is the only screen restricted to the Curriculum Committee alone, and the point at which everything on the Teacher side becomes reachable.
+
+A Section may only be assigned to someone already registered as a user, and only a Subject already placed in the Program may be opened.
+
+## Acceptance criteria
+- [ ] A Curriculum Committee member can open a Subject for a chosen year and semester
+- [ ] Several Sections can exist under one Offering, each with its own number
+- [ ] The same Section number can exist for different Subjects, and is rejected as a duplicate within one Offering
+- [ ] One or more Teachers can be assigned to a Section, and reassigned afterwards
+- [ ] A Teacher not present in the user list cannot be assigned
+- [ ] A Subject not placed in the Program cannot be opened
+- [ ] Copying from a previous year and semester reproduces the Offerings and Sections, and states what it created
+- [ ] Removal asks for confirmation first, and an Offering with enrolled students or recorded marks is protected
+- [ ] Every other role, including Faculty Admin, is refused on these endpoints at the server
+- [ ] Tests cover the Section-number scoping, the unknown-Teacher refusal and the role restriction
+
+## Blocked by
+- #18 Program Subjects
+- #11 User accounts

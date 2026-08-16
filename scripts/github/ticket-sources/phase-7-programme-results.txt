@@ -1,0 +1,82 @@
+@@@TICKET@@@
+Programme-level results by intake
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member sees how an intake cohort is performing against the Program's PLOs, rolled up from the CLO attainment recorded across every Subject that cohort has taken. From any figure they can drill into the Activities and evidence behind it, so a number can be verified rather than trusted.
+
+This is the first of the four programme-level screens and establishes the roll-up the other three reuse. The inherited screens are named for a course level, which is what they are not; they are renamed to programme level across routes, files and components. The Thai menu labels already say programme level and do not change.
+
+## Acceptance criteria
+- [ ] Selecting a Program and an intake year shows attainment for every PLO of that Program
+- [ ] Attainment rolls up from CLO scores across the Subjects the cohort has taken
+- [ ] Scores use the same five-point normalisation as the course-level screens
+- [ ] Selecting a PLO reveals the contributing Subjects and Activities
+- [ ] Evidence attached to a contributing Activity can be opened from the drill-down, subject to the same access rules
+- [ ] A cohort with no recorded marks renders an explanatory state rather than zeroes
+- [ ] Routes, files and components use programme-level naming, and no route named for a course level remains
+- [ ] A Curriculum Committee member is refused on another Program, enforced at the server
+- [ ] Tests seed a cohort with known marks and assert the rolled-up figures
+
+## Blocked by
+- #34 Activity marks
+- #20 Outcome-to-Subject mapping
+@@@TICKET@@@
+Programme-level results for all students
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member sees every student in an intake against every PLO as a heatmap, so the distribution across the cohort is visible rather than only its average — a Program can hit its mean while a quarter of the cohort misses an outcome entirely.
+
+## Acceptance criteria
+- [ ] A heatmap shows every student of the selected intake against every PLO
+- [ ] Cells are coloured on the same five ranges as the course-level heatmap
+- [ ] The heatmap scrolls horizontally rather than forcing the page to
+- [ ] Students can be sorted, so the weakest are reachable without scanning
+- [ ] An empty state appears when the intake has no recorded marks
+- [ ] A Curriculum Committee member is refused on another Program, enforced at the server
+
+## Blocked by
+- #42 Programme-level results by intake
+@@@TICKET@@@
+Programme-level comparison across intakes
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member compares PLO attainment across a range of intake years, so that the effect of a curriculum change is visible as a trend rather than a single snapshot.
+
+## Acceptance criteria
+- [ ] A start and end year can be chosen and every intake in between is included
+- [ ] Attainment per PLO is shown for each year side by side
+- [ ] Years with no recorded marks are shown as absent rather than as zero
+- [ ] Figures for a single year agree with what the by-intake screen reports for that year
+- [ ] An explanatory state appears when the range contains no data
+- [ ] A Curriculum Committee member is refused on another Program, enforced at the server
+- [ ] Tests assert that a year appearing in both screens reports the same figures
+
+## Blocked by
+- #42 Programme-level results by intake
+@@@TICKET@@@
+Programme-level results for one student
+## Parent
+#1
+
+## What to build
+A Curriculum Committee member picks one student and sees their attainment against every PLO of the Program, drilling into the Activities and evidence behind any figure — the view needed when a single case has to be examined, whether for an appeal or an accreditation sample.
+
+## Acceptance criteria
+- [ ] A student can be selected, filtered by intake year
+- [ ] Their attainment is shown for every PLO of the Program
+- [ ] Selecting a PLO reveals the contributing Subjects and Activities for that student
+- [ ] Evidence attached to a contributing Activity can be opened, subject to the same access rules
+- [ ] Figures agree with what the all-students heatmap shows for the same student
+- [ ] A student with no recorded marks renders an explanatory state
+- [ ] A Curriculum Committee member is refused on a student outside their Program, enforced at the server
+- [ ] Tests assert agreement between this screen and the all-students heatmap for one seeded student
+
+## Blocked by
+- #42 Programme-level results by intake
+- #17 Central student register
