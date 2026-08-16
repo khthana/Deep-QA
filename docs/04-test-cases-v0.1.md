@@ -548,4 +548,6 @@
 
 ---
 
-**ไฟล์ที่เกี่ยวข้อง:** [`01-requirements.md`](./01-requirements.md) · [`02-database-schema.md`](./02-database-schema.md) · [`03-er-diagram.md`](./03-er-diagram.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md)
+**ไฟล์ที่เกี่ยวข้อง:** [`01-requirements.md`](./01-requirements.md) · [`02-database-schema.md`](./02-database-schema.md) · [`03-er-diagram.md`](./03-er-diagram.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md) · [`06-implementation-plan.md`](./06-implementation-plan.md) · [`07-ticket-breakdown.md`](./07-ticket-breakdown.md)
+
+> **สถานะของเอกสารนี้:** ใช้เป็น *guideline* เท่านั้น ไม่ใช่ชุดทดสอบที่จะรันจริง — test case ที่ใช้จริงเขียนเป็น acceptance criteria ในแต่ละ ticket ([#2](https://github.com/khthana/Deep-QA/issues/2)–[#45](https://github.com/khthana/Deep-QA/issues/45)) โดยแยกเป็น automated API integration test กับ UAT checklist ที่อาจารย์กดเอง · ชุดข้อมูลใน §1.2–1.3 ถูกนำไปใช้เป็น seed จริงใน [#6](https://github.com/khthana/Deep-QA/issues/6) · กลุ่ม TC-NFR เรื่องสิทธิ์จะ fail ทั้งกลุ่มกับโค้ดเดิม และถูกแก้ที่ [#9](https://github.com/khthana/Deep-QA/issues/9) ตาม [ADR-0002](./adr/0002-server-side-rbac.md)

@@ -499,4 +499,6 @@
 
 ---
 
-**ไฟล์ที่เกี่ยวข้อง:** [`01-requirements.md`](./01-requirements.md) · [`03-er-diagram.md`](./03-er-diagram.md) · [`04-test-cases-v0.1.md`](./04-test-cases-v0.1.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md)
+**ไฟล์ที่เกี่ยวข้อง:** [`01-requirements.md`](./01-requirements.md) · [`03-er-diagram.md`](./03-er-diagram.md) · [`04-test-cases-v0.1.md`](./04-test-cases-v0.1.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md) · [`06-implementation-plan.md`](./06-implementation-plan.md) · [`07-ticket-breakdown.md`](./07-ticket-breakdown.md)
+
+> **หมายเหตุสำคัญ:** ข้อสังเกตในหัวข้อ 9 ถูกตัดสินไปแล้วระหว่างการออกแบบ — ดู [ADR-0001](./adr/0001-three-tier-key-strategy.md) (กลยุทธ์คีย์ 3 ชั้น และการแก้ unique constraint ที่กว้างเกินไป) และ [ADR-0003](./adr/0003-clo-belongs-to-program-subject-year.md) (CLO ย้ายไปผูกกับหลักสูตร-รายวิชา-ปีการศึกษา) · ตารางที่ไม่มีโค้ดแตะจะไม่ถูกสร้าง · โค้ดใช้ `rubric_details` และ `user_roles` (พหูพจน์) และมีตาราง `user_image` ที่เล่มไม่ได้บันทึกไว้

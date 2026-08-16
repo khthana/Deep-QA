@@ -7,8 +7,32 @@ DEEP-QA is a curriculum & learning-outcomes management system, split into
 Each app has its own README; the frontend has its own `CLAUDE.md` with
 app-specific architecture notes.
 
-Project specs live in `docs/` (requirements, database schema, ER diagram,
-test cases, screen↔API mapping).
+## Current state — read this first
+
+The two `DEEP-QA-*` directories are the **student implementation as delivered** and are
+now **read-only reference**. There is no database for them and they are not being
+edited. The rebuild lands in fresh `backend/`, `frontend/` and `db/` trees, one screen
+at a time, and the reference directories are deleted when it completes.
+
+Work is tracked as GitHub issues: [#1](https://github.com/khthana/Deep-QA/issues/1) is
+the spec, [#2](https://github.com/khthana/Deep-QA/issues/2)–[#45](https://github.com/khthana/Deep-QA/issues/45)
+are the 44 tickets, wired with native blocking dependencies. Take work from the
+frontier — tickets whose blockers are all closed.
+
+## Documentation map
+
+| File | What it is |
+|---|---|
+| `CONTEXT.md` | Domain glossary. Use its vocabulary in issues, tests and commits. |
+| `docs/adr/` | Decisions that are hard to reverse. Read before touching keys, authorisation or the CLO grain. |
+| `docs/01`–`05` | Extracted from the thesis and from scanning the student code. **Descriptive of what was delivered, not prescriptive of what to build** — each carries a note where the rebuild diverges. |
+| `docs/06-implementation-plan.md` | The spec the rebuild implements. |
+| `docs/07-ticket-breakdown.md` | The 44 tickets, their dependency graph and the critical path. |
+
+Three decisions govern most of the work and are easy to violate by accident:
+keys follow the three tiers of ADR-0001; authorisation is derived server-side from the
+database and never from a request body (ADR-0002); and CLOs and the weighting scheme
+belong to a (Program, Subject, academic year), not to a Section (ADR-0003).
 
 ## Agent skills
 

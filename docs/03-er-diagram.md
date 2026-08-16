@@ -542,4 +542,6 @@ activity_scores (คะแนนดิบ)
 
 ---
 
-**ไฟล์ที่เกี่ยวข้อง:** [`01-requirements.md`](./01-requirements.md) · [`02-database-schema.md`](./02-database-schema.md) · [`04-test-cases-v0.1.md`](./04-test-cases-v0.1.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md)
+**ไฟล์ที่เกี่ยวข้อง:** [`01-requirements.md`](./01-requirements.md) · [`02-database-schema.md`](./02-database-schema.md) · [`04-test-cases-v0.1.md`](./04-test-cases-v0.1.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md) · [`06-implementation-plan.md`](./06-implementation-plan.md) · [`07-ticket-breakdown.md`](./07-ticket-breakdown.md)
+
+> **ERD นี้สะท้อนงานนักศึกษาตามที่ส่งมอบ ไม่ใช่ schema ที่จะสร้างจริง** — โครงที่จะ implement ต่างออกไปสองจุดหลัก: `subject_clo` (พร้อมตารางลูก) และ `subject_score_ratio` ย้ายจาก `section_id` ไปผูกกับ (`program_id`, `subject_id`, `academic_year`) ตาม [ADR-0003](./adr/0003-clo-belongs-to-program-subject-year.md) และคีย์ถูกจัดใหม่ตาม [ADR-0001](./adr/0001-three-tier-key-strategy.md)

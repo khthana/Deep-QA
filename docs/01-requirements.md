@@ -291,4 +291,4 @@
 
 ---
 
-**ไฟล์ที่เกี่ยวข้อง:** [`02-database-schema.md`](./02-database-schema.md) · [`03-er-diagram.md`](./03-er-diagram.md) · [`04-test-cases-v0.1.md`](./04-test-cases-v0.1.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md)
+**ไฟล์ที่เกี่ยวข้อง:** [`02-database-schema.md`](./02-database-schema.md) · [`03-er-diagram.md`](./03-er-diagram.md) · [`04-test-cases-v0.1.md`](./04-test-cases-v0.1.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md) · [`06-implementation-plan.md`](./06-implementation-plan.md) · [`07-ticket-breakdown.md`](./07-ticket-breakdown.md)

@@ -1011,3 +1011,14 @@ Deep-QA/
 - [`03-er-diagram.md`](./03-er-diagram.md) — ER Diagram
 - [`04-test-cases-v0.1.md`](./04-test-cases-v0.1.md) — Test Cases v0.1
 - **`05-screen-api-mapping.md`** — Screen ↔ Frontend ↔ Backend ↔ API Mapping *(เอกสารนี้)*
+- [`06-implementation-plan.md`](./06-implementation-plan.md) — Implementation Spec
+- [`07-ticket-breakdown.md`](./07-ticket-breakdown.md) — Ticket Breakdown (44 tickets)
+
+> **เอกสารนี้อธิบายโค้ดของนักศึกษาตามที่ส่งมอบ** และจะถูกอัปเดตทีละ ticket ระหว่างการเขียนใหม่ สิ่งที่จะเปลี่ยน:
+> ชื่อ mount ที่สะกดผิด (`envidence`, `coursSections`) · endpoint ที่อ่านอย่างเดียวเปลี่ยนจาก POST เป็น GET ·
+> หน้า `courseLevel*` (A15–A18) เปลี่ยนชื่อเป็น `programLevel*` · endpoint 25 เส้นที่ไม่มีคนเรียกจะไม่ถูกคัดลอกไป
+> ส่วน Findings ในหัวข้อ 9 ถูกแปลงเป็นงานแล้วทั้งหมด: §9.1 hook ที่พัง → [#36](https://github.com/khthana/Deep-QA/issues/36) ·
+> §9.2 endpoint ที่ไม่มี `verifyToken` → [#9](https://github.com/khthana/Deep-QA/issues/9) ·
+> §9.5 ข้อ 5–6 เรื่องไฟล์หลักฐาน → [#35](https://github.com/khthana/Deep-QA/issues/35)
+> ข้อยกเว้น: §9.5 ข้อ 2 ที่ระบุว่า sidebar ของ FULL_ADMIN ขัดกับวิทยานิพนธ์ — ตรวจแล้วว่าเป็นการอ่านเล่มผิด
+> เล่มจำกัดบทบาทนี้ไว้ที่การจัดการผู้ใช้และสิทธิ์ ซึ่งตรงกับโค้ด จึงไม่แก้
