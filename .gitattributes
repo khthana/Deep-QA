@@ -1,0 +1,13 @@
+# Normalise line endings: LF in the repository and in the working tree, on
+# every platform. Without this, files committed from Windows carry CRLF and a
+# later contributor on macOS or Linux produces a whole-file diff on first save.
+* text=auto eol=lf
+
+# Binary formats present in this repo. Auto-detection already handles these,
+# but declaring them makes corruption from a misdetection impossible.
+*.pdf   binary
+*.xlsx  binary
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.ttf   binary
