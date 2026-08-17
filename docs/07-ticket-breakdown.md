@@ -9,7 +9,7 @@
 |---|---|
 | **Tracker** | GitHub Issues — [`khthana/Deep-QA`](https://github.com/khthana/Deep-QA/issues) |
 | **Spec (parent)** | [#1](https://github.com/khthana/Deep-QA/issues/1) |
-| **Tickets** | [#2](https://github.com/khthana/Deep-QA/issues/2)–[#45](https://github.com/khthana/Deep-QA/issues/45) — 44 in total |
+| **Tickets** | [#2](https://github.com/khthana/Deep-QA/issues/2)–[#45](https://github.com/khthana/Deep-QA/issues/45) — 44 in total. Gaps found while building are opened as new issues above #45 and are not folded back in here; GitHub is the live list. |
 | **Triage label** | `ready-for-agent` on every ticket |
 | **Blocking edges** | 57, recorded as GitHub *native issue dependencies* — not as body text |
 | **Published** | 2026-08-16 |

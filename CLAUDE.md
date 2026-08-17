@@ -15,9 +15,10 @@ edited. The rebuild lands in fresh `backend/`, `frontend/` and `db/` trees, one 
 at a time, and the reference directories are deleted when it completes.
 
 Work is tracked as GitHub issues: [#1](https://github.com/khthana/Deep-QA/issues/1) is
-the spec, [#2](https://github.com/khthana/Deep-QA/issues/2)–[#45](https://github.com/khthana/Deep-QA/issues/45)
-are the 44 tickets, wired with native blocking dependencies. Take work from the
-frontier — tickets whose blockers are all closed.
+the spec, [#2](https://github.com/khthana/Deep-QA/issues/2)–[#46](https://github.com/khthana/Deep-QA/issues/46)
+are the tickets, wired with native blocking dependencies. Take work from the
+frontier — tickets whose blockers are all closed. #2–#45 are the original 44 from
+`docs/07`; numbers above that are gaps found during the rebuild and opened since.
 
 ## Documentation map
 
@@ -27,7 +28,7 @@ frontier — tickets whose blockers are all closed.
 | `docs/adr/` | Decisions that are hard to reverse. Read before touching keys, authorisation or the CLO grain. |
 | `docs/01`–`05` | Extracted from the thesis and from scanning the student code. **Descriptive of what was delivered, not prescriptive of what to build** — each carries a note where the rebuild diverges. |
 | `docs/06-implementation-plan.md` | The spec the rebuild implements. |
-| `docs/07-ticket-breakdown.md` | The 44 tickets, their dependency graph and the critical path. |
+| `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 
 Three decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the
