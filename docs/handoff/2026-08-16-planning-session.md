@@ -34,7 +34,7 @@ Everything decided is written down. Read in this order:
 the rebuild diverges — heed those notes; the raw content will otherwise mislead you.
 
 Git history: `ff10a91` baseline (student code as delivered) → `7bff235` line endings → `9d47c9e` docs. Pushed to
-`origin/master`.
+`origin/main`.
 
 ---
 
@@ -73,8 +73,9 @@ read-only reference — copy from them, never edit them, delete them only at pro
 
 ## 5. Open items the artifacts do not capture
 
-1. **Default branch is `master`.** The user was offered a switch to `main` and has not answered. Cost is still zero —
-   nobody has cloned. Raise it once, then drop it.
+1. ~~**Default branch is `master`.**~~ **Resolved 2026-08-17** — the user chose `main`. Renamed server-side via the
+   GitHub branch-rename API, which moved the default-branch pointer in the same call; the local branch and
+   `origin/HEAD` were retargeted to match. `origin/master` no longer exists.
 2. **The nested git repository removed from `DEEP-QA-FRONTEND/` was backed up outside the repository and is now
    gone.** It contained zero commits, no refs and no remote — only dangling blobs of files that still exist on disk,
    so nothing of value was in it. It was deliberately not brought into the repository: it is 4.9 MB of nothing, and a
