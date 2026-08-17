@@ -40,7 +40,7 @@
 
 const bcrypt = require('bcrypt');
 
-const { createPool } = require('./pool');
+const { createPool, schemaName } = require('./pool');
 
 /**
  * The password every seeded account shares.
@@ -480,8 +480,13 @@ async function findOrCreate(client, { find, findParams, insert, insertParams }) 
  * The cohort's marks are a few thousand rows, and a round trip each would make
  * the seed take minutes rather than seconds. The chunk keeps the parameter
  * count under PostgreSQL's limit of 65535 per statement.
+ *
+ * `conflictTarget` is optional, and omitting it is not the same as passing the
+ * primary key: a table whose only key is a generated surrogate has no conflict
+ * to arbitrate, and an ON CONFLICT naming it would be a clause that can never
+ * fire. Those callers guard re-runs before they get here.
  */
-async function insertMany(client, { table, columns, rows, conflictTarget }) {
+async function insertMany(client, { table, columns, rows, conflictTarget = null }) {
   if (rows.length === 0) return 0;
 
   const perStatement = Math.floor(60000 / columns.length);
@@ -498,7 +503,7 @@ async function insertMany(client, { table, columns, rows, conflictTarget }) {
 
     const result = await client.query(
       `INSERT INTO ${table} (${columns.join(', ')}) VALUES ${values}
-       ON CONFLICT (${conflictTarget}) DO NOTHING`,
+       ${conflictTarget ? `ON CONFLICT (${conflictTarget}) DO NOTHING` : ''}`,
       chunk.flat(),
     );
     written += result.rowCount;
@@ -936,13 +941,26 @@ async function seedAssessment(client, { section, students, cloIds, ratioIds, yea
  * this table.
  */
 async function seedWorkGroups(client, { section, students, performedBy }) {
-  let groupCount = 0;
+  let created = 0;
   let memberCount = 0;
 
-  for (let start = 0, number = 1; start < students.length; start += GROUP_SIZE, number += 1) {
-    const members = students.slice(start, start + GROUP_SIZE);
+  // The roll is divided into as few groups as the ceiling allows and then
+  // spread evenly across them, rather than filled eight at a time. Filling
+  // leaves the remainder in a group of its own - a section of 57 ends with a
+  // group of one - and a work group with one student in it is not a fixture
+  // anything can be tested against.
+  const groupCount = Math.ceil(students.length / GROUP_SIZE);
+
+  for (let number = 1; number <= groupCount; number += 1) {
+    const members = students.slice(
+      Math.floor(((number - 1) * students.length) / groupCount),
+      Math.floor((number * students.length) / groupCount),
+    );
     const name = `กลุ่มที่ ${number}`;
 
+    // Not findOrCreate: the point of the lookup is the `continue`, which skips
+    // the members and the log rows as well as the group itself. The helper
+    // would hand back the existing group and let them be written twice.
     const existing = await client.query(
       `SELECT group_id FROM student_group WHERE section_id = $1 AND group_name = $2`,
       [section.id, name],
@@ -954,7 +972,7 @@ async function seedWorkGroups(client, { section, students, performedBy }) {
       [section.id, name],
     );
     const groupId = rows[0].group_id;
-    groupCount += 1;
+    created += 1;
 
     await client.query(
       `INSERT INTO student_group_change_log (
@@ -982,6 +1000,9 @@ async function seedWorkGroups(client, { section, students, performedBy }) {
         'new_group_id',
         'performed_by',
       ],
+      // No conflict target: a log line has no natural key - 0003 says so, and
+      // says why. The `continue` above is what keeps a second run from writing
+      // this twice.
       rows: members.map((studentId) => [
         section.id,
         groupId,
@@ -991,11 +1012,10 @@ async function seedWorkGroups(client, { section, students, performedBy }) {
         groupId,
         performedBy,
       ]),
-      conflictTarget: 'log_id',
     });
   }
 
-  return { groups: groupCount, members: memberCount };
+  return { groups: created, members: memberCount };
 }
 
 /**
@@ -1026,7 +1046,8 @@ async function summarise(client) {
  * rebuilds it identically, which is #6's first acceptance criterion.
  */
 async function seed({ schema } = {}) {
-  const pool = createPool({ schema });
+  const target = schemaName(schema ?? process.env.DB_SCHEMA);
+  const pool = createPool({ schema: target });
   let counts;
 
   const client = await pool.connect();
@@ -1071,19 +1092,31 @@ async function seed({ schema } = {}) {
 
     counts = await summarise(client);
     await client.query('COMMIT');
+    client.release();
   } catch (error) {
-    await client.query('ROLLBACK');
+    // The same shape, and for the same reason, as migrate.js: a failure can
+    // take the connection with it, and then the rollback fails too. Swallow
+    // that one - the transaction is already gone, and the failure worth
+    // reporting is the seed's, not the cleanup's.
+    try {
+      await client.query('ROLLBACK');
+    } catch {
+      // fall through
+    }
+    // Released with the error, so pg discards the client rather than handing
+    // the next caller a connection sitting in an aborted transaction.
+    client.release(error);
     throw error;
   } finally {
-    client.release();
     await pool.end();
   }
 
-  return { schema: schema ?? process.env.DB_SCHEMA, counts };
+  return { schema: target, counts };
 }
 
 module.exports = {
   seed,
+  byAlias,
   PASSWORD,
   ACCOUNTS,
   ROLES,

@@ -139,7 +139,8 @@ talking about the same rows:
 - `PLO-1`–`PLO-13` with their sub-outcomes, `CLO-1`–`CLO-9` with measurable behaviours and achievement criteria for
   each year, and a weighting of โครงงาน 40 / กลางภาค 30 / ปลายภาค 30.
 - Five activities per section, every one mapped to CLOs, and a mark for every enrolled student on every one of them.
-- Work groups of eight, inside BR-06's ceiling of ten, with no student in two.
+- Work groups of seven or eight — the roll split into even shares rather than filled to a limit, so no group is
+  left with one member — inside BR-06's ceiling of ten, with no student in two.
 
 Everything is deterministic — names, marks and group memberships come from a seeded generator, not from
 `Math.random` — so a checklist that names a particular student and a particular mark stays true after a reset.

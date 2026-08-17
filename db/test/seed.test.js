@@ -9,6 +9,7 @@ const { migrate } = require('../migrate');
 const { createPool } = require('../pool');
 const {
   seed,
+  byAlias,
   PASSWORD,
   ACCOUNTS,
   ROLES,
@@ -291,17 +292,42 @@ test('the work groups', async (t) => {
     assert.equal(oversized, 0, `BR-06 caps a group at ${MAX_GROUP_SIZE} students`);
   });
 
-  // BR-07, and the reason the seed walks the roll once rather than sampling it.
-  await t.test('no student belongs to two groups within one section', async () => {
+  // BR-07 is stated per subject, not per section - "นักศึกษาอยู่ 2 กลุ่มใน
+  // รายวิชาเดียวกัน" (docs/04 §2.14, TC-GRP-004). Grouping by the offering
+  // rather than the section is what actually asks that question: a student who
+  // somehow appeared in two sections of one subject would be caught here and
+  // missed by the narrower grain.
+  await t.test('no student belongs to two groups within one offering', async () => {
     const doubled = await count(
       `SELECT count(*) FROM (
-         SELECT m.student_id, g.section_id FROM student_group_member m
+         SELECT m.student_id, cs.semester_course_id FROM student_group_member m
          JOIN student_group g ON g.group_id = m.group_id
-         GROUP BY m.student_id, g.section_id HAVING count(*) > 1
+         JOIN course_sections cs ON cs.section_id = g.section_id
+         GROUP BY m.student_id, cs.semester_course_id HAVING count(*) > 1
        ) offenders`,
     );
 
     assert.equal(doubled, 0);
+  });
+
+  // Not a rule the requirements state, but the reason the seed slices the roll
+  // into even shares instead of filling groups greedily: a greedy fill of 57
+  // students into eights leaves a last group of one, which is a poor fixture
+  // for any screen that shows a group.
+  await t.test('the roll is split evenly, with no runt group left over', async () => {
+    const { rows } = await pool.query(
+      `SELECT g.section_id, count(*)::int AS size
+       FROM student_group_member m JOIN student_group g ON g.group_id = m.group_id
+       GROUP BY g.group_id, g.section_id`,
+    );
+
+    for (const section of new Set(rows.map((row) => row.section_id))) {
+      const sizes = rows.filter((row) => row.section_id === section).map((row) => row.size);
+      assert.ok(
+        Math.max(...sizes) - Math.min(...sizes) <= 1,
+        `section ${section} has groups of ${sizes.join(', ')}`,
+      );
+    }
   });
 
   await t.test('every enrolled student of the current year has a group', async () => {
@@ -372,7 +398,8 @@ test('the named accounts', async (t) => {
   // shown to refuse something, rather than merely be assumed to.
   await t.test('the cross-scope department admin administers the other department', async () => {
     const { rows } = await pool.query(
-      `SELECT scope_id FROM user_roles WHERE user_id = 'deptadm01' AND role_id = 'DEPT_ADMIN'`,
+      `SELECT scope_id FROM user_roles WHERE user_id = $1 AND role_id = 'DEPT_ADMIN'`,
+      [byAlias('U_DEPT2')],
     );
 
     assert.equal(rows[0].scope_id, '01');
@@ -381,14 +408,17 @@ test('the named accounts', async (t) => {
 
   await t.test('the second teacher teaches no section at all', async () => {
     const sections = await count(
-      `SELECT count(*) FROM course_sections_teacher WHERE user_id = 'teach02'`,
+      `SELECT count(*) FROM course_sections_teacher WHERE user_id = $1`,
+      [byAlias('U_TEACH2')],
     );
 
     assert.equal(sections, 0);
   });
 
   await t.test('the multi-role account holds two roles at once', async () => {
-    const grants = await count(`SELECT count(*) FROM user_roles WHERE user_id = 'multi01'`);
+    const grants = await count(`SELECT count(*) FROM user_roles WHERE user_id = $1`, [
+      byAlias('U_MULTI'),
+    ]);
 
     assert.equal(grants, 2);
   });
@@ -409,29 +439,25 @@ test('the named accounts', async (t) => {
  * have to reset to recover.
  */
 test('seeding twice changes nothing', async () => {
-  const before = await Promise.all([
-    count(`SELECT count(*) FROM student`),
-    count(`SELECT count(*) FROM activities`),
-    count(`SELECT count(*) FROM activity_scores`),
-    count(`SELECT count(*) FROM student_group`),
-    count(`SELECT count(*) FROM student_group_member`),
-    count(`SELECT count(*) FROM learning_outcomes`),
-    count(`SELECT count(*) FROM user_roles`),
-    count(`SELECT count(*) FROM student_group_change_log`),
-  ]);
+  // One table per thing the seed writes with a different idempotency mechanism:
+  // natural-key lookups, name-within-section lookups, and the change log, which
+  // has no natural key at all and so is the one most likely to grow on a rerun.
+  const TABLES = [
+    'student',
+    'activities',
+    'activity_scores',
+    'student_group',
+    'student_group_member',
+    'learning_outcomes',
+    'user_roles',
+    'student_group_change_log',
+  ];
+  const snapshot = () =>
+    Promise.all(TABLES.map((table) => count(`SELECT count(*) FROM ${table}`)));
 
+  const before = await snapshot();
   await seed({ schema: SCHEMA });
-
-  const after = await Promise.all([
-    count(`SELECT count(*) FROM student`),
-    count(`SELECT count(*) FROM activities`),
-    count(`SELECT count(*) FROM activity_scores`),
-    count(`SELECT count(*) FROM student_group`),
-    count(`SELECT count(*) FROM student_group_member`),
-    count(`SELECT count(*) FROM learning_outcomes`),
-    count(`SELECT count(*) FROM user_roles`),
-    count(`SELECT count(*) FROM student_group_change_log`),
-  ]);
+  const after = await snapshot();
 
   assert.deepEqual(after, before);
 });
