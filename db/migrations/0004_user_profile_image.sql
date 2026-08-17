@@ -1,0 +1,61 @@
+-- The user profile photo: one image per account.
+--
+-- This table has no entry in the thesis. docs/02's closing note records that it
+-- exists and nothing else, so unlike every other table in the rebuild there is
+-- no published column list to recover it from - and nothing to diverge from
+-- either. Its whole specification is the three statements the inherited code
+-- issues against it, and the migration is written to serve exactly those:
+--
+--   services/userService.js:374  SELECT * FROM user_image WHERE user_id = $1
+--   services/userService.js:383  INSERT ... ON CONFLICT (user_id) DO UPDATE
+--                                  SET image_path = EXCLUDED.image_path
+--   models/userModel.js:404      LEFT JOIN user_image ui ON ui.user_id = u.user_id
+--
+-- It was found missing while #5 was being built and is identity-scoped, so it
+-- lands after 0003 as its own file rather than being folded back into 0001.
+--
+-- ADR-0001's three tiers do not reach it. It is not reference data; it is not a
+-- junction, which is a table identified by a *pair* of parents where this has
+-- one; and its natural key is the single column user_id, which leaves a
+-- surrogate plus UNIQUE nothing to buy. user_id is both the natural key and the
+-- primary key. 0001's widths still bind: a person's identifier is varchar(20).
+
+CREATE TABLE user_image (
+  -- Primary key and foreign key at once, which is what makes the upsert work:
+  -- ON CONFLICT (user_id) needs a unique constraint on exactly this column, and
+  -- against a table keyed any other way PostgreSQL raises 42P10 and writes
+  -- nothing. One row per user is also the rule the screen wants - a second
+  -- upload replaces the photo rather than adding one.
+  --
+  -- CASCADE, against 0001's general RESTRICT. That rule's own exception is for
+  -- "rows with no meaning of their own once their subject is gone", and a
+  -- profile photo is one: nothing refers to it, and there is nothing an
+  -- accreditation review would later be shown it for. The inherited code agrees
+  -- - userModel.deleteUser issues a bare DELETE FROM users with no cleanup, and
+  -- its own 23503 branch tells the reader to check CASCADE. Under RESTRICT any
+  -- account that had ever uploaded a photo would be undeletable through it.
+  --
+  -- The file on disk is not swept up with the row: deleteUser does not unlink,
+  -- so a deleted user leaves an orphan under /data/evidence/user_image. That is
+  -- the upload path's to fix, alongside the type, size and retrieval defects
+  -- #46's notes park with #35.
+  --
+  -- No index. user_id is the leftmost column of the primary key, which is the
+  -- case 0001's index rule exempts.
+  user_id     varchar(20) PRIMARY KEY REFERENCES users (user_id) ON DELETE CASCADE,
+
+  -- A path under the evidence root, not the image itself:
+  -- controllers/userController.js:406 writes the bytes to disk as
+  -- /user_image/<user_id>_<timestamp><ext> and stores that string. text rather
+  -- than a varchar for the same reason activity_evidence.file_path is - the
+  -- length is the filesystem's business and a cap here would only ever be one
+  -- long filename away from a 22001 nobody predicted.
+  --
+  -- Deliberately no created_at or updated_at, which every other table in
+  -- 0001-0003 carries. The only writer is that upsert, and it sets image_path
+  -- and nothing else, so a timestamp would be right until the second upload and
+  -- wrong from then on - worse than absent, because it reads as maintained.
+  -- Neither reader selects one. If a screen ever needs "photo last changed",
+  -- the column and the upsert that maintains it are added together.
+  image_path  text        NOT NULL
+);

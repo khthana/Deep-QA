@@ -8,6 +8,7 @@ Numbered SQL files, applied in filename order by `../migrate.js` and recorded in
 | `0001_identity_and_organisation.sql` | Faculty, department, programme, subject and the programme's subject list; students; users, roles, role grants and the activity log. |
 | `0002_offerings_and_learning_outcomes.sql` | Offerings, sections, teaching assignments and the weekly plan; PLOs and their mapping to subjects; CLOs with their measurable behaviours and achievement criteria; the continuous-improvement cycle. |
 | `0003_assessment_scores_and_rubrics.sql` | Section enrolment, work groups and their change history; the weighting scheme and Activities with their CLO links; marks and assessment evidence; rubrics and their criteria. |
+| `0004_user_profile_image.sql` | One profile photo per user — a table the thesis never documented, recovered from the SQL the inherited user service issues. |
 
 - `NNNN_short_description.sql`, four digits, zero-padded, no gaps.
 - Never edit a file that has been applied anywhere but a local machine; add

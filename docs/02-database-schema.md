@@ -11,7 +11,7 @@
 
 | กลุ่ม | ตาราง |
 |---|---|
-| ผู้ใช้งานและสิทธิ์ | `users`, `roles`, `user_role`, `user_log` |
+| ผู้ใช้งานและสิทธิ์ | `users`, `roles`, `user_role`, `user_log`, `user_image` |
 | โครงสร้างองค์กร | `faculty`, `departments`, `programs` |
 | นักศึกษา | `student`, `student_course`, `student_group`, `student_group_member`, `student_group_change_log` |
 | รายวิชา / การเปิดสอน | `subjects`, `program_subjects`, `semester_courses`, `course_sections`, `course_sections_teacher`, `course_syllabus` |
@@ -77,6 +77,26 @@
 | `user_id` | Varchar(8) | FK → `users`, NN | |
 | `activity` | Varchar(20) | NN | `LOGIN` / `LOGOUT` / `VIEW` |
 | `time_stamp` | Timestamp | default now() `Asia/Bangkok` | |
+
+### 1.5 `user_image` — รูปโปรไฟล์ผู้ใช้งาน (**เล่มไม่ได้บันทึกไว้**)
+
+ตารางเดียวในเอกสารนี้ที่ไม่มีตารางในเล่มรองรับ — หมายเหตุท้ายหัวข้อ 9 บันทึกแค่ว่ามีอยู่ ไม่ได้ให้คอลัมน์
+รูปร่างด้านล่างจึงกู้จาก SQL ที่โค้ดเดิมส่งจริงล้วน ๆ ไม่ใช่จากเล่ม:
+
+- `services/userService.js:374` — `SELECT * FROM user_image WHERE user_id = $1`
+- `services/userService.js:383` — `INSERT ... ON CONFLICT (user_id) DO UPDATE SET image_path = EXCLUDED.image_path`
+- `models/userModel.js:404` — `LEFT JOIN user_image ui ON ui.user_id = u.user_id` เพื่ออ่าน `ui.image_path`
+- `controllers/userController.js:406` — เขียนไฟล์ลงดิสก์แล้วเก็บ path `/user_image/<user_id>_<timestamp><ext>`
+
+| Field | Type | Key / Constraint | คำอธิบาย |
+|---|---|---|---|
+| `user_id` | `varchar(20)` | PK, FK → `users` `ON DELETE CASCADE` | หนึ่งรูปต่อหนึ่งผู้ใช้ — PK เดี่ยวคือ unique constraint ที่ `ON CONFLICT (user_id)` ต้องใช้ ไม่งั้นได้ 42P10 |
+| `image_path` | `text` | NN | path ใต้ evidence root ไม่ใช่ตัวไฟล์ |
+
+ไม่มี `created_at` / `updated_at` โดยตั้งใจ — ทางเขียนเดียวคือ upsert ข้างบน ซึ่งเซ็ตแค่ `image_path`
+timestamp จึงจะถูกแค่การอัปโหลดครั้งแรกและผิดตั้งแต่ครั้งที่สองเป็นต้นไป ดู
+[`0004_user_profile_image.sql`](../db/migrations/0004_user_profile_image.sql) และตั๋ว
+[#46](https://github.com/khthana/Deep-QA/issues/46)
 
 ---
 
@@ -528,7 +548,8 @@ model เดิม *ส่งจริง* ไม่ใช่จากตาร�
 | timestamp ทั้งหมด | `Timestamp` | `timestamptz` | โค้ดเดิมปนกันเอง — `upsertSubject` เขียน `CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'` ขณะที่ `updateSubject` เขียน `NOW()` ซึ่งทำให้คอลัมน์เดียวมีสองความหมาย |
 | แถวที่อาจถูกอ้างถึง | — | ทุกตารางอ้างอิงมี `is_active` **หรือ status enum** (`users.status`, `student.status`) และ FK เป็น `ON DELETE RESTRICT` | แอปเดิม soft-delete อยู่แล้ว (`deleteDepartment`, `deleteProgram`, `deleteSubject`, `deleteUser`) และ `deleteProgramSubject` ใช้ SQLSTATE 23503 เป็นสัญญาณให้ตั้ง `is_active = false` · ข้อยกเว้นคือแถวที่ไม่มีความหมายเมื่อเจ้าของหายไป — grant และ log line `CASCADE` จาก `users` |
 
-`user_image` (ตารางที่เล่มไม่ได้บันทึกไว้ ดูหมายเหตุท้ายหัวข้อ 9) ยังไม่ถูกสร้าง — ไม่อยู่ในรายการสิบตารางของตั๋ว #3
+`user_image` (§1.5 ตารางที่เล่มไม่ได้บันทึกไว้) ไม่ถูกสร้างที่นี่ — ไม่อยู่ในรายการสิบตารางของตั๋ว #3
+ช่องว่างนี้ถูกพบตอนสร้าง 0003 และตั๋ว [#46](https://github.com/khthana/Deep-QA/issues/46) รับไป สร้างใน 0004 (§10.4)
 
 ### 10.2 [`0002_offerings_and_learning_outcomes.sql`](../db/migrations/0002_offerings_and_learning_outcomes.sql)
 
@@ -590,8 +611,23 @@ model เดิม *ส่งจริง* ไม่ใช่จากตาร�
 
 PK ร่วมของ `student_course` (§3.2) และ `student_group_member` (§3.4) **ไม่ใช่การเบี่ยงเบน** — เอกสารให้ไว้เป็น PK ร่วมอยู่แล้ว และ migration ทำตาม ตรงกับ ADR-0001 ชั้น 2 พอดี และการใช้งานก็ยืนยันให้อีกชั้น: ทุก INSERT/DELETE/SELECT ใน `studentCourseModel` และ `studentGroupModel` key ที่คู่ตามธรรมชาติ ไม่มีที่ไหนอ้าง surrogate `id` ส่วนการซ้ำที่เคยกันด้วย `SELECT` ในโค้ดแอปตอนนี้คีย์กันให้
 
+### 10.4 [`0004_user_profile_image.sql`](../db/migrations/0004_user_profile_image.sql)
+
+ครอบคลุมตารางเดียวคือ `user_image` (§1.5) — ตั๋ว [#46](https://github.com/khthana/Deep-QA/issues/46)
+เป็นตารางเดียวในไฟล์นี้ที่ **ไม่มีอะไรให้เบี่ยงเบน** เพราะเล่มไม่ได้ให้คอลัมน์ไว้เลย ทุกอย่างจึงกู้จาก SQL
+ที่โค้ดเดิมส่งจริง ตามกฎของตั๋ว #3 อย่างเต็มรูปแบบ รายการที่อยู่ตรงนี้จึงเป็น *การตัดสิน* ไม่ใช่การเบี่ยงเบน
+
+| จุด | ที่มา | migration 0004 ทำ | เหตุผล |
+|---|---|---|---|
+| คีย์ของตาราง | — | `user_id` เป็นทั้ง PK และ FK ไม่มี surrogate | `ON CONFLICT (user_id)` ของ `upsertUserImage` ต้องการ unique constraint บน `user_id` ตรง ๆ ไม่งั้น PostgreSQL ยิง 42P10 และไม่เขียนอะไรเลย · ไม่ตรงชั้นไหนของ [ADR-0001](./adr/0001-three-tier-key-strategy.md): ไม่ใช่ reference data, ไม่ใช่ junction (junction ระบุตัวด้วยพ่อแม่ *คู่หนึ่ง* ตารางนี้มีพ่อแม่ตัวเดียว) และคีย์ตามธรรมชาติเป็นคอลัมน์เดียว จึงไม่มีอะไรให้ surrogate + UNIQUE ซื้อ |
+| `user_id` | — | `varchar(20)` | ความกว้างรหัสบุคคลของ 0001 (§10.1 แถวสุดท้าย) — FK varchar↔varchar ที่กว้างต่างกันสร้างได้เงียบ ๆ แล้วพังทีหลัง |
+| การลบ | — | `ON DELETE CASCADE` | เป็น **ข้อยกเว้น** ของกฎ RESTRICT ใน §10.1 ไม่ใช่ตัวกฎ — รูปโปรไฟล์ไม่มีความหมายของตัวเองเมื่อเจ้าของหายไป และไม่ใช่แถวที่การประเมินจะถูกนำมาแสดง · โค้ดเดิมเห็นตรงกัน: `deleteUser` ยิง `DELETE FROM users` เปล่า ๆ และข้อความใน branch 23503 ของมันเองบอกให้ "เช็ค CASCADE" · ไฟล์บนดิสก์ไม่ถูกลบตาม (`deleteUser` ไม่ unlink) เป็นงานของหน้าจอโปรไฟล์ ฝากไว้กับ [#35](https://github.com/khthana/Deep-QA/issues/35) |
+| `image_path` | — | `text` NN | เก็บ path ไม่ใช่ blob — `controllers/userController.js:406` เขียนไฟล์ลงดิสก์ก่อน · `text` ด้วยเหตุผลเดียวกับ `activity_evidence.file_path` ความยาวเป็นเรื่องของ filesystem |
+| `created_at` / `updated_at` | ทุกตารางอื่นใน 0001–0003 มี | **ไม่มีทั้งคู่** | ทางเขียนเดียวคือ upsert ซึ่งเซ็ตแค่ `image_path` — timestamp จะถูกแค่ครั้งแรกและผิดตั้งแต่ครั้งที่สอง ซึ่งแย่กว่าไม่มี เพราะอ่านแล้วเหมือนมีคนดูแล · ทางอ่านทั้งสองทางไม่ได้ select มันอยู่แล้ว ถ้าวันหนึ่งต้องการ "แก้รูปล่าสุดเมื่อไหร่" ให้เพิ่มคอลัมน์พร้อม upsert ที่ดูแลมันในตั๋วเดียวกัน |
+| index | — | **ไม่เพิ่ม** | `user_id` เป็นคอลัมน์ซ้ายสุดของ PK อยู่แล้ว ซึ่งเป็นข้อยกเว้นในกฎ index ของ 0001 |
+
 ---
 
 **ไฟล์ที่เกี่ยวข้อง:** [`01-requirements.md`](./01-requirements.md) · [`03-er-diagram.md`](./03-er-diagram.md) · [`04-test-cases-v0.1.md`](./04-test-cases-v0.1.md) · [`05-screen-api-mapping.md`](./05-screen-api-mapping.md) · [`06-implementation-plan.md`](./06-implementation-plan.md) · [`07-ticket-breakdown.md`](./07-ticket-breakdown.md)
 
-> **หมายเหตุสำคัญ:** ข้อสังเกตในหัวข้อ 9 ถูกตัดสินไปแล้วระหว่างการออกแบบ — ดู [ADR-0001](./adr/0001-three-tier-key-strategy.md) (กลยุทธ์คีย์ 3 ชั้น และการแก้ unique constraint ที่กว้างเกินไป) และ [ADR-0003](./adr/0003-clo-belongs-to-program-subject-year.md) (CLO ย้ายไปผูกกับหลักสูตร-รายวิชา-ปีการศึกษา) · ตารางที่ไม่มีโค้ดแตะจะไม่ถูกสร้าง · โค้ดใช้ `rubric_details` และ `user_roles` (พหูพจน์) และมีตาราง `user_image` ที่เล่มไม่ได้บันทึกไว้
+> **หมายเหตุสำคัญ:** ข้อสังเกตในหัวข้อ 9 ถูกตัดสินไปแล้วระหว่างการออกแบบ — ดู [ADR-0001](./adr/0001-three-tier-key-strategy.md) (กลยุทธ์คีย์ 3 ชั้น และการแก้ unique constraint ที่กว้างเกินไป) และ [ADR-0003](./adr/0003-clo-belongs-to-program-subject-year.md) (CLO ย้ายไปผูกกับหลักสูตร-รายวิชา-ปีการศึกษา) · ตารางที่ไม่มีโค้ดแตะจะไม่ถูกสร้าง · โค้ดใช้ `rubric_details` และ `user_roles` (พหูพจน์) และมีตาราง `user_image` ที่เล่มไม่ได้บันทึกไว้ ซึ่งกู้รูปร่างจากโค้ดแล้วและบันทึกไว้ที่ §1.5 · สร้างใน 0004 (§10.4)
