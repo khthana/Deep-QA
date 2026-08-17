@@ -4,15 +4,17 @@ Curriculum and learning-outcomes management for the Faculty of Engineering, KMIT
 its graduates to learn, how each subject teaches and assesses that, and how far each student actually got — as
 evidence for TABEE accreditation.
 
-**Status: the rebuild has started with the database.** Alongside it sits the student implementation exactly as
-delivered, and the design work planning its replacement. The schema's identity, organisation, offering and learning-outcome
-tables exist; there is no application yet. Ticket [#5](https://github.com/khthana/Deep-QA/issues/5) is the next
-piece of work.
+**Status: the database is built and the backend has a skeleton.** Alongside them sits the student implementation
+exactly as delivered, and the design work planning its replacement. All four migrations are written, and `backend/`
+serves one route — a health check — over a test harness the screen tickets build on. No screen exists yet: sign-in,
+ticket [#8](https://github.com/khthana/Deep-QA/issues/8), is the next piece of work.
 
 ## Layout
 
 ```
 Deep-QA/
+├── db/                  PostgreSQL container, migrations and their runner
+├── backend/             the HTTP API
 ├── DEEP-QA-BACKEND/     student implementation — read-only reference
 ├── DEEP-QA-FRONTEND/    student implementation — read-only reference
 ├── docs/                specs, ADRs, plan and ticket breakdown
@@ -116,11 +118,43 @@ credentials with the deployed system.
 
 Migrations never name the schema: `DB_SCHEMA` is set on the connection's search path, so a query naming a bare table
 resolves in the right place and pointing the tests at their own schema is a configuration change rather than a code
-change. Ticket [#2](https://github.com/khthana/Deep-QA/issues/2) built the runner and ticket
-[#3](https://github.com/khthana/Deep-QA/issues/3) the identity and organisation tables, with
-[#4](https://github.com/khthana/Deep-QA/issues/4) adding offerings and learning outcomes, so `migrate` now leaves a
-schema with tables in it. They are still empty: seeding arrives with ticket
+change. Tickets [#2](https://github.com/khthana/Deep-QA/issues/2)–[#5](https://github.com/khthana/Deep-QA/issues/5)
+and [#46](https://github.com/khthana/Deep-QA/issues/46) built the runner and the four migrations, so `migrate` leaves
+a schema with all 33 tables in it. They are still empty: seeding arrives with ticket
 [#6](https://github.com/khthana/Deep-QA/issues/6).
+
+## The backend
+
+```bash
+cd backend
+npm install
+npm start                 # http://localhost:PORT, from the root .env
+```
+
+`npm start` binds a port; nothing else in the tree does. `app.js` builds the application and returns it, `server.js`
+is the only caller that starts it listening — which is what lets the whole suite run in-process.
+
+```bash
+npm test                  # from backend/
+```
+
+The tests need the container running (`npm run db:up` in `db/`) and the root `.env` present, but **not** a migrated
+development schema: each test file creates a schema of its own named after the file and the process, migrates it,
+and drops it when it finishes. `DB_SCHEMA` is never opened, so a suite run cannot touch development data and two
+files cannot collide.
+
+| Command | What it does |
+|---|---|
+| `npm start` | Starts the API on `PORT`. |
+| `npm test` | Runs every `test/*.test.js`, each against its own throwaway schema. |
+| `node --test test/smoke.test.js` | One file, when that is all you want. |
+
+`test/fixtures.js` builds the core chain — Program, Subject, Offering, Section, enrolment, CLO, Activity, marks — so
+a scenario is a few lines: `coreChain(pool, 'tag')` returns every identifier along the way, and the individual
+builders compose onto what it made.
+
+Note that the backend and a CRA frontend both read `PORT`, and the last assignment in a `.env` wins. The root `.env`
+holds the backend's; the frontend section of [`.env.example`](./.env.example) is copied into `frontend/.env` instead.
 
 ## Provenance
 
