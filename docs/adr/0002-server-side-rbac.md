@@ -23,3 +23,33 @@ irrelevant at this system's scale.
 - `blockDirectAccess` is no longer load-bearing and is dropped rather than carried over.
 - Requirements R004, R006, R014, R033, R042 and R054 become testable for the first time: each turns into a `403`
   assertion in the screen's API integration tests.
+
+## As built
+
+Delivered by [#9](https://github.com/khthana/Deep-QA/issues/9) in `backend/auth/authorise.js`, as three pieces
+declared in order: `attachRoles(pool)` puts the caller's active grants on `req.auth`, `requireRole(...roleIds)` asks
+what kind of account the endpoint is for, and `requireScope(pool, target)` asks whether what the account holds reaches
+the record. `target` is a function of the request returning the *record's* identifier; the pool is a parameter, as it
+is for every router in the house.
+
+Four things a later ticket can violate by accident:
+
+- **The public surface is positional, not per-route.** `app.use('/api', requireSession, attachRoles(pool))` sits below
+  the health and sign-in routers and above everything else, so every route added afterwards is guarded by
+  construction. The two above it are the whole of the anonymous surface: sign-in cannot require having signed in, and
+  `/api/health` is read by a load balancer that holds no cookie.
+- **A global grant passes `requireScope` everywhere, by design.** What keeps the Central Admin out of the curriculum
+  is curriculum routes *not listing* `FULL_ADMIN` in `requireRole` — never the scope check. A route author who reaches
+  for `requireScope` alone as the fence gets it wrong.
+- **An empty scope chain is covered by nobody**, the global grant included, and is checked *before* the grants rather
+  than left to fall out of them. A chain comes back empty for a target no table claims — including a route handing
+  over `undefined` from a mistyped parameter — and the routes that list `FULL_ADMIN` are exactly the grant-management
+  ones where a global grant would otherwise turn that mistake into a pass.
+- **An account whose last grant was revoked mid-session is refused at `attachRoles`** with `403` and the same words
+  sign-in uses for the same state, rather than left to fail at whichever guard it happens to meet.
+
+The refusal for both a role and a scope failure is deliberately identical and names nothing — no other user, no table,
+no identifier. The messages live in one table in `backend/auth/refusals.js`.
+
+The rules are asserted through HTTP in `backend/test/authorise.test.js`; `scopeChain` and `covers` are not exported,
+because docs/06's Testing Decisions allow the tests one seam.

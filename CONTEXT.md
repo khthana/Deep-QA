@@ -102,10 +102,16 @@ create Offerings.
 **Teacher** (อาจารย์ผู้สอน, `TEACHER`):
 Owns the Sections they teach: students, Work Groups, CLOs, Activities, scores and Evidence.
 
-**External Assessor** (ผู้ประเมินภายนอก):
+**External Assessor** (ผู้ประเมินภายนอก, `EXT_ASSESSOR`):
 A time-boxed account for accreditation review.
 
 **Scope** (ขอบเขตสิทธิ์):
 The faculty, department or program a role grant is confined to. A grant may never exceed the granter's own scope.
 A grant that is confined to nothing — a full administrator's — carries the literal `FULL_ADMIN` in place of a code,
 never a null. Scope is therefore not a foreign key: the same column names three different tables and one sentinel.
+
+A grant **covers** a record when the grant's scope is the record's own scope or one the record sits inside: a faculty
+reaches its departments and their programs, a department reaches its programs, and neither reaches sideways or upward.
+Because the column is polymorphic, an identifier is resolved **program, then department, then faculty, first hit
+wins** — which is why the faculty carries the code `ENG` rather than a number, so it cannot collide with a numbered
+department. An identifier no table claims is covered by nobody, the `FULL_ADMIN` sentinel included.
