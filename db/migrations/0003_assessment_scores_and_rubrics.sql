@@ -286,14 +286,13 @@ CREATE TABLE activity_evidence (
 
 -- A rubric, and the criteria it marks against.
 --
--- ADR-0001 lists rubrics among its tier 2 tables, and this is tier 3: the
--- surrogate id is kept and rubric_code carries the natural key as a UNIQUE. The
--- ADR's tier 2 is for junctions, and a rubric is not one - it has no pair of
+-- ADR-0001 tier 3: the surrogate id is kept and rubric_code carries the natural
+-- key as a UNIQUE. The ADR listed rubrics under tier 2 until this migration was
+-- written; tier 2 is for junctions, and a rubric is not one - it has no pair of
 -- parents to be keyed on. It is also addressed by that surrogate throughout:
 -- rubricsModel deletes and updates WHERE id = $1, and rubric_details.rubric_id
 -- is that id, so dropping it would rewrite queries this file is meant to serve.
--- The ADR's list is what is wrong here, and correcting it is the ADR's own call,
--- not a migration's.
+-- The ADR's list was the thing that was wrong, and it has since been corrected.
 --
 -- rubric_code is unique across the institution and not within its programme,
 -- which is the opposite of the scoping 0002 gave section numbers and CLO codes.
