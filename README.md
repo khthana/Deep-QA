@@ -5,8 +5,9 @@ its graduates to learn, how each subject teaches and assesses that, and how far 
 evidence for TABEE accreditation.
 
 **Status: the rebuild has started with the database.** Alongside it sits the student implementation exactly as
-delivered, and the design work planning its replacement. The schema's identity and organisation tables exist; there is
-no application yet. Ticket [#4](https://github.com/khthana/Deep-QA/issues/4) is the next piece of work.
+delivered, and the design work planning its replacement. The schema's identity, organisation, offering and learning-outcome
+tables exist; there is no application yet. Ticket [#5](https://github.com/khthana/Deep-QA/issues/5) is the next
+piece of work.
 
 ## Layout
 
@@ -116,7 +117,8 @@ credentials with the deployed system.
 Migrations never name the schema: `DB_SCHEMA` is set on the connection's search path, so a query naming a bare table
 resolves in the right place and pointing the tests at their own schema is a configuration change rather than a code
 change. Ticket [#2](https://github.com/khthana/Deep-QA/issues/2) built the runner and ticket
-[#3](https://github.com/khthana/Deep-QA/issues/3) the identity and organisation tables, so `migrate` now leaves a
+[#3](https://github.com/khthana/Deep-QA/issues/3) the identity and organisation tables, with
+[#4](https://github.com/khthana/Deep-QA/issues/4) adding offerings and learning outcomes, so `migrate` now leaves a
 schema with tables in it. They are still empty: seeding arrives with ticket
 [#6](https://github.com/khthana/Deep-QA/issues/6).
 

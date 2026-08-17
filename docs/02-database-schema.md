@@ -507,8 +507,9 @@
 เอกสารนี้ **บรรยายสิ่งที่ส่งมอบ ไม่ได้กำหนดสิ่งที่จะสร้าง** ชนิดข้อมูลของ rebuild ถูกกู้จาก SQL ที่
 model เดิม *ส่งจริง* ไม่ใช่จากตารางในเล่ม ซึ่งขัดกันหลายจุด เมื่อขัดกัน **โค้ดชนะ**
 
-รายการด้านล่างคือทุกจุดที่ [`db/migrations/0001_identity_and_organisation.sql`](../db/migrations/0001_identity_and_organisation.sql)
-เบี่ยงจากหัวข้อ 1–8 ข้างต้น ตั๋วถัดไปให้ยึดตามนี้ ไม่ใช่ตามตารางในหัวข้อ 1–8
+ตารางด้านล่างแยกตาม migration ตั๋วถัดไปให้ยึดตามนี้ ไม่ใช่ตามตารางในหัวข้อ 1–8
+
+### 10.1 [`0001_identity_and_organisation.sql`](../db/migrations/0001_identity_and_organisation.sql)
 
 | จุด | เอกสารนี้ว่า | migration 0001 ทำ | เหตุผล |
 |---|---|---|---|
@@ -526,6 +527,38 @@ model เดิม *ส่งจริง* ไม่ใช่จากตาร�
 | แถวที่อาจถูกอ้างถึง | — | ทุกตารางอ้างอิงมี `is_active` **หรือ status enum** (`users.status`, `student.status`) และ FK เป็น `ON DELETE RESTRICT` | แอปเดิม soft-delete อยู่แล้ว (`deleteDepartment`, `deleteProgram`, `deleteSubject`, `deleteUser`) และ `deleteProgramSubject` ใช้ SQLSTATE 23503 เป็นสัญญาณให้ตั้ง `is_active = false` · ข้อยกเว้นคือแถวที่ไม่มีความหมายเมื่อเจ้าของหายไป — grant และ log line `CASCADE` จาก `users` |
 
 `user_image` (ตารางที่เล่มไม่ได้บันทึกไว้ ดูหมายเหตุท้ายหัวข้อ 9) ยังไม่ถูกสร้าง — ไม่อยู่ในรายการสิบตารางของตั๋ว #3
+
+### 10.2 [`0002_offerings_and_learning_outcomes.sql`](../db/migrations/0002_offerings_and_learning_outcomes.sql)
+
+ครอบคลุมหัวข้อ 4.3–4.6 และ 5.1–5.7 ทั้งหมด (11 ตาราง) [ADR-0003](./adr/0003-clo-belongs-to-program-subject-year.md) เป็นตัวกำหนดรูปร่างของไฟล์นี้
+
+| จุด | เอกสารนี้ว่า | migration 0002 ทำ | เหตุผล |
+|---|---|---|---|
+| `subject_clo.section_id` · `subject_clo_measurable_behavior.section_id` · `subject_clo_achievement_criteria.section_id` (§5.3–5.5) | FK → `course_sections` | **ตัดทิ้งทั้งสามตาราง** แทนด้วย `(program_id, subject_id, academic_year)` บน `subject_clo` | [ADR-0003](./adr/0003-clo-belongs-to-program-subject-year.md) — ทุกกลุ่มเรียนของการเปิดสอนเดียวกันสอนไปที่ผลการเรียนรู้ชุดเดียวกัน โครงเดิมบังคับให้แต่ละกลุ่มถือสำเนาของตัวเอง · ตั๋ว #4 เกณฑ์รับข้อ 3 |
+| `subject_clo.updated_by` | ไม่มีคอลัมน์ (§5.3) | **เพิ่ม** `varchar(20)` FK → `users` | ADR-0003 ทำให้ CLO ชุดเดียวถูกอาจารย์หลายคนแก้ได้ last write wins จึงต้องสืบได้ว่าใครเขียนล่าสุด |
+| `course_sections.section_number` | Unique เดี่ยว (§4.4 · หัวข้อ 9 ข้อ 4) | `UNIQUE (semester_course_id, section_number)` | ของเดิมเปิด "กลุ่ม 1" ได้เพียงรายวิชาเดียวทั้งมหาวิทยาลัย |
+| `learning_outcomes.outcome_code` | Unique เดี่ยว (§5.1 · หัวข้อ 9 ข้อ 6) | `UNIQUE (program_id, outcome_code)` | แต่ละหลักสูตรต้องมี `PLO1` ของตนเองได้ |
+| `subject_clo.clo_number` | Unique เดี่ยว (§5.3 · หัวข้อ 9 ข้อ 5) | `UNIQUE (program_id, subject_id, academic_year, clo_number)` | หัวข้อ 9 ข้อ 5 เสนอให้ unique ร่วมกับ `section_id` แต่ ADR-0003 ตัด section ทิ้ง ขอบเขตจึงเป็นหลักสูตร-รายวิชา-ปี |
+| `semester_courses` | ไม่มี unique ตามธรรมชาติ (§4.3) | `UNIQUE (program_id, subject_id, academic_year, semester)` | [ADR-0001](./adr/0001-three-tier-key-strategy.md) ชั้น 3 — ไม่งั้นเปิดรายวิชาเดียวกันซ้ำในภาคเดียวกันได้ และไม่มีอะไรบอกความต่าง |
+| `semester_courses` · `subject_plo_mapping` · `subject_clo` · `clo_course_cycle_cloplan` | FK แยก → `programs` และ → `subjects` | **FK คู่** `(program_id, subject_id)` → `program_subjects` | ตาม `CONTEXT.md` การเปิดสอนคือ *รายวิชาในหลักสูตร* ที่เปิดในปี-ภาคหนึ่ง FK แยกสองตัวยอมให้เปิดรายวิชาที่หลักสูตรนั้นไม่ได้สอน |
+| `subject_plo_mapping.mapping_id` | surrogate PK (§5.2) | **ตัดทิ้ง** PK เป็น `(program_id, subject_id, outcome_id)` | ADR-0001 ชั้น 2 |
+| `subject_plo_mapping.outcome_id` | nullable (§5.2) | `NOT NULL` | แถว placeholder ที่ไม่ระบุ outcome เป็นโค้ดตาย — `createEmptyMapping` ไม่มีใครเรียก ทางที่ดูเหมือนเรียก (import รายวิชาของหลักสูตร) ใช้ `createPloMapping` กับ `outcome_id: null` ต่างหาก และการอ่านเดียวที่แยก "มี placeholder" ออกจาก "ไม่มีแถว" ได้คือ `checkMappingExists` ซึ่งมีไว้ตัดสินว่าจะเขียน placeholder หรือไม่ · รายวิชาที่ยังไม่เชื่อมโยง = ไม่มีแถว ส่วน `mapping_level` `'E'` บอกได้ว่า PLO *ข้อที่ระบุ* ไม่ได้ถูกรายวิชานี้รองรับ ซึ่งแคบกว่าที่แถว placeholder เคยบอกได้ แต่เป็นอย่างเดียวที่มีโค้ดอ่าน |
+| `course_sections_teacher.id` (§4.5) | surrogate PK | **ตัดทิ้ง** PK เป็น `(section_id, user_id)` | ADR-0001 ชั้น 2 · R035 อาจารย์หลายคนต่อกลุ่มเรียน |
+| `course_sections_teacher.semester_course_id` (§4.5) | FK NN | **ไม่สร้าง** | insert ทั้งสามที่เขียนค่านี้ แต่ไม่มี query ไหนอ่าน — `getTeacherCourse` เข้าถึงการเปิดสอนผ่าน `course_sections` สำเนาที่ไม่มีใครอ่านทำได้อย่างเดียวคือขัดกับ section ของตัวเอง |
+| `subject_clo_measurable_behavior.clo_id` · `subject_clo_achievement_criteria.clo_id` | `Smallint` (§5.4–5.5 · หัวข้อ 9 ข้อ 2) | `integer` ให้ตรงกับ `subject_clo.clo_id` | `Smallint` ทำให้ตารางหยุดรับแถวที่ CLO ลำดับ 32,767 |
+| `course_syllabus.section_id` (§4.6) · `subject_clo_achievement_criteria.achievement_level` (§5.5) | nullable | `NOT NULL` ทั้งคู่ | แผนการสอนที่ไม่สังกัดกลุ่มเรียน และเกณฑ์ที่ไม่ระบุระดับ ไม่มีความหมาย |
+| ความกว้าง `Varchar(8)` / `Varchar(20)` ใน §4.5, §4.6, §5.2, §5.3, §5.6 | `course_sections_teacher.user_id` = `Varchar(8)` · `course_syllabus.created_by` = `Varchar(8)` · `subject_plo_mapping.created_by`/`updated_by` = `Varchar(8)` · `subject_clo.created_by` = `Varchar(8)` · `subject_plo_mapping.subject_id` = `Varchar(20)` · `clo_course_cycle_cloplan.subject_id` = `Varchar(20)` | ยึดกฎความกว้างของ 0001 ทั้งหมด — รหัสบุคคล `varchar(20)` รหัสรายวิชา `varchar(8)` | เอกสารผิดในทางเดียวกันทั้งเจ็ดคอลัมน์ และ PostgreSQL จะไม่เตือน: FK varchar↔varchar ที่ความกว้างต่างกันสร้างสำเร็จ แล้วไปพังทีหลังกับค่าที่พอดีด้านหนึ่งแต่ไม่พอดีอีกด้าน · มีเทสต์เดียวตรวจ FK ทุกเส้นในสคีมาว่าชนิดและความกว้างตรงกับปลายทาง |
+| `learning_activity` (§8) | `Quiz`, `exam`, `homework` (และงานที่มอบหมาย) | `exam`, `exercise`, `homework`, `assigned_work` — **ยึดตาม R063** | สามแหล่งไม่ตรงกัน: R063 (บังคับ M) ให้สี่ — ข้อสอบ, แบบฝึกหัด, การบ้าน, งานที่มอบหมาย · หน้าจอเดิมมีสามเพราะรวม `แบบฝึกหัด/การบ้าน` เป็นตัวเลือกเดียว ซึ่งเป็น *ข้อความบนจอ* ของ frontend ที่กำลังจะถูกเขียนใหม่ ไม่ใช่หลักฐานระดับสคีมาแบบ INSERT ที่เหลือรอด · §8 ให้สี่ค่าแต่บรรยายว่าสาม · ยึด R063 เพราะเป็นข้อกำหนดที่การรื้อสร้างต้องทำให้ได้ (marked M) — ไม่ใช่เพราะเป็นรายการที่ยาวกว่า ในทางต้นทุนแล้วรายการที่ *สั้นกว่า* ปลอดภัยกว่า เพราะการ *เพิ่ม* ค่าภายหลังคือ `ALTER TYPE … ADD VALUE` ครั้งเดียว (ในไฟล์ migration ใหม่ เพราะ ADD VALUE ใช้ในทรานแซกชันเดียวกับที่รันไม่ได้) ส่วนการ *ลด* ต้องเขียนทุกแถวที่ใช้ค่านั้นใหม่ · ตัด `Quiz` เพราะมีแต่ §8 · ใช้ `assigned_work` ไม่ใช่ `assignment` เพราะ `CONTEXT.md` สงวนคำนั้นไว้ให้ Activity |
+| `subject_clo.plo_id` · `subject_plo_mapping.outcome_id` · `learning_outcomes.parent_outcome_id` | FK เดี่ยว → `learning_outcomes` (§5.1–5.3) | **FK คู่** `(program_id, …)` → `learning_outcomes (program_id, outcome_id)` พร้อม `UNIQUE (program_id, outcome_id)` บน `learning_outcomes` | เหตุผลเดียวกับ FK คู่เข้า `program_subjects` และเป็นเหตุผลที่ ADR-0003 ให้ไว้เองว่าทำไม `program_id` ต้องอยู่บน `subject_clo` — FK เดี่ยวยอมให้ CLO หรือการเชื่อมโยงของหลักสูตรหนึ่งไปอ้าง PLO ของอีกหลักสูตร และยอมให้ต้นไม้ PLO ข้ามหลักสูตร · `plo_id` ยัง nullable ได้เพราะ MATCH SIMPLE ปล่อยผ่านเมื่อคอลัมน์ใดคอลัมน์หนึ่งเป็น NULL |
+| `subject_clo_measurable_behavior` · `subject_clo_achievement_criteria` | ไม่มี unique (§5.4–5.5) | `UNIQUE (clo_id, behavior_no)` · `UNIQUE (clo_id, criteria_no)` | ADR-0001 ชั้น 3 · โค้ดเดิมต้องการอยู่แล้ว — ทางลบจัดหมายเลขที่เหลือใหม่ให้เป็น 1..N ไม่มีช่องว่าง และ `subjectCloAchController` ตอบ "Duplicate entry … criteria_no" จากฝั่งแอปอยู่ก่อน · ลูปจัดหมายเลขใหม่ไล่ `ORDER BY … ASC` และการลบปล่อยเลขที่ *ต่ำกว่า* ให้ว่างเสมอ จึงไม่ชนกัน |
+| `clo_course_cycle_detail_cloplan.reference_academic_year` | `Integer` (§5.7) | `varchar(4)` | ปีการศึกษาเป็น `varchar(4)` ทุกที่ทั้งใน 0001 และไฟล์นี้ · ปีที่มีแต่การเปรียบเทียบและแสดงผลไม่ใช่ตัวเลข และหนึ่งแนวคิดที่เก็บสองชนิดคือข้อบกพร่องประเภทที่หัวข้อ 9 มีไว้รวบรวม |
+| `cognitive_level` (§8) | `remember`, `understand`, `apply`, `analyze` … | ครบหกระดับ `remember`, `understand`, `apply`, `analyze`, `evaluate`, `create` | `CONTEXT.md` ระบุ "(remember … create)" — §8 ไล่ไปสี่ตัวแล้วทิ้งท้ายไว้ในวงเล็บ |
+| `achievement_level` · `detail_type` | CHECK (§5.5, §5.7) | คง CHECK ไม่แปลงเป็น enum | สี่ระดับการบรรลุผลจะปรากฏอีกที่ `rubrics` และหลักฐานการประเมินในตั๋วถัดไป CHECK ขยายทีละตารางได้โดยไม่ต้อง `ALTER TYPE` ที่กระทบทุกที่ |
+| `clo_course_cycle_cloplan` · `clo_course_cycle_detail_cloplan` | U(1) (§5.6–5.7) | `UNIQUE (subject_id, program_id, academic_year)` และ `UNIQUE (clo_course_cycle_id, clo_id, detail_type)` | ไม่ใช่ของประดับ — `createCycle` และ `upsertDetail` จบด้วย `ON CONFLICT` บนคอลัมน์ชุดนี้พอดี ถ้าไม่มี constraint ที่ครอบคลุมตรงกัน PostgreSQL ตอบ 42P10 |
+| `course_syllabus.week_no` (§4.6) · `semester_courses.semester` (§4.3) | ไม่มี CHECK | `CHECK (week_no > 0)` · `CHECK (semester IN (1, 2, 3))` | สัปดาห์ที่ศูนย์และภาคที่สี่คือการพิมพ์ผิด ไม่ใช่ค่าที่มีอยู่จริง |
+| การลบ | — | `ON DELETE CASCADE` เฉพาะ `course_syllabus`, `subject_clo_measurable_behavior`, `subject_clo_achievement_criteria`, `clo_course_cycle_detail_cloplan` ที่เหลือ RESTRICT · authorship `SET NULL` | ตามกฎเดียวกับ 0001 — แถวที่ไม่มีความหมายของตัวเองเมื่อแม่หายไปคือส่วนประกอบ ไม่ใช่ระเบียน ส่วน `parent_outcome_id` เป็น RESTRICT เพราะการลบข้อหลักต้องไม่พาข้อย่อยหายไปเงียบ ๆ |
+
+`course_syllabus` เป็นตารางที่สองต่อจาก `user_log` ที่ ADR-0001 ชั้น 3 ขอ natural key แล้วไม่มีให้ — `(section_id, week_no)` ดูเข้าท่าแต่ผิด เพราะ `upsertCourseSyllabus` ตัดสิน insert/update จาก surrogate id เท่านั้น ไม่เคยดูสัปดาห์ หนึ่งสัปดาห์จึงมีได้หลายหัวข้อ ต่างจาก `subject_clo_measurable_behavior` และ `subject_clo_achievement_criteria` ในตารางข้างบน ที่โค้ดเดิมจัดหมายเลขให้ไม่ซ้ำอยู่แล้ว
 
 ---
 
