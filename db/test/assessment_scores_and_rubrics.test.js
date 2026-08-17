@@ -151,9 +151,9 @@ test('reset and migrate build the schema from nothing', async (t) => {
 test('the change log keeps its group columns comparable without a foreign key', async () => {
   // The three group columns are deliberately not foreign keys, so the width
   // check cannot see them wherever it lives, and a Smallint copied out of
-  // docs/02 would go
-  // unnoticed until a group_id passed 32767. Comparing a live group against the
-  // log is what the columns exist for, so the comparison is the assertion.
+  // docs/02 would go unnoticed until a group_id passed 32767. Comparing a live
+  // group against the log is what the columns exist for, so the comparison is
+  // the assertion.
   const ids = await section('logtype');
   const { rows } = await pool.query(
     `INSERT INTO student_group (section_id, group_name) VALUES ($1, 'กลุ่ม 1') RETURNING group_id`,

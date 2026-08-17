@@ -16,10 +16,12 @@ const { testSchema, dropSchema, baseFixtures, errorCodeOf } = require('./helpers
  * introspection lives in this file now, having moved on from 0003's, together
  * with the applied-migration list.
  *
- * The statements below are the ones services/userService.js and
- * models/userModel.js actually issue. The table has no columns in the thesis,
- * so that SQL is the whole specification, and reproducing it verbatim is what
- * tells us the schema serves it - a paraphrase would not have caught 42P10.
+ * The statements below come from services/userService.js and
+ * models/userModel.js. The table has no columns in the thesis, so that SQL is
+ * the whole specification, and keeping the shape that matters is what tells us
+ * the schema serves it - a paraphrase of the upsert would not have caught
+ * 42P10. UPSERT is verbatim; PROFILE keeps the LEFT JOIN and drops the columns
+ * of the read that belong to other tables.
  */
 
 const SCHEMA = testSchema('userimage');
@@ -77,7 +79,9 @@ test('every foreign key has the type and width of the column it points at', asyn
   // without a word, then fails much later on a value that fits one and not the
   // other. docs/02 gets it wrong seven times within 0002's scope and nine more
   // within 0003's, always by giving a person the subject's width, so it is
-  // exactly the error most likely to be copied in.
+  // exactly the error most likely to be copied in. 0004 adds no count of its
+  // own - the thesis has no entry for its table to state a width wrongly in -
+  // but its one foreign key is read here like every other.
   const { rows } = await pool.query(`
     SELECT ch.relname  AS child_table,
            ac.attname  AS child_column,
@@ -147,7 +151,8 @@ test('a photo may only be filed against a user who exists', async () => {
 
 test('deleting a user takes the profile photo with it', async () => {
   // 0001's exception to RESTRICT, and the behaviour userModel.deleteUser is
-  // written for: it issues a bare DELETE and its 23503 branch says to check
+  // written for: it cleans up course_sections_teacher by hand and never touches
+  // user_image, leaving that to the database - its 23503 branch says to check
   // CASCADE. Under RESTRICT every user who ever uploaded a photo would become
   // undeletable through that path.
   const ids = await baseFixtures(pool, 'delphoto');

@@ -31,9 +31,10 @@ CREATE TABLE user_image (
   -- "rows with no meaning of their own once their subject is gone", and a
   -- profile photo is one: nothing refers to it, and there is nothing an
   -- accreditation review would later be shown it for. The inherited code agrees
-  -- - userModel.deleteUser issues a bare DELETE FROM users with no cleanup, and
-  -- its own 23503 branch tells the reader to check CASCADE. Under RESTRICT any
-  -- account that had ever uploaded a photo would be undeletable through it.
+  -- - userModel.deleteUser sweeps up course_sections_teacher by hand before it
+  -- deletes the user, and never mentions user_image; its 23503 branch tells the
+  -- reader to check CASCADE instead. Under RESTRICT any account that had ever
+  -- uploaded a photo would be undeletable through that path.
   --
   -- The file on disk is not swept up with the row: deleteUser does not unlink,
   -- so a deleted user leaves an orphan under /data/evidence/user_image. That is

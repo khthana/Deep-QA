@@ -14,7 +14,8 @@ const { testSchema, dropSchema, baseFixtures, errorCodeOf } = require('./helpers
  *
  * The assertions are behavioural - insert what the schema should refuse and
  * check the SQLSTATE, delete a parent and look at what survived. The one
- * exception is the foreign-key type check below, and it says why.
+ * exception is the foreign-key type check, which lives in the newest
+ * migration's test file and says why there.
  */
 
 const SCHEMA = testSchema('outcomes');
