@@ -4,10 +4,11 @@ Curriculum and learning-outcomes management for the Faculty of Engineering, KMIT
 its graduates to learn, how each subject teaches and assesses that, and how far each student actually got — as
 evidence for TABEE accreditation.
 
-**Status: the database is built and the backend has a skeleton.** Alongside them sits the student implementation
-exactly as delivered, and the design work planning its replacement. All four migrations are written, and `backend/`
-serves one route — a health check — over a test harness the screen tickets build on. No screen exists yet: sign-in,
-ticket [#8](https://github.com/khthana/Deep-QA/issues/8), is the next piece of work.
+**Status: the database is built and seeded, and the backend has a skeleton.** Alongside them sits the student
+implementation exactly as delivered, and the design work planning its replacement. All four migrations are written,
+one command fills them with the acceptance dataset, and `backend/` serves one route — a health check — over a test
+harness the screen tickets build on. No screen exists yet: sign-in, ticket
+[#8](https://github.com/khthana/Deep-QA/issues/8), is the next piece of work.
 
 ## Layout
 
@@ -97,6 +98,7 @@ cd db
 npm install
 npm run db:up             # PostgreSQL 16 on the port named by DB_PORT
 npm run migrate           # applies every pending migration, in order
+npm run seed              # fills it with the development and acceptance dataset
 ```
 
 `db:up` publishes **5433**, not 5432 — a PostgreSQL installed directly on the machine commonly holds 5432, and from the
@@ -114,14 +116,62 @@ credentials with the deployed system.
 | `npm run db:down -- -v` | Stops it *and destroys the volume*. The only way to change the database credentials. |
 | `npm run migrate` | Applies pending migrations in filename order. Safe to run twice; the second run applies nothing. |
 | `npm run reset` | Drops the schema and recreates it empty. `migrate` afterwards replays the whole history. |
+| `npm run seed` | Fills a migrated schema with the dataset below. One transaction, and safe to run twice — a second run changes nothing. |
 | `npm test` | Runs the runner's tests against the same container, each in a throwaway schema named after the test and the process, dropped when it finishes. |
 
 Migrations never name the schema: `DB_SCHEMA` is set on the connection's search path, so a query naming a bare table
 resolves in the right place and pointing the tests at their own schema is a configuration change rather than a code
 change. Tickets [#2](https://github.com/khthana/Deep-QA/issues/2)–[#5](https://github.com/khthana/Deep-QA/issues/5)
 and [#46](https://github.com/khthana/Deep-QA/issues/46) built the runner and the four migrations, so `migrate` leaves
-a schema with all 33 tables in it. They are still empty: seeding arrives with ticket
-[#6](https://github.com/khthana/Deep-QA/issues/6).
+a schema with all 33 tables in it.
+
+### The seeded dataset
+
+`npm run seed` fills those tables with the test data
+[`docs/04`](./docs/04-test-cases-v0.1.md) §1.3 already specifies, so an acceptance run and a written test case are
+talking about the same rows:
+
+- Department `05` วิศวกรรมคอมพิวเตอร์ under programme `0501`, plus a second department and a second programme that
+  exist only so a permission rule can be shown to refuse something.
+- Subject `01076105` การเขียนโปรแกรมเชิงวัตถุ, opened for **2568 semester 2** across two sections, with all 113
+  students enrolled — and again for **2567**, with a smaller cohort and its own completed marks, so the
+  year-over-year screens have two points to compare.
+- `PLO-1`–`PLO-13` with their sub-outcomes, `CLO-1`–`CLO-9` with measurable behaviours and achievement criteria for
+  each year, and a weighting of โครงงาน 40 / กลางภาค 30 / ปลายภาค 30.
+- Five activities per section, every one mapped to CLOs, and a mark for every enrolled student on every one of them.
+- Work groups of eight, inside BR-06's ceiling of ten, with no student in two.
+
+Everything is deterministic — names, marks and group memberships come from a seeded generator, not from
+`Math.random` — so a checklist that names a particular student and a particular mark stays true after a reset.
+
+### The seeded accounts
+
+Every account below signs in with the same password:
+
+```
+deep-core-local
+```
+
+It is local-only and deliberately uninteresting, in the same spirit as `DB_PASS`. This seed fills an empty local
+database and the accounts it opens have nothing behind them; nothing here is a credential for anything deployed.
+
+| Alias in `docs/04` | Sign in as | Role | Scope |
+|---|---|---|---|
+| `U_ADMIN` | `admin@kmitl.ac.th` | ผู้ดูแลระบบกลาง | the whole system |
+| `U_FAC` | `faculty.admin@kmitl.ac.th` | ผู้ดูแลระบบระดับคณะ | คณะวิศวกรรมศาสตร์ |
+| `U_DEPT` | `dept.admin.05@kmitl.ac.th` | ผู้ดูแลระบบระดับภาควิชา | ภาควิชา `05` |
+| `U_DEPT2` | `dept.admin.01@kmitl.ac.th` | ผู้ดูแลระบบระดับภาควิชา | ภาควิชา `01` — **cross-scope** |
+| `U_COM` | `committee.0501@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0501` |
+| `U_COM2` | `committee.0503@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0503` — **cross-scope** |
+| `U_TEACH` | `teacher.one@kmitl.ac.th` | อาจารย์ผู้สอน | กลุ่มเรียน 1 of `01076105` |
+| `U_TEACH2` | `teacher.two@kmitl.ac.th` | อาจารย์ผู้สอน | **teaches nothing** |
+| `U_EXT` | `external.assessor@kmitl.ac.th` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
+| `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and กลุ่มเรียน 2 |
+| `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | outside `@kmitl.ac.th` (R010) |
+
+The last five rows are the point of the list. A permission rule is only tested by an account that should be refused,
+so the dataset ships a committee member and a department admin scoped elsewhere, a teacher with no sections, an
+account holding two roles at once, and an address outside the university domain.
 
 ## The backend
 
