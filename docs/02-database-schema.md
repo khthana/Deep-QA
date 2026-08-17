@@ -4,6 +4,9 @@
 > DBMS: **PostgreSQL** · Timezone ค่าเริ่มต้น: `Asia/Bangkok`
 > ER Diagram อยู่ในไฟล์แยก → [`03-er-diagram.md`](./03-er-diagram.md)
 
+> **เอกสารนี้บรรยายสิ่งที่ส่งมอบ ไม่ได้กำหนดสิ่งที่จะสร้าง** — ทุกจุดที่ schema ของ rebuild ไม่ตรงกับหัวข้อ 1–8
+> ถูกบันทึกไว้ที่ **หัวข้อ 10 "การเบี่ยงเบนของ rebuild"** ท้ายไฟล์ อ่านหัวข้อนั้นก่อนยึดตารางใดในเอกสารนี้
+
 ## สารบัญตาราง
 
 | กลุ่ม | ตาราง |
@@ -496,6 +499,33 @@
 4. **`course_sections.section_number` เป็น Unique เดี่ยว** — ตามหลักการควรเป็น Unique ร่วมกับ `semester_course_id` มิฉะนั้นจะเปิด "กลุ่ม 1" ได้เพียงรายวิชาเดียวทั้งระบบ (ประเด็นที่ต้องยืนยันกับผู้พัฒนา)
 5. **`subject_clo.clo_number` เป็น Unique เดี่ยว** — ตามหลักการควรเป็น Unique ร่วมกับ `section_id` มิฉะนั้นแต่ละกลุ่มเรียนจะตั้งชื่อ `CLO1` ซ้ำกันไม่ได้
 6. **`learning_outcomes.outcome_code` เป็น Unique เดี่ยว** — ควรเป็น Unique ร่วมกับ `program_id` เพื่อให้แต่ละหลักสูตรมี `PLO1` ของตนเองได้
+
+---
+
+## 10. การเบี่ยงเบนของ rebuild — ที่ migration จริงไม่ตรงกับเอกสารนี้
+
+เอกสารนี้ **บรรยายสิ่งที่ส่งมอบ ไม่ได้กำหนดสิ่งที่จะสร้าง** ชนิดข้อมูลของ rebuild ถูกกู้จาก SQL ที่
+model เดิม *ส่งจริง* ไม่ใช่จากตารางในเล่ม ซึ่งขัดกันหลายจุด เมื่อขัดกัน **โค้ดชนะ**
+
+รายการด้านล่างคือทุกจุดที่ [`db/migrations/0001_identity_and_organisation.sql`](../db/migrations/0001_identity_and_organisation.sql)
+เบี่ยงจากหัวข้อ 1–8 ข้างต้น ตั๋วถัดไปให้ยึดตามนี้ ไม่ใช่ตามตารางในหัวข้อ 1–8
+
+| จุด | เอกสารนี้ว่า | migration 0001 ทำ | เหตุผล |
+|---|---|---|---|
+| `student.student_id` | PK, FK → `users` (§3.1) | PK อย่างเดียว **ไม่มี FK** | `createStudent` / `insertStudent` ไม่เขียนแถวใน `users` เลย และ query อ่านทั้งสามที่ `LEFT JOIN users` — FK จริงจะพังตั้งแต่แถวแรกที่ import |
+| `student.admission_year` | Generated (§3.1) | คอลัมน์ธรรมดา | insert ทั้งสองทางส่งค่ามาเอง และการ insert ลง generated column เป็น error (`full_name_th` ยังคง generated เพราะมีแต่การอ่าน) |
+| `student.full_name_th` | `Varchar(200)` (§3.1) | `text` | `first_name_th` + ` ` + `last_name_th` ที่ `Varchar(100)` สองตัวยาวได้ถึง 201 — ความกว้างในเล่มจะปฏิเสธชื่อคู่ที่ถูกต้อง |
+| `user_log.activity` | LOGIN / LOGOUT / VIEW (§1.4) | `varchar` ไม่ใช่ enum | ผู้เรียก `addUserLog` เขียนเจ็ดค่า และไม่มี `VIEW` อยู่ในนั้น: `LOGIN`, `LOGOUT`, `GOOGLE_LOGIN`, `UPDATE_PROFILE`, `CHANGE_PASSWORD` และสถานะบัญชีตัวพิมพ์ใหญ่ `ACTIVE` / `INACTIVE` — เซตนี้เปิดและโตตามการกระทำที่ต้อง audit |
+| `roles.role_name` | `Varchar(20)` (§1.2) | `varchar(100)` | เป็น label สำหรับแสดงผล ไม่ใช่โค้ด และ `Varchar(20)` ไม่พอสำหรับชื่อภาษาไทย |
+| `users.faculty_id` | มีคอลัมน์ (§1.1) | **ไม่สร้าง** | ผู้ใช้เพียงรายเดียวคือ `getFacultyByEmail` ซึ่งไม่มีใครเรียก — คณะเข้าถึงได้ทาง `users.department_id → departments.faculty_id` |
+| `program_subjects.id` | surrogate PK (§4.2) | **ตัดทิ้ง** PK เป็น `(program_id, subject_id)` | [ADR-0001](./adr/0001-three-tier-key-strategy.md) ชั้น 2 และยืนยันจากการใช้งาน — ทุก read / update / delete / reactivate ใน `program_subjectsModel` key ที่คู่นี้ ไม่มีที่ไหน select หรือ join บน `id` |
+| `user_role` (§1.3) | ชื่อเอกพจน์ | `user_roles` | โค้ดใช้พหูพจน์ (ดูหมายเหตุท้ายหัวข้อ 9) PK คือ `(user_id, role_id, scope_id)` |
+| `user_roles.scope_id` | — | `NOT NULL` และรับ sentinel `'FULL_ADMIN'` ได้ **ไม่มี FK** | ฝั่งอ่านเทียบ `scope_id` ที่อ่านกลับมาจาก DB กับ literal `'FULL_ADMIN'` อยู่แล้ว ส่วนฝั่งเขียนใน `userService` ยังส่ง null ได้ — จุดนี้จึง *ตัดสินใหม่* ไม่ใช่กู้มา และ seed ของตั๋ว #6 ต้องเขียน `'FULL_ADMIN'` ไม่ใช่ null · ไม่มี FK เพราะ `findScopeHierarchy` ไล่หาใน `programs` แล้ว `departments` แล้ว `faculty` — เป็น polymorphic |
+| ความกว้างที่ขัดกันเอง (หัวข้อ 9 ข้อ 2) | `Char(2)` / `Varchar(2)` / `Varchar(8)` / `Varchar(20)` ปนกัน | **โค้ดคณะ ภาควิชา หลักสูตร = `varchar(10)`** · **รหัสบุคคล (`user_id`, `student_id`, ทุก `created_by` / `updated_by` / `assigned_by`) = `varchar(20)`** · **รหัสรายวิชา (`subject_id` และทุกคอลัมน์ที่ชี้มาที่มัน) = `varchar(8)`** | หนึ่งแนวคิดหนึ่งชนิด ตามเกณฑ์รับของตั๋ว #3 ข้อ 4 — `scope_id` ใช้ความกว้างของรหัสบุคคลเพราะต้องเก็บ sentinel ที่รูปร่างเหมือนชื่อ role ด้วย · รหัสรายวิชาเป็นกฎข้อที่สาม ไม่ใช่โค้ดองค์กรและไม่ใช่รหัสบุคคล: §4.3 ให้ `semester_courses.subject_id` เป็น `Varchar(8)` ขณะที่ §2.2 ให้ `subjects.subject_id` เป็น `Varchar(20)` — **รูปแบบจริงคือแปดหลักตายตัว** (`01076105`) จึงยึด `varchar(8)` ตาม §4.3 และเป็นความกว้างเดียวในไฟล์ที่ *ไม่* เผื่อโต โดยตั้งใจ เพราะการเปลี่ยนรูปแบบรหัสวิชาต้องเปลี่ยนทั้งมหาวิทยาลัยพร้อมกัน ไม่ใช่เรื่องที่คณะใดขยับเองได้ · **ตั๋ว #4 ต้องใช้ `varchar(8)` ให้ตรงกัน** เพราะ FK varchar↔varchar ที่ความกว้างต่างกันสร้างได้โดยไม่ error จะไม่มีอะไรมาเตือน |
+| timestamp ทั้งหมด | `Timestamp` | `timestamptz` | โค้ดเดิมปนกันเอง — `upsertSubject` เขียน `CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'` ขณะที่ `updateSubject` เขียน `NOW()` ซึ่งทำให้คอลัมน์เดียวมีสองความหมาย |
+| แถวที่อาจถูกอ้างถึง | — | ทุกตารางอ้างอิงมี `is_active` **หรือ status enum** (`users.status`, `student.status`) และ FK เป็น `ON DELETE RESTRICT` | แอปเดิม soft-delete อยู่แล้ว (`deleteDepartment`, `deleteProgram`, `deleteSubject`, `deleteUser`) และ `deleteProgramSubject` ใช้ SQLSTATE 23503 เป็นสัญญาณให้ตั้ง `is_active = false` · ข้อยกเว้นคือแถวที่ไม่มีความหมายเมื่อเจ้าของหายไป — grant และ log line `CASCADE` จาก `users` |
+
+`user_image` (ตารางที่เล่มไม่ได้บันทึกไว้ ดูหมายเหตุท้ายหัวข้อ 9) ยังไม่ถูกสร้าง — ไม่อยู่ในรายการสิบตารางของตั๋ว #3
 
 ---
 

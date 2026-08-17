@@ -107,3 +107,5 @@ A time-boxed account for accreditation review.
 
 **Scope** (ขอบเขตสิทธิ์):
 The faculty, department or program a role grant is confined to. A grant may never exceed the granter's own scope.
+A grant that is confined to nothing — a full administrator's — carries the literal `FULL_ADMIN` in place of a code,
+never a null. Scope is therefore not a foreign key: the same column names three different tables and one sentinel.

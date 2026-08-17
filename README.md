@@ -4,9 +4,9 @@ Curriculum and learning-outcomes management for the Faculty of Engineering, KMIT
 its graduates to learn, how each subject teaches and assesses that, and how far each student actually got — as
 evidence for TABEE accreditation.
 
-**Status: the rebuild has not started.** What is in this repository today is the student implementation exactly as
-delivered, plus the design work planning its replacement. There is no database and the application cannot be run yet.
-Ticket [#2](https://github.com/khthana/Deep-QA/issues/2) is the first piece of work.
+**Status: the rebuild has started with the database.** Alongside it sits the student implementation exactly as
+delivered, and the design work planning its replacement. The schema's identity and organisation tables exist; there is
+no application yet. Ticket [#4](https://github.com/khthana/Deep-QA/issues/4) is the next piece of work.
 
 ## Layout
 
@@ -51,7 +51,7 @@ But **exclude `node_modules` when you do** — the directory is 4.7 GB, and the 
 4.6 GB of that. Excluding them, and the compiled bundle, brings the copy down to roughly 110 MB.
 
 ```powershell
-robocopy "C:\Users\Terry\Desktop\Code\Deep-QA" "D:\Deep-QA" /E /XD node_modules build
+robocopy "C:\Users\khtha\OneDrive\Desktop\Code\Deep-QA" "D:\Deep-QA" /E /XD node_modules build
 ```
 
 Then on the new machine:
@@ -115,9 +115,10 @@ credentials with the deployed system.
 
 Migrations never name the schema: `DB_SCHEMA` is set on the connection's search path, so a query naming a bare table
 resolves in the right place and pointing the tests at their own schema is a configuration change rather than a code
-change. Seeding arrives with ticket [#6](https://github.com/khthana/Deep-QA/issues/6); today the schema is empty by
-design — ticket [#2](https://github.com/khthana/Deep-QA/issues/2) built the runner, and ticket
-[#3](https://github.com/khthana/Deep-QA/issues/3) writes the first tables.
+change. Ticket [#2](https://github.com/khthana/Deep-QA/issues/2) built the runner and ticket
+[#3](https://github.com/khthana/Deep-QA/issues/3) the identity and organisation tables, so `migrate` now leaves a
+schema with tables in it. They are still empty: seeding arrives with ticket
+[#6](https://github.com/khthana/Deep-QA/issues/6).
 
 ## Provenance
 
