@@ -126,10 +126,14 @@ a schema with all 33 tables in it. They are still empty: seeding arrives with ti
 ## The backend
 
 ```bash
-cd backend
-npm install
+cd db && npm install      # backend/ reaches ../db for the pool and the runner
+cd ../backend && npm install
 npm start                 # http://localhost:PORT, from the root .env
 ```
+
+The first line is not optional. `backend/` declares only what it uses directly; the pool, the migration runner and
+their `pg` and `dotenv` dependencies belong to `db/` and are required across the directory boundary rather than
+copied — a second copy of the runner would be a copy that can drift from the schema it describes.
 
 `npm start` binds a port; nothing else in the tree does. `app.js` builds the application and returns it, `server.js`
 is the only caller that starts it listening — which is what lets the whole suite run in-process.
@@ -138,7 +142,8 @@ is the only caller that starts it listening — which is what lets the whole sui
 npm test                  # from backend/
 ```
 
-The tests need the container running (`npm run db:up` in `db/`) and the root `.env` present, but **not** a migrated
+The tests need `db/`'s dependencies installed, the container running (`npm run db:up` in `db/`) and the root `.env`
+present, but **not** a migrated
 development schema: each test file creates a schema of its own named after the file and the process, migrates it,
 and drops it when it finishes. `DB_SCHEMA` is never opened, so a suite run cannot touch development data and two
 files cannot collide.

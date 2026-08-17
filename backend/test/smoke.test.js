@@ -20,7 +20,15 @@ const assert = require('node:assert/strict');
 
 const request = require('supertest');
 
+const { createApp } = require('../app');
 const { startApi } = require('./helpers');
+
+// Without the guard the omission surfaces as a TypeError inside whichever
+// request first touched the pool, which reads as a bug in that route rather
+// than in how the application was built.
+test('an application built without a pool is refused at once', () => {
+  assert.throws(() => createApp({}), /needs a pool/);
+});
 
 test('the seam', async (t) => {
   const api = await startApi('smoke');
