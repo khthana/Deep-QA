@@ -37,9 +37,9 @@ CREATE TABLE user_image (
   -- uploaded a photo would be undeletable through that path.
   --
   -- The file on disk is not swept up with the row: deleteUser does not unlink,
-  -- so a deleted user leaves an orphan under /data/evidence/user_image. That is
-  -- the upload path's to fix, alongside the type, size and retrieval defects
-  -- #46's notes park with #35.
+  -- so a deleted user leaves an orphan under /data/evidence/user_image, still
+  -- served. The database cannot reach a filesystem, so this half belongs to the
+  -- upload path, with the type-check and retrieval-auth defects: #47.
   --
   -- No index. user_id is the leftmost column of the primary key, which is the
   -- case 0001's index rule exempts.
