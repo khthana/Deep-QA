@@ -648,6 +648,12 @@ test('evidence is soft-deleted, keeps its file metadata and survives its uploade
     },
   ]);
 
+  // Evidence is the record an accreditation review reads, so the Activity it
+  // belongs to cannot be deleted out from under it. The inherited deleteActivity
+  // issues a bare DELETE and would raise this; refusing the deletion in the
+  // application, and asking for the evidence to be removed first, is #32's.
+  assert.equal(await errorCode(`DELETE FROM activities WHERE id = $1`, [id]), '23503');
+
   await pool.query(`DELETE FROM users WHERE user_id = $1`, [ids.user]);
   const orphaned = await pool.query(
     `SELECT uploaded_by, file_name FROM activity_evidence WHERE evidence_id = $1`,
@@ -657,7 +663,7 @@ test('evidence is soft-deleted, keeps its file metadata and survives its uploade
   assert.equal(orphaned.rows[0].file_name, 'midterm.pdf');
 });
 
-test('deleting an Activity takes everything hanging off it, in one statement', async () => {
+test('deleting an Activity takes its CLO mapping and its marks with it', async () => {
   const ids = await section('actdel');
   const id = await activity(ids);
 
@@ -670,25 +676,18 @@ test('deleting an Activity takes everything hanging off it, in one statement', a
     `INSERT INTO activity_scores (student_id, activity_id, clo_id, score) VALUES ($1, $2, $3, 7)`,
     [ids.student, id, ids.clo],
   );
-  await pool.query(
-    `INSERT INTO activity_evidence (section_id, activity_id, file_name, file_path)
-     VALUES ($1, $2, 'report.pdf', '/uploads/report.pdf')`,
-    [ids.section, id],
-  );
 
-  // deleteActivity issues exactly this, with no cleanup before it, so all three
-  // children have to go together. A RESTRICT on any one of them - evidence was
-  // the one that had it - turns the endpoint into a 500 the moment an Activity
-  // has been marked or has a file against it.
+  // Neither row means anything once the Activity is gone: a weight against an
+  // Activity nobody can name, and a mark out of a full mark nobody can look up.
+  // Evidence is the one child that does not go this way - see the test above.
   await pool.query(`DELETE FROM activities WHERE id = $1`, [id]);
 
   const { rows } = await pool.query(
     `SELECT (SELECT count(*) FROM activity_clo_mapping WHERE activity_id = $1)::int AS mappings,
-            (SELECT count(*) FROM activity_scores     WHERE activity_id = $1)::int AS scores,
-            (SELECT count(*) FROM activity_evidence   WHERE activity_id = $1)::int AS evidence`,
+            (SELECT count(*) FROM activity_scores     WHERE activity_id = $1)::int AS scores`,
     [id],
   );
-  assert.deepEqual(rows, [{ mappings: 0, scores: 0, evidence: 0 }]);
+  assert.deepEqual(rows, [{ mappings: 0, scores: 0 }]);
 });
 
 test('the log holds on to the student it is about', async () => {

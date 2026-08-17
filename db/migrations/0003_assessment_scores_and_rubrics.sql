@@ -31,18 +31,20 @@
 -- Deletion follows 0001's rule and its exception. Anything that could be
 -- referred to later is RESTRICT, because the application soft-deletes; the
 -- exception is a row with no meaning of its own once its parent is gone, which
--- CASCADEs. Five columns are of that kind: student_group_member.group_id, and
--- activity_clo_mapping.activity_id, activity_scores.activity_id,
--- activity_evidence.activity_id and rubric_details.rubric_id. Authorship and
--- upload columns SET NULL, so deleting whoever uploaded a file does not delete
--- the file.
+-- CASCADEs. Four columns are of that kind: student_group_member.group_id, and
+-- activity_clo_mapping.activity_id, activity_scores.activity_id and
+-- rubric_details.rubric_id. Authorship and upload columns SET NULL, so deleting
+-- whoever uploaded a file does not delete the file.
 --
--- The three hanging off an Activity are CASCADE together because deleteActivity
--- issues a bare DELETE FROM activities WHERE id = $1 with no cleanup before it,
--- so a RESTRICT on any one of them turns that endpoint into a 500 the moment an
--- Activity has been marked or has evidence against it. Cascading the evidence
--- row leaves the file on disk: nothing in the inherited code deletes an uploaded
--- file either, and a blob with no row is the recoverable half of the two.
+-- activity_evidence.activity_id is the one hanging off an Activity that does not
+-- join them. Evidence is what an accreditation review is shown, so it is exactly
+-- the row that is referred to later, and it takes the rule's main clause rather
+-- than its exception. That is a deliberate divergence from the inherited
+-- deleteActivity, which issues a bare DELETE FROM activities WHERE id = $1 with
+-- no cleanup before it and would now raise 23503 against an Activity that has a
+-- file against it. Refusing that deletion, and asking for the evidence to be
+-- removed first, belongs to the screen that deletes Activities - see #32, whose
+-- acceptance criteria carry it.
 
 -- Enumerated vocabularies here are CHECK constraints rather than enum types,
 -- which is what docs/02 §6.2, §6.4 and §3.5 give them as. 0002 used enum types
@@ -268,7 +270,7 @@ CREATE TABLE activity_scores (
 CREATE TABLE activity_evidence (
   evidence_id    integer     GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   section_id     integer     NOT NULL REFERENCES course_sections (section_id) ON DELETE RESTRICT,
-  activity_id    integer     NOT NULL REFERENCES activities (id) ON DELETE CASCADE,
+  activity_id    integer     NOT NULL REFERENCES activities (id) ON DELETE RESTRICT,
   evidence_type  varchar(50),
   description    text,
   file_name      text        NOT NULL,
