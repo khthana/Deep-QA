@@ -91,46 +91,15 @@ test('reset and migrate build the schema from nothing', async (t) => {
 
   const { applied } = await migrate({ schema });
 
-  assert.deepEqual(applied, [
-    '0001_identity_and_organisation.sql',
-    '0002_offerings_and_learning_outcomes.sql',
-  ]);
+  // Only that this file's own migration ran, and ran second. The full list
+  // grows with every ticket and is asserted once, in the newest test file.
+  assert.equal(applied[1], '0002_offerings_and_learning_outcomes.sql');
 });
 
-test('every foreign key has the type and width of the column it points at', async () => {
-  // The one place introspection earns its keep. A mismatched width is not
-  // something either side's DDL states - it is the disagreement between two
-  // lines in two files - and PostgreSQL creates varchar(8) -> varchar(20)
-  // without a word, then fails much later on a value that fits one and not the
-  // other. docs/02 gets this wrong five times over (§9 item 2, plus
-  // course_sections_teacher.user_id, course_syllabus.created_by,
-  // subject_plo_mapping.subject_id and clo_course_cycle_cloplan.subject_id), so
-  // it is exactly the error most likely to be copied in.
-  const { rows } = await pool.query(`
-    SELECT ch.relname  AS child_table,
-           ac.attname  AS child_column,
-           format_type(ac.atttypid, ac.atttypmod) AS child_type,
-           pa.relname  AS parent_table,
-           ap.attname  AS parent_column,
-           format_type(ap.atttypid, ap.atttypmod) AS parent_type
-      FROM pg_constraint c
-      JOIN pg_class ch ON ch.oid = c.conrelid
-      JOIN pg_class pa ON pa.oid = c.confrelid
-      JOIN unnest(c.conkey, c.confkey) AS k(child_attnum, parent_attnum) ON true
-      JOIN pg_attribute ac ON ac.attrelid = c.conrelid AND ac.attnum = k.child_attnum
-      JOIN pg_attribute ap ON ap.attrelid = c.confrelid AND ap.attnum = k.parent_attnum
-     WHERE c.contype = 'f'
-       AND ch.relnamespace = current_schema()::regnamespace
-  `);
-
-  const mismatched = rows
-    .filter((r) => r.child_type !== r.parent_type)
-    .map((r) => `${r.child_table}.${r.child_column} ${r.child_type} -> ${r.parent_table}.${r.parent_column} ${r.parent_type}`);
-
-  assert.deepEqual(mismatched, []);
-  // Guards against the query silently matching nothing and passing.
-  assert.ok(rows.length > 20, `expected the schema's foreign keys, found ${rows.length}`);
-});
+// The foreign-key type and width check that used to live here has moved to the
+// newest migration's test file, alongside the applied-migration list. It reads
+// every foreign key in the schema, so one copy covers this migration's too, and
+// two copies would only ever drift.
 
 test('an offering may only open a subject its programme teaches', async () => {
   const ids = await baseFixtures(pool, 'noprogsub');
