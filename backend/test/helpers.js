@@ -14,6 +14,7 @@
  */
 
 const { migrate } = require('../../db/migrate');
+const { seed } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
 const { dropSchema } = require('../../db/reset');
 const { testSchema } = require('../../db/test/helpers');
@@ -34,10 +35,18 @@ const { createApp } = require('../app');
  *
  * The label says which file the schema belongs to, so one left behind by a run
  * that died mid-test can be identified rather than guessed at.
+ *
+ * `withSeed` fills the fresh schema with the acceptance dataset before the app
+ * is built. It is opt-in rather than the default because most scenarios are
+ * better built from test/fixtures - a few rows a test can name - and because
+ * seeding costs a couple of seconds of bcrypt per file. Sign-in is the case
+ * that needs it: docs/06 forbids stubbing authentication, so a test signs in
+ * as one of the eleven named accounts, which have to be there.
  */
-async function startApi(label) {
+async function startApi(label, { withSeed = false } = {}) {
   const schema = testSchema(`api_${label}`);
   await migrate({ schema });
+  if (withSeed) await seed({ schema });
 
   const pool = createPool({ schema });
   const app = createApp({ pool });

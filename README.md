@@ -4,11 +4,11 @@ Curriculum and learning-outcomes management for the Faculty of Engineering, KMIT
 its graduates to learn, how each subject teaches and assesses that, and how far each student actually got — as
 evidence for TABEE accreditation.
 
-**Status: the database is built and seeded, and the backend has a skeleton.** Alongside them sits the student
+**Status: the database is built and seeded, and the backend signs people in.** Alongside them sits the student
 implementation exactly as delivered, and the design work planning its replacement. All four migrations are written,
-one command fills them with the acceptance dataset, and `backend/` serves one route — a health check — over a test
-harness the screen tickets build on. No screen exists yet: sign-in, ticket
-[#8](https://github.com/khthana/Deep-QA/issues/8), is the next piece of work.
+one command fills them with the acceptance dataset, and `backend/` serves a health check and the sign-in routes of
+ticket [#8](https://github.com/khthana/Deep-QA/issues/8) over a test harness the screen tickets build on. No frontend
+screen exists yet.
 
 ## Layout
 
@@ -188,6 +188,30 @@ copied — a second copy of the runner would be a copy that can drift from the s
 
 `npm start` binds a port; nothing else in the tree does. `app.js` builds the application and returns it, `server.js`
 is the only caller that starts it listening — which is what lets the whole suite run in-process.
+
+### Signing in
+
+`SECRET_KEY` must be set before anything can sign in — it signs the session — and `cp .env.example .env` leaves it
+blank. Generate one with `openssl rand -base64 32`. The Google credentials are genuinely optional: leave them blank
+and the two Google routes answer 503 while password sign-in works as normal.
+
+| Route | What it does |
+|---|---|
+| `POST /api/auth/login` | `{ email, password }`. Answers with the account, its highest-priority role, and every role it holds. |
+| `POST /api/auth/logout` | Clears the session. Needs one. |
+| `GET /api/auth/google-login` · `GET /api/auth/google/callback` | The Google round trip, when it is configured. |
+
+A successful sign-in sets a 30-minute JWT in an HttpOnly cookie named `token`, renewed by any request made in its
+last ten minutes, and appends `LOGIN`, `GOOGLE_LOGIN` or `LOGOUT` to `user_log`. The token carries the user id and
+nothing else, so that the authorisation lookup ticket #9 adds can read grants from the database per request, per
+[ADR-0002](./docs/adr/), rather than trusting a copy that a revoked grant cannot reach. That lookup is not here yet:
+what this ticket delivers is identity — who the caller is — and nothing that decides what they may do.
+
+Who may use which way in: the `@kmitl.ac.th` rule applies to Google sign-in only, because an external assessor —
+`U_NONKMITL` above — legitimately signs in with a password from outside the university. Password sign-in is open to
+the central administrator and external assessors everywhere, and to **every role when `NODE_ENV` is not
+`production`**, which is what lets an acceptance pass work through all eleven seeded accounts without a Google
+project.
 
 ```bash
 npm test                  # from backend/

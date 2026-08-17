@@ -14,15 +14,21 @@
  * different pool - no environment variable mutated at test time, and no code
  * path that only tests take.
  *
- * Deliberately absent for now: sessions, passport, CORS and the static
- * evidence directory. Each belongs to the ticket that first needs it - #8 for
- * sign-in and the session cookie, #10 for the browser that will need an origin
- * allowed, #35 and #47 for evidence served from disk - and carrying them here
- * would mean shipping SESSION_SECRET handling that nothing yet exercises.
+ * Deliberately absent for now: CORS and the static evidence directory. Each
+ * belongs to the ticket that first needs it - #10 for the browser that will
+ * need an origin allowed, #35 and #47 for evidence served from disk.
+ *
+ * There is no express-session either, and there will not be one: #8's session
+ * is a signed JWT in an HttpOnly cookie, which needs a cookie parser and no
+ * store. Passport is mounted by the auth router rather than here, because the
+ * Google strategy is the only thing that uses it and it is registered only
+ * when the OAuth credentials are configured.
  */
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
 
+const { authRoutes } = require('./routes/auth');
 const { healthRoutes } = require('./routes/health');
 
 function createApp({ pool }) {
@@ -32,8 +38,10 @@ function createApp({ pool }) {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
 
   app.use('/api', healthRoutes(pool));
+  app.use('/api', authRoutes(pool));
 
   // Express' own fallback answers with HTML, which a client that asked for
   // JSON cannot read: it gets a parse error where it expected a status.
