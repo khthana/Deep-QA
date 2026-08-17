@@ -84,8 +84,40 @@ Then bring the gitignored material across **by hand**, over a channel that is no
 | `DEEP-QA-BACKEND/.env` · `DEEP-QA-FRONTEND/.env` | Live credentials, and this repository is public. [`.env.example`](./.env.example) documents every variable. Use a password manager or a USB stick — not email or chat. |
 | `DEEP-QA-BACKEND/uploads/` | Around 200 assessment evidence files uploaded through the running system. This is student work: treat it as personal data, and never commit it. Not needed for the rebuild. |
 
-Once ticket [#2](https://github.com/khthana/Deep-QA/issues/2) lands, this section gains the commands that bring the
-database up and seed it.
+## The database
+
+The rebuild's database is a PostgreSQL 16 container plus numbered SQL migrations under [`db/`](./db). From nothing:
+
+```bash
+cp .env.example .env      # one .env at the repository root; it is gitignored
+cd db
+npm install
+npm run db:up             # PostgreSQL 16 on the port named by DB_PORT
+npm run migrate           # applies every pending migration, in order
+```
+
+`db:up` publishes **5433**, not 5432 — a PostgreSQL installed directly on the machine commonly holds 5432, and from the
+client's side the two are indistinguishable. Change `DB_PORT` if that does not suit; it is both the published port and
+the port the pool dials.
+
+`DB_USER`, `DB_PASS` and `DB_NAME` are what the container is *created* with. Changing them later has no effect until
+the volume is destroyed. The example values are local-only and deliberately uninteresting; nothing here shares
+credentials with the deployed system.
+
+| Command | What it does |
+|---|---|
+| `npm run db:up` | Starts the container. Data lives in the named volume `deep-core-pgdata`. |
+| `npm run db:down` | Stops it. **The volume survives** — the data is still there on the next `db:up`. |
+| `npm run db:down -- -v` | Stops it *and destroys the volume*. The only way to change the database credentials. |
+| `npm run migrate` | Applies pending migrations in filename order. Safe to run twice; the second run applies nothing. |
+| `npm run reset` | Drops the schema and recreates it empty. `migrate` afterwards replays the whole history. |
+| `npm test` | Runs the runner's tests against the same container, each in a throwaway schema named after the test and the process, dropped when it finishes. |
+
+Migrations never name the schema: `DB_SCHEMA` is set on the connection's search path, so a query naming a bare table
+resolves in the right place and pointing the tests at their own schema is a configuration change rather than a code
+change. Seeding arrives with ticket [#6](https://github.com/khthana/Deep-QA/issues/6); today the schema is empty by
+design — ticket [#2](https://github.com/khthana/Deep-QA/issues/2) built the runner, and ticket
+[#3](https://github.com/khthana/Deep-QA/issues/3) writes the first tables.
 
 ## Provenance
 

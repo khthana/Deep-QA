@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: deep-core-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:?set DB_USER in the repository-root .env}
+      POSTGRES_PASSWORD: ${DB_PASS:?set DB_PASS in the repository-root .env}
+      POSTGRES_DB: ${DB_NAME:?set DB_NAME in the repository-root .env}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      # Named, so `docker compose down` keeps the data and only
+      # `docker compose down -v` throws it away.
+      - deep-core-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  deep-core-pgdata:

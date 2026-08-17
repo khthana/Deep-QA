@@ -1,0 +1,19 @@
+{
+  "name": "deep-core-db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DEEP-Core database: local PostgreSQL, numbered SQL migrations and the runner that applies them.",
+  "type": "commonjs",
+  "scripts": {
+    "db:up": "docker compose --env-file ../.env up -d --wait",
+    "db:down": "docker compose --env-file ../.env down",
+    "db:logs": "docker compose --env-file ../.env logs -f postgres",
+    "migrate": "node migrate.js",
+    "reset": "node reset.js",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "pg": "^8.13.1"
+  }
+}
