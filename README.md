@@ -4,10 +4,11 @@ Curriculum and learning-outcomes management for the Faculty of Engineering, KMIT
 its graduates to learn, how each subject teaches and assesses that, and how far each student actually got — as
 evidence for TABEE accreditation.
 
-**Status: the database is built and seeded, and the backend signs people in.** Alongside them sits the student
-implementation exactly as delivered, and the design work planning its replacement. All four migrations are written,
-one command fills them with the acceptance dataset, and `backend/` serves a health check and the sign-in routes of
-ticket [#8](https://github.com/khthana/Deep-QA/issues/8) over a test harness the screen tickets build on. No frontend
+**Status: the database is built and seeded, and the backend signs people in and knows what they may do.** Alongside
+them sits the student implementation exactly as delivered, and the design work planning its replacement. All four
+migrations are written, one command fills them with the acceptance dataset, and `backend/` serves a health check,
+the sign-in routes of ticket [#8](https://github.com/khthana/Deep-QA/issues/8) and the authorisation layer of
+[#9](https://github.com/khthana/Deep-QA/issues/9) over a test harness the screen tickets build on. No frontend
 screen exists yet.
 
 ## Layout
@@ -203,15 +204,39 @@ and the two Google routes answer 503 while password sign-in works as normal.
 
 A successful sign-in sets a 30-minute JWT in an HttpOnly cookie named `token`, renewed by any request made in its
 last ten minutes, and appends `LOGIN`, `GOOGLE_LOGIN` or `LOGOUT` to `user_log`. The token carries the user id and
-nothing else, so that the authorisation lookup ticket #9 adds can read grants from the database per request, per
-[ADR-0002](./docs/adr/), rather than trusting a copy that a revoked grant cannot reach. That lookup is not here yet:
-what this ticket delivers is identity — who the caller is — and nothing that decides what they may do.
+nothing else, so that the authorisation lookup reads grants from the database per request, per
+[ADR-0002](./docs/adr/), rather than trusting a copy that a revoked grant cannot reach.
 
 Who may use which way in: the `@kmitl.ac.th` rule applies to Google sign-in only, because an external assessor —
 `U_NONKMITL` above — legitimately signs in with a password from outside the university. Password sign-in is open to
 the central administrator and external assessors everywhere, and to **every role when `NODE_ENV` is not
 `production`**, which is what lets an acceptance pass work through all eleven seeded accounts without a Google
 project.
+
+### What the caller may do
+
+Sign-in and the health check are the whole of the public surface. Everything mounted after them in `backend/app.js`
+is behind `requireSession` and `attachRoles`, so a route added later is guarded by construction rather than by
+someone remembering: an anonymous request to anything else is a 401, not a 404 telling it which paths exist.
+
+`attachRoles` puts the caller's active grants on `req.auth`, read from the database on **every** request. That is
+what makes revoking a grant bite on the caller's very next request without them signing in again, and it is why the
+cookie carries no roles. On top of it, a route declares what it needs:
+
+| Guard | What it asks |
+|---|---|
+| `requireRole('DEPT_ADMIN', …)` | Is this account one of the kinds of account this endpoint is for? |
+| `requireScope(pool, (req) => req.params.programId)` | Does a grant it holds reach the record being asked for? |
+
+A grant reaches a record when its scope is the record's own or one the record sits inside — the faculty
+administrator reaches every programme under the faculty, the department administrator the programmes under the
+department, and neither reaches sideways. Nothing reads a role or a scope out of a request body or query string;
+`requireScope` is handed the *record's* identifier and resolves its scope against the database.
+
+The central administrator's global grant passes the scope guard everywhere but is not a master key: their scope is
+deliberately narrow — user accounts and permission grants, no curriculum data — and what keeps them out is
+curriculum routes not listing the role. Both refusals are a bare `403` with one message that names no role, no
+table, no identifier and no other user.
 
 ```bash
 npm test                  # from backend/

@@ -1126,6 +1126,13 @@ module.exports = {
   ACTIVITIES,
   COHORTS,
   MAX_GROUP_SIZE,
+  // The organisation, exported because #9's scope tests are about it: which
+  // faculty a department hangs off and which department a programme hangs off
+  // is what decides who reaches what, and a test that spelled the codes out
+  // again would be asserting against its own copy.
+  FACULTY,
+  DEPARTMENTS,
+  PROGRAMS,
   SUBJECT,
   PROGRAM,
   CURRENT_YEAR,

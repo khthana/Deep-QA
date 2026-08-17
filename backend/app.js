@@ -28,6 +28,8 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 
+const { attachRoles } = require('./auth/authorise');
+const { requireSession } = require('./auth/session');
 const { authRoutes } = require('./routes/auth');
 const { healthRoutes } = require('./routes/health');
 
@@ -40,8 +42,16 @@ function createApp({ pool }) {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
+  // Everything mounted above this line answers an anonymous caller; everything
+  // below it does not. Health is the one endpoint that has to answer before
+  // anyone has signed in - a load balancer holds no cookie - and sign-in
+  // cannot require having signed in. That is the whole of the public surface,
+  // and #9's sixth criterion is true of every route added after this line by
+  // construction rather than by anyone remembering to guard it.
   app.use('/api', healthRoutes(pool));
   app.use('/api', authRoutes(pool));
+
+  app.use('/api', requireSession, attachRoles(pool));
 
   // Express' own fallback answers with HTML, which a client that asked for
   // JSON cannot read: it gets a parse error where it expected a status.

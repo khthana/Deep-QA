@@ -23,15 +23,13 @@
 const { after, before, test } = require('node:test');
 const assert = require('node:assert/strict');
 
-const express = require('express');
-const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
 
 const { PASSWORD, byAlias } = require('../../db/seed');
 const { resolveGoogleAccount } = require('../auth/accounts');
 const { COOKIE_NAME, LIFETIME_SECONDS, requireSession } = require('../auth/session');
-const { startApi } = require('./helpers');
+const { startApi, guardedApp } = require('./helpers');
 
 /**
  * One seeded schema for the whole file. Seeding costs a bcrypt hash and a few
@@ -73,16 +71,11 @@ const claimsOf = (cookie) => {
 /**
  * The smallest application `requireSession` can be mounted on. Renewal cannot
  * be read off any of this ticket's own routes - `/auth/logout` is the only one
- * behind the middleware, and it clears the cookie on the way out - and the
- * routes that will exercise it in earnest arrive with #9. This is the real
- * middleware over real HTTP; only the handler behind it is a stand-in.
+ * behind the middleware, and it clears the cookie on the way out. This is the
+ * real middleware over real HTTP; only the handler behind it is a stand-in, and
+ * the same stand-in serves #9's guards in authorise.test.js.
  */
-const guarded = () => {
-  const app = express();
-  app.use(cookieParser());
-  app.get('/guarded', requireSession, (req, res) => res.json({ userId: req.session.userId }));
-  return app;
-};
+const guarded = () => guardedApp(requireSession);
 
 const sessionOf = (userId, seconds) =>
   `${COOKIE_NAME}=${jwt.sign({ user_id: userId }, process.env.SECRET_KEY, { expiresIn: seconds })}`;

@@ -23,6 +23,7 @@ const {
   resolvePasswordAccount,
   profileOf,
 } = require('../auth/accounts');
+const { REFUSALS } = require('../auth/refusals');
 const { issueSession, clearSession, requireSession } = require('../auth/session');
 
 /**
@@ -77,7 +78,7 @@ function authRoutes(pool) {
   }
 
   const googleUnavailable = (res) =>
-    res.status(503).json({ message: 'ยังไม่ได้ตั้งค่าการเข้าสู่ระบบด้วย Google บนเซิร์ฟเวอร์นี้' });
+    res.status(503).json({ message: REFUSALS.googleUnavailable });
 
   router.get('/auth/google-login', (req, res, next) => {
     if (!googleConfigured()) return googleUnavailable(res);

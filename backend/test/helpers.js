@@ -13,6 +13,9 @@
  * dependency runs one way only: backend reads db, never the reverse.
  */
 
+const express = require('express');
+const cookieParser = require('cookie-parser');
+
 const { migrate } = require('../../db/migrate');
 const { seed } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
@@ -63,4 +66,35 @@ async function startApi(label, { withSeed = false } = {}) {
   };
 }
 
-module.exports = { startApi };
+/**
+ * A minimal application carrying nothing but the middleware under test.
+ *
+ * The guards #9 delivers have no routes to sit in front of yet - the endpoints
+ * they will protect belong to the tickets that build them - so the way to
+ * exercise one over real HTTP is to give it a route of its own. Two paths, the
+ * second naming a target, because a scope guard needs a record to be asked
+ * about; the handler echoes back what the middleware put on the request, so a
+ * test can assert both that the call was allowed and what it was allowed as.
+ *
+ * The stand-in is the only thing here that a shipped route would not do. It
+ * stubs no authentication: a test still signs in against the real application
+ * and sends the cookie it was given.
+ */
+function guardedApp(...middleware) {
+  const app = express();
+  app.use(cookieParser());
+
+  const answer = (req, res) =>
+    res.json({
+      userId: req.session?.userId ?? null,
+      roles: req.auth?.roles?.map((grant) => grant.role_id) ?? null,
+      scopes: req.auth?.roles?.map((grant) => grant.scope_id) ?? null,
+    });
+
+  app.get('/guarded', ...middleware, answer);
+  app.get('/guarded/:target', ...middleware, answer);
+
+  return app;
+}
+
+module.exports = { startApi, guardedApp };

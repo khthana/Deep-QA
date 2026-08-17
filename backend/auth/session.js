@@ -18,6 +18,8 @@
 
 const jwt = require('jsonwebtoken');
 
+const { REFUSALS } = require('./refusals');
+
 const COOKIE_NAME = 'token';
 const LIFETIME_SECONDS = 30 * 60;
 
@@ -90,7 +92,7 @@ function clearSession(res) {
 function requireSession(req, res, next) {
   const token = req.cookies?.[COOKIE_NAME];
   if (!token) {
-    return res.status(401).json({ message: 'ไม่พบการเข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่' });
+    return res.status(401).json({ message: REFUSALS.noSession });
   }
 
   let claims;
@@ -103,9 +105,7 @@ function requireSession(req, res, next) {
     // across a renewal - into a signed-out browser. Clearing is what
     // /auth/logout is for.
     const expired = error.name === 'TokenExpiredError';
-    return res.status(401).json({
-      message: expired ? 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่' : 'การเข้าสู่ระบบไม่ถูกต้อง',
-    });
+    return res.status(401).json({ message: expired ? REFUSALS.expired : REFUSALS.invalidSession });
   }
 
   const remaining = claims.exp - Math.floor(Date.now() / 1000);

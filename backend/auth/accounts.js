@@ -22,6 +22,8 @@
 
 const bcrypt = require('bcrypt');
 
+const { REFUSALS } = require('./refusals');
+
 const KMITL_DOMAIN = '@kmitl.ac.th';
 
 /**
@@ -39,16 +41,6 @@ const PASSWORD_ROLES = new Set(['FULL_ADMIN', 'EXT_ASSESSOR']);
  * what a real comparison costs.
  */
 const ABSENT_PASSWORD = '$2b$10$5reNSYeYldlOdEXXhDM5GOB/lqhlAHfa6Rar1m2Nn1EEPW8x8AIui';
-
-const REFUSALS = {
-  domain: 'กรุณาใช้เมล @kmitl.ac.th ในการเข้าใช้งาน',
-  unknown: 'ไม่พบข้อมูลผู้ใช้งานในระบบ กรุณาติดต่อเจ้าหน้าที่เพื่อลงทะเบียน',
-  noRole: 'บัญชีนี้ยังไม่ได้รับสิทธิ์การใช้งาน กรุณาติดต่อเจ้าหน้าที่เพื่อกำหนดบทบาท',
-  inactive: 'บัญชีนี้ถูกระงับการใช้งาน',
-  unverified: 'บัญชีนี้ยังไม่ได้ผ่านการยืนยันตัวตน',
-  credentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-  passwordNotAllowed: 'บัญชีนี้ต้องเข้าสู่ระบบด้วยบัญชี Google ของ KMITL',
-};
 
 const refuse = (status, reason) => ({ ok: false, status, reason, message: REFUSALS[reason] });
 
@@ -176,7 +168,6 @@ const profileOf = (user) => ({
 module.exports = {
   KMITL_DOMAIN,
   PASSWORD_ROLES,
-  REFUSALS,
   findByEmail,
   allRoles,
   recordActivity,

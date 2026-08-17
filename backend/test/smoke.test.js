@@ -61,8 +61,13 @@ test('the seam', async (t) => {
 
   // A JSON API that answers an unknown path with Express' HTML default hands a
   // client expecting JSON a parse error instead of a status it can act on.
+  //
+  // The path is outside /api on purpose. Since #9 an unknown path under /api
+  // meets the session guard first and an anonymous caller is told 401 rather
+  // than which paths exist; that a signed-in caller still gets this same 404 is
+  // asserted in authorise.test.js, where there is an account to sign in as.
   await t.test('an unknown path is refused as JSON', async () => {
-    const response = await request(api.app).get('/api/no-such-thing');
+    const response = await request(api.app).get('/no-such-thing');
 
     assert.equal(response.status, 404);
     assert.match(response.headers['content-type'], /application\/json/);
