@@ -18,7 +18,7 @@
  * as this system publishes it, not a detail of one route file.
  */
 
-const { coveredScopes } = require('./authorise');
+const { GLOBAL_SCOPE, coveredScopes } = require('./authorise');
 
 /**
  * Who may manage accounts at all - #11's eighth criterion reads "an
@@ -134,6 +134,20 @@ function administration(pool) {
     return rows[0] ?? null;
   };
 
+  /** Whether a scope identifier names something that exists and is live. */
+  const known = async (scopeId) => {
+    if (scopeId === GLOBAL_SCOPE) return true;
+    const { rows } = await pool.query(
+      `SELECT 1 FROM faculty WHERE faculty_id = $1 AND is_active
+        UNION ALL
+       SELECT 1 FROM departments WHERE department_id = $1 AND is_active
+        UNION ALL
+       SELECT 1 FROM programs WHERE program_id = $1 AND is_active`,
+      [scopeId],
+    );
+    return rows.length > 0;
+  };
+
   /**
    * Whether this administrator may hand out this grant.
    *
@@ -152,11 +166,17 @@ function administration(pool) {
     );
     if (!rows[0]) return 'roleNotAssignable';
     if (rows[0].priority < priority) return 'roleNotAssignable';
+    if (!scopeId) return 'scopeUnknown';
     // A global grant is the Central Admin's own, and is handed out by them
     // alone: `coveredScopes` answers null for it, which no scoped administrator
-    // ever gets back.
-    if (scopes === null) return null;
-    if (!scopeId || !scopes.includes(scopeId)) return 'scopeNotYours';
+    // ever gets back. Their reach is unbounded, but it is not unchecked -
+    // `scope_id` is deliberately not a foreign key (CONTEXT.md), so a mistyped
+    // one would otherwise write a live grant that `scopeChain` resolves to
+    // nothing and that refuses the grantee everywhere. The account would hold a
+    // role and gain no access, which is #12's second criterion failing while
+    // answering 201.
+    if (scopes === null) return (await known(scopeId)) ? null : 'scopeUnknown';
+    if (!scopes.includes(scopeId)) return 'scopeNotYours';
     return null;
   };
 

@@ -293,6 +293,28 @@ test('a grant that is not an escalation but is still wrong', async (t) => {
     assert.equal(response.body.message, REFUSALS.roleNotAssignable);
   });
 
+  await t.test('a scope identifier that names nothing, from the Central Admin', async () => {
+    // The one caller whose reach is unbounded is the one whose typing nothing
+    // else catches: `scope_id` is not a foreign key, so without this the grant
+    // is written, answers 201, and resolves to no access at all.
+    const admin = await signInAs('U_ADMIN');
+    const response = await grant(admin, 'U_TEACH', {
+      role_id: 'TEACHER',
+      scope_id: '05O1',
+    });
+    assert.equal(response.status, 403);
+    assert.equal(response.body.message, REFUSALS.scopeUnknown);
+  });
+
+  await t.test('and the Central Admin still reaches a real one', async () => {
+    const admin = await signInAs('U_ADMIN');
+    const response = await grant(admin, 'U_TEACH', {
+      role_id: 'TEACHER',
+      scope_id: PROGRAM_THAI,
+    });
+    assert.equal(response.status, 201);
+  });
+
   await t.test('a body with no role at all', async () => {
     const response = await grant(cookie, 'U_TEACH', { scope_id: DEPT_COMPUTER });
     assert.equal(response.status, 400);
@@ -310,39 +332,6 @@ test('a grant that is not an escalation but is still wrong', async (t) => {
     const response = await grantsOf(dept, 'U_DEPT2');
     assert.equal(response.status, 404);
     assert.equal(response.body.message, REFUSALS.userNotFound);
-  });
-});
-
-// --- the pairing #10 deferred to the ticket that could produce it -----------
-
-test('a password role and a Google role cannot sit on one account', async (t) => {
-  const cookie = await signInAs('U_ADMIN');
-
-  await t.test('not by adding a Google role to the Central Admin', async () => {
-    const response = await grant(cookie, 'U_ADMIN', {
-      role_id: 'TEACHER',
-      scope_id: DEPT_COMPUTER,
-    });
-    assert.equal(response.status, 403);
-    assert.equal(response.body.message, REFUSALS.roleNotCombinable);
-  });
-
-  await t.test('and not by adding the Central Admin to a teacher', async () => {
-    const response = await grant(cookie, 'U_TEACH', {
-      role_id: 'FULL_ADMIN',
-      scope_id: 'FULL_ADMIN',
-    });
-    assert.equal(response.status, 403);
-    assert.equal(response.body.message, REFUSALS.roleNotCombinable);
-  });
-
-  await t.test('but an assessor grant is junior to everything and may be added', async () => {
-    const response = await grant(cookie, 'U_TEACH', {
-      role_id: 'EXT_ASSESSOR',
-      scope_id: PROGRAM_THAI,
-    });
-    assert.equal(response.status, 201, response.body.message);
-    await revoke(cookie, 'U_TEACH', 'EXT_ASSESSOR', PROGRAM_THAI);
   });
 });
 

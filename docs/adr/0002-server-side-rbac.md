@@ -131,3 +131,12 @@ Two things #12 adds that are worth stating here rather than only in the route:
 - **A revoke is `is_active = false`.** `allRoles` filters on it and `attachRoles` re-reads the grants on every request,
   so the access is gone on the grantee's next one without anything reaching into their session. The row stays, because
   it is what records who granted it and when.
+- **An unbounded reach is not an unchecked one.** `scope_id` is deliberately not a foreign key, so the one caller whose
+  `coveredScopes` is `null` is also the one caller whose scope nothing else validates. `assignable` therefore checks the
+  identifier against the three scope tables before it lets a global reach through. A mistyped scope would otherwise write
+  a live grant that `scopeChain` resolves to nothing: a role held, no access anywhere, and a `201` saying it worked.
+
+The pairing of a password sign-in role with a Google one is *not* refused here, though `routes/me.js` asks for it.
+Refusing it at the grant would forbid a `FULL_ADMIN` from holding any second role, which is #12's fourth criterion
+inverted. The gate belongs on `PUT /api/me/acting-role` — the switch is where a password session reaches a grant it did
+not sign in under — and that is [#53](https://github.com/khthana/Deep-QA/issues/53).

@@ -57,5 +57,3 @@ export default function GrantPicker({ grantable, value, onChange, disabled }) {
     </>
   )
 }
-
-export { scopeLabel }

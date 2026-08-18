@@ -41,9 +41,10 @@ const REFUSALS = {
   // both things the caller learns nothing from being told.
   forbidden: 'บัญชีนี้ไม่มีสิทธิ์ใช้งานส่วนนี้',
 
-  // The shell - #10. These three do name what went wrong, and may: all three
-  // are about the caller's own account and their own choices, so there is
-  // nobody else's business to leak. A role picker that answered "no" without
+  // The shell - #10, and #12's revoke. These three do name what went wrong,
+  // and may: they are about a choice the caller made - their own acting role,
+  // their own password, or a grant they just asked to undo and could already
+  // see - so there is nobody else's business to leak. A role picker that answered "no" without
   // saying which of the two things was wrong would be unusable.
   roleNotHeld: 'บัญชีนี้ไม่ได้รับบทบาทที่เลือก',
   wrongPassword: 'รหัสผ่านเดิมไม่ถูกต้อง',
@@ -64,13 +65,13 @@ const REFUSALS = {
   // Google. An account of one of those created without a password can sign in
   // by neither path, which is the state #11's second criterion rules out.
   passwordRequired: 'บทบาทนี้ต้องกำหนดรหัสผ่านตอนสร้างบัญชี',
+  // A scope identifier that names nothing - #12. Not a leak: the caller was
+  // told about their own typing, and the three scope tables are what
+  // `/users/grantable` already hands them.
+  scopeUnknown: 'ขอบเขตที่เลือกไม่มีอยู่ในระบบ',
+
   scopeNotYours: 'ไม่สามารถจัดการบัญชีนอกขอบเขตที่รับผิดชอบได้',
   roleNotAssignable: 'ไม่สามารถกำหนดบทบาทนี้ได้',
-  // Granting roles after the account exists - #12. Password sign-in is gated
-  // on the account's most senior role, and switching hats happens after that
-  // gate, so an account whose most senior role signs in with a password must
-  // not also hold one that signs in with Google. See routes/grants.js.
-  roleNotCombinable: 'บทบาทนี้ใช้ร่วมกับบทบาทเดิมของบัญชีนี้ไม่ได้',
   importEmpty: 'ไม่พบข้อมูลในไฟล์ที่นำเข้า',
   importRejected: 'ไฟล์นำเข้ามีข้อผิดพลาด ระบบไม่ได้บันทึกรายการใด',
 

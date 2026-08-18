@@ -29,36 +29,17 @@
 
 const express = require('express');
 
-const { PASSWORD_ROLES, recordActivity } = require('../auth/accounts');
+const { recordActivity } = require('../auth/accounts');
 const { ADMIN_ROLES, administration } = require('../auth/administration');
 const { GLOBAL_SCOPE, requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 
 /** What a grant is, as this file reads it out. */
-const HELD = `SELECT ur.role_id, r.role_name, r.priority, ur.scope_id,
+const HELD = `SELECT ur.role_id, r.role_name, ur.scope_id,
                      ur.assigned_by, ur.assigned_at
                 FROM user_roles ur JOIN roles r ON r.role_id = ur.role_id
                WHERE ur.user_id = $1 AND ur.is_active AND r.is_active
                ORDER BY r.priority, ur.scope_id`;
-
-/**
- * Whether a set of roles may sit on one account together.
- *
- * #10 left this note in me.js and named the ticket that would answer it:
- * password sign-in is gated on the account's *most senior* role being an
- * administrator or an external assessor, and switching happens after that
- * gate. So an account whose most senior role is one of those, and which also
- * holds a role the sign-in rule directs to Google, can reach the Google-only
- * role with a password. The gate is not wrong; the pairing is. #11 could not
- * produce it - one account, one grant - and this is the first route that can,
- * so this is where it is refused.
- *
- * `roles` arrives ordered by priority, so the head is the most senior.
- */
-const pairingRefused = (roles) =>
-  roles.length > 1 &&
-  PASSWORD_ROLES.has(roles[0].role_id) &&
-  roles.some((role) => !PASSWORD_ROLES.has(role.role_id));
 
 function grantRoutes(pool) {
   const router = express.Router();
@@ -141,16 +122,6 @@ function grantRoutes(pool) {
 
       const refusal = await assignable(req, roleId, scopeId);
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
-
-      const existing = await heldBy(target.user_id);
-      const proposed = existing.filter((one) => one.role_id !== roleId);
-      const { rows: role } = await pool.query(
-        `SELECT role_id, priority FROM roles WHERE role_id = $1`, [roleId]);
-      proposed.push(role[0]);
-      proposed.sort((a, b) => a.priority - b.priority);
-      if (pairingRefused(proposed)) {
-        return res.status(403).json({ message: REFUSALS.roleNotCombinable });
-      }
 
       // The triple is the primary key and a revoke leaves the row in place, so
       // granting again is a revival: the same row, switched back on and
