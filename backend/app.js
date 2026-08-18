@@ -39,7 +39,7 @@ const { attachRoles } = require('./auth/authorise');
 const { REFUSALS } = require('./auth/refusals');
 const { frontendUrl } = require('./config');
 const { requireSession } = require('./auth/session');
-const { activityRoutes } = require('./routes/activity');
+const { historyRoutes } = require('./routes/history');
 const { authRoutes } = require('./routes/auth');
 const { grantRoutes } = require('./routes/grants');
 const { healthRoutes } = require('./routes/health');
@@ -77,7 +77,7 @@ function createApp({ pool }) {
   // Before the user routes: #12's `/users/grantable` would otherwise be read
   // as an account identifier by `/users/:userId` and answered 404.
   app.use('/api', grantRoutes(pool));
-  app.use('/api', activityRoutes(pool));
+  app.use('/api', historyRoutes(pool));
   app.use('/api', userRoutes(pool));
 
   // Express' own fallback answers with HTML, which a client that asked for

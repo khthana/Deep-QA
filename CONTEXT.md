@@ -116,6 +116,13 @@ so a teacher acting as a teacher is refused what their administrator grant would
 in the session cookie as a **pointer**, re-checked against the grants read from the database on every request, so a
 grant revoked mid-session stops being honoured at once rather than at the next sign-in. See ADR-0002.
 
+**Activity log entry** (ประวัติการใช้งาน):
+One line in `user_log`: an account, what it did, and when. Written where the action happens — signing in and out, and
+every change to an account or a grant — and read back per account, newest first, by an administrator who reaches that
+account. Deliberately keyless: a log line has no natural key, so ADR-0001's tiers do not apply to it.
+_Avoid_: activity — an **Activity** is a piece of assessed work within a Section and is a different thing entirely;
+say activity log entry, or history, for this one.
+
 **Scope** (ขอบเขตสิทธิ์):
 The faculty, department or program a role grant is confined to. A grant may never exceed the granter's own scope.
 A grant that is confined to nothing — a full administrator's — carries the literal `FULL_ADMIN` in place of a code,

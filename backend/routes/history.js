@@ -24,10 +24,16 @@
  * right.
  *
  * What is *not* here: a filter by activity, and any writing. The ticket asks
- * for a reader. The nine activity codes are written where the actions happen,
+ * for a reader. The eleven activity codes are written where the actions happen,
  * which is the only place that knows one happened; a route recording that
  * somebody read a screen would be a decision about audit policy, and the log
  * holds no such rows today (see docs/acceptance/13).
+ *
+ * The route, this module and the screen are all named *history* and never
+ * *activity*, because CONTEXT.md already binds **Activity** to a piece of
+ * assessed work within a Section. The column keeps its inherited name -
+ * renaming it is a migration, not a ticket - so `activity` appears below as a
+ * field and nowhere as a concept. The glossary entry is **Activity log entry**.
  */
 
 const express = require('express');
@@ -42,7 +48,7 @@ const MAX_PAGE_SIZE = 100;
 /** What an entry is, as this file reads it out. */
 const ENTRY = 'id, user_id, activity, time_stamp';
 
-function activityRoutes(pool) {
+function historyRoutes(pool) {
   const router = express.Router();
   const { reachable } = administration(pool);
 
@@ -54,7 +60,7 @@ function activityRoutes(pool) {
    * screen's job: the server has no business guessing which clock the reader
    * is on, and an instant is the one form that cannot be misread as another.
    */
-  router.get('/users/:userId/activity', requireRole(...ADMIN_ROLES), async (req, res, next) => {
+  router.get('/users/:userId/history', requireRole(...ADMIN_ROLES), async (req, res, next) => {
     try {
       const target = await reachable(req, req.params.userId);
       if (!target) return res.status(404).json({ message: REFUSALS.userNotFound });
@@ -97,4 +103,4 @@ function activityRoutes(pool) {
   return router;
 }
 
-module.exports = { activityRoutes };
+module.exports = { historyRoutes };

@@ -35,7 +35,7 @@ const { startApi } = require('./helpers');
 
 let api;
 before(async () => {
-  api = await startApi('activity', { withSeed: true });
+  api = await startApi('history', { withSeed: true });
 });
 after(() => api.close());
 
@@ -53,7 +53,7 @@ const signOut = (cookie) => request(api.app).post('/api/auth/logout').set('Cooki
 
 const historyOf = (cookie, alias, query = '') =>
   request(api.app)
-    .get(`/api/users/${account(alias).id}/activity${query}`)
+    .get(`/api/users/${account(alias).id}/history${query}`)
     .set('Cookie', cookie);
 
 // --- the first, second and fifth criteria ------------------------------------
@@ -181,7 +181,7 @@ test('an administrator reads history only within their own scope', async (t) => 
   await t.test('an account that does not exist is refused the same way', async () => {
     const admin = await signInAs('U_ADMIN');
     const response = await request(api.app)
-      .get('/api/users/U_NOBODY/activity')
+      .get('/api/users/U_NOBODY/history')
       .set('Cookie', admin);
     assert.equal(response.status, 404);
     assert.equal(response.body.message, REFUSALS.userNotFound);
@@ -194,7 +194,7 @@ test('an administrator reads history only within their own scope', async (t) => 
   });
 
   await t.test('and an anonymous caller may not read at all', async () => {
-    const response = await request(api.app).get(`/api/users/${account('U_TEACH').id}/activity`);
+    const response = await request(api.app).get(`/api/users/${account('U_TEACH').id}/history`);
     assert.equal(response.status, 401);
   });
 });

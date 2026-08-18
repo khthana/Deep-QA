@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import ActivityPanel from '../components/users/ActivityPanel'
+import HistoryPanel from '../components/users/HistoryPanel'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import GrantsPanel from '../components/users/GrantsPanel'
 import ImportPanel from '../components/users/ImportPanel'
@@ -158,7 +158,7 @@ export default function Users() {
             #13, and the same condition for the same reason: a history is what
             an account has done, and an account being added has done nothing.
           */}
-          {editing.user_id && <ActivityPanel user={editing} onError={report} />}
+          {editing.user_id && <HistoryPanel user={editing} onError={report} />}
         </>
       ) : (
         <>

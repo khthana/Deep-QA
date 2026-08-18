@@ -58,8 +58,8 @@ export const revokeGrant = (userId, roleId, scopeId) =>
  * the same 404 for an account out of their scope as for one that does not
  * exist (ADR-0002).
  */
-export const listActivity = (userId, params = {}) =>
-  get(`/api/users/${userId}/activity${query(params)}`)
+export const listHistory = (userId, params = {}) =>
+  get(`/api/users/${userId}/history${query(params)}`)
 
 /** The template, as its text, so the screen can hand it to the browser. */
 export const importTemplate = () =>

@@ -35,5 +35,4 @@ export const breadcrumbNameMap = {
   programLevelIndividual: 'ผลการเรียนรู้ระดับหลักสูตรรายบุคคล',
   programLevelCompare: 'เปรียบเทียบผลการเรียนรู้ระดับหลักสูตร',
   programLevelAllStudents: 'ผลลัพธ์การเรียนรู้ระดับหลักสูตร',
-  'user-history': 'ประวัติการใช้งาน',
 }

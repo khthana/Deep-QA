@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
-import { listActivity } from '../../api/users'
+import { listHistory } from '../../api/users'
 
 /**
  * What one account has done — #13.
@@ -26,7 +26,7 @@ import { listActivity } from '../../api/users'
 const PAGE_SIZE = 10
 
 /**
- * The activity codes, as a person reads them.
+ * The codes `user_log.activity` holds, as a person reads them.
  *
  * Written where the actions are: `recordActivity` is called by the sign-in,
  * account, grant and profile routes, and these are the codes they write. An
@@ -34,7 +34,7 @@ const PAGE_SIZE = 10
  * because a new activity nobody added a label for should still be visible in
  * an audit rather than silently absent.
  */
-const ACTIVITY = {
+const ACTIONS = {
   LOGIN: 'เข้าสู่ระบบ',
   GOOGLE_LOGIN: 'เข้าสู่ระบบด้วย Google',
   LOGOUT: 'ออกจากระบบ',
@@ -66,7 +66,7 @@ const happenedAt = value =>
       })
     : '—'
 
-export default function ActivityPanel({ user, onError }) {
+export default function HistoryPanel({ user, onError }) {
   const [page, setPage] = useState(1)
   const [history, setHistory] = useState({ entries: [], total: 0 })
   const [loading, setLoading] = useState(true)
@@ -74,7 +74,7 @@ export default function ActivityPanel({ user, onError }) {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setHistory(await listActivity(user.user_id, { page, per_page: PAGE_SIZE }))
+      setHistory(await listHistory(user.user_id, { page, per_page: PAGE_SIZE }))
     } catch (error) {
       if (!error.expired) onError(error)
     } finally {
@@ -122,7 +122,7 @@ export default function ActivityPanel({ user, onError }) {
               history.entries.map(entry => (
                 <tr key={entry.id}>
                   <td className="px-4 py-2">
-                    {ACTIVITY[entry.activity] ?? entry.activity}
+                    {ACTIONS[entry.activity] ?? entry.activity}
                   </td>
                   <td className="px-4 py-2">{happenedAt(entry.time_stamp)}</td>
                 </tr>
