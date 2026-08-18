@@ -13,6 +13,17 @@ import { del, get, post, put, query } from './client'
 export const listDepartments = (params = {}) =>
   get(`/api/departments${query(params)}`)
 
+/**
+ * One department, read back from the server.
+ *
+ * The editor asks for this rather than reusing the row the list already drew,
+ * so a form opened on a page that has been sitting there edits what is in the
+ * database now - and a department that has gone, or that this grant no longer
+ * reaches, says so instead of saving over it.
+ */
+export const getDepartment = departmentId =>
+  get(`/api/departments/${departmentId}`)
+
 export const createDepartment = draft => post('/api/departments', draft)
 
 export const updateDepartment = (departmentId, draft) =>

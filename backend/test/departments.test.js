@@ -32,8 +32,18 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, FACULTY, DEPARTMENTS } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { IMPORT_COLUMNS } = require('../routes/departments');
 const { startApi } = require('./helpers');
+
+/**
+ * The template's columns, written out here rather than imported from the route.
+ *
+ * A test that compared the served header against the constant the route built
+ * it from would pass whatever that constant said. Naming the three columns
+ * independently is what makes the fifth criterion's "matches what the importer
+ * accepts" an assertion instead of a tautology - and there is deliberately no
+ * `faculty_id` among them, because the server derives it.
+ */
+const COLUMNS = ['department_id', 'department_name_th', 'department_name_en'];
 
 const [DEPT_COMPUTER] = DEPARTMENTS.map((department) => department.id);
 
@@ -81,8 +91,8 @@ const importCsv = (cookie, csv) =>
 /** A CSV whose header is the template's, from rows given as objects. */
 const csvOf = (rows) =>
   [
-    IMPORT_COLUMNS.join(','),
-    ...rows.map((row) => IMPORT_COLUMNS.map((column) => row[column] ?? '').join(',')),
+    COLUMNS.join(','),
+    ...rows.map((row) => COLUMNS.map((column) => row[column] ?? '').join(',')),
   ].join('\r\n');
 
 test('a faculty administrator adds, edits and removes a department', async () => {
@@ -224,10 +234,10 @@ test('the list paginates beyond ten rows', async () => {
   for (const id of made) assert.equal((await remove(cookie, id)).status, 204);
 });
 
-test('the template downloads and matches what the importer accepts', async () => {
-  // The fifth criterion. The header is not compared against a list written out
-  // here - that would only prove this test agrees with itself - but against the
-  // module's own `IMPORT_COLUMNS`, which is the list the import reads rows by.
+test('the template downloads and matches what the importer accepts', async (t) => {
+  t.after(async () => remove(await signInAs('U_FAC'), '07'));
+  // The fifth criterion, in both halves: the header is what this file names,
+  // and the file it hands back is one the importer will take.
   const cookie = await signInAs('U_FAC');
 
   const response = await template(cookie);
@@ -236,7 +246,7 @@ test('the template downloads and matches what the importer accepts', async () =>
   assert.match(response.headers['content-type'], /text\/csv/);
   assert.match(response.headers['content-disposition'], /attachment; filename="departments-template\.csv"/);
   const [header] = response.text.replace(/^﻿/, '').split('\r\n');
-  assert.deepEqual(header.split(','), IMPORT_COLUMNS);
+  assert.deepEqual(header.split(','), COLUMNS);
 
   // And the example row it carries is itself acceptable to the importer, which
   // is the half of "matches" a header comparison cannot reach.
@@ -359,31 +369,37 @@ test('a caller who has not signed in reaches none of it', async () => {
   for (const answer of answers) assert.equal(answer.status, 401);
 });
 
-test('the Central Admin names the faculty, because they belong to none', async () => {
-  // The one caller for whom the faculty cannot be derived from a grant: acting
-  // globally is not acting in a faculty. So it is a field for them, checked
-  // against the table rather than taken on trust, and its absence is refused.
+test('the Central Admin is refused by the server on every endpoint too', async () => {
+  // Not part of the ticket's wording, and that is the point. CONTEXT.md gives
+  // departments to the Faculty Admin as "the only role that may manage
+  // Departments", and the Central Admin "manages user accounts and permission
+  // grants system-wide, and nothing else". ADR-0002 records the mechanism that
+  // keeps it true: curriculum routes do not list `FULL_ADMIN`. So the global
+  // grant, which reaches every account in the university, reaches no department
+  // - and this asserts it on the same seven endpoints as U_DEPT, because a role
+  // left out of a menu is left out of a menu.
   const cookie = await signInAs('U_ADMIN');
 
-  const unnamed = await create(cookie, { department_id: 'C01', department_name_th: 'ไร้คณะ' });
-  assert.equal(unnamed.status, 400);
-  assert.equal(unnamed.body.message, REFUSALS.facultyUnknown);
+  const answers = await Promise.all([
+    list(cookie),
+    read(cookie, DEPT_COMPUTER),
+    create(cookie, { department_id: 'C01', department_name_th: 'ไม่ควรเกิด', faculty_id: FACULTY.id }),
+    edit(cookie, DEPT_COMPUTER, { department_name_th: 'ไม่ควรเกิด' }),
+    remove(cookie, DEPT_COMPUTER),
+    template(cookie),
+    importCsv(cookie, csvOf([{ department_id: 'C02', department_name_th: 'ไม่ควรเกิด' }])),
+  ]);
 
-  const invented = await create(cookie, {
-    department_id: 'C01',
-    department_name_th: 'คณะที่ไม่มี',
-    faculty_id: 'NOPE',
-  });
-  assert.equal(invented.status, 400);
-  assert.equal(invented.body.message, REFUSALS.facultyUnknown);
+  for (const answer of answers) {
+    assert.equal(answer.status, 403, `${answer.request.method} ${answer.request.url}`);
+    assert.equal(answer.body.message, REFUSALS.forbidden);
+  }
 
-  const named = await create(cookie, {
-    department_id: 'C01',
-    department_name_th: 'วิศวกรรมสิ่งแวดล้อม',
-    faculty_id: FACULTY.id,
-  });
-  assert.equal(named.status, 201);
-  assert.equal(named.body.department.faculty_id, FACULTY.id);
-
-  assert.equal((await remove(cookie, 'C01')).status, 204);
+  const admin = await signInAs('U_FAC');
+  assert.equal((await read(admin, 'C01')).status, 404);
+  assert.equal((await read(admin, 'C02')).status, 404);
+  assert.equal(
+    (await read(admin, DEPT_COMPUTER)).body.department.department_name_th,
+    'วิศวกรรมคอมพิวเตอร์',
+  );
 });

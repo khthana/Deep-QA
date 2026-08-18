@@ -7,6 +7,7 @@ import ImportPanel from '../components/ImportPanel'
 import {
   createDepartment,
   deleteDepartment,
+  getDepartment,
   importDepartments,
   importTemplate,
   listDepartments,
@@ -18,7 +19,10 @@ import {
  *
  * The faculty's own structure: which departments it has, what they are called,
  * which are still in use. Reached by the faculty administrator, whose sidebar
- * carries the entry (docs/05 A01), and by the Central Admin.
+ * carries the entry (docs/05 A01), and by nobody else. The Central Admin is
+ * refused on all seven of this screen's calls: CONTEXT.md makes the Faculty
+ * Admin the only role that manages departments, and the Central Admin manages
+ * accounts and grants "and nothing else".
  *
  * A department administrator has no entry for it and, more to the point, is
  * refused by the server on every call this screen makes - the eighth criterion
@@ -68,6 +72,20 @@ export default function Departments() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
+  // Read afresh rather than editing the row the table happens to be holding.
+  const openEditor = async department => {
+    setBusy(true)
+    try {
+      const { department: current } = await getDepartment(department.department_id)
+      setEditing(current)
+    } catch (error) {
+      report(error)
+      await load()
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const save = async draft => {
     setBusy(true)
     try {
@@ -93,9 +111,13 @@ export default function Departments() {
       setRemoving(null)
       setNotice({ error: false, message: 'ลบภาควิชาเรียบร้อยแล้ว' })
       // The last row of the last page having gone, staying on that page shows
-      // an empty table and reads as "there are none".
-      setPage(current => (data.departments.length === 1 ? Math.max(1, current - 1) : current))
-      await load()
+      // an empty table and reads as "there are none". Stepping back is a change
+      // of page and the effect fetches it; calling `load` here as well would
+      // race it with a second request for the page just left, and whichever
+      // answered last would win.
+      const stepBack = page > 1 && data.departments.length === 1
+      if (stepBack) setPage(current => current - 1)
+      else await load()
     } catch (error) {
       // Including the refusal for a department something still points at,
       // which is a real answer and is shown in the server's own words.
@@ -190,7 +212,7 @@ export default function Departments() {
                       <td className="px-4 py-3 text-right">
                         <button
                           type="button"
-                          onClick={() => setEditing(department)}
+                          onClick={() => openEditor(department)}
                           className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
                         >
                           แก้ไข

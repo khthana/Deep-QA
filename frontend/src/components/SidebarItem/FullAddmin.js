@@ -1,7 +1,6 @@
 import {
   HiOutlineUserGroup, // ผู้ใช้งานระบบ
   HiOutlineClock, // ประวัติการใช้งาน
-  HiOutlineBuildingOffice2, // ข้อมูลภาควิชา
 } from 'react-icons/hi2'
 
 export const FULL_ADMIN = [
@@ -11,17 +10,11 @@ export const FULL_ADMIN = [
     path: '/main/users',
     icon: <HiOutlineUserGroup />,
   },
-  // #14 opens the department screen to the Central Admin as well as to the
-  // faculty administrator - `FACULTY_ROLES` on the server is both - and an
-  // endpoint a role may reach with no way to reach it is the worst of the
-  // three states. The faculty is a field on the form for them, because acting
-  // globally is not acting in a faculty.
-  {
-    key: 'ข้อมูลภาควิชา',
-    label: 'ข้อมูลภาควิชา',
-    path: '/main/departments',
-    icon: <HiOutlineBuildingOffice2 />,
-  },
+  // No department entry, and no route either. CONTEXT.md gives departments to
+  // the Faculty Admin as the only role that may manage them; the Central Admin
+  // "manages user accounts and permission grants system-wide, and nothing
+  // else". The server refuses them on all seven of #14's endpoints, so a menu
+  // item would only lead to a screen that answers 403.
   {
     key: 'ประวัติการใช้งาน',
     label: 'ประวัติการใช้งาน',

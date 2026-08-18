@@ -86,7 +86,6 @@ const REFUSALS = {
   invalidDepartment: 'ข้อมูลภาควิชาไม่ครบถ้วนหรือไม่ถูกต้อง',
   departmentInUse: 'ภาควิชานี้มีข้อมูลอื่นอ้างอิงอยู่ จึงลบไม่ได้ หากต้องการเลิกใช้งานให้ปิดการใช้งานแทน',
   facultyNotYours: 'ไม่สามารถจัดการภาควิชานอกคณะที่รับผิดชอบได้',
-  facultyUnknown: 'คณะที่เลือกไม่มีอยู่ในระบบ',
 
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording

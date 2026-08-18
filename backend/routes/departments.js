@@ -42,19 +42,26 @@
 
 const express = require('express');
 
-const { requireRole, coveredScopes, GLOBAL_SCOPE } = require('../auth/authorise');
+const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { importRows, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 
 /**
- * The two roles above a department. `DEPT_ADMIN` is absent on purpose and is
- * the eighth criterion: a department administrator is confined to one
- * department and excludes department records themselves (CONTEXT.md), so they
- * are refused by the server on every route here and not merely left off the
- * menu.
+ * The one role that maintains departments.
+ *
+ * CONTEXT.md names it exactly: the Faculty Admin "owns master data and outcomes
+ * within one Faculty" and is "the only role that may manage Departments".
+ *
+ * The two absences are both deliberate and both are enforced here rather than
+ * in a menu. `DEPT_ADMIN` is the eighth criterion - a department administrator
+ * is confined to one department "excluding Department records themselves", so
+ * every route refuses them. `FULL_ADMIN` is absent because the Central Admin
+ * "manages user accounts and permission grants system-wide, and nothing else",
+ * and ADR-0002 says how that is kept true: curriculum routes do not list
+ * `FULL_ADMIN` in `requireRole`. This is a curriculum route.
  */
-const FACULTY_ROLES = ['FULL_ADMIN', 'FACULTY_ADMIN'];
+const MAINTAINERS = ['FACULTY_ADMIN'];
 
 /** What a department is, as this file reads it out. */
 const RETURNED = 'department_id, department_name_th, department_name_en, faculty_id, is_active';
@@ -118,26 +125,14 @@ function departmentRoutes(pool) {
    * identifier *is* the answer - so a `faculty_id` in the body is either the
    * same one, in which case it added nothing, or a different one, in which case
    * honouring it would let a faculty administrator create departments in
-   * somebody else's faculty by editing a form field. It is refused.
+   * somebody else's faculty by editing a form field. It is refused (ADR-0002).
    *
-   * The Central Admin acts at global scope and belongs to no faculty, so theirs
-   * has to come from the request. That is not a hole in ADR-0002: the rule is
-   * that authority is derived from the database, and the Central Admin's
-   * authority - every faculty - is what makes any answer here allowed.
+   * Because the only role that reaches this file is scoped to a faculty, there
+   * is no request here whose faculty has to come from the body - which is why
+   * neither the form nor the import template has a column for it.
    */
   async function facultyFor(req, given) {
     const wanted = blankToNull(given);
-
-    if (req.auth.acting.scope_id === GLOBAL_SCOPE) {
-      if (!wanted) return { ok: false, reason: 'facultyUnknown' };
-      const { rows } = await pool.query('SELECT faculty_id FROM faculty WHERE faculty_id = $1', [
-        wanted,
-      ]);
-      return rows[0]
-        ? { ok: true, facultyId: rows[0].faculty_id }
-        : { ok: false, reason: 'facultyUnknown' };
-    }
-
     const { rows } = await pool.query('SELECT faculty_id FROM faculty WHERE faculty_id = $1', [
       req.auth.acting.scope_id,
     ]);
@@ -172,7 +167,7 @@ function departmentRoutes(pool) {
    * the total, because a client counting the rows it received cannot work out
    * how many there are.
    */
-  router.get('/departments', requireRole(...FACULTY_ROLES), async (req, res, next) => {
+  router.get('/departments', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const reach = await coveredScopes(pool, req.auth.acting.scope_id);
       const { page, perPage, offset } = pageOf(req);
@@ -211,7 +206,7 @@ function departmentRoutes(pool) {
    * are built from it. The faculty is not among them, because the server
    * derives it.
    */
-  router.get('/departments/import-template', requireRole(...FACULTY_ROLES), (req, res) =>
+  router.get('/departments/import-template', requireRole(...MAINTAINERS), (req, res) =>
     sendTemplate(res, 'departments-template.csv', IMPORT_COLUMNS, {
       department_id: '07',
       department_name_th: 'วิศวกรรมเคมี',
@@ -226,7 +221,7 @@ function departmentRoutes(pool) {
    * is what is about departments: how a row is read, that the identifier must
    * not repeat within the file, and what writing one means.
    */
-  router.post('/departments/import', requireRole(...FACULTY_ROLES), async (req, res, next) => {
+  router.post('/departments/import', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const faculty = await facultyFor(req, null);
       if (!faculty.ok) return res.status(403).json({ message: REFUSALS[faculty.reason] });
@@ -275,7 +270,7 @@ function departmentRoutes(pool) {
   });
 
   /** One department, for the edit form. */
-  router.get('/departments/:departmentId', requireRole(...FACULTY_ROLES), async (req, res, next) => {
+  router.get('/departments/:departmentId', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const department = await reachable(req, req.params.departmentId);
       if (!department) return res.status(404).json({ message: REFUSALS.departmentNotFound });
@@ -286,16 +281,13 @@ function departmentRoutes(pool) {
   });
 
   /** Adding one — the first criterion. */
-  router.post('/departments', requireRole(...FACULTY_ROLES), async (req, res, next) => {
+  router.post('/departments', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const draft = readDepartment(req.body ?? {});
       if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
 
       const faculty = await facultyFor(req, req.body?.faculty_id);
-      if (!faculty.ok) {
-        const status = faculty.reason === 'facultyNotYours' ? 403 : 400;
-        return res.status(status).json({ message: REFUSALS[faculty.reason] });
-      }
+      if (!faculty.ok) return res.status(403).json({ message: REFUSALS[faculty.reason] });
 
       const { rows } = await pool.query(
         `INSERT INTO departments
@@ -327,7 +319,7 @@ function departmentRoutes(pool) {
    * account, programme, subject and student that points at it - which is a
    * migration, not an edit on a form.
    */
-  router.put('/departments/:departmentId', requireRole(...FACULTY_ROLES), async (req, res, next) => {
+  router.put('/departments/:departmentId', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const existing = await reachable(req, req.params.departmentId);
       if (!existing) return res.status(404).json({ message: REFUSALS.departmentNotFound });
@@ -373,7 +365,7 @@ function departmentRoutes(pool) {
    */
   router.delete(
     '/departments/:departmentId',
-    requireRole(...FACULTY_ROLES),
+    requireRole(...MAINTAINERS),
     async (req, res, next) => {
       try {
         const existing = await reachable(req, req.params.departmentId);
@@ -395,4 +387,4 @@ function departmentRoutes(pool) {
   return router;
 }
 
-module.exports = { departmentRoutes, IMPORT_COLUMNS };
+module.exports = { departmentRoutes };
