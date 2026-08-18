@@ -5,6 +5,7 @@ import MainPage from '../pages/Mainpage'
 import SelectApp from '../pages/SelectApp'
 import NotFoundPage from '../pages/PageNotFound'
 import UserNotFound from '../pages/UserNotFound'
+import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
@@ -97,7 +98,7 @@ export default function AppRoutes() {
             breadcrumb reads it as one - ผู้ใช้งานระบบ / ประวัติการใช้งาน -
             and docs/05 A13 gives the path in that shape. */}
         <Route path="users/user-history" element={<UserHistory />} />
-        <Route path="departments" element={<NotBuiltYet ticket="#14" />} />
+        <Route path="departments" element={<Departments />} />
         <Route path="programs" element={<NotBuiltYet ticket="#15" />} />
         <Route path="subjects" element={<NotBuiltYet ticket="#16" />} />
         <Route path="rubrics" element={<NotBuiltYet ticket="#21" />} />

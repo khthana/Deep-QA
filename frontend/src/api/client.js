@@ -96,6 +96,47 @@ async function api(
   return response.json().catch(() => ({}))
 }
 
+/**
+ * A query string from the parameters that were actually given.
+ *
+ * Blank, null and undefined are dropped rather than sent empty, because the
+ * routes read an absent filter as "no restriction" and `?q=` would otherwise
+ * be a filter on the empty string.
+ */
+export const query = params => {
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      search.set(key, value)
+    }
+  }
+  const text = search.toString()
+  return text ? `?${text}` : ''
+}
+
+/**
+ * Hands the browser a file to save.
+ *
+ * The blob is built from the text the API answered rather than by pointing a
+ * link at the endpoint, because the endpoint needs the session cookie and a
+ * plain `<a href>` download is a request this application's client does not
+ * make - it would arrive without credentials and be refused. The object URL is
+ * revoked afterwards; without it the file stays in memory for the life of the
+ * tab.
+ */
+export function saveAsFile(text, filename) {
+  const url = URL.createObjectURL(
+    new Blob([text], { type: 'text/csv;charset=utf-8' })
+  )
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 export const get = (path, options) => api(path, options)
 export const post = (path, body, options) =>
   api(path, { ...options, method: 'POST', body })

@@ -45,9 +45,7 @@ const express = require('express');
 const { ADMIN_ROLES, administration } = require('../auth/administration');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-
-const PAGE_SIZE = 10;
-const MAX_PAGE_SIZE = 100;
+const { pageOf } = require('../lib/paging');
 
 /** What an entry is, as this file reads it out - actor, action, object, when. */
 const ENTRY = 'id, user_id, activity, target_kind, target_id, time_stamp';
@@ -69,11 +67,7 @@ function historyRoutes(pool) {
       const target = await reachable(req, req.params.userId);
       if (!target) return res.status(404).json({ message: REFUSALS.userNotFound });
 
-      const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
-      const perPage = Math.min(
-        MAX_PAGE_SIZE,
-        Math.max(1, Number.parseInt(req.query.per_page, 10) || PAGE_SIZE),
-      );
+      const { page, perPage, offset } = pageOf(req);
 
       const counted = await pool.query(
         'SELECT count(*)::int AS total FROM user_log WHERE user_id = $1',
@@ -90,7 +84,7 @@ function historyRoutes(pool) {
       const { rows } = await pool.query(
         `SELECT ${ENTRY} FROM user_log WHERE user_id = $1
           ORDER BY time_stamp DESC, id DESC LIMIT $2 OFFSET $3`,
-        [target.user_id, perPage, (page - 1) * perPage],
+        [target.user_id, perPage, offset],
       );
 
       return res.status(200).json({

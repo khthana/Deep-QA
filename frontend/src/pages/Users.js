@@ -3,12 +3,14 @@ import { useCallback, useEffect, useState } from 'react'
 import HistoryPanel from '../components/users/HistoryPanel'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import GrantsPanel from '../components/users/GrantsPanel'
-import ImportPanel from '../components/users/ImportPanel'
+import ImportPanel from '../components/ImportPanel'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
 import { roleName } from '../components/MapRole'
 import {
   createUser,
+  importTemplate,
+  importUsers,
   listUsers,
   setUserStatus,
   updateUser,
@@ -307,6 +309,11 @@ export default function Users() {
           </div>
 
           <ImportPanel
+            title="นำเข้าผู้ใช้งานจากไฟล์"
+            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
+            templateName="users-template.csv"
+            fetchTemplate={importTemplate}
+            send={importUsers}
             onImported={() => {
               setPage(1)
               load()

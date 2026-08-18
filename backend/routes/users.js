@@ -47,7 +47,8 @@ const bcrypt = require('bcrypt');
 const { PASSWORD_ROLES, onUser, recordActivity } = require('../auth/accounts');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { formatCsv, parseTable } = require('../lib/csv');
+const { importRows, sendTemplate } = require('../lib/importer');
+const { pageOf } = require('../lib/paging');
 const {
   ADMIN_ROLES,
   COLUMNS,
@@ -60,10 +61,6 @@ const {
 
 /** The same cost #8 signs in against and #10 changes a password with. */
 const HASH_ROUNDS = 10;
-
-/** The default page. Ten rows is the number #11's first criterion names. */
-const PAGE_SIZE = 10;
-const MAX_PAGE_SIZE = 100;
 
 /** The template's columns, and the fields the import reads from a row. */
 const IMPORT_COLUMNS = [
@@ -258,11 +255,7 @@ function userRoutes(pool) {
     try {
       const { scopes, priority } = await reachOf(req);
 
-      const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
-      const perPage = Math.min(
-        MAX_PAGE_SIZE,
-        Math.max(1, Number.parseInt(req.query.per_page, 10) || PAGE_SIZE),
-      );
+      const { page, perPage, offset } = pageOf(req);
 
       // Each filter is optional and absent means no restriction, which is why
       // every one is written as `$n IS NULL OR ...` rather than by assembling
@@ -300,7 +293,7 @@ function userRoutes(pool) {
            FROM users u ${where}
           ORDER BY u.email ASC
           LIMIT $6 OFFSET $7`,
-        [...params, perPage, (page - 1) * perPage],
+        [...params, perPage, offset],
       );
 
       return res.status(200).json({
@@ -321,34 +314,27 @@ function userRoutes(pool) {
    * Declared before `/users/:userId` because Express matches in order and the
    * parameter would otherwise swallow the word.
    */
-  router.get('/users/import-template', requireRole(...ADMIN_ROLES), (req, res) => {
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="users-template.csv"');
-    // One example row, because a template of headers alone leaves the person
-    // guessing at the date format - the field they are most likely to get wrong
-    // and the one this system is strictest about.
-    return res.status(200).send(
-      formatCsv(IMPORT_COLUMNS, [
-        {
-          user_id: '66010001',
-          email: 'somchai.ja@kmitl.ac.th',
-          title_th: 'นาย',
-          first_name_th: 'สมชาย',
-          last_name_th: 'ใจดี',
-          title_en: 'Mr.',
-          first_name_en: 'Somchai',
-          last_name_en: 'Jaidee',
-          department_id: '05',
-          program_id: '',
-          role_id: 'TEACHER',
-          scope_id: '05',
-          valid_from: '',
-          valid_until: '',
-          password: '',
-        },
-      ]),
-    );
-  });
+  router.get('/users/import-template', requireRole(...ADMIN_ROLES), (req, res) =>
+    // The example row matters most here for the date format - the field a
+    // person is most likely to get wrong and the one this system is strictest
+    // about.
+    sendTemplate(res, 'users-template.csv', IMPORT_COLUMNS, {
+      user_id: '66010001',
+      email: 'somchai.ja@kmitl.ac.th',
+      title_th: 'นาย',
+      first_name_th: 'สมชาย',
+      last_name_th: 'ใจดี',
+      title_en: 'Mr.',
+      first_name_en: 'Somchai',
+      last_name_en: 'Jaidee',
+      department_id: '05',
+      program_id: '',
+      role_id: 'TEACHER',
+      scope_id: '05',
+      valid_from: '',
+      valid_until: '',
+      password: '',
+    }));
 
   router.get('/users/:userId', requireRole(...ADMIN_ROLES), async (req, res, next) => {
     try {
@@ -501,15 +487,12 @@ function userRoutes(pool) {
   /**
    * The sixth and seventh criteria: every row, or none of them.
    *
-   * The whole file is read, every row validated, and the failures collected
-   * with the line each is on. One failure anywhere means the transaction rolls
-   * back and the answer is the report - so the person fixes their file and
-   * uploads it again, rather than working out which half of it took.
-   *
-   * Validation is not only per row. Two rows claiming the same address are each
-   * individually fine and together are not, and the database would catch that
-   * as a 23505 naming a constraint rather than a line - so duplicates within
-   * the file are found here, where the line numbers are.
+   * All of the mechanism - every row or none, the per-row savepoint, the
+   * duplicates within the file, the report sorted by line - is `lib/importer`
+   * and is shared with every other import screen (#14). What is left here is
+   * the four things that are about accounts and nothing else: what makes a row
+   * readable, which two columns must not repeat, which scopes and grants this
+   * administrator may use, and what writing one row means.
    *
    * The body arrives as `text/csv` and not as a multipart upload. A file input
    * in the browser can read its file and post the text, which is the whole of
@@ -518,101 +501,49 @@ function userRoutes(pool) {
    * after a request that failed.
    */
   router.post('/users/import', requireRole(...ADMIN_ROLES), async (req, res, next) => {
-    const client = await pool.connect();
     try {
-      const text = typeof req.body === 'string' ? req.body : '';
-      const { records } = parseTable(text);
-      if (records.length === 0) {
+      const result = await importRows(pool, req.body, {
+        readRow: (record) => {
+          const draft = readAccount(record);
+          if (!draft.ok) return draft;
+          // `readAccount` reports a missing or unknown role by leaving `role`
+          // null rather than by refusing, because the single-account route
+          // wants the values either way.
+          if (!draft.role) return { ok: false, reason: 'invalidUser' };
+          return { ok: true, draft: { values: draft.values, role: draft.role } };
+        },
+        keys: [
+          { of: (d) => d.values.user_id, message: REFUSALS.duplicateUserId },
+          { of: (d) => d.values.email.toLowerCase(), message: REFUSALS.duplicateEmail },
+        ],
+        verify: async ({ values, role }) => {
+          if (!(await placeAllowed(req, values.department_id, values.program_id))) {
+            return 'scopeNotYours';
+          }
+          return assignable(req, role.role_id, role.scope_id);
+        },
+        insert: async (client, { values, role }) => {
+          const written = await insertAccount(client, values, role, req.auth.userId);
+          return written.ok ? { ok: true, row: written.user } : written;
+        },
+        // One line for the upload rather than one per account. Migration 0006
+        // says why it names no target.
+        onCommit: (client) => recordActivity(client, req.auth.userId, 'IMPORT_USERS'),
+      });
+
+      if (result.empty) {
         return res.status(400).json({ message: REFUSALS.importEmpty, errors: [], created: 0 });
       }
-
-      const errors = [];
-      const drafts = [];
-      const seenIds = new Map();
-      const seenEmails = new Map();
-
-      for (const record of records) {
-        const draft = readAccount(record);
-        if (!draft.ok) {
-          errors.push({ line: record.line, message: REFUSALS[draft.reason] });
-          continue;
-        }
-        const { values, role } = draft;
-        if (!role) {
-          errors.push({ line: record.line, message: REFUSALS.invalidUser });
-          continue;
-        }
-
-        const firstId = seenIds.get(values.user_id);
-        if (firstId) {
-          errors.push({
-            line: record.line,
-            message: `${REFUSALS.duplicateUserId} (ซ้ำกับบรรทัดที่ ${firstId})`,
-          });
-          continue;
-        }
-        const firstEmail = seenEmails.get(values.email.toLowerCase());
-        if (firstEmail) {
-          errors.push({
-            line: record.line,
-            message: `${REFUSALS.duplicateEmail} (ซ้ำกับบรรทัดที่ ${firstEmail})`,
-          });
-          continue;
-        }
-        seenIds.set(values.user_id, record.line);
-        seenEmails.set(values.email.toLowerCase(), record.line);
-
-        if (!(await placeAllowed(req, values.department_id, values.program_id))) {
-          errors.push({ line: record.line, message: REFUSALS.scopeNotYours });
-          continue;
-        }
-        const refusal = await assignable(req, role.role_id, role.scope_id);
-        if (refusal) {
-          errors.push({ line: record.line, message: REFUSALS[refusal] });
-          continue;
-        }
-
-        drafts.push({ line: record.line, values, role });
+      if (!result.ok) {
+        return res
+          .status(400)
+          .json({ message: REFUSALS.importRejected, errors: result.errors, created: 0 });
       }
-
-      await client.query('BEGIN');
-      const created = [];
-      for (const draft of drafts) {
-        // Each row inside a savepoint. A row colliding with one already in the
-        // table poisons the transaction, and without the savepoint the very
-        // next statement fails with 25P02 - so the report would name the first
-        // collision and stop, and a file with three of them would take three
-        // uploads to fix. Rolling back to the savepoint leaves the transaction
-        // writable and the loop free to judge every remaining row.
-        await client.query('SAVEPOINT row');
-        const result = await insertAccount(client, draft.values, draft.role, req.auth.userId);
-        if (result.ok) {
-          await client.query('RELEASE SAVEPOINT row');
-          created.push(result.user);
-        } else {
-          await client.query('ROLLBACK TO SAVEPOINT row');
-          errors.push({ line: draft.line, message: REFUSALS[result.reason] });
-        }
-      }
-
-      if (errors.length > 0) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          message: REFUSALS.importRejected,
-          errors: errors.sort((a, b) => a.line - b.line),
-          created: 0,
-        });
-      }
-
-      await recordActivity(client, req.auth.userId, 'IMPORT_USERS');
-      await client.query('COMMIT');
-
-      return res.status(201).json({ created: created.length, users: created, errors: [] });
+      return res
+        .status(201)
+        .json({ created: result.created.length, users: result.created, errors: [] });
     } catch (error) {
-      await client.query('ROLLBACK').catch(() => {});
       return next(error);
-    } finally {
-      client.release();
     }
   });
 

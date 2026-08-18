@@ -1,12 +1,19 @@
 import { useRef, useState } from 'react'
 
-import ContentMotionDIV from '../ContentMotionDIV'
-import { importTemplate, importUsers, saveAsFile } from '../../api/users'
+import ContentMotionDIV from './ContentMotionDIV'
+import { saveAsFile } from '../api/client'
 
 /**
- * Importing a spreadsheet of accounts — #11's fifth, sixth and seventh
- * criteria, and the pattern every import screen in this system follows:
- * download the template, upload the completed file, read a per-row report.
+ * Importing a spreadsheet — the pattern every import screen in this system
+ * follows: download the template, upload the completed file, read a per-row
+ * report.
+ *
+ * Written for accounts in #11 and made shared in #14, alongside the server's
+ * `lib/importer` and for the same reason: ten screens need this and none of
+ * them needs its own version of it. What differs between them is four strings
+ * and two calls - the heading, the subtitle, the file's name, and the two API
+ * functions that fetch the template and post the file - so those are props and
+ * everything else is here.
  *
  * The report is the part worth getting right. A failed import writes nothing,
  * so what the person needs is not "it did not work" but the line number and the
@@ -17,7 +24,15 @@ import { importTemplate, importUsers, saveAsFile } from '../../api/users'
  * multipart upload and nothing is written to the server's disk, so a request
  * that failed leaves nothing behind to clean up.
  */
-export default function ImportPanel({ onImported, onError }) {
+export default function ImportPanel({
+  title,
+  subtitle,
+  templateName,
+  fetchTemplate,
+  send,
+  onImported,
+  onError,
+}) {
   const [busy, setBusy] = useState(false)
   const [report, setReport] = useState(null)
   const [filename, setFilename] = useState('')
@@ -25,7 +40,7 @@ export default function ImportPanel({ onImported, onError }) {
 
   const download = async () => {
     try {
-      saveAsFile(await importTemplate(), 'users-template.csv')
+      saveAsFile(await fetchTemplate(), templateName)
     } catch (error) {
       onError?.(error)
     }
@@ -38,7 +53,7 @@ export default function ImportPanel({ onImported, onError }) {
     setReport(null)
     setBusy(true)
     try {
-      const result = await importUsers(await file.text())
+      const result = await send(await file.text())
       setReport({ ok: true, created: result.created })
       onImported?.()
     } catch (error) {
@@ -58,13 +73,8 @@ export default function ImportPanel({ onImported, onError }) {
 
   return (
     <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-1 text-lg font-medium text-primary">
-        นำเข้าผู้ใช้งานจากไฟล์
-      </h2>
-      <p className="mb-4 text-sm text-slate-500">
-        ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ
-        หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย
-      </p>
+      <h2 className="mb-1 text-lg font-medium text-primary">{title}</h2>
+      <p className="mb-4 text-sm text-slate-500">{subtitle}</p>
 
       <div className="flex flex-wrap items-center gap-3">
         <button

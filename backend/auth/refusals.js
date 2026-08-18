@@ -75,6 +75,19 @@ const REFUSALS = {
   importEmpty: 'ไม่พบข้อมูลในไฟล์ที่นำเข้า',
   importRejected: 'ไฟล์นำเข้ามีข้อผิดพลาด ระบบไม่ได้บันทึกรายการใด',
 
+  // Departments - #14. `departmentNotFound` is `userNotFound`'s counterpart and
+  // is given for the same two cases: a department that does not exist, and one
+  // that exists in a faculty this administrator does not hold. `departmentInUse`
+  // is the one refusal here that names a consequence rather than a mistake, and
+  // has to: the caller asked to destroy a record that other records depend on,
+  // and the useful thing to tell them is the way round it.
+  departmentNotFound: 'ไม่พบภาควิชาที่ระบุ',
+  duplicateDepartmentId: 'รหัสภาควิชานี้ถูกใช้งานแล้ว',
+  invalidDepartment: 'ข้อมูลภาควิชาไม่ครบถ้วนหรือไม่ถูกต้อง',
+  departmentInUse: 'ภาควิชานี้มีข้อมูลอื่นอ้างอิงอยู่ จึงลบไม่ได้ หากต้องการเลิกใช้งานให้ปิดการใช้งานแทน',
+  facultyNotYours: 'ไม่สามารถจัดการภาควิชานอกคณะที่รับผิดชอบได้',
+  facultyUnknown: 'คณะที่เลือกไม่มีอยู่ในระบบ',
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.

@@ -39,6 +39,7 @@ const { attachRoles } = require('./auth/authorise');
 const { REFUSALS } = require('./auth/refusals');
 const { frontendUrl } = require('./config');
 const { requireSession } = require('./auth/session');
+const { departmentRoutes } = require('./routes/departments');
 const { historyRoutes } = require('./routes/history');
 const { authRoutes } = require('./routes/auth');
 const { grantRoutes } = require('./routes/grants');
@@ -58,7 +59,8 @@ function createApp({ pool }) {
   // a file input can read its file and send the characters, which is the whole
   // of what multipart would have bought here, and this way nothing is written
   // to disk and there is nothing to clean up after a request that failed. See
-  // routes/users.js. The limit is a few thousand accounts' worth.
+  // lib/importer.js, which every import screen shares. The limit is a few
+  // thousand rows' worth.
   app.use(express.text({ type: 'text/csv', limit: '2mb' }));
   app.use(cookieParser());
 
@@ -79,6 +81,7 @@ function createApp({ pool }) {
   app.use('/api', grantRoutes(pool));
   app.use('/api', historyRoutes(pool));
   app.use('/api', userRoutes(pool));
+  app.use('/api', departmentRoutes(pool));
 
   // Express' own fallback answers with HTML, which a client that asked for
   // JSON cannot read: it gets a parse error where it expected a status.
