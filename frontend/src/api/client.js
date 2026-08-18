@@ -14,7 +14,10 @@
  * will be missing from most of them. `onSessionExpired` registers the one
  * listener; a call that expects an anonymous answer - the sign-in page asking
  * who is signed in, before anyone is - passes `anonymous` and is not counted,
- * because nothing has expired yet.
+ * because nothing has expired yet. Such a call still has to distinguish the
+ * two, and does it by the `reason` the guard sends rather than by its wording:
+ * a tab left open past the half hour and then reloaded is an ended session and
+ * gets the dialog, where a first visit is neither.
  *
  * 401 and 403 are kept apart. The inherited utils/session.js treated them as
  * one state — `isSessionExpired` returned true for both — so an idle session
@@ -27,10 +30,16 @@
 const BASE = process.env.REACT_APP_API_URL ?? 'http://localhost:3000'
 
 export class ApiError extends Error {
-  constructor(status, message) {
+  constructor(status, message, reason) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    /**
+     * The server's own word for why, where it sends one. Only the session
+     * guard does today: 'anonymous', 'expired' or 'invalid'. It exists so the
+     * shell can tell those apart without matching on Thai prose.
+     */
+    this.reason = reason
     /** The session ended; the shell shows the sign-in-again dialog. */
     this.expired = status === 401
     /** Signed in, but not allowed this; the shell says so and stays put. */
@@ -66,7 +75,8 @@ async function api(
     if (response.status === 401 && !anonymous) sessionExpiredListener?.()
     throw new ApiError(
       response.status,
-      payload.message ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์'
+      payload.message ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์',
+      payload.reason
     )
   }
   return payload

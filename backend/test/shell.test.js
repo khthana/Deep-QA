@@ -94,6 +94,11 @@ test('the signed-in caller asking who they are', async (t) => {
 
     assert.equal(response.status, 401);
     assert.equal(response.body.message, REFUSALS.noSession);
+    // Never having signed in and having been signed out by the clock are both
+    // 401 with Thai prose in the body, and the shell shows a dialog for the
+    // second and nothing for the first. `reason` is what it tells them apart
+    // by; matching on the wording would break the day someone rewords it.
+    assert.equal(response.body.reason, 'anonymous');
   });
 });
 
@@ -314,6 +319,7 @@ test('an idle session', async (t) => {
 
     assert.equal(response.status, 401);
     assert.equal(response.body.message, REFUSALS.expired);
+    assert.equal(response.body.reason, 'expired');
   });
 
   // 401 and 403 are different states and the shell shows different things for

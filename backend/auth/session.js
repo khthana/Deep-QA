@@ -103,6 +103,13 @@ function clearSession(res) {
  * Puts `req.session = { userId, acting }` on a request carrying a live token,
  * and refuses one that does not.
  *
+ * Every refusal here carries a `reason` beside the words. The shell has to
+ * tell "you never signed in" from "you were signed in and the session ended",
+ * because the first is the sign-in page's ordinary state and the second is
+ * #10's sixth criterion - an explanation rather than an unexplained failure.
+ * The words alone cannot carry that: they are Thai prose, and a machine that
+ * has to match on prose breaks the day someone rewords it.
+ *
  * This is identity only. Ticket #9 layers the authorisation lookup on top -
  * which grants the account holds, and whether one of them covers the scope
  * being asked for - and that lookup reads the database rather than anything
@@ -111,7 +118,7 @@ function clearSession(res) {
 function requireSession(req, res, next) {
   const token = req.cookies?.[COOKIE_NAME];
   if (!token) {
-    return res.status(401).json({ message: REFUSALS.noSession });
+    return res.status(401).json({ message: REFUSALS.noSession, reason: 'anonymous' });
   }
 
   let claims;
@@ -124,7 +131,10 @@ function requireSession(req, res, next) {
     // across a renewal - into a signed-out browser. Clearing is what
     // /auth/logout is for.
     const expired = error.name === 'TokenExpiredError';
-    return res.status(401).json({ message: expired ? REFUSALS.expired : REFUSALS.invalidSession });
+    return res.status(401).json({
+      message: expired ? REFUSALS.expired : REFUSALS.invalidSession,
+      reason: expired ? 'expired' : 'invalid',
+    });
   }
 
   const remaining = claims.exp - Math.floor(Date.now() / 1000);

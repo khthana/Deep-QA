@@ -10,7 +10,8 @@ import { HiOutlineClipboardDocumentCheck } from 'react-icons/hi2'
  * no menu for it at all. Rather than invent a set of screens and let it
  * harden into a requirement, the role gets read-only reach at the one thing
  * accreditation review is for, and the real set is settled by whoever owns
- * the requirement. See the note on #10.
+ * the requirement. Recorded under "สิ่งที่ยังไม่ปิดใน #10" in
+ * docs/acceptance/10-application-shell.md.
  */
 export const EXT_ASSESSOR = [
   {

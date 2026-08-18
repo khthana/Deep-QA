@@ -105,6 +105,17 @@ Owns the Sections they teach: students, Work Groups, CLOs, Activities, scores an
 **External Assessor** (ผู้ประเมินภายนอก, `EXT_ASSESSOR`):
 A time-boxed account for accreditation review.
 
+**Acting grant** (บทบาทที่กำลังใช้งาน):
+The single grant a signed-in account is working as right now, out of however many it holds. One person may be a
+department administrator and also teach; the two reach different records, so "what may this person do" has no answer
+until one of the hats is on. On sign-in the acting grant is the most senior held — lowest `priority` — and the person
+may change it to any other grant they hold.
+
+Every authorisation decision reads the acting grant and none reads the full set: holding a grant is not exercising it,
+so a teacher acting as a teacher is refused what their administrator grant would have allowed. The selection travels
+in the session cookie as a **pointer**, re-checked against the grants read from the database on every request, so a
+grant revoked mid-session stops being honoured at once rather than at the next sign-in. See ADR-0002.
+
 **Scope** (ขอบเขตสิทธิ์):
 The faculty, department or program a role grant is confined to. A grant may never exceed the granter's own scope.
 A grant that is confined to nothing — a full administrator's — carries the literal `FULL_ADMIN` in place of a code,

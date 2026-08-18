@@ -38,7 +38,11 @@ export const AuthProvider = ({ children }) => {
       setState(await get('/api/me', { anonymous: true }))
     } catch (error) {
       // Not signed in is the ordinary state of the sign-in page, and is not
-      // an expiry dialog: there is nothing to have expired yet.
+      // an expiry dialog: there is nothing to have expired yet. A cookie that
+      // has run out is the other thing, and this is the request it arrives on:
+      // a tab left open past the half hour and then reloaded asks this first
+      // and would otherwise be dropped at the sign-in page without a word.
+      if (error.reason === 'expired') setExpired(true)
       setState(null)
     } finally {
       setLoading(false)
