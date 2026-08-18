@@ -44,7 +44,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 
-const { PASSWORD_ROLES, recordActivity } = require('../auth/accounts');
+const { PASSWORD_ROLES, onUser, recordActivity } = require('../auth/accounts');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { formatCsv, parseTable } = require('../lib/csv');
@@ -397,7 +397,7 @@ function userRoutes(pool) {
         await client.query('ROLLBACK');
         return res.status(created.status).json({ message: REFUSALS[created.reason] });
       }
-      await recordActivity(client, req.auth.userId, 'CREATE_USER');
+      await recordActivity(client, req.auth.userId, 'CREATE_USER', onUser(created.user.user_id));
       await client.query('COMMIT');
 
       return res.status(201).json({ user: created.user });
@@ -447,7 +447,7 @@ function userRoutes(pool) {
           values.valid_until,
         ],
       );
-      await recordActivity(pool, req.auth.userId, 'UPDATE_USER');
+      await recordActivity(pool, req.auth.userId, 'UPDATE_USER', onUser(existing.user_id));
       return res.status(200).json({ user: rows[0] });
     } catch (error) {
       const refusal = writeRefusal(error);
@@ -489,7 +489,7 @@ function userRoutes(pool) {
       );
       // Twenty characters is what user_log.activity holds, so the two states
       // share one verb rather than being told apart by a longer word.
-      await recordActivity(pool, req.auth.userId, 'SET_USER_STATUS');
+      await recordActivity(pool, req.auth.userId, 'SET_USER_STATUS', onUser(existing.user_id));
       return res.status(200).json({ user: rows[0] });
     } catch (error) {
       return next(error);

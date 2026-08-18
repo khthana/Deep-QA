@@ -14,6 +14,12 @@ import { listHistory } from '../../api/users'
  * happened, is the filter - so the two entry points cannot disagree about what
  * a history is.
  *
+ * It is a list of what this account *did*, not of what was done to it. A line
+ * written when an administrator edits this account sits in that
+ * administrator's history and names this account in the ทำกับข้อมูล column;
+ * "who edited this person" is therefore a search across every account's log,
+ * which no screen asks yet (migration 0006).
+ *
  * The reach is the server's decision. An administrator who cannot reach the
  * account never gets this far, because the row they would have opened it from
  * was not in their list, and asking for it directly is refused (ADR-0002).
@@ -47,6 +53,27 @@ const ACTIONS = {
   GRANT_ROLE: 'ให้บทบาท',
   REVOKE_ROLE: 'ยกเลิกบทบาท',
 }
+
+/**
+ * The record the line was written about, as a person reads it.
+ *
+ * `target_kind` is the sort of record and `target_id` is its own id, and the
+ * id is shown raw. Resolving it to a name would mean reading a record the
+ * reader may not reach - an administrator reaches the person who acted without
+ * necessarily reaching everything that person touched - so a name here would
+ * be a disclosure the rest of the screens refuse. The roles panel shows
+ * `assigned_by` the same way.
+ *
+ * Blank for the actions whose only object is the actor's own account, which is
+ * what migration 0006 leaves null: signing in and out, switching role,
+ * changing one's own password, and an import, whose object is a whole file.
+ */
+const TARGETS = {
+  USER: 'บัญชีผู้ใช้',
+}
+
+const actedOn = entry =>
+  entry.target_id ? `${TARGETS[entry.target_kind] ?? entry.target_kind} ${entry.target_id}` : '—'
 
 /**
  * When it happened, in Bangkok time.
@@ -100,7 +127,7 @@ export default function HistoryPanel({ user, onError }) {
     <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       <h2 className="mb-1 text-lg font-medium text-primary">ประวัติการใช้งาน</h2>
       <p className="mb-4 text-sm text-gray-500">
-        กิจกรรมของบัญชีนี้ เรียงจากล่าสุด เวลาตามเขตเวลากรุงเทพฯ
+        กิจกรรมที่บัญชีนี้เป็นผู้ลงมือ เรียงจากล่าสุด เวลาตามเขตเวลากรุงเทพฯ
       </p>
 
       <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -108,20 +135,21 @@ export default function HistoryPanel({ user, onError }) {
           <thead className="bg-gray-50 text-gray-600">
             <tr>
               <th className="px-4 py-2">กิจกรรม</th>
+              <th className="px-4 py-2">ทำกับข้อมูล</th>
               <th className="px-4 py-2">เมื่อ</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading && (
               <tr>
-                <td colSpan={2} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={3} className="px-4 py-6 text-center text-slate-500">
                   กำลังโหลด…
                 </td>
               </tr>
             )}
             {!loading && history.entries.length === 0 && (
               <tr>
-                <td colSpan={2} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={3} className="px-4 py-6 text-center text-slate-500">
                   ยังไม่มีประวัติการใช้งานของบัญชีนี้
                 </td>
               </tr>
@@ -132,6 +160,7 @@ export default function HistoryPanel({ user, onError }) {
                   <td className="px-4 py-2">
                     {ACTIONS[entry.activity] ?? entry.activity}
                   </td>
+                  <td className="px-4 py-2 text-slate-600">{actedOn(entry)}</td>
                   <td className="px-4 py-2">{happenedAt(entry.time_stamp)}</td>
                 </tr>
               ))}

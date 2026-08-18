@@ -12,7 +12,7 @@ const { testSchema, dropSchema, baseFixtures, errorCodeOf } = require('./helpers
  * against real PostgreSQL, in a schema this file owns and drops.
  *
  * The assertions are behavioural. The foreign-key type check and the
- * applied-migration list have moved on to 0005's file, as they move to
+ * applied-migration list have moved on to 0006's file, as they move to
  * whichever migration is newest.
  *
  * The statements below come from services/userService.js and

@@ -29,7 +29,7 @@
 
 const express = require('express');
 
-const { recordActivity } = require('../auth/accounts');
+const { onUser, recordActivity } = require('../auth/accounts');
 const { ADMIN_ROLES, administration } = require('../auth/administration');
 const { GLOBAL_SCOPE, requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
@@ -134,7 +134,7 @@ function grantRoutes(pool) {
             SET is_active = true, assigned_by = EXCLUDED.assigned_by, assigned_at = now()`,
         [target.user_id, roleId, scopeId, req.auth.userId],
       );
-      await recordActivity(pool, req.auth.userId, 'GRANT_ROLE');
+      await recordActivity(pool, req.auth.userId, 'GRANT_ROLE', onUser(target.user_id));
 
       return res.status(201).json({ roles: await heldBy(target.user_id) });
     } catch (error) {
@@ -184,7 +184,7 @@ function grantRoutes(pool) {
         );
         if (rowCount === 0) return res.status(404).json({ message: REFUSALS.roleNotHeld });
 
-        await recordActivity(pool, req.auth.userId, 'REVOKE_ROLE');
+        await recordActivity(pool, req.auth.userId, 'REVOKE_ROLE', onUser(target.user_id));
         return res.status(200).json({ roles: await heldBy(target.user_id) });
       } catch (error) {
         return next(error);

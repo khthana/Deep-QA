@@ -9,6 +9,8 @@ Numbered SQL files, applied in filename order by `../migrate.js` and recorded in
 | `0002_offerings_and_learning_outcomes.sql` | Offerings, sections, teaching assignments and the weekly plan; PLOs and their mapping to subjects; CLOs with their measurable behaviours and achievement criteria; the continuous-improvement cycle. |
 | `0003_assessment_scores_and_rubrics.sql` | Section enrolment, work groups and their change history; the weighting scheme and Activities with their CLO links; marks and assessment evidence; rubrics and their criteria. |
 | `0004_user_profile_image.sql` | One profile photo per user — a table the thesis never documented, recovered from the SQL the inherited user service issues. |
+| `0005_external_assessor_validity.sql` | How long an account is good for — the two dates R005 asks for, on `users` and not on the grant. |
+| `0006_user_log_target.sql` | Which record a log line was written about. Not a foreign key: an audit line has to outlive the record it names. |
 
 - `NNNN_short_description.sql`, four digits, zero-padded, no gaps.
 - Never edit a file that has been applied anywhere but a local machine; add

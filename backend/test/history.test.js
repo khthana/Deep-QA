@@ -29,7 +29,7 @@ const assert = require('node:assert/strict');
 
 const request = require('supertest');
 
-const { PASSWORD, ACCOUNTS } = require('../../db/seed');
+const { PASSWORD, ACCOUNTS, DEPARTMENTS } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
 const { startApi } = require('./helpers');
 
@@ -196,5 +196,65 @@ test('an administrator reads history only within their own scope', async (t) => 
   await t.test('and an anonymous caller may not read at all', async () => {
     const response = await request(api.app).get(`/api/users/${account('U_TEACH').id}/history`);
     assert.equal(response.status, 401);
+  });
+});
+
+// --- the record acted on -----------------------------------------------------
+
+test('an entry names the record it was written about', async (t) => {
+  const admin = await signInAs('U_ADMIN');
+  const teacher = account('U_TEACH').id;
+
+  const latest = async (activity) => {
+    // The administrator's own history, because that is where the line lands:
+    // the row belongs to whoever acted, and only the object of the action
+    // moves to the new columns (migration 0006).
+    const response = await historyOf(admin, 'U_ADMIN', '?per_page=100');
+    assert.equal(response.status, 200, response.body.message);
+    return response.body.entries.find((entry) => entry.activity === activity);
+  };
+
+  await t.test('changing an account records which account it was', async () => {
+    const changed = await request(api.app)
+      .put(`/api/users/${teacher}/status`)
+      .set('Cookie', admin)
+      .send({ status: 'active' });
+    assert.equal(changed.status, 200, changed.body.message);
+
+    const entry = await latest('SET_USER_STATUS');
+    assert.ok(entry, 'no SET_USER_STATUS entry was written');
+    assert.equal(entry.target_kind, 'USER');
+    assert.equal(entry.target_id, teacher);
+  });
+
+  await t.test('and so does granting a role', async () => {
+    const granted = await request(api.app)
+      .post(`/api/users/${teacher}/roles`)
+      .set('Cookie', admin)
+      .send({ role_id: 'TEACHER', scope_id: DEPARTMENTS[0].id });
+    assert.equal(granted.status, 201, granted.body.message);
+
+    const entry = await latest('GRANT_ROLE');
+    assert.ok(entry, 'no GRANT_ROLE entry was written');
+    assert.equal(entry.target_kind, 'USER');
+    assert.equal(entry.target_id, teacher);
+  });
+
+  await t.test('signing in names no record, because its object is the signer', async () => {
+    const response = await historyOf(admin, 'U_ADMIN', '?per_page=100');
+    const signIn = response.body.entries.find((entry) => entry.activity === 'LOGIN');
+    assert.ok(signIn, 'no LOGIN entry was written');
+    assert.equal(signIn.target_kind, null);
+    assert.equal(signIn.target_id, null);
+  });
+
+  await t.test("and the line stays in the actor's history, not the subject's", async () => {
+    // The decision the ticket's open item records: `teach01`'s history is what
+    // `teach01` did. Who edited `teach01` is a search by object across every
+    // account's log, and no screen asks that question yet.
+    const response = await historyOf(admin, 'U_TEACH', '?per_page=100');
+    assert.equal(response.status, 200, response.body.message);
+    for (const entry of response.body.entries) assert.equal(entry.user_id, teacher);
+    assert.ok(!response.body.entries.some((entry) => entry.activity === 'SET_USER_STATUS'));
   });
 });

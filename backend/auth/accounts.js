@@ -89,10 +89,27 @@ async function allRoles(pool, userId) {
  * a transaction. Writing the log through the pool from inside a transaction
  * would record work that the enclosing ROLLBACK then undoes, so the caller
  * hands in whichever of the two the entry belongs to.
+ *
+ * `userId` is always the person who *acted*, never the person acted upon, and
+ * `target` is the record they acted on - `{ kind, id }`, or absent for the
+ * actions whose only object is the actor's own account. Migration 0006 says
+ * why the row stays with the actor and why the target is not a foreign key.
  */
-async function recordActivity(db, userId, activity) {
-  await db.query(`INSERT INTO user_log (user_id, activity) VALUES ($1, $2)`, [userId, activity]);
+async function recordActivity(db, userId, activity, target = null) {
+  await db.query(
+    `INSERT INTO user_log (user_id, activity, target_kind, target_id) VALUES ($1, $2, $3, $4)`,
+    [userId, activity, target?.kind ?? null, target?.id ?? null],
+  );
 }
+
+/**
+ * The record an entry was written about, when that record is an account.
+ *
+ * The one kind there is today. It exists so the string `'USER'` is written
+ * once rather than at every call site, and so the next kind - a subject, a CLO
+ * - arrives beside it instead of as another literal somewhere in a route.
+ */
+const onUser = userId => ({ kind: 'USER', id: userId });
 
 /**
  * Whether today falls inside the account's stated window - #11's fourth
@@ -260,6 +277,7 @@ module.exports = {
   withinValidity,
   sessionAdmission,
   recordActivity,
+  onUser,
   resolveGoogleAccount,
   resolvePasswordAccount,
   profileOf,

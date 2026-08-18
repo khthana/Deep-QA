@@ -26,8 +26,12 @@
  * What is *not* here: a filter by activity, and any writing. The ticket asks
  * for a reader. The eleven activity codes are written where the actions happen,
  * which is the only place that knows one happened; a route recording that
- * somebody read a screen would be a decision about audit policy, and the log
- * holds no such rows today (see docs/acceptance/13).
+ * somebody read a screen would be a decision about audit policy, and that
+ * decision was made - reads are not logged (see docs/acceptance/13).
+ *
+ * An entry now also carries the record it was written about, and the entry the
+ * route reads out is still the acting account's: what this person did, not what
+ * was done to them. Migration 0006 says why.
  *
  * The route, this module and the screen are all named *history* and never
  * *activity*, because CONTEXT.md already binds **Activity** to a piece of
@@ -45,8 +49,8 @@ const { REFUSALS } = require('../auth/refusals');
 const PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
 
-/** What an entry is, as this file reads it out. */
-const ENTRY = 'id, user_id, activity, time_stamp';
+/** What an entry is, as this file reads it out - actor, action, object, when. */
+const ENTRY = 'id, user_id, activity, target_kind, target_id, time_stamp';
 
 function historyRoutes(pool) {
   const router = express.Router();
