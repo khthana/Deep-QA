@@ -42,7 +42,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 
-const { recordActivity } = require('../auth/accounts');
+const { PASSWORD_ROLES, recordActivity } = require('../auth/accounts');
 const { coveredScopes, requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { formatCsv, parseTable } = require('../lib/csv');
@@ -60,7 +60,7 @@ const HASH_ROUNDS = 10;
  * sentence about administrators in the plural, and it is answered by admitting
  * them and filtering, not by admitting one of them.
  *
- * The programme committee is deliberately not here. They own a curriculum, not
+ * The programme committee is deliberately not here. They own a programme, not
  * the people in it.
  */
 const ADMIN_ROLES = ['FULL_ADMIN', 'FACULTY_ADMIN', 'DEPT_ADMIN'];
@@ -85,6 +85,7 @@ const IMPORT_COLUMNS = [
   'scope_id',
   'valid_from',
   'valid_until',
+  'password',
 ];
 
 /**
@@ -104,6 +105,17 @@ const COLUMNS = `u.user_id, u.email, u.status, u.is_verified,
                  u.title_en, u.first_name_en, u.last_name_en,
                  u.department_id, u.program_id,
                  u.valid_from::text AS valid_from, u.valid_until::text AS valid_until`;
+
+/**
+ * The same list without the alias, for a RETURNING clause, which names the row
+ * it is writing and so has no table to qualify against.
+ *
+ * Derived rather than typed out a second time: the point of `COLUMNS` is that
+ * a column added to `users` later is not published until somebody says so, and
+ * a hand-copied duplicate is how the write path quietly starts publishing what
+ * the read path does not.
+ */
+const RETURNED = COLUMNS.replace(/\bu\./g, '');
 
 /**
  * The account's own place in the organisation: its programme if it sits in one,
@@ -207,6 +219,15 @@ function readAccount(source, { editing = false } = {}) {
   // role named in an edit body is ignored rather than half-applied.
   const role = editing || !roleId ? null : { role_id: roleId, scope_id: scopeId };
 
+  // The Central Admin and the external assessor sign in with a password;
+  // everybody else is sent to Google, which refuses any address outside
+  // @kmitl.ac.th. So one of those two created without a password has no way in
+  // at all, and an account that cannot sign in is not the account the second
+  // criterion asks for.
+  if (role && PASSWORD_ROLES.has(role.role_id) && !values.password) {
+    return { ok: false, reason: 'passwordRequired' };
+  }
+
   return { ok: true, values, role };
 }
 
@@ -244,11 +265,7 @@ async function insertAccount(client, values, role, actorId) {
                           department_id, program_id, password,
                           valid_from, valid_until, is_verified, status)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, true, 'active')
-    RETURNING user_id, email, status, is_verified,
-              title_th, first_name_th, last_name_th,
-              title_en, first_name_en, last_name_en,
-              department_id, program_id,
-              valid_from::text AS valid_from, valid_until::text AS valid_until`,
+    RETURNING ${RETURNED}`,
       [
         values.user_id,
         values.email,
@@ -278,7 +295,7 @@ async function insertAccount(client, values, role, actorId) {
     if (!refusal) throw error;
     // The failed statement has poisoned the transaction, so the caller cannot
     // go on writing on this client. Every path that reads this rolls back.
-    return { ok: false, reason: refusal.reason };
+    return { ok: false, status: refusal.status, reason: refusal.reason };
   }
 }
 
@@ -458,6 +475,7 @@ function userRoutes(pool) {
           scope_id: '05',
           valid_from: '',
           valid_until: '',
+          password: '',
         },
       ]),
     );
@@ -508,11 +526,9 @@ function userRoutes(pool) {
       const created = await insertAccount(client, values, role, req.auth.userId);
       if (!created.ok) {
         await client.query('ROLLBACK');
-        return res.status(409).json({ message: REFUSALS[created.reason] });
+        return res.status(created.status).json({ message: REFUSALS[created.reason] });
       }
-      await client.query(`INSERT INTO user_log (user_id, activity) VALUES ($1, 'CREATE_USER')`, [
-        req.auth.userId,
-      ]);
+      await recordActivity(client, req.auth.userId, 'CREATE_USER');
       await client.query('COMMIT');
 
       return res.status(201).json({ user: created.user });
@@ -546,11 +562,7 @@ function userRoutes(pool) {
                 valid_from = $11, valid_until = $12,
                 updated_at = now()
           WHERE user_id = $1
-      RETURNING user_id, email, status, is_verified,
-                title_th, first_name_th, last_name_th,
-                title_en, first_name_en, last_name_en,
-                department_id, program_id,
-              valid_from::text AS valid_from, valid_until::text AS valid_until`,
+      RETURNING ${RETURNED}`,
         [
           existing.user_id,
           values.email,
@@ -723,9 +735,7 @@ function userRoutes(pool) {
         });
       }
 
-      await client.query(`INSERT INTO user_log (user_id, activity) VALUES ($1, 'IMPORT_USERS')`, [
-        req.auth.userId,
-      ]);
+      await recordActivity(client, req.auth.userId, 'IMPORT_USERS');
       await client.query('COMMIT');
 
       return res.status(201).json({ created: created.length, users: created, errors: [] });
@@ -740,4 +750,4 @@ function userRoutes(pool) {
   return router;
 }
 
-module.exports = { userRoutes, ADMIN_ROLES, IMPORT_COLUMNS };
+module.exports = { userRoutes, IMPORT_COLUMNS };

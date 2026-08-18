@@ -60,6 +60,10 @@ const REFUSALS = {
   duplicateUserId: 'รหัสผู้ใช้นี้ถูกใช้งานแล้ว',
   invalidUser: 'ข้อมูลบัญชีไม่ครบถ้วนหรือไม่ถูกต้อง',
   invalidValidity: 'ช่วงเวลาใช้งานไม่ถูกต้อง วันสิ้นสุดต้องไม่มาก่อนวันเริ่มต้น',
+  // The roles the sign-in rule sends to the password form rather than to
+  // Google. An account of one of those created without a password can sign in
+  // by neither path, which is the state #11's second criterion rules out.
+  passwordRequired: 'บทบาทนี้ต้องกำหนดรหัสผ่านตอนสร้างบัญชี',
   scopeNotYours: 'ไม่สามารถจัดการบัญชีนอกขอบเขตที่รับผิดชอบได้',
   roleNotAssignable: 'ไม่สามารถกำหนดบทบาทนี้ได้',
   importEmpty: 'ไม่พบข้อมูลในไฟล์ที่นำเข้า',

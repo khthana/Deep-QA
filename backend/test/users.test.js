@@ -75,7 +75,16 @@ const signInWith = (email, password) =>
 const day = (offset) => {
   const date = new Date();
   date.setDate(date.getDate() + offset);
-  return date.toISOString().slice(0, 10);
+  // Bangkok's day, because that is the day the routes compare against. Taking
+  // the host's UTC day instead would make every window here an hour-of-day
+  // lottery: between midnight and seven in the morning local time the two
+  // disagree, and a test that fails only before breakfast is worse than no test.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
 };
 
 // --- the first criterion -----------------------------------------------------
@@ -194,6 +203,26 @@ test('adding an account', async (t) => {
     // And left nothing behind: the account and its grant are one transaction.
     const { rows } = await api.pool.query(`SELECT 1 FROM users WHERE user_id = 'DUPLICATE'`);
     assert.deepEqual(rows, []);
+  });
+
+  await t.test('refuses a department that does not exist as a mistake, not a clash', async () => {
+    // 23503 is a foreign key, not a duplicate. Answering 409 for it tells the
+    // person their identifier is taken when what is wrong is the department
+    // they typed, and they will spend the next five minutes changing the wrong
+    // field.
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await create(admin, {
+      user_id: 'NOWHERE_1',
+      email: 'nowhere@kmitl.ac.th',
+      first_name_th: 'ไม่มี',
+      last_name_th: 'ภาควิชา',
+      department_id: 'ZZ',
+      role: { role_id: 'TEACHER', scope_id: DEPT_COMPUTER },
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, REFUSALS.invalidUser);
   });
 
   await t.test('refuses an account with no grant, which could not sign in', async () => {
@@ -369,6 +398,57 @@ test('an external assessor with a validity period', async (t) => {
     assert.equal(response.body.message, REFUSALS.invalidValidity);
   });
 
+  await t.test('may not be created without a password, having no other way in', async () => {
+    // An external assessor is not a KMITL address, so Google refuses them and
+    // the password form is the only door they have. Created without one they
+    // hold a grant, a window and no way to use either.
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await create(admin, {
+      user_id: 'MUTE_EXT',
+      email: 'muteassessor@tabee-review.org',
+      first_name_en: 'Mute',
+      last_name_en: 'Assessor',
+      program_id: PROGRAM_THAI,
+      valid_from: day(0),
+      valid_until: day(30),
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, REFUSALS.passwordRequired);
+
+    const absent = await signInWith('muteassessor@tabee-review.org', PASSWORD);
+    assert.equal(absent.status, 401);
+  });
+
+  await t.test('signs in on the first morning of a window that opens today', async () => {
+    // The boundary the server used to get wrong: `valid_from` of today, read
+    // against the host's calendar day rather than Bangkok's, turns the
+    // assessor away for the first seven hours of the day it was granted.
+    const admin = await signInAs('U_ADMIN');
+    const email = 'todayassessor@tabee-review.org';
+
+    const created = await create(admin, {
+      user_id: 'TODAY_EXT',
+      email,
+      first_name_en: 'Today',
+      last_name_en: 'Assessor',
+      program_id: PROGRAM_THAI,
+      password: 'deep-core-today',
+      valid_from: day(0),
+      valid_until: day(0),
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+    assert.equal(created.status, 201, created.body.message);
+
+    // Both ends are today, so the window is exactly one day long and the
+    // account works on it - `valid_until` names the last day it works, not the
+    // moment it stops.
+    const response = await signInWith(email, 'deep-core-today');
+    assert.equal(response.status, 200, response.body.message);
+  });
+
   await t.test('leaves an account with no window stated able to sign in', async () => {
     // Every ordinary staff account is this case, and the migration's two
     // nullable columns are what make it true. A default would have put a date
@@ -394,20 +474,22 @@ test('the import template', async (t) => {
     for (const column of IMPORT_COLUMNS) assert.ok(response.text.includes(column), column);
   });
 
-  await t.test('is a file this system can then import', async () => {
-    // The template and the reader are the two halves of the fifth and sixth
-    // criteria, and the failure worth catching is that they drift apart: a
-    // column renamed on one side leaves a template that downloads, uploads,
-    // and reports every row as missing a name.
+  await t.test("is a spreadsheet file, asserted without this system's own reader", async () => {
+    // Read by hand rather than through `parseTable`, because the template is
+    // written by `formatCsv` and handing one module's output to its own
+    // partner asserts only that the pair agree with each other. What has to
+    // hold is the format Excel needs: a byte-order mark, so Thai opens as Thai
+    // and not as mojibake, CRLF line endings, and the columns in the order the
+    // reader names them.
     const admin = await signInAs('U_ADMIN');
     const template = await request(api.app).get('/api/users/import-template').set('Cookie', admin);
 
-    const { parseTable } = require('../lib/csv');
-    const { headers, records } = parseTable(template.text);
-
-    assert.deepEqual(headers, IMPORT_COLUMNS);
-    assert.equal(records.length, 1);
-    assert.equal(records[0].line, 2);
+    const lines = template.text.split('\r\n');
+    assert.equal(lines[0], `\uFEFF${IMPORT_COLUMNS.join(',')}`);
+    // One example row, and the field it exists to demonstrate.
+    assert.equal(lines[1].split(',').length, IMPORT_COLUMNS.length);
+    assert.equal(lines[1].split(',')[IMPORT_COLUMNS.indexOf('role_id')], 'TEACHER');
+    assert.equal(lines.at(-1), '');
   });
 });
 

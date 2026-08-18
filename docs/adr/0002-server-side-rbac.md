@@ -85,3 +85,31 @@ What a later ticket can violate by accident:
   deliberately, not by reaching back into `req.auth.roles`.
 - **`req.auth.roles` is not an authorisation input.** It exists so the shell can draw the picker. Any guard reading it
   reintroduces exactly the problem #10 removed.
+
+## Amended by #11 — a grant made *for somebody else*
+
+[#11](https://github.com/khthana/Deep-QA/issues/11) adds the third kind of body that carries `role_id` and `scope_id`:
+`POST /api/users`, and every row of `POST /api/users/import`. #10's paragraph covered a body naming *the caller's own*
+grant; this one names a grant the caller is about to hand to a stranger, which is a larger thing to allow and needs
+saying plainly.
+
+It is allowed because none of it is read as an assertion. What the body says is a **request**, and the answer comes
+from the database and from `req.auth.acting` alone:
+
+- **Scope.** `coveredScopes(pool, req.auth.acting.scope_id)` walks the organisation downwards from the acting grant's
+  own scope and returns the set of scopes it reaches. Both the account's place (`COALESCE(program_id, department_id)`)
+  and the scope the new grant names must be in that set, or the answer is `403 scopeNotYours`.
+- **Seniority.** `roles.priority` is read from the database, never from the request. An administrator cannot grant a
+  role more senior than the one they are acting as, cannot see an account holding one, and cannot deactivate it.
+- **Who did it.** `user_roles.assigned_by` is `req.auth.userId`, from the token, never from the body.
+
+So the body chooses among the grants the acting administrator was *already entitled to make*, in the same sense #10's
+paragraph means it. A body naming a scope outside their reach or a role above their own is a `403`, not an escalation.
+
+What a later ticket can violate by accident:
+
+- **#12 owns the second grant onwards.** `readAccount` deliberately ignores a role named in an edit body
+  (`PUT /api/users/:userId`) rather than half-applying it. When #12 adds grant management it must apply the same two
+  checks above; a route that adds a grant without them is the hole this ADR exists to close, reopened from the side.
+- **The import is not a lesser door.** Every row goes through the identical checks, because a rule the form enforces and
+  the spreadsheet does not is a rule with a way around it — and the spreadsheet is how a hundred accounts arrive at once.

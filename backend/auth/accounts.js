@@ -82,9 +82,16 @@ async function allRoles(pool, userId) {
   return rows;
 }
 
-/** Appended to `user_log`, which is what the activity log is. */
-async function recordActivity(pool, userId, activity) {
-  await pool.query(`INSERT INTO user_log (user_id, activity) VALUES ($1, $2)`, [userId, activity]);
+/**
+ * Appended to `user_log`, which is what the activity log is.
+ *
+ * `db` is anything that answers `query` - the pool, or a client already inside
+ * a transaction. Writing the log through the pool from inside a transaction
+ * would record work that the enclosing ROLLBACK then undoes, so the caller
+ * hands in whichever of the two the entry belongs to.
+ */
+async function recordActivity(db, userId, activity) {
+  await db.query(`INSERT INTO user_log (user_id, activity) VALUES ($1, $2)`, [userId, activity]);
 }
 
 /**
@@ -97,17 +104,36 @@ async function recordActivity(pool, userId, activity) {
  * written there, and `valid_until` names the last day the account works and
  * not the moment it stops.
  *
+ * Which day it is, is asked of Bangkok and not of the host. The window was
+ * written by somebody sitting in Thailand and means the day they meant; a
+ * server running on UTC would, for the seven hours after midnight here, still
+ * be on yesterday and would turn away an assessor on the first morning of
+ * their access. The two ends are read by local calendar fields instead,
+ * because node-postgres hands a `date` back as local midnight.
+ *
  * `today` is a parameter rather than read from the clock, so a test can put
  * the account either side of its window without waiting for a date to pass.
  */
-function withinValidity(user, today = new Date()) {
-  const day = (value) => {
-    const date = value instanceof Date ? value : new Date(value);
-    return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-  };
-  const now = day(today);
-  if (user.valid_from && now < day(user.valid_from)) return false;
-  if (user.valid_until && now > day(user.valid_until)) return false;
+const BANGKOK = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Bangkok',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+const calendarDay = (value) => {
+  if (typeof value === 'string') return value.slice(0, 10);
+  const date = value instanceof Date ? value : new Date(value);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+function withinValidity(user, today = BANGKOK.format(new Date())) {
+  // `YYYY-MM-DD` compares as a string in the order it compares as a date,
+  // which is the whole reason ISO is written biggest-part-first.
+  const now = calendarDay(today);
+  if (user.valid_from && now < calendarDay(user.valid_from)) return false;
+  if (user.valid_until && now > calendarDay(user.valid_until)) return false;
   return true;
 }
 

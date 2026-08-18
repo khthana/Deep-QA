@@ -80,6 +80,12 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
   const set = key => event =>
     setDraft(current => ({ ...current, [key]: event.target.value }))
 
+  // The two roles the sign-in rule sends to the password form; everybody else
+  // goes to Google. Marked here as well as refused server-side so the person
+  // finds out while they are still filling the form in.
+  const needsPassword =
+    draft.role_id === 'FULL_ADMIN' || draft.role_id === 'EXT_ASSESSOR'
+
   const submit = event => {
     event.preventDefault()
     const { role_id, scope_id, password, ...details } = draft
@@ -235,13 +241,20 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
                 placeholder="05 หรือ 0501"
               />
             </Field>
-            <Field label="รหัสผ่าน (ถ้าไม่ได้เข้าผ่าน Google)">
+            <Field
+              label={
+                needsPassword
+                  ? 'รหัสผ่าน (บทบาทนี้ต้องกำหนด)'
+                  : 'รหัสผ่าน (ถ้าไม่ได้เข้าผ่าน Google)'
+              }
+            >
               <input
                 className={field}
                 type="password"
                 value={draft.password}
                 onChange={set('password')}
                 autoComplete="new-password"
+                required={needsPassword}
               />
             </Field>
           </div>
