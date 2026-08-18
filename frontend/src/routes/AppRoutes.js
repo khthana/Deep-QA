@@ -7,6 +7,7 @@ import NotFoundPage from '../pages/PageNotFound'
 import UserNotFound from '../pages/UserNotFound'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Users from '../pages/Users'
+import UserHistory from '../pages/UserHistory'
 import LoadingScreen from '../components/LoadingScreen'
 import { useAuth } from '../context/AuthContext'
 
@@ -92,6 +93,10 @@ export default function AppRoutes() {
       >
         <Route index element={<div />} />
         <Route path="users" element={<Users />} />
+        {/* #13. A child of `users` rather than a sibling because the
+            breadcrumb reads it as one - ผู้ใช้งานระบบ / ประวัติการใช้งาน -
+            and docs/05 A13 gives the path in that shape. */}
+        <Route path="users/user-history" element={<UserHistory />} />
         <Route path="departments" element={<NotBuiltYet ticket="#14" />} />
         <Route path="programs" element={<NotBuiltYet ticket="#15" />} />
         <Route path="subjects" element={<NotBuiltYet ticket="#16" />} />

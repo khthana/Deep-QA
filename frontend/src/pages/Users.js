@@ -5,6 +5,7 @@ import ContentMotionDIV from '../components/ContentMotionDIV'
 import GrantsPanel from '../components/users/GrantsPanel'
 import ImportPanel from '../components/users/ImportPanel'
 import UserForm from '../components/users/UserForm'
+import { personName } from '../components/users/personName'
 import { roleName } from '../components/MapRole'
 import {
   createUser,
@@ -241,13 +242,7 @@ export default function Users() {
                     <tr key={user.user_id}>
                       <td className="px-4 py-3">{user.user_id}</td>
                       <td className="px-4 py-3">
-                        {[user.title_th, user.first_name_th, user.last_name_th]
-                          .filter(Boolean)
-                          .join(' ') ||
-                          [user.first_name_en, user.last_name_en]
-                            .filter(Boolean)
-                            .join(' ') ||
-                          '—'}
+                        {personName(user)}
                       </td>
                       <td className="px-4 py-3">{user.email}</td>
                       <td className="px-4 py-3">

@@ -11,6 +11,7 @@ import {
   HiOutlineKey, // กำหนดผลการเรียนรู้ระดับหลักสูตร PLO
   HiOutlineLink, // Maping ผลการเรียนรู้กับรายวิชา
   HiOutlineUsers, // ผู้ใช้งานระบบ
+  HiOutlineClock, // ประวัติการใช้งาน
 } from 'react-icons/hi2'
 
 export const FACULTY_ADMIN = [
@@ -88,5 +89,11 @@ export const FACULTY_ADMIN = [
     label: 'ผู้ใช้งานระบบ',
     path: '/main/users',
     icon: <HiOutlineUsers />,
+  },
+  {
+    key: 'ประวัติการใช้งาน',
+    label: 'ประวัติการใช้งาน',
+    path: '/main/users/user-history',
+    icon: <HiOutlineClock />,
   },
 ]

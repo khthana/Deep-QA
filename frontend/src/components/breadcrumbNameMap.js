@@ -24,6 +24,7 @@ export const breadcrumbNameMap = {
   studentResults: 'ผลลัพธ์การเรียนรู้รายบุคคล',
   learningDetails: 'รายละเอียดผลการเรียนรู้',
   outcomeActivityMapping: 'ความเชื่อมโยงผลการเรียนรู้และกิจกรรม',
+  'user-history': 'ประวัติการใช้งาน',
   'course-in-term': 'การเปิดรายวิชาในภาคการศึกษา',
   behaviors: 'พฤติกรรมที่วัดผลได้ตาม CLO',
   attention: 'ระดับการบรรลุผลพฤติกรรม',

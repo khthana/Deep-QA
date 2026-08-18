@@ -6,13 +6,13 @@ import { listHistory } from '../../api/users'
 /**
  * What one account has done — #13.
  *
- * Shown beneath the roles panel, for the same reason that one is shown beside
- * the details form: the ticket opens with "an administrator selects a user and
- * reads what that account has done", and the selection is already made by the
- * time this is on screen. That selection is also the filter the third
- * criterion asks for - there is one history per person and it is the person
- * who is open - so there is no second picker here, and no second screen
- * listing everybody's activity at once.
+ * Drawn in two places, because the ticket asks for both: beneath the roles
+ * panel of an account that is open, where the administrator already has
+ * somebody selected, and on the ประวัติการใช้งาน screen, where they pick the
+ * person first (criterion 3's "filterable by user", docs/05 A13). It takes the
+ * account it draws and no filter of its own - the picking, wherever it
+ * happened, is the filter - so the two entry points cannot disagree about what
+ * a history is.
  *
  * The reach is the server's decision. An administrator who cannot reach the
  * account never gets this far, because the row they would have opened it from
@@ -85,6 +85,14 @@ export default function HistoryPanel({ user, onError }) {
   useEffect(() => {
     load()
   }, [load])
+
+  // The picker on the ประวัติการใช้งาน screen can swap the account underneath
+  // this panel. Page four of the last person's history is not page four of this
+  // one's, and on a shorter history it is nothing at all - which reads as "this
+  // person did nothing" rather than as a page number left behind.
+  useEffect(() => {
+    setPage(1)
+  }, [user.user_id])
 
   const pages = Math.max(1, Math.ceil(history.total / PAGE_SIZE))
 
