@@ -6,6 +6,7 @@ import SelectApp from '../pages/SelectApp'
 import NotFoundPage from '../pages/PageNotFound'
 import UserNotFound from '../pages/UserNotFound'
 import NotBuiltYet from '../pages/NotBuiltYet'
+import Users from '../pages/Users'
 import LoadingScreen from '../components/LoadingScreen'
 import { useAuth } from '../context/AuthContext'
 
@@ -15,7 +16,8 @@ import { useAuth } from '../context/AuthContext'
  * Every path the sidebar can navigate to has an entry, because a menu whose
  * entries lead nowhere cannot be shown to anyone. What is behind most of them
  * is `NotBuiltYet` until the ticket that builds the screen replaces the
- * element: #11 for users, #14 onwards for the rest. Route paths are the ones
+ * element: #11 has replaced the users one, #14 onwards are still to come.
+ * Route paths are the ones
  * the inherited application used, with the four `courseLevel*` renamed
  * `programLevel*` as CONTEXT.md requires — those screens are about a
  * programme, not a course.
@@ -89,7 +91,7 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<div />} />
-        <Route path="users" element={<NotBuiltYet ticket="#11" />} />
+        <Route path="users" element={<Users />} />
         <Route path="departments" element={<NotBuiltYet ticket="#14" />} />
         <Route path="programs" element={<NotBuiltYet ticket="#15" />} />
         <Route path="subjects" element={<NotBuiltYet ticket="#16" />} />

@@ -56,30 +56,44 @@ export const onSessionExpired = listener => {
 
 async function api(
   path,
-  { method = 'GET', body, signal, anonymous = false } = {}
+  { method = 'GET', body, signal, anonymous = false, contentType, accept } = {}
 ) {
+  // A body that is already a string is sent as it stands, under the type the
+  // caller named: #11 posts an import file as text/csv rather than wrapping a
+  // spreadsheet inside a JSON string. Everything else is JSON, as before.
+  const raw = typeof body === 'string'
   const response = await fetch(`${BASE}${path}`, {
     method,
     credentials: 'include',
     signal,
     headers:
-      body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
+      body === undefined
+        ? undefined
+        : { 'Content-Type': contentType ?? 'application/json' },
+    body: body === undefined ? undefined : raw ? body : JSON.stringify(body),
   })
 
-  // A 204 and an error page both fail to parse; neither should become a
-  // parse error the caller has to read as a status.
-  const payload = await response.json().catch(() => ({}))
-
+  // A refusal is JSON whatever was asked for, because the error handler and
+  // the guards answer in JSON on every route.
   if (!response.ok) {
+    const payload = await response.json().catch(() => ({}))
     if (response.status === 401 && !anonymous) sessionExpiredListener?.()
-    throw new ApiError(
+    const error = new ApiError(
       response.status,
       payload.message ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์',
       payload.reason
     )
+    // The per-row import report rides on the refusal rather than on a 200,
+    // because a rejected import is a refusal: nothing was written. The screen
+    // needs the rows, so the error carries them.
+    error.details = payload.errors ?? null
+    throw error
   }
-  return payload
+
+  if (accept === 'text') return response.text()
+  // A 204 fails to parse and should not become a parse error the caller has
+  // to read as a status.
+  return response.json().catch(() => ({}))
 }
 
 export const get = (path, options) => api(path, options)

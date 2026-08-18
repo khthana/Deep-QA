@@ -54,7 +54,7 @@ async function findByEmail(pool, email) {
     `SELECT user_id, email, password, status, is_verified,
             title_th, first_name_th, last_name_th,
             title_en, first_name_en, last_name_en,
-            department_id, program_id
+            department_id, program_id, valid_from, valid_until
      FROM users WHERE lower(email) = lower($1)`,
     [email],
   );
@@ -88,20 +88,80 @@ async function recordActivity(pool, userId, activity) {
 }
 
 /**
+ * Whether today falls inside the account's stated window - #11's fourth
+ * criterion, and R005's mandatory one.
+ *
+ * Both ends are optional and an absent end is open, so an ordinary staff
+ * account with neither set is inside every window there is. The comparison is
+ * by calendar day rather than by instant: 0005 stores dates for the reason
+ * written there, and `valid_until` names the last day the account works and
+ * not the moment it stops.
+ *
+ * `today` is a parameter rather than read from the clock, so a test can put
+ * the account either side of its window without waiting for a date to pass.
+ */
+function withinValidity(user, today = new Date()) {
+  const day = (value) => {
+    const date = value instanceof Date ? value : new Date(value);
+    return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  };
+  const now = day(today);
+  if (user.valid_from && now < day(user.valid_from)) return false;
+  if (user.valid_until && now > day(user.valid_until)) return false;
+  return true;
+}
+
+/**
  * The checks both ways in share, run once the caller has established that the
  * person is who they say they are. A suspended or unverified account is
  * refused by name; an account with no grant is refused distinctly from one
  * that does not exist, because the two need different things done about them
  * and the person reading the message is the one who has to ask.
+ *
+ * The validity window sits with them because it is the same kind of fact: a
+ * true statement about the account that has nothing to do with whether the
+ * password was right. Putting it in the password path alone would have left
+ * the Google path open, and an external assessor with a KMITL address is not
+ * forbidden by anything.
  */
 async function admit(pool, user) {
   if (user.status !== 'active') return refuse(403, 'inactive');
   if (!user.is_verified) return refuse(403, 'unverified');
+  if (!withinValidity(user)) return refuse(403, 'outsideValidity');
 
   const roles = await allRoles(pool, user.user_id);
   if (roles.length === 0) return refuse(403, 'noRole');
 
   return { ok: true, user, role: roles[0], roles };
+}
+
+/**
+ * The same three account-level facts, for a caller who signed in earlier and
+ * is holding a cookie: is the account still active, still verified, still
+ * inside its window.
+ *
+ * `attachRoles` re-reads the grants on every request so a revoked grant stops
+ * being honoured at once (#9's fifth criterion). Deactivating an account and
+ * an assessor's window running out are the same kind of event, and until #11
+ * neither bit until the cookie ran out - up to half an hour of a suspended
+ * account still working. This is what closes that, at the cost of one small
+ * read per request alongside the grants.
+ *
+ * Returns a refusal or null, so the caller reads it the way `admit` is read.
+ */
+async function sessionAdmission(pool, userId) {
+  const { rows } = await pool.query(
+    `SELECT status, is_verified, valid_from, valid_until FROM users WHERE user_id = $1`,
+    [userId],
+  );
+  const user = rows[0];
+  // The account was deleted while its cookie was still good. Told as `unknown`
+  // for the same reason sign-in tells it: there is nothing to reactivate.
+  if (!user) return refuse(403, 'unknown');
+  if (user.status !== 'active') return refuse(403, 'inactive');
+  if (!user.is_verified) return refuse(403, 'unverified');
+  if (!withinValidity(user)) return refuse(403, 'outsideValidity');
+  return null;
 }
 
 /** The rules the Google callback applies, minus the part Google owns. */
@@ -171,6 +231,8 @@ module.exports = {
   PASSWORD_ROLES,
   findByEmail,
   allRoles,
+  withinValidity,
+  sessionAdmission,
   recordActivity,
   resolveGoogleAccount,
   resolvePasswordAccount,

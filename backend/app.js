@@ -52,6 +52,12 @@ function createApp({ pool }) {
   app.use(cors({ origin: frontendUrl(), credentials: true }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  // The import file, posted as its own text rather than as a multipart upload:
+  // a file input can read its file and send the characters, which is the whole
+  // of what multipart would have bought here, and this way nothing is written
+  // to disk and there is nothing to clean up after a request that failed. See
+  // routes/users.js. The limit is a few thousand accounts' worth.
+  app.use(express.text({ type: 'text/csv', limit: '2mb' }));
   app.use(cookieParser());
 
   // Everything mounted above this line answers an anonymous caller; everything

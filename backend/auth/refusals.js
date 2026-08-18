@@ -22,6 +22,11 @@ const REFUSALS = {
   noRole: 'บัญชีนี้ยังไม่ได้รับสิทธิ์การใช้งาน กรุณาติดต่อเจ้าหน้าที่เพื่อกำหนดบทบาท',
   inactive: 'บัญชีนี้ถูกระงับการใช้งาน',
   unverified: 'บัญชีนี้ยังไม่ได้ผ่านการยืนยันตัวตน',
+  // R005's time-boxed account, refused outside its window. Named rather than
+  // folded into `inactive`, because the two need different things done about
+  // them: an account that was suspended is a decision somebody made, and one
+  // whose review round has ended needs its dates extended.
+  outsideValidity: 'บัญชีนี้อยู่นอกช่วงเวลาที่กำหนดให้ใช้งาน',
   credentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
   passwordNotAllowed: 'บัญชีนี้ต้องเข้าสู่ระบบด้วยบัญชี Google ของ KMITL',
   googleUnavailable: 'ยังไม่ได้ตั้งค่าการเข้าสู่ระบบด้วย Google บนเซิร์ฟเวอร์นี้',
@@ -43,6 +48,22 @@ const REFUSALS = {
   roleNotHeld: 'บัญชีนี้ไม่ได้รับบทบาทที่เลือก',
   wrongPassword: 'รหัสผ่านเดิมไม่ถูกต้อง',
   weakPassword: 'รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 8 ตัวอักษร',
+
+  // Managing other people's accounts - #11. These name what is wrong with the
+  // form that was sent, which is the caller's own submission and so nobody
+  // else's business to leak. `userNotFound` is the exception worth reading
+  // twice: it is also what an administrator gets for an account that exists
+  // outside their scope, so the answer cannot be used to discover who exists
+  // elsewhere in the university.
+  userNotFound: 'ไม่พบบัญชีผู้ใช้ที่ระบุ',
+  duplicateEmail: 'อีเมลนี้ถูกใช้งานแล้ว',
+  duplicateUserId: 'รหัสผู้ใช้นี้ถูกใช้งานแล้ว',
+  invalidUser: 'ข้อมูลบัญชีไม่ครบถ้วนหรือไม่ถูกต้อง',
+  invalidValidity: 'ช่วงเวลาใช้งานไม่ถูกต้อง วันสิ้นสุดต้องไม่มาก่อนวันเริ่มต้น',
+  scopeNotYours: 'ไม่สามารถจัดการบัญชีนอกขอบเขตที่รับผิดชอบได้',
+  roleNotAssignable: 'ไม่สามารถกำหนดบทบาทนี้ได้',
+  importEmpty: 'ไม่พบข้อมูลในไฟล์ที่นำเข้า',
+  importRejected: 'ไฟล์นำเข้ามีข้อผิดพลาด ระบบไม่ได้บันทึกรายการใด',
 
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording

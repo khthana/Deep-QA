@@ -28,7 +28,7 @@
  * the hole ADR-0002 exists to close.
  */
 
-const { allRoles } = require('./accounts');
+const { allRoles, sessionAdmission } = require('./accounts');
 const { REFUSALS } = require('./refusals');
 
 /**
@@ -83,6 +83,15 @@ function attachRoles(pool) {
     }
 
     try {
+      // The account itself before its grants. A cookie proves a sign-in that
+      // happened; it does not prove the account is still one that may sign in,
+      // and until #11 an account deactivated mid-session went on working until
+      // the cookie ran out - the same hole the fresh grant read exists to
+      // close, one level up. An external assessor's window ending is the same
+      // event on a timer (#11's fourth criterion).
+      const refused = await sessionAdmission(pool, userId);
+      if (refused) return res.status(refused.status).json({ message: refused.message });
+
       const roles = await allRoles(pool, userId);
       // Told as `noRole` rather than as the flat refusal below, because it is
       // the one 403 the person can act on: there is nothing to ask for a
@@ -217,7 +226,48 @@ function requireScope(pool, target) {
   };
 }
 
-// `scopeChain` and `covers` are deliberately not exported. They are how
-// `requireScope` reaches its answer, and the rules they carry are asserted
-// through it rather than at them: docs/06 allows the tests one seam.
-module.exports = { GLOBAL_SCOPE, attachRoles, requireRole, requireScope };
+/**
+ * Every scope the grant reaches, as a set — `scopeChain` turned around.
+ *
+ * The guards above ask "does this grant reach *that* record", one record at a
+ * time, and answer it by walking outwards from the record. A list screen asks
+ * the mirror question - "which records does this grant reach" - of a whole
+ * table at once, and walking outwards from each row in turn is one query per
+ * row. So the reach is computed once, downwards, and handed to the query as an
+ * array to filter on.
+ *
+ * The two must agree, and the reason they do is that they read the same three
+ * tables in the same three relationships. Where they would come apart is if
+ * one of them were taught a rule the other was not; the tests assert the
+ * agreement over HTTP rather than trusting this paragraph, by asking for a
+ * record the list did not show and expecting the guard to refuse it.
+ *
+ * A global grant reaches everything, and says so with `null` rather than by
+ * listing every scope in the university - a caller filtering on it should skip
+ * the filter, not build an `IN` list of the whole organisation.
+ *
+ * `scopeChain` and `covers` stay unexported. They are how `requireScope`
+ * reaches its answer and the rules they carry are asserted through it: docs/06
+ * allows the tests one seam. This one is exported because it answers a
+ * question no guard asks, and a list route cannot be written without it.
+ */
+async function coveredScopes(pool, scopeId) {
+  if (scopeId === GLOBAL_SCOPE) return null;
+  if (!scopeId) return [];
+
+  const { rows } = await pool.query(
+    `SELECT f.faculty_id AS scope_id FROM faculty f WHERE f.faculty_id = $1
+     UNION
+     SELECT d.department_id FROM departments d
+      WHERE d.department_id = $1 OR d.faculty_id = $1
+     UNION
+     SELECT p.program_id FROM programs p
+      WHERE p.program_id = $1
+         OR p.department_id = $1
+         OR p.department_id IN (SELECT department_id FROM departments WHERE faculty_id = $1)`,
+    [scopeId],
+  );
+  return rows.map((row) => row.scope_id);
+}
+
+module.exports = { GLOBAL_SCOPE, attachRoles, requireRole, requireScope, coveredScopes };

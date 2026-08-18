@@ -209,7 +209,10 @@ test('a menu entry a role never sees', async (t) => {
     const response = await request(api.app).get('/api/users').set('Cookie', admin);
 
     assert.equal(response.status, 200);
-    assert.ok(response.body.users.length >= ACCOUNTS.length);
+    // `total` rather than the row count: #11 made the list paginate, so the
+    // rows are one page of it and the count of the whole is what says the
+    // Central Admin reaches every account.
+    assert.ok(response.body.total >= ACCOUNTS.length);
     // Every row, not the first: a route that listed the column on all but
     // one of them would pass a check of one.
     assert.ok(response.body.users.every((row) => row.password === undefined));
