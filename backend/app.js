@@ -14,9 +14,15 @@
  * different pool - no environment variable mutated at test time, and no code
  * path that only tests take.
  *
- * Deliberately absent for now: CORS and the static evidence directory. Each
- * belongs to the ticket that first needs it - #10 for the browser that will
- * need an origin allowed, #35 and #47 for evidence served from disk.
+ * CORS arrives with #10, which is the first ticket with a browser in front of
+ * the API. One origin is allowed - the frontend's, named by FRONTEND_URL -
+ * and credentials are enabled, because the session is a cookie and a
+ * cross-origin request without them arrives anonymous. A wildcard origin is
+ * not an option even if it were wanted: the two settings are mutually
+ * exclusive by specification.
+ *
+ * Still deliberately absent: the static evidence directory, which belongs to
+ * #35 and #47, where evidence is first served from disk.
  *
  * There is no express-session either, and there will not be one: #8's session
  * is a signed JWT in an HttpOnly cookie, which needs a cookie parser and no
@@ -27,17 +33,23 @@
 
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const { attachRoles } = require('./auth/authorise');
+const { REFUSALS } = require('./auth/refusals');
+const { frontendUrl } = require('./config');
 const { requireSession } = require('./auth/session');
 const { authRoutes } = require('./routes/auth');
 const { healthRoutes } = require('./routes/health');
+const { meRoutes } = require('./routes/me');
+const { userRoutes } = require('./routes/users');
 
 function createApp({ pool }) {
   if (!pool) throw new Error('createApp needs a pool');
 
   const app = express();
 
+  app.use(cors({ origin: frontendUrl(), credentials: true }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
@@ -53,10 +65,29 @@ function createApp({ pool }) {
 
   app.use('/api', requireSession, attachRoles(pool));
 
+  app.use('/api', meRoutes(pool));
+  app.use('/api', userRoutes(pool));
+
   // Express' own fallback answers with HTML, which a client that asked for
   // JSON cannot read: it gets a parse error where it expected a status.
   app.use((request, response) => {
     response.status(404).json({ error: 'Not found' });
+  });
+
+  // The last thing mounted, because that is the only position Express treats
+  // as an error handler, and the four-argument shape is the only signature it
+  // recognises as one - `next` is unused and cannot be dropped.
+  //
+  // Without it, Express' own finalhandler answers a thrown error with the
+  // stack trace in the body whenever NODE_ENV is not 'production', which is
+  // the default everywhere except a deployment that remembered to set it.
+  // That publishes absolute server paths and module names to whoever provoked
+  // the throw. The stack goes to the log, where it is useful, and the caller
+  // gets a status and a sentence.
+  // eslint-disable-next-line no-unused-vars
+  app.use((error, request, response, next) => {
+    console.error(error);
+    response.status(500).json({ message: REFUSALS.unexpected });
   });
 
   return app;

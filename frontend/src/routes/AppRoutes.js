@@ -1,0 +1,139 @@
+import { Navigate, Route, Routes } from 'react-router-dom'
+
+import Login from '../pages/Login'
+import MainPage from '../pages/Mainpage'
+import SelectApp from '../pages/SelectApp'
+import NotFoundPage from '../pages/PageNotFound'
+import UserNotFound from '../pages/UserNotFound'
+import NotBuiltYet from '../pages/NotBuiltYet'
+import LoadingScreen from '../components/LoadingScreen'
+import { useAuth } from '../context/AuthContext'
+
+/**
+ * The routes the shell knows about — #10.
+ *
+ * Every path the sidebar can navigate to has an entry, because a menu whose
+ * entries lead nowhere cannot be shown to anyone. What is behind most of them
+ * is `NotBuiltYet` until the ticket that builds the screen replaces the
+ * element: #11 for users, #14 onwards for the rest. Route paths are the ones
+ * the inherited application used, with the four `courseLevel*` renamed
+ * `programLevel*` as CONTEXT.md requires — those screens are about a
+ * programme, not a course.
+ *
+ * Not carried over: the second, duplicate `rubrics` declaration, which the
+ * router silently ignored, and the STUDENT tree, since students are records
+ * here and not accounts.
+ */
+
+export const ProtectedRoute = ({ children }) => {
+  const { profile, loading } = useAuth()
+  if (loading) return <LoadingScreen />
+  if (!profile) return <Navigate to="/" replace />
+  return children
+}
+
+export const GuestRoute = ({ children }) => {
+  const { profile, loading } = useAuth()
+  if (loading) return <LoadingScreen />
+  if (profile) return <Navigate to="/main" replace />
+  return children
+}
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <GuestRoute>
+            <Login />
+          </GuestRoute>
+        }
+      />
+      {/* The Google path refuses by redirecting to /login?error=<reason>
+          (backend/routes/auth.js). Sign-in lives at '/', so without this the
+          refusal would land on the catch-all and tell the person the page does
+          not exist rather than why they were turned away. */}
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <Login />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/user-not-found"
+        element={
+          <GuestRoute>
+            <UserNotFound />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/select-app"
+        element={
+          <ProtectedRoute>
+            <SelectApp />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/page-not-found" element={<NotFoundPage />} />
+
+      <Route
+        path="/main/*"
+        element={
+          <ProtectedRoute>
+            <MainPage />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<div />} />
+        <Route path="users" element={<NotBuiltYet ticket="#11" />} />
+        <Route path="departments" element={<NotBuiltYet ticket="#14" />} />
+        <Route path="programs" element={<NotBuiltYet ticket="#15" />} />
+        <Route path="subjects" element={<NotBuiltYet ticket="#16" />} />
+        <Route path="rubrics" element={<NotBuiltYet ticket="#21" />} />
+        <Route
+          path="course-in-program"
+          element={<NotBuiltYet ticket="#18" />}
+        />
+        <Route path="student-data" element={<NotBuiltYet ticket="#17" />} />
+        <Route path="course-in-term" element={<NotBuiltYet ticket="#23" />} />
+        <Route path="plos" element={<NotBuiltYet ticket="#19" />} />
+        <Route path="mapping-plo" element={<NotBuiltYet ticket="#20" />} />
+        <Route
+          path="programLevelByIntake"
+          element={<NotBuiltYet ticket="#42" />}
+        />
+        <Route
+          path="programLevelCompare"
+          element={<NotBuiltYet ticket="#44" />}
+        />
+        <Route
+          path="programLevelIndividual"
+          element={<NotBuiltYet ticket="#45" />}
+        />
+        <Route
+          path="programLevelAllStudents"
+          element={<NotBuiltYet ticket="#43" />}
+        />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+
+      <Route
+        path="/teacher/teacherDashboard/*"
+        element={
+          <ProtectedRoute>
+            <MainPage />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<NotBuiltYet ticket="#24" />} />
+        <Route path=":subjectNameEn/*" element={<NotBuiltYet />} />
+      </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  )
+}

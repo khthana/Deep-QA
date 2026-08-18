@@ -55,6 +55,15 @@ async function signInAs(alias) {
 const asUser = (cookie, app, path = '/guarded') =>
   request(app).get(path).set('Cookie', cookie);
 
+/** The claims inside the token a response set, read without verifying. */
+const claimsIn = (cookie) => {
+  const token = cookie
+    .find((entry) => entry.startsWith('token='))
+    .split(';')[0]
+    .slice('token='.length);
+  return JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+};
+
 const attached = () => guardedApp(requireSession, attachRoles(api.pool));
 
 const roleGuarded = (...roleIds) =>
@@ -97,13 +106,26 @@ test('the grants attached to a request', async (t) => {
 
   await t.test('are not carried in the session cookie', async () => {
     const cookie = await signInAs('U_MULTI');
-    const token = cookie
-      .find((entry) => entry.startsWith('token='))
-      .split(';')[0]
-      .slice('token='.length);
-    const claims = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
 
-    assert.deepEqual(Object.keys(claims).sort(), ['exp', 'iat', 'user_id']);
+    assert.deepEqual(Object.keys(claimsIn(cookie)).sort(), ['exp', 'iat', 'user_id']);
+  });
+
+  // #10 puts one more claim in the token: which of the caller's own grants
+  // they are currently working as. It is a selection and not an authority -
+  // `attachRoles` matches it against the rows it just read and ignores it
+  // when it matches none - and the shape assertion is kept so that a later
+  // ticket cannot quietly grow it into the role list this ADR keeps out.
+  await t.test('carry the caller’s choice among them, and nothing more', async () => {
+    const cookie = await signInAs('U_MULTI');
+    const switched = await request(api.app)
+      .put('/api/me/acting-role')
+      .set('Cookie', cookie)
+      .send({ role_id: 'TEACHER', scope_id: DEPT_COMPUTER });
+
+    const claims = claimsIn(switched.headers['set-cookie']);
+
+    assert.deepEqual(Object.keys(claims).sort(), ['acting', 'exp', 'iat', 'user_id']);
+    assert.deepEqual(Object.keys(claims.acting).sort(), ['role_id', 'scope_id']);
   });
 });
 
@@ -153,12 +175,26 @@ test('the role guard', async (t) => {
     assert.equal(response.status, 200);
   });
 
-  await t.test('admits a caller holding any one of the roles listed', async () => {
+  // #10 made the guard consult the *acting* grant rather than the whole list,
+  // so this pair replaces what was one assertion here: U_MULTI holds a
+  // teaching grant, and is refused at a teachers' route while acting as the
+  // committee, and admitted at it after switching. Reading the list would
+  // admit them both times, which is the reading #10's fourth criterion rules
+  // out - the sidebar would then be the only thing telling the two apart.
+  await t.test('admits a caller acting as one of the roles listed', async () => {
     const cookie = await signInAs('U_MULTI');
 
-    const response = await asUser(cookie, roleGuarded('FACULTY_ADMIN', 'TEACHER'));
+    const asCommittee = await asUser(cookie, roleGuarded('FACULTY_ADMIN', 'TEACHER'));
 
-    assert.equal(response.status, 200);
+    assert.equal(asCommittee.status, 403);
+
+    const switched = await request(api.app)
+      .put('/api/me/acting-role')
+      .set('Cookie', cookie)
+      .send({ role_id: 'TEACHER', scope_id: DEPT_COMPUTER });
+    const asTeacher = await asUser(switched.headers['set-cookie'], roleGuarded('FACULTY_ADMIN', 'TEACHER'));
+
+    assert.equal(asTeacher.status, 200);
   });
 
   // The two roles the seed carries for the outside of the organisation. The

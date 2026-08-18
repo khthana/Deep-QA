@@ -12,6 +12,14 @@
  * the record being asked for", which is a fact about the record. A route that
  * needs all three says so in its own declaration and nothing is implied.
  *
+ * #10 adds a fourth idea on top of the three: the *acting* grant. An account
+ * may hold several, and the guards consult exactly one of them - the one the
+ * caller is currently working as. Holding a grant and acting as it are
+ * different things, and the shell's role picker is only meaningful if they
+ * are: switching role has to change what the server permits and not merely
+ * what the sidebar draws. `req.auth.roles` is still every grant, because that
+ * is what the picker renders; `req.auth.acting` is the one in effect.
+ *
  * Nothing here reads a role or a scope from a request body or a query string.
  * `requireScope` is handed a function that produces the *record's* identifier -
  * a programme in the path, a subject the handler is about to load - and the
@@ -34,6 +42,16 @@ const GLOBAL_SCOPE = 'FULL_ADMIN';
 const forbid = (res) => res.status(403).json({ message: REFUSALS.forbidden });
 
 /**
+ * The grant in effect: the selected one if it is still held, and otherwise the
+ * most senior. `allRoles` orders by priority ascending, so `roles[0]` is the
+ * most senior and is what a caller who has never chosen acts as.
+ */
+const actingFrom = (roles, selected) =>
+  roles.find(
+    (grant) => grant.role_id === selected?.role_id && grant.scope_id === selected?.scope_id,
+  ) ?? roles[0];
+
+/**
  * The caller's active grants, on `req.auth`, read fresh on every request.
  *
  * Fresh is the whole point, and the fifth acceptance criterion: revoking a
@@ -47,6 +65,13 @@ const forbid = (res) => res.status(403).json({ message: REFUSALS.forbidden });
  * than left to fail at whichever guard it happens to meet: it is the same
  * state sign-in refuses as `noRole`, is told so in the same words, and should
  * not depend on the route it happened to ask for.
+ *
+ * The acting grant is resolved here too, and resolved the same way: the
+ * cookie's selection is matched against the rows just read, and a selection
+ * matching none of them - never made, or made against a grant since revoked -
+ * falls back to the most senior held. So the selection is a pointer and never
+ * an authority, and the fifth criterion survives the addition intact: revoke
+ * the grant being acted as, and the next request stops acting as it.
  */
 function attachRoles(pool) {
   return async function attach(req, res, next) {
@@ -66,7 +91,7 @@ function attachRoles(pool) {
       // same state.
       if (roles.length === 0) return res.status(403).json({ message: REFUSALS.noRole });
 
-      req.auth = { userId, roles };
+      req.auth = { userId, roles, acting: actingFrom(roles, req.session.acting) };
       return next();
     } catch (error) {
       return next(error);
@@ -87,8 +112,11 @@ function requireRole(...roleIds) {
   const allowed = new Set(roleIds);
   return function checkRole(req, res, next) {
     if (!req.auth) return next(new Error('requireRole requires attachRoles ahead of it'));
-    const held = req.auth.roles.some((grant) => allowed.has(grant.role_id));
-    return held ? next() : forbid(res);
+    // The acting grant, not the whole list. An account holding both a
+    // committee grant and a teaching one is one or the other at any moment,
+    // and an endpoint for teachers is not open to it while it is acting as
+    // the committee.
+    return allowed.has(req.auth.acting.role_id) ? next() : forbid(res);
   };
 }
 
@@ -139,7 +167,11 @@ async function scopeChain(pool, scopeId) {
 }
 
 /**
- * Whether any of the grants held reaches this chain.
+ * Whether the grant reaches this chain.
+ *
+ * The grant asked about is the acting one, for the same reason `requireRole`
+ * consults it: what the caller may reach is what the hat they are wearing
+ * reaches, not the union of every hat they own.
  *
  * A grant covers a record when its scope is the record's own scope or one the
  * record sits inside: the faculty administrator reaches every department and
@@ -155,9 +187,8 @@ async function scopeChain(pool, scopeId) {
  * `undefined` - and the routes that list FULL_ADMIN are exactly the ones where
  * a global grant would otherwise turn that mistake into a pass.
  */
-const covers = (roles, chain) =>
-  chain.length > 0 &&
-  roles.some((grant) => grant.scope_id === GLOBAL_SCOPE || chain.includes(grant.scope_id));
+const covers = (grant, chain) =>
+  chain.length > 0 && (grant.scope_id === GLOBAL_SCOPE || chain.includes(grant.scope_id));
 
 /**
  * Refuses a caller whose grants do not reach the record being asked for.
@@ -179,7 +210,7 @@ function requireScope(pool, target) {
     try {
       const scopeId = await target(req);
       const chain = await scopeChain(pool, scopeId);
-      return covers(req.auth.roles, chain) ? next() : forbid(res);
+      return covers(req.auth.acting, chain) ? next() : forbid(res);
     } catch (error) {
       return next(error);
     }

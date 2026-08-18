@@ -53,3 +53,35 @@ no identifier. The messages live in one table in `backend/auth/refusals.js`.
 
 The rules are asserted through HTTP in `backend/test/authorise.test.js`; `scopeChain` and `covers` are not exported,
 because docs/06's Testing Decisions allow the tests one seam.
+
+## Amended by #10 — the acting grant
+
+[#10](https://github.com/khthana/Deep-QA/issues/10) narrowed what the guards read, and added the one endpoint that
+does take `role_id` and `scope_id` in a body. Both are deliberate, and the rule above still holds.
+
+An account can hold several grants. Until #10, `attachRoles` put all of them on `req.auth` and `requireRole` passed if
+*any* matched, so a lecturer who was also a programme committee member passed a committee-only guard while wearing the
+lecturer hat — and the only thing distinguishing the two was the sidebar, which is what this ADR exists to stop.
+`req.auth` therefore gains `acting`: the one grant in effect, chosen by `actingFrom(roles, selected)`. `requireRole`
+and `requireScope` consult `acting` **only**; `roles` remains, but as the list the role picker offers, not as an
+authority.
+
+`PUT /api/me/acting-role` is where the choice is made. It carries `role_id` and `scope_id` in a body, and the sentence
+above about removing them from every request body is unchanged in spirit: what arrives is not an assertion of
+privilege but a *choice among the grants the server has already read from `user_roles` for this caller*. The route
+matches the pair against `req.auth.roles` and refuses anything not found there, so a body naming a grant the account
+does not hold is a `403`, never an escalation. Both halves are required, because one account can hold one role at two
+scopes and a role alone could not say which.
+
+The selection then rides in the JWT, and this is the one place it is easy to read as a contradiction of the decision
+above. It is a **pointer, not an authority**: `attachRoles` still reads the grants from the database on every request,
+and `actingFrom` falls back to the most senior grant when the selected one is no longer among them. A revoked role
+therefore stops working on the next request, exactly as before — the claim in the token cannot outlive the row.
+
+What a later ticket can violate by accident:
+
+- **`requireRole` now means "is acting as", not "holds".** Tickets #12–#46 were written against the older reading. A
+  guard that should admit an account regardless of which hat it is wearing has no expression here and needs one added
+  deliberately, not by reaching back into `req.auth.roles`.
+- **`req.auth.roles` is not an authorisation input.** It exists so the shell can draw the picker. Any guard reading it
+  reintroduces exactly the problem #10 removed.

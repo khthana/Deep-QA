@@ -1,0 +1,81 @@
+/**
+ * The one place the frontend talks to the API.
+ *
+ * Every call goes through `api`, so three things are true everywhere rather
+ * than remembered at each call site: the session cookie is sent
+ * (`credentials: 'include'`, which a cross-origin fetch omits by default and
+ * without which every request arrives anonymous), the base URL comes from one
+ * place, and a refusal is turned into an error carrying the server's own words
+ * rather than a status the caller has to interpret.
+ *
+ * A 401 is also announced here rather than at each call site. The shell shows
+ * one dialog when a session ends (#10's sixth criterion), and a dialog that
+ * depends on every future screen remembering to raise it is a dialog that
+ * will be missing from most of them. `onSessionExpired` registers the one
+ * listener; a call that expects an anonymous answer - the sign-in page asking
+ * who is signed in, before anyone is - passes `anonymous` and is not counted,
+ * because nothing has expired yet.
+ *
+ * 401 and 403 are kept apart. The inherited utils/session.js treated them as
+ * one state — `isSessionExpired` returned true for both — so an idle session
+ * and a permission refusal looked identical to the person at the screen, which
+ * is exactly what #10's sixth criterion asks us to stop doing. Here a 401 is
+ * "your session ended, sign in again" and a 403 is "you are signed in and this
+ * is not yours"; `expired` on the error says which.
+ */
+
+const BASE = process.env.REACT_APP_API_URL ?? 'http://localhost:3000'
+
+export class ApiError extends Error {
+  constructor(status, message) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    /** The session ended; the shell shows the sign-in-again dialog. */
+    this.expired = status === 401
+    /** Signed in, but not allowed this; the shell says so and stays put. */
+    this.forbidden = status === 403
+  }
+}
+
+/** The shell's listener for a session that has ended; see AuthContext. */
+let sessionExpiredListener = null
+
+export const onSessionExpired = listener => {
+  sessionExpiredListener = listener
+}
+
+async function api(
+  path,
+  { method = 'GET', body, signal, anonymous = false } = {}
+) {
+  const response = await fetch(`${BASE}${path}`, {
+    method,
+    credentials: 'include',
+    signal,
+    headers:
+      body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+
+  // A 204 and an error page both fail to parse; neither should become a
+  // parse error the caller has to read as a status.
+  const payload = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    if (response.status === 401 && !anonymous) sessionExpiredListener?.()
+    throw new ApiError(
+      response.status,
+      payload.message ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์'
+    )
+  }
+  return payload
+}
+
+export const get = (path, options) => api(path, options)
+export const post = (path, body, options) =>
+  api(path, { ...options, method: 'POST', body })
+export const put = (path, body, options) =>
+  api(path, { ...options, method: 'PUT', body })
+
+export default api

@@ -25,6 +25,7 @@ const {
 } = require('../auth/accounts');
 const { REFUSALS } = require('../auth/refusals');
 const { issueSession, clearSession, requireSession } = require('../auth/session');
+const { frontendUrl } = require('../config');
 
 /**
  * The OAuth credentials are optional. `cp .env.example .env` leaves them blank
@@ -97,7 +98,7 @@ function authRoutes(pool) {
     return passport.authenticate('google', { session: false }, async (error, admission, refusal) => {
       if (error) return next(error);
 
-      const frontend = process.env.FRONTEND_URL ?? '';
+      const frontend = frontendUrl();
       if (!admission) {
         // The refusal travels in the redirect rather than as a status code:
         // the caller here is a browser following Google back, and what it

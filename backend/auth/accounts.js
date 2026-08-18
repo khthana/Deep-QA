@@ -166,6 +166,7 @@ const profileOf = (user) => ({
 });
 
 module.exports = {
+  ABSENT_PASSWORD,
   KMITL_DOMAIN,
   PASSWORD_ROLES,
   findByEmail,

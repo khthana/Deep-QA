@@ -35,6 +35,19 @@ const REFUSALS = {
   // which roles an endpoint accepts, and which scope a record sits in, are
   // both things the caller learns nothing from being told.
   forbidden: 'บัญชีนี้ไม่มีสิทธิ์ใช้งานส่วนนี้',
+
+  // The shell - #10. These three do name what went wrong, and may: all three
+  // are about the caller's own account and their own choices, so there is
+  // nobody else's business to leak. A role picker that answered "no" without
+  // saying which of the two things was wrong would be unusable.
+  roleNotHeld: 'บัญชีนี้ไม่ได้รับบทบาทที่เลือก',
+  wrongPassword: 'รหัสผ่านเดิมไม่ถูกต้อง',
+  weakPassword: 'รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 8 ตัวอักษร',
+
+  // What the error handler in app.js says. It names nothing, because an
+  // unhandled throw is by definition something nobody decided the wording
+  // of, and whatever is in the stack is not the caller's business.
+  unexpected: 'เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง',
 };
 
 module.exports = { REFUSALS };

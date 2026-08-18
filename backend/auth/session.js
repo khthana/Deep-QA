@@ -14,6 +14,15 @@
  * stronger one: ADR-0002 derives authorisation from the database on every
  * request, so a role in the token would be a second source of truth that a
  * revoked grant could not reach.
+ *
+ * #10 adds one more claim, `acting`, and it is worth being exact about what
+ * it is not. It is the caller's *selection* - which of their own grants they
+ * are currently working as - and it confers nothing: `attachRoles` re-reads
+ * the grants from the database on every request and matches the selection
+ * against them, falling back to the most senior when it matches none. A
+ * cookie naming a grant the account does not hold is worth exactly as much as
+ * a cookie naming none. So the paragraph above still holds: nothing in here
+ * is a source of authority.
  */
 
 const jwt = require('jsonwebtoken');
@@ -63,9 +72,19 @@ const cookieOptions = () => ({
   maxAge: LIFETIME_SECONDS * 1000,
 });
 
-/** Signs a session for this user and sets it on the response. */
-function issueSession(res, userId) {
-  const token = jwt.sign({ user_id: userId }, secret(), { expiresIn: LIFETIME_SECONDS });
+/**
+ * Signs a session for this user and sets it on the response. `acting` is the
+ * caller's selected grant as `{ role_id, scope_id }`, or undefined when they
+ * have not chosen one and the most senior applies.
+ */
+function issueSession(res, userId, acting) {
+  const claims = { user_id: userId };
+  // Both halves or neither: a role without its scope is ambiguous the moment
+  // one account holds one role at two scopes.
+  if (acting?.role_id && acting?.scope_id) {
+    claims.acting = { role_id: acting.role_id, scope_id: acting.scope_id };
+  }
+  const token = jwt.sign(claims, secret(), { expiresIn: LIFETIME_SECONDS });
   res.cookie(COOKIE_NAME, token, cookieOptions());
   return token;
 }
@@ -81,8 +100,8 @@ function clearSession(res) {
 }
 
 /**
- * Puts `req.session = { userId }` on a request carrying a live token, and
- * refuses one that does not.
+ * Puts `req.session = { userId, acting }` on a request carrying a live token,
+ * and refuses one that does not.
  *
  * This is identity only. Ticket #9 layers the authorisation lookup on top -
  * which grants the account holds, and whether one of them covers the scope
@@ -109,9 +128,12 @@ function requireSession(req, res, next) {
   }
 
   const remaining = claims.exp - Math.floor(Date.now() / 1000);
-  if (remaining < RENEW_BELOW_SECONDS) issueSession(res, claims.user_id);
+  // The renewal carries the selection forward, or working continuously past
+  // the twenty-minute mark would silently put the caller back in their most
+  // senior role.
+  if (remaining < RENEW_BELOW_SECONDS) issueSession(res, claims.user_id, claims.acting);
 
-  req.session = { userId: claims.user_id };
+  req.session = { userId: claims.user_id, acting: claims.acting };
   return next();
 }
 
