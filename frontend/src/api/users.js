@@ -50,6 +50,17 @@ export const grantRole = (userId, role) =>
 export const revokeGrant = (userId, roleId, scopeId) =>
   del(`/api/users/${userId}/roles/${roleId}/${scopeId}`)
 
+/**
+ * One page of an account's activity, newest first — #13.
+ *
+ * The account is named in the path and nothing else narrows the answer: the
+ * server decides whether this administrator reaches that person, and answers
+ * the same 404 for an account out of their scope as for one that does not
+ * exist (ADR-0002).
+ */
+export const listActivity = (userId, params = {}) =>
+  get(`/api/users/${userId}/activity${query(params)}`)
+
 /** The template, as its text, so the screen can hand it to the browser. */
 export const importTemplate = () =>
   get('/api/users/import-template', { accept: 'text' })

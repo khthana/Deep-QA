@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import ActivityPanel from '../components/users/ActivityPanel'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import GrantsPanel from '../components/users/GrantsPanel'
 import ImportPanel from '../components/users/ImportPanel'
@@ -13,7 +14,7 @@ import {
 } from '../api/users'
 
 /**
- * ผู้ใช้งานระบบ — tickets #11 and #12.
+ * ผู้ใช้งานระบบ — tickets #11, #12 and #13.
  *
  * Who exists, who may be added, whose account is switched off, for how long an
  * external assessor's account works, and - #12 - which roles each person holds
@@ -153,6 +154,11 @@ export default function Users() {
             everything after it is #12 and is managed here, one at a time.
           */}
           {editing.user_id && <GrantsPanel user={editing} onError={report} />}
+          {/*
+            #13, and the same condition for the same reason: a history is what
+            an account has done, and an account being added has done nothing.
+          */}
+          {editing.user_id && <ActivityPanel user={editing} onError={report} />}
         </>
       ) : (
         <>
