@@ -102,4 +102,8 @@ export const post = (path, body, options) =>
 export const put = (path, body, options) =>
   api(path, { ...options, method: 'PUT', body })
 
+// #12 revokes a grant, which is the first request this application makes that
+// names what it is removing in the path and carries no body.
+export const del = (path, options) => api(path, { ...options, method: 'DELETE' })
+
 export default api

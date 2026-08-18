@@ -1,4 +1,4 @@
-import { get, post, put } from './client'
+import { del, get, post, put } from './client'
 
 /**
  * The user-account calls — #11.
@@ -30,6 +30,25 @@ export const updateUser = (userId, draft) => put(`/api/users/${userId}`, draft)
 
 export const setUserStatus = (userId, status) =>
   put(`/api/users/${userId}/status`, { status })
+
+/**
+ * The grant calls — #12.
+ *
+ * `listGrantable` is what the administrator may offer: the roles no more
+ * senior than their own and the scopes their acting grant reaches, both
+ * decided by the server from the database. It exists so the pickers can be
+ * honest, not so they can be the guard - the same grant posted past them is
+ * refused on the same rule (ADR-0002, and #12's sixth criterion).
+ */
+export const listGrantable = () => get('/api/users/grantable')
+
+export const listGrants = userId => get(`/api/users/${userId}/roles`)
+
+export const grantRole = (userId, role) =>
+  post(`/api/users/${userId}/roles`, role)
+
+export const revokeGrant = (userId, roleId, scopeId) =>
+  del(`/api/users/${userId}/roles/${roleId}/${scopeId}`)
 
 /** The template, as its text, so the screen can hand it to the browser. */
 export const importTemplate = () =>

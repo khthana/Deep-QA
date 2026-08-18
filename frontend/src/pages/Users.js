@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
+import GrantsPanel from '../components/users/GrantsPanel'
 import ImportPanel from '../components/users/ImportPanel'
 import UserForm from '../components/users/UserForm'
 import { roleName } from '../components/MapRole'
@@ -12,10 +13,11 @@ import {
 } from '../api/users'
 
 /**
- * ผู้ใช้งานระบบ — ticket #11.
+ * ผู้ใช้งานระบบ — tickets #11 and #12.
  *
- * Who exists, who may be added, whose account is switched off, and for how long
- * an external assessor's account works. Reached by the Central Admin and by the
+ * Who exists, who may be added, whose account is switched off, for how long an
+ * external assessor's account works, and - #12 - which roles each person holds
+ * and at what scope. Reached by the Central Admin and by the
  * administrators below them, whose sidebars carry the entry (docs/05 A11) and
  * who now reach the route as well - #10 left it open to the Central Admin alone
  * because that was all that ticket needed, and #11's eighth criterion is what
@@ -75,9 +77,12 @@ export default function Users() {
     load()
   }, [load])
 
-  const report = error => {
+  // Memoised because the grants panel re-reads its list whenever its error
+  // handler changes identity: a fresh closure every render would put that read
+  // in a loop.
+  const report = useCallback(error => {
     if (!error.expired) setNotice({ error: true, message: error.message })
-  }
+  }, [])
 
   const save = async draft => {
     setBusy(true)
@@ -135,12 +140,20 @@ export default function Users() {
       )}
 
       {editing ? (
-        <UserForm
-          user={editing.user_id ? editing : null}
-          onSubmit={save}
-          onCancel={() => setEditing(null)}
-          busy={busy}
-        />
+        <>
+          <UserForm
+            user={editing.user_id ? editing : null}
+            onSubmit={save}
+            onCancel={() => setEditing(null)}
+            busy={busy}
+          />
+          {/*
+            Only for an account that exists. A grant needs somebody to grant it
+            to, and the first one is made with the account by the form above;
+            everything after it is #12 and is managed here, one at a time.
+          */}
+          {editing.user_id && <GrantsPanel user={editing} onError={report} />}
+        </>
       ) : (
         <>
           <div className="flex flex-wrap items-end justify-between gap-3">

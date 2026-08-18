@@ -66,6 +66,11 @@ const REFUSALS = {
   passwordRequired: 'บทบาทนี้ต้องกำหนดรหัสผ่านตอนสร้างบัญชี',
   scopeNotYours: 'ไม่สามารถจัดการบัญชีนอกขอบเขตที่รับผิดชอบได้',
   roleNotAssignable: 'ไม่สามารถกำหนดบทบาทนี้ได้',
+  // Granting roles after the account exists - #12. Password sign-in is gated
+  // on the account's most senior role, and switching hats happens after that
+  // gate, so an account whose most senior role signs in with a password must
+  // not also hold one that signs in with Google. See routes/grants.js.
+  roleNotCombinable: 'บทบาทนี้ใช้ร่วมกับบทบาทเดิมของบัญชีนี้ไม่ได้',
   importEmpty: 'ไม่พบข้อมูลในไฟล์ที่นำเข้า',
   importRejected: 'ไฟล์นำเข้ามีข้อผิดพลาด ระบบไม่ได้บันทึกรายการใด',
 

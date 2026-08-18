@@ -1,36 +1,29 @@
 import { useEffect, useState } from 'react'
 
-import { roleName } from '../MapRole'
 import ContentMotionDIV from '../ContentMotionDIV'
+import GrantPicker from './GrantPicker'
+import useGrantable from './useGrantable'
 
 /**
  * The form for adding an account and for editing one — #11.
  *
  * One component for both, because the fields are the same and a second copy is
  * a second place for a rule to be forgotten. What differs is small and stated
- * where it happens: the identifier cannot change once it exists, and the first
- * role grant is made with the account and is not editable here - adding and
- * revoking grants afterwards is #12.
+ * where it happens: the identifier cannot change once it exists, and the role
+ * pickers are shown only when adding, because that is the one grant made with
+ * the account. Every grant after it is managed in the panel beside this form
+ * (#12), which is where a person already holding roles has them listed.
  *
  * The validity period is shown for every role and not only for the external
  * assessor, because it is a property of the account rather than of the grant
  * (migration 0005). It is where an assessor's `บัญชีชั่วคราว` is stated, and
  * an ordinary account simply leaves it blank.
  *
- * Nothing here decides what the person may do. The role list is what they may
- * plausibly grant and the server decides whether they actually may; a form that
- * enforced it alone would be a rule with a way around it (ADR-0002).
+ * Nothing here decides what the person may do. The roles and scopes offered
+ * are the ones the server said this administrator may hand out, and the server
+ * decides again when the form is posted; a form that enforced it alone would
+ * be a rule with a way around it (ADR-0002).
  */
-
-/** The six roles, most senior first — the order `priority` gives them. */
-const ROLES = [
-  'FULL_ADMIN',
-  'FACULTY_ADMIN',
-  'DEPT_ADMIN',
-  'PROG_MANAGER',
-  'TEACHER',
-  'EXT_ASSESSOR',
-]
 
 const EMPTY = {
   user_id: '',
@@ -46,7 +39,7 @@ const EMPTY = {
   password: '',
   valid_from: '',
   valid_until: '',
-  role_id: 'TEACHER',
+  role_id: '',
   scope_id: '',
 }
 
@@ -65,6 +58,7 @@ function Field({ label, children }) {
 
 export default function UserForm({ user, onSubmit, onCancel, busy }) {
   const editing = Boolean(user)
+  const grantable = useGrantable()
   const [draft, setDraft] = useState(EMPTY)
 
   useEffect(() => {
@@ -89,9 +83,10 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
   const submit = event => {
     event.preventDefault()
     const { role_id, scope_id, password, ...details } = draft
-    // The grants are #12's from the second one onwards, so an edit sends the
-    // details alone rather than a role the server would have to decide whether
-    // to ignore.
+    // An edit sends the details alone. The grants an existing account holds are
+    // the panel's - they are added and revoked one at a time against their own
+    // routes - and a role smuggled into an edit body would be one the server
+    // has to decide whether to ignore.
     onSubmit(
       editing
         ? details
@@ -220,27 +215,13 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
 
         {!editing && (
           <div className="grid gap-4 md:grid-cols-3">
-            <Field label="บทบาทเริ่มต้น">
-              <select
-                className={field}
-                value={draft.role_id}
-                onChange={set('role_id')}
-              >
-                {ROLES.map(role => (
-                  <option key={role} value={role}>
-                    {roleName(role)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="ขอบเขตของบทบาท">
-              <input
-                className={field}
-                value={draft.scope_id}
-                onChange={set('scope_id')}
-                placeholder="05 หรือ 0501"
-              />
-            </Field>
+            <GrantPicker
+              grantable={grantable}
+              value={{ role_id: draft.role_id, scope_id: draft.scope_id }}
+              onChange={grant =>
+                setDraft(current => ({ ...current, ...grant }))
+              }
+            />
             <Field
               label={
                 needsPassword

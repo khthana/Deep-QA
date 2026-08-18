@@ -32,7 +32,9 @@
  * ones, which leaves the person holding a half-imported file and no way to work
  * out what to re-upload.
  *
- * Granting and revoking roles is #12. What is here is the *first* grant, made
+ * Granting and revoking roles afterwards is #12 and lives in routes/grants.js,
+ * which shares the scope and seniority checks below rather than re-deriving
+ * them. What is here is the *first* grant, made
  * with the account, because #11's second criterion says a new account can
  * immediately sign in and an account holding no grant is refused at sign-in by
  * name. Creating an account that cannot sign in and calling it done would meet
@@ -43,27 +45,21 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 
 const { PASSWORD_ROLES, recordActivity } = require('../auth/accounts');
-const { coveredScopes, requireRole } = require('../auth/authorise');
+const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { formatCsv, parseTable } = require('../lib/csv');
+const {
+  ADMIN_ROLES,
+  COLUMNS,
+  RETURNED,
+  OWN_SCOPE,
+  SENIORITY,
+  GRANTS,
+  administration,
+} = require('../auth/administration');
 
 /** The same cost #8 signs in against and #10 changes a password with. */
 const HASH_ROUNDS = 10;
-
-/**
- * Who may manage accounts at all.
- *
- * docs/05's A11 puts the entry in every administrator's sidebar, and #10's
- * eighth criterion left the route open to the Central Admin alone because that
- * was all that ticket needed. #11's eighth criterion is what settles it: "an
- * administrator sees and may edit only users within their own scope" is a
- * sentence about administrators in the plural, and it is answered by admitting
- * them and filtering, not by admitting one of them.
- *
- * The programme committee is deliberately not here. They own a programme, not
- * the people in it.
- */
-const ADMIN_ROLES = ['FULL_ADMIN', 'FACULTY_ADMIN', 'DEPT_ADMIN'];
 
 /** The default page. Ten rows is the number #11's first criterion names. */
 const PAGE_SIZE = 10;
@@ -87,59 +83,6 @@ const IMPORT_COLUMNS = [
   'valid_until',
   'password',
 ];
-
-/**
- * The columns published about an account.
- *
- * The two dates are cast to text on the way out. node-postgres reads a `date`
- * as a Date at local midnight, and JSON.stringify then writes that as a UTC
- * instant - so in Bangkok every window this system published came back a day
- * early, and an assessor whose access ran to the 31st was told the 30th. A
- * calendar day has no timezone and should not acquire one crossing the wire.
- * Listed rather than taken with `*`,
- * so a column added to the table later - a reset token, a note - is not
- * published by accident. `password` is the one that matters and it is not here.
- */
-const COLUMNS = `u.user_id, u.email, u.status, u.is_verified,
-                 u.title_th, u.first_name_th, u.last_name_th,
-                 u.title_en, u.first_name_en, u.last_name_en,
-                 u.department_id, u.program_id,
-                 u.valid_from::text AS valid_from, u.valid_until::text AS valid_until`;
-
-/**
- * The same list without the alias, for a RETURNING clause, which names the row
- * it is writing and so has no table to qualify against.
- *
- * Derived rather than typed out a second time: the point of `COLUMNS` is that
- * a column added to `users` later is not published until somebody says so, and
- * a hand-copied duplicate is how the write path quietly starts publishing what
- * the read path does not.
- */
-const RETURNED = COLUMNS.replace(/\bu\./g, '');
-
-/**
- * The account's own place in the organisation: its programme if it sits in one,
- * its department otherwise.
- *
- * An account with neither - the Central Admin, who belongs to the university
- * rather than to a part of it - has no scope, and is therefore covered by no
- * scoped administrator and reachable only by the global grant. That is the
- * intended answer and not an oversight: a department administrator has no
- * business editing them.
- */
-const OWN_SCOPE = `COALESCE(u.program_id, u.department_id)`;
-
-/** The most senior grant the account holds, or nothing if it holds none. */
-const SENIORITY = `(SELECT min(r.priority)
-                      FROM user_roles ur JOIN roles r ON r.role_id = ur.role_id
-                     WHERE ur.user_id = u.user_id AND ur.is_active AND r.is_active)`;
-
-/** The grants themselves, so the list can show what each account is. */
-const GRANTS = `(SELECT COALESCE(json_agg(json_build_object(
-                          'role_id', ur.role_id, 'scope_id', ur.scope_id)
-                          ORDER BY r.priority, ur.scope_id), '[]'::json)
-                   FROM user_roles ur JOIN roles r ON r.role_id = ur.role_id
-                  WHERE ur.user_id = u.user_id AND ur.is_active AND r.is_active)`;
 
 const trimmed = (value) => (typeof value === 'string' ? value.trim() : value);
 
@@ -301,81 +244,7 @@ async function insertAccount(client, values, role, actorId) {
 
 function userRoutes(pool) {
   const router = express.Router();
-
-  /**
-   * What the acting administrator reaches, read on every request from the
-   * database and never from anything the caller sent.
-   *
-   * `scopes` of null is the global grant and means no filtering; an empty array
-   * is a grant whose scope no part of the organisation claims, and reaches
-   * nothing - the same answer `covers` gives an empty chain, for the same
-   * reason.
-   */
-  const reachOf = async (req) => ({
-    scopes: await coveredScopes(pool, req.auth.acting.scope_id),
-    priority: req.auth.acting.priority,
-  });
-
-  /**
-   * The account, if this administrator may touch it.
-   *
-   * Scope and seniority in one query, so "not yours" and "does not exist" come
-   * back the same way. They are answered the same way too - 404, `userNotFound`
-   * - because an administrator who could tell the two apart could enumerate the
-   * university's staff by asking for identifiers and reading which answer came
-   * back.
-   */
-  const reachable = async (req, userId) => {
-    const { scopes, priority } = await reachOf(req);
-    const { rows } = await pool.query(
-      `SELECT ${COLUMNS}, ${SENIORITY} AS seniority
-         FROM users u
-        WHERE u.user_id = $1
-          AND ($2::text[] IS NULL OR ${OWN_SCOPE} = ANY($2))
-          AND COALESCE(${SENIORITY}, 99) >= $3`,
-      [userId, scopes, priority],
-    );
-    return rows[0] ?? null;
-  };
-
-  /**
-   * Whether this administrator may hand out this grant.
-   *
-   * Two questions, and both have to be asked. A grant is assignable when its
-   * role is no more senior than the administrator's own - otherwise a
-   * department administrator promotes somebody to faculty administrator and
-   * then, being junior to them, can no longer see what they did - and when its
-   * scope is one the administrator reaches, so nobody grants a role over a
-   * department that is not theirs.
-   */
-  const assignable = async (req, roleId, scopeId) => {
-    const { scopes, priority } = await reachOf(req);
-    const { rows } = await pool.query(
-      `SELECT priority FROM roles WHERE role_id = $1 AND is_active`,
-      [roleId],
-    );
-    if (!rows[0]) return 'roleNotAssignable';
-    if (rows[0].priority < priority) return 'roleNotAssignable';
-    // A global grant is the Central Admin's own, and is handed out by them
-    // alone: `coveredScopes` answers null for it, which no scoped administrator
-    // ever gets back.
-    if (scopes === null) return null;
-    if (!scopeId || !scopes.includes(scopeId)) return 'scopeNotYours';
-    return null;
-  };
-
-  /**
-   * Whether the account's own place in the organisation is one this
-   * administrator reaches. Asked on create and on edit, because otherwise an
-   * administrator could file a new account against another department and lose
-   * sight of it the moment it was written.
-   */
-  const placeAllowed = async (req, departmentId, programId) => {
-    const { scopes } = await reachOf(req);
-    if (scopes === null) return true;
-    const own = programId ?? departmentId;
-    return Boolean(own) && scopes.includes(own);
-  };
+  const { reachOf, reachable, assignable, placeAllowed } = administration(pool);
 
   // --- the list ------------------------------------------------------------
 

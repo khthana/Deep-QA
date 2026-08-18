@@ -113,3 +113,21 @@ What a later ticket can violate by accident:
   checks above; a route that adds a grant without them is the hole this ADR exists to close, reopened from the side.
 - **The import is not a lesser door.** Every row goes through the identical checks, because a rule the form enforces and
   the spreadsheet does not is a rule with a way around it — and the spreadsheet is how a hundred accounts arrive at once.
+
+## Closed by #12 — the second grant onwards
+
+[#12](https://github.com/khthana/Deep-QA/issues/12) is the route the amendment above named as the thing that could
+reopen the hole from the side, and it does not: `POST /api/users/:userId/roles` and
+`DELETE /api/users/:userId/roles/:roleId/:scopeId` apply the identical two checks, because they call the identical
+function. `reachOf`, `reachable`, `assignable` and `placeAllowed` were extracted out of `routes/users.js` into
+`auth/administration.js` and are now shared by the create path, the import path and the grant path. There is one
+implementation of "may this administrator hand out this grant", not three that happen to agree.
+
+Two things #12 adds that are worth stating here rather than only in the route:
+
+- **`GET /api/users/grantable` is not a guard.** It answers the roles and scopes the acting administrator may offer, so
+  the pickers can be honest. Every refusal is still decided by `assignable` on the write, and #12's sixth and eighth
+  criteria are tests that post a grant past the pickers and assert the server refuses it.
+- **A revoke is `is_active = false`.** `allRoles` filters on it and `attachRoles` re-reads the grants on every request,
+  so the access is gone on the grantee's next one without anything reaching into their session. The row stays, because
+  it is what records who granted it and when.
