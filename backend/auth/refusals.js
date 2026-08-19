@@ -87,6 +87,18 @@ const REFUSALS = {
   departmentInUse: 'ภาควิชานี้มีข้อมูลอื่นอ้างอิงอยู่ จึงลบไม่ได้ หากต้องการเลิกใช้งานให้ปิดการใช้งานแทน',
   facultyNotYours: 'ไม่สามารถจัดการภาควิชานอกคณะที่รับผิดชอบได้',
 
+  // Programmes - #15. `programNotFound` covers both the programme that does not
+  // exist and the one in a department this administrator does not hold, for the
+  // same reason `departmentNotFound` does: a different answer for the second
+  // would turn the route into a way of listing other departments' programmes.
+  // `departmentNotYours` is the refusal for the other direction - the body
+  // names the department a programme is to be filed under, and a department
+  // administrator naming somebody else's is refused rather than obeyed.
+  programNotFound: 'ไม่พบหลักสูตรที่ระบุ',
+  duplicateProgramId: 'รหัสหลักสูตรนี้ถูกใช้งานแล้ว',
+  invalidProgram: 'ข้อมูลหลักสูตรไม่ครบถ้วนหรือไม่ถูกต้อง',
+  departmentNotYours: 'ไม่สามารถจัดการหลักสูตรนอกภาควิชาที่รับผิดชอบได้',
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.

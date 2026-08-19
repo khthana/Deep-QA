@@ -45,6 +45,7 @@ const { authRoutes } = require('./routes/auth');
 const { grantRoutes } = require('./routes/grants');
 const { healthRoutes } = require('./routes/health');
 const { meRoutes } = require('./routes/me');
+const { programRoutes } = require('./routes/programs');
 const { userRoutes } = require('./routes/users');
 
 function createApp({ pool }) {
@@ -82,6 +83,7 @@ function createApp({ pool }) {
   app.use('/api', historyRoutes(pool));
   app.use('/api', userRoutes(pool));
   app.use('/api', departmentRoutes(pool));
+  app.use('/api', programRoutes(pool));
 
   // Express' own fallback answers with HTML, which a client that asked for
   // JSON cannot read: it gets a parse error where it expected a status.
