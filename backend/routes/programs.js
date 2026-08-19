@@ -210,9 +210,11 @@ function programRoutes(pool) {
   });
 
   /**
-   * The departments this caller may file a programme under — the list the
-   * form's picker is drawn from, and the first criterion's "a chosen
-   * Department" made choosable.
+   * The departments this caller reaches — what the form's picker is drawn from,
+   * and the first criterion's "a chosen Department" made choosable. It is the
+   * screen's only way of turning a department identifier into a name, so it
+   * reports every department in reach and lets the form decide which of them
+   * may be chosen.
    *
    * It lives here rather than being read from `/departments` because that
    * screen belongs to the faculty administrator alone (#14, CONTEXT.md), and a
@@ -221,9 +223,14 @@ function programRoutes(pool) {
    * picker offers is exactly what `departmentRefusal` will accept - a form
    * cannot be made to name a department the server would then turn down.
    *
-   * Retired departments are left out: this is a selection list, and the fourth
-   * criterion's second half - a record that is switched off "stops appearing in
-   * selection lists" - reads the same for a department as for a programme.
+   * Retired departments are reported rather than hidden, each with its
+   * `is_active`. The fourth criterion's "stops appearing in selection lists" is
+   * about the selection list, and the selection list is the form: hiding a
+   * retired department here would also empty the picker of the programmes
+   * already filed under it and blank the department column on the list, so the
+   * screen would be unable to name where a programme lives. The form offers a
+   * retired department only as the one a programme is already under, and
+   * `departmentRefusal` still turns down a create or a move into it.
    *
    * Not paged: it is a dropdown, and a faculty has departments in the dozens.
    */
@@ -231,10 +238,9 @@ function programRoutes(pool) {
     try {
       const reach = await coveredScopes(pool, req.auth.acting.scope_id);
       const { rows } = await pool.query(
-        `SELECT department_id, department_name_th, department_name_en
+        `SELECT department_id, department_name_th, department_name_en, is_active
            FROM departments
           WHERE ($1::text[] IS NULL OR department_id = ANY($1))
-            AND is_active
           ORDER BY department_id ASC`,
         [reach],
       );

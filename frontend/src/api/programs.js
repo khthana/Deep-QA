@@ -14,15 +14,19 @@ import { del, get, post, put, query } from './client'
 export const listPrograms = (params = {}) => get(`/api/programs${query(params)}`)
 
 /**
- * The departments this account may file a programme under.
+ * The departments this account reaches, each with its `is_active`.
  *
  * Read from the programmes routes rather than from `/api/departments`, which
  * belongs to the faculty administrator alone — a department administrator
  * belongs on this screen and would be refused by that one. What comes back is
  * the same reach the server checks against, so the picker cannot offer a
  * choice that would then be turned down.
+ *
+ * Retired ones come too, and are the screen's only way of naming the
+ * department a programme already filed under one lives in. Deciding which of
+ * them may be *picked* is the form's job, not this call's.
  */
-export const listUsableDepartments = () => get('/api/programs/departments')
+export const listReachableDepartments = () => get('/api/programs/departments')
 
 /**
  * One programme, read back from the server.

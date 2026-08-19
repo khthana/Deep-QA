@@ -581,11 +581,13 @@ test('a creation cannot ask for a programme that is already switched off', async
   assert.equal((await remove(cookie, id)).status, 204);
 });
 
-test('a retired department is not offered, and nothing new may be filed under it', async () => {
+test('a retired department is reported as retired, and nothing new may be filed under it', async () => {
   // The fourth criterion's second half, read for the department a programme is
   // chosen into: a record that is switched off "stops appearing in selection
-  // lists". What the picker offers and what the writes accept stay the one
-  // rule, so both ends are asserted again here.
+  // lists". The selection list is the form, not this response - the screen has
+  // no other way to name the department a programme already sits in, so the
+  // department is reported with its `is_active` and the form is what declines
+  // to offer it. What the writes accept is asserted here as before.
   const cookie = await signInAs('U_FAC');
   await api.pool.query('UPDATE departments SET is_active = false WHERE department_id = $1', [
     DEPT_CIVIL,
@@ -593,7 +595,9 @@ test('a retired department is not offered, and nothing new may be filed under it
 
   try {
     const offered = await pickable(cookie);
-    assert.ok(!offered.body.departments.some((row) => row.department_id === DEPT_CIVIL));
+    const retired = offered.body.departments.find((row) => row.department_id === DEPT_CIVIL);
+    assert.ok(retired, 'the retired department is still named');
+    assert.equal(retired.is_active, false);
 
     const refused = await create(cookie, {
       program_id: 'T5011',

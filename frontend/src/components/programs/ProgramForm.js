@@ -15,9 +15,16 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * the person types.
  *
  * The department *is* a field, unlike #14's faculty, and it is a picker rather
- * than a box: what it offers is the list the server said this account may use,
- * so the form cannot be made to name a department the save would then be
- * refused for.
+ * than a box: what it offers is drawn from the list the server said this
+ * account reaches, so the form cannot be made to name a department the save
+ * would then be refused for.
+ *
+ * A retired department is offered only when it is the one this programme is
+ * already filed under, and disabled there. That is the fourth criterion read
+ * for the department - switched off "stops appearing in selection lists" - and
+ * the exception is the reason retiring a department does not freeze every
+ * programme beneath it: the person can still fix a name, or move the programme
+ * out, without the picker being empty and the save impossible.
  *
  * Switching a programme off is how one is retired when PLOs, Program Subjects,
  * students and graded work still point at it - and is also what the server does
@@ -55,17 +62,30 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
   const [draft, setDraft] = useState(EMPTY)
   const editing = Boolean(value?.program_id)
 
+  // The one department there is to file under, when there is only one. Retired
+  // ones do not count: auto-picking one would put the form in a state the
+  // server refuses before the person has touched anything.
+  const usable = departments.filter(department => department.is_active !== false)
+  const onlyOne = usable.length === 1 ? usable[0] : null
+
   useEffect(() => {
     setDraft(current => ({
       ...EMPTY,
       // A department to start on, so adding one to a faculty with a single
       // department is not a choice the person has to make by hand.
-      department_id: departments.length === 1 ? departments[0].department_id : current.department_id,
+      department_id: onlyOne ? onlyOne.department_id : current.department_id,
       ...value,
     }))
-  }, [value, departments])
+  }, [value, onlyOne])
 
   const set = key => event => setDraft(current => ({ ...current, [key]: event.target.value }))
+
+  // The retired department this programme already sits in is kept in the list
+  // so the picker can show where it lives; every other retired one is left out,
+  // because nothing may be filed under it.
+  const offered = departments.filter(
+    department => department.is_active !== false || department.department_id === draft.department_id,
+  )
 
   const submit = event => {
     event.preventDefault()
@@ -107,9 +127,14 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
               required
             >
               <option value="">เลือกภาควิชา</option>
-              {departments.map(department => (
-                <option key={department.department_id} value={department.department_id}>
+              {offered.map(department => (
+                <option
+                  key={department.department_id}
+                  value={department.department_id}
+                  disabled={department.is_active === false}
+                >
                   {department.department_id} {department.department_name_th}
+                  {department.is_active === false && ' (ปิดใช้งาน)'}
                 </option>
               ))}
             </select>

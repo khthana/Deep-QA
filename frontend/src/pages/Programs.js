@@ -11,7 +11,7 @@ import {
   importPrograms,
   importTemplate,
   listPrograms,
-  listUsableDepartments,
+  listReachableDepartments,
   updateProgram,
 } from '../api/programs'
 
@@ -71,14 +71,15 @@ export default function Programs() {
     load()
   }, [load])
 
-  // The picker's options, fetched once: which departments this account may file
-  // a programme under is a property of the grant and does not change with the
-  // page being looked at.
+  // The departments in reach, fetched once: what this account covers is a
+  // property of the grant and does not change with the page being looked at.
+  // Used twice - to name the department each row sits in, and as the pool the
+  // form's picker draws from.
   useEffect(() => {
     let cancelled = false
-    listUsableDepartments()
-      .then(({ departments: usable }) => {
-        if (!cancelled) setDepartments(usable)
+    listReachableDepartments()
+      .then(({ departments: reachable }) => {
+        if (!cancelled) setDepartments(reachable)
       })
       .catch(report)
     return () => {
