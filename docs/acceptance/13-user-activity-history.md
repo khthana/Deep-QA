@@ -76,8 +76,9 @@ cd frontend && npm start         # http://localhost:5000
    จึงไม่มีเป้าหมาย และ `GRANT_ROLE` / `REVOKE_ROLE` ชี้ที่ *ผู้ได้รับบทบาท* — ว่าเป็นบทบาทใดในขอบเขตใดไม่ได้อยู่ในบรรทัด
    เพราะสองคอลัมน์ชี้ระเบียนเดียว ส่วน `user_roles` ไม่มี surrogate key ให้ชี้
 3. **`PAGE_SIZE = 10` ประกาศไว้สามที่** (`backend/routes/history.js`, `frontend/src/pages/Users.js`,
-   `frontend/src/components/users/HistoryPanel.js`) และแถบแบ่งหน้าเขียนซ้ำกันสองที่ ยังไม่ดึงออกมาเป็น
-   `<Pager>` ร่วมกันเพราะจะกลายเป็นการรื้อจอของ #11 ไปด้วย ควรเป็นตั๋วเล็ก ๆ ของตัวเองเมื่อจอที่สี่มาถึง
+   `frontend/src/components/users/HistoryPanel.js`) ~~และแถบแบ่งหน้าเขียนซ้ำกันสองที่~~
+   ครึ่งหลังปิดแล้วใน **#57** (โค้ดรวมแล้ว แต่ยังรอเดิน `docs/acceptance/57-pager.md`) — แถบแบ่งหน้าเป็น `frontend/src/components/Pager.js` ตัวเดียว
+   ที่ทุกหน้าจอเรียก ส่วน `PAGE_SIZE` ยังแยกกันอยู่ตามเหตุผลใน `docs/acceptance/57-pager.md` ข้อ 1
 4. **`assigned_at` ในแผง *บทบาทที่ได้รับ* ยังใช้เวลาตามเครื่องผู้ใช้** (`madeOn` ใน `GrantsPanel.js`)
    เป็นวันที่ล้วนจึงเพี้ยนได้อย่างมากหนึ่งวัน แผงประวัติของ #13 ระบุ `Asia/Bangkok` ไว้แล้ว
    ถ้าจะให้ทั้งจอใช้ตัวจัดรูปแบบเดียวกัน ควรเป็นตั๋วเล็ก ๆ ของตัวเอง

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
+import Pager from '../Pager'
 import { listHistory } from '../../api/users'
 
 /**
@@ -121,8 +122,6 @@ export default function HistoryPanel({ user, onError }) {
     setPage(1)
   }, [user.user_id])
 
-  const pages = Math.max(1, Math.ceil(history.total / PAGE_SIZE))
-
   return (
     <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       <h2 className="mb-1 text-lg font-medium text-primary">ประวัติการใช้งาน</h2>
@@ -168,29 +167,14 @@ export default function HistoryPanel({ user, onError }) {
         </table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
-        <span>
-          ทั้งหมด {history.total} รายการ · หน้า {history.page ?? page} จาก {pages}
-        </span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setPage(current => Math.max(1, current - 1))}
-            disabled={page <= 1}
-            className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-40"
-          >
-            ก่อนหน้า
-          </button>
-          <button
-            type="button"
-            onClick={() => setPage(current => Math.min(pages, current + 1))}
-            disabled={page >= pages}
-            className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-40"
-          >
-            ถัดไป
-          </button>
-        </div>
-      </div>
+      <Pager
+        page={page}
+        shown={history.page}
+        total={history.total}
+        perPage={PAGE_SIZE}
+        onPage={setPage}
+        className="mt-4"
+      />
     </ContentMotionDIV>
   )
 }

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
+import Pager from '../components/Pager'
 import SubjectForm from '../components/subjects/SubjectForm'
 import {
   createSubject,
@@ -162,8 +163,6 @@ export default function Subjects() {
     }
   }
 
-  const pages = Math.max(1, Math.ceil(data.total / PAGE_SIZE))
-
   return (
     <div className="space-y-6">
       {notice && (
@@ -309,29 +308,13 @@ export default function Subjects() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-slate-600">
-            <span>
-              ทั้งหมด {data.total} รายการ · หน้า {data.page ?? page} จาก {pages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setPage(current => Math.max(1, current - 1))}
-                disabled={page <= 1}
-                className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-40"
-              >
-                ก่อนหน้า
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(current => Math.min(pages, current + 1))}
-                disabled={page >= pages}
-                className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-40"
-              >
-                ถัดไป
-              </button>
-            </div>
-          </div>
+          <Pager
+            page={page}
+            shown={data.page}
+            total={data.total}
+            perPage={PAGE_SIZE}
+            onPage={setPage}
+          />
 
           <ImportPanel
             title="นำเข้ารายวิชาจากไฟล์"

@@ -4,6 +4,7 @@ import HistoryPanel from '../components/users/HistoryPanel'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import GrantsPanel from '../components/users/GrantsPanel'
 import ImportPanel from '../components/ImportPanel'
+import Pager from '../components/Pager'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
 import { roleName } from '../components/MapRole'
@@ -119,8 +120,6 @@ export default function Users() {
       report(error)
     }
   }
-
-  const pages = Math.max(1, Math.ceil(data.total / PAGE_SIZE))
 
   // A filter changing has to send the reader back to the first page: staying
   // on page four of a result that now has one page shows an empty table and
@@ -284,29 +283,13 @@ export default function Users() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-slate-600">
-            <span>
-              ทั้งหมด {data.total} รายการ · หน้า {data.page ?? page} จาก {pages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setPage(current => Math.max(1, current - 1))}
-                disabled={page <= 1}
-                className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-40"
-              >
-                ก่อนหน้า
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(current => Math.min(pages, current + 1))}
-                disabled={page >= pages}
-                className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-40"
-              >
-                ถัดไป
-              </button>
-            </div>
-          </div>
+          <Pager
+            page={page}
+            shown={data.page}
+            total={data.total}
+            perPage={PAGE_SIZE}
+            onPage={setPage}
+          />
 
           <ImportPanel
             title="นำเข้าผู้ใช้งานจากไฟล์"
