@@ -51,6 +51,7 @@ const express = require('express');
 
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
+const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
 const { importRows, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 
@@ -80,13 +81,6 @@ const IMPORT_COLUMNS = [
   'department_id',
   'year',
 ];
-
-const trimmed = (value) => (typeof value === 'string' ? value.trim() : value);
-
-const blankToNull = (value) => {
-  const text = trimmed(value);
-  return text === '' || text === undefined ? null : text;
-};
 
 /**
  * One programme's worth of fields, from a form or from a spreadsheet row.
@@ -127,12 +121,6 @@ function readProgram(source, { editing = false } = {}) {
   return { ok: true, values };
 }
 
-/** Postgres says a unique index was violated; which one is not the point. */
-const isDuplicate = (error) => error.code === '23505';
-
-/** Something still references the row that was asked to be destroyed. */
-const isReferenced = (error) => error.code === '23503';
-
 function programRoutes(pool) {
   const router = express.Router();
 
@@ -148,13 +136,15 @@ function programRoutes(pool) {
    * Returns a REFUSALS key or null, which is also `importRows`'s `verify`
    * contract - so the same check covers the typed row and the imported one.
    */
-  async function departmentRefusal(req, departmentId) {
+  async function departmentRefusal(req, departmentId, { mustBeActive = true } = {}) {
     if (!departmentId) return 'invalidProgram';
     const reach = await coveredScopes(pool, req.auth.acting.scope_id);
     const { rows } = await pool.query(
       `SELECT department_id FROM departments
-        WHERE department_id = $1 AND ($2::text[] IS NULL OR department_id = ANY($2))`,
-      [departmentId, reach],
+        WHERE department_id = $1
+          AND ($2::text[] IS NULL OR department_id = ANY($2))
+          AND ($3::boolean IS NOT TRUE OR is_active)`,
+      [departmentId, reach, mustBeActive],
     );
     return rows[0] ? null : 'departmentNotYours';
   }
@@ -171,7 +161,7 @@ function programRoutes(pool) {
     const reach = await coveredScopes(pool, req.auth.acting.scope_id);
     const { rows } = await pool.query(
       `SELECT ${RETURNED} FROM programs
-        WHERE program_id = $1 AND ($2::text[] IS NULL OR program_id = ANY($2))`,
+        WHERE program_id = $1 AND ($2::text[] IS NULL OR department_id = ANY($2))`,
       [programId, reach],
     );
     return rows[0] ?? null;
@@ -194,7 +184,7 @@ function programRoutes(pool) {
       const { page, perPage, offset } = pageOf(req);
       const activeOnly = ['1', 'true'].includes(String(req.query.active));
 
-      const where = `WHERE ($1::text[] IS NULL OR program_id = ANY($1))
+      const where = `WHERE ($1::text[] IS NULL OR department_id = ANY($1))
                        AND ($2::boolean IS NOT TRUE OR is_active)`;
 
       const counted = await pool.query(`SELECT count(*)::int AS total FROM programs ${where}`, [
@@ -231,6 +221,10 @@ function programRoutes(pool) {
    * picker offers is exactly what `departmentRefusal` will accept - a form
    * cannot be made to name a department the server would then turn down.
    *
+   * Retired departments are left out: this is a selection list, and the fourth
+   * criterion's second half - a record that is switched off "stops appearing in
+   * selection lists" - reads the same for a department as for a programme.
+   *
    * Not paged: it is a dropdown, and a faculty has departments in the dozens.
    */
   router.get('/programs/departments', requireRole(...MAINTAINERS), async (req, res, next) => {
@@ -240,6 +234,7 @@ function programRoutes(pool) {
         `SELECT department_id, department_name_th, department_name_en
            FROM departments
           WHERE ($1::text[] IS NULL OR department_id = ANY($1))
+            AND is_active
           ORDER BY department_id ASC`,
         [reach],
       );
@@ -347,17 +342,19 @@ function programRoutes(pool) {
       const refusal = await departmentRefusal(req, draft.values.department_id);
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
 
+      // `is_active` is deliberately not read here. A programme is created
+      // because it is being offered; retiring one is what the fourth criterion
+      // describes, and it happens on an edit or on a removal, not at birth.
       const { rows } = await pool.query(
         `INSERT INTO programs
-           (program_id, program_name_th, program_name_en, department_id, year, is_active)
-         VALUES ($1, $2, $3, $4, $5, coalesce($6, true)) RETURNING ${RETURNED}`,
+           (program_id, program_name_th, program_name_en, department_id, year)
+         VALUES ($1, $2, $3, $4, $5) RETURNING ${RETURNED}`,
         [
           draft.values.program_id,
           draft.values.program_name_th,
           draft.values.program_name_en,
           draft.values.department_id,
           draft.values.year,
-          typeof req.body?.is_active === 'boolean' ? req.body.is_active : null,
         ],
       );
 
@@ -382,12 +379,12 @@ function programRoutes(pool) {
    * somebody else's programme under their own department, or push their own out
    * of their reach and lose it.
    *
-   * The two fields that are left alone when the request does not carry them are
-   * the department and the year, and both are for the same reason: they are the
-   * fields a caller that is not the form - a script, a later screen sending a
-   * partial edit - is most likely to omit, and blanking a programme's department
-   * is not something anybody meant by leaving a column out. The names replace,
-   * as a PUT's fields do.
+   * The one field left alone when the request does not carry it is the
+   * department: a programme has to be filed somewhere, and blanking that is not
+   * something anybody meant by leaving a column out. Everything else replaces,
+   * as a PUT's fields do - including the year, which the form has to be able to
+   * clear. Reading an absent year as "leave it" would have made an emptied box
+   * answer "บันทึกเรียบร้อย" and change nothing.
    */
   router.put('/programs/:programId', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
@@ -397,8 +394,14 @@ function programRoutes(pool) {
       const draft = readProgram(req.body ?? {}, { editing: true });
       if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
 
+      // A department that has since been retired may keep the programmes
+      // already filed under it - otherwise retiring a department would freeze
+      // its programmes, and switching one of them off would be impossible. It
+      // is only a *move* into a retired department that is refused.
       const department = draft.values.department_id ?? existing.department_id;
-      const refusal = await departmentRefusal(req, department);
+      const refusal = await departmentRefusal(req, department, {
+        mustBeActive: department !== existing.department_id,
+      });
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
 
       const { rows } = await pool.query(
@@ -406,7 +409,7 @@ function programRoutes(pool) {
             SET program_name_th = $2,
                 program_name_en = $3,
                 department_id = $4,
-                year = coalesce($5, year),
+                year = $5,
                 is_active = coalesce($6, is_active),
                 updated_at = now()
           WHERE program_id = $1
@@ -446,19 +449,38 @@ function programRoutes(pool) {
       const existing = await reachable(req, req.params.programId);
       if (!existing) return res.status(404).json({ message: REFUSALS.programNotFound });
 
+      // One transaction with a savepoint, rather than two calls on the pool: a
+      // failed DELETE has to be rolled back before anything else can be said on
+      // that connection, and the row has to still be there for the UPDATE that
+      // follows. Two separate calls could answer "deactivated" for a programme
+      // a concurrent request had already removed.
+      const client = await pool.connect();
       try {
-        await pool.query('DELETE FROM programs WHERE program_id = $1', [existing.program_id]);
-        return res.status(204).send();
-      } catch (error) {
-        if (!isReferenced(error)) throw error;
-      }
+        await client.query('BEGIN');
+        await client.query('SAVEPOINT attempt');
+        try {
+          await client.query('DELETE FROM programs WHERE program_id = $1', [existing.program_id]);
+          await client.query('COMMIT');
+          return res.status(204).send();
+        } catch (error) {
+          if (!isReferenced(error)) throw error;
+          await client.query('ROLLBACK TO SAVEPOINT attempt');
+        }
 
-      const { rows } = await pool.query(
-        `UPDATE programs SET is_active = false, updated_at = now()
-          WHERE program_id = $1 RETURNING ${RETURNED}`,
-        [existing.program_id],
-      );
-      return res.status(200).json({ program: rows[0], deactivated: true });
+        const { rows } = await client.query(
+          `UPDATE programs SET is_active = false, updated_at = now()
+            WHERE program_id = $1 RETURNING ${RETURNED}`,
+          [existing.program_id],
+        );
+        await client.query('COMMIT');
+        if (!rows[0]) return res.status(404).json({ message: REFUSALS.programNotFound });
+        return res.status(200).json({ program: rows[0], deactivated: true });
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally {
+        client.release();
+      }
     } catch (error) {
       return next(error);
     }

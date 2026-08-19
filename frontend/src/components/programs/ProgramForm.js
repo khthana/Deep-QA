@@ -22,6 +22,11 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * Switching a programme off is how one is retired when PLOs, Program Subjects,
  * students and graded work still point at it - and is also what the server does
  * by itself when a deletion is asked for and something depends on the record.
+ * The box is on the edit form only; a programme being added is being offered.
+ *
+ * Every field is sent on every save, blank ones included, because the server
+ * reads a PUT as a replacement: an emptied year is an intentionally emptied
+ * year, and the form is the thing that knows the person emptied it.
  */
 
 const EMPTY = {
@@ -139,16 +144,20 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
           </Field>
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={draft.is_active}
-            onChange={event =>
-              setDraft(current => ({ ...current, is_active: event.target.checked }))
-            }
-          />
-          เปิดใช้งาน
-        </label>
+        {/* Only on an edit: a programme is created because it is being offered,
+            and the server does not read the field on a creation either. */}
+        {editing && (
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={draft.is_active}
+              onChange={event =>
+                setDraft(current => ({ ...current, is_active: event.target.checked }))
+              }
+            />
+            เปิดใช้งาน
+          </label>
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <button

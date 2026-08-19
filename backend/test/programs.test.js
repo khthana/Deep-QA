@@ -261,8 +261,15 @@ test('a referenced programme is deactivated instead of deleted', async () => {
   assert.ok(managed.body.programs.some((row) => row.program_id === SEEDED.id));
 
   // Put it back: later tests read this programme and the seed says it is on.
-  const on = await edit(cookie, SEEDED.id, { program_name_th: SEEDED.th, is_active: true });
+  // Every field, because a PUT replaces - see the year test below.
+  const on = await edit(cookie, SEEDED.id, {
+    program_name_th: SEEDED.th,
+    program_name_en: SEEDED.en,
+    year: SEEDED.year,
+    is_active: true,
+  });
   assert.equal(on.body.program.is_active, true);
+  assert.equal(on.body.program.year, SEEDED.year);
 });
 
 test('the form is offered exactly the departments the caller may use', async () => {
@@ -533,4 +540,84 @@ test('a caller who has not signed in reaches none of it', async () => {
   ]);
 
   for (const answer of answers) assert.equal(answer.status, 401);
+});
+
+test('an edit that empties the year empties it', async () => {
+  // The form sends every box on every save, so a year that arrives blank is a
+  // year somebody cleared. Reading it as "leave the old one" would have told
+  // the person their edit was saved while the table kept the old value.
+  const cookie = await signInAs('U_FAC');
+  const id = 'T5009';
+  await create(cookie, {
+    program_id: id,
+    program_name_th: 'หลักสูตรทดสอบปี',
+    department_id: DEPT_COMPUTER,
+    year: '2565',
+  });
+
+  const cleared = await edit(cookie, id, { program_name_th: 'หลักสูตรทดสอบปี', year: '' });
+  assert.equal(cleared.status, 200);
+  assert.equal(cleared.body.program.year, null);
+  assert.equal((await read(cookie, id)).body.program.year, null);
+
+  assert.equal((await remove(cookie, id)).status, 204);
+});
+
+test('a creation cannot ask for a programme that is already switched off', async () => {
+  // Retiring one is the fourth criterion and happens on an edit or a removal.
+  // Nothing in the ticket asks for a programme to be born inactive, so the
+  // field is not read on a creation.
+  const cookie = await signInAs('U_FAC');
+  const id = 'T5010';
+  const added = await create(cookie, {
+    program_id: id,
+    program_name_th: 'หลักสูตรที่ขอปิดตั้งแต่แรก',
+    department_id: DEPT_COMPUTER,
+    is_active: false,
+  });
+
+  assert.equal(added.status, 201);
+  assert.equal(added.body.program.is_active, true);
+  assert.equal((await remove(cookie, id)).status, 204);
+});
+
+test('a retired department is not offered, and nothing new may be filed under it', async () => {
+  // The fourth criterion's second half, read for the department a programme is
+  // chosen into: a record that is switched off "stops appearing in selection
+  // lists". What the picker offers and what the writes accept stay the one
+  // rule, so both ends are asserted again here.
+  const cookie = await signInAs('U_FAC');
+  await api.pool.query('UPDATE departments SET is_active = false WHERE department_id = $1', [
+    DEPT_CIVIL,
+  ]);
+
+  try {
+    const offered = await pickable(cookie);
+    assert.ok(!offered.body.departments.some((row) => row.department_id === DEPT_CIVIL));
+
+    const refused = await create(cookie, {
+      program_id: 'T5011',
+      program_name_th: 'หลักสูตรในภาควิชาที่ปิดแล้ว',
+      department_id: DEPT_CIVIL,
+    });
+    assert.equal(refused.status, 403);
+    assert.equal(refused.body.message, REFUSALS.departmentNotYours);
+
+    // But a programme already filed under it is still editable, or retiring a
+    // department would freeze the programmes underneath it.
+    const id = 'T5012';
+    await api.pool.query(
+      `INSERT INTO programs (program_id, program_name_th, department_id)
+       VALUES ($1, 'หลักสูตรเดิมของภาควิชานี้', $2)`,
+      [id, DEPT_CIVIL],
+    );
+    const edited = await edit(cookie, id, { program_name_th: 'ชื่อใหม่', is_active: false });
+    assert.equal(edited.status, 200);
+    assert.equal(edited.body.program.is_active, false);
+    assert.equal((await remove(cookie, id)).status, 204);
+  } finally {
+    await api.pool.query('UPDATE departments SET is_active = true WHERE department_id = $1', [
+      DEPT_CIVIL,
+    ]);
+  }
 });

@@ -44,6 +44,7 @@ const express = require('express');
 
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
+const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
 const { importRows, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 
@@ -68,13 +69,6 @@ const RETURNED = 'department_id, department_name_th, department_name_en, faculty
 
 /** The template's columns, and the fields the import reads from a row. */
 const IMPORT_COLUMNS = ['department_id', 'department_name_th', 'department_name_en'];
-
-const trimmed = (value) => (typeof value === 'string' ? value.trim() : value);
-
-const blankToNull = (value) => {
-  const text = trimmed(value);
-  return text === '' || text === undefined ? null : text;
-};
 
 /**
  * One department's worth of fields, from a form or from a spreadsheet row.
@@ -108,12 +102,6 @@ function readDepartment(source, { editing = false } = {}) {
 
   return { ok: true, values };
 }
-
-/** Postgres says a unique index was violated; which one is not the point. */
-const isDuplicate = (error) => error.code === '23505';
-
-/** Something still references the row that was asked to be destroyed. */
-const isReferenced = (error) => error.code === '23503';
 
 function departmentRoutes(pool) {
   const router = express.Router();

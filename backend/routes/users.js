@@ -47,6 +47,7 @@ const bcrypt = require('bcrypt');
 const { PASSWORD_ROLES, onUser, recordActivity } = require('../auth/accounts');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
+const { blankToNull, trimmed } = require('../lib/fields');
 const { importRows, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const {
@@ -80,13 +81,6 @@ const IMPORT_COLUMNS = [
   'valid_until',
   'password',
 ];
-
-const trimmed = (value) => (typeof value === 'string' ? value.trim() : value);
-
-const blankToNull = (value) => {
-  const text = trimmed(value);
-  return text === '' || text === undefined ? null : text;
-};
 
 /**
  * A date as the form or the spreadsheet stated it, or a refusal.
