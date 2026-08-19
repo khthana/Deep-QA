@@ -54,6 +54,7 @@ const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
 const { importRows, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { departmentInReach, reachableDepartments } = require('../lib/reach');
 
 /**
  * The roles that maintain programmes.
@@ -135,18 +136,15 @@ function programRoutes(pool) {
    *
    * Returns a REFUSALS key or null, which is also `importRows`'s `verify`
    * contract - so the same check covers the typed row and the imported one.
+   * The question itself is `lib/reach`, shared with #16; what a `false` means
+   * is this file's, because the sentence names หลักสูตร.
    */
   async function departmentRefusal(req, departmentId, { mustBeActive = true } = {}) {
     if (!departmentId) return 'invalidProgram';
-    const reach = await coveredScopes(pool, req.auth.acting.scope_id);
-    const { rows } = await pool.query(
-      `SELECT department_id FROM departments
-        WHERE department_id = $1
-          AND ($2::text[] IS NULL OR department_id = ANY($2))
-          AND ($3::boolean IS NOT TRUE OR is_active)`,
-      [departmentId, reach, mustBeActive],
-    );
-    return rows[0] ? null : 'departmentNotYours';
+    const held = await departmentInReach(pool, req.auth.acting.scope_id, departmentId, {
+      mustBeActive,
+    });
+    return held ? null : 'departmentNotYours';
   }
 
   /**
@@ -236,15 +234,8 @@ function programRoutes(pool) {
    */
   router.get('/programs/departments', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
-      const reach = await coveredScopes(pool, req.auth.acting.scope_id);
-      const { rows } = await pool.query(
-        `SELECT department_id, department_name_th, department_name_en, is_active
-           FROM departments
-          WHERE ($1::text[] IS NULL OR department_id = ANY($1))
-          ORDER BY department_id ASC`,
-        [reach],
-      );
-      return res.status(200).json({ departments: rows });
+      const departments = await reachableDepartments(pool, req.auth.acting.scope_id);
+      return res.status(200).json({ departments });
     } catch (error) {
       return next(error);
     }

@@ -8,6 +8,7 @@ import UserNotFound from '../pages/UserNotFound'
 import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Programs from '../pages/Programs'
+import Subjects from '../pages/Subjects'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
 import LoadingScreen from '../components/LoadingScreen'
@@ -101,7 +102,7 @@ export default function AppRoutes() {
         <Route path="users/user-history" element={<UserHistory />} />
         <Route path="departments" element={<Departments />} />
         <Route path="programs" element={<Programs />} />
-        <Route path="subjects" element={<NotBuiltYet ticket="#16" />} />
+        <Route path="subjects" element={<Subjects />} />
         <Route path="rubrics" element={<NotBuiltYet ticket="#21" />} />
         <Route
           path="course-in-program"

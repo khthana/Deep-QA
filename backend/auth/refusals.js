@@ -99,6 +99,20 @@ const REFUSALS = {
   invalidProgram: 'ข้อมูลหลักสูตรไม่ครบถ้วนหรือไม่ถูกต้อง',
   departmentNotYours: 'ไม่สามารถจัดการหลักสูตรนอกภาควิชาที่รับผิดชอบได้',
 
+  // Subjects - #16. The catalogue entry, and the same three shapes as
+  // programmes above: not found covers both the subject that does not exist and
+  // the one in another department, a duplicate code is its own refusal because
+  // the code is what the registrar knows a subject by, and
+  // `subjectDepartmentNotYours` is the body naming a department this
+  // administrator does not hold. It is a separate key from
+  // `departmentNotYours` rather than a reuse of it because the sentence names
+  // what is being managed, and a person told "หลักสูตร" while adding a รายวิชา
+  // would go looking for a programme they never touched.
+  subjectNotFound: 'ไม่พบรายวิชาที่ระบุ',
+  duplicateSubjectId: 'รหัสวิชานี้ถูกใช้งานแล้ว',
+  invalidSubject: 'ข้อมูลรายวิชาไม่ครบถ้วนหรือไม่ถูกต้อง',
+  subjectDepartmentNotYours: 'ไม่สามารถจัดการรายวิชานอกภาควิชาที่รับผิดชอบได้',
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.
