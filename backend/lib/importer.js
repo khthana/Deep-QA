@@ -32,10 +32,12 @@
  * checking, writing - so they arrive out of order, and a report that jumps
  * about is a report the reader has to sort themselves.
  *
- * What this deliberately does *not* do is answer the request. It returns data
- * and the route shapes the body, because the bodies differ - `users` returns
- * the accounts it created under a key of that name - and a helper that owned
- * the response would have to grow a parameter for every screen's spelling.
+ * `importRows` still stops short of answering the request: it returns data and
+ * the caller decides what to do with it. What answering the request looks like
+ * is `sendImport` below, which #59 added once four routes had written the same
+ * eleven lines out. The guess made here at #14 - that a helper owning the
+ * response "would have to grow a parameter for every screen's spelling" - was
+ * wrong by three parameters: the bodies differ in one key and nothing else.
  */
 
 const { formatCsv, parseTable } = require('./csv');
@@ -140,6 +142,33 @@ async function importRows(pool, text, { readRow, keys = [], verify, insert, onCo
 }
 
 /**
+ * The answer to an import, once - ticket #59.
+ *
+ * Four routes had written this out identically: the two refusals with their
+ * `created: 0`, the success with its count and its empty `errors`. The bodies
+ * differ in the name of one key - `users`, `departments`, `programs`,
+ * `subjects` - which is why it is a parameter and why the rest is not.
+ *
+ * The order of the two refusals matters. `importRows` reports an empty file as
+ * `{ ok: false, empty: true }`, so an empty file is also a failure, and asking
+ * `!result.ok` first would answer every empty upload with the wrong message and
+ * an undefined `errors`. `empty` is asked first for that reason.
+ */
+function sendImport(res, result, key) {
+  if (result.empty) {
+    return res.status(400).json({ message: REFUSALS.importEmpty, errors: [], created: 0 });
+  }
+  if (!result.ok) {
+    return res
+      .status(400)
+      .json({ message: REFUSALS.importRejected, errors: result.errors, created: 0 });
+  }
+  return res
+    .status(201)
+    .json({ created: result.created.length, [key]: result.created, errors: [] });
+}
+
+/**
  * The other half of the pattern: the blank file the screen offers to download.
  *
  * Headers and one example row, because a template of headers alone leaves the
@@ -153,4 +182,4 @@ function sendTemplate(res, filename, columns, example) {
   return res.status(200).send(formatCsv(columns, example ? [example] : []));
 }
 
-module.exports = { importRows, sendTemplate };
+module.exports = { importRows, sendImport, sendTemplate };

@@ -47,7 +47,7 @@ const express = require('express');
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
-const { importRows, sendTemplate } = require('../lib/importer');
+const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const { departmentInReach, reachableDepartments } = require('../lib/reach');
 
@@ -300,17 +300,7 @@ function subjectRoutes(pool) {
         },
       });
 
-      if (result.empty) {
-        return res.status(400).json({ message: REFUSALS.importEmpty, errors: [], created: 0 });
-      }
-      if (!result.ok) {
-        return res
-          .status(400)
-          .json({ message: REFUSALS.importRejected, errors: result.errors, created: 0 });
-      }
-      return res
-        .status(201)
-        .json({ created: result.created.length, subjects: result.created, errors: [] });
+      return sendImport(res, result, 'subjects');
     } catch (error) {
       return next(error);
     }

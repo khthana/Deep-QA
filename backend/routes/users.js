@@ -48,7 +48,7 @@ const { PASSWORD_ROLES, onUser, recordActivity } = require('../auth/accounts');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, trimmed } = require('../lib/fields');
-const { importRows, sendTemplate } = require('../lib/importer');
+const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const {
   ADMIN_ROLES,
@@ -525,17 +525,7 @@ function userRoutes(pool) {
         onCommit: (client) => recordActivity(client, req.auth.userId, 'IMPORT_USERS'),
       });
 
-      if (result.empty) {
-        return res.status(400).json({ message: REFUSALS.importEmpty, errors: [], created: 0 });
-      }
-      if (!result.ok) {
-        return res
-          .status(400)
-          .json({ message: REFUSALS.importRejected, errors: result.errors, created: 0 });
-      }
-      return res
-        .status(201)
-        .json({ created: result.created.length, users: result.created, errors: [] });
+      return sendImport(res, result, 'users');
     } catch (error) {
       return next(error);
     }
