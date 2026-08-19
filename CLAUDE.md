@@ -20,6 +20,9 @@ are the tickets, wired with native blocking dependencies. Take work from the
 frontier — tickets whose blockers are all closed. #2–#45 are the original 44 from
 `docs/07`; numbers above that are gaps found during the rebuild and opened since.
 
+The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
+will cost time. Read it before taking work.
+
 ## Documentation map
 
 | File | What it is |
@@ -28,6 +31,7 @@ frontier — tickets whose blockers are all closed. #2–#45 are the original 44
 | `docs/adr/` | Decisions that are hard to reverse. Read before touching keys, authorisation or the CLO grain. |
 | `docs/01`–`05` | Extracted from the thesis and from scanning the student code. **Descriptive of what was delivered, not prescriptive of what to build** — each carries a note where the rebuild diverges. |
 | `docs/06-implementation-plan.md` | The spec the rebuild implements. |
+| `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 
 Three decisions govern most of the work and are easy to violate by accident:
