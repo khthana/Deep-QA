@@ -114,6 +114,8 @@ export const query = params => {
   return text ? `?${text}` : ''
 }
 
+const BOM = '\uFEFF'
+
 /**
  * Hands the browser a file to save.
  *
@@ -123,10 +125,21 @@ export const query = params => {
  * make - it would arrive without credentials and be refused. The object URL is
  * revoked afterwards; without it the file stays in memory for the life of the
  * tab.
+ *
+ * The byte-order mark is put back here - ticket #62. `formatCsv` on the server
+ * writes one, and reading the answer with `response.text()` strips it: the
+ * Fetch specification decodes UTF-8 with a BOM-removal step, so by the time the
+ * text reaches this function the mark is gone and the blob is written without
+ * it. Excel then reads a Thai template as cp874 mojibake. Do not delete this as
+ * redundant on the strength of `formatCsv` visibly adding one - it does, and the
+ * client throws it away. Guarded so that a caller that somehow still holds the
+ * mark does not get two.
  */
 export function saveAsFile(text, filename) {
   const url = URL.createObjectURL(
-    new Blob([text], { type: 'text/csv;charset=utf-8' })
+    new Blob([text.startsWith(BOM) ? text : BOM + text], {
+      type: 'text/csv;charset=utf-8',
+    })
   )
   const link = document.createElement('a')
   link.href = url
