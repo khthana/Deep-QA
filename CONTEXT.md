@@ -90,10 +90,14 @@ Manages user accounts and permission grants system-wide, and nothing else. Delib
 data — see [ADR-0002](./docs/adr/0002-server-side-rbac.md).
 
 **Faculty Admin** (ผู้ดูแลระดับคณะ, `FACULTY_ADMIN`):
-Owns master data and outcomes within one Faculty. The only role that may manage Departments.
+Owns master data and outcomes within one Faculty. The only role that may manage Departments, and the one role that may
+not touch the Subject catalogue — see the Department Admin below.
 
 **Department Admin** (ผู้ดูแลระดับภาควิชา, `DEPT_ADMIN`):
-As Faculty Admin, but confined to one Department and excluding Department records themselves.
+As Faculty Admin, but confined to one Department and excluding Department records themselves. The only role that
+maintains Subjects: a subject is what a department teaches, so the department that teaches it owns its catalogue
+entry, and a Faculty Admin is refused that screen the way a Department Admin is refused Departments (#61). Placing a
+subject into a curriculum is a different thing and stays open to both — that is Program Subjects, not the catalogue.
 
 **Curriculum Committee** (กรรมการหลักสูตร, `PROG_MANAGER`):
 Owns one Program: its PLOs, its Program Subjects, its Offerings, and its Program-level Results. The only role that may

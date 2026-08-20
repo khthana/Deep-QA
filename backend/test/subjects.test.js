@@ -13,6 +13,12 @@
  * a different department. Every test that needs a subject it may destroy makes
  * its own, with codes no other test names.
  *
+ * The account nearly every test signs in as is U_DEPT, who administers `05` -
+ * the department the seeded subject sits in. It was the faculty administrator
+ * until #61 settled that a catalogue belongs to the department that teaches
+ * what is in it; what that role reaches here now is one test, and it is a
+ * refusal.
+ *
  * Two criteria are asserted somewhere other than in this file and it is worth
  * saying where. *"Removal asks for confirmation first"* is a dialog, and
  * docs/06 settles that frontend components are not unit-tested, so it is on the
@@ -118,7 +124,7 @@ test('an administrator adds, edits and removes a subject', async () => {
   // The first criterion, end to end, on a subject this test owns and nothing
   // else references - so the removal really is a deletion. Every field the
   // ticket names is here: code, credits, both names and description.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const added = await create(
     cookie,
@@ -159,7 +165,7 @@ test('an administrator adds, edits and removes a subject', async () => {
 
 test('a duplicate code is refused rather than overwriting', async () => {
   // The second criterion and half of the eighth, on the seeded subject.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const clash = await create(cookie, draftOf(SUBJECT.id, { subject_name_th: 'อะไรก็ตาม' }));
 
@@ -168,18 +174,43 @@ test('a duplicate code is refused rather than overwriting', async () => {
   assert.equal((await read(cookie, SUBJECT.id)).body.subject.subject_name_th, SUBJECT.th);
 });
 
-test('a faculty administrator manages subjects in any department of the faculty', async () => {
-  // The third criterion's first half. Both seeded departments belong to ENG and
-  // U_FAC's grant is scoped to ENG, so the subject in the department they are
-  // not otherwise associated with is theirs to make and theirs to read back.
+test('a faculty administrator is refused the catalogue entirely', async () => {
+  // #61, and the answer to the question #16 left open. The catalogue is the
+  // department's own: what a department teaches is its content, and content a
+  // department owns is content that department maintains. So the faculty
+  // administrator is not a maintainer of it - and is refused the screen at the
+  // server rather than merely left out of its menu, in the shape #14 refuses a
+  // department administrator the faculty's own structure.
+  //
+  // Reading is refused with the writing, which is the part the ruling turned
+  // on. docs/06 story 31 says only "an administrator" where stories 25 and 27
+  // name the Faculty Admin by hand, and the vagueness was settled the narrow
+  // way: not this screen at all.
   const cookie = await signInAs('U_FAC');
 
-  const civil = await create(cookie, draftOf('T0100001', { department_id: DEPT_CIVIL }));
-  assert.equal(civil.status, 201, civil.body.message);
-  assert.equal(civil.body.subject.department_id, DEPT_CIVIL);
+  const answers = await Promise.all([
+    list(cookie),
+    read(cookie, SUBJECT.id),
+    create(cookie, draftOf('F0500001')),
+    edit(cookie, SUBJECT.id, { subject_name_th: 'ไม่ควรเกิด' }),
+    remove(cookie, SUBJECT.id),
+    template(cookie),
+    pickable(cookie),
+    importCsv(cookie, csvOf([draftOf('F0500002')])),
+  ]);
 
-  assert.equal((await read(cookie, SUBJECT.id)).status, 200);
-  assert.equal((await remove(cookie, 'T0100001')).status, 204);
+  for (const answer of answers) {
+    assert.equal(answer.status, 403, `${answer.request.method} ${answer.request.url}`);
+    assert.equal(answer.body.message, REFUSALS.forbidden);
+  }
+
+  // And nothing they asked for happened.
+  const admin = await signInAs('U_DEPT');
+  assert.equal((await read(admin, 'F0500001')).status, 404);
+  assert.equal((await read(admin, 'F0500002')).status, 404);
+  const untouched = await read(admin, SUBJECT.id);
+  assert.equal(untouched.body.subject.subject_name_th, SUBJECT.th);
+  assert.equal(untouched.body.subject.is_active, true);
 });
 
 test('a department administrator is confined to their own department by the server', async () => {
@@ -213,11 +244,13 @@ test('a department administrator is confined to their own department by the serv
     ['T0100002'],
   );
 
-  // Nothing they were refused happened.
-  const admin = await signInAs('U_FAC');
-  assert.equal((await read(admin, 'T0500001')).status, 404);
-  assert.equal((await read(admin, SUBJECT.id)).body.subject.subject_name_th, SUBJECT.th);
-  assert.equal((await remove(admin, 'T0100002')).status, 204);
+  // Nothing they were refused happened - looked at by the administrator of the
+  // department they reached into, who since #61 is the only account that can.
+  const neighbour = await signInAs('U_DEPT');
+  assert.equal((await read(neighbour, 'T0500001')).status, 404);
+  assert.equal((await read(neighbour, SUBJECT.id)).body.subject.subject_name_th, SUBJECT.th);
+  // And their own is theirs to clear away.
+  assert.equal((await remove(cookie, 'T0100002')).status, 204);
 });
 
 test('a department administrator cannot move a subject out of their reach', async () => {
@@ -225,13 +258,12 @@ test('a department administrator cannot move a subject out of their reach', asyn
   // department administrator who could name any of them would have a way of
   // pushing a record out of their own reach - or of adopting one that is not
   // theirs.
-  const admin = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT2');
   assert.equal(
-    (await create(admin, draftOf('T0100003', { department_id: DEPT_CIVIL }))).status,
+    (await create(cookie, draftOf('T0100003', { department_id: DEPT_CIVIL }))).status,
     201,
   );
 
-  const cookie = await signInAs('U_DEPT2');
   const moved = await edit(cookie, 'T0100003', {
     subject_name_th: 'รายวิชา T0100003',
     subject_name_en: 'Subject T0100003',
@@ -243,7 +275,7 @@ test('a department administrator cannot move a subject out of their reach', asyn
   assert.equal(moved.body.message, REFUSALS.subjectDepartmentNotYours);
   assert.equal((await read(cookie, 'T0100003')).body.subject.department_id, DEPT_CIVIL);
 
-  assert.equal((await remove(admin, 'T0100003')).status, 204);
+  assert.equal((await remove(cookie, 'T0100003')).status, 204);
 });
 
 test('a referenced subject is deactivated instead of deleted', async () => {
@@ -251,7 +283,7 @@ test('a referenced subject is deactivated instead of deleted', async () => {
   // Subject points at it - and, through that pair, an Offering, its CLOs and a
   // year of marks. Every one of those references is ON DELETE RESTRICT, and the
   // answer is not a refusal: the row is switched off and the caller is told so.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const removed = await remove(cookie, SUBJECT.id);
 
@@ -285,7 +317,7 @@ test('a referenced subject is deactivated instead of deleted', async () => {
 });
 
 test('a subject with no name, no credits, no department or too long a code is refused', async () => {
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const cases = {
     // Both names are required: the column says NOT NULL and the ticket asks for
@@ -315,23 +347,19 @@ test('a subject with no name, no credits, no department or too long a code is re
   assert.equal(tooLong.body.message, REFUSALS.invalidSubject);
 });
 
-test('the list filters by department and paginates beyond ten rows', async () => {
-  // The seventh criterion, both halves at once: eleven subjects in one
-  // department and two in another, so the filter changes the total and the
-  // paging has a second page to reach.
-  const cookie = await signInAs('U_FAC');
+test('the list paginates beyond ten rows, and the filter narrows within the reach', async () => {
+  // The seventh criterion, both halves, as they read after #61: eleven subjects
+  // in the one department this account administers, so there is a second page
+  // to reach, and a filter that still applies - to the department in reach it
+  // takes nothing away, and the department out of reach is the test below.
+  const cookie = await signInAs('U_DEPT');
   const computer = Array.from(
     { length: 11 },
     (unused, index) => `Q00000${String(index).padStart(2, '0')}`,
   );
-  const civil = ['Q0100001', 'Q0100002'];
 
   for (const id of computer) {
     assert.equal((await create(cookie, draftOf(id))).status, 201, `could not seed ${id}`);
-  }
-  for (const id of civil) {
-    const added = await create(cookie, draftOf(id, { department_id: DEPT_CIVIL }));
-    assert.equal(added.status, 201, `could not seed ${id}`);
   }
 
   const first = await list(cookie);
@@ -339,8 +367,8 @@ test('the list filters by department and paginates beyond ten rows', async () =>
   assert.equal(first.body.subjects.length, 10);
   assert.equal(first.body.page, 1);
   assert.equal(first.body.per_page, 10);
-  // The eleven, the two, and the one the seed put there.
-  assert.equal(first.body.total, computer.length + civil.length + 1);
+  // The eleven, and the one the seed put there.
+  assert.equal(first.body.total, computer.length + 1);
 
   const second = await list(cookie, '?page=2');
   assert.equal(second.body.page, 2);
@@ -348,15 +376,10 @@ test('the list filters by department and paginates beyond ten rows', async () =>
   const seen = new Set(first.body.subjects.map((row) => row.subject_id));
   assert.ok(second.body.subjects.every((row) => !seen.has(row.subject_id)));
 
-  // The filter narrows to one department, and pages within it.
-  const filtered = await list(cookie, `?department_id=${DEPT_CIVIL}&per_page=100`);
-  assert.equal(filtered.body.total, civil.length);
-  assert.deepEqual(
-    filtered.body.subjects.map((row) => row.subject_id),
-    civil,
-  );
+  const filtered = await list(cookie, `?department_id=${DEPT_COMPUTER}&per_page=100`);
+  assert.equal(filtered.body.total, first.body.total);
 
-  for (const id of [...computer, ...civil]) assert.equal((await remove(cookie, id)).status, 204);
+  for (const id of computer) assert.equal((await remove(cookie, id)).status, 204);
 });
 
 test('the department filter narrows the reach and never widens it', async () => {
@@ -388,12 +411,16 @@ test('the form is offered exactly the departments the caller may use', async () 
   // the filter is drawn from. What it offers has to be what the server will
   // accept, or the form has a way of producing a refusal by being used as
   // intended - so the two are the same reach, asserted from both ends.
-  const faculty = await signInAs('U_FAC');
-  const both = await pickable(faculty);
-  assert.equal(both.status, 200);
+  //
+  // Since #61 that reach is one department, and each administrator is offered
+  // their own rather than the same one: the endpoint answers from the grant, so
+  // two accounts asking the identical question are given different lists.
+  const computer = await signInAs('U_DEPT');
+  const one = await pickable(computer);
+  assert.equal(one.status, 200);
   assert.deepEqual(
-    both.body.departments.map((row) => row.department_id).sort(),
-    [DEPT_CIVIL, DEPT_COMPUTER].sort(),
+    one.body.departments.map((row) => row.department_id),
+    [DEPT_COMPUTER],
   );
 
   const department = await signInAs('U_DEPT2');
@@ -414,7 +441,7 @@ test('the form is offered exactly the departments the caller may use', async () 
 test('the template downloads and matches what the importer accepts', async () => {
   // The sixth criterion, in both halves: the header is what this file names,
   // and the file it hands back is one the importer will take.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const response = await template(cookie);
 
@@ -435,9 +462,11 @@ test('the template downloads and matches what the importer accepts', async () =>
 });
 
 test('a valid spreadsheet imports every row', async () => {
-  // The sixth criterion's first half, across two departments in one file -
-  // which is the reason the template carries a department column at all.
-  const cookie = await signInAs('U_FAC');
+  // The sixth criterion's first half. Both rows name the department the caller
+  // administers, because since #61 that is the only value they may write; the
+  // column is still carried and still checked, and the row that names somebody
+  // else's department is the test two below.
+  const cookie = await signInAs('U_DEPT');
 
   const response = await importCsv(
     cookie,
@@ -451,11 +480,11 @@ test('a valid spreadsheet imports every row', async () => {
         description_th: 'กระบวนการพัฒนาซอฟต์แวร์',
       },
       {
-        subject_id: 'I0100001',
-        subject_name_th: 'กลศาสตร์วัสดุ',
-        subject_name_en: 'MECHANICS OF MATERIALS',
+        subject_id: 'I0000002',
+        subject_name_th: 'ระบบฐานข้อมูล',
+        subject_name_en: 'DATABASE SYSTEMS',
         credits: '3',
-        department_id: DEPT_CIVIL,
+        department_id: DEPT_COMPUTER,
       },
     ]),
   );
@@ -464,15 +493,15 @@ test('a valid spreadsheet imports every row', async () => {
   assert.equal(response.body.created, 2);
   assert.deepEqual(response.body.errors, []);
   assert.deepEqual(
-    response.body.subjects.map((row) => row.department_id).sort(),
-    [DEPT_CIVIL, DEPT_COMPUTER].sort(),
+    response.body.subjects.map((row) => row.department_id),
+    [DEPT_COMPUTER, DEPT_COMPUTER],
   );
   // The descriptions are optional, as the columns are.
-  const sparse = (await read(cookie, 'I0100001')).body.subject;
+  const sparse = (await read(cookie, 'I0000002')).body.subject;
   assert.equal(sparse.description_th, null);
   assert.equal(sparse.description_en, null);
 
-  for (const id of ['I0000001', 'I0100001']) assert.equal((await remove(cookie, id)).status, 204);
+  for (const id of ['I0000001', 'I0000002']) assert.equal((await remove(cookie, id)).status, 204);
 });
 
 test('a spreadsheet with bad rows reports each failure and applies nothing', async () => {
@@ -480,7 +509,7 @@ test('a spreadsheet with bad rows reports each failure and applies nothing', asy
   // transaction: the person fixes their file and uploads it again rather than
   // working out which half of it took. Five different failures, one good row
   // among them, and the good row must not survive.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const response = await importCsv(
     cookie,
@@ -529,12 +558,12 @@ test('an imported row cannot name a department the caller does not hold', async 
   assert.equal(response.status, 400);
   assert.equal(response.body.errors[0].message, REFUSALS.subjectDepartmentNotYours);
 
-  const admin = await signInAs('U_FAC');
+  const admin = await signInAs('U_DEPT');
   assert.equal((await read(admin, 'X0500001')).status, 404);
 });
 
 test('an empty file is refused as such', async () => {
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const response = await importCsv(cookie, csvOf([]));
 
@@ -564,7 +593,7 @@ test('the Central Admin is refused by the server on every endpoint', async () =>
     assert.equal(answer.body.message, REFUSALS.forbidden);
   }
 
-  const admin = await signInAs('U_FAC');
+  const admin = await signInAs('U_DEPT');
   assert.equal((await read(admin, 'C0500001')).status, 404);
   assert.equal((await read(admin, 'C0500002')).status, 404);
   const untouched = await read(admin, SUBJECT.id);
@@ -586,7 +615,7 @@ test('a creation cannot ask for a subject that is already switched off', async (
   // Retiring one is the fourth criterion and happens on an edit or a removal.
   // Nothing in the ticket asks for a subject to be born inactive, so the field
   // is not read on a creation.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
   const added = await create(cookie, draftOf('T0000002', { is_active: false }));
 
   assert.equal(added.status, 201);
@@ -600,7 +629,7 @@ test('a retired department keeps its subjects, and nothing new may be filed unde
   // list is the form, not this response - the screen has no other way to name
   // the department a subject lives in - so the department is reported with its
   // `is_active` and the form is what declines to offer it.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT2');
   await api.pool.query('UPDATE departments SET is_active = false WHERE department_id = $1', [
     DEPT_CIVIL,
   ]);

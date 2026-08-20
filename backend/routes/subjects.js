@@ -35,11 +35,13 @@
  * where they meant to be told what they left out. So it is read as digits and
  * refused as `invalidSubject` when it is not.
  *
- * *The list is filterable by department.* The seventh criterion asks for it
- * here, where a faculty administrator looking after several departments reads a
- * catalogue of hundreds rather than a dozen programmes. The filter narrows
- * within the reach and never widens it: a department outside the reach simply
- * matches nothing, because the reach clause is still there.
+ * *The list is filterable by department.* The seventh criterion asks for it,
+ * and #61 has since narrowed who ever sees a choice: one department administers
+ * this catalogue and the filter has one option to offer them. It stays because
+ * it is the reach expressed as a query - the filter narrows within the reach
+ * and never widens it, so a department outside the reach matches nothing rather
+ * than answering with somebody else's catalogue - and because a later grant
+ * covering two departments would need it back.
  */
 
 const express = require('express');
@@ -53,14 +55,27 @@ const { deleteOrDeactivate } = require('../lib/removal');
 const { departmentInReach, reachableDepartments } = require('../lib/reach');
 
 /**
- * The roles that maintain the catalogue — #15's two, for #15's reasons.
+ * The role that maintains the catalogue — one of them, settled by #61.
  *
- * `PROG_MANAGER` is absent again: the Curriculum Committee chooses which
+ * A subject is what a department teaches, and the department that teaches it is
+ * the one that knows its code, its credits and its description. Content a
+ * department owns is content that department maintains, so the catalogue is the
+ * Department Admin's and the Faculty Admin does not reach this screen — not to
+ * write and not to read, the way #14's own screen is refused the other way
+ * round.
+ *
+ * This is a ruling about Subjects and not a rule about screens. Departments
+ * (#14) and Programmes (#15) stay with the Faculty Admin because docs/06
+ * stories 25 and 27 name that role by hand; story 31 says only "an
+ * administrator", and that gap is the whole of what #61 decided.
+ *
+ * `PROG_MANAGER` is absent as before: the Curriculum Committee chooses which
  * subjects its programme uses, which is #18, and does not decide what the
- * university teaches. `FULL_ADMIN` is absent because a subject is curriculum
- * (ADR-0002).
+ * university teaches — and a Faculty Admin still reaches #18, because placing
+ * a subject into a curriculum is not maintaining the catalogue. `FULL_ADMIN` is
+ * absent because a subject is curriculum (ADR-0002).
  */
-const MAINTAINERS = ['FACULTY_ADMIN', 'DEPT_ADMIN'];
+const MAINTAINERS = ['DEPT_ADMIN'];
 
 /** What a subject is, as this file reads it out. */
 const RETURNED = `subject_id, subject_name_th, subject_name_en, credits,

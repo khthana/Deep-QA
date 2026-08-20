@@ -120,8 +120,11 @@ construction rather than retrofitted.
 29. As an administrator, I want a Program that is already referenced to be deactivated rather than deleted, so that
     historical records stay intact.
 30. As an administrator, I want to confirm before any deletion, so that a misclick does not destroy data.
-31. As an administrator, I want to add, edit and remove Subjects with code, credits, bilingual names and description,
-    so that the catalogue is complete.
+31. As a Department Admin, I want to add, edit and remove the Subjects of my own Department with code, credits,
+    bilingual names and description, so that the catalogue is complete — and, as story 26 asks for Departments, I
+    want the Faculty Admin refused access to the catalogue, so that what a department teaches is maintained by the
+    department that teaches it. (This story read "As an administrator" until #61; that vagueness was the question
+    #61 answered.)
 32. As an administrator, I want to import Departments, Programs and Subjects from spreadsheets using system
     templates, so that setting up a faculty does not mean typing hundreds of rows.
 33. As an administrator, I want to download the template for every import, so that I know the expected columns.
@@ -311,6 +314,14 @@ entirely outside production and trivially spoofed within it.
 Central Admin's scope is deliberately narrow — user accounts and permission grants only, with no access to curriculum
 data. This matches both the thesis and the inherited menu configuration, and is a separation of duties rather than an
 oversight.
+
+The Subject catalogue is the Department Admin's alone, settled by #61 after the question surfaced while walking the
+pagination checklist. Story 31 said only "an administrator" where stories 25 and 27 name the Faculty Admin by hand,
+and the gap was closed the narrow way: content a department owns is content that department maintains, so a Faculty
+Admin reaches neither the writes nor the reads of the Subjects screen and is refused it at the server, exactly as a
+Department Admin is refused Departments. The ruling is about Subjects and nothing else — Departments and Programs are
+unchanged, and a Faculty Admin still places subjects into a curriculum on the Program Subjects screen, because
+placing one is not maintaining the catalogue.
 
 ### API surface
 

@@ -4,10 +4,11 @@ import { del, get, post, put, query } from './client'
  * The subject calls — #16.
  *
  * #15's shape for a different table, with one addition the ticket asks for: the
- * list takes a `department_id`, so a faculty administrator reading a catalogue
- * of hundreds can narrow it to one department. The filter narrows within what
- * the account already reaches and cannot widen it — the server applies it
- * inside the same reach it filters by (ADR-0002).
+ * list takes a `department_id`. Since #61 the only role that reaches these
+ * calls is the ผู้ดูแลภาควิชา, who reaches one department, so the filter has one
+ * value to take — it is kept because it is the reach expressed as a query. It
+ * narrows within what the account already reaches and cannot widen it; the
+ * server applies it inside the same reach it filters by (ADR-0002).
  */
 
 /** One page of subjects, with the total so a pager can be drawn. */
@@ -17,8 +18,9 @@ export const listSubjects = (params = {}) => get(`/api/subjects${query(params)}`
  * The departments this account reaches, each with its `is_active`.
  *
  * Read from the subjects routes rather than from `/api/departments`, which
- * belongs to the faculty administrator alone — a department administrator
- * belongs on this screen and would be refused by that one. What comes back is
+ * belongs to the faculty administrator alone — the department administrator
+ * this screen belongs to would be refused by that one, and since #61 the two
+ * screens have no reader in common. What comes back is
  * the same reach the server checks against, so neither the picker nor the
  * filter can name a choice that would then be turned down.
  *

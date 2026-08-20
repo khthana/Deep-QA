@@ -24,21 +24,23 @@ import {
  * one into a หลักสูตร is รายวิชาในหลักสูตร (#18) and teaching it in a term is
  * การเปิดรายวิชา (#23). Neither appears here.
  *
- * The same two roles as ข้อมูลหลักสูตร share it, and neither is told so by this
- * file — the server filters the list and refuses the writes, and what arrives
- * is simply what that account may see (ADR-0002). The Central Admin reaches
- * none of it.
+ * The ผู้ดูแลภาควิชา owns it alone. #61 settled what #16 left open: a subject
+ * is what a department teaches, so the department that teaches it maintains it,
+ * and the ผู้ดูแลระดับคณะ does not reach this screen at all — not to write and
+ * not to read. That is enforced at the server and not by this file, as
+ * ADR-0002 asks; what the menu leaves out is a convenience, and what arrives
+ * here is simply what that account may see. The Central Admin reaches none of
+ * it either.
  *
  * What this screen has that ข้อมูลหลักสูตร does not is a filter by department,
- * which the ticket asks for: a faculty administrator looking after several
- * departments is reading a catalogue of hundreds rather than a dozen
- * programmes. It narrows within the account's reach and cannot widen it.
- *
- * An account that reaches one department is shown that department's name in the
- * filter's place rather than a dropdown. Both readings of the criterion are
- * served that way: the row is always there, so the screen says which catalogue
- * is being read no matter who is reading it, and nobody is handed a control
- * whose every option returns the same rows.
+ * which the ticket asks for. Since #61 every account that reaches the screen
+ * reaches one department, so what it draws is the name rather than a dropdown —
+ * the row is always there, so the screen says which catalogue is being read no
+ * matter who is reading it, and nobody is handed a control whose every option
+ * returns the same rows. The dropdown it falls back from is kept rather than
+ * deleted: it is the same control รายวิชาในหลักสูตร draws live, and a grant
+ * covering two departments would need it back. It narrows within the account's
+ * reach and cannot widen it either way.
  *
  * The list shows retired subjects as well as current ones, deliberately: this
  * is the screen one is switched back on from. Removing one asks first, and may

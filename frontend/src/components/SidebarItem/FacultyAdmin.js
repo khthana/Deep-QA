@@ -2,7 +2,6 @@ import {
   HiOutlineSquaresPlus, // ข้อมูลหลัก
   HiOutlineBuildingOffice2, // ข้อมูลภาควิชา
   HiOutlineAcademicCap, // ข้อมูลหลักสูตร
-  HiOutlineBookOpen, // ข้อมูลรายวิชา
   HiOutlineClipboardDocumentCheck, // ข้อมูล Rubric กลาง
   HiOutlineSquare3Stack3D, // หลักสูตร
   HiOutlineRectangleGroup, // รายวิชาในหลักสูตร
@@ -31,12 +30,6 @@ export const FACULTY_ADMIN = [
         label: 'ข้อมูลหลักสูตร',
         path: '/main/programs',
         icon: <HiOutlineAcademicCap />,
-      },
-      {
-        key: 'ข้อมูลรายวิชา',
-        label: 'ข้อมูลรายวิชา',
-        path: '/main/subjects',
-        icon: <HiOutlineBookOpen />,
       },
       {
         key: 'ข้อมูล Rubric กลาง',
