@@ -21,8 +21,8 @@ const { PASSWORD } = require('./accounts');
  * Where the browser lands afterwards is not this helper's business, and is in
  * fact not what Login.js believes: `GuestRoute` sends an account that now has
  * a profile to `/main` before `navigate('/select-app')` can run, so the
- * chooser is never shown on the password path. That is a screen defect, filed
- * separately; pinning it here would make every spec in this suite fail the day
+ * chooser is never shown on the password path. That is a screen defect - #66 -
+ * and not this helper's to work around; pinning it here would make every spec in this suite fail the day
  * it is fixed.
  */
 async function signIn(page, email, password = PASSWORD) {
