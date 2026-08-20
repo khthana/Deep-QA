@@ -44,11 +44,27 @@ const headerOf = template => template.text.replace(BOM, '').split(/\r?\n/)[0];
 /** A file made of the screen's own header and the rows a row of the checklist names. */
 const csv = (header, ...rows) => [header, ...rows].join('\r\n') + '\r\n';
 
-/** Uploads a file through the screen's own file input and waits for the report. */
+/**
+ * Uploads a file through the screen's own file input, and waits for the import
+ * to have answered before returning.
+ *
+ * Waiting is the whole point of the helper. Without it a spec that imports
+ * twice asserts against a report the first import left on the screen, and
+ * would go on passing if the second were refused - which is one of the things
+ * these rows exist to catch.
+ */
 async function importCsv(page, text, name = 'students.csv') {
-  await page
-    .locator('input[type="file"]')
-    .setInputFiles({ name, mimeType: 'text/csv', buffer: Buffer.from(text, 'utf8') });
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      answer =>
+        new URL(answer.url()).pathname === '/api/students/import' &&
+        answer.request().method() === 'POST',
+    ),
+    page
+      .locator('input[type="file"]')
+      .setInputFiles({ name, mimeType: 'text/csv', buffer: Buffer.from(text, 'utf8') }),
+  ]);
+  return response;
 }
 
 /** What the pager says the register holds. */

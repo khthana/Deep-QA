@@ -12,7 +12,9 @@ const {
   importCsv,
   total,
   reportedLines,
+  reportTable,
 } = require('../support/students-screen');
+const { BACKEND_URL } = require('../support/env');
 
 /**
  * docs/acceptance/17-students.md, rows 12-17 — the import.
@@ -56,6 +58,13 @@ test('row 12: the template is four columns and one sample, and keeps its byte-or
   expect(lines[0]).not.toContain('department_id');
   expect(lines[0]).not.toContain('admission_year');
   expect(lines).toHaveLength(2);
+
+  // The one sample row is `66010001` — the first student of the seeded 66
+  // cohort. Uploading the template as it arrives therefore does not demonstrate
+  // an import; it renames a real student. Asserted rather than merely noted so
+  // that the day the sample stops colliding, this row says so (#67).
+  const sample = await page.request.get(`${BACKEND_URL}/api/students/${lines[1].split(',')[0]}`);
+  expect(sample.status()).toBe(200);
 });
 
 test('row 13: a good file is applied and its students are on the first page', async ({
@@ -124,6 +133,11 @@ test('row 15: two rows of one file claiming one code is refused, naming the seco
     page,
     csv(header, '68040001,ซ้ำหนึ่ง,นำเข้า,0501', '68040001,ซ้ำสอง,นำเข้า,0501'),
   );
+
+  // Two tables are on the screen once an import is refused. If the filter
+  // matched both, the register's own first column would join the reported
+  // lines and the assertion below would be a coincidence.
+  await expect.poll(() => reportTable(page).count()).toBe(1);
 
   // The database cannot catch this one: an import that meets an existing code
   // updates it, so the second row would be read as a correction to the first
