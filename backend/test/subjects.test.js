@@ -120,6 +120,46 @@ const draftOf = (id, extra = {}) => ({
   ...extra,
 });
 
+/**
+ * Every endpoint of the catalogue walked as one account, asserting the server
+ * refuses all eight, and then read back from a maintainer's session to show
+ * that nothing the refused account asked for happened.
+ *
+ * Two roles are refused the whole screen, for two different reasons - the
+ * faculty administrator by #61 and the Central Admin by ADR-0002 - and the
+ * proof each one needs is the same walk, so the walk is written once and the
+ * reasons stay in the tests that call it. `prefix` keeps the codes the two
+ * attempts create from colliding.
+ */
+const refusedEverything = async (account, prefix) => {
+  const cookie = await signInAs(account);
+  const created = `${prefix}0500001`;
+  const imported = `${prefix}0500002`;
+
+  const answers = await Promise.all([
+    list(cookie),
+    read(cookie, SUBJECT.id),
+    create(cookie, draftOf(created)),
+    edit(cookie, SUBJECT.id, { subject_name_th: 'ไม่ควรเกิด' }),
+    remove(cookie, SUBJECT.id),
+    template(cookie),
+    pickable(cookie),
+    importCsv(cookie, csvOf([draftOf(imported)])),
+  ]);
+
+  for (const answer of answers) {
+    assert.equal(answer.status, 403, `${answer.request.method} ${answer.request.url}`);
+    assert.equal(answer.body.message, REFUSALS.forbidden);
+  }
+
+  const maintainer = await signInAs('U_DEPT');
+  assert.equal((await read(maintainer, created)).status, 404);
+  assert.equal((await read(maintainer, imported)).status, 404);
+  const untouched = await read(maintainer, SUBJECT.id);
+  assert.equal(untouched.body.subject.subject_name_th, SUBJECT.th);
+  assert.equal(untouched.body.subject.is_active, true);
+};
+
 test('an administrator adds, edits and removes a subject', async () => {
   // The first criterion, end to end, on a subject this test owns and nothing
   // else references - so the removal really is a deletion. Every field the
@@ -186,31 +226,7 @@ test('a faculty administrator is refused the catalogue entirely', async () => {
   // on. docs/06 story 31 says only "an administrator" where stories 25 and 27
   // name the Faculty Admin by hand, and the vagueness was settled the narrow
   // way: not this screen at all.
-  const cookie = await signInAs('U_FAC');
-
-  const answers = await Promise.all([
-    list(cookie),
-    read(cookie, SUBJECT.id),
-    create(cookie, draftOf('F0500001')),
-    edit(cookie, SUBJECT.id, { subject_name_th: 'ไม่ควรเกิด' }),
-    remove(cookie, SUBJECT.id),
-    template(cookie),
-    pickable(cookie),
-    importCsv(cookie, csvOf([draftOf('F0500002')])),
-  ]);
-
-  for (const answer of answers) {
-    assert.equal(answer.status, 403, `${answer.request.method} ${answer.request.url}`);
-    assert.equal(answer.body.message, REFUSALS.forbidden);
-  }
-
-  // And nothing they asked for happened.
-  const admin = await signInAs('U_DEPT');
-  assert.equal((await read(admin, 'F0500001')).status, 404);
-  assert.equal((await read(admin, 'F0500002')).status, 404);
-  const untouched = await read(admin, SUBJECT.id);
-  assert.equal(untouched.body.subject.subject_name_th, SUBJECT.th);
-  assert.equal(untouched.body.subject.is_active, true);
+  await refusedEverything('U_FAC', 'F');
 });
 
 test('a department administrator is confined to their own department by the server', async () => {
@@ -347,7 +363,7 @@ test('a subject with no name, no credits, no department or too long a code is re
   assert.equal(tooLong.body.message, REFUSALS.invalidSubject);
 });
 
-test('the list paginates beyond ten rows, and the filter narrows within the reach', async () => {
+test('the list paginates beyond ten rows, and the filter keeps to the one department in reach', async () => {
   // The seventh criterion, both halves, as they read after #61: eleven subjects
   // in the one department this account administers, so there is a second page
   // to reach, and a filter that still applies - to the department in reach it
@@ -379,6 +395,13 @@ test('the list paginates beyond ten rows, and the filter narrows within the reac
   const filtered = await list(cookie, `?department_id=${DEPT_COMPUTER}&per_page=100`);
   assert.equal(filtered.body.total, first.body.total);
 
+  // That assertion on its own would pass on a route that read the parameter and
+  // threw it away, because the department asked for is the only one this account
+  // has. The department it does not reach is what tells the two answers apart.
+  const elsewhere = await list(cookie, `?department_id=${DEPT_CIVIL}&per_page=100`);
+  assert.equal(elsewhere.body.total, 0);
+  assert.deepEqual(elsewhere.body.subjects, []);
+
   for (const id of computer) assert.equal((await remove(cookie, id)).status, 204);
 });
 
@@ -387,6 +410,13 @@ test('the department filter narrows the reach and never widens it', async () => 
   // nothing rather than that department's catalogue: the filter is applied
   // inside the reach, not instead of it.
   const cookie = await signInAs('U_DEPT2');
+  // A subject of their own first, so that the empty page below is the filter
+  // refusing to widen and not a department that had nothing to show anyway.
+  assert.equal(
+    (await create(cookie, draftOf('T0100006', { department_id: DEPT_CIVIL }))).status,
+    201,
+  );
+  assert.equal((await list(cookie)).body.total, 1);
 
   const answer = await list(cookie, `?department_id=${DEPT_COMPUTER}&per_page=100`);
 
@@ -404,6 +434,8 @@ test('the department filter narrows the reach and never widens it', async () => 
   );
   assert.equal(twice.status, 200);
   assert.deepEqual(twice.body.subjects, []);
+
+  assert.equal((await remove(cookie, 'T0100006')).status, 204);
 });
 
 test('the form is offered exactly the departments the caller may use', async () => {
@@ -575,30 +607,7 @@ test('the Central Admin is refused by the server on every endpoint', async () =>
   // CONTEXT.md gives the Central Admin accounts and grants "and nothing else",
   // and ADR-0002 records the mechanism that keeps it true: curriculum routes do
   // not list `FULL_ADMIN`. A subject is curriculum.
-  const cookie = await signInAs('U_ADMIN');
-
-  const answers = await Promise.all([
-    list(cookie),
-    read(cookie, SUBJECT.id),
-    create(cookie, draftOf('C0500001')),
-    edit(cookie, SUBJECT.id, { subject_name_th: 'ไม่ควรเกิด' }),
-    remove(cookie, SUBJECT.id),
-    template(cookie),
-    pickable(cookie),
-    importCsv(cookie, csvOf([draftOf('C0500002')])),
-  ]);
-
-  for (const answer of answers) {
-    assert.equal(answer.status, 403, `${answer.request.method} ${answer.request.url}`);
-    assert.equal(answer.body.message, REFUSALS.forbidden);
-  }
-
-  const admin = await signInAs('U_DEPT');
-  assert.equal((await read(admin, 'C0500001')).status, 404);
-  assert.equal((await read(admin, 'C0500002')).status, 404);
-  const untouched = await read(admin, SUBJECT.id);
-  assert.equal(untouched.body.subject.subject_name_th, SUBJECT.th);
-  assert.equal(untouched.body.subject.is_active, true);
+  await refusedEverything('U_ADMIN', 'C');
 });
 
 test('a caller who has not signed in reaches none of it', async () => {

@@ -90,8 +90,9 @@ Manages user accounts and permission grants system-wide, and nothing else. Delib
 data — see [ADR-0002](./docs/adr/0002-server-side-rbac.md).
 
 **Faculty Admin** (ผู้ดูแลระดับคณะ, `FACULTY_ADMIN`):
-Owns master data and outcomes within one Faculty. The only role that may manage Departments, and the one role that may
-not touch the Subject catalogue — see the Department Admin below.
+Owns master data and outcomes within one Faculty. The only role that may manage Departments. Reaches no part of the
+Subject catalogue, which is the Department Admin's below — the one thing a Department Admin may do that this role
+may not.
 
 **Department Admin** (ผู้ดูแลระดับภาควิชา, `DEPT_ADMIN`):
 As Faculty Admin, but confined to one Department and excluding Department records themselves. The only role that
