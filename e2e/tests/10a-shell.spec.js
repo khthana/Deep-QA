@@ -4,6 +4,11 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const {
+  sessionCookie,
+  payloadOf,
+  expireSession,
+} = require('../support/expired-session');
 const { USERS, waitForList } = require('../support/users-screen');
 const {
   PROGRAMS,
@@ -31,14 +36,18 @@ const {
  * is offered, that a session ending says so instead of dropping someone at the
  * sign-in page, and that a changed password is the password from then on.
  *
- * Two rows of that document are deliberately absent and neither is an
- * oversight; both are written up in it. The reload half of criterion 6 asks
- * for the expiry dialog after deleting the cookie and pressing F5, and the
- * shell cannot show it: the cookie's `maxAge` is the token's own lifetime, so
- * a browser never presents an expired token, and a shell whose first call is
- * anonymous sees `reason: 'anonymous'` either way. Criterion 8's browser half
- * is already asserted, in `11a-users-refusals.spec.js`, and is not repeated
- * here.
+ * One row of that document is deliberately absent and it is not an oversight:
+ * criterion 8's browser half is already asserted, in
+ * `11a-users-refusals.spec.js`, and is not repeated here.
+ *
+ * The reload half of criterion 6 used to be absent too, because the shell
+ * could not show it - the cookie's `maxAge` was the token's own lifetime, so
+ * a browser never presented an expired token. #69 made the cookie outlive the
+ * token and the row is now here, proved in two composed halves, because no
+ * suite can sit still for thirty minutes: one assertion reads the real cookie
+ * the server set and shows the window in which a dead token is still
+ * presented, and the other puts a dead token in that window and asserts the
+ * dialog. Together they are the tab someone left open; neither alone is.
  */
 
 const PROGRAM_MANAGER_0501 = 'กรรมการหลักสูตร 0501';
@@ -112,6 +121,39 @@ test.describe('the shell, in a browser', () => {
     await expect(expiryDialog(page)).toBeVisible();
     await expect(page.getByRole('button', { name: 'เข้าสู่ระบบใหม่' })).toBeVisible();
     expect(new URL(page.url()).pathname).not.toBe('/');
+  });
+
+  test('row 6: the cookie outlives the token, so an ended session can be seen', async ({
+    page,
+  }) => {
+    await signIn(page, ACCOUNTS.teacherOne);
+
+    // The two used to be the same number, and a browser that drops the cookie
+    // in the second the token dies never presents an expired token at all.
+    // The margin is what the next test needs to exist: the stretch of time in
+    // which a reload still carries something the server can recognise as a
+    // session that ended.
+    const cookie = await sessionCookie(page);
+    const { exp } = payloadOf(cookie.value);
+    expect(cookie.expires - exp).toBeGreaterThan(5 * 60);
+  });
+
+  test('row 6: a reload inside that window says so, rather than dropping the tab', async ({
+    page,
+  }) => {
+    await signIn(page, ACCOUNTS.teacherOne);
+    await page.goto(PROGRAM_SUBJECTS);
+
+    // The state a tab left open past the half hour is in: the cookie is still
+    // held, and the token inside it is dead.
+    await expireSession(page);
+    await page.reload();
+
+    // The shell's own first call is flagged anonymous - it has to be, or the
+    // sign-in page would accuse everyone of an expiry - so this is the answer's
+    // `reason` doing the work and nothing else.
+    await expect(expiryDialog(page)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'เข้าสู่ระบบใหม่' })).toBeVisible();
   });
 
   test('row 6: a 403 is not an expiry', async ({ page }) => {

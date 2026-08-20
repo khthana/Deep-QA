@@ -28,7 +28,12 @@ const request = require('supertest');
 
 const { PASSWORD, byAlias } = require('../../db/seed');
 const { resolveGoogleAccount } = require('../auth/accounts');
-const { COOKIE_NAME, LIFETIME_SECONDS, requireSession } = require('../auth/session');
+const {
+  COOKIE_NAME,
+  LIFETIME_SECONDS,
+  COOKIE_LIFETIME_SECONDS,
+  requireSession,
+} = require('../auth/session');
 const { startApi, guardedApp } = require('./helpers');
 
 /**
@@ -207,6 +212,21 @@ test('the session cookie', async (t) => {
     // Local development is served over http; a Secure cookie would never be
     // sent back and nobody could stay signed in.
     assert.doesNotMatch(cookie, /Secure/i);
+  });
+
+  // #69. With the two equal the browser drops the cookie in the same second
+  // the token dies, so nobody sitting at a screen ever presents an expired
+  // token and `reason: 'expired'` is unreachable from a browser - a tab left
+  // open past the half hour is returned to the sign-in page without a word.
+  await t.test('outlives the token it carries', async () => {
+    const cookie = sessionCookie(await signIn(api.app, EMAILS.teacher));
+
+    const maxAge = Number(cookie.match(/Max-Age=(\d+)/i)[1]);
+    assert.equal(maxAge, COOKIE_LIFETIME_SECONDS);
+    assert.ok(
+      maxAge > LIFETIME_SECONDS,
+      `the cookie must outlive the token: Max-Age=${maxAge}, token=${LIFETIME_SECONDS}`,
+    );
   });
 
   await t.test('carries no more than the user id', async () => {

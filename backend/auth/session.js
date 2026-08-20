@@ -41,6 +41,23 @@ const LIFETIME_SECONDS = 30 * 60;
  */
 const RENEW_BELOW_SECONDS = 10 * 60;
 
+/**
+ * How long the browser keeps the cookie, which is deliberately longer than
+ * the token inside it lives.
+ *
+ * With the two equal there is no instant at which a browser holds a cookie
+ * whose token has died, so `requireSession` never sees TokenExpiredError from
+ * anyone sitting at a screen: the cookie is simply gone, the shell's first
+ * call is `anonymous`, and the person is returned to the sign-in page without
+ * a word - which is the one thing #10's sixth criterion forbids. Keeping the
+ * cookie past the token grants no authority, because the token is what is
+ * checked and it is dead; what it buys is the window in which someone who
+ * walks away and comes back is still told their session ended rather than
+ * treated as a stranger who never signed in. Twice the lifetime makes that
+ * window as long as the session itself. Ticket #69.
+ */
+const COOKIE_LIFETIME_SECONDS = LIFETIME_SECONDS * 2;
+
 const isProduction = () => process.env.NODE_ENV === 'production';
 
 /**
@@ -69,7 +86,7 @@ const cookieOptions = () => ({
   secure: isProduction(),
   sameSite: 'lax',
   path: '/',
-  maxAge: LIFETIME_SECONDS * 1000,
+  maxAge: COOKIE_LIFETIME_SECONDS * 1000,
 });
 
 /**
@@ -150,6 +167,7 @@ function requireSession(req, res, next) {
 module.exports = {
   COOKIE_NAME,
   LIFETIME_SECONDS,
+  COOKIE_LIFETIME_SECONDS,
   RENEW_BELOW_SECONDS,
   issueSession,
   clearSession,
