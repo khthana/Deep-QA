@@ -124,36 +124,49 @@ function readStudent(source) {
 }
 
 /**
- * Write one student, or update the one already filed under that code.
+ * What an existing code does to a write, and it is the only thing the two
+ * paths disagree about.
  *
  * `status` is not in the SET list: a student who was marked graduated stays
  * graduated when the registry office re-sends the file that first named them.
  * `updated_at` is set by hand because the table carries no trigger.
  */
-function upsertStudent(executor, values) {
-  return executor
-    .query(
-      `INSERT INTO student (student_id, first_name_th, last_name_th,
-                            department_id, program_id, admission_year)
-            VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (student_id) DO UPDATE
-              SET first_name_th = EXCLUDED.first_name_th,
-                  last_name_th = EXCLUDED.last_name_th,
-                  department_id = EXCLUDED.department_id,
-                  program_id = EXCLUDED.program_id,
-                  admission_year = EXCLUDED.admission_year,
-                  updated_at = now()
-         RETURNING ${RETURNED}`,
-      [
-        values.student_id,
-        values.first_name_th,
-        values.last_name_th,
-        values.department_id,
-        values.program_id,
-        values.admission_year,
-      ],
-    )
-    .then((result) => result.rows[0]);
+const OVERWRITE = `ON CONFLICT (student_id) DO UPDATE
+                          SET first_name_th = EXCLUDED.first_name_th,
+                              last_name_th = EXCLUDED.last_name_th,
+                              department_id = EXCLUDED.department_id,
+                              program_id = EXCLUDED.program_id,
+                              admission_year = EXCLUDED.admission_year,
+                              updated_at = now()`;
+
+/**
+ * Writing one student, for whichever of the two callers is asking.
+ *
+ * The typed form writes through the pool and the import writes through the
+ * client its transaction is on, and both take the same six columns in the same
+ * order - so the statement is written once and handed the executor, as
+ * `insertSubject` is, rather than copied into the route and into the importer's
+ * `insert` where the two could drift a column apart. What differs is one
+ * clause: the import overwrites a code it meets and the form does not, which is
+ * the sixth criterion and the paragraph above it.
+ */
+async function writeStudent(executor, values, { overwrite = false } = {}) {
+  const { rows } = await executor.query(
+    `INSERT INTO student (student_id, first_name_th, last_name_th,
+                          department_id, program_id, admission_year)
+          VALUES ($1, $2, $3, $4, $5, $6)
+     ${overwrite ? OVERWRITE : ''}
+       RETURNING ${RETURNED}`,
+    [
+      values.student_id,
+      values.first_name_th,
+      values.last_name_th,
+      values.department_id,
+      values.program_id,
+      values.admission_year,
+    ],
+  );
+  return rows[0];
 }
 
 function studentRoutes(pool) {
@@ -225,13 +238,18 @@ function studentRoutes(pool) {
         program,
       ]);
       const { rows } = await pool.query(
-        // Newest first. A register only grows, and every other list here sorts
-        // ascending because a code is a name - but a student code carries the
-        // cohort in its first two digits, so ascending would bury this year's
-        // intake behind every year before it, and the student somebody has just
-        // added would land on the last page.
+        // Newest first, and newest means most recently *added*, not highest
+        // code. A register only grows, and every other list here sorts
+        // ascending because a code is a name - but ascending would bury this
+        // year's intake behind every year before it, and the student somebody
+        // has just added would land on the last page. Sorting on the code alone
+        // would only move that problem: a late-admitted `63…` transferring in
+        // would land on the last page too, and the second criterion is that a
+        // student who has just been added *appears in the list*. So `created_at`
+        // decides, and the code breaks its ties - which for a seeded or
+        // imported batch, all written in one statement, is the whole ordering.
         `SELECT ${RETURNED} FROM student ${where}
-          ORDER BY student_id DESC
+          ORDER BY created_at DESC, student_id DESC
           LIMIT $4 OFFSET $5`,
         [reach, department, program, perPage, offset],
       );
@@ -307,7 +325,10 @@ function studentRoutes(pool) {
         },
         keys: [{ of: (values) => values.student_id, message: REFUSALS.repeatedStudentId }],
         verify: (values) => refuseWrite(req, values),
-        insert: async (client, values) => ({ ok: true, row: await upsertStudent(client, values) }),
+        insert: async (client, values) => ({
+          ok: true,
+          row: await writeStudent(client, values, { overwrite: true }),
+        }),
       });
       return sendImport(res, result, 'students');
     } catch (error) {
@@ -356,21 +377,8 @@ function studentRoutes(pool) {
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
 
       try {
-        const student = await pool.query(
-          `INSERT INTO student (student_id, first_name_th, last_name_th,
-                                department_id, program_id, admission_year)
-                VALUES ($1, $2, $3, $4, $5, $6)
-             RETURNING ${RETURNED}`,
-          [
-            draft.values.student_id,
-            draft.values.first_name_th,
-            draft.values.last_name_th,
-            draft.values.department_id,
-            draft.values.program_id,
-            draft.values.admission_year,
-          ],
-        );
-        return res.status(201).json({ student: student.rows[0] });
+        const student = await writeStudent(pool, draft.values);
+        return res.status(201).json({ student });
       } catch (error) {
         if (isDuplicate(error)) {
           return res.status(409).json({ message: REFUSALS.duplicateStudentId });

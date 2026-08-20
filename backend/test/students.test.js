@@ -172,10 +172,13 @@ test('an administrator adds a student individually and it appears in the list', 
   // The second criterion. The department is not in the body: the server takes
   // it off the หลักสูตร, which is what the first assertion after the 201 is.
   const cookie = await signInAs('U_DEPT');
-  // This year's intake, so the list's newest-first order puts them on the first
-  // page - which is the half of the criterion that says "and it appears in the
-  // list" rather than "and it is somewhere in the table".
-  const id = '68010001';
+  // A code *below* every seeded one, deliberately: a transfer admitted years
+  // ago is exactly the row that a list sorted on the code alone would file on
+  // the last page, where the person who has just typed it would never see it.
+  // The criterion is "and it appears in the list", so the assertion below is
+  // that it is the first row - which only holds because the list is ordered by
+  // when a student was added and not by what their code says.
+  const id = '61010001';
 
   const added = await create(cookie, draftOf(id));
   assert.equal(added.status, 201, added.body.message);
