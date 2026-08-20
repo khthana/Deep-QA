@@ -59,9 +59,16 @@ export default function ImportPanel({
     } catch (error) {
       // `details` is the per-row report, which rides on the refusal because a
       // rejected import is one: nothing was written. A refusal without rows -
-      // an expired session, a role that may not import - is left to the shell
-      // and to the caller.
-      if (error.details) setReport({ ok: false, errors: error.details })
+      // an expired session, a role that may not import, a file with nothing in
+      // it - is left to the shell and to the caller.
+      //
+      // Asked for a row rather than for the key: the server sends `errors: []`
+      // with the refusal for an empty file, and an empty array is truthy, so
+      // asking `error.details` drew the heading "no rows were saved, correct
+      // the rows below" over a table with no rows in it and threw away the one
+      // sentence that said what was wrong (#14 row 7, and every other screen
+      // with this panel on it).
+      if (error.details?.length) setReport({ ok: false, errors: error.details })
       else onError?.(error)
     } finally {
       setBusy(false)
