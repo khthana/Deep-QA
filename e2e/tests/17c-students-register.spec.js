@@ -37,6 +37,12 @@ test.beforeEach(async ({ page }) => {
 
 test('row 10: the หลักสูตร filter filters, and the total follows it', async ({ page }) => {
   const before = await total(page);
+  // What `0503` holds before this row adds to it, rather than an expected
+  // zero: a later spec that imports a `0503` student would otherwise break
+  // this row, and it would look like the filter had failed.
+  await filterProgram(page, '0503');
+  const before0503 = await total(page);
+  await filterProgram(page, '');
 
   // The two students rows 5 and 9 of the checklist add, added here because
   // this row is about telling them apart, not about the banner either of them
@@ -67,7 +73,8 @@ test('row 10: the หลักสูตร filter filters, and the total follows
 
   await filterProgram(page, '0503');
   await expect(registerRow(page, '67010002')).toHaveCount(1);
-  expect(await total(page)).toBe(1);
+  await expect(registerRow(page, '61010001')).toHaveCount(0);
+  expect(await total(page)).toBe(before0503 + 1);
 });
 
 test('row 11: a code the register already holds is refused, and the student it holds is untouched', async ({
@@ -87,6 +94,10 @@ test('row 11: a code the register already holds is refused, and the student it h
   // the import's overwrite path. If it were, this would answer 200 and the
   // register would quietly hold a different person under the same code.
   await page.getByRole('button', { name: 'ยกเลิก' }).click();
+  // Asked again rather than read off the screen: cancelling only puts the
+  // list back, it does not fetch, so both lines below would otherwise be
+  // reading the numbers the screen already held and could not fail.
+  await openRegister(page);
   expect(await total(page)).toBe(before);
   await expect(registerRow(page, '61010001')).toContainText('สมหญิง เรียนดี');
   await expect(registerRow(page, '61010001')).not.toContainText('ไม่ควรทับ');
