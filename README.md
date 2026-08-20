@@ -165,8 +165,8 @@ database and the accounts it opens have nothing behind them; nothing here is a c
 | `U_FAC` | `faculty.admin@kmitl.ac.th` | ผู้ดูแลระบบระดับคณะ | คณะวิศวกรรมศาสตร์ |
 | `U_DEPT` | `dept.admin.05@kmitl.ac.th` | ผู้ดูแลระบบระดับภาควิชา | ภาควิชา `05` |
 | `U_DEPT2` | `dept.admin.01@kmitl.ac.th` | ผู้ดูแลระบบระดับภาควิชา | ภาควิชา `01` — **cross-scope** |
-| `U_COM` | `committee.0501@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0501` |
-| `U_COM2` | `committee.0503@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0503` — **cross-scope** |
+| `U_COM` | `prog.manager@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0501` |
+| `U_COM2` | `prog.manager.0503@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0503` — **cross-scope** |
 | `U_TEACH` | `teacher.one@kmitl.ac.th` | อาจารย์ผู้สอน | กลุ่มเรียน 1 of `01076105` |
 | `U_TEACH2` | `teacher.two@kmitl.ac.th` | อาจารย์ผู้สอน | **teaches nothing** |
 | `U_EXT` | `external.assessor@kmitl.ac.th` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
@@ -176,6 +176,10 @@ database and the accounts it opens have nothing behind them; nothing here is a c
 The last five rows are the point of the list. A permission rule is only tested by an account that should be refused,
 so the dataset ships a committee member and a department admin scoped elsewhere, a teacher with no sections, an
 account holding two roles at once, and an address outside the university domain.
+
+`U_COM` and `U_COM2` were `committee.0501@` and `committee.0503@` until the seed was aligned with
+`docs/acceptance/18-program-subjects.md`, which names them by the role they hold. Acceptance rows walked
+before that still print the old addresses; the aliases and the user ids did not change.
 
 ## The backend
 

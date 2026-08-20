@@ -193,7 +193,7 @@ const ACCOUNTS = [
   {
     alias: 'U_COM',
     id: 'comm0501',
-    email: 'committee.0501@kmitl.ac.th',
+    email: 'prog.manager@kmitl.ac.th',
     th: ['ผศ.', 'ธนากร', 'หลักสูตร'],
     en: ['Asst. Prof.', 'Thanakorn', 'Laksut'],
     department: '05',
@@ -204,7 +204,7 @@ const ACCOUNTS = [
   {
     alias: 'U_COM2',
     id: 'comm0503',
-    email: 'committee.0503@kmitl.ac.th',
+    email: 'prog.manager.0503@kmitl.ac.th',
     th: ['ผศ.', 'ชลธิชา', 'นานาชาติ'],
     en: ['Asst. Prof.', 'Chonthicha', 'Nanachat'],
     department: '05',

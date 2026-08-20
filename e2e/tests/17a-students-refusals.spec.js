@@ -24,7 +24,7 @@ const STUDENT_DATA = '/main/student-data';
  */
 const REFUSED = [
   { row: 19, who: 'faculty.admin@', email: ACCOUNTS.facultyAdmin },
-  { row: 20, who: 'committee.0501@', email: ACCOUNTS.committee0501 },
+  { row: 20, who: 'prog.manager@', email: ACCOUNTS.committee0501 },
   { row: 21, who: 'admin@', email: ACCOUNTS.systemAdmin },
   { row: 22, who: 'teacher.one@', email: ACCOUNTS.teacherOne },
 ];

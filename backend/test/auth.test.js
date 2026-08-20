@@ -47,7 +47,7 @@ const EMAILS = {
   admin: 'admin@kmitl.ac.th',
   faculty: 'faculty.admin@kmitl.ac.th',
   dept: 'dept.admin.05@kmitl.ac.th',
-  committee: 'committee.0501@kmitl.ac.th',
+  committee: 'prog.manager@kmitl.ac.th',
   teacher: 'teacher.one@kmitl.ac.th',
   assessor: 'external.assessor@kmitl.ac.th',
   outsider: 'assessor@tabee-review.org',
@@ -358,7 +358,7 @@ test('Google sign-in', async (t) => {
 
     assert.equal((await resolveGoogleAccount(api.pool, 'teacher.two@kmitl.ac.th')).reason, 'inactive');
     assert.equal(
-      (await resolveGoogleAccount(api.pool, 'committee.0503@kmitl.ac.th')).reason,
+      (await resolveGoogleAccount(api.pool, 'prog.manager.0503@kmitl.ac.th')).reason,
       'unverified',
     );
 
