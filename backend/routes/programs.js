@@ -51,10 +51,11 @@ const express = require('express');
 
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
+const { blankToNull, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const { departmentInReach, reachableDepartments } = require('../lib/reach');
+const { deleteOrDeactivate } = require('../lib/removal');
 
 /**
  * The roles that maintain programmes.
@@ -436,38 +437,28 @@ function programRoutes(pool) {
       const existing = await reachable(req, req.params.programId);
       if (!existing) return res.status(404).json({ message: REFUSALS.programNotFound });
 
-      // One transaction with a savepoint, rather than two calls on the pool: a
-      // failed DELETE has to be rolled back before anything else can be said on
-      // that connection, and the row has to still be there for the UPDATE that
-      // follows. Two separate calls could answer "deactivated" for a programme
-      // a concurrent request had already removed.
-      const client = await pool.connect();
-      try {
-        await client.query('BEGIN');
-        await client.query('SAVEPOINT attempt');
-        try {
-          await client.query('DELETE FROM programs WHERE program_id = $1', [existing.program_id]);
-          await client.query('COMMIT');
-          return res.status(204).send();
-        } catch (error) {
-          if (!isReferenced(error)) throw error;
-          await client.query('ROLLBACK TO SAVEPOINT attempt');
-        }
+      // Delete it, or switch it off if something depends on it - `lib/removal`,
+      // shared with #16 and #18, which is also where the reasoning for the
+      // savepoint lives.
+      const outcome = await deleteOrDeactivate(pool, {
+        remove: (client) =>
+          client.query('DELETE FROM programs WHERE program_id = $1', [existing.program_id]),
+        deactivate: (client) =>
+          client.query('UPDATE programs SET is_active = false, updated_at = now() WHERE program_id = $1', [
+            existing.program_id,
+          ]),
+        load: async (client) => {
+          const { rows } = await client.query(
+            `SELECT ${RETURNED} FROM programs WHERE program_id = $1`,
+            [existing.program_id],
+          );
+          return rows[0];
+        },
+      });
 
-        const { rows } = await client.query(
-          `UPDATE programs SET is_active = false, updated_at = now()
-            WHERE program_id = $1 RETURNING ${RETURNED}`,
-          [existing.program_id],
-        );
-        await client.query('COMMIT');
-        if (!rows[0]) return res.status(404).json({ message: REFUSALS.programNotFound });
-        return res.status(200).json({ program: rows[0], deactivated: true });
-      } catch (error) {
-        await client.query('ROLLBACK').catch(() => {});
-        throw error;
-      } finally {
-        client.release();
-      }
+      if (outcome.deleted) return res.status(204).send();
+      if (outcome.missing) return res.status(404).json({ message: REFUSALS.programNotFound });
+      return res.status(200).json({ program: outcome.row, deactivated: true });
     } catch (error) {
       return next(error);
     }

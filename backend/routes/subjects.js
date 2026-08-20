@@ -46,9 +46,10 @@ const express = require('express');
 
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
+const { blankToNull, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { deleteOrDeactivate } = require('../lib/removal');
 const { departmentInReach, reachableDepartments } = require('../lib/reach');
 
 /**
@@ -422,37 +423,26 @@ function subjectRoutes(pool) {
       const existing = await reachable(req, req.params.subjectId);
       if (!existing) return res.status(404).json({ message: REFUSALS.subjectNotFound });
 
-      // One transaction with a savepoint, rather than two calls on the pool: a
-      // failed DELETE has to be rolled back before anything else can be said on
-      // that connection, and the row has to still be there for the UPDATE that
-      // follows.
-      const client = await pool.connect();
-      try {
-        await client.query('BEGIN');
-        await client.query('SAVEPOINT attempt');
-        try {
-          await client.query('DELETE FROM subjects WHERE subject_id = $1', [existing.subject_id]);
-          await client.query('COMMIT');
-          return res.status(204).send();
-        } catch (error) {
-          if (!isReferenced(error)) throw error;
-          await client.query('ROLLBACK TO SAVEPOINT attempt');
-        }
+      const outcome = await deleteOrDeactivate(pool, {
+        remove: (client) =>
+          client.query('DELETE FROM subjects WHERE subject_id = $1', [existing.subject_id]),
+        deactivate: (client) =>
+          client.query(
+            `UPDATE subjects SET is_active = false, updated_at = now() WHERE subject_id = $1`,
+            [existing.subject_id],
+          ),
+        load: async (client) => {
+          const { rows } = await client.query(
+            `SELECT ${RETURNED} FROM subjects WHERE subject_id = $1`,
+            [existing.subject_id],
+          );
+          return rows[0];
+        },
+      });
 
-        const { rows } = await client.query(
-          `UPDATE subjects SET is_active = false, updated_at = now()
-            WHERE subject_id = $1 RETURNING ${RETURNED}`,
-          [existing.subject_id],
-        );
-        await client.query('COMMIT');
-        if (!rows[0]) return res.status(404).json({ message: REFUSALS.subjectNotFound });
-        return res.status(200).json({ subject: rows[0], deactivated: true });
-      } catch (error) {
-        await client.query('ROLLBACK').catch(() => {});
-        throw error;
-      } finally {
-        client.release();
-      }
+      if (outcome.deleted) return res.status(204).send();
+      if (outcome.missing) return res.status(404).json({ message: REFUSALS.subjectNotFound });
+      return res.status(200).json({ subject: outcome.row, deactivated: true });
     } catch (error) {
       return next(error);
     }

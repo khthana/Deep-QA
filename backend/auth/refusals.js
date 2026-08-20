@@ -113,6 +113,26 @@ const REFUSALS = {
   invalidSubject: 'ข้อมูลรายวิชาไม่ครบถ้วนหรือไม่ถูกต้อง',
   subjectDepartmentNotYours: 'ไม่สามารถจัดการรายวิชานอกภาควิชาที่รับผิดชอบได้',
 
+  // Program Subjects - #18. The pair, not the two tables: `programNotYours` is
+  // the หลักสูตร named by the body or the path being one this grant does not
+  // hold, and it names รายวิชา because that is what the person was doing.
+  // `programSubjectNotFound` covers both the pair that was never made and the
+  // pair in somebody else's programme, for `subjectNotFound`'s reason.
+  //
+  // `subjectNotInCatalogue` is the third criterion in as many words, and is a
+  // different sentence from `subjectNotFound` on purpose: the person did not
+  // mistype a subject they maintain, they named one the university does not
+  // teach, and the thing to do about it is to have it added to the catalogue
+  // first. `subjectRetired` is the same mistake one step along - the code is
+  // real and has been withdrawn - and would be actively misleading if it were
+  // folded into the first.
+  programSubjectNotFound: 'ไม่พบรายวิชานี้ในหลักสูตรที่ระบุ',
+  duplicateProgramSubject: 'รายวิชานี้อยู่ในหลักสูตรนี้แล้ว',
+  invalidProgramSubject: 'ข้อมูลรายวิชาในหลักสูตรไม่ครบถ้วนหรือไม่ถูกต้อง',
+  subjectNotInCatalogue: 'ไม่พบรหัสวิชานี้ในคลังรายวิชา กรุณาเพิ่มรายวิชาเข้าคลังก่อน',
+  subjectRetired: 'รายวิชานี้ถูกปิดการใช้งานแล้ว จึงเพิ่มเข้าหลักสูตรไม่ได้',
+  programNotYours: 'ไม่สามารถจัดการรายวิชาในหลักสูตรที่ไม่ได้รับผิดชอบได้',
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.

@@ -8,6 +8,7 @@ import UserNotFound from '../pages/UserNotFound'
 import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Programs from '../pages/Programs'
+import ProgramSubjects from '../pages/ProgramSubjects'
 import Subjects from '../pages/Subjects'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
@@ -104,10 +105,7 @@ export default function AppRoutes() {
         <Route path="programs" element={<Programs />} />
         <Route path="subjects" element={<Subjects />} />
         <Route path="rubrics" element={<NotBuiltYet ticket="#21" />} />
-        <Route
-          path="course-in-program"
-          element={<NotBuiltYet ticket="#18" />}
-        />
+        <Route path="course-in-program" element={<ProgramSubjects />} />
         <Route path="student-data" element={<NotBuiltYet ticket="#17" />} />
         <Route path="course-in-term" element={<NotBuiltYet ticket="#23" />} />
         <Route path="plos" element={<NotBuiltYet ticket="#19" />} />
