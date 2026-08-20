@@ -197,6 +197,7 @@ test('row 6: choosing a different person swaps the history and goes back to page
   // the two apart - the wasted read is the only thing that can. (The
   // development server runs React's strict mode, so there is more than one read
   // of page one; what matters is that none of them is of page two.)
+  expect(asked.length).toBeGreaterThan(0);
   for (const answer of asked) {
     expect(new URL(answer.url()).searchParams.get('page')).toBe('1');
   }
