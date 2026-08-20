@@ -4,12 +4,17 @@ Curriculum and learning-outcomes management for the Faculty of Engineering, KMIT
 its graduates to learn, how each subject teaches and assesses that, and how far each student actually got — as
 evidence for TABEE accreditation.
 
-**Status: the database is built and seeded, and the backend signs people in and knows what they may do.** Alongside
-them sits the student implementation exactly as delivered, and the design work planning its replacement. All four
-migrations are written, one command fills them with the acceptance dataset, and `backend/` serves a health check,
-the sign-in routes of ticket [#8](https://github.com/khthana/Deep-QA/issues/8) and the authorisation layer of
-[#9](https://github.com/khthana/Deep-QA/issues/9) over a test harness the screen tickets build on. No frontend
-screen exists yet.
+**Status: built through the master-data screens.** The database, the sign-in routes and the authorisation layer are
+done, and nine screens sit on top of them — the application shell, accounts, role grants, activity history,
+departments, curricula, subjects, the student register and the subjects of a curriculum. Two test suites run against
+them: `backend/`'s 270 tests at the HTTP surface, and `e2e/`'s 84 in a real browser. Alongside all of it sits the
+student implementation exactly as delivered, which is read-only reference and is deleted when the rebuild completes.
+
+[#17](https://github.com/khthana/Deep-QA/issues/17) and [#18](https://github.com/khthana/Deep-QA/issues/18) stay open until the rows of their checklists that a person
+still has to walk are walked — a ticket here closes on its acceptance checklist, not on its tests.
+
+Next is the outcomes half — programme learning outcomes, the map from outcomes to subjects, and rubrics
+([#19](https://github.com/khthana/Deep-QA/issues/19)–[#21](https://github.com/khthana/Deep-QA/issues/21)).
 
 ## Layout
 
@@ -19,9 +24,10 @@ Deep-QA/
 ├── backend/             the HTTP API
 ├── frontend/            the screens
 ├── e2e/                 the browser tests, across both of them
+├── mutation/            the mutations that proved the browser tests
 ├── DEEP-QA-BACKEND/     student implementation — read-only reference
 ├── DEEP-QA-FRONTEND/    student implementation — read-only reference
-├── docs/                specs, ADRs, plan and ticket breakdown
+├── docs/                specs, ADRs, plan, tickets, acceptance and handoffs
 ├── scripts/             tooling (issue publishing)
 ├── CONTEXT.md           domain glossary
 └── CLAUDE.md            orientation for AI agents
@@ -36,12 +42,16 @@ directories are never edited — they are copied from, and deleted once the rebu
 |---|---|
 | [`CONTEXT.md`](./CONTEXT.md) | Domain glossary. Read before writing anything that names a domain concept. |
 | [`docs/06-implementation-plan.md`](./docs/06-implementation-plan.md) | What is being built and why. |
-| [`docs/07-ticket-breakdown.md`](./docs/07-ticket-breakdown.md) | The 44 tickets and their dependency order. |
+| [`docs/07-ticket-breakdown.md`](./docs/07-ticket-breakdown.md) | The original 44 tickets and their dependency order. Tickets opened after it was published are on GitHub only. |
 | [`docs/adr/`](./docs/adr/) | Decisions that are expensive to reverse. Binding. |
+| [`docs/acceptance/`](./docs/acceptance/) | One checklist per screen ticket, and the record of how each row was proved. A ticket closes on it. |
+| [`docs/handoff/`](./docs/handoff/) | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
+| [`mutation/`](./mutation/) | The mutations that proved each browser-covered acceptance row. |
 | [`docs/01`–`05`](./docs/) | Extracted from the thesis and from scanning the student code. **Descriptive of what was delivered, not prescriptive of what to build** — each carries a note where the rebuild diverges. |
 
 Work is tracked as [GitHub issues](https://github.com/khthana/Deep-QA/issues): #1 is the spec, #2–#45 are the
-tickets, wired with native blocking dependencies.
+original 44 tickets, wired with native blocking dependencies. Numbers above that are gaps and defects found during
+the rebuild and opened since.
 
 ## Setting up on a new machine
 
@@ -269,10 +279,14 @@ holds the backend's; the frontend section of [`.env.example`](./.env.example) is
 
 ## The browser tests
 
-A second suite, in `e2e/`, drives a real browser against both servers running for real. It covers the two things the
-backend suite cannot state without inventing the browser's half of them: a screen typed into the address bar and
-refused **by the server** rather than merely missing from a menu, and a spreadsheet that the screen's own template
-button produced, filled in, and sent back through the screen's own file control.
+A second suite, in `e2e/`, drives a real browser against both servers running for real. It covers what the backend
+suite cannot state without inventing the browser's half of it: a screen typed into the address bar and refused **by
+the server** rather than merely missing from a menu; a spreadsheet that the screen's own template button produced,
+filled in, and sent back through the screen's own file control; and the behaviour a screen has of its own — a paging
+bar's ends, a list that steps back a page when its last row is deleted.
+
+It asserts behaviour and never appearance. A checklist row stated in terms of colour, wording or menu contents stays
+a row a person walks.
 
 ```bash
 npm test                  # from e2e/

@@ -9,10 +9,13 @@ are only rules once a browser is involved:
 - a screen typed into the address bar and **refused by the server**, rather than merely missing from a menu — the
   refusal rows every acceptance checklist repeats;
 - a spreadsheet that the screen's own template button produced, filled in, and sent back through the screen's own file
-  control — the import rows every acceptance checklist repeats.
+  control — the import rows every acceptance checklist repeats;
+- behaviour a screen has of its own, where the server is only half the answer or none of it — a paging bar's ends, a
+  list that steps back a page when the last row of the last page is deleted, a picker that offers what a rule says it
+  should offer.
 
-Both are half browser and half server, and neither can be stated at the first seam without inventing the browser's
-half. That half is the one this system has had wrong before.
+The first two are half browser and half server, and neither can be stated at the first seam without inventing the
+browser's half. That half is the one this system has had wrong before. The third has no first-seam statement at all.
 
 ## Running it
 
@@ -66,6 +69,9 @@ its mutants and its kills. Two traps in doing it here: a `mode: 'serial'` file s
 died, so a later assertion has to be re-run under `-g`; and truncating Playwright's output hides which line failed —
 keep the whole log and grep it.
 
+The mutants themselves live in [`mutation/`](../mutation/), one file per ticket, so a row's evidence can be produced
+again rather than believed. `mutation/README.md` says how to run one.
+
 ## Layout
 
 ```
@@ -78,15 +84,27 @@ e2e/
 │   ├── auth.js            signing in the way a person does
 │   ├── shell.js           the role picker, the user menu, the two dialogs over the top
 │   ├── import-panel.js    the template button, the file control, the total — shared by every import row
+│   ├── expired-session.js the dialog a dead session raises, shared by the rows that provoke one
+│   ├── pager.js           the one paging control every list draws — #57
 │   ├── grants-panel.js    ┐
 │   ├── history-panel.js   ├ one module per screen or panel: its controls,
 │   ├── users-screen.js    │ read as the checklist reads them
 │   ├── departments-screen.js
+│   ├── programs-screen.js │
 │   ├── subjects-screen.js │
-│   └── students-screen.js ┘
-└── tests/                 one file per acceptance document, named for the rows it covers
+│   ├── students-screen.js │
+│   └── program-subjects-screen.js ┘
+└── tests/                 named for the rows they cover
 ```
 
-Spec files sort alphabetically and run in that order under one worker. `17a-` before `17b-` is that ordering and
-nothing else: the refusal file's control row asserts the register still holds the seeded 173, and the import file adds
-students.
+**A spec file is named for what it proves, not for where the proof lands.** Usually that is one acceptance document,
+and the name says so — `14b-departments-import.spec.js` is rows 5–7 of `14-departments.md`. The exception is a claim
+about something several screens share: `57a-pager.spec.js` covers four screens in one file because what it proves is
+one component that all four draw, and its rows land in five documents. Splitting it per screen would mean writing the
+same helper four times, which is the duplication #57 exists to have removed.
+
+Spec files sort alphabetically and run in that order under one worker, and that ordering is load-bearing twice.
+`17a-` before `17b-`: the refusal file's control row asserts the register still holds the seeded 173, and the import
+file adds students. And `57a-` after every `16x` and `18x`: a row of it that read "ten on the page" from what those
+left behind would be a row whose meaning depends on a file it never mentions, so it imports its own rows under codes
+no other spec uses — `Z…`, `ZP…`, `010797…` — and measures every count against what the table holds at that moment.

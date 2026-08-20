@@ -438,6 +438,14 @@ Alongside automated tests, each ticket carries a short checklist of steps perfor
 written in terms of what a named seeded account does and sees. A ticket is complete when its tests pass and its
 checklist has been worked through.
 
+A row of such a checklist may instead be marked as covered by the browser seam, in which case it names the spec file
+that covers it and is not walked again. **That mark is earned, not asserted.** Before a row is marked, the code the
+new assertion is about is broken on purpose and the run is read to confirm that *that* assertion failed — that one,
+and not an earlier one in the same file. Without the step, a green suite proves the tests ran and not that they would
+notice anything: an assertion aimed at the wrong thing is green too. The mutations are kept in `mutation/`, one file
+per ticket, so a row's evidence can be produced again rather than believed, and each acceptance document records
+which mutant killed which assertion.
+
 ## Out of Scope
 
 - **Visual redesign.** The UI is reproduced as-is. Any proposal to change it is raised as a question, not implemented.
