@@ -37,6 +37,32 @@ const departmentRow = (page, departmentId) =>
     .getByRole('row')
     .filter({ has: page.getByRole('cell', { name: departmentId, exact: true }) });
 
+/**
+ * The screen's own list, told apart from the rejection report's table.
+ *
+ * `first()` because the list is drawn above the import panel, and a refused
+ * import puts the report's table on the screen underneath it.
+ */
+const listTable = page => page.locator('table').first();
+
+/**
+ * Deletes one department through the screen's own confirmation, and waits for
+ * the list that follows.
+ *
+ * The wait is for a list request rather than for the banner, because the row
+ * this serves — `57-pager.md` row 3 — is about *which page* the screen lands
+ * on afterwards, and that is decided by the request it sends.
+ */
+async function removeDepartment(page, departmentId) {
+  await departmentRow(page, departmentId).getByRole('button', { name: 'ลบ' }).click();
+  const [answer] = await Promise.all([
+    waitForList(page),
+    page.getByRole('button', { name: 'ลบภาควิชา' }).click(),
+  ]);
+  expect(answer.status()).toBe(200);
+  return answer;
+}
+
 module.exports = {
   DEPARTMENTS,
   API,
@@ -44,4 +70,6 @@ module.exports = {
   openDepartments,
   importDepartments,
   departmentRow,
+  listTable,
+  removeDepartment,
 };

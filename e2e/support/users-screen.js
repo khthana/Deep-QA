@@ -72,6 +72,14 @@ const importUsers = (page, text, name = 'users.csv') =>
 const userRow = (page, email) =>
   page.getByRole('row').filter({ has: page.getByRole('cell', { name: email, exact: true }) });
 
+/**
+ * The screen's own list, told apart from the rejection report's table.
+ *
+ * `first()` because the list is drawn above the import panel, and a refused
+ * import puts the report's table on the screen underneath it.
+ */
+const listTable = page => page.locator('table').first();
+
 module.exports = {
   USERS,
   API,
@@ -80,4 +88,5 @@ module.exports = {
   search,
   importUsers,
   userRow,
+  listTable,
 };

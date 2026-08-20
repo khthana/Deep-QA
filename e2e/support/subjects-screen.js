@@ -88,6 +88,14 @@ async function save(page) {
   return reloaded;
 }
 
+/**
+ * The screen's own list, told apart from the rejection report's table.
+ *
+ * `first()` because the list is drawn above the import panel, and a refused
+ * import puts the report's table on the screen underneath it.
+ */
+const listTable = page => page.locator('table').first();
+
 module.exports = {
   SUBJECTS,
   API,
@@ -98,4 +106,5 @@ module.exports = {
   departmentPicker,
   fillNewSubject,
   save,
+  listTable,
 };
