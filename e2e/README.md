@@ -60,6 +60,12 @@ document, marked **⚙** and naming the spec that covers it. Where a row states 
 the browser — rows 19–22 of `17-students.md` are refused at the server *and* have no menu entry — the row says which
 half is still a person's.
 
+A ⚙ is not earned by a passing test. Before a row is marked, the code the assertion is about is broken deliberately
+and the run is read to check that **that** assertion failed, and not one earlier in the file; each document records
+its mutants and its kills. Two traps in doing it here: a `mode: 'serial'` file skips the tests after the one that
+died, so a later assertion has to be re-run under `-g`; and truncating Playwright's output hides which line failed —
+keep the whole log and grep it.
+
 ## Layout
 
 ```
@@ -70,7 +76,13 @@ e2e/
 │   ├── global-setup.js    drop, migrate, seed
 │   ├── accounts.js        the seeded accounts, by what they are
 │   ├── auth.js            signing in the way a person does
-│   └── students-screen.js the register's controls, read as the checklist reads them
+│   ├── import-panel.js    the template button, the file control, the total — shared by every import row
+│   ├── grants-panel.js    ┐
+│   ├── history-panel.js   ├ one module per screen or panel: its controls,
+│   ├── users-screen.js    │ read as the checklist reads them
+│   ├── departments-screen.js
+│   ├── subjects-screen.js │
+│   └── students-screen.js ┘
 └── tests/                 one file per acceptance document, named for the rows it covers
 ```
 

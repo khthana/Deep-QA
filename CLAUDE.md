@@ -21,7 +21,20 @@ frontier — tickets whose blockers are all closed. #2–#45 are the original 44
 `docs/07`; numbers above that are gaps found during the rebuild and opened since.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time. Read it before taking work.
+will cost time. Read it before taking work. Each handoff names the one it supersedes for state,
+so follow that chain rather than the filenames.
+
+## Two test seams
+
+Work is tested at the backend HTTP surface (`backend/test/*.test.js`) and, since #65, in the
+browser (`e2e/`, Playwright — its own stack on ports 3100/5100 and schema `deep_core_e2e`,
+reseeded on every run). The browser seam asserts **behaviour**; anything an acceptance row states
+in terms of **appearance** — colours, wording, menu contents, "this is text and not a control" —
+stays a hand-walked row.
+
+Acceptance rows are therefore marked ☑ walked · ◐ half-walked · ☐ not walked · **⚙ covered by the
+browser seam** (the row names the spec file). A row is only marked ⚙ after a mutation test shows
+the new assertion — that one, not an earlier one — failing when the code it is about is broken.
 
 ## Documentation map
 
@@ -31,6 +44,7 @@ will cost time. Read it before taking work.
 | `docs/adr/` | Decisions that are hard to reverse. Read before touching keys, authorisation or the CLO grain. |
 | `docs/01`–`05` | Extracted from the thesis and from scanning the student code. **Descriptive of what was delivered, not prescriptive of what to build** — each carries a note where the rebuild diverges. |
 | `docs/06-implementation-plan.md` | The spec the rebuild implements. |
+| `docs/acceptance/` | One checklist per screen ticket, and the record of how each row was proved. A ticket closes on it. |
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 
