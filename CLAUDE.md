@@ -11,7 +11,7 @@ app-specific architecture notes.
 
 The two `DEEP-QA-*` directories are the **student implementation as delivered** and are
 now **read-only reference**. There is no database for them and they are not being
-edited. The rebuild lands in fresh `backend/`, `frontend/` and `db/` trees, one screen
+edited. The rebuild lands in fresh `backend/`, `frontend/`, `db/` and `e2e/` trees, one screen
 at a time, and the reference directories are deleted when it completes.
 
 Work is tracked as GitHub issues: [#1](https://github.com/khthana/Deep-QA/issues/1) is

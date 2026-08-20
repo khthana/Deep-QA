@@ -17,6 +17,8 @@ screen exists yet.
 Deep-QA/
 ├── db/                  PostgreSQL container, migrations and their runner
 ├── backend/             the HTTP API
+├── frontend/            the screens
+├── e2e/                 the browser tests, across both of them
 ├── DEEP-QA-BACKEND/     student implementation — read-only reference
 ├── DEEP-QA-FRONTEND/    student implementation — read-only reference
 ├── docs/                specs, ADRs, plan and ticket breakdown
@@ -260,6 +262,23 @@ builders compose onto what it made.
 
 Note that the backend and a CRA frontend both read `PORT`, and the last assignment in a `.env` wins. The root `.env`
 holds the backend's; the frontend section of [`.env.example`](./.env.example) is copied into `frontend/.env` instead.
+
+## The browser tests
+
+A second suite, in `e2e/`, drives a real browser against both servers running for real. It covers the two things the
+backend suite cannot state without inventing the browser's half of them: a screen typed into the address bar and
+refused **by the server** rather than merely missing from a menu, and a spreadsheet that the screen's own template
+button produced, filled in, and sent back through the screen's own file control.
+
+```bash
+npm test                  # from e2e/
+```
+
+It needs the container running and `frontend/`'s and `backend/`'s dependencies installed, and the first run also needs
+`npx playwright install chromium`. It starts both servers itself, on ports 3100 and 5100 and against the
+`deep_core_e2e` schema, which it drops, migrates and seeds at the start of every run — so it never attaches to a
+development server and never writes into development data. Sign-in is the real sign-in screen with the seeded
+accounts; nothing about the session is stubbed. [`e2e/README.md`](./e2e/README.md) has the rest.
 
 ## Provenance
 

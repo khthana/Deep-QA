@@ -1,0 +1,14 @@
+{
+  "name": "deep-core-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The browser seam: a real browser driving the real frontend against the real backend.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

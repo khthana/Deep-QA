@@ -371,13 +371,27 @@ A test states a rule from the requirements or business rules and asserts it thro
 It never reaches into a module to check how a result was reached, and it never asserts on markup. If a test would
 still pass after the rule it names was deleted, it is not testing that rule.
 
-### The seam
+### The seams
 
-There is one seam: the HTTP surface of the backend, exercised in-process against a real PostgreSQL database. This is
-the outermost boundary the frontend consumes, so tests are expressed in the same terms as the screen-to-endpoint
-mapping and as the acceptance checklists — a rule, a request, a response.
+There are two, and the boundary between them is what a test needs a browser for.
 
-Enabling it requires the only structural change to the inherited backend: the application currently builds itself and
+**The HTTP surface of the backend**, exercised in-process against a real PostgreSQL database, is the first and carries
+almost everything. It is the outermost boundary the frontend consumes, so tests are expressed in the same terms as the
+screen-to-endpoint mapping and as the acceptance checklists — a rule, a request, a response. Any rule that can be
+stated as a request and an answer belongs here, and putting it anywhere else makes it slower and no truer.
+
+**A real browser driving the running frontend against the running backend** is the second — added by #65, and
+deliberately narrow. It exists for rules that are only rules once a browser is involved: a screen typed into the
+address bar and refused by the server rather than merely absent from a menu, and a file that a button produced,
+a person filled in and the same screen sent back. Neither can be stated at the first seam without inventing the
+browser's half of it, which is the half that has been wrong before.
+
+Its limit is the one the frontend exclusion below draws. This seam asserts behaviour and never asserts on class names,
+copy or layout; anything a checklist row states in terms of appearance — a colour, a wording, the contents of a
+dropdown, an empty state's phrasing — stays a hand-walked row. It follows that a row is either walked by a person or
+covered here, never counted twice: `docs/acceptance/` marks the covered ones and names the test that covers them.
+
+Enabling the first requires the only structural change to the inherited backend: the application currently builds itself and
 starts listening in one file with no export, so it is split into a module that builds and exports the configured
 application and a thin entry point that listens.
 
@@ -389,7 +403,14 @@ resulting session cookie, so every authorization assertion exercises the middlew
 matters more than usual here, because the inherited system's central defect was authorization that existed only in
 appearance — a stubbed session would reproduce exactly that blind spot.
 
-Upload endpoints — evidence and every spreadsheet import — are exercised at the same seam by attaching real files.
+Upload endpoints — evidence and every spreadsheet import — are exercised at the first seam by attaching real files.
+What the second adds is the step before that one: the template arriving as a file the browser saved, and the person's
+edited copy going back through the screen's own control.
+
+The second seam repeats this arrangement rather than varying it. It runs both servers on ports of their own against a
+schema of its own, migrated and seeded at the start of each run, and it signs in through the sign-in screen with the
+same seeded accounts. `e2e/README.md` says how to run it; the command is `npm test` from `e2e/`, as it is from
+`backend/`.
 
 ### What is not separately tested
 
@@ -399,7 +420,10 @@ by fixture builders that make scenarios cheap to express. This keeps the calcula
 without rewriting tests, at the cost of more setup per case.
 
 Frontend components are not unit-tested. The UI is carried over unchanged by instruction, so component tests would
-pin down markup that was not designed here and that no one intends to change.
+pin down markup that was not designed here and that no one intends to change. This is an objection to pinning markup
+and not to testing the frontend, which is why the browser seam above does not contradict it: that seam locates the
+controls it presses and reads the numbers they produce, and asserts on neither the markup around them nor the words
+inside them.
 
 ### Prior art
 
