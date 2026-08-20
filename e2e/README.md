@@ -76,6 +76,7 @@ e2e/
 │   ├── global-setup.js    drop, migrate, seed
 │   ├── accounts.js        the seeded accounts, by what they are
 │   ├── auth.js            signing in the way a person does
+│   ├── shell.js           the role picker, the user menu, the two dialogs over the top
 │   ├── import-panel.js    the template button, the file control, the total — shared by every import row
 │   ├── grants-panel.js    ┐
 │   ├── history-panel.js   ├ one module per screen or panel: its controls,

@@ -17,6 +17,7 @@ const ACCOUNTS = {
   systemAdmin: 'admin@kmitl.ac.th',
   teacherOne: 'teacher.one@kmitl.ac.th',
   teacherTwo: 'teacher.two@kmitl.ac.th',
+  multiRole: 'multi.role@kmitl.ac.th',
 };
 
 /**
@@ -32,6 +33,7 @@ const IDS = {
   systemAdmin: 'admin01',
   teacherOne: 'teach01',
   teacherTwo: 'teach02',
+  multiRole: 'multi01',
 };
 
 module.exports = { ACCOUNTS, IDS, PASSWORD };

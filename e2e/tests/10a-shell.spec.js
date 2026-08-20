@@ -1,0 +1,184 @@
+'use strict';
+
+const { test, expect } = require('@playwright/test');
+const { REFUSALS } = require('../../backend/auth/refusals');
+const { ACCOUNTS, PASSWORD } = require('../support/accounts');
+const { signIn } = require('../support/auth');
+const { USERS, waitForList } = require('../support/users-screen');
+const {
+  PROGRAMS,
+  PROGRAM_SUBJECTS,
+  PROGRAM_SUBJECTS_API,
+  USERS_MENU,
+  actingButton,
+  switchTo,
+  expiryDialog,
+  openChangePassword,
+  submitPasswordChange,
+  signOut,
+} = require('../support/shell');
+
+/**
+ * docs/acceptance/10-application-shell.md - the rows of the shell that are
+ * about behaviour rather than about appearance.
+ *
+ * The split is #65's: what a menu *contains*, what the breadcrumb *reads* and
+ * which items a sidebar draws stay hand-walked rows, because a driver
+ * asserting them would be asserting the screen against itself. What is here is
+ * the half a browser can settle and a person cannot easily: that the grant the
+ * shell starts in is the senior one and not merely the first one drawn, that
+ * putting on another hat changes what the server *permits* and not only what
+ * is offered, that a session ending says so instead of dropping someone at the
+ * sign-in page, and that a changed password is the password from then on.
+ *
+ * Two rows of that document are deliberately absent and neither is an
+ * oversight; both are written up in it. The reload half of criterion 6 asks
+ * for the expiry dialog after deleting the cookie and pressing F5, and the
+ * shell cannot show it: the cookie's `maxAge` is the token's own lifetime, so
+ * a browser never presents an expired token, and a shell whose first call is
+ * anonymous sees `reason: 'anonymous'` either way. Criterion 8's browser half
+ * is already asserted, in `11a-users-refusals.spec.js`, and is not repeated
+ * here.
+ */
+
+const PROGRAM_MANAGER_0501 = 'กรรมการหลักสูตร 0501';
+const TEACHER = 'อาจารย์ผู้สอน';
+
+const waitForProgramSubjects = page =>
+  page.waitForResponse(
+    response => new URL(response.url()).pathname === PROGRAM_SUBJECTS_API,
+  );
+
+test.describe('the shell, in a browser', () => {
+  test('row 3: two grants, and the shell starts in the senior one', async ({
+    page,
+  }) => {
+    await signIn(page, ACCOUNTS.multiRole);
+
+    // Priority 4 beats priority 5. The account holds both; nothing in the
+    // sign-in asked which, so the server chose - and it chose the senior.
+    await expect(actingButton(page)).toHaveText(
+      new RegExp(PROGRAM_MANAGER_0501),
+    );
+
+    // And the switch is a request rather than a redraw: the inherited picker
+    // wrote the choice into localStorage and reloaded, which is a menu change
+    // the server never heard about.
+    const answer = await switchTo(page, TEACHER);
+    expect(answer.status()).toBe(200);
+    expect((await answer.json()).acting).toMatchObject({
+      role_id: 'TEACHER',
+      scope_id: '05',
+    });
+    await expect(actingButton(page)).toHaveText(new RegExp(TEACHER));
+  });
+
+  test('row 4: the switch changes what the server permits, not just the menu', async ({
+    page,
+  }) => {
+    await signIn(page, ACCOUNTS.multiRole);
+
+    // The same account, the same address, twice - so the only thing that can
+    // account for the two answers is the hat.
+    const [asManager] = await Promise.all([
+      waitForProgramSubjects(page),
+      page.goto(PROGRAM_SUBJECTS),
+    ]);
+    expect(asManager.status()).toBe(200);
+
+    await switchTo(page, TEACHER);
+
+    const [asTeacher] = await Promise.all([
+      waitForProgramSubjects(page),
+      page.reload(),
+    ]);
+    expect(asTeacher.status()).toBe(403);
+    await expect(page.getByText(REFUSALS.forbidden)).toBeVisible();
+  });
+
+  test('row 6: a session that has ended says so', async ({ page }) => {
+    await signIn(page, ACCOUNTS.departmentAdmin05);
+    await page.goto(PROGRAMS);
+    await expect(page.getByRole('link', { name: USERS_MENU })).toBeVisible();
+
+    // What a person does through DevTools. From here on the browser is a
+    // browser with no session, which is the state the criterion is about.
+    await page.context().clearCookies();
+
+    await page.getByRole('link', { name: USERS_MENU }).click();
+
+    // The point of the row: an explanation, not an unannounced return to the
+    // sign-in screen.
+    await expect(expiryDialog(page)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'เข้าสู่ระบบใหม่' })).toBeVisible();
+    expect(new URL(page.url()).pathname).not.toBe('/');
+  });
+
+  test('row 6: a 403 is not an expiry', async ({ page }) => {
+    await signIn(page, ACCOUNTS.teacherOne);
+
+    const [response] = await Promise.all([waitForList(page), page.goto(USERS)]);
+    expect(response.status()).toBe(403);
+
+    // Both halves matter. The inherited client read every refusal as the same
+    // thing and signed the person out on a 403, which told them their session
+    // had ended when it had not.
+    await expect(page.getByText(REFUSALS.forbidden)).toBeVisible();
+    await expect(expiryDialog(page)).toHaveCount(0);
+  });
+
+  test('row 7: the wrong current password is said in the dialog', async ({
+    page,
+  }) => {
+    await signIn(page, ACCOUNTS.teacherTwo);
+    await openChangePassword(page);
+
+    const answer = await submitPasswordChange(
+      page,
+      'not-the-password',
+      'deep-core-changed',
+    );
+    expect(answer.status()).toBe(403);
+
+    await expect(page.getByText(REFUSALS.wrongPassword)).toBeVisible();
+    // Still in the dialog, still signed in: a refusal here is a correction to
+    // make, not an ejection.
+    await expect(page.getByRole('heading', { name: 'เปลี่ยนรหัสผ่าน' })).toBeVisible();
+    await expect(expiryDialog(page)).toHaveCount(0);
+  });
+
+  test('row 7: the new password is the password from then on', async ({
+    page,
+  }) => {
+    const NEW_PASSWORD = 'deep-core-changed';
+
+    await signIn(page, ACCOUNTS.teacherTwo);
+    await openChangePassword(page);
+    expect((await submitPasswordChange(page, PASSWORD, NEW_PASSWORD)).status()).toBe(200);
+
+    await signOut(page);
+
+    // The old one is refused - the change was to the stored credential and not
+    // to this browser's session.
+    await page.locator('input[type="text"]').fill(ACCOUNTS.teacherTwo);
+    await page.locator('input[type="password"]').fill(PASSWORD);
+    const [refused] = await Promise.all([
+      page.waitForResponse(
+        response => new URL(response.url()).pathname === '/api/auth/login',
+      ),
+      page.getByRole('button', { name: 'Login to your account' }).click(),
+    ]);
+    expect(refused.status()).toBe(401);
+    await expect(page.getByText(REFUSALS.credentials)).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe('/');
+
+    // And the new one is accepted. `signIn` asserts the 200 for us.
+    await signIn(page, ACCOUNTS.teacherTwo, NEW_PASSWORD);
+
+    // Put it back. Every spec in this suite shares one seeded schema, and a
+    // later one signing in as this account with the seeded password would fail
+    // for a reason that had nothing to do with it.
+    await openChangePassword(page);
+    expect((await submitPasswordChange(page, NEW_PASSWORD, PASSWORD)).status()).toBe(200);
+  });
+});
