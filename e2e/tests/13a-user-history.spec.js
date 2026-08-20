@@ -174,25 +174,32 @@ test('row 6: choosing a different person swaps the history and goes back to page
   // The swap. The same search term still offers both teachers, so what changes
   // here is only which of them is chosen.
   //
-  // Every read of the new person's history, because the swap makes more than
-  // one: the panel re-renders with the new account while `page` is still 2,
-  // asks for page 2 of it, and only then runs the effect that puts the page
-  // number back - so what this row is about is where the screen *settles*, and
-  // the wasted read on the way there is recorded as an open item rather than
-  // asserted on.
+  // Every read of the new person's history is collected, because the assertion
+  // below is about how many there are as much as about what they asked for.
   const asked = [];
   page.on('response', answer => {
     if (new URL(answer.url()).pathname === historyPath(IDS.teacherTwo)) asked.push(answer);
   });
-  await page.getByRole('combobox').selectOption(IDS.teacherTwo);
+  const [swapped] = await Promise.all([
+    waitForHistory(page, IDS.teacherTwo, 1),
+    page.getByRole('combobox').selectOption(IDS.teacherTwo),
+  ]);
 
   // Settled on the first page rather than on the fourth. Page two of the last
   // person's history is not page two of this one's, and on a shorter history it
   // is nothing at all - which draws an empty table and reads as "this person
   // did nothing".
   await expect(pagerLine(page)).toContainText('หน้า 1');
-  const swapped = asked[asked.length - 1];
-  expect(new URL(swapped.url()).searchParams.get('page')).toBe('1');
+
+  // And page two of the new person was never asked for on the way here. A panel
+  // that carried the page number across the swap and corrected itself in an
+  // effect would settle on page one too, so the settled state alone cannot tell
+  // the two apart - the wasted read is the only thing that can. (The
+  // development server runs React's strict mode, so there is more than one read
+  // of page one; what matters is that none of them is of page two.)
+  for (const answer of asked) {
+    expect(new URL(answer.url()).searchParams.get('page')).toBe('1');
+  }
   const body = await swapped.json();
 
   // And what is drawn is this person's history rather than the last one's.

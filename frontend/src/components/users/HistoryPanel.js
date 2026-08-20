@@ -94,6 +94,12 @@ const happenedAt = value =>
       })
     : '—'
 
+/**
+ * The page number is state of *this account's* history, not of the panel, and
+ * the two callers say so with a `key` - so an account swapped underneath draws
+ * its first page from its first render, rather than asking for the page number
+ * the last one was left on and correcting itself afterwards.
+ */
 export default function HistoryPanel({ user, onError }) {
   const [page, setPage] = useState(1)
   const [history, setHistory] = useState({ entries: [], total: 0 })
@@ -113,14 +119,6 @@ export default function HistoryPanel({ user, onError }) {
   useEffect(() => {
     load()
   }, [load])
-
-  // The picker on the ประวัติการใช้งาน screen can swap the account underneath
-  // this panel. Page four of the last person's history is not page four of this
-  // one's, and on a shorter history it is nothing at all - which reads as "this
-  // person did nothing" rather than as a page number left behind.
-  useEffect(() => {
-    setPage(1)
-  }, [user.user_id])
 
   return (
     <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

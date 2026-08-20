@@ -160,7 +160,9 @@ export default function Users() {
             #13, and the same condition for the same reason: a history is what
             an account has done, and an account being added has done nothing.
           */}
-          {editing.user_id && <HistoryPanel user={editing} onError={report} />}
+          {editing.user_id && (
+            <HistoryPanel key={editing.user_id} user={editing} onError={report} />
+          )}
         </>
       ) : (
         <>

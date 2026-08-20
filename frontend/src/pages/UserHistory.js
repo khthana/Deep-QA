@@ -125,7 +125,11 @@ export default function UserHistory() {
       </ContentMotionDIV>
 
       {chosen ? (
-        <HistoryPanel user={chosen} onError={report} />
+        // Keyed by the account: the picker can swap it, and page four of the
+        // last person's history is not page four of this one's - on a shorter
+        // history it is nothing at all, which reads as "this person did
+        // nothing". A fresh panel starts on page one before it asks anything.
+        <HistoryPanel key={chosen.user_id} user={chosen} onError={report} />
       ) : (
         <ContentMotionDIV className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-slate-500">
           เลือกผู้ใช้งานเพื่อดูประวัติการใช้งานของบัญชีนั้น
