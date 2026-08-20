@@ -27,3 +27,8 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Mutation harness backups - the untouched copies of whatever a mutant is about
+mutation/.backup/
+__pycache__/
+*.pyc

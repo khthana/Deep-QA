@@ -47,6 +47,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/acceptance/` | One checklist per screen ticket, and the record of how each row was proved. A ticket closes on it. |
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
+| `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 
 Three decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the
