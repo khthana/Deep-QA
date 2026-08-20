@@ -1,9 +1,9 @@
 # Handoff — DEEP-Core rebuild
 
 **Workspace:** `C:\Users\khtha\OneDrive\Desktop\Code\Deep-QA`
-**Written:** 2026-08-19 · end of the session that closed #16
-**State:** Six screens built and accepted. `main` at `1bd1dc0`, pushed, working tree clean.
-The next action is a five-row Excel walk for **#62**, then ticket **#18**.
+**Written:** 2026-08-20 · end of the session that closed #16 and #62
+**State:** Six screens built and accepted, and every acceptance checklist walked. The next
+action is ticket **#18**.
 
 Supersedes `2026-08-16-planning-session.md` for state; that document is still the authority on
 how the plan was arrived at and on the working agreements in its sections 3 and 7.
@@ -12,7 +12,7 @@ how the plan was arrived at and on the working agreements in its sections 3 and 
 
 ## 1. Where the rebuild is
 
-Closed: **#2–#16**, plus **#46**, **#53**, **#57**, **#59**. That is the whole platform layer and the
+Closed: **#2–#16**, plus **#46**, **#53**, **#57**, **#59**, **#62**. That is the whole platform layer and the
 first six screens — application shell, user accounts, role grants, activity history, departments,
 programmes, subjects.
 
@@ -27,35 +27,28 @@ Open and unblocked (the frontier):
 Query the frontier with `gh api repos/khthana/Deep-QA/issues/<n>/dependencies/blocked_by`.
 The GraphQL `blockedByIssues` field **does not exist** — do not retry it.
 
-Open issues that are findings rather than planned work: #47–#56, #58, #60, #61, #62.
+Open issues that are findings rather than planned work: #47–#56, #58, #60, #61. (#62 is closed — see section 2.)
 Two need the advisor, not code: **#61** (does a Faculty Admin maintain the Subject catalogue? — the
 spec says yes, practice may not) and the credits-as-integer question in `16-subjects.md`.
 
 ---
 
-## 2. #62 — the one thing left half-done
+## 2. #62 — closed
 
-`frontend/src/api/client.js` now puts the byte-order mark back in `saveAsFile` before the blob is
+`frontend/src/api/client.js` puts the byte-order mark back in `saveAsFile` before the blob is
 built. `formatCsv` writes one; `response.text()` strips it (the Fetch specification decodes UTF-8
-with a BOM-removal step); Excel then read a Thai template as cp874 mojibake. Committed as `1bd1dc0`
-and pushed. **The issue is deliberately still open.**
+with a BOM-removal step); Excel then read a Thai template as cp874 mojibake. Committed as `1bd1dc0`.
 
-Its only evidence is a hand-walk, and there are **five** rows, none of them ticked:
+Walked in Excel on 2026-08-20 and all five rows pass — the template row of
+`11-user-accounts.md` (5), `14-departments.md` (5), `15-programs.md` (7) and `16-subjects.md` (6.1),
+all now ticked, plus one row the fix created for itself: a filled-in template uploaded back now
+carries `ef bb bf` for the first time, and `backend/lib/csv.js:37` strips it as its source claims.
+Nothing about this is covered by a test — `docs/06 §Testing Decisions` puts frontend components
+outside the suite, and the 243-test backend run never loads `client.js`.
 
-1. `docs/acceptance/11-user-accounts.md` row 5 — download the template, open it in Excel.
-2. `docs/acceptance/14-departments.md` row 5 — same.
-3. `docs/acceptance/15-programs.md` row 7 — same. This row was ticked once **without** being opened
-   in Excel and was unticked again in `f9b3366`; see the item at the foot of that file.
-4. `docs/acceptance/16-subjects.md` row 6.1 — same. This is the row that found the bug.
-5. **New, and created by the fix itself:** download a template, fill one row, upload it back, and
-   confirm the import succeeds with the Thai landing correctly in the database. Every import walked
-   so far used a template with no BOM, because the bug was live. From now on the uploaded file
-   carries `ef bb bf`. All four routes go through `importRows` -> `parseTable` -> `parseRows`, and
-   `backend/lib/csv.js:37` strips it — but that is reasoning from source, which is exactly the move
-   that produced the false tick on row 3. Walk it.
-
-The backend suite is silent on all of this: `docs/06 §Testing Decisions` puts frontend components
-outside the suite, and 243/0 never loads `frontend/src/api/client.js`.
+Row 3 above is the one that was ticked once **without** being opened in Excel, unticked in
+`f9b3366`, and re-walked properly here. That is the failure mode to watch for: a checklist row
+ticked from reading the code rather than from running it.
 
 ---
 
