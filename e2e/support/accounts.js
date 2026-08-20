@@ -16,6 +16,22 @@ const ACCOUNTS = {
   committee0501: 'committee.0501@kmitl.ac.th',
   systemAdmin: 'admin@kmitl.ac.th',
   teacherOne: 'teacher.one@kmitl.ac.th',
+  teacherTwo: 'teacher.two@kmitl.ac.th',
 };
 
-module.exports = { ACCOUNTS, PASSWORD };
+/**
+ * The stored ids of the accounts above, for the rows that read an id rather
+ * than an address - the history screen's picker offers `name (user_id)` and
+ * the history route is addressed by id.
+ */
+const IDS = {
+  departmentAdmin05: 'deptadm05',
+  departmentAdmin01: 'deptadm01',
+  facultyAdmin: 'facadm01',
+  committee0501: 'comm0501',
+  systemAdmin: 'admin01',
+  teacherOne: 'teach01',
+  teacherTwo: 'teach02',
+};
+
+module.exports = { ACCOUNTS, IDS, PASSWORD };
