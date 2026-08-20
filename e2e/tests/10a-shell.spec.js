@@ -156,29 +156,36 @@ test.describe('the shell, in a browser', () => {
     await openChangePassword(page);
     expect((await submitPasswordChange(page, PASSWORD, NEW_PASSWORD)).status()).toBe(200);
 
-    await signOut(page);
+    // From here the stored credential is not the seeded one, and every spec in
+    // this suite shares one seeded schema: a failure below must still hand the
+    // account back, or a later spec signing in as it fails for a reason that
+    // has nothing to do with it.
+    try {
+      await signOut(page);
 
-    // The old one is refused - the change was to the stored credential and not
-    // to this browser's session.
-    await page.locator('input[type="text"]').fill(ACCOUNTS.teacherTwo);
-    await page.locator('input[type="password"]').fill(PASSWORD);
-    const [refused] = await Promise.all([
-      page.waitForResponse(
-        response => new URL(response.url()).pathname === '/api/auth/login',
-      ),
-      page.getByRole('button', { name: 'Login to your account' }).click(),
-    ]);
-    expect(refused.status()).toBe(401);
-    await expect(page.getByText(REFUSALS.credentials)).toBeVisible();
-    expect(new URL(page.url()).pathname).toBe('/');
+      // The old one is refused - the change was to the stored credential and not
+      // to this browser's session.
+      await page.locator('input[type="text"]').fill(ACCOUNTS.teacherTwo);
+      await page.locator('input[type="password"]').fill(PASSWORD);
+      const [refused] = await Promise.all([
+        page.waitForResponse(
+          response => new URL(response.url()).pathname === '/api/auth/login',
+        ),
+        page.getByRole('button', { name: 'Login to your account' }).click(),
+      ]);
+      expect(refused.status()).toBe(401);
+      await expect(page.getByText(REFUSALS.credentials)).toBeVisible();
+      expect(new URL(page.url()).pathname).toBe('/');
 
-    // And the new one is accepted. `signIn` asserts the 200 for us.
-    await signIn(page, ACCOUNTS.teacherTwo, NEW_PASSWORD);
-
-    // Put it back. Every spec in this suite shares one seeded schema, and a
-    // later one signing in as this account with the seeded password would fail
-    // for a reason that had nothing to do with it.
-    await openChangePassword(page);
-    expect((await submitPasswordChange(page, NEW_PASSWORD, PASSWORD)).status()).toBe(200);
+      // And the new one is accepted. `signIn` asserts the 200 for us.
+      await signIn(page, ACCOUNTS.teacherTwo, NEW_PASSWORD);
+    } finally {
+      // A fresh session with whichever password is now current, so the restore
+      // does not depend on where the failure above left the browser.
+      await page.context().clearCookies();
+      await signIn(page, ACCOUNTS.teacherTwo, NEW_PASSWORD);
+      await openChangePassword(page);
+      expect((await submitPasswordChange(page, NEW_PASSWORD, PASSWORD)).status()).toBe(200);
+    }
   });
 });
