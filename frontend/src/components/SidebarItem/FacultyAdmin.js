@@ -5,7 +5,6 @@ import {
   HiOutlineClipboardDocumentCheck, // ข้อมูล Rubric กลาง
   HiOutlineSquare3Stack3D, // หลักสูตร
   HiOutlineRectangleGroup, // รายวิชาในหลักสูตร
-  HiOutlineIdentification, // ข้อมูลนักศึกษากลาง
   HiOutlineChartBar, // ผลการเรียนรู้
   HiOutlineKey, // กำหนดผลการเรียนรู้ระดับหลักสูตร PLO
   HiOutlineLink, // Maping ผลการเรียนรู้กับรายวิชา
@@ -49,12 +48,6 @@ export const FACULTY_ADMIN = [
         label: 'รายวิชาในหลักสูตร',
         path: '/main/course-in-program',
         icon: <HiOutlineRectangleGroup />,
-      },
-      {
-        key: 'ข้อมูลนักศึกษากลาง',
-        label: 'ข้อมูลนักศึกษากลาง',
-        path: '/main/student-data',
-        icon: <HiOutlineIdentification />,
       },
     ],
   },

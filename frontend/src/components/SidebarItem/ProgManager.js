@@ -2,7 +2,6 @@ import {
   HiOutlineClipboardDocumentCheck, // ข้อมูล Rubric กลาง
   HiOutlineAcademicCap, // หลักสูตร
   HiOutlineSquare3Stack3D, // รายวิชาในหลักสูตร
-  HiOutlineIdentification, // ข้อมูลนักศึกษากลาง
   HiOutlineCalendarDays, // การเปิดรายวิชาในภาคการศึกษา
   HiOutlineChartBar, // ผลการเรียนรู้
   HiOutlineKey, // กำหนดผลการเรียนรู้ระดับหลักสูตร PLO
@@ -31,12 +30,6 @@ export const PROG_MANAGER = [
         label: 'รายวิชาในหลักสูตร',
         path: '/main/course-in-program',
         icon: <HiOutlineSquare3Stack3D />,
-      },
-      {
-        key: 'ข้อมูลนักศึกษากลาง',
-        label: 'ข้อมูลนักศึกษากลาง',
-        path: '/main/student-data',
-        icon: <HiOutlineIdentification />,
       },
       {
         key: 'การเปิดรายวิชาในภาคการศึกษา',

@@ -133,6 +133,25 @@ const REFUSALS = {
   subjectRetired: 'รายวิชานี้ถูกปิดการใช้งานแล้ว จึงเพิ่มเข้าหลักสูตรไม่ได้',
   programNotYours: 'ไม่สามารถจัดการรายวิชาในหลักสูตรที่ไม่ได้รับผิดชอบได้',
 
+  // Students - #17. The central register. Four of the five are about one
+  // student code and they are deliberately not one key. `duplicateStudentId`
+  // is a typed form meeting a code the register already holds, which is a 409
+  // and a refusal; `repeatedStudentId` is two rows of one spreadsheet claiming
+  // it, which the database cannot see because an import that meets an existing
+  // code updates it; `studentNotYours` is a code held in another department,
+  // which answers neither of those because which department holds them is not
+  // the caller's to learn; and `studentNotFound` is the read, covering both the
+  // code nobody holds and the one somebody else does, for `subjectNotFound`'s
+  // reason. `studentProgramNotYours` is the request naming a หลักสูตร this
+  // administrator does not hold, separate from #18's `programNotYours` because
+  // the sentence has to be about the student rather than the curriculum.
+  studentNotFound: 'ไม่พบข้อมูลนักศึกษานี้',
+  studentNotYours: 'ไม่สามารถบันทึกข้อมูลนักศึกษารหัสนี้ได้',
+  duplicateStudentId: 'รหัสนักศึกษานี้มีอยู่ในระบบแล้ว',
+  repeatedStudentId: 'รหัสนักศึกษาซ้ำกันภายในไฟล์',
+  invalidStudent: 'ข้อมูลนักศึกษาไม่ครบถ้วน กรุณาตรวจสอบรหัสนักศึกษา (ตัวเลข 8 หลัก) ชื่อ นามสกุล และหลักสูตร',
+  studentProgramNotYours: 'ไม่สามารถบันทึกนักศึกษาในหลักสูตรนี้ได้',
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.

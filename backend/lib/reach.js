@@ -1,7 +1,8 @@
 'use strict';
 
 /**
- * The departments an acting grant reaches — extracted at the second copy, #16.
+ * The departments and programmes an acting grant reaches — extracted at the
+ * second copy, #16 for departments and #17 for programmes.
  *
  * #15 wrote two small queries about departments that are not about programmes
  * at all: the list a picker is drawn from, and the yes-or-no a write is checked
@@ -72,4 +73,56 @@ async function departmentInReach(pool, scopeId, departmentId, { mustBeActive = t
   return Boolean(rows[0]);
 }
 
-module.exports = { reachableDepartments, departmentInReach };
+/**
+ * Every programme in reach, retired ones included, each with its `is_active`.
+ *
+ * `reachableDepartments`' twin, extracted at its second copy for the same
+ * reason: #18 drew this list for the committee member's filter and #17 draws it
+ * again for the register's, and the two queries were the same query. The
+ * `department_id` comes back with the row because #17 files a student under the
+ * department its หลักสูตร already belongs to rather than asking anybody to
+ * retype it.
+ *
+ * Retired ones come too, and not paged, for `reachableDepartments`' reasons.
+ */
+async function reachablePrograms(pool, scopeId) {
+  const reach = await coveredScopes(pool, scopeId);
+  const { rows } = await pool.query(
+    `SELECT program_id, program_name_th, program_name_en, department_id, is_active
+       FROM programs
+      WHERE ($1::text[] IS NULL OR program_id = ANY($1))
+      ORDER BY program_id ASC`,
+    [reach],
+  );
+  return rows;
+}
+
+/**
+ * The programme row this grant may file a record under, or null.
+ *
+ * `departmentInReach`'s twin, and it answers with the row rather than a boolean
+ * because every caller so far has wanted the `department_id` off it - the
+ * yes-or-no is `Boolean()` away and the second query is not.
+ *
+ * A programme that does not exist, one in another department and one that has
+ * been retired all answer the same null: telling them apart would turn this
+ * into a way of listing other departments' หลักสูตร.
+ */
+async function programInReach(pool, scopeId, programId) {
+  if (!programId) return null;
+  const reach = await coveredScopes(pool, scopeId);
+  const { rows } = await pool.query(
+    `SELECT program_id, department_id FROM programs
+      WHERE program_id = $1 AND is_active
+        AND ($2::text[] IS NULL OR program_id = ANY($2))`,
+    [programId, reach],
+  );
+  return rows[0] || null;
+}
+
+module.exports = {
+  reachableDepartments,
+  departmentInReach,
+  reachablePrograms,
+  programInReach,
+};

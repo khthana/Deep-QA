@@ -129,10 +129,14 @@ construction rather than retrofitted.
     templates, so that setting up a faculty does not mean typing hundreds of rows.
 33. As an administrator, I want to download the template for every import, so that I know the expected columns.
 34. As an administrator, I want an import to report which rows failed and why, so that I can correct and retry.
-35. As an administrator, I want to browse the central student register filtered by Program, so that I can confirm who
-    is enrolled.
-36. As an administrator, I want to add students to the central register individually and by spreadsheet import, so
-    that Teachers can subsequently enrol them into Sections.
+35. As a Department Admin, I want to browse the central student register of my own Department filtered by Program,
+    so that I can confirm who is enrolled — and, as story 31 asks for the Subject catalogue, I want the Faculty Admin
+    and the Curriculum Committee refused the register, so that who is admitted is maintained by the department that
+    admits them. (These two stories read "As an administrator" until #17; that vagueness was the question #17
+    answered.)
+36. As a Department Admin, I want to add students to the central register individually and by spreadsheet import,
+    with the admission year derived from the student code rather than entered, so that Teachers can subsequently
+    enrol them into Sections.
 37. As any user, I want tables of more than ten rows paginated, so that long lists stay usable.
 
 ### Curriculum Committee setup

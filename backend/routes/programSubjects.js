@@ -48,6 +48,7 @@ const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { reachablePrograms, programInReach } = require('../lib/reach');
 const { deleteOrDeactivate } = require('../lib/removal');
 
 /**
@@ -126,14 +127,8 @@ function programSubjectRoutes(pool) {
    */
   async function programRefusal(req, programId) {
     if (!programId) return 'invalidProgramSubject';
-    const reach = await coveredScopes(pool, req.auth.acting.scope_id);
-    const { rows } = await pool.query(
-      `SELECT program_id FROM programs
-        WHERE program_id = $1 AND is_active
-          AND ($2::text[] IS NULL OR program_id = ANY($2))`,
-      [programId, reach],
-    );
-    return rows[0] ? null : 'programNotYours';
+    const program = await programInReach(pool, req.auth.acting.scope_id, programId);
+    return program ? null : 'programNotYours';
   }
 
   /**
@@ -249,15 +244,8 @@ function programSubjectRoutes(pool) {
    */
   router.get('/program-subjects/programs', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
-      const reach = await coveredScopes(pool, req.auth.acting.scope_id);
-      const { rows } = await pool.query(
-        `SELECT program_id, program_name_th, program_name_en, department_id, is_active
-           FROM programs
-          WHERE ($1::text[] IS NULL OR program_id = ANY($1))
-          ORDER BY program_id ASC`,
-        [reach],
-      );
-      return res.status(200).json({ programs: rows });
+      const programs = await reachablePrograms(pool, req.auth.acting.scope_id);
+      return res.status(200).json({ programs });
     } catch (error) {
       return next(error);
     }
