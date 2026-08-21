@@ -39,10 +39,11 @@ MUTANTS = {
                 "      if (false) await pool.query(`UPDATE users SET password = $2 WHERE user_id = $1`, ["),
     # row 7b: any refusal read as an expiry - the inherited modal's own defect
     "ejectonrefusal": ("navbar", "      if (err.expired) {", "      if (true) {"),
-    # row 4: TEACHER is not a maintainer of program subjects
+    # row 4: TEACHER is not a maintainer of program subjects. The anchor was
+    # rewritten at #79, which took `FACULTY_ADMIN` out of that list.
     "maintainer": ("progsub",
-                   "const MAINTAINERS = ['PROG_MANAGER', 'FACULTY_ADMIN', 'DEPT_ADMIN'];",
-                   "const MAINTAINERS = ['PROG_MANAGER', 'FACULTY_ADMIN', 'DEPT_ADMIN', 'TEACHER'];"),
+                   "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];",
+                   "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN', 'TEACHER'];"),
     # row 6a: a 401 anywhere raises the dialog
     "silent401": ("client",
                   "if (response.status === 401 && !anonymous) sessionExpiredListener?.()",

@@ -42,7 +42,7 @@ python mutation/18-program-subjects.py restore     # คืนโค้ดเด
 | ไฟล์ | ตั๋ว | จำนวน |
 |---|---|---:|
 | `10-application-shell.py` | #10 เปลือกหน้าจอ | 12 |
-| `11-12-accounts-and-grants.py` | #11 ผู้ใช้งานระบบ, #12 สิทธิ์การใช้งาน | 7 |
+| `11-12-accounts-and-grants.py` | #11 ข้อมูลผู้ใช้งาน, #12 สิทธิ์การใช้งาน | 7 |
 | `13-user-activity-history.py` | #13 ประวัติการใช้งาน | 9 |
 | `16-subjects.py` | #16 ข้อมูลรายวิชา | 14 |
 | `18-program-subjects.py` | #18 รายวิชาในหลักสูตร | 23 |
@@ -69,6 +69,13 @@ harness ปฏิเสธตัวที่ข้อความตรงกั
   ทั้ง expression แล้วรันซ้ำ ตายที่ `e2e/tests/13a-user-history.spec.js` บรรทัด 100 ตามเดิม
 - **`13:N6`** — ตกยุคจริง ๆ แผงเคยรีเซ็ตเลขหน้าใน `useEffect` และถูกแทนที่ด้วย `key` ที่ผู้เรียก
   ทั้งสองแห่ง ซึ่งเป็นสิ่งที่ `N9` พูดถึง เก็บไว้เป็นบันทึกแต่ apply ไม่ได้แล้ว
+
+ที่ #79 (2026-08-21) อีกสองตัว — `MAINTAINERS` ของ `backend/routes/programSubjects.js`
+ตัด `FACULTY_ADMIN` ออก ข้อความที่ `18:maintainerall` กับ `10:maintainer` ผูกไว้จึงหายไป
+เขียนใหม่ทั้งคู่ให้ตรงกับโค้ดวันนี้ แล้วรันซ้ำ — `18:maintainerall` ตายที่
+`e2e/tests/18c-program-subjects-refusals.spec.js` บรรทัด 152 ตามเดิม และ `10:maintainer`
+ตายที่ `e2e/tests/10a-shell.spec.js` บรรทัด 104 ตามเดิม ตัวเดียวที่เหลือ
+เป็น MISS จึงยังคงเป็น `13:N6` ตัวเดียว
 
 ## ข้อควรระวัง
 

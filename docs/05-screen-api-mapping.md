@@ -109,17 +109,17 @@ Deep-QA/
 |---|---|---|---|---|
 | A01 | `/main/departments` | ข้อมูลภาควิชา | `AdminContent/Department/DepartmentTable.js` | FACULTY_ADMIN |
 | A02 | `/main/programs` | ข้อมูลหลักสูตร | `AdminContent/Programs/ProgramsTable.js` | FACULTY_ADMIN, DEPT_ADMIN |
-| A03 | `/main/subjects` | ข้อมูลรายวิชา | `AdminContent/Subject/SubjectTable.js` | FACULTY_ADMIN, DEPT_ADMIN |
-| A04 | `/main/rubrics` | ข้อมูล Rubric กลาง | `AdminContent/Rubric/RubricTable.js` (ใน `RubricManage`) | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
+| A03 | `/main/subjects` | ข้อมูลรายวิชา | `AdminContent/Subject/SubjectTable.js` | DEPT_ADMIN |
+| A04 | `/main/rubrics` | ข้อมูล Rubric กลาง | `AdminContent/Rubric/RubricTable.js` (ใน `RubricManage`) | DEPT_ADMIN, PROG_MANAGER |
 | A05 | `/main/rubrics/edit-Rubric` | แก้ไขรายละเอียด Rubric | `AdminContent/Rubric/EditRubricDetail.js` | เท่ากับ A04 |
-| A06 | `/main/course-in-program` | รายวิชาในหลักสูตร | `AdminContent/Subject/CourseInProg.js` | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
-| A07 | `/main/student-data` | ข้อมูลนักศึกษากลาง | `AdminContent/Student/MainStudentData.js` | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
+| A06 | `/main/course-in-program` | รายวิชาในหลักสูตร | `AdminContent/Subject/CourseInProg.js` | DEPT_ADMIN, PROG_MANAGER |
+| A07 | `/main/student-data` | ข้อมูลนักศึกษากลาง | `AdminContent/Student/MainStudentData.js` | DEPT_ADMIN |
 | A08 | `/main/course-in-term` | การเปิดรายวิชาในภาคการศึกษา | `AdminContent/Subject/CourseInTerm.js` | PROG_MANAGER |
-| A09 | `/main/plos` | ผลลัพธ์การเรียนรู้ระดับหลักสูตร (PLO) | `AdminContent/PLO/PLOtable.js` (ใน `PLOManage`) | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
-| A10 | `/main/mapping-plo` | เชื่อมโยงผลการเรียนรู้กับรายวิชา | `AdminContent/PLOMapping/MappingPLO.js` | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
-| A11 | `/main/users` | ผู้ใช้งานระบบ | `AdminContent/UserMangement/UserTable.js` (ใน `UserManage`) | ทุก admin role |
-| A12 | `/main/users/edit-user` | แก้ไขผู้ใช้ / จัดการสิทธิ์ | `AdminContent/UserMangement/EditUser.js` | ทุก admin role |
-| A13 | `/main/users/user-history` | ประวัติการใช้งานผู้ใช้ | `AdminContent/UserMangement/userLogs.js` | ทุก admin role |
+| A09 | `/main/plos` | ผลลัพธ์การเรียนรู้ระดับหลักสูตร (PLO) | `AdminContent/PLO/PLOtable.js` (ใน `PLOManage`) | DEPT_ADMIN, PROG_MANAGER |
+| A10 | `/main/mapping-plo` | เชื่อมโยงผลการเรียนรู้กับรายวิชา | `AdminContent/PLOMapping/MappingPLO.js` | DEPT_ADMIN, PROG_MANAGER |
+| A11 | `/main/users` | ผู้ใช้งานระบบ | `AdminContent/UserMangement/UserTable.js` (ใน `UserManage`) | FULL_ADMIN, FACULTY_ADMIN, DEPT_ADMIN |
+| A12 | `/main/users/edit-user` | แก้ไขผู้ใช้ / จัดการสิทธิ์ | `AdminContent/UserMangement/EditUser.js` | FULL_ADMIN, FACULTY_ADMIN, DEPT_ADMIN |
+| A13 | `/main/users/user-history` | ประวัติการใช้งานผู้ใช้ | `AdminContent/UserMangement/userLogs.js` | FULL_ADMIN, FACULTY_ADMIN, DEPT_ADMIN |
 | A14 | `/main/course-list` | รายการรายวิชา (placeholder) | `AdminContent/CourseList.js` | ไม่มีในเมนู |
 | A15 | `/main/courseLevelByIntake` | ประเมินระดับหลักสูตรตามรุ่นปีรับเข้า | `AdminContent/courseLevelByIntake/courseLevelByIntake.js` | PROG_MANAGER |
 | A16 | `/main/courseLevelAllStudents` | ระดับหลักสูตรของนักศึกษาทุกคน | `AdminContent/courseLevelAllStudents.js` | PROG_MANAGER |
@@ -1019,7 +1019,10 @@ Deep-QA/
 > หน้า `courseLevel*` (A15–A18) เปลี่ยนชื่อเป็น `programLevel*` · endpoint 25 เส้นที่ไม่มีคนเรียกจะไม่ถูกคัดลอกไป ·
 > A03 (`/main/subjects`) เหลือ `DEPT_ADMIN` บทบาทเดียว ตาม [#61](https://github.com/khthana/Deep-QA/issues/61)
 > ซึ่งตัดสินว่าแคตตาล็อกรายวิชาเป็นของภาควิชาที่สอนวิชานั้น ผู้ดูแลระดับคณะจึงเข้าหน้านี้ไม่ได้เลย
-> ทั้งอ่านและแก้ (A06 รายวิชาในหลักสูตร ไม่เปลี่ยน — การเอารายวิชาเข้าหลักสูตรไม่ใช่การดูแลแคตตาล็อก) ·
+> ทั้งอ่านและแก้ ·
+> A04, A06, A09 และ A10 ตัด `FACULTY_ADMIN` ออกทั้งสี่หน้า ตาม [#79](https://github.com/khthana/Deep-QA/issues/79)
+> คณะถือรายชื่อภาควิชาและรายชื่อหลักสูตร (A01, A02) ส่วนสิ่งที่อยู่ *ข้างใน* หลักสูตร — รายวิชา Rubric PLO
+> และการเชื่อมโยง — เป็นของภาควิชากับกรรมการหลักสูตร #79 จึงกลับคำหมายเหตุเดิมที่ว่า A06 ไม่เปลี่ยน ·
 > A07 (`/main/student-data`) เหลือ `DEPT_ADMIN` บทบาทเดียวเช่นกัน ตาม [#17](https://github.com/khthana/Deep-QA/issues/17)
 > ด้วยเหตุผลเดียวกัน — นักศึกษาถูกรับเข้าที่ภาควิชา ส่วนกรรมการหลักสูตรดูแลว่าหลักสูตรสอนอะไร ไม่ใช่ว่าใครถูกรับเข้า
 > ทั้ง `FACULTY_ADMIN` และ `PROG_MANAGER` จึงถูกปฏิเสธหน้านี้ทั้งอ่านและเขียน และเมนูของทั้งสองบทบาทถูกตัดรายการนี้ออก

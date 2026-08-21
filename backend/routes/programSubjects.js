@@ -56,9 +56,11 @@ const { deleteOrDeactivate } = require('../lib/removal');
  *
  * `FULL_ADMIN` is absent because a curriculum is not the central
  * administrator's (ADR-0002), and `TEACHER` because teaching a subject is not
- * choosing it.
+ * choosing it. `FACULTY_ADMIN` is absent since #79: the faculty keeps the list
+ * of departments and of curricula, and what a curriculum is made of is decided
+ * below it. That reverses the note #61 left here.
  */
-const MAINTAINERS = ['PROG_MANAGER', 'FACULTY_ADMIN', 'DEPT_ADMIN'];
+const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];
 
 /** `subject_type_enum`, exactly. บังคับ and เลือก are the screen's words for these. */
 const TYPES = ['required', 'elective'];

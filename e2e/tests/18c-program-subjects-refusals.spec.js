@@ -29,8 +29,8 @@ const {
  * half that only a browser shows: that an account which never sees a menu entry
  * is refused all the same when it types the address, and that the reach is
  * drawn — one committee member is *told* which curriculum they hold while the
- * two administrators above them are *offered* a choice between both, which is
- * the same fact wearing two faces.
+ * administrator above them is *offered* a choice between both, which is the
+ * same fact wearing two faces.
  *
  * A pairing is placed in `0503` first, by an administrator who holds it. Row 8's
  * first half is that the committee of `0503` sees its own curriculum and not
@@ -91,8 +91,8 @@ test('row 8: the committee of one curriculum is shown that one and only that one
   expect(await total(page)).toBe(1);
 });
 
-test('row 8: an administrator above both curricula reaches both', async ({ page }) => {
-  for (const account of [ACCOUNTS.departmentAdmin05, ACCOUNTS.facultyAdmin]) {
+test('row 8: the administrator above both curricula reaches both', async ({ page }) => {
+  for (const account of [ACCOUNTS.departmentAdmin05]) {
     await page.context().clearCookies();
     await signIn(page, account);
     await openProgramSubjects(page);
@@ -134,10 +134,10 @@ test('row 8: an administrator above both curricula reaches both', async ({ page 
   await expect(pairRow(page, OTHERS).getByRole('cell').nth(CELL.type)).toHaveText('วิชาบังคับ');
 });
 
-test('row 8: a curriculum is neither the central administrator\'s nor a teacher\'s', async ({
+test('row 8: a curriculum is not the central administrator\'s, the faculty\'s or a teacher\'s', async ({
   page,
 }) => {
-  for (const account of [ACCOUNTS.systemAdmin, ACCOUNTS.teacherOne]) {
+  for (const account of [ACCOUNTS.systemAdmin, ACCOUNTS.teacherOne, ACCOUNTS.facultyAdmin]) {
     await page.context().clearCookies();
     await signIn(page, account);
 
@@ -146,8 +146,9 @@ test('row 8: a curriculum is neither the central administrator\'s nor a teacher\
     // The half of the row that is enforced. The missing menu entry is a
     // convenience and a drawn thing; this is the rule, and it holds for an
     // account that reached the screen by typing its address. What a curriculum
-    // is made of is not the central administrator's decision (ADR-0002), and
-    // teaching a subject is not choosing it.
+    // is made of is not the central administrator's decision (ADR-0002),
+    // teaching a subject is not choosing it, and since #79 the faculty keeps
+    // the list of curricula rather than deciding their contents.
     expect(answer.status(), `${account} should be refused`).toBe(403);
     await expect(page.getByText(REFUSALS.forbidden)).toBeVisible();
 

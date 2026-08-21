@@ -2,13 +2,7 @@ import {
   HiOutlineSquaresPlus, // ข้อมูลหลัก
   HiOutlineBuildingOffice2, // ข้อมูลภาควิชา
   HiOutlineAcademicCap, // ข้อมูลหลักสูตร
-  HiOutlineClipboardDocumentCheck, // ข้อมูล Rubric กลาง
-  HiOutlineSquare3Stack3D, // หลักสูตร
-  HiOutlineRectangleGroup, // รายวิชาในหลักสูตร
-  HiOutlineChartBar, // ผลการเรียนรู้
-  HiOutlineKey, // กำหนดผลการเรียนรู้ระดับหลักสูตร PLO
-  HiOutlineLink, // Maping ผลการเรียนรู้กับรายวิชา
-  HiOutlineUsers, // ผู้ใช้งานระบบ
+  HiOutlineUsers, // ข้อมูลผู้ใช้งาน
   HiOutlineClock, // ประวัติการใช้งาน
 } from 'react-icons/hi2'
 
@@ -30,49 +24,11 @@ export const FACULTY_ADMIN = [
         path: '/main/programs',
         icon: <HiOutlineAcademicCap />,
       },
-      {
-        key: 'ข้อมูล Rubric กลาง',
-        label: 'ข้อมูล Rubric กลาง',
-        path: '/main/rubrics',
-        icon: <HiOutlineClipboardDocumentCheck />,
-      },
     ],
   },
   {
-    key: 'หลักสูตร',
-    label: 'หลักสูตร',
-    icon: <HiOutlineSquare3Stack3D />,
-    sub: [
-      {
-        key: 'รายวิชาในหลักสูตร',
-        label: 'รายวิชาในหลักสูตร',
-        path: '/main/course-in-program',
-        icon: <HiOutlineRectangleGroup />,
-      },
-    ],
-  },
-  {
-    key: 'ผลการเรียนรู้',
-    label: 'ผลการเรียนรู้',
-    icon: <HiOutlineChartBar />,
-    sub: [
-      {
-        key: 'กำหนดผลการเรียนรู้ระดับหลักสูตร PLO',
-        label: 'กำหนดผลการเรียนรู้ระดับหลักสูตร PLO',
-        path: '/main/plos',
-        icon: <HiOutlineKey />,
-      },
-      {
-        key: 'Maping ผลการเรียนรู้กับรายวิชา',
-        label: 'การเชื่อมโยงผลการเรียนรู้กับรายวิชา',
-        path: '/main/mapping-plo',
-        icon: <HiOutlineLink />,
-      },
-    ],
-  },
-  {
-    key: 'ผู้ใช้งานระบบ',
-    label: 'ผู้ใช้งานระบบ',
+    key: 'ข้อมูลผู้ใช้งาน',
+    label: 'ข้อมูลผู้ใช้งาน',
     path: '/main/users',
     icon: <HiOutlineUsers />,
   },

@@ -8,10 +8,10 @@
  *
  * This is the first screen the Curriculum Committee owns, so the reach tests
  * are the point rather than a formality. U_COM administers 0501 and U_COM2
- * administers 0503, both under department 05 and both under the faculty - so
- * the eighth criterion is asserted between two grants that a coarser reach
- * would have let through, and the two administrators above them are asserted to
- * reach both.
+ * administers 0503, both under department 05 - so the eighth criterion is
+ * asserted between two grants that a coarser reach would have let through, and
+ * the department administrator above them is asserted to reach both. The
+ * faculty administrator reaches neither, since #79.
  *
  * The catalogue the seed ships is one subject wide, which is not enough to
  * place, to page or to refuse on - so this file makes its own, with codes
@@ -273,24 +273,24 @@ test('a curriculum committee member is refused on another programme', async () =
   assert.equal(shown.body.total, 0);
 });
 
-test('the administrators above a programme reach it', async () => {
+test('the administrator above a programme reaches it', async () => {
   // The other direction of the same rule: a reach that refused U_COM2 by
   // refusing everyone would pass the test above and be wrong. The department
-  // administrator of 05 and the faculty administrator both maintain 0501; the
-  // administrator of department 01 does not.
+  // administrator of 05 maintains 0501 on every verb; the administrator of
+  // department 01 does not. The faculty administrator is no longer above this
+  // screen at all - see the refusal test below.
   const code = await catalogueEntry('P0000006');
 
-  const byDept = await place(await signInAs('U_DEPT'), {
+  const dept = await signInAs('U_DEPT');
+  const byDept = await place(dept, {
     program_id: PROGRAM_COM,
     subject_id: code,
     subject_type: 'elective',
   });
   assert.equal(byDept.status, 201, byDept.body.message);
 
-  const byFaculty = await edit(await signInAs('U_FAC'), PROGRAM_COM, code, {
-    subject_type: 'required',
-  });
-  assert.equal(byFaculty.status, 200, byFaculty.body.message);
+  const changed = await edit(dept, PROGRAM_COM, code, { subject_type: 'required' });
+  assert.equal(changed.status, 200, changed.body.message);
 
   const byStranger = await place(await signInAs('U_DEPT2'), {
     program_id: PROGRAM_COM,
@@ -304,8 +304,9 @@ test('the administrators above a programme reach it', async () => {
 test('the screen is refused to a role that does not maintain curricula', async () => {
   // FULL_ADMIN is absent from the maintainers for ADR-0002's reason - the
   // central administrator keeps accounts, not curricula - and a teacher has no
-  // business editing what their programme is made of.
-  for (const alias of ['U_ADMIN', 'U_TEACH']) {
+  // business editing what their programme is made of. FACULTY_ADMIN joined them
+  // with #79: the faculty keeps the list of curricula, not their contents.
+  for (const alias of ['U_ADMIN', 'U_TEACH', 'U_FAC']) {
     const cookie = await signInAs(alias);
     const shown = await list(cookie);
     assert.equal(shown.status, 403, `${alias} was allowed the list`);
@@ -326,11 +327,19 @@ test('the pickers offer exactly what the writes will accept', async () => {
     [PROGRAM_COM],
   );
 
-  const faculty = await programs(await signInAs('U_FAC'));
+  const dept = await programs(await signInAs('U_DEPT'));
+  assert.equal(dept.status, 200, dept.body.message);
   assert.deepEqual(
-    faculty.body.programs.map((program) => program.program_id).sort(),
+    dept.body.programs.map((program) => program.program_id).sort(),
     [PROGRAM_COM, PROGRAM_INTL],
   );
+
+  // And the picker is refused to the same roles the writes are, rather than
+  // answering an empty list - a dropdown with nothing in it is a screen that
+  // opened.
+  const faculty = await programs(await signInAs('U_FAC'));
+  assert.equal(faculty.status, 403);
+  assert.equal(faculty.body.message, REFUSALS.forbidden);
 
   const foreign = await catalogueEntry('P0000007', { department: '01' });
   const offered = await catalogue(await signInAs('U_COM'), '?q=P0000007');

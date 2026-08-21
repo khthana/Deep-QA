@@ -96,10 +96,13 @@ MUTANTS = {
     "listeveryone": ("route",
                      "WHERE ($1::text[] IS NULL OR ps.program_id = ANY($1))",
                      "WHERE ($1::text[] IS NOT NULL OR ps.program_id = ANY($1))"),
-    # 18c row 8: a curriculum is not the central administrator's nor a teacher's
+    # 18c row 8: a curriculum is not the central administrator's, the faculty's
+    # nor a teacher's. Rewritten at #79, which took `FACULTY_ADMIN` out of the
+    # maintainers: the mutant it was written against no longer exists in the
+    # file, and the refused three are now the three this puts back.
     "maintainerall": ("route",
-                      "const MAINTAINERS = ['PROG_MANAGER', 'FACULTY_ADMIN', 'DEPT_ADMIN'];",
-                      "const MAINTAINERS = ['PROG_MANAGER', 'FACULTY_ADMIN', 'DEPT_ADMIN', 'FULL_ADMIN', 'TEACHER'];"),
+                      "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];",
+                      "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN', 'FULL_ADMIN', 'TEACHER', 'FACULTY_ADMIN'];"),
 }
 
 main(FILES, MUTANTS)
