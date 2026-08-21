@@ -39,6 +39,14 @@ MUTANTS = {
  'M6': ('grants',
    "        if (userId === req.auth.userId) {\n          return res.status(403).json({ message: REFUSALS.forbidden });\n        }\n",
    ""),
+ # The live session's own copy of the suspension check, and only that copy:
+ # `admit` makes the same test at sign-in, so with this gone a suspended
+ # account is still refused at the sign-in screen and goes on working in the
+ # tab it already had. Anchored on the line above it because the two copies of
+ # the check are written the same way.
+ 'M8': ('accounts',
+   "  if (!user) return refuse(403, 'unknown');\n  if (user.status !== 'active') return refuse(403, 'inactive');",
+   "  if (!user) return refuse(403, 'unknown');"),
  'M7': ('grants',
    "SET is_active = true, assigned_by = EXCLUDED.assigned_by, assigned_at = now()",
    "SET is_active = true, assigned_at = now()"),
