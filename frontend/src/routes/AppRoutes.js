@@ -99,7 +99,7 @@ export default function AppRoutes() {
         <Route index element={<div />} />
         <Route path="users" element={<Users />} />
         {/* #13. A child of `users` rather than a sibling because the
-            breadcrumb reads it as one - ผู้ใช้งานระบบ / ประวัติการใช้งาน -
+            breadcrumb reads it as one - ข้อมูลผู้ใช้งาน / ประวัติการใช้งาน -
             and docs/05 A13 gives the path in that shape. */}
         <Route path="users/user-history" element={<UserHistory />} />
         <Route path="departments" element={<Departments />} />

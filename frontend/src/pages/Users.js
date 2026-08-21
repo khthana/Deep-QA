@@ -18,7 +18,7 @@ import {
 } from '../api/users'
 
 /**
- * ผู้ใช้งานระบบ — tickets #11, #12 and #13.
+ * ข้อมูลผู้ใช้งาน — tickets #11, #12 and #13.
  *
  * Who exists, who may be added, whose account is switched off, for how long an
  * external assessor's account works, and - #12 - which roles each person holds

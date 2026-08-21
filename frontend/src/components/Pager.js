@@ -1,7 +1,7 @@
 /**
  * The paging control every list on this system draws — ticket #57.
  *
- * Five screens had written it out by hand — ผู้ใช้งานระบบ, ประวัติการใช้งาน,
+ * Five screens had written it out by hand — ข้อมูลผู้ใช้งาน, ประวัติการใช้งาน,
  * ข้อมูลภาควิชา, ข้อมูลหลักสูตร and ข้อมูลรายวิชา — and #16 made it six.
  * `docs/acceptance/14-departments.md` said to revisit it "at the third or
  * fourth screen"; #57 is the ticket that does, before #17 and #18 make it

@@ -22,7 +22,7 @@ const { expect } = require('@playwright/test');
 
 const PROGRAMS = '/main/programs';
 const PROGRAM_SUBJECTS = '/main/course-in-program';
-const USERS_MENU = 'ผู้ใช้งานระบบ';
+const USERS_MENU = 'ข้อมูลผู้ใช้งาน';
 
 /** The list call the Program Subjects screen makes on the way in. */
 const PROGRAM_SUBJECTS_API = '/api/program-subjects';

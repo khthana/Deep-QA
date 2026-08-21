@@ -67,7 +67,7 @@ function toLeaveOneOnTheLastPage(before) {
   return add;
 }
 
-test.describe('ผู้ใช้งานระบบ — the control itself', () => {
+test.describe('ข้อมูลผู้ใช้งาน — the control itself', () => {
   test.beforeEach(async ({ page }) => {
     await signIn(page, ACCOUNTS.systemAdmin);
     await users.openUsers(page);

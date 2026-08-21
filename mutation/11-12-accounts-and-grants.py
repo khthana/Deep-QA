@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-#11 ผู้ใช้งานระบบ and #12 สิทธิ์การใช้งาน - the account and grant routes.
+#11 ข้อมูลผู้ใช้งาน and #12 สิทธิ์การใช้งาน - the account and grant routes.
 
 Every mutant here was applied on its own and the suite run against it, and each
 killed the one assertion it was aimed at - see the mutation section of

@@ -25,7 +25,7 @@ import {
  * server filters the list and refuses the writes, and what arrives is simply
  * what that account may see (ADR-0002). The Central Admin reaches none of it.
  *
- * The paging is server-side, as on ผู้ใช้งานระบบ and ข้อมูลภาควิชา.
+ * The paging is server-side, as on ข้อมูลผู้ใช้งาน and ข้อมูลภาควิชา.
  *
  * The list shows retired programmes as well as current ones, deliberately: this
  * is the screen one is switched back on from, and a management list that hid

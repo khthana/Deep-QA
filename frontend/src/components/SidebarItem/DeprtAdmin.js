@@ -9,7 +9,7 @@ import {
   HiOutlineChartBar, // ผลการเรียนรู้
   HiOutlineKey, // กำหนดผลการเรียนรู้ระดับหลักสูตร PLO
   HiOutlineLink, // Maping ผลการเรียนรู้กับรายวิชา
-  HiOutlineUsers, // ผู้ใช้งานระบบ
+  HiOutlineUsers, // ข้อมูลผู้ใช้งาน
   HiOutlineClock, // ประวัติการใช้งาน
 } from 'react-icons/hi2'
 
@@ -79,8 +79,8 @@ export const DEPT_ADMIN = [
     ],
   },
   {
-    key: 'ผู้ใช้งานระบบ',
-    label: 'ผู้ใช้งานระบบ',
+    key: 'ข้อมูลผู้ใช้งาน',
+    label: 'ข้อมูลผู้ใช้งาน',
     path: '/main/users',
     icon: <HiOutlineUsers />,
   },

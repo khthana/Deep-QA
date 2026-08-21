@@ -30,7 +30,7 @@ import {
  * is written that way because a menu that hides an option is a menu, not a
  * permission (ADR-0002).
  *
- * The paging is server-side, as on ผู้ใช้งานระบบ and for the same reason: a
+ * The paging is server-side, as on ข้อมูลผู้ใช้งาน and for the same reason: a
  * screen that fetched every department and sliced ten off the front would look
  * identical and would still be sending the whole faculty down the wire.
  *
