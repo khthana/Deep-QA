@@ -13,9 +13,14 @@ are only rules once a browser is involved:
 - behaviour a screen has of its own, where the server is only half the answer or none of it — a paging bar's ends, a
   list that steps back a page when the last row of the last page is deleted, a picker that offers what a rule says it
   should offer.
+- two sessions held at the same time in cookie jars that do not know each other — one account suspended through the
+  other's screen, and refused on the next click inside the shell it had already drawn.
 
 The first two are half browser and half server, and neither can be stated at the first seam without inventing the
 browser's half. That half is the one this system has had wrong before. The third has no first-seam statement at all.
+The fourth is half and half again: the server's every-request guard is statable at the first seam, but the
+administrator's button that trips it and the shell still standing on the other side of it are not, and one Chrome
+profile cannot hold both sessions — which is why that row sat half-walked until `browser.newContext()` took it.
 
 ## Running it
 
@@ -103,8 +108,13 @@ about something several screens share: `57a-pager.spec.js` covers four screens i
 one component that all four draw, and its rows land in five documents. Splitting it per screen would mean writing the
 same helper four times, which is the duplication #57 exists to have removed.
 
-Spec files sort alphabetically and run in that order under one worker, and that ordering is load-bearing twice.
-`17a-` before `17b-`: the refusal file's control row asserts the register still holds the seeded 173, and the import
+Spec files sort alphabetically and run in that order under one worker, and that ordering is load-bearing three
+times. `17a-` before `17b-`: the refusal file's control row asserts the register still holds the seeded 173, and the import
 file adds students. And `57a-` after every `16x` and `18x`: a row of it that read "ten on the page" from what those
 left behind would be a row whose meaning depends on a file it never mentions, so it imports its own rows under codes
 no other spec uses — `Z…`, `ZP…`, `010797…` — and measures every count against what the table holds at that moment.
+
+The third is `11c-suspension-and-a-live-session.spec.js`, which suspends `teacher.two@` and reactivates it, and
+`13a-` signs in as that account. It sits between `11b-` and `12a-` by its name alone, and it carries a `test.afterAll`
+that puts the account back whatever the run did — but the net only holds if the file stays ahead of `13a-`, so a
+rename that moves it is a rename that breaks a file it never mentions.

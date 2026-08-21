@@ -72,9 +72,13 @@ test.afterAll(async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
   await signIn(page, ACCOUNTS.systemAdmin);
-  await page.request.put(`${BACKEND_URL}${statusPath(IDS.teacherTwo)}`, {
-    data: { status: 'active' },
-  });
+  const handedBack = await page.request.put(
+    `${BACKEND_URL}${statusPath(IDS.teacherTwo)}`,
+    { data: { status: 'active' } },
+  );
+  // Asserted, because a net that fails quietly is not a net: `13a-` signs in
+  // as this account and would fail for a reason of its own making.
+  expect(handedBack).toBeOK();
   await context.close();
 });
 
@@ -116,6 +120,11 @@ test('row 3: a suspension refuses the session the account was already holding', 
   // point at screens #23 and later have not built, and the user menu is the
   // one thing every signed-in person can reach that asks the server for
   // something.
+  // This probe is a mutating endpoint, which is safe only because the refusal
+  // arrives before anything is written and because the schema is reseeded at
+  // the start of every run. If the guard ever breaks, the password of
+  // `teacher.two@` becomes this literal for the rest of the run and `13a-`
+  // fails for a reason that is not its own.
   await openChangePassword(held);
   const changed = await submitPasswordChange(held, PASSWORD, 'walked-suspended');
   expect(changed.status()).toBe(403);
