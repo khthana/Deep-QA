@@ -118,3 +118,24 @@ The third is `11c-suspension-and-a-live-session.spec.js`, which suspends `teache
 `13a-` signs in as that account. It sits between `11b-` and `12a-` by its name alone, and it carries a `test.afterAll`
 that puts the account back whatever the run did — but the net only holds if the file stays ahead of `13a-`, so a
 rename that moves it is a rename that breaks a file it never mentions.
+
+## Reading a number off the screen
+
+A count read straight after a navigation is read too early. `openRegister` and the other `open…` helpers wait for
+the list's own `GET` to come back, which is the last thing this suite can wait for and is not the thing being
+asserted: the response arriving and React having painted the new total are two different moments, and between them
+the table is empty. `17b-students-import.spec.js:121` read `0` where it expected `176` on a loaded machine and
+passed on every unloaded one - a test that fails only when the CI box is busy, which is when nobody is looking.
+
+So a number read after a fetch is polled - `await expect.poll(() => total(page)).toBe(before)` - rather than read
+once. This is not a timeout in disguise: poll re-reads until the value matches or the deadline passes, so a total
+that is genuinely wrong still fails, and fails at the same place. A number read off a screen that has already been
+asserted against needs no poll: three of the plain reads sit under `await expect(...)` calls on rows of the same
+table, and the row appearing and the total changing are one React commit, so the wait above them is the wait.
+
+The other four - the counts read after a *refused* import in `11b` and `14b` - are left plain for now and are a
+separate matter, not a flake. `ImportPanel` calls `onImported` only on success, so a refused import never re-fetches
+the list and the total standing on the screen is the one from before the upload, whatever the server did with the
+file. That assertion therefore reads the same whether the rollback held or leaked; `18b-program-subjects-import.spec.js`
+says so in its own comment and calls `openProgramSubjects` first for exactly that reason. Making the other four read
+afresh is a change to what they prove, not to when they read, and belongs to a ticket of its own.

@@ -155,7 +155,7 @@ test('row 7: one bad row keeps the whole file out', async ({ page }) => {
   // upload and would agree with a file that had been written whole - which is
   // exactly what a broken rollback looks like.
   await openProgramSubjects(page);
-  expect(await total(page)).toBe(before);
+  await expect.poll(() => total(page)).toBe(before);
   await expect(pairRow(page, CODES[2])).toHaveCount(0);
 
   // And the same file name again once it is corrected: the input's value is

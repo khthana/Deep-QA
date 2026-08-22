@@ -121,7 +121,7 @@ test('row 7: every bad row is reported at once, and nothing is written', async (
   // import applies whole or not at all.
   await page.reload();
   await openDepartments(page);
-  expect(await total(page)).toBe(before);
+  await expect.poll(() => total(page)).toBe(before);
   await expect(departmentRow(page, 'Y1')).toHaveCount(0);
 
   // The same file name again, once it has been corrected. The input's value is

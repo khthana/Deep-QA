@@ -98,7 +98,7 @@ test('row 11: a code the register already holds is refused, and the student it h
   // list back, it does not fetch, so both lines below would otherwise be
   // reading the numbers the screen already held and could not fail.
   await openRegister(page);
-  expect(await total(page)).toBe(before);
+  await expect.poll(() => total(page)).toBe(before);
   await expect(registerRow(page, '61010001')).toContainText('สมหญิง เรียนดี');
   await expect(registerRow(page, '61010001')).not.toContainText('ไม่ควรทับ');
 });

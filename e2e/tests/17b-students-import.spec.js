@@ -118,7 +118,7 @@ test('row 14: a file with bad rows is refused whole, naming every bad line', asy
   // rule: an import applies whole or not at all.
   await page.reload();
   await openRegister(page);
-  expect(await total(page)).toBe(before);
+  await expect.poll(() => total(page)).toBe(before);
   await expect(page.getByText('68030001')).toHaveCount(0);
   await expect(page.getByText('68030005')).toHaveCount(0);
 });
@@ -146,7 +146,7 @@ test('row 15: two rows of one file claiming one code is refused, naming the seco
 
   await page.reload();
   await openRegister(page);
-  expect(await total(page)).toBe(before);
+  await expect.poll(() => total(page)).toBe(before);
   await expect(page.getByText('68040001')).toHaveCount(0);
 });
 

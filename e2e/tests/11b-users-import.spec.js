@@ -128,7 +128,7 @@ test('row 7: every bad row is reported at once, and nothing is written', async (
   // an import applies whole or not at all.
   await page.reload();
   await openUsers(page);
-  expect(await total(page)).toBe(before);
+  await expect.poll(() => total(page)).toBe(before);
   await search(page, good.email);
   await expect(userRow(page, good.email)).toHaveCount(0);
 });
