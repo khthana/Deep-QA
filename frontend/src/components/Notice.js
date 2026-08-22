@@ -27,30 +27,32 @@ import ContentMotionDIV from './ContentMotionDIV'
  * the least it can. That is exactly what the ticket asks and no more, and it
  * works in any scroll container, including one nobody has written yet.
  *
- * ## Why the effect is keyed on the message and not on the notice
+ * ## Why the effect is keyed on the notice and not on its text
  *
- * #91's flow sets `notice` to `null` and then to a fresh object, so an effect
- * keyed on the object would also re-fire on a parent re-render that changed
- * nothing — pulling the page back up under someone who had scrolled down to
- * read the table beneath a banner that is still true. The two strings are what
- * "a new thing to say" actually means here.
+ * The first draft keyed it on `message` and `error`, to avoid re-scrolling on a
+ * re-render that changed nothing. That was the wrong guard for the wrong thing:
+ * `notice` is state, so its identity is already stable between the calls that
+ * set it, and keying on the text instead broke the case that matters most — a
+ * refusal repeated. Press บันทึก on the same duplicate code twice and the
+ * second refusal has the same two strings as the first, so nothing re-fired and
+ * the banner stayed above the fold on exactly the attempt where the person had
+ * scrolled back down to fix something. `55a`'s third test is that case.
  *
  * ## The shape
  *
- * `{ message, error }`, as all six screens already held it. `UserHistory` keeps
- * its notice as a bare string and every one of them is a refusal, so it builds
- * the object at the call site; a new object each render costs nothing, because
- * of the paragraph above.
+ * `{ message, error }`, as all six screens already held it, and held in state —
+ * a caller that builds the object inline hands this a new identity on every
+ * render and gets a scroll on every render with it. `UserHistory` keeps its
+ * notice as a bare string and every one of them is a refusal, so it builds the
+ * object with `useMemo` for that reason.
  */
 export default function Notice({ notice }) {
   const box = useRef(null)
-  const message = notice?.message ?? null
-  const error = Boolean(notice?.error)
 
   useEffect(() => {
-    if (message === null) return
+    if (!notice) return
     box.current?.scrollIntoView({ block: 'nearest' })
-  }, [message, error])
+  }, [notice])
 
   if (!notice) return null
 
@@ -58,10 +60,10 @@ export default function Notice({ notice }) {
     <div ref={box}>
       <ContentMotionDIV
         className={`rounded-lg p-3 text-sm ${
-          error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'
+          notice.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'
         }`}
       >
-        {message}
+        {notice.message}
       </ContentMotionDIV>
     </div>
   )

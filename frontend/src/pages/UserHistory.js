@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
@@ -42,6 +42,14 @@ export default function UserHistory() {
   const [chosen, setChosen] = useState(null)
   const [notice, setNotice] = useState(null)
 
+  // This screen keeps its notice as a bare string, and every one of them is a
+  // refusal. `Notice` scrolls itself into view when the object it is given
+  // changes, so building one inline would scroll on every render - #55.
+  const banner = useMemo(
+    () => (notice ? { error: true, message: notice } : null),
+    [notice],
+  )
+
   const report = useCallback(error => {
     // A 401 already raises the shell's dialog; saying it again here would put a
     // banner behind that dialog.
@@ -75,9 +83,7 @@ export default function UserHistory() {
 
   return (
     <div className="space-y-6">
-      {/* This screen keeps its notice as a bare string, and every one of them
-          is a refusal, so the shape the shared banner takes is built here. */}
-      <Notice notice={notice && { error: true, message: notice }} />
+      <Notice notice={banner} />
 
       <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-1 text-lg font-medium text-primary">เลือกผู้ใช้งาน</h2>

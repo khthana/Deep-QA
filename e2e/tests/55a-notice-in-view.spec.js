@@ -89,6 +89,44 @@ test.describe('แถบแจ้งผลหลังบันทึกจา�
     await expect(refusal).toBeInViewport();
   });
 
+  /**
+   * การปฏิเสธครั้งที่สองด้วยข้อความเดิม
+   *
+   * กรณีที่แยกออกมาเป็นเทสต์ของตัวเอง เพราะมันเป็นทางเดียวที่แถบไม่ถูกล้างก่อน
+   * ฟอร์มยังเปิดอยู่หลังคำปฏิเสธ คนเลื่อนกลับลงไปกดบันทึกอีกครั้ง และได้คำปฏิเสธเดิม
+   * คำต่อคำ ถ้า `Notice` ตัดสินจากตัวข้อความ มันจะเห็นว่าไม่มีอะไรเปลี่ยน
+   * และปล่อยแถบไว้เหนือขอบจออีกครั้ง ซึ่งคือข้อบกพร่องเดิมที่ตั๋วนี้เปิดขึ้นมาเพื่อแก้
+   */
+  test('คำปฏิเสธครั้งที่สองที่ข้อความเหมือนเดิม ก็ถูกพากลับมาอยู่ในจอ', async ({ page }) => {
+    await page.getByRole('button', { name: 'เพิ่มหลักสูตร' }).click();
+
+    await page.getByLabel('รหัสหลักสูตร', { exact: true }).fill('0501');
+    await page.getByRole('combobox', { name: 'ภาควิชา' }).selectOption('05');
+    await page
+      .getByLabel('ชื่อหลักสูตร (ไทย)', { exact: true })
+      .fill('หลักสูตรที่ใช้รหัสซ้ำ');
+
+    const refusal = page.locator('.bg-red-50').first();
+
+    for (const attempt of ['ครั้งแรก', 'ครั้งที่สอง']) {
+      await scrollToBottomOfForm(page);
+      await expectScrolledPastHeading(page, 'เพิ่มหลักสูตร');
+
+      const [answer] = await Promise.all([
+        page.waitForResponse(
+          response =>
+            new URL(response.url()).pathname === '/api/programs' &&
+            response.request().method() === 'POST',
+        ),
+        page.getByRole('button', { name: 'บันทึก' }).click(),
+      ]);
+      expect(answer.ok(), attempt).toBe(false);
+
+      await expect(refusal, attempt).toBeVisible();
+      await expect(refusal, attempt).toBeInViewport();
+    }
+  });
+
   test('แถบเขียวที่ยืนยันการบันทึกอยู่ในจอ โดยไม่ต้องเลื่อนขึ้นไปหา', async ({ page }) => {
     await programRow(page, '0503').getByRole('button', { name: 'แก้ไข' }).click();
     await expect(page.getByRole('heading', { name: 'แก้ไขหลักสูตร' })).toBeVisible();
