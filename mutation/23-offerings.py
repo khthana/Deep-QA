@@ -11,8 +11,14 @@ and `23b-offerings-refusals.spec.js`.
     python mutation/23-offerings.py save
     python mutation/23-offerings.py <mutant>
     cd backend && node --test test/offerings.test.js
-    # or, for the two browser ones:
+    # or, for the eleven browser ones:
     cd e2e && npx playwright test 23
+
+`nolanding` and `noconfirm` mutate CRA source. Do not apply either while an e2e run
+is in flight or the dev frontend is up: the running server compiles what is on disk
+at that moment, and a mutant applied mid-run is a result about nothing. The e2e stack
+boots its own frontend per run (`reuseExistingServer: false`), so apply first, then
+run.
     python mutation/23-offerings.py restore
 
 `sectionglobal` is the one to read first. The third criterion is a fact about a
