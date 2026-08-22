@@ -73,8 +73,34 @@ export default function Departments() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
+/**
+ * The banner, and when it goes - ticket #91.
+ *
+ * `notice` used to be overwritten and never cleared, so it stood there across
+ * actions it had nothing to do with: a refusal still on the screen after the
+ * form that caused it was cancelled, and *saved* floating above a form that
+ * had saved nothing.
+ *
+ * So every place a new action *begins* clears it: opening the form, cancelling
+ * it, asking to remove a row, and calling that question off. The places that
+ * *end* one do not - `save` and `confirmRemoval` set the banner that is the
+ * answer to what just happened, and clearing there would delete the reply
+ * along with the question.
+ *
+ * That distinction is why this is four one-line edits per screen rather than a
+ * shared helper: `setEditing(null)` means "cancelled" in one place and "saved,
+ * form closed" in the other, and a helper that cleared on both would take the
+ * success banner off the screen the moment it was put there.
+ *
+ * Not a timer. #85 is the ticket about a banner that disappeared before it
+ * could be read, and a screen that hides its own answer after three seconds
+ * has the same defect in a nicer costume. What the banner is bound to is the
+ * person's next action.
+ */
+
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async department => {
+    setNotice(null)
     setBusy(true)
     try {
       const { department: current } = await getDepartment(department.department_id)
@@ -146,7 +172,10 @@ export default function Departments() {
           value={editing}
           busy={busy}
           onSave={save}
-          onCancel={() => setEditing(null)}
+          onCancel={() => {
+            setNotice(null)
+            setEditing(null)
+          }}
         />
       ) : (
         <>
@@ -154,7 +183,10 @@ export default function Departments() {
             <h1 className="text-lg font-medium text-primary">ข้อมูลภาควิชา</h1>
             <button
               type="button"
-              onClick={() => setEditing({})}
+              onClick={() => {
+                setNotice(null)
+                setEditing({})
+              }}
               className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
             >
               เพิ่มภาควิชา
@@ -218,7 +250,10 @@ export default function Departments() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setRemoving(department)}
+                          onClick={() => {
+                            setNotice(null)
+                            setRemoving(department)
+                          }}
                           className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
                         >
                           ลบ
@@ -264,7 +299,10 @@ export default function Departments() {
         confirmLabel="ลบภาควิชา"
         busy={busy}
         onConfirm={confirmRemoval}
-        onCancel={() => setRemoving(null)}
+        onCancel={() => {
+          setNotice(null)
+          setRemoving(null)
+        }}
       />
     </div>
   )

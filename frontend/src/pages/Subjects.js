@@ -107,6 +107,7 @@ export default function Subjects() {
 
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async subject => {
+    setNotice(null)
     setBusy(true)
     try {
       const { subject: current } = await getSubject(subject.subject_id)
@@ -183,7 +184,10 @@ export default function Subjects() {
           departments={departments}
           busy={busy}
           onSave={save}
-          onCancel={() => setEditing(null)}
+          onCancel={() => {
+            setNotice(null)
+            setEditing(null)
+          }}
         />
       ) : (
         <>
@@ -230,7 +234,10 @@ export default function Subjects() {
               )}
               <button
                 type="button"
-                onClick={() => setEditing({})}
+                onClick={() => {
+                  setNotice(null)
+                  setEditing({})
+                }}
                 className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
               >
                 เพิ่มรายวิชา
@@ -298,7 +305,10 @@ export default function Subjects() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setRemoving(subject)}
+                          onClick={() => {
+                            setNotice(null)
+                            setRemoving(subject)
+                          }}
                           className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
                         >
                           ลบ
@@ -344,7 +354,10 @@ export default function Subjects() {
         confirmLabel="ลบรายวิชา"
         busy={busy}
         onConfirm={confirmRemoval}
-        onCancel={() => setRemoving(null)}
+        onCancel={() => {
+          setNotice(null)
+          setRemoving(null)
+        }}
       />
     </div>
   )

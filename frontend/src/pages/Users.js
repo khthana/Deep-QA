@@ -147,7 +147,10 @@ export default function Users() {
           <UserForm
             user={editing.user_id ? editing : null}
             onSubmit={save}
-            onCancel={() => setEditing(null)}
+            onCancel={() => {
+              setNotice(null)
+              setEditing(null)
+            }}
             busy={busy}
           />
           {/*
@@ -205,7 +208,10 @@ export default function Users() {
             </div>
             <button
               type="button"
-              onClick={() => setEditing({})}
+              onClick={() => {
+                setNotice(null)
+                setEditing({})
+              }}
               className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
             >
               เพิ่มผู้ใช้งาน
@@ -266,7 +272,10 @@ export default function Users() {
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <button
                           type="button"
-                          onClick={() => setEditing(user)}
+                          onClick={() => {
+                            setNotice(null)
+                            setEditing(user)
+                          }}
                           className="rounded-lg px-3 py-1.5 text-secondary hover:bg-blue-50"
                         >
                           แก้ไข

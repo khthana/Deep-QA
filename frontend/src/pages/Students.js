@@ -141,7 +141,10 @@ export default function Students() {
           departments={departments}
           busy={busy}
           onSave={save}
-          onCancel={() => setAdding(false)}
+          onCancel={() => {
+            setNotice(null)
+            setAdding(false)
+          }}
         />
       ) : (
         <>
@@ -179,7 +182,10 @@ export default function Students() {
               </label>
               <button
                 type="button"
-                onClick={() => setAdding(true)}
+                onClick={() => {
+                  setNotice(null)
+                  setAdding(true)
+                }}
                 className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
               >
                 เพิ่มนักศึกษา

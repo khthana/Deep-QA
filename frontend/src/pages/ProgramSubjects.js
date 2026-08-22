@@ -99,6 +99,7 @@ export default function ProgramSubjects() {
 
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async pair => {
+    setNotice(null)
     setBusy(true)
     try {
       const { program_subject: current } = await getProgramSubject(
@@ -179,7 +180,10 @@ export default function ProgramSubjects() {
           defaultProgram={program}
           busy={busy}
           onSave={save}
-          onCancel={() => setEditing(null)}
+          onCancel={() => {
+            setNotice(null)
+            setEditing(null)
+          }}
         />
       ) : (
         <>
@@ -223,7 +227,10 @@ export default function ProgramSubjects() {
               )}
               <button
                 type="button"
-                onClick={() => setEditing({})}
+                onClick={() => {
+                  setNotice(null)
+                  setEditing({})
+                }}
                 className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
               >
                 เพิ่มรายวิชาเข้าหลักสูตร
@@ -303,7 +310,10 @@ export default function ProgramSubjects() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setRemoving(pair)}
+                          onClick={() => {
+                            setNotice(null)
+                            setRemoving(pair)
+                          }}
                           className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
                         >
                           นำออก
@@ -349,7 +359,10 @@ export default function ProgramSubjects() {
         confirmLabel="นำออกจากหลักสูตร"
         busy={busy}
         onConfirm={confirmRemoval}
-        onCancel={() => setRemoving(null)}
+        onCancel={() => {
+          setNotice(null)
+          setRemoving(null)
+        }}
       />
     </div>
   )

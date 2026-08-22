@@ -94,6 +94,7 @@ export default function Programs() {
 
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async program => {
+    setNotice(null)
     setBusy(true)
     try {
       const { program: current } = await getProgram(program.program_id)
@@ -170,7 +171,10 @@ export default function Programs() {
           departments={departments}
           busy={busy}
           onSave={save}
-          onCancel={() => setEditing(null)}
+          onCancel={() => {
+            setNotice(null)
+            setEditing(null)
+          }}
         />
       ) : (
         <>
@@ -178,7 +182,10 @@ export default function Programs() {
             <h1 className="text-lg font-medium text-primary">ข้อมูลหลักสูตร</h1>
             <button
               type="button"
-              onClick={() => setEditing({})}
+              onClick={() => {
+                  setNotice(null)
+                  setEditing({})
+                }}
               className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
             >
               เพิ่มหลักสูตร
@@ -249,7 +256,10 @@ export default function Programs() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setRemoving(program)}
+                          onClick={() => {
+                            setNotice(null)
+                            setRemoving(program)
+                          }}
                           className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
                         >
                           ลบ
@@ -295,7 +305,10 @@ export default function Programs() {
         confirmLabel="ลบหลักสูตร"
         busy={busy}
         onConfirm={confirmRemoval}
-        onCancel={() => setRemoving(null)}
+        onCancel={() => {
+          setNotice(null)
+          setRemoving(null)
+        }}
       />
     </div>
   )
