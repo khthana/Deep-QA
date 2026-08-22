@@ -167,7 +167,10 @@ test('row 7: two rows of one file claiming one address name each other', async (
 
   // The same file name again, once it has been corrected. The input's value is
   // cleared after every upload, so choosing the file that was just refused
-  // starts a new upload rather than doing nothing at all.
+  // starts a new upload rather than doing nothing at all. The count below is
+  // read against the same unfiltered list `before` was read from; anything
+  // inserted above that narrows the list - a `search`, a page - makes it wrong
+  // rather than flaky.
   await importUsers(
     page,
     csv(

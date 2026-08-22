@@ -143,7 +143,10 @@ mutation could have moved them at all.
 What the four looked like they were proving is proved, in both files, by the atomicity row above them - `11b:131`
 and `14b:124` - which reloads the page, re-opens the list and polls a number that came from the server after the
 upload. Mutant `M9` of `mutation/11-12-accounts-and-grants.py` commits a refused import instead of rolling it back,
-and those two assertions are the ones that fail under it. That single mutant covers every screen's import, because
+and those two assertions are the ones that fail under it - each of them the *first* failure in its file, which is
+what the standard asks: the new assertion, not an earlier one. Both files are `mode: 'serial'`, so the tests after
+the failure are skipped rather than run, and the round says nothing about them either way. That single mutant covers
+every screen's import, because
 `backend/lib/importer.js` rolls back on `errors.length > 0` once and every import route calls it - which is also why
 a fifth assertion in `11b`, on a file whose rows collide with each other, would have proved nothing new.
 
