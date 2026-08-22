@@ -2,8 +2,7 @@
 """
 #23 การเปิดรายวิชาในภาคการศึกษา - the term being planned, and who may plan it.
 
-Five mutants. Three break the backend seam and two break the browser one, and
-the split is deliberate: what the routes answer is asked in
+Mutants for both seams, and the split is deliberate: what the routes answer is asked in
 `backend/test/offerings.test.js`, and what only a browser can show - a
 replacement box that has quietly become an additive one, a refusal that leaves
 the screen showing something else - is asked in `e2e/tests/23a-offerings.spec.js`
@@ -33,6 +32,8 @@ from harness import main
 
 FILES = {
     "routes": "backend/routes/offerings.js",
+    "acting": "backend/auth/authorise.js",
+    "page": "frontend/src/pages/Offerings.js",
 }
 
 MUTANTS = {
@@ -60,7 +61,7 @@ MUTANTS = {
     # rows stay green, so nothing but those refusals notices.
     "wideopen": ("routes",
                  "const COMMITTEE = ['PROG_MANAGER'];",
-                 "const COMMITTEE = ['PROG_MANAGER', 'DEPT_ADMIN', 'FACULTY_ADMIN'];"),
+                 "const COMMITTEE = ['PROG_MANAGER', 'DEPT_ADMIN', 'FACULTY_ADMIN', 'FULL_ADMIN', 'TEACHER'];"),
     # `teacherRefusal` made to answer `null` for every list, so nothing is
     # checked before the write. An unknown code then reaches the foreign key and
     # comes back as an unexpected error rather than as the fifth criterion's
@@ -116,6 +117,95 @@ MUTANTS = {
     "additive": ("routes",
                  "    await executor.query(`DELETE FROM course_sections_teacher WHERE section_id = $1`, [sectionId]);\n    for (const userId of userIds) {",
                  "    for (const userId of userIds) {"),
+    # The section create made idempotent: a number already used under this
+    # Offering updates the row it collides with and answers 201. Every count on
+    # the screen stays right - there is still one ตอนเรียน 1 - so a test that
+    # only counts the cards is happy. What is lost is the refusal itself, and
+    # with it the person's chance to learn that the number is taken.
+    "dupupsert": ("routes",
+                  """        `INSERT INTO course_sections (semester_course_id, section_number)
+         VALUES ($1, $2) RETURNING section_id`,
+        [offering.id, number],""",
+                  """        `INSERT INTO course_sections (semester_course_id, section_number)
+         VALUES ($1, $2)
+         ON CONFLICT (semester_course_id, section_number)
+         DO UPDATE SET section_number = EXCLUDED.section_number
+         RETURNING section_id`,
+        [offering.id, number],"""),
+    # The replacement half of `writeTeachers` kept and the writing half dropped,
+    # so an assignment clears the section and puts nobody back. The request
+    # still answers 200 with a section in it, which is why this is a browser
+    # row: the screen is the only place the empty card is visible.
+    "noassign": ("routes",
+                 """    await executor.query(`DELETE FROM course_sections_teacher WHERE section_id = $1`, [sectionId]);
+    for (const userId of userIds) {""",
+                 """    await executor.query(`DELETE FROM course_sections_teacher WHERE section_id = $1`, [sectionId]);
+    for (const userId of []) {"""),
+    # The copy reproduces the Offerings and not the ตอนเรียน under them. The
+    # report still says how many subjects were opened, and the term looks
+    # copied from the list - it is one screen further in that the term turns
+    # out to have nothing anybody can be enrolled in.
+    "nocopysections": ("routes",
+                       "          for (const section of sections.rows) {",
+                       "          for (const section of []) {"),
+    # The second and third outcomes of a copy collapsed into one: subjects
+    # already open are still skipped, and no longer named. Pressing คัดลอก twice
+    # then reports nothing at all the second time, which reads as a copy that
+    # did nothing rather than a copy that found the work already done.
+    "nocopyreport": ("routes",
+                     """            report.skipped_existing.push(row.subject_id);
+            continue;""",
+                     """            continue;"""),
+    # The 23503 catch on the Offering removal dropped, so the eighth
+    # criterion's refusal becomes an unexpected error. The row is still there
+    # afterwards - the database saw to that - but what the person is told is the
+    # generic failure sentence, not the reason, and nothing on the screen says
+    # the term is protected rather than broken.
+    "norestrictcatch": ("routes",
+                        """        if (isReferenced(error)) {
+          return res.status(409).json({ message: REFUSALS.offeringInUse });""",
+                        """        if (false) {
+          return res.status(409).json({ message: REFUSALS.offeringInUse });"""),
+    # The reach clause dropped from the list, leaving the three filters the
+    # screen sends. Every account still has to be a committee member to get
+    # here, so `wideopen`'s rows stay green; what breaks is the other half of
+    # the ninth criterion - a committee member seeing a term that belongs to
+    # somebody else's หลักสูตร.
+    "anyprogram": ("routes",
+                   """      const reach = await coveredScopes(pool, req.auth.acting.scope_id);
+      const { page, perPage, offset } = pageOf(req);""",
+                   """      const reach = null;
+      const { page, perPage, offset } = pageOf(req);"""),
+    # The acting grant of an account that has never chosen taken as the least
+    # senior rather than the most senior. Every single-role account is
+    # unaffected, which is what makes this the mutant for the multi-role row:
+    # the committee member who also teaches arrives as a teacher and is refused
+    # by their own screen.
+    "firstrole": ("acting",
+                  "  ) ?? roles[0];",
+                  "  ) ?? roles[roles.length - 1];"),
+    # The create leaves the person on the list instead of opening the new
+    # Offering's sections. The Offering is made either way and the banner still
+    # says so, so nothing at the HTTP surface notices; what is lost is the
+    # first criterion's second half, that an Offering with no ตอนเรียน is not
+    # yet anything a teacher can reach and the next step is always to add one.
+    "nolanding": ("page",
+                  """      await load()
+      await refresh(offering.id)""",
+                  "      await load()"),
+    # The confirmation dropped from the section removal: the button on the card
+    # deletes. This is the mutant for the half of the eighth criterion that is
+    # about being asked - a screen that removes on the first press passes every
+    # test that only checks the section is gone afterwards.
+    "noconfirm": ("page",
+                  """          onRemoveSection={section => {
+            setNotice(null)
+            setRemoving({ kind: 'section', section })
+          }}""",
+                  """          onRemoveSection={section => {
+            setNotice(null)
+            onSection(() => deleteSection(viewing.id, section.section_id))
+          }}"""),
 }
 
 main(FILES, MUTANTS)

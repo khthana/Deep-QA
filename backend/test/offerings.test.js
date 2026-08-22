@@ -676,6 +676,43 @@ test('a subject taken out of the curriculum is named rather than copied', async 
   await placedSubject('OC000001');
 });
 
+test('a subject closed in the catalogue is named under its own heading', async () => {
+  // Closed in the catalogue and still paired with the curriculum is a real
+  // state (see the opening test above). The copy has to skip it, and it must
+  // not be skipped under `skipped_unplaced`: that bucket is printed as
+  // ข้ามเพราะไม่อยู่ในหลักสูตรแล้ว, which for this subject is untrue and sends the
+  // person to the wrong screen to fix it.
+  const cookie = await signInAs('U_COM');
+  await api.pool.query(`UPDATE subjects SET is_active = false WHERE subject_id = $1`, [
+    'OC000001',
+  ]);
+
+  try {
+    const copied = await copy(cookie, {
+      program_id: PROGRAM_COM,
+      from_academic_year: SOURCE_YEAR,
+      from_semester: 1,
+      academic_year: '2572',
+      semester: 1,
+    });
+
+    assert.equal(copied.status, 200);
+    assert.deepEqual(copied.body.skipped_closed, ['OC000001']);
+    assert.deepEqual(copied.body.skipped_unplaced, []);
+    assert.deepEqual(
+      copied.body.created.map((offering) => offering.subject_id),
+      ['OC000002'],
+    );
+  } finally {
+    // In a `finally` because the tests after this one read the same two
+    // subjects, and a failed assertion here would otherwise close OC000001 for
+    // the rest of the file and fail them for a reason that is not theirs.
+    await api.pool.query(`UPDATE subjects SET is_active = true WHERE subject_id = $1`, [
+      'OC000001',
+    ]);
+  }
+});
+
 test('a teacher who has since been suspended is dropped and named', async () => {
   const cookie = await signInAs('U_COM');
   await api.pool.query(`UPDATE users SET status = 'inactive' WHERE user_id = $1`, [

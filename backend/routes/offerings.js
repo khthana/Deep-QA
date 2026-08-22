@@ -509,6 +509,7 @@ function offeringRoutes(pool) {
         created: [],
         skipped_existing: [],
         skipped_unplaced: [],
+        skipped_closed: [],
         dropped_teachers: [],
         sections: 0,
       };
@@ -519,9 +520,18 @@ function offeringRoutes(pool) {
 
         for (const row of source.rows) {
           // Asked per subject rather than joined into the query above, so that
-          // the two reasons for skipping stay two reasons.
-          const unplaced = await placementRefusal(program, row.subject_id);
-          if (unplaced) {
+          // the reasons for skipping stay separate reasons. `placementRefusal`
+          // answers two of them since the catalogue tier was added, and they
+          // are not the same news: one is fixed on รายวิชาในหลักสูตร, the other
+          // on ข้อมูลรายวิชา. Folding both into `skipped_unplaced` would put a
+          // subject the curriculum still holds under a heading that says it
+          // does not.
+          const refusal = await placementRefusal(program, row.subject_id);
+          if (refusal === 'subjectClosed') {
+            report.skipped_closed.push(row.subject_id);
+            continue;
+          }
+          if (refusal) {
             report.skipped_unplaced.push(row.subject_id);
             continue;
           }

@@ -122,6 +122,12 @@ export default function CopyTermPanel({ busy, report, onCopy }) {
               {report.skipped_unplaced.join(', ')}
             </p>
           )}
+          {report.skipped_closed?.length > 0 && (
+            <p className="text-amber-700">
+              ข้ามเพราะรายวิชาถูกปิดในคลังรายวิชาแล้ว {report.skipped_closed.length} รายวิชา —{' '}
+              {report.skipped_closed.join(', ')}
+            </p>
+          )}
           {report.dropped_teachers.length > 0 && (
             <p className="text-amber-700">
               ไม่ได้คัดลอกผู้สอน {report.dropped_teachers.length} รายการ
