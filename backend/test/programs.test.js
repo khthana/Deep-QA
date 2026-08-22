@@ -492,6 +492,28 @@ test('an empty file is refused as such', async () => {
   assert.equal(response.body.message, REFUSALS.importEmpty);
 });
 
+
+test('a departments file uploaded here is refused as the wrong template', async () => {
+  // #56, the reverse direction. `department_id` is a column both templates
+  // carry, so the file is not refused for having nothing in common with this
+  // one - it is refused because `program_id` and `program_name_th`, which
+  // `readProgram` requires of every row, are not in the header at all.
+  const cookie = await signInAs('U_FAC');
+
+  const response = await importCsv(
+    cookie,
+    [
+      'department_id,department_name_th,department_name_en',
+      'T71,วิศวกรรมอาหาร,Food Engineering',
+    ].join('\r\n'),
+  );
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.message, REFUSALS.importWrongTemplate);
+  assert.deepEqual(response.body.errors, []);
+  assert.equal(response.body.created, 0);
+});
+
 test('the Central Admin is refused by the server on every endpoint', async () => {
   // CONTEXT.md gives the Central Admin accounts and grants "and nothing else",
   // and ADR-0002 records the mechanism that keeps it true: curriculum routes do

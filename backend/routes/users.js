@@ -497,6 +497,10 @@ function userRoutes(pool) {
   router.post('/users/import', requireRole(...ADMIN_ROLES), async (req, res, next) => {
     try {
       const result = await importRows(pool, req.body, {
+        // `readAccount` also wants a name, but in Thai *or* in English, and a
+        // header cannot say "one of these two" - #56 checks what every correct
+        // file carries.
+        required: ['user_id', 'email'],
         readRow: (record) => {
           const draft = readAccount(record);
           if (!draft.ok) return draft;

@@ -300,6 +300,9 @@ function subjectRoutes(pool) {
   router.post('/subjects/import', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const result = await importRows(pool, req.body, {
+        // Both names and the credits, which `readSubject` refuses a row without.
+        // The two descriptions are optional and so are not here.
+        required: ['subject_id', 'subject_name_th', 'subject_name_en', 'credits', 'department_id'],
         readRow: (record) => {
           const draft = readSubject(record);
           return draft.ok ? { ok: true, draft: draft.values } : draft;

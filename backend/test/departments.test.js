@@ -330,6 +330,70 @@ test('an empty file is refused as such', async () => {
   assert.equal(response.body.message, REFUSALS.importEmpty);
 });
 
+test('a file with no header line at all is still refused as empty', async () => {
+  // What pins the order of the two checks #56 leaves the importer with. A body
+  // with nothing in it has no header either, so every column the reader
+  // requires is missing from it - and answering that with "this is the wrong
+  // template" would send somebody who uploaded a blank file off to download a
+  // different one. Empty is asked first, and this is the test that says so.
+  const cookie = await signInAs('U_FAC');
+
+  const response = await importCsv(cookie, '');
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.message, REFUSALS.importEmpty);
+});
+
+
+test('a programmes file uploaded here is refused as the wrong template', async () => {
+  // #56. Every row of this file fails `readDepartment` on the same missing
+  // field, and the per-row report that produced sent the reader looking for bad
+  // data inside a file whose data is fine. The header is what says otherwise:
+  // `department_id` is there - programmes carry one - but `department_name_th`
+  // is not, and no departments file is missing that.
+  const cookie = await signInAs('U_FAC');
+
+  const response = await importCsv(
+    cookie,
+    [
+      'program_id,program_name_th,program_name_en,department_id,year',
+      `0501,วิศวกรรมคอมพิวเตอร์,Computer Engineering,${DEPT_COMPUTER},2565`,
+      `0502,วิศวกรรมซอฟต์แวร์,Software Engineering,${DEPT_COMPUTER},2565`,
+    ].join('\r\n'),
+  );
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.message, REFUSALS.importWrongTemplate);
+  // No rows: naming lines 2 and 3 would be repeating the mistake in smaller
+  // print, and there is nothing on those lines to correct.
+  assert.deepEqual(response.body.errors, []);
+  assert.equal(response.body.created, 0);
+});
+
+test('a file carrying a column this screen has no use for still imports', async () => {
+  // The other half of #56, and the reason the check asks for the columns the
+  // reader requires rather than for the template's whole list: `csv.js` keeps
+  // unknown headers on purpose, and an export from somewhere else carries
+  // columns this system never asked for. It also omits `department_name_en`,
+  // which is optional and was importable before this ticket.
+  const cookie = await signInAs('U_FAC');
+
+  const response = await importCsv(
+    cookie,
+    [
+      'department_id,department_name_th,หมายเหตุ',
+      'T61,วิศวกรรมชีวการแพทย์,ย้ายมาจากคณะอื่น',
+    ].join('\r\n'),
+  );
+
+  assert.equal(response.status, 201);
+  assert.equal(response.body.created, 1);
+  assert.equal(
+    (await read(cookie, 'T61')).body.department.department_name_th,
+    'วิศวกรรมชีวการแพทย์',
+  );
+});
+
 test('a department administrator is refused by the server on every endpoint', async () => {
   // The eighth criterion, stated as it is written: not merely denied the menu
   // entry. U_DEPT administers department 05 and so has an administrator's

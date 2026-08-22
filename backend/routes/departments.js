@@ -215,6 +215,9 @@ function departmentRoutes(pool) {
       if (!faculty.ok) return res.status(403).json({ message: REFUSALS[faculty.reason] });
 
       const result = await importRows(pool, req.body, {
+        // The English name is optional, so it is not here: a file without that
+        // column imported before #56 and still does.
+        required: ['department_id', 'department_name_th'],
         readRow: (record) => {
           const draft = readDepartment(record);
           return draft.ok ? { ok: true, draft: draft.values } : draft;

@@ -74,6 +74,13 @@ const REFUSALS = {
   roleNotAssignable: 'ไม่สามารถกำหนดบทบาทนี้ได้',
   importEmpty: 'ไม่พบข้อมูลในไฟล์ที่นำเข้า',
   importRejected: 'ไฟล์นำเข้ามีข้อผิดพลาด ระบบไม่ได้บันทึกรายการใด',
+  // #56. The refusal for a file that is not this screen's template at all -
+  // a programmes export dropped into the departments box. Every row of it
+  // fails on the same missing field, and reporting that per row sends the
+  // reader looking for bad data inside a file whose data is fine. The
+  // sentence names the download button, because that is the way out.
+  importWrongTemplate:
+    'หัวคอลัมน์ในไฟล์ไม่ตรงกับแบบฟอร์มของหน้านี้ — ตรวจว่าดาวน์โหลดแบบฟอร์มมาจากหน้าถูกหรือไม่',
 
   // Departments - #14. `departmentNotFound` is `userNotFound`'s counterpart and
   // is given for the same two cases: a department that does not exist, and one

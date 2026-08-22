@@ -308,6 +308,8 @@ function programSubjectRoutes(pool) {
   router.post('/program-subjects/import', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const result = await importRows(pool, req.body, {
+        // All three, because `readPairing` refuses a row for any of them.
+        required: ['program_id', 'subject_id', 'subject_type'],
         readRow: (record) => {
           const draft = readPairing(record);
           return draft.ok ? { ok: true, draft: draft.values } : draft;

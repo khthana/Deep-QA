@@ -319,6 +319,14 @@ function studentRoutes(pool) {
   router.post('/students/import', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const result = await importRows(pool, req.body, {
+        // Every column the template has, which is the one screen where the two
+        // lists coincide: `IMPORT_COLUMNS` above already leaves out the
+        // department and the admission year because the server holds both, so
+        // what is left is exactly what `readStudent` refuses a row without.
+        // Written out rather than spelled `IMPORT_COLUMNS` so that adding an
+        // optional column to the template later does not silently start
+        // refusing files that omit it.
+        required: ['student_id', 'first_name_th', 'last_name_th', 'program_id'],
         readRow: (record) => {
           const draft = readStudent(record);
           return draft.ok ? { ok: true, draft: draft.values } : draft;

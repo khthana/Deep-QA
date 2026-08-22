@@ -276,6 +276,9 @@ function programRoutes(pool) {
   router.post('/programs/import', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const result = await importRows(pool, req.body, {
+        // `department_id` alone would not tell this file from a departments one -
+        // both templates carry it. The two names beside it are what does.
+        required: ['program_id', 'program_name_th', 'department_id'],
         readRow: (record) => {
           const draft = readProgram(record);
           return draft.ok ? { ok: true, draft: draft.values } : draft;

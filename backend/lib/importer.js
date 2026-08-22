@@ -51,6 +51,11 @@ const { REFUSALS } = require('../auth/refusals');
  *   opaque - whatever the caller wants to hand its own `insert` - because an
  *   account's draft is values *and* the grant to make with them, and a
  *   department's is just values.
+ * - `required` are the header cells `readRow` cannot do without - the columns
+ *   every row of a correct file has to carry. Not the template's whole list:
+ *   `csv.js` keeps unknown headers on purpose, and an optional column that a
+ *   person deleted from their file imported before #56 and still does. What
+ *   this catches is the file that is not this template at all.
  * - `keys` are the fields that must not repeat within the file:
  *   `{ of: draft => …, message: REFUSALS.… }`. A null or undefined `of` is
  *   skipped, so an optional column does not collide with every other blank.
@@ -63,11 +68,27 @@ const { REFUSALS } = require('../auth/refusals');
  *   been written and before COMMIT. Where an audit line belongs. Optional.
  *
  * Answers `{ ok: true, created: [row] }`, or `{ ok: false, empty: true }` for a
- * file with no rows in it, or `{ ok: false, errors: [{ line, message }] }`.
+ * file with no rows in it, or `{ ok: false, wrongTemplate: true }` for a file
+ * whose header is some other screen's, or `{ ok: false, errors: [{ line,
+ * message }] }`.
  */
-async function importRows(pool, text, { readRow, keys = [], verify, insert, onCommit }) {
-  const { records } = parseTable(typeof text === 'string' ? text : '');
+async function importRows(
+  pool,
+  text,
+  { readRow, required = [], keys = [], verify, insert, onCommit },
+) {
+  const { headers, records } = parseTable(typeof text === 'string' ? text : '');
   if (records.length === 0) return { ok: false, empty: true };
+
+  // #56. Asked before any row is read, and after the empty check: a body with
+  // nothing in it has no header either, and answering that with "wrong
+  // template" would tell somebody who uploaded a blank file to go and download
+  // a different one. A header missing a column every row needs is not a file
+  // with bad rows in it - it is the wrong file, and the per-row report that
+  // used to come back named every line of a file whose data was fine.
+  if (required.some((column) => !headers.includes(column))) {
+    return { ok: false, wrongTemplate: true };
+  }
 
   const errors = [];
   const drafts = [];
@@ -152,11 +173,19 @@ async function importRows(pool, text, { readRow, keys = [], verify, insert, onCo
  * The order of the two refusals matters. `importRows` reports an empty file as
  * `{ ok: false, empty: true }`, so an empty file is also a failure, and asking
  * `!result.ok` first would answer every empty upload with the wrong message and
- * an undefined `errors`. `empty` is asked first for that reason.
+ * an undefined `errors`. `empty` is asked first for that reason, and #56's `wrongTemplate` is asked
+ * second for the same one: both are failures, and both carry no `errors`.
+ * `ImportPanel` reads that - a refusal with no rows on it is handed to the
+ * screen's own banner rather than drawn as a report with an empty table.
  */
 function sendImport(res, result, key) {
   if (result.empty) {
     return res.status(400).json({ message: REFUSALS.importEmpty, errors: [], created: 0 });
+  }
+  if (result.wrongTemplate) {
+    return res
+      .status(400)
+      .json({ message: REFUSALS.importWrongTemplate, errors: [], created: 0 });
   }
   if (!result.ok) {
     return res

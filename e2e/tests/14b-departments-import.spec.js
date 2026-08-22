@@ -145,3 +145,24 @@ test('row 7: a file with nothing but a header says so', async ({ page }) => {
   // can kill is not proof of anything.
   await expect(page.getByText(/นำเข้าสำเร็จ/)).toHaveCount(0);
 });
+
+test('#56: a programmes file in this box is refused as the wrong template', async ({ page }) => {
+  const before = await total(page);
+
+  await importDepartments(
+    page,
+    csv(
+      'program_id,program_name_th,program_name_en,department_id,year',
+      '0501,วิศวกรรมคอมพิวเตอร์,Computer Engineering,05,2565',
+      '0502,วิศวกรรมซอฟต์แวร์,Software Engineering,05,2565',
+    ),
+    'programs-in-the-wrong-box.csv',
+  );
+
+  await expect(page.getByText(REFUSALS.importWrongTemplate)).toBeVisible();
+  // Not a report. Both lines of that file are perfectly good programmes, and
+  // naming them would send the reader looking for a mistake that is not in
+  // them - which is the whole of #56.
+  await expect.poll(() => reportTable(page).count()).toBe(0);
+  await expect.poll(() => total(page)).toBe(before);
+});
