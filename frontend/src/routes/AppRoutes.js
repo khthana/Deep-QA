@@ -7,6 +7,7 @@ import NotFoundPage from '../pages/PageNotFound'
 import UserNotFound from '../pages/UserNotFound'
 import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
+import Offerings from '../pages/Offerings'
 import Programs from '../pages/Programs'
 import ProgramSubjects from '../pages/ProgramSubjects'
 import Students from '../pages/Students'
@@ -23,7 +24,9 @@ import { useAuth } from '../context/AuthContext'
  * entries lead nowhere cannot be shown to anyone. What is behind most of them
  * is `NotBuiltYet` until the ticket that builds the screen replaces the
  * element: #11 has replaced the users one, #14 and #15 the departments and
- * programmes ones, and the rest are still to come. Route paths are the ones
+ * programmes ones, #16 subjects, #17 students, #18 the subjects in a
+ * programme and #23 the term they are opened in, and the rest are still to
+ * come. Route paths are the ones
  * the inherited application used, with the four `courseLevel*` renamed
  * `programLevel*` as CONTEXT.md requires — those screens are about a
  * programme, not a course.
@@ -108,7 +111,7 @@ export default function AppRoutes() {
         <Route path="rubrics" element={<NotBuiltYet ticket="#21" />} />
         <Route path="course-in-program" element={<ProgramSubjects />} />
         <Route path="student-data" element={<Students />} />
-        <Route path="course-in-term" element={<NotBuiltYet ticket="#23" />} />
+        <Route path="course-in-term" element={<Offerings />} />
         <Route path="plos" element={<NotBuiltYet ticket="#19" />} />
         <Route path="mapping-plo" element={<NotBuiltYet ticket="#20" />} />
         <Route
