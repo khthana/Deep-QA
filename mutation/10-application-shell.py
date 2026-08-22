@@ -22,6 +22,7 @@ FILES = {
     "navbar": "frontend/src/components/Navbar.js",
     "dropdown": "frontend/src/components/RoleDropdown.js",
     "admin": "backend/auth/administration.js",
+    "authroutes": "backend/routes/auth.js",
     "session": "backend/auth/session.js",
     "authctx": "frontend/src/context/AuthContext.js",
 }
@@ -66,6 +67,12 @@ MUTANTS = {
     "silentexpiry": ("authctx",
                      "if (error.reason === 'expired') setExpired(true)",
                      "if (false) setExpired(true)"),
+    # row 6 button: signing out put back behind the session, which is #92
+    # itself - the box still draws and its button still exists, and only the
+    # press comes back with the cookie untouched
+    "guardedlogout": ("authroutes",
+                      "  router.post('/auth/logout', async (req, res, next) => {",
+                      "  router.post('/auth/logout', require('../auth/session').requireSession, async (req, res, next) => {"),
     # row 7b: a wrong current password answered as an expiry
     "wrongas401": ("me",
                    "if (!matches) return res.status(403).json({ message: REFUSALS.wrongPassword });",

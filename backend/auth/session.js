@@ -117,6 +117,30 @@ function clearSession(res) {
 }
 
 /**
+ * Who a cookie names, whether or not it is still in date - or null if nothing
+ * readable is there.
+ *
+ * Only sign-out uses this, and only to attribute a log line (#92). Expiry is
+ * ignored because the account that expired is exactly the one signing out;
+ * the signature is not, because an unsigned token names nobody and a line
+ * filed under a name a stranger chose is worse than no line at all.
+ *
+ * This is not an authorisation path and must never become one: nothing here
+ * decides what the caller may do, which is ADR-0002's whole point. It answers
+ * one question - whose sign-out is this - for a route that would clear the
+ * cookie either way.
+ */
+function accountInDeadCookie(req) {
+  const token = req.cookies?.[COOKIE_NAME];
+  if (!token) return null;
+  try {
+    return jwt.verify(token, secret(), { ignoreExpiration: true }).user_id ?? null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Puts `req.session = { userId, acting }` on a request carrying a live token,
  * and refuses one that does not.
  *
@@ -171,5 +195,6 @@ module.exports = {
   RENEW_BELOW_SECONDS,
   issueSession,
   clearSession,
+  accountInDeadCookie,
   requireSession,
 };

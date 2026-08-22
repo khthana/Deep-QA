@@ -75,10 +75,11 @@ const claimsOf = (cookie) => {
 
 /**
  * The smallest application `requireSession` can be mounted on. Renewal cannot
- * be read off any of this ticket's own routes - `/auth/logout` is the only one
- * behind the middleware, and it clears the cookie on the way out. This is the
- * real middleware over real HTTP; only the handler behind it is a stand-in, and
- * the same stand-in serves #9's guards in authorise.test.js.
+ * be read off any of this ticket's own routes - since #92 none of them is
+ * behind the middleware at all, `/auth/logout` least of all, because the
+ * browser that most needs to sign out is the one whose session has already
+ * died. This is the real middleware over real HTTP; only the handler behind it
+ * is a stand-in, and the same stand-in serves #9's guards in authorise.test.js.
  */
 const guarded = () => guardedApp(requireSession);
 
@@ -285,18 +286,49 @@ test('the session cookie', async (t) => {
     assert.match(sessionCookie(response), /token=;/);
   });
 
-  await t.test('signing out without one is refused', async () => {
-    const response = await request(api.app).post('/api/auth/logout');
+  // The three below are #92, and they are a deliberate change of contract:
+  // signing out used to be refused unless a live session backed it, and is now
+  // idempotent. The cookie outlives the token by a full lifetime, so the
+  // browser this matters to - a tab left open past the expiry - is holding a
+  // cookie it cannot get rid of, on the only route that erases one. What a
+  // dead session takes away is the *record*, not the erasure.
+  await t.test('is cleared on sign-out from a session that has expired', async () => {
+    const teacher = byAlias('U_TEACH');
+    const before = await logCount(api.pool, teacher, 'LOGOUT');
 
-    assert.equal(response.status, 401);
+    const response = await request(api.app)
+      .post('/api/auth/logout')
+      .set('Cookie', sessionOf(teacher, -60));
+
+    assert.equal(response.status, 200);
+    assert.match(sessionCookie(response), /token=;/);
+    // An expired token is still one this server signed, so the line is
+    // attributable and gets written. That is the whole distinction the route
+    // draws: expired is a person, unreadable is nobody.
+    assert.equal(await logCount(api.pool, teacher, 'LOGOUT'), before + 1);
   });
 
-  await t.test('a token this server did not sign is refused', async () => {
+  await t.test('signing out without one succeeds, having nothing to clear', async () => {
+    const response = await request(api.app).post('/api/auth/logout');
+
+    assert.equal(response.status, 200);
+    assert.match(sessionCookie(response), /token=;/);
+  });
+
+  await t.test('a token this server did not sign is cleared, and logged to nobody', async () => {
+    const lines = () =>
+      api.pool.query('SELECT count(*)::int AS n FROM user_log').then(({ rows }) => rows[0].n);
+    const before = await lines();
+
     const response = await request(api.app)
       .post('/api/auth/logout')
       .set('Cookie', 'token=not.a.token');
 
-    assert.equal(response.status, 401);
+    assert.equal(response.status, 200);
+    assert.match(sessionCookie(response), /token=;/);
+    // Not `logCount` for one account: a forged token names nobody, so the
+    // assertion has to be that *no* line was written anywhere.
+    assert.equal(await lines(), before);
   });
 });
 

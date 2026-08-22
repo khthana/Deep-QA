@@ -156,6 +156,29 @@ test.describe('the shell, in a browser', () => {
     await expect(page.getByRole('button', { name: 'เข้าสู่ระบบใหม่' })).toBeVisible();
   });
 
+  test('row 6: the button in that box gets the person back in', async ({ page }) => {
+    await signIn(page, ACCOUNTS.teacherOne);
+    await page.goto(PROGRAM_SUBJECTS);
+    await expireSession(page);
+    await page.reload();
+    await expect(expiryDialog(page)).toBeVisible();
+
+    await page.getByRole('button', { name: 'เข้าสู่ระบบใหม่' }).click();
+
+    // #92: the button used to reload, and a reload lands back in this same
+    // state - the cookie outlives its dead token by a full lifetime, so the
+    // shell's next call is expired again and draws the box again, over a
+    // sign-in page that is underneath a `fixed inset-0` overlay and cannot be
+    // typed into. The box being gone is the assertion the old button failed.
+    await expect(expiryDialog(page)).toHaveCount(0);
+    expect(await sessionCookie(page)).toBeUndefined();
+
+    // And gone in the way that matters: the screen behind it is one somebody
+    // can actually sign in on. A cleared cookie with a dead-end page would
+    // satisfy everything above.
+    await signIn(page, ACCOUNTS.teacherOne);
+  });
+
   test('row 6: a 403 is not an expiry', async ({ page }) => {
     await signIn(page, ACCOUNTS.teacherOne);
 

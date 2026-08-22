@@ -24,7 +24,11 @@ const {
   profileOf,
 } = require('../auth/accounts');
 const { REFUSALS } = require('../auth/refusals');
-const { issueSession, clearSession, requireSession } = require('../auth/session');
+const {
+  issueSession,
+  clearSession,
+  accountInDeadCookie,
+} = require('../auth/session');
 const { frontendUrl } = require('../config');
 
 /**
@@ -125,11 +129,27 @@ function authRoutes(pool) {
     }
   });
 
-  // Behind the session, so signing out can say who signed out. A request
-  // without a live cookie has nothing to log and nothing to clear.
-  router.post('/auth/logout', requireSession, async (req, res, next) => {
+  // Not behind the session, and #92 is why. The cookie outlives the token it
+  // carries by a full lifetime, so the browser with the most reason to sign
+  // out - a tab left open past the expiry - is precisely the one `requireSession`
+  // would turn away, leaving it holding a cookie that only this route erases
+  // and looping through the expiry dialog forever.
+  //
+  // The fix is not to let `requireSession` clear on a failed verification: the
+  // comment in auth/session.js says why not, and that reason still holds. It is
+  // that clearing and recording are different things. Clearing is unconditional
+  // and idempotent - signing out of a session that is already gone is still
+  // signing out, and answering 401 to that is answering a question nobody
+  // asked. Recording needs a name, so it happens only when the cookie carries
+  // one this server signed.
+  //
+  // Dropping the guard is not a hole to force from another site: the cookie is
+  // `sameSite: 'lax'`, so a cross-site POST never carries it, and a request
+  // that carries nothing clears nothing and logs nobody.
+  router.post('/auth/logout', async (req, res, next) => {
     try {
-      await recordActivity(pool, req.session.userId, 'LOGOUT');
+      const userId = accountInDeadCookie(req);
+      if (userId) await recordActivity(pool, userId, 'LOGOUT');
       clearSession(res);
       return res.status(200).json({ message: 'ออกจากระบบแล้ว' });
     } catch (error) {

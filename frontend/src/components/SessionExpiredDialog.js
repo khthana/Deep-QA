@@ -1,6 +1,6 @@
 import ContentMotionDIV from './ContentMotionDIV'
 
-export default function SessionExpiredDialog({ open }) {
+export default function SessionExpiredDialog({ open, onSignIn }) {
   if (!open) return null
 
   return (
@@ -27,12 +27,12 @@ export default function SessionExpiredDialog({ open }) {
         </div>
 
         <p className="text-md mt-4 break-words leading-relaxed text-gray-600">
-          เซสชันของคุณหมดอายุแล้ว กรุณารีเฟรชหน้าเพื่อเข้าสู่ระบบใหม่อีกครั้ง
+          เซสชันของคุณหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้ง
         </p>
 
         <div className="mt-6 flex justify-end">
           <button
-            onClick={() => window.location.reload()}
+            onClick={onSignIn}
             className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/40"
           >
             เข้าสู่ระบบใหม่
