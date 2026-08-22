@@ -711,6 +711,101 @@ test('a teacher who has since been suspended is dropped and named', async () => 
   ]);
 });
 
+test('a weekly plan protects the section it belongs to, and the Offering above it', async () => {
+  // Not one of the ten acceptance rows, and the reason it is here anyway: every
+  // other child of a section refuses through ON DELETE RESTRICT, so the removals
+  // could be written as "try it and catch 23503". `course_syllabus.section_id`
+  // is ON DELETE CASCADE, alone among them - right for the row, since a plan
+  // has no life without its section, and wrong for the removal. Without the
+  // check this asserts, a section with no enrolments and a มคอ.3 filled in
+  // deletes cleanly and takes a teacher's term of work with it, 204 and no
+  // record. The protection cannot be a whitelist by omission.
+  const cookie = await signInAs('U_COM');
+  const offering = await freshOffering(cookie);
+  const section = (await addSection(cookie, offering.id, { section_number: '1' })).body.section;
+
+  await api.pool.query(
+    `INSERT INTO course_syllabus (section_id, week_no, title) VALUES ($1, 1, $2)`,
+    [section.section_id, 'สัปดาห์แรก'],
+  );
+
+  const droppedSection = await dropSection(cookie, offering.id, section.section_id);
+  assert.equal(droppedSection.status, 409);
+  assert.equal(droppedSection.body.message, REFUSALS.sectionInUse);
+
+  // And from the tier above, where the sections are deleted on the way through
+  // and the cascade would fire just the same.
+  const closed = await close(cookie, offering.id);
+  assert.equal(closed.status, 409);
+  assert.equal(closed.body.message, REFUSALS.offeringInUse);
+
+  // Both refusals left everything where it was. A rollback that half-ran would
+  // be the same loss with a 409 painted over it.
+  const after = await read(cookie, offering.id);
+  assert.equal(after.status, 200);
+  assert.equal(after.body.offering.sections.length, 1);
+  const plan = await api.pool.query(`SELECT 1 FROM course_syllabus WHERE section_id = $1`, [
+    section.section_id,
+  ]);
+  assert.equal(plan.rows.length, 1);
+
+  // Taken away again, the removal that was refused goes through.
+  await api.pool.query(`DELETE FROM course_syllabus WHERE section_id = $1`, [section.section_id]);
+  assert.equal((await dropSection(cookie, offering.id, section.section_id)).status, 204);
+});
+
+test('a subject closed in the catalogue cannot be opened, however the curriculum has it', async () => {
+  // `routes/subjects.js` retires a referenced entry by switching
+  // `subjects.is_active` off and leaving the pairing alone, so live in the
+  // curriculum and closed in the catalogue is a state that exists. The picker
+  // on this screen filters on both; this is the address bar and the copy route,
+  // which do not go through the picker.
+  const cookie = await signInAs('U_COM');
+  const subject = await placedSubject('O8000003');
+  await api.pool.query(`UPDATE subjects SET is_active = false WHERE subject_id = $1`, [subject]);
+
+  const opened = await open(cookie, {
+    program_id: PROGRAM_COM,
+    subject_id: subject,
+    academic_year: OPEN_YEAR,
+    semester: 2,
+  });
+  assert.equal(opened.status, 400);
+  assert.equal(opened.body.message, REFUSALS.subjectClosed);
+
+  // A different sentence from the one the tier below gives, because it is a
+  // different mistake with a different remedy: this one is fixed in ข้อมูลรายวิชา,
+  // not in รายวิชาในหลักสูตร.
+  assert.notEqual(REFUSALS.subjectClosed, REFUSALS.subjectNotOffered);
+
+  await api.pool.query(`UPDATE subjects SET is_active = true WHERE subject_id = $1`, [subject]);
+});
+
+test('a section number longer than the column is refused, not raised', async () => {
+  // `section_number` is varchar(10). An eleventh character raises 22001, which
+  // is neither the 23505 the duplicate case catches nor the 23503 the removals
+  // catch, so it used to reach the generic handler as a 500 for what is an
+  // ordinary typing mistake. The form caps it at ten as a courtesy; this is the
+  // rule.
+  const cookie = await signInAs('U_COM');
+  const offering = await freshOffering(cookie);
+
+  const tooLong = await addSection(cookie, offering.id, { section_number: '12345678901' });
+  assert.equal(tooLong.status, 400);
+  assert.equal(tooLong.body.message, REFUSALS.invalidSection);
+
+  // Ten is still ten, so the refusal is the length and not a fear of long ones.
+  const allowed = await addSection(cookie, offering.id, { section_number: '1234567890' });
+  assert.equal(allowed.status, 201);
+
+  // And renaming is the same door.
+  const renamed = await renameSection(cookie, offering.id, allowed.body.section.section_id, {
+    section_number: '12345678901',
+  });
+  assert.equal(renamed.status, 400);
+  assert.equal(renamed.body.message, REFUSALS.invalidSection);
+});
+
 test('a copy is refused when either end is not a term, or both are the same', async () => {
   const cookie = await signInAs('U_COM');
 

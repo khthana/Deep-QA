@@ -113,6 +113,22 @@ function readOffering(source) {
 }
 
 /** A term, as the copy route reads its two ends. */
+/**
+ * A section number off a request body, or `null` if it is not one.
+ *
+ * The length is checked here rather than left to the column. `section_number`
+ * is `varchar(10)`, and an eleventh character raises 22001 - which is neither
+ * the 23505 the duplicate case catches nor the 23503 the removals catch, so it
+ * fell through to the generic handler as a 500 for what is an ordinary typing
+ * mistake. The form caps it at ten too, but that cap is a courtesy to the
+ * person typing and not a rule: this is the rule.
+ */
+function readSectionNumber(body) {
+  const number = blankToNull((body ?? {}).section_number);
+  if (!number || number.length > 10) return null;
+  return number;
+}
+
 function readTerm(year, semester) {
   const value = { academic_year: blankToNull(year), semester: Number(semester) };
   if (!/^\d{4}$/.test(value.academic_year ?? '')) return null;
@@ -154,11 +170,44 @@ function offeringRoutes(pool) {
   async function placementRefusal(programId, subjectId) {
     if (!subjectId) return 'invalidOffering';
     const { rows } = await pool.query(
-      `SELECT is_active FROM program_subjects WHERE program_id = $1 AND subject_id = $2`,
+      `SELECT ps.is_active AS placed, s.is_active AS catalogued
+         FROM program_subjects ps
+         JOIN subjects s ON s.subject_id = ps.subject_id
+        WHERE ps.program_id = $1 AND ps.subject_id = $2`,
       [programId, subjectId],
     );
     if (!rows[0]) return 'subjectNotInProgram';
-    return rows[0].is_active ? null : 'subjectNotOffered';
+    if (!rows[0].placed) return 'subjectNotOffered';
+    // And the tier above it. `routes/subjects.js` retires a referenced entry by
+    // switching `subjects.is_active` off and leaving the pairing alone, so a
+    // subject can be live in the curriculum and closed in the catalogue at the
+    // same time. The picker on this screen already filters on both; without
+    // this line the address bar and the copy route would still open one.
+    return rows[0].catalogued ? null : 'subjectClosed';
+  }
+
+  /**
+   * Whether a weekly plan hangs off any of these sections.
+   *
+   * Asked rather than left to the database, and that is the whole point. Every
+   * other child of a section refuses through `ON DELETE RESTRICT`, so the
+   * removal below could be written as "try it and catch 23503" - which is what
+   * it was. `course_syllabus.section_id` is `ON DELETE CASCADE`, alone among
+   * them, because a plan is written *about* a section and has no life without
+   * one. That is right for the row and wrong for the removal: a section with no
+   * enrolments and a มคอ.3 filled in would delete cleanly and take a teacher's
+   * term of work with it, with a 204 and no record.
+   *
+   * So the protection cannot be a whitelist by omission. It is asked here by
+   * name, and the next table added with `CASCADE` has to be added here too.
+   */
+  async function hasSyllabus(executor, sectionIds) {
+    if (sectionIds.length === 0) return false;
+    const { rows } = await executor.query(
+      `SELECT 1 FROM course_syllabus WHERE section_id = ANY($1::int[]) LIMIT 1`,
+      [sectionIds],
+    );
+    return Boolean(rows[0]);
   }
 
   /**
@@ -538,6 +587,17 @@ function offeringRoutes(pool) {
         await client.query('COMMIT');
       } catch (error) {
         await client.query('ROLLBACK');
+        // Two presses at once. `skipped_existing` above is a read followed by a
+        // write, so two requests can both find the target term empty and both
+        // try to make it; the loser meets the unique index on
+        // `(program_id, subject_id, academic_year, semester)`. The whole copy
+        // rolls back either way, and the honest answer is the one the single
+        // opening gives - this term already has it - rather than a 500 for
+        // pressing a button twice, which this route's own premise says has to
+        // be safe.
+        if (isDuplicate(error)) {
+          return res.status(409).json({ message: REFUSALS.duplicateOffering });
+        }
         throw error;
       } finally {
         client.release();
@@ -620,6 +680,16 @@ function offeringRoutes(pool) {
       const client = await pool.connect();
       try {
         await client.query('BEGIN');
+
+        const owned = await client.query(
+          `SELECT section_id FROM course_sections WHERE semester_course_id = $1`,
+          [offering.id],
+        );
+        if (await hasSyllabus(client, owned.rows.map((row) => row.section_id))) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ message: REFUSALS.offeringInUse });
+        }
+
         await client.query(
           `DELETE FROM course_sections_teacher
             WHERE section_id IN (SELECT section_id FROM course_sections
@@ -653,7 +723,7 @@ function offeringRoutes(pool) {
       const offering = await reachable(req, req.params.id);
       if (!offering) return res.status(404).json({ message: REFUSALS.offeringNotFound });
 
-      const number = blankToNull((req.body ?? {}).section_number);
+      const number = readSectionNumber(req.body);
       if (!number) return res.status(400).json({ message: REFUSALS.invalidSection });
 
       const { rows } = await pool.query(
@@ -683,7 +753,7 @@ function offeringRoutes(pool) {
       if (!offering) return res.status(404).json({ message: REFUSALS.offeringNotFound });
       if (!section) return res.status(404).json({ message: REFUSALS.sectionNotFound });
 
-      const number = blankToNull((req.body ?? {}).section_number);
+      const number = readSectionNumber(req.body);
       if (!number) return res.status(400).json({ message: REFUSALS.invalidSection });
 
       await pool.query(
@@ -720,6 +790,12 @@ function offeringRoutes(pool) {
         const client = await pool.connect();
         try {
           await client.query('BEGIN');
+
+          if (await hasSyllabus(client, [section.section_id])) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ message: REFUSALS.sectionInUse });
+          }
+
           await client.query(`DELETE FROM course_sections_teacher WHERE section_id = $1`, [
             section.section_id,
           ]);
