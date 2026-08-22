@@ -343,6 +343,7 @@ export default function ProgramSubjects() {
               setPage(1)
               load()
             }}
+            onStart={() => setNotice(null)}
             onError={report}
           />
         </>

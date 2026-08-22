@@ -2,7 +2,7 @@
 """
 #91 แถบแจ้งผลค้างอยู่ข้ามการกระทำ - the banner that outlived what it was about.
 
-Two mutants, one per assertion of e2e/tests/14c-departments-notice.spec.js.
+Three mutants, one per assertion of e2e/tests/14c-departments-notice.spec.js.
 Each puts back one half of the defect the ticket describes, and each kills its
 own assertion and leaves the other passing - which is the point: the two ways
 the walk found it are two different call sites, not one.
@@ -16,6 +16,7 @@ from harness import main
 
 FILES = {
     "departments": "frontend/src/pages/Departments.js",
+    "panel": "frontend/src/components/ImportPanel.js",
 }
 
 MUTANTS = {
@@ -33,6 +34,9 @@ MUTANTS = {
                   "                setEditing({})\n"
                   "              }}",
                   "              onClick={() => setEditing({})}"),
+    # An upload stops clearing what was on the screen before it - the site the
+    # first pass at #91 walked past, and the one the code review found.
+    "keepbeforeupload": ("panel", "    onStart?.()", "    if (false) onStart?.()"),
 }
 
 main(FILES, MUTANTS)

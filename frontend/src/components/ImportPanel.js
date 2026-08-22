@@ -30,6 +30,7 @@ export default function ImportPanel({
   templateName,
   fetchTemplate,
   send,
+  onStart,
   onImported,
   onError,
 }) {
@@ -51,6 +52,13 @@ export default function ImportPanel({
     if (!file) return
     setFilename(file.name)
     setReport(null)
+    // The screen's own banner, not this panel's report - #91. Choosing a file
+    // is a new action, and the panel is the one place that begins one without
+    // touching `editing` or `removing`, so it was the site the first pass at
+    // #91 walked straight past: a refusal from the upload before, or a
+    // "saved" from something else entirely, sat above the panel's own green
+    // line and read as though it belonged to the import that just succeeded.
+    onStart?.()
     setBusy(true)
     try {
       const result = await send(await file.text())

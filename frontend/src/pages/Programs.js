@@ -183,9 +183,9 @@ export default function Programs() {
             <button
               type="button"
               onClick={() => {
-                  setNotice(null)
-                  setEditing({})
-                }}
+                setNotice(null)
+                setEditing({})
+              }}
               className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
             >
               เพิ่มหลักสูตร
@@ -289,6 +289,7 @@ export default function Programs() {
               setPage(1)
               load()
             }}
+            onStart={() => setNotice(null)}
             onError={report}
           />
         </>

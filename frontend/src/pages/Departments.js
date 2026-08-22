@@ -96,6 +96,16 @@ export default function Departments() {
  * could be read, and a screen that hides its own answer after three seconds
  * has the same defect in a nicer costume. What the banner is bound to is the
  * person's next action.
+ *
+ * One case is a genuine loss and is taken knowingly. A removal refused because
+ * something still points at the department answers in words that name the way
+ * round it - switch the department off instead - and the click that acts on
+ * that advice is แก้ไข, which now clears the sentence that gave it. The advice
+ * is kept because the alternative is worse: a red bar saying a department
+ * could not be deleted, standing over the form for a different department
+ * entirely, which is the whole of #91. If it turns out people need the words
+ * while they are in the form, they belong *in* the form rather than in a
+ * banner that outlives it.
  */
 
   // Read afresh rather than editing the row the table happens to be holding.
@@ -283,6 +293,7 @@ export default function Departments() {
               setPage(1)
               load()
             }}
+            onStart={() => setNotice(null)}
             onError={report}
           />
         </>

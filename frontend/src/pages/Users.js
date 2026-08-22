@@ -312,6 +312,7 @@ export default function Users() {
               setPage(1)
               load()
             }}
+            onStart={() => setNotice(null)}
             onError={report}
           />
         </>

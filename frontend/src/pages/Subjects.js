@@ -338,6 +338,7 @@ export default function Subjects() {
               setPage(1)
               load()
             }}
+            onStart={() => setNotice(null)}
             onError={report}
           />
         </>
