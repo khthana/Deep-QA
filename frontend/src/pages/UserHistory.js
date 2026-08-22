@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
+import Notice from '../components/Notice'
 import HistoryPanel from '../components/users/HistoryPanel'
 import { personName } from '../components/users/personName'
 import { listUsers } from '../api/users'
@@ -74,11 +75,9 @@ export default function UserHistory() {
 
   return (
     <div className="space-y-6">
-      {notice && (
-        <ContentMotionDIV className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
-          {notice}
-        </ContentMotionDIV>
-      )}
+      {/* This screen keeps its notice as a bare string, and every one of them
+          is a refusal, so the shape the shared banner takes is built here. */}
+      <Notice notice={notice && { error: true, message: notice }} />
 
       <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-1 text-lg font-medium text-primary">เลือกผู้ใช้งาน</h2>

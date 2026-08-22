@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import HistoryPanel from '../components/users/HistoryPanel'
-import ContentMotionDIV from '../components/ContentMotionDIV'
 import GrantsPanel from '../components/users/GrantsPanel'
 import ImportPanel from '../components/ImportPanel'
+import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
@@ -132,15 +132,7 @@ export default function Users() {
 
   return (
     <div className="space-y-6">
-      {notice && (
-        <ContentMotionDIV
-          className={`rounded-lg p-3 text-sm ${
-            notice.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'
-          }`}
-        >
-          {notice.message}
-        </ContentMotionDIV>
-      )}
+      <Notice notice={notice} />
 
       {editing ? (
         <>

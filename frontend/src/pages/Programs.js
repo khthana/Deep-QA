@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
-import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
+import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import ProgramForm from '../components/programs/ProgramForm'
 import {
@@ -155,15 +155,7 @@ export default function Programs() {
 
   return (
     <div className="space-y-6">
-      {notice && (
-        <ContentMotionDIV
-          className={`rounded-lg p-3 text-sm ${
-            notice.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'
-          }`}
-        >
-          {notice.message}
-        </ContentMotionDIV>
-      )}
+      <Notice notice={notice} />
 
       {editing ? (
         <ProgramForm
