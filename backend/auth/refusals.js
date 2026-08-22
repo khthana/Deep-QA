@@ -159,6 +159,43 @@ const REFUSALS = {
   invalidStudent: 'ข้อมูลนักศึกษาไม่ครบถ้วน กรุณาตรวจสอบรหัสนักศึกษา (ตัวเลข 8 หลัก) ชื่อ นามสกุล และหลักสูตร',
   studentProgramNotYours: 'ไม่สามารถบันทึกนักศึกษาในหลักสูตรนี้ได้',
 
+  // Offerings and Sections - #23. The screen that opens a รายวิชา for a term and
+  // splits it into ตอนเรียน. Four things about this block are decisions rather
+  // than wording.
+  //
+  // `subjectNotInProgram` is #18's `subjectNotInCatalogue` one tier down. The
+  // catalogue holds the code and the person did not mistype it; it has not been
+  // placed into this หลักสูตร, and what to do about it is to place it there
+  // first. `subjectNotOffered` is the same mistake one step along, exactly as
+  // `subjectRetired` is for the tier above: the pairing exists and has been
+  // switched off.
+  //
+  // `offeringInUse` and `sectionInUse` say จึงลบไม่ได้ and stop, where every
+  // refusal of this shape above them - `departmentInUse` and its neighbours -
+  // goes on to offer switching the row off instead. Neither table has an
+  // `is_active` column: an Offering is a fact about one term and a term that
+  // happened cannot be un-happened, so there is nothing to offer and a sentence
+  // offering it would describe a button that is not there.
+  //
+  // `teacherNotRegistered` is the fifth criterion in as many words. It names no
+  // account, so a caller cannot use the assignment box to find out who is in
+  // the register; what it says is what to do, which is to have the person
+  // registered first. `teacherNotActive` is that person suspended, separate for
+  // `subjectRetired`'s reason - the code is right and the answer is different.
+  offeringNotFound: 'ไม่พบรายวิชาที่เปิดสอนตามที่ระบุ',
+  duplicateOffering: 'รายวิชานี้ถูกเปิดสอนในปีการศึกษาและภาคการศึกษานี้แล้ว',
+  invalidOffering: 'ข้อมูลการเปิดสอนไม่ครบถ้วน กรุณาตรวจสอบหลักสูตร รายวิชา ปีการศึกษา (ตัวเลข 4 หลัก) และภาคการศึกษา (1 2 หรือ 3)',
+  subjectNotInProgram: 'รายวิชานี้ยังไม่อยู่ในหลักสูตรที่เลือก กรุณาเพิ่มเข้าหลักสูตรก่อนจึงจะเปิดสอนได้',
+  subjectNotOffered: 'รายวิชานี้ถูกปิดการใช้งานในหลักสูตรแล้ว จึงเปิดสอนไม่ได้',
+  offeringNotYours: 'ไม่สามารถจัดการการเปิดสอนในหลักสูตรที่ไม่ได้รับผิดชอบได้',
+  offeringInUse: 'รายวิชาที่เปิดสอนนี้มีนักศึกษาลงทะเบียนหรือมีการบันทึกคะแนนแล้ว จึงลบไม่ได้',
+  sectionNotFound: 'ไม่พบตอนเรียนที่ระบุ',
+  duplicateSectionNumber: 'ตอนเรียนนี้มีอยู่ในรายวิชาที่เปิดสอนนี้แล้ว',
+  invalidSection: 'ข้อมูลตอนเรียนไม่ครบถ้วนหรือไม่ถูกต้อง',
+  sectionInUse: 'ตอนเรียนนี้มีนักศึกษาลงทะเบียนหรือมีการบันทึกคะแนนแล้ว จึงลบไม่ได้',
+  teacherNotRegistered: 'ไม่พบผู้ใช้งานตามรหัสที่ระบุ ผู้สอนต้องถูกลงทะเบียนเป็นผู้ใช้งานก่อนจึงจะกำหนดให้สอนได้',
+  teacherNotActive: 'บัญชีผู้ใช้งานนี้ถูกระงับการใช้งาน จึงกำหนดให้สอนไม่ได้',
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.
