@@ -18,6 +18,7 @@ FILES = {
     'users': 'backend/routes/users.js',
     'grants': 'backend/routes/grants.js',
     'accounts': 'backend/auth/accounts.js',
+    'importer': 'backend/lib/importer.js',
 }
 
 MUTANTS = {
@@ -50,6 +51,14 @@ MUTANTS = {
  'M7': ('grants',
    "SET is_active = true, assigned_by = EXCLUDED.assigned_by, assigned_at = now()",
    "SET is_active = true, assigned_at = now()"),
+ # The whole-or-nothing rule of an import, which #64 needed a mutant for once
+ # the four vacuous counts in 11b and 14b were taken out: what is left had to
+ # be shown to be the thing that carries the claim. Same edit as `keepgood` in
+ # mutation/18-program-subjects.py, against the same shared importer - which is
+ # the point, since one rollback serves every screen's import.
+ 'M9': ('importer',
+   "      await client.query('ROLLBACK');\n      return { ok: false,",
+   "      await client.query('COMMIT');\n      return { ok: false,"),
 }
 
 main(FILES, MUTANTS)

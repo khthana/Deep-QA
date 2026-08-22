@@ -133,9 +133,20 @@ that is genuinely wrong still fails, and fails at the same place. A number read 
 asserted against needs no poll: three of the plain reads sit under `await expect(...)` calls on rows of the same
 table, and the row appearing and the total changing are one React commit, so the wait above them is the wait.
 
-The other four - the counts read after a *refused* import in `11b` and `14b` - are left plain for now and are a
-separate matter, not a flake. `ImportPanel` calls `onImported` only on success, so a refused import never re-fetches
-the list and the total standing on the screen is the one from before the upload, whatever the server did with the
-file. That assertion therefore reads the same whether the rollback held or leaked; `18b-program-subjects-import.spec.js`
-says so in its own comment and calls `openProgramSubjects` first for exactly that reason. Making the other four read
-afresh is a change to what they prove, not to when they read, and belongs to a ticket of its own.
+Four others were removed rather than fixed, and #64 is the record of why. They were counts read after a *refused*
+import in `11b` and `14b`. `ImportPanel` calls `onImported` only on success, so a refused import never re-fetches the
+list: the total standing on the screen is the one from before the upload, whatever the server did with the file, and
+the assertion reads the same whether the rollback held or leaked. Polling that number would have made it no truer.
+Two of the four were worse than merely stale - they followed an *empty* file, which has no rows to write, so no
+mutation could have moved them at all.
+
+What the four looked like they were proving is proved, in both files, by the atomicity row above them - `11b:131`
+and `14b:124` - which reloads the page, re-opens the list and polls a number that came from the server after the
+upload. Mutant `M9` of `mutation/11-12-accounts-and-grants.py` commits a refused import instead of rolling it back,
+and those two assertions are the ones that fail under it. That single mutant covers every screen's import, because
+`backend/lib/importer.js` rolls back on `errors.length > 0` once and every import route calls it - which is also why
+a fifth assertion in `11b`, on a file whose rows collide with each other, would have proved nothing new.
+
+The rule the episode leaves behind: a number that cannot be made to fail is not evidence, and dressing it in a poll
+makes it look like evidence. Ask where the claim is actually proved, and if it is proved somewhere else, say so in a
+comment and delete the assertion.

@@ -134,13 +134,14 @@ test('row 7: every bad row is reported at once, and nothing is written', async (
 
 test('row 7: a file with nothing but a header says so', async ({ page }) => {
   const header = headerOf(await downloadTemplate(page));
-  const before = await total(page);
 
   await importDepartments(page, `${header}\r\n`);
 
   await expect(page.getByText(REFUSALS.importEmpty)).toBeVisible();
   // An empty file is a refusal, not a success with a count of zero: the two
-  // read very differently to somebody who uploaded the wrong file.
+  // read very differently to somebody who uploaded the wrong file. There is no
+  // count read after it: a file with no rows in it has nothing to write, so
+  // there is no mutation that could move the number, and an assertion nothing
+  // can kill is not proof of anything.
   await expect(page.getByText(/นำเข้าสำเร็จ/)).toHaveCount(0);
-  expect(await total(page)).toBe(before);
 });

@@ -154,7 +154,16 @@ test('row 7: two rows of one file claiming one address name each other', async (
   // which of the two rows to change.
   await expect.poll(() => reportedLines(page)).toEqual([3]);
   await expect(reportedReason(page, 3)).toContainText('ซ้ำกับบรรทัดที่ 2');
-  expect(await total(page)).toBe(before);
+
+  // No count is read here, and that is deliberate. `ImportPanel` re-fetches the
+  // list only when an import succeeds, so after a refusal the number on the
+  // screen is the one from before the upload whatever the server did with the
+  // file - it reads the same whether the rollback held or leaked, and no
+  // mutation can make it fail. The row above is where the rollback is proved,
+  // by a read taken afresh from the server, and it proves it for this file too:
+  // a duplicate within the file is an entry in the same `errors` array, and
+  // `backend/lib/importer.js` rolls the transaction back on `errors.length > 0`
+  // once, for every refusal there is.
 
   // The same file name again, once it has been corrected. The input's value is
   // cleared after every upload, so choosing the file that was just refused
@@ -174,15 +183,16 @@ test('row 7: two rows of one file claiming one address name each other', async (
 
 test('row 7: a file with nothing but a header says so', async ({ page }) => {
   const header = headerOf(await downloadTemplate(page));
-  const before = await total(page);
 
   await importUsers(page, csv(header));
 
   await expect(page.getByText(REFUSALS.importEmpty)).toBeVisible();
   // An empty file is a refusal, not a success with a count of zero: the two
-  // read very differently to somebody who uploaded the wrong file.
+  // read very differently to somebody who uploaded the wrong file. There is no
+  // count read after it: a file with no rows in it has nothing to write, so
+  // there is no mutation that could move the number, and an assertion nothing
+  // can kill is not proof of anything.
   await expect(page.getByText(/นำเข้าสำเร็จ/)).toHaveCount(0);
-  expect(await total(page)).toBe(before);
 });
 
 test('row 8: the import is bounded by the same scope the list is', async ({ page }) => {
@@ -191,7 +201,6 @@ test('row 8: the import is bounded by the same scope the list is', async ({ page
   await openUsers(page);
 
   const header = headerOf(await downloadTemplate(page));
-  const before = await total(page);
   const outside = 'e2e.import.outside@kmitl.ac.th';
 
   await importUsers(
@@ -215,11 +224,12 @@ test('row 8: the import is bounded by the same scope the list is', async ({ page
   // it, and a hundred rows at once is exactly when nobody is checking.
   await expect.poll(() => reportedLines(page)).toEqual([2]);
   await expect(reportedReason(page, 2)).toContainText(REFUSALS.scopeNotYours);
-  expect(await total(page)).toBe(before);
 
-  // And not merely absent from this account's own list, which is filtered by
-  // the same scope and would hide the row either way: the Central Admin, which
-  // sees every account there is, cannot find it either.
+  // That the row was not written is asked of the server rather than read off
+  // the screen, and asked of the one account that could not be fooled by the
+  // asking. This account's own list is filtered by the same scope and would
+  // hide a leaked row either way; the Central Admin sees every account there
+  // is, and cannot find it.
   await page.context().clearCookies();
   await signIn(page, ACCOUNTS.systemAdmin);
   await openUsers(page);
