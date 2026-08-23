@@ -12,6 +12,8 @@ import Programs from '../pages/Programs'
 import ProgramSubjects from '../pages/ProgramSubjects'
 import Students from '../pages/Students'
 import Subjects from '../pages/Subjects'
+import TeacherDashboard from '../pages/TeacherDashboard'
+import TeacherSection from '../pages/TeacherSection'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
 import LoadingScreen from '../components/LoadingScreen'
@@ -25,8 +27,8 @@ import { useAuth } from '../context/AuthContext'
  * is `NotBuiltYet` until the ticket that builds the screen replaces the
  * element: #11 has replaced the users one, #14 and #15 the departments and
  * programmes ones, #16 subjects, #17 students, #18 the subjects in a
- * programme and #23 the term they are opened in, and the rest are still to
- * come. Route paths are the ones
+ * programme, #23 the term they are opened in and #24 the teacher's own
+ * sections, and the rest are still to come. Route paths are the ones
  * the inherited application used, with the four `courseLevel*` renamed
  * `programLevel*` as CONTEXT.md requires — those screens are about a
  * programme, not a course.
@@ -141,8 +143,17 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<NotBuiltYet ticket="#24" />} />
-        <Route path=":subjectNameEn/*" element={<NotBuiltYet />} />
+        <Route index element={<TeacherDashboard />} />
+        {/*
+          The Section context - ADR-0004. The id in the path is the whole of it:
+          it is what the dashboard navigates to, what a reload still has, and
+          what the sidebar reads to decide whether the Section-specific entries
+          are shown at all. The screens under it are #27 onwards.
+        */}
+        <Route path=":sectionId">
+          <Route index element={<TeacherSection />} />
+          <Route path="*" element={<NotBuiltYet />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

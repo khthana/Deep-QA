@@ -4,7 +4,7 @@ import { FULL_ADMIN } from './SidebarItem/FullAddmin'
 import { FACULTY_ADMIN } from './SidebarItem/FacultyAdmin'
 import { DEPT_ADMIN } from './SidebarItem/DeprtAdmin'
 import { PROG_MANAGER } from './SidebarItem/ProgManager'
-import { TEACHER } from './SidebarItem/Teacher'
+import { TEACHER, SECTION_TOKEN } from './SidebarItem/Teacher'
 import { EXT_ASSESSOR } from './SidebarItem/ExtAssessor'
 
 import { FaChevronDown, FaChevronLeft, FaSignOutAlt } from 'react-icons/fa'
@@ -37,22 +37,22 @@ const MENUS = {
 }
 
 /**
- * The subject the teacher has opened, or null.
+ * The ตอนเรียน the teacher currently has open, read out of the address — or
+ * null, which is the dashboard.
  *
- * Read through a guard rather than JSON.parse directly: two of the three call
- * sites below run during render, and the key is a plain string on the same
- * origin that anything - a previous version of this application, a developer's
- * console - may have left in a shape this cannot parse. A throw there blanks
- * the whole shell rather than one menu entry. #24 is where the teacher's
- * screens write it, and this is the shape they have to write.
+ * This read `localStorage.selectedCourse` and `localStorage.section` until #24.
+ * ADR-0004 retired both: the section id in the route is the only carrier, so
+ * there is nothing to parse, nothing to leave behind, and no way for a
+ * remembered section and the address to disagree. It also means the menu is
+ * right on the first render after a reload, where the stored copy was right
+ * only if it happened to still match.
+ *
+ * Anchored at the dashboard path and matched against digits, so that neither a
+ * screen name nor anything else further along the path can be mistaken for a
+ * section.
  */
-const savedSubject = () => {
-  try {
-    return JSON.parse(localStorage.getItem('selectedCourse'))
-  } catch {
-    return null
-  }
-}
+const openSection = pathname =>
+  pathname.match(/^\/teacher\/teacherDashboard\/(\d+)(?:\/|$)/)?.[1] ?? null
 
 /** The first thing the menu points at, which '/main' redirects to. */
 const firstEntry = menu => (menu[0]?.sub ? menu[0].sub[0] : menu[0])
@@ -73,14 +73,14 @@ function SidebarItem({
 
   useEffect(() => {
     const menu = MENUS[role] ?? []
-    const savedCourse = savedSubject()
     let menuData = menu
 
-    // The teacher's second group is about one subject, so it appears only
-    // once a subject has been opened.
+    // The teacher's second group is about one ตอนเรียน, so it appears only once
+    // one is open — #24's third and fourth criteria. What decides that is the
+    // address and nothing else, so the group appears and disappears exactly
+    // when the route does.
     if (role === 'TEACHER') {
-      const opened =
-        savedCourse && location.pathname !== '/teacher/teacherDashboard'
+      const opened = openSection(location.pathname)
       menuData = opened ? menu : menu.slice(0, 1)
       setOpenMenu(opened ? [menu[1].key] : [])
     } else {
@@ -116,9 +116,8 @@ function SidebarItem({
       <div className="flex h-full flex-col overflow-hidden">
         <ul className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3">
           {menuForRole.map((item, index) => {
-            const savedCourse = savedSubject()
             const isActive =
-              (role === 'TEACHER' ? !savedCourse : true) &&
+              (role === 'TEACHER' ? !openSection(location.pathname) : true) &&
               location.pathname.startsWith(item.path)
             const isMenuOpen = openMenu.includes(item.key)
 
@@ -189,17 +188,12 @@ function SidebarItem({
                         let subPath = sub.path
 
                         if (role === 'TEACHER') {
-                          const savedCourse = savedSubject()
-                          const section = localStorage.getItem('section')
+                          const section = openSection(location.pathname)
 
-                          // ถ้ายังไม่ได้เลือกวิชา ไม่ต้องแสดง Submenu ของวิชานั้นๆ
-                          if (!savedCourse) return null
+                          // ถ้ายังไม่ได้เลือกตอนเรียน ไม่ต้องแสดง Submenu ของตอนเรียนนั้น
+                          if (!section) return null
 
-                          const subjectSlug = `${savedCourse.subject_name_en.replace(
-                            /\s+/g,
-                            '-'
-                          )}-Section-${section}`
-                          subPath = sub.path.replace('%SUBJECT%', subjectSlug)
+                          subPath = sub.path.replace(SECTION_TOKEN, section)
                         }
 
                         return (
