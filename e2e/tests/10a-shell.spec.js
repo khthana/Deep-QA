@@ -265,6 +265,54 @@ test.describe('the shell, in a browser', () => {
     await signIn(page, ACCOUNTS.teacherOne);
   });
 
+  test('row 6: the window that did not hear the news lands on the sign-in page', async ({
+    page,
+    context,
+  }) => {
+    // The price #94 pays, asserted rather than described.
+    //
+    // Two windows of one browser share one cookie jar, so only one of them can
+    // be the window that hears the news: whichever reloads first gets the
+    // dialog and erases the dead cookie, and the other one reloads into
+    // `anonymous` and is returned to the sign-in page without a word. That is
+    // worse than being told, and better than what it replaced - before #94
+    // both windows sat in the same box for half an hour with no way out of
+    // either. The acceptance document records it as a deliberate cost, and a
+    // cost nobody has asserted is a cost that quietly becomes something else.
+    //
+    // This is a second page in the same context and not a second browser: a
+    // second browser has a cookie jar of its own and could not be dropped by
+    // anything the first one did, which makes it the one arrangement that
+    // cannot show this at all.
+    await signIn(page, ACCOUNTS.teacherOne);
+    await openAndSettle(page, PROGRAM_SUBJECTS);
+
+    const other = await context.newPage();
+    await openAndSettle(other, PROGRAM_SUBJECTS);
+    await expect(expiryDialog(other)).toHaveCount(0);
+
+    await expireSession(page);
+
+    // The first window, and only the first, is told. That the cookie is gone
+    // afterwards is the row above's assertion and is deliberately not repeated
+    // here: a copy of it would be the line a mutant killed first, and this row
+    // would then be proved by someone else's evidence rather than its own.
+    await page.reload();
+    await expect(expiryDialog(page)).toBeVisible();
+
+    // The second reloads after the cookie is already gone. `networkidle` for
+    // the same reason as the row above: a negative assertion read before the
+    // server has answered proves nothing.
+    await other.reload();
+    await other.waitForLoadState('networkidle');
+    await expect(expiryDialog(other)).toHaveCount(0);
+
+    // Dropped at a sign-in page that can be typed into, which is the whole of
+    // what makes this cost payable.
+    await expect(other.locator('input[type="password"]')).toBeVisible();
+    await other.close();
+  });
+
   test('row 6: a 403 is not an expiry', async ({ page }) => {
     await signIn(page, ACCOUNTS.teacherOne);
 
