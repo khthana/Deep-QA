@@ -183,6 +183,15 @@ MUTANTS = {
                     "    if (planned) return 'cloInPlan';",
                     "    if (planned && false) return 'cloInPlan';"),
 
+    # The duplicate is no longer recognised as one. 23505 still comes back from
+    # the database, so nothing is written either way; what is gone is the
+    # sentence, and the route answers 500 through the error handler instead.
+    # The sixth criterion is a refusal in words, and this is the mutant for the
+    # words - `swallowsave` covers the banner not appearing, which is a
+    # different failure and leaves the 409 intact.
+    "dupnotseen": ("routes",
+                   "const isDuplicate = (error) => error && error.code === '23505';",
+                   "const isDuplicate = (error) => error && error.code === '00000';"),
     # The save writes and the screen never looks again. The route answers 201,
     # so a row that stopped at the status code would see nothing wrong; the CLO
     # that was just added is simply not on the list, which is the whole of what

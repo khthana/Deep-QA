@@ -118,7 +118,7 @@ seed หลังเดินคำสั่งข้างบนมีรูป
 
 ## มัตแตนต์ที่พิสูจน์แถว ⚙
 
-`mutation/27-course-outcomes.py` ยี่สิบสองตัว อ่านวิธีใช้ที่ `mutation/README.md` ก่อน
+`mutation/27-course-outcomes.py` ยี่สิบสามตัว อ่านวิธีใช้ที่ `mutation/README.md` ก่อน
 
 ทุกแถวที่ติด ⚙ มีมัตแตนต์ของตัวเอง และมัตแตนต์นั้นตายที่ assertion ของแถวนั้นจริง ๆ ไม่ใช่แค่ที่
 spec ไฟล์เดียวกันตาย เดินจริงเมื่อ 23 สิงหาคม 2569 บน `backend/test/clos.test.js` (20 subtests)
@@ -153,6 +153,13 @@ PostgreSQL จึงปฏิเสธทั้ง statement และ route ต
 สองแถวนั้นจึงอยู่ในสภาพเดียวกับที่รอบนี้ตามแก้มาตลอด คือ assertion มีอยู่ แต่ไม่มีอะไรพิสูจน์ว่ามันจะเห็น
 `savenoreload` กับ `swallowdelete` เพิ่งเขียนขึ้นเพื่อปิดช่องนี้
 
+พอเจอสองแถวนั้นแล้วจึงไล่ **ทั้งสิบสามแถว ⚙** ใหม่ทีละแถว โดยถามคำถามเดียวกัน คือ
+*ข้ออ้างของแถวนี้วางอยู่บนบรรทัดไหน* และ *มัตแตนต์ตัวไหนตายที่บรรทัดนั้น* การไล่แบบนี้เจอช่องที่สาม
+คือ **การปฏิเสธรหัสซ้ำ** ซึ่งวางอยู่บนบรรทัด 196 และไม่มีมัตแตนต์ตัวใดตายที่นั่นเลย — `swallowsave`
+ตายที่ 197 ซึ่งเป็นเรื่อง *แถบไม่ขึ้น* ไม่ใช่ *ไม่มีการปฏิเสธ* และฝั่งเซิร์ฟเวอร์ก็ไม่มีอะไรฆ่าข้อ 7 เช่นกัน
+`dupnotseen` ปิดช่องนั้น ตอนนี้ทั้งสิบสามแถวจับคู่กับบรรทัดที่ตายจริงได้ครบ และไม่มีบรรทัดไหนถูกใช้
+ต่างแถวกันโดยที่ข้ออ้างไม่ตรงกัน
+
 ### ฝั่ง server
 
 `node --test backend/test/clos.test.js` (20 subtests) วัดใหม่ทั้งหมดหลังการแก้สามข้อข้างบน
@@ -174,6 +181,7 @@ PostgreSQL จึงปฏิเสธทั้ง statement และ route ต
 | `nomarksguard` | เอาการตรวจคะแนนออกก่อนลบ | ข้อ 10 *a CLO with marks against it is refused in words rather than raised* — foreign key ยังปฏิเสธ แต่ 23503 ไปถึง handler แล้วกลายเป็น *เกิดข้อผิดพลาดในระบบ* |
 | `mappedasmarked` | ตอบสถานะ *ผูกกับกิจกรรม* ด้วยประโยคของ *มีคะแนนแล้ว* | ข้อ 11 *a CLO mapped to an Activity but never marked is refused with the other sentence* — สองในสามสถานะยังถูก ตัวนี้มีไว้พิสูจน์ว่าแถวนั้น assert ประโยค ไม่ใช่ status |
 | `swallowdelete` | ต่อ `AND FALSE` ท้าย `DELETE FROM subject_clo` — $1 ยังผูกอยู่ statement จึงถูกกฎหมาย transaction commit และ route ตอบ 204 | ข้อ 13 *a CLO nothing points at is removed, and the removal is real* — คือรูปร่างของการลบที่ไม่ได้ลบ ซึ่งเทสต์ที่ดูแค่ status จะเรียกว่าผ่าน |
+| `dupnotseen` | `isDuplicate` ไม่รู้จัก 23505 อีกต่อไป | ข้อ 7 *the code is unique within the year and free in another one* — ฐานข้อมูลยังปฏิเสธ ไม่มีอะไรถูกเขียน สิ่งที่หายคือ *ประโยค* และคำตอบกลายเป็น 500 |
 | `noplanguard` | เอาการตรวจแผนรอบการสอนออก | ข้อ 12 *a CLO named in the course-cycle plan is refused rather than cascaded away* — มัตแตนต์นี้ทำให้การลบ **สำเร็จ** และบันทึกทบทวนหายไปเงียบ ๆ ตาม `ON DELETE CASCADE` |
 
 ### ฝั่งเบราว์เซอร์
@@ -190,6 +198,7 @@ PostgreSQL จึงปฏิเสธทั้ง statement และ route ต
 | `noeditorline` | หน้าจอ | เอาบรรทัด *แก้ไขล่าสุดโดย* ออกจากการ์ด | แถว 4 บรรทัด 147 — ข้อมูลถูกทั้งหมด สิ่งที่หายคือทางเดียวที่คนจะรู้ |
 | `allplos` | route | picker สร้างจาก PLO ทั้งหลักสูตร | แถว 5 บรรทัด 182 `expect(plos.some(plo => plo.outcome_code === 'PLO-4')).toBe(false)` |
 | `emptypicker` | ฟอร์ม | `<select>` ไม่วาดตัวเลือกที่ได้รับมาเลย | แถว 5 บรรทัด 175 `toHaveCount(plos.length + 1)` |
+| `dupnotseen` | route | ไม่รู้จักรหัสซ้ำอีกต่อไป ตอบ 500 | แถว 6 บรรทัด 196 `expect(refused.status()).toBe(409)` |
 | `swallowsave` | หน้าจอ | กลืนคำปฏิเสธตอนบันทึก | แถว 6 บรรทัด 197 — แถบ *รหัสผลการเรียนรู้นี้ถูกใช้แล้ว* ไม่ขึ้น |
 | `nomarksguard` | route | ไม่ตรวจคะแนนก่อนลบ | แถว 7 บรรทัด 211 — ประโยคกลายเป็น *เกิดข้อผิดพลาดในระบบ* |
 | `swallowremoval` | หน้าจอ | กลืนคำปฏิเสธตอนลบ | แถว 7 บรรทัด 211 — แถบเดียวกันไม่ขึ้นเลย |
