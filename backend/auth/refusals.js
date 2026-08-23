@@ -197,6 +197,39 @@ const REFUSALS = {
   teacherNotRegistered: 'ไม่พบผู้ใช้งานตามรหัสที่ระบุ ผู้สอนต้องถูกลงทะเบียนเป็นผู้ใช้งานก่อนจึงจะกำหนดให้สอนได้',
   teacherNotActive: 'บัญชีผู้ใช้งานนี้ถูกระงับการใช้งาน จึงกำหนดให้สอนไม่ได้',
 
+  // Course Learning Outcomes - #27. ADR-0003 puts the CLO set at the
+  // (Program, Subject, academic year) grain, so none of these name a Section
+  // even though a Section id is what the caller arrived holding: the thing
+  // being refused belongs to the Offering, and a sentence naming the class the
+  // person is standing in front of would describe the wrong scope.
+  //
+  // `cloNotFound` covers the CLO that does not exist and the CLO of another
+  // Subject or another year, for `sectionNotFound`'s reason one tier up.
+  //
+  // `ploNotMapped` is the second criterion in a sentence. It is a 400 and not a
+  // 403: the person holds everything they need to hold, and what is wrong is
+  // the PLO they picked - the coverage grid has not placed it on this รายวิชา,
+  // and the way out is through the committee that owns the grid. Saying so is
+  // no leak, because the same request already told them the code.
+  //
+  // The three removal refusals are three states, not one. The database
+  // collapses them: `activity_clo_mapping` restricts as soon as a mapping
+  // exists whether a mark was ever entered or not, and
+  // `clo_course_cycle_detail_cloplan` cascades, so a CLO carrying a weekly plan
+  // would be deleted along with it and nobody told. The route therefore looks
+  // for all three itself, before the DELETE, and each sentence names a
+  // different way out - unmark, unmap, or take it off the plan. The eighth
+  // criterion asks only for the first; the other two exist because a 23503
+  // reaching the error handler would answer เกิดข้อผิดพลาดในระบบ for a thing
+  // the person could have fixed.
+  cloNotFound: 'ไม่พบผลการเรียนรู้รายวิชาที่ระบุ',
+  duplicateCloNumber: 'รหัสผลการเรียนรู้นี้ถูกใช้ในรายวิชาและปีการศึกษานี้แล้ว',
+  invalidClo: 'ข้อมูลผลการเรียนรู้ไม่ครบถ้วน กรุณาตรวจสอบรหัสและรายละเอียด',
+  ploNotMapped: 'ผลการเรียนรู้ของหลักสูตรข้อนี้ยังไม่ถูกผูกกับรายวิชานี้ จึงเลือกไม่ได้',
+  cloHasScores: 'ผลการเรียนรู้ข้อนี้มีคะแนนบันทึกไว้แล้ว จึงลบไม่ได้',
+  cloInUse: 'ผลการเรียนรู้ข้อนี้ถูกผูกไว้กับกิจกรรมการวัดผล จึงลบไม่ได้ ให้ยกเลิกการผูกที่กิจกรรมก่อน',
+  cloInPlan: 'ผลการเรียนรู้ข้อนี้ถูกอ้างถึงในแผนการสอนรายสัปดาห์ จึงลบไม่ได้ ให้นำออกจากแผนก่อน',
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.
