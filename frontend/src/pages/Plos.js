@@ -267,7 +267,7 @@ export default function Plos() {
                             with its aunt. */}
                         <div
                           className={
-                            plo.level_depth > 1 ? 'border-l-2 border-gray-200 pl-3' : 'font-medium'
+                            plo.level_depth > 1 ? 'border-l-2 border-gray-200 pl-3' : 'font-bold'
                           }
                           style={{ marginLeft: `${(plo.level_depth - 1) * 1.5}rem` }}
                         >
