@@ -133,10 +133,20 @@ export default function CourseOutcomes() {
             <h1 className="mt-1 text-xl font-semibold text-primary">
               ผลการเรียนรู้รายวิชา
             </h1>
-            {/* The grain, in words. ADR-0003 in a sentence a ผู้สอน can act on. */}
+            {/*
+              The grain, in words. ADR-0003 in a sentence a ผู้สอน can act on.
+
+              The line break falls before และ, where a space belongs, and nowhere
+              else. JSX joins two lines of text with one space, so a break placed
+              for the sake of the margin puts that space on the screen — and Thai
+              does not space between words, so it lands in the middle of a word.
+              This sentence had one inside ในปีการศึกษา until somebody read it
+              aloud on 23 ส.ค. 2569. Nothing in either seam noticed: every
+              assertion matches on a fragment rather than on the whole sentence.
+            */}
             <p className="mt-2 text-sm text-slate-500">
-              ปีการศึกษา {data.offering.academic_year} · ทุกตอนเรียนของรายวิชานี้ใน
-              ปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้ และปีการศึกษาอื่นมีชุดของตัวเอง
+              ปีการศึกษา {data.offering.academic_year} · ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
+              และปีการศึกษาอื่นมีชุดของตัวเอง
             </p>
           </div>
 
