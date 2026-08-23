@@ -422,6 +422,15 @@ const ACTIVITIES = [
  * Each cohort has its own students. The same person does not sit the same
  * subject twice, and a shared cohort would make "compare 2567 with 2568" a
  * comparison of one group with itself.
+ *
+ * `year` follows the clock and `admission` deliberately does not. The two were
+ * written two apart, and deriving the admission year as well would rewrite every
+ * seeded student code once a year - and `backend/test/students.test.js` reads
+ * `66010001` and `65010001` back by name, because "the admission year is derived
+ * from the code" is a claim that needs a code written down to be a claim at all.
+ * So the cohorts drift apart in age as the clock moves, which is what a cohort
+ * does: 2566 sitting a subject in 2569 is a fourth year, and nothing in the
+ * system reads the gap.
  */
 const COHORTS = [
   {

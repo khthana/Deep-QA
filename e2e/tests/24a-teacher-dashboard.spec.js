@@ -103,6 +103,34 @@ test('row 3: choosing a section puts its id in the address', async ({ page }) =>
   await expect(page.getByText(`ตอนเรียน 1`, { exact: false })).toBeVisible();
 });
 
+test('row 3: a section-specific menu entry leads to that section and not to a placeholder', async ({
+  page,
+}) => {
+  // The substitution itself, which is criterion 3's mechanism and the one line
+  // ADR-0004 replaced outright. Each entry's path carries a token that the
+  // sidebar swaps for the id in the address; a token that was never swapped
+  // would navigate to a path containing the token itself, which routes to
+  // NotBuiltYet - indistinguishable, on the screen, from a screen that has
+  // genuinely not been built. So the address is what this reads.
+  //
+  // Which entries are in the menu is a different question and a hand-walked
+  // one. This row asserts where one of them points, not which of them exist.
+  await signIn(page, ACCOUNTS.teacherOne);
+  await openDashboard(page);
+  await chooseSection(page, SUBJECT);
+  const chosen = sectionInUrl(page);
+
+  await page.getByRole('link', { name: 'รายชื่อนักศึกษาของรายวิชา' }).click();
+  await page.waitForURL(`${DASHBOARD}/${chosen}/subjectStudents`);
+
+  // And the group stays open behind them: the sidebar reads the section out of
+  // a path that now has a screen name after it, so the row that keeps the menu
+  // in place is the same match that put it there.
+  await expect(
+    page.getByRole('link', { name: 'รายชื่อนักศึกษาของรายวิชา' }),
+  ).toBeVisible();
+});
+
 test('row 5: the chosen section survives a reload, without being remembered', async ({ page }) => {
   await signIn(page, ACCOUNTS.teacherOne);
   await openDashboard(page);
