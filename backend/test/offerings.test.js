@@ -43,13 +43,21 @@ const {
   SUBJECT,
   PROGRAM,
   CURRENT_YEAR,
+  SEMESTER,
   byAlias,
 } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
 const { startApi } = require('./helpers');
 
-/** A year the seed does not use, so nothing in this file collides with it. */
-const OPEN_YEAR = '2569';
+/**
+ * Years the seed does not use, so nothing in this file collides with it.
+ *
+ * Counted off the seed's own year rather than written down. The seed takes its
+ * term from the calendar now, so a spelled-out year is free until the calendar
+ * reaches it - this one was '2569', and the calendar reached it.
+ */
+const yearAfterSeed = (n) => String(Number(CURRENT_YEAR) + n);
+const OPEN_YEAR = yearAfterSeed(1);
 
 const [PROGRAM_COM, PROGRAM_INTL] = PROGRAMS.map((program) => program.id);
 
@@ -450,14 +458,15 @@ test('an Offering in another committee member’s programme is out of reach', as
 });
 
 test('an Offering with enrolled students is protected, and an unused one is removed', async () => {
-  // The eighth criterion's server half. The seed's 2568 Offering carries 113
+  // The eighth criterion's server half. The seeded Offering carries 113
   // enrolled students and their marks; the one this test makes carries
-  // nothing.
+  // nothing. Its term is the seed's own and is asked for by name: the seed
+  // takes it from the calendar, so there is no number to write here.
   const cookie = await signInAs('U_COM');
 
   const seeded = await list(
     cookie,
-    `?program_id=${PROGRAM}&academic_year=${CURRENT_YEAR}&semester=2`,
+    `?program_id=${PROGRAM}&academic_year=${CURRENT_YEAR}&semester=${SEMESTER}`,
   );
   const [inUse] = seeded.body.offerings.filter((row) => row.subject_id === SUBJECT.id);
   assert.ok(inUse, 'the seeded Offering should be on the list');
@@ -576,7 +585,7 @@ test('a section is addressed under its own Offering', async () => {
  * the seed, because a copy is judged by what it reproduces and a source nobody
  * else writes to is the only way that stays true as this file grows.
  */
-const SOURCE_YEAR = '2570';
+const SOURCE_YEAR = yearAfterSeed(2);
 
 const copy = (cookie, body) =>
   request(api.app).post('/api/offerings/copy').set('Cookie', cookie).send(body);
@@ -692,7 +701,7 @@ test('a subject closed in the catalogue is named under its own heading', async (
       program_id: PROGRAM_COM,
       from_academic_year: SOURCE_YEAR,
       from_semester: 1,
-      academic_year: '2572',
+      academic_year: yearAfterSeed(3),
       semester: 1,
     });
 
@@ -723,7 +732,7 @@ test('a teacher who has since been suspended is dropped and named', async () => 
     program_id: PROGRAM_COM,
     from_academic_year: SOURCE_YEAR,
     from_semester: 1,
-    academic_year: '2571',
+    academic_year: yearAfterSeed(4),
     semester: 1,
   });
 

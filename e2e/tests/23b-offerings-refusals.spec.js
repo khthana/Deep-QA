@@ -3,6 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
+const { CURRENT_YEAR, SEMESTER } = require('../../db/seed');
 const { signIn } = require('../support/auth');
 const {
   OFFERINGS,
@@ -27,7 +28,11 @@ const {
  * everything else in the system and not this.
  */
 
-/** The seeded Offering of 2568, which every account here either sees or does not. */
+/**
+ * The seeded Offering, which every account here either sees or does not. Its
+ * term is asked for by name rather than by number: the seed takes it from the
+ * calendar, so the number would be right until the term turned.
+ */
 const SEEDED = '01076105';
 
 for (const [who, account] of [
@@ -62,7 +67,7 @@ test('row 9: the committee of another curriculum sees none of this one', async (
 
   // 0501's seeded term is real and is not theirs. The filter is the server's
   // `program_id = ANY(reach)` and not a query this screen sent.
-  await filterToTerm(page, '2568', 2);
+  await filterToTerm(page, CURRENT_YEAR, SEMESTER);
   await expect(offeringRow(page, SEEDED)).toHaveCount(0);
   await expect(page.getByText('ยังไม่มีรายวิชาที่เปิดสอนตามเงื่อนไขนี้')).toBeVisible();
 });
@@ -74,6 +79,6 @@ test('row 9: the account holding two roles gets in as the committee', async ({ p
   // about the account.
   await signIn(page, ACCOUNTS.multiRole);
   await openOfferings(page);
-  await filterToTerm(page, '2568', 2);
+  await filterToTerm(page, CURRENT_YEAR, SEMESTER);
   await expect(offeringRow(page, SEEDED)).toHaveCount(1);
 });

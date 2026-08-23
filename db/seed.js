@@ -41,6 +41,7 @@
 const bcrypt = require('bcrypt');
 
 const { createPool, schemaName } = require('./pool');
+const { currentTerm } = require('./term');
 
 /**
  * The password every seeded account shares.
@@ -57,9 +58,26 @@ const { createPool, schemaName } = require('./pool');
 const PASSWORD = 'deep-core-local';
 const BCRYPT_COST = 10;
 
-const CURRENT_YEAR = '2568';
-const PRIOR_YEAR = '2567';
-const SEMESTER = 2;
+/**
+ * The term the seed fills, taken from the calendar rather than written down.
+ *
+ * These were literals - 2568, 2567, semester 2 - and a literal here is a seed
+ * that is right until the term turns and then quietly seeds the past. #24 is
+ * what forced the change: its dashboard opens on the current term, so a seed
+ * that names any other one gives the person walking the checklist an empty
+ * screen and nothing to walk.
+ *
+ * The prior year is the same semester one year earlier, which keeps the reason
+ * it exists intact: #6 asks for a second academic year of completed marks for
+ * the same Subject, and a comparison across two different semesters would not
+ * be the year-over-year comparison the screens are for.
+ *
+ * Anything in the suites that needs a term the seed does not occupy derives it
+ * from CURRENT_YEAR rather than spelling a number out; three of them did spell
+ * it out, and all three would have collided with the seed on 1 June.
+ */
+const { academicYear: CURRENT_YEAR, semester: SEMESTER } = currentTerm();
+const PRIOR_YEAR = String(Number(CURRENT_YEAR) - 1);
 
 /**
  * faculty_id is 'ENG' and not the '01' the university uses, because
@@ -1137,6 +1155,7 @@ module.exports = {
   PROGRAM,
   CURRENT_YEAR,
   PRIOR_YEAR,
+  SEMESTER,
 };
 
 if (require.main === module) {

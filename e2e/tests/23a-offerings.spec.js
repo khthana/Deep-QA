@@ -3,6 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
+const { CURRENT_YEAR, SEMESTER } = require('../../db/seed');
 const { signIn } = require('../support/auth');
 const { downloadTemplate, headerOf, csv } = require('../support/import-panel');
 const { openSubjects, importSubjects } = require('../support/subjects-screen');
@@ -54,8 +55,11 @@ const {
  * Offering the seed hangs 113 enrolments and their marks off, and that is on
  * `01076105` whatever its catalogue entry now says.
  *
- * The term is 2569, which no seed and no other spec touches - the seeded
- * Offerings are 2568 and 2567, and row 5 needs one of those still to be there.
+ * The term this file builds is the year after the seed's, which no seed and no
+ * other spec touches - the seed opens its Offerings in the current term and the
+ * one before it, and row 5 needs the current one still to be there. Counted off
+ * the seed rather than spelled out: the seed takes its term from the calendar
+ * now, so a written-down year is free only until the calendar reaches it.
  */
 test.describe.configure({ mode: 'serial' });
 
@@ -76,7 +80,7 @@ const PROGRAM = '0501';
 /** The seeded Offering, the one with enrolments and marks hanging off it. */
 const SEEDED = '01076105';
 
-const YEAR = '2569';
+const YEAR = String(Number(CURRENT_YEAR) + 1);
 
 const TEACHER_ONE = 'ดร. อนันต์ สอนดี';
 const TEACHER_TWO = 'ดร. ภัทรา ว่างสอน';
@@ -204,7 +208,7 @@ test('row 8: an Offering with enrolled students is refused and stays on the scre
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
   // The seeded term: 113 students enrolled and their marks recorded.
-  await filterToTerm(page, '2568', 2);
+  await filterToTerm(page, CURRENT_YEAR, SEMESTER);
 
   await startRemoval(page, 'ยกเลิกการเปิด');
   await expect(confirmDialog(page)).toBeVisible();
