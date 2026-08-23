@@ -21,6 +21,7 @@ const assert = require('node:assert/strict');
 const request = require('supertest');
 
 const { createApp } = require('../app');
+const { REFUSALS } = require('../auth/refusals');
 const { startApi } = require('./helpers');
 
 // Without the guard the omission surfaces as a TypeError inside whichever
@@ -66,11 +67,20 @@ test('the seam', async (t) => {
   // meets the session guard first and an anonymous caller is told 401 rather
   // than which paths exist; that a signed-in caller still gets this same 404 is
   // asserted in authorise.test.js, where there is an account to sign in as.
+  //
+  // The field is `message` and is asserted here rather than left to whoever
+  // reads the body, because #95 is what a field name nobody checked costs: the
+  // client reads `message` alone, so a 404 carrying anything else fell through
+  // to its fallback sentence and the screen blamed the connection for an hour.
   await t.test('an unknown path is refused as JSON', async () => {
     const response = await request(api.app).get('/no-such-thing');
 
     assert.equal(response.status, 404);
     assert.match(response.headers['content-type'], /application\/json/);
-    assert.equal(response.body.error, 'Not found');
+    // Read first, because `undefined === undefined` is how this assertion
+    // passes on a server that sends no message at all and a table that has no
+    // such key - which is exactly the state #95 describes.
+    assert.equal(typeof REFUSALS.routeNotFound, 'string');
+    assert.equal(response.body.message, REFUSALS.routeNotFound);
   });
 });

@@ -99,8 +99,21 @@ function createApp({ pool }) {
 
   // Express' own fallback answers with HTML, which a client that asked for
   // JSON cannot read: it gets a parse error where it expected a status.
+  //
+  // `message`, like every other refusal in the system, and not `error` as this
+  // answered until #95. The client reads `message` and nothing else, so the
+  // old field made this the one refusal whose words never reached the screen:
+  // the screen fell through to its own guess, and the guess was that the
+  // connection had failed. It had not - a body arriving is proof it had not.
+  // The sentence it now sends is the one that gets a person to restart a
+  // backend started before the route they are calling was written, which is
+  // the way this is met in practice while the screens are being built.
+  //
+  // `error` is dropped rather than kept alongside: nothing reads it. It was
+  // asserted in two tests and consumed nowhere, and a field held for
+  // compatibility with no consumer is a field the next reader has to check.
   app.use((request, response) => {
-    response.status(404).json({ error: 'Not found' });
+    response.status(404).json({ message: REFUSALS.routeNotFound });
   });
 
   // The last thing mounted, because that is the only position Express treats

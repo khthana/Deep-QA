@@ -78,9 +78,16 @@ async function api(
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}))
     if (response.status === 401 && !anonymous) sessionExpiredListener?.()
+    // The fallback speaks only about what is known here, which is the status
+    // and nothing else. It used to say the connection had failed, and that is
+    // never what this branch means: the response reached this line, so the
+    // connection worked. A server that cannot be reached at all rejects the
+    // fetch above and never arrives here. #95 is the hour that guess cost -
+    // the real cause was a 404 whose sentence the old field name hid.
     const error = new ApiError(
       response.status,
-      payload.message ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์',
+      payload.message ??
+        `เซิร์ฟเวอร์ปฏิเสธคำขอนี้โดยไม่ได้ระบุเหตุผล (สถานะ ${response.status})`,
       payload.reason
     )
     // The per-row import report rides on the refusal rather than on a 200,

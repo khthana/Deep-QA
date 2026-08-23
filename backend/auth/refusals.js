@@ -31,6 +31,15 @@ const REFUSALS = {
   passwordNotAllowed: 'บัญชีนี้ต้องเข้าสู่ระบบด้วยบัญชี Google ของ KMITL',
   googleUnavailable: 'ยังไม่ได้ตั้งค่าการเข้าสู่ระบบด้วย Google บนเซิร์ฟเวอร์นี้',
 
+  // A path this server does not have - #95. It is the only refusal here that
+  // is about the server rather than about the caller's data, and it earns its
+  // place for the reason the rest do: it is read by a person at a screen. The
+  // sentence names what is actually wrong, because the wrong sentence cost an
+  // hour of looking at cookies, ports and the database while the only thing
+  // missing was a restart after a route was added. It names no path: which
+  // paths exist is not something an unknown caller is told.
+  routeNotFound: 'ไม่พบเส้นทางที่เรียกบนเซิร์ฟเวอร์นี้ เซิร์ฟเวอร์อาจยังไม่ได้อัปเดต',
+
   // The session.
   noSession: 'ไม่พบการเข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่',
   expired: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',

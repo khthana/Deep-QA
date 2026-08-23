@@ -162,7 +162,14 @@ test('an unauthenticated request', async (t) => {
     const response = await asUser(cookie, api.app, '/api/no-such-thing');
 
     assert.equal(response.status, 404);
-    assert.equal(response.body.error, 'Not found');
+    // Same field every other refusal in the system uses - see #95, and the
+    // note on the same assertion in smoke.test.js. A signed-in caller is the
+    // only one who ever reaches this handler under /api, so if the field is
+    // going to be wrong for anybody it is wrong here. The type is read first
+    // for the reason smoke.test.js reads it: without that line, a table with
+    // no such key and a body with no message compare equal and this passes.
+    assert.equal(typeof REFUSALS.routeNotFound, 'string');
+    assert.equal(response.body.message, REFUSALS.routeNotFound);
   });
 });
 
