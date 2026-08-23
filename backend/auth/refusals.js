@@ -149,6 +149,44 @@ const REFUSALS = {
   subjectRetired: 'รายวิชานี้ถูกปิดการใช้งานแล้ว จึงเพิ่มเข้าหลักสูตรไม่ได้',
   programNotYours: 'ไม่สามารถจัดการรายวิชาในหลักสูตรที่ไม่ได้รับผิดชอบได้',
 
+  // Programme Learning Outcomes - #19. What a graduate of a หลักสูตร can do,
+  // as a tree. Five keys, and four of them are decisions rather than wording.
+  //
+  // `ploNotFound` covers the outcome that was never made and the one in a
+  // หลักสูตร this caller does not hold, for `programSubjectNotFound`'s reason:
+  // telling the two apart would turn the address bar into a way of learning
+  // which codes another curriculum uses.
+  //
+  // `duplicatePloCode` says ในหลักสูตรนี้ and the phrase is the whole ticket.
+  // The inherited schema made outcome_code globally unique, which stopped two
+  // curricula each having a PLO1 - the thing curricula actually do. The
+  // sentence has to say that the collision is local, or the person reads it as
+  // the old refusal and renames an outcome that did not need renaming.
+  //
+  // `ploParentNotFound` is a parent named in another หลักสูตร or not at all.
+  // The composite foreign key already makes the first impossible, so this key
+  // exists to produce a sentence rather than to provide the safety - the same
+  // argument ADR-0003 makes for subject_clo.
+  //
+  // `ploParentCycle` is a tree refusing to stop being one: an outcome made a
+  // child of its own descendant. No foreign key can see this, so it is the one
+  // check here that is load-bearing.
+  //
+  // `ploHasChildren` is a deletion refused rather than turned into a
+  // deactivation. Every other master-data screen lets deleteOrDeactivate turn
+  // a foreign key violation into "switched off instead", and for a mapping or
+  // a CLO that is right. For a sub-outcome it is not: the person asked to
+  // remove a main outcome, and switching it off while its ข้อย่อย stay listed
+  // underneath is an outcome nobody asked for and nobody would notice. So the
+  // children are asked about first and the answer says what to do.
+  ploNotFound: 'ไม่พบผลการเรียนรู้ที่ระบุ',
+  duplicatePloCode: 'รหัสผลการเรียนรู้นี้มีอยู่ในหลักสูตรนี้แล้ว',
+  invalidPlo: 'ข้อมูลผลการเรียนรู้ไม่ครบถ้วน กรุณาตรวจสอบรหัส ชื่อ ประเภท และลำดับการแสดงผล',
+  ploProgramNotYours: 'ไม่สามารถจัดการผลการเรียนรู้ของหลักสูตรที่ไม่ได้รับผิดชอบได้',
+  ploParentNotFound: 'ไม่พบผลการเรียนรู้ที่จะใช้เป็นข้อหลัก หรือข้อนั้นอยู่คนละหลักสูตร',
+  ploParentCycle: 'ไม่สามารถย้ายผลการเรียนรู้ไปอยู่ใต้ข้อย่อยของตัวเองได้',
+  ploHasChildren: 'ผลการเรียนรู้ข้อนี้ยังมีข้อย่อยอยู่ กรุณาลบข้อย่อยก่อน',
+
   // Students - #17. The central register. Four of the five are about one
   // student code and they are deliberately not one key. `duplicateStudentId`
   // is a typed form meeting a code the register already holds, which is a 409

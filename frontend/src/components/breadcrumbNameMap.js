@@ -9,7 +9,7 @@ export const breadcrumbNameMap = {
   'edit-rubric': 'แก้ไขข้อมูล Rubric',
   'course-in-program': 'รายวิชาในหลักสูตร',
   'student-data': 'ข้อมูลนักศึกษากลาง',
-  plos: 'การกำหนดผลการเรียนรู้ระกับหลักสูตร PLO',
+  plos: 'การกำหนดผลการเรียนรู้ระดับหลักสูตร PLO',
   teacher: 'ข้อมูลหลัก',
   'mapping-plo': 'การเชื่อมโยงผลการเรียนรู้กับรายวิชา',
   teacherDashboard: 'รายวิชาที่รับผิดชอบ',

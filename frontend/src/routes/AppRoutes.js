@@ -8,6 +8,7 @@ import UserNotFound from '../pages/UserNotFound'
 import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Offerings from '../pages/Offerings'
+import Plos from '../pages/Plos'
 import Programs from '../pages/Programs'
 import ProgramSubjects from '../pages/ProgramSubjects'
 import Students from '../pages/Students'
@@ -115,7 +116,7 @@ export default function AppRoutes() {
         <Route path="course-in-program" element={<ProgramSubjects />} />
         <Route path="student-data" element={<Students />} />
         <Route path="course-in-term" element={<Offerings />} />
-        <Route path="plos" element={<NotBuiltYet ticket="#19" />} />
+        <Route path="plos" element={<Plos />} />
         <Route path="mapping-plo" element={<NotBuiltYet ticket="#20" />} />
         <Route
           path="programLevelByIntake"

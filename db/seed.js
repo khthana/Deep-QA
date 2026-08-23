@@ -128,6 +128,7 @@ const SUBJECT = {
 };
 
 const PROGRAM = PROGRAMS[0].id;
+const PROGRAM_INTL = PROGRAMS[1].id;
 
 /**
  * The six roles of docs/01 §ROLE-1..ROLE-6.
@@ -312,6 +313,42 @@ const PLOS = [
   { title: 'ตระหนักถึงผลกระทบของเทคโนโลยีต่อสังคมและสิ่งแวดล้อม', type: 'ethics', subs: 2 },
   { title: 'สามารถทำงานร่วมกับผู้อื่นและแสดงภาวะผู้นำได้', type: 'character', subs: 2 },
   { title: 'มีวินัยในการเรียนรู้ด้วยตนเองอย่างต่อเนื่องตลอดชีวิต', type: 'character', subs: 2 },
+];
+
+/**
+ * A second หลักสูตร's own outcomes, for programme 0503 - #19.
+ *
+ * Two facts about the screen have nowhere to be seen without this, and both
+ * are acceptance criteria rather than decoration.
+ *
+ * *A code belongs to its หลักสูตร.* `PLO-1` below is a different outcome from
+ * 0501's `PLO-1`, with a different title and a different type, and both exist
+ * at once. That is the whole of the ticket's fifth criterion and the reason
+ * the inherited schema's global uniqueness had to go; on a seed where only one
+ * curriculum held outcomes, nothing on any screen could show it.
+ *
+ * *Display order is a field, not the code.* `PLO-2` is seeded to sort *above*
+ * `PLO-1` here. #96 is the lesson: 0501's outcomes have sequence_order equal to
+ * their number, so ordering by the field and ordering by the code produce
+ * identical output there, and an assertion on either one passes whichever the
+ * route actually used. These two rows are the only place in the seed where the
+ * two orderings disagree, so they are what makes the fourth criterion provable.
+ */
+const PLOS_INTL = [
+  {
+    code: 'PLO-1',
+    title: 'มีความรู้ทางวิศวกรรมคอมพิวเตอร์และสื่อสารในบริบทสากลได้',
+    type: 'knowledge',
+    order: 2,
+    subs: [],
+  },
+  {
+    code: 'PLO-2',
+    title: 'สามารถทำงานร่วมกับเพื่อนร่วมงานต่างวัฒนธรรมได้',
+    type: 'character',
+    order: 1,
+    subs: ['สื่อสารด้วยภาษาอังกฤษในที่ทำงานได้', 'ปรับตัวเข้ากับทีมข้ามชาติได้'],
+  },
 ];
 
 /**
@@ -688,6 +725,43 @@ async function seedLearningOutcomes(client) {
           main.outcome_id,
           sub,
           committee,
+        ],
+      });
+    }
+  }
+
+  // The second curriculum's own tree. Committed by its own committee member,
+  // because who wrote an outcome is part of what the screen shows.
+  const committee2 = byAlias('U_COM2');
+  for (const plo of PLOS_INTL) {
+    const main = await findOrCreate(client, {
+      find: `SELECT outcome_id FROM learning_outcomes WHERE program_id = $1 AND outcome_code = $2`,
+      findParams: [PROGRAM_INTL, plo.code],
+      insert: `INSERT INTO learning_outcomes (
+                 program_id, outcome_code, outcome_title, outcome_type,
+                 sequence_order, level_depth, is_expanded, created_by
+               )
+               VALUES ($1, $2, $3, $4, $5, 1, true, $6) RETURNING outcome_id`,
+      insertParams: [PROGRAM_INTL, plo.code, plo.title, plo.type, plo.order, committee2],
+    });
+
+    for (const [index, title] of plo.subs.entries()) {
+      await findOrCreate(client, {
+        find: `SELECT outcome_id FROM learning_outcomes WHERE program_id = $1 AND outcome_code = $2`,
+        findParams: [PROGRAM_INTL, `${plo.code}-${index + 1}`],
+        insert: `INSERT INTO learning_outcomes (
+                   program_id, outcome_code, outcome_title, outcome_type,
+                   parent_outcome_id, sequence_order, level_depth, created_by
+                 )
+                 VALUES ($1, $2, $3, $4, $5, $6, 2, $7) RETURNING outcome_id`,
+        insertParams: [
+          PROGRAM_INTL,
+          `${plo.code}-${index + 1}`,
+          title,
+          plo.type,
+          main.outcome_id,
+          index + 1,
+          committee2,
         ],
       });
     }
@@ -1148,6 +1222,7 @@ module.exports = {
   ACCOUNTS,
   ROLES,
   PLOS,
+  PLOS_INTL,
   CLOS,
   SCORE_RATIOS,
   ACTIVITIES,
@@ -1162,6 +1237,7 @@ module.exports = {
   PROGRAMS,
   SUBJECT,
   PROGRAM,
+  PROGRAM_INTL,
   CURRENT_YEAR,
   PRIOR_YEAR,
   SEMESTER,
