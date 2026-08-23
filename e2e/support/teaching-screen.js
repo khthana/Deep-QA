@@ -22,10 +22,27 @@ const DASHBOARD = '/teacher/teacherDashboard';
 const API = '/api/teaching/sections';
 
 /** Waits for the dashboard's list call, whatever the answer turns out to be. */
+/**
+ * The body is pulled in as soon as the response lands, and thrown away.
+ *
+ * Chromium keeps a response body only until the page navigates away from it,
+ * and a caller that reads `.json()` a few statements later is racing whatever
+ * the screen does next — `27a` row 1 lost that race twice, with *Response body
+ * is not available for a response that was navigated away from*. Playwright
+ * caches the body once it has been read, so reading it here and discarding it
+ * makes every later `.json()` on the same response a lookup rather than a
+ * round trip. The `catch` is there because a body that is already gone is the
+ * caller's problem to report, not this helper's.
+ */
 function waitForSections(page) {
-  return page.waitForResponse(
-    answer => new URL(answer.url()).pathname === API && answer.request().method() === 'GET',
-  );
+  return page
+    .waitForResponse(
+      answer => new URL(answer.url()).pathname === API && answer.request().method() === 'GET',
+    )
+    .then(async answer => {
+      await answer.body().catch(() => {});
+      return answer;
+    });
 }
 
 /** Waits for one Section being read back — the context resolving itself. */

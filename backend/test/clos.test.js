@@ -255,11 +255,15 @@ test('the code is unique within the year and free in another one', async () => {
   assert.equal(clash.status, 409);
   assert.equal(clash.body.message, REFUSALS.duplicateCloNumber);
 
-  const free = await add(cookie, lastYear, { ...DRAFT, clo_number: 'CLO-90' });
+  // CLO-97 rather than DRAFT's own CLO-90, for the reason the sixth subtest
+  // uses CLO-96: any mutant that stops a removal from happening leaves that
+  // subtest's row behind, and a row sharing this code would make this test die
+  // of somebody else's failure and look like a second victim.
+  const free = await add(cookie, lastYear, { ...DRAFT, clo_number: 'CLO-97' });
   assert.equal(free.status, 201, free.body.message);
   // And now it is taken there, and still free here.
-  assert.equal((await add(cookie, lastYear, { ...DRAFT, clo_number: 'CLO-90' })).status, 409);
-  const here = await add(cookie, section, { ...DRAFT, clo_number: 'CLO-90' });
+  assert.equal((await add(cookie, lastYear, { ...DRAFT, clo_number: 'CLO-97' })).status, 409);
+  const here = await add(cookie, section, { ...DRAFT, clo_number: 'CLO-97' });
   assert.equal(here.status, 201, here.body.message);
 
   assert.equal((await remove(cookie, lastYear, free.body.clo.clo_id)).status, 204);

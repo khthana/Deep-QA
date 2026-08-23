@@ -183,6 +183,26 @@ MUTANTS = {
                     "    if (planned) return 'cloInPlan';",
                     "    if (planned && false) return 'cloInPlan';"),
 
+    # The save writes and the screen never looks again. The route answers 201,
+    # so a row that stopped at the status code would see nothing wrong; the CLO
+    # that was just added is simply not on the list, which is the whole of what
+    # "เพิ่ม CLO ใหม่ได้" means to the person doing it.
+    #
+    # A mutant on the INSERT itself was tried first and was thrown away: making
+    # it write into the wrong ปีการศึกษา also defeats the duplicate guard, so
+    # row 6 left rows behind and row 8 died at its 201 rather than at the line
+    # about the list - a kill by contamination, which proves nothing.
+    "savenoreload": ("screen",
+                     "      setEditing(null)\n      await load()",
+                     "      setEditing(null)"),
+    # The removal removes nothing. `AND FALSE` keeps $1 bound, so the statement
+    # is legal, the transaction commits, and the route answers 204 - the exact
+    # shape of a delete that a row asserting only the status code would call
+    # proof.
+    "swallowdelete": ("routes",
+                      "DELETE FROM subject_clo WHERE clo_id = $1",
+                      "DELETE FROM subject_clo WHERE clo_id = $1 AND FALSE"),
+
     # --- the browser's own ---
 
     # ยกเลิก removes it anyway. The dialog appears, it is answered no, and the
