@@ -325,6 +325,42 @@ test('an idle session', async (t) => {
     assert.equal(response.body.reason, 'expired');
   });
 
+  // #94. Saying it once is the whole point: the cookie outlives the token by a
+  // full lifetime (#69), and for that half hour every reload asks this same
+  // question and gets this same answer, which is a dialog nobody can dismiss
+  // by reloading. The news has been delivered; the dead cookie has no further
+  // work to do.
+  await t.test('is forgotten by the browser too, so the news is told once', async () => {
+    const expired = jwt.sign({ user_id: byAlias('U_TEACH') }, process.env.SECRET_KEY, {
+      expiresIn: -60,
+    });
+
+    const response = await me([`${COOKIE_NAME}=${expired}`]);
+
+    assert.equal(response.body.reason, 'expired');
+    assert.match(String(response.headers['set-cookie']), /token=;/);
+  });
+
+  // And only there. Every other protected route is a screen doing work, where
+  // a single verification failure is as likely to be a request that crossed a
+  // renewal as a session that ended, and clearing on one of those signs out a
+  // browser that was never idle. The comment in auth/session.js says so and
+  // still means it; #94 narrows the exception to the one call that is asking
+  // who is signed in rather than asking for something.
+  await t.test('is left alone when a screen asks, not the shell', async () => {
+    const expired = jwt.sign({ user_id: byAlias('U_TEACH') }, process.env.SECRET_KEY, {
+      expiresIn: -60,
+    });
+
+    const response = await request(api.app)
+      .get('/api/programs')
+      .set('Cookie', [`${COOKIE_NAME}=${expired}`]);
+
+    assert.equal(response.status, 401);
+    assert.equal(response.body.reason, 'expired');
+    assert.equal(response.headers['set-cookie'], undefined);
+  });
+
   // 401 and 403 are different states and the shell shows different things for
   // them: sign in again, versus you are signed in and may not do this. The
   // inherited utils/session.js treated them as one, which is why an idle

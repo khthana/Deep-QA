@@ -73,6 +73,18 @@ MUTANTS = {
     "guardedlogout": ("authroutes",
                       "  router.post('/auth/logout', async (req, res, next) => {",
                       "  router.post('/auth/logout', require('../auth/session').requireSession, async (req, res, next) => {"),
+    # row 6 second reload: the dead cookie is kept, which is the state before
+    # #94 - the box still draws on the first reload and its button still works,
+    # and only the person who pressed F5 instead stays trapped
+    "keepdeadcookie": ("session",
+                       "    if (expired && isBootstrapRead(req)) clearSession(res);",
+                       "    if (false && isBootstrapRead(req)) clearSession(res);"),
+    # row 6 second reload: the exception widens to every protected route, which
+    # is what the comment in that file has always refused - one request that
+    # crossed a renewal now signs the browser out
+    "clearanywhere": ("session",
+                      "    if (expired && isBootstrapRead(req)) clearSession(res);",
+                      "    if (expired) clearSession(res);"),
     # row 7b: a wrong current password answered as an expiry
     "wrongas401": ("me",
                    "if (!matches) return res.status(403).json({ message: REFUSALS.wrongPassword });",

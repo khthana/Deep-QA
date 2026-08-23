@@ -141,6 +141,29 @@ function accountInDeadCookie(req) {
 }
 
 /**
+ * Is this the shell asking who is signed in, rather than a screen asking for
+ * something?
+ *
+ * Identity middleware knowing one route by name is a coupling worth naming
+ * rather than hiding, so: `GET /api/me` is the only call in the system whose
+ * entire subject is the session itself. `AuthContext.load()` makes it on every
+ * page load and asks nothing else of it. Every other protected route is work -
+ * a list, a save - and for those, a failed verification is as likely to be a
+ * request that crossed a renewal as a session that truly ended, which is why
+ * `requireSession` does not clear on them and must not start.
+ *
+ * The mount is `app.use('/api', requireSession, ...)`, so Express has already
+ * stripped the prefix by the time this runs and the path is `/me`.
+ *
+ * The trailing slash and the case are matched the way the router itself
+ * matches them - it is neither strict nor case-sensitive by default, so
+ * `/api/me/` and `/api/ME` reach the same handler. A spelling that reaches the
+ * route but not this test would be a session that loops the dialog exactly as
+ * it did before #94, which is a difference nobody would think to look for.
+ */
+const isBootstrapRead = (req) => req.method === 'GET' && /^\/me\/?$/i.test(req.path);
+
+/**
  * Puts `req.session = { userId, acting }` on a request carrying a live token,
  * and refuses one that does not.
  *
@@ -171,7 +194,21 @@ function requireSession(req, res, next) {
     // failure turns one unlucky request - a clock skew, a request in flight
     // across a renewal - into a signed-out browser. Clearing is what
     // /auth/logout is for.
+    //
+    // With one exception, and #94 is why. An expired token answered to the
+    // shell's bootstrap read is not an unlucky request: it is the final answer
+    // to the question "who is signed in", and it has been delivered. Keeping
+    // the dead cookie past that point buys nothing and costs the half hour in
+    // which the cookie outlives it (#69), because every reload in that window
+    // asks the same question, gets the same answer, and draws the same
+    // full-screen dialog over the sign-in page it is telling the person to
+    // use. #92 fixed the button in that dialog; this is the path of everyone
+    // who pressed F5 instead. Nothing widens: the reason above still governs
+    // every other route, and an `invalid` token is still left where it is,
+    // since a cookie this server did not sign is not evidence about any
+    // session of ours.
     const expired = error.name === 'TokenExpiredError';
+    if (expired && isBootstrapRead(req)) clearSession(res);
     return res.status(401).json({
       message: expired ? REFUSALS.expired : REFUSALS.invalidSession,
       reason: expired ? 'expired' : 'invalid',
