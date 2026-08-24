@@ -217,6 +217,28 @@ const REFUSALS = {
   invalidRubric: 'ข้อมูล Rubric ไม่ครบถ้วน กรุณาตรวจสอบรหัส ชื่อภาษาไทย ชื่อภาษาอังกฤษ และลำดับการแสดงผล',
   rubricProgramNotYours: 'ไม่สามารถจัดการ Rubric ของหลักสูตรที่ไม่ได้รับผิดชอบได้',
 
+  // Rubric criteria - #22. Two keys, and neither of them is about a
+  // หลักสูตร: `rubric_details` holds no program_id, so what a caller may
+  // write is settled entirely by the rubric named in the address, and the four
+  // keys above already say everything there is to say about that rubric.
+  //
+  // `criterionNotFound` covers three things a screen cannot tell apart and
+  // should not be able to: the criterion that was never made, the one addressed
+  // by something that is not a number, and the one that exists under a
+  // different rubric than the address names. The third is the one worth
+  // spelling out - a criterion is reachable only through its own rubric, and
+  // saying ไม่พบ rather than ไม่ใช่ของ Rubric นี้ keeps the address bar from
+  // reporting which ids exist.
+  //
+  // `invalidCriterion` names the four bands as well as the names and the
+  // weight, because all four descriptions are required by this route and by
+  // nothing in the schema: the columns are nullable text. A person who read
+  // ข้อมูลไม่ครบถ้วน alone would look at the two name boxes and not at the
+  // four description boxes below them.
+  criterionNotFound: 'ไม่พบเกณฑ์การให้คะแนนที่ระบุ',
+  invalidCriterion:
+    'ข้อมูลเกณฑ์ไม่ครบถ้วน กรุณาตรวจสอบชื่อภาษาไทย ชื่อภาษาอังกฤษ น้ำหนัก ลำดับการแสดงผล และคำอธิบายทั้งสี่ระดับ',
+
   // Students - #17. The central register. Four of the five are about one
   // student code and they are deliberately not one key. `duplicateStudentId`
   // is a typed form meeting a code the register already holds, which is a 409

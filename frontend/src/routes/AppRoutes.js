@@ -9,6 +9,7 @@ import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Offerings from '../pages/Offerings'
 import Plos from '../pages/Plos'
+import RubricCriteria from '../pages/RubricCriteria'
 import Rubrics from '../pages/Rubrics'
 import Programs from '../pages/Programs'
 import ProgramSubjects from '../pages/ProgramSubjects'
@@ -114,14 +115,12 @@ export default function AppRoutes() {
         <Route path="programs" element={<Programs />} />
         <Route path="subjects" element={<Subjects />} />
         <Route path="rubrics" element={<Rubrics />} />
-        {/* #21's fifth criterion needs somewhere to land. The criteria
-            themselves are #22, and the rubric's id in the path is the whole of
-            the context it will need - ADR-0004's shape, applied one screen
-            down. #22 owns this path and may move it. */}
-        <Route
-          path="rubrics/:rubricId/criteria"
-          element={<NotBuiltYet ticket="#22" />}
-        />
+        {/* #21's fifth criterion lands here and #22 built it. The rubric's id
+            in the path is the whole of the context this screen needs -
+            ADR-0004's shape, applied one screen down - and it is also what
+            authorises the request: a criterion carries no หลักสูตร of its own,
+            so the rubric named here is the only thing the server has to check. */}
+        <Route path="rubrics/:rubricId/criteria" element={<RubricCriteria />} />
         <Route path="course-in-program" element={<ProgramSubjects />} />
         <Route path="student-data" element={<Students />} />
         <Route path="course-in-term" element={<Offerings />} />

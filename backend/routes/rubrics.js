@@ -153,6 +153,32 @@ function readRubric(source, { editing = false } = {}) {
   return { ok: true, values };
 }
 
+/**
+ * One rubric, if this grant reaches its curriculum — shared with #22.
+ *
+ * The same reach the list filters on, so a rubric the list did not show cannot
+ * be edited by asking for it by number, and out of reach answers the same 404
+ * as never-made, which is the seventh criterion enforced at the server rather
+ * than in a menu.
+ *
+ * It is at module scope and exported because a rubric's criteria are
+ * authorised by exactly this question and by nothing else - `rubric_details`
+ * carries no curriculum of its own, so `routes/rubricCriteria.js` asking the
+ * database its own version of this would be two answers to one question, and
+ * the day they drift is the day a criterion is writable through a rubric that
+ * is not.
+ */
+async function reachableRubric(pool, req, rubricId) {
+  if (!/^\d+$/.test(String(rubricId))) return null;
+  const reach = await coveredScopes(pool, req.auth.acting.scope_id);
+  const { rows } = await pool.query(
+    `SELECT ${RETURNED} ${FROM}
+      WHERE r.id = $1 AND ($2::text[] IS NULL OR r.program_id = ANY($2))`,
+    [rubricId, reach],
+  );
+  return rows[0] ?? null;
+}
+
 function rubricRoutes(pool) {
   const router = express.Router();
 
@@ -179,16 +205,7 @@ function rubricRoutes(pool) {
    * same 404 as never-made, which is the seventh criterion enforced at the
    * server rather than in a menu.
    */
-  async function reachable(req, rubricId) {
-    if (!/^\d+$/.test(String(rubricId))) return null;
-    const reach = await coveredScopes(pool, req.auth.acting.scope_id);
-    const { rows } = await pool.query(
-      `SELECT ${RETURNED} ${FROM}
-        WHERE r.id = $1 AND ($2::text[] IS NULL OR r.program_id = ANY($2))`,
-      [rubricId, reach],
-    );
-    return rows[0] ?? null;
-  }
+  const reachable = (req, rubricId) => reachableRubric(pool, req, rubricId);
 
   /** The row as the screen wants it, read back after a write. */
   async function load(executor, rubricId) {
@@ -419,4 +436,4 @@ function rubricRoutes(pool) {
   return router;
 }
 
-module.exports = { rubricRoutes };
+module.exports = { rubricRoutes, reachableRubric, MAINTAINERS };
