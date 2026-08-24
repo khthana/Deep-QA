@@ -9,6 +9,7 @@ import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Offerings from '../pages/Offerings'
 import Plos from '../pages/Plos'
+import Rubrics from '../pages/Rubrics'
 import Programs from '../pages/Programs'
 import ProgramSubjects from '../pages/ProgramSubjects'
 import Students from '../pages/Students'
@@ -112,7 +113,15 @@ export default function AppRoutes() {
         <Route path="departments" element={<Departments />} />
         <Route path="programs" element={<Programs />} />
         <Route path="subjects" element={<Subjects />} />
-        <Route path="rubrics" element={<NotBuiltYet ticket="#21" />} />
+        <Route path="rubrics" element={<Rubrics />} />
+        {/* #21's fifth criterion needs somewhere to land. The criteria
+            themselves are #22, and the rubric's id in the path is the whole of
+            the context it will need - ADR-0004's shape, applied one screen
+            down. #22 owns this path and may move it. */}
+        <Route
+          path="rubrics/:rubricId/criteria"
+          element={<NotBuiltYet ticket="#22" />}
+        />
         <Route path="course-in-program" element={<ProgramSubjects />} />
         <Route path="student-data" element={<Students />} />
         <Route path="course-in-term" element={<Offerings />} />

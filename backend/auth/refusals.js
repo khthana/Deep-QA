@@ -187,6 +187,36 @@ const REFUSALS = {
   ploParentCycle: 'ไม่สามารถย้ายผลการเรียนรู้ไปอยู่ใต้ข้อย่อยของตัวเองได้',
   ploHasChildren: 'ผลการเรียนรู้ข้อนี้ยังมีข้อย่อยอยู่ กรุณาลบข้อย่อยก่อน',
 
+  // Rubrics - #21. The หลักสูตร's reusable scoring guides. Four keys, and the
+  // first of them is the one that copying #19 would get exactly backwards.
+  //
+  // `duplicateRubricCode` says ทั้งระบบ, which is the opposite of what
+  // `duplicatePloCode` says four lines above it. `rubrics.rubric_code` is
+  // UNIQUE on its own and not within a หลักสูตร, and 0003 gives the reason: the
+  // inherited findRubricByCode(rubric_code) is handed a code with no curriculum
+  // beside it, so a code meaning one thing in one หลักสูตร and another
+  // elsewhere would resolve to whichever row was found first. The sentence has
+  // to name the wider scope, or a กรรมการหลักสูตร who reads ถูกใช้งานแล้ว
+  // searches their own list, finds nothing holding that code, and concludes the
+  // screen is lying to them. It is the only refusal on this system that has to
+  // tell a person about a row they are not allowed to see.
+  //
+  // `rubricNotFound` covers the rubric that was never made and the one in a
+  // หลักสูตร this caller does not hold, for `ploNotFound`'s reason.
+  //
+  // `invalidRubric` names all four fields the form can get wrong, because the
+  // route answers one key for all of them: a message that said only
+  // ข้อมูลไม่ครบถ้วน would leave the person hunting which box it meant.
+  //
+  // `rubricProgramNotYours` is the body naming a หลักสูตร this account does not
+  // hold. Separate from #18's `programNotYours` and #19's `ploProgramNotYours`
+  // because the sentence names what is being managed, and a person who is
+  // refused wants to read the noun they were working on.
+  rubricNotFound: 'ไม่พบ Rubric ที่ระบุ',
+  duplicateRubricCode: 'รหัส Rubric นี้ถูกใช้งานแล้ว รหัส Rubric ห้ามซ้ำกันทั้งระบบ ไม่ใช่เฉพาะภายในหลักสูตรนี้',
+  invalidRubric: 'ข้อมูล Rubric ไม่ครบถ้วน กรุณาตรวจสอบรหัส ชื่อภาษาไทย ชื่อภาษาอังกฤษ และลำดับการแสดงผล',
+  rubricProgramNotYours: 'ไม่สามารถจัดการ Rubric ของหลักสูตรที่ไม่ได้รับผิดชอบได้',
+
   // Students - #17. The central register. Four of the five are about one
   // student code and they are deliberately not one key. `duplicateStudentId`
   // is a typed form meeting a code the register already holds, which is a 409

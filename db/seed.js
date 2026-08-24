@@ -352,6 +352,59 @@ const PLOS_INTL = [
 ];
 
 /**
+ * The หลักสูตร's reusable scoring guides - #21.
+ *
+ * Eleven of them for 0501, which is one more than a page holds, because the
+ * ticket's eighth criterion is that the list pages beyond ten rows and a seed
+ * of ten proves nothing: the pager would draw itself, say "หน้า 1 จาก 1", and
+ * every assertion about it would pass.
+ *
+ * `order` disagrees with the code on purpose, and in two different ways. RUB-02
+ * sorts above RUB-01 and RUB-05 above RUB-04, so ordering by the field and
+ * ordering by the code give visibly different lists - #96's lesson, learned in
+ * #19 where 0501's outcomes had sequence_order equal to their own number and an
+ * assertion on either ordering passed whichever the route actually used.
+ *
+ * And RUB-06 and RUB-07 are given the *same* order. `display_order` is
+ * `NOT NULL DEFAULT 0`, so a tie is the state every rubric starts in rather
+ * than an edge case, and a paged list whose ORDER BY does not settle ties can
+ * show one row on both pages and another on neither. These two rows are what
+ * makes that settlement provable.
+ *
+ * `criteria` is what #22 will edit. A handful are seeded here because deleting
+ * a rubric takes them with it - rubric_details.rubric_id is ON DELETE CASCADE -
+ * and a confirmation that warns about criteria needs a rubric that has some.
+ */
+const RUBRICS = [
+  { code: 'RUB-01', th: 'การนำเสนอผลงาน', en: 'Presentation', order: 3, criteria: 3 },
+  { code: 'RUB-02', th: 'การเขียนรายงานทางวิชาการ', en: 'Academic report writing', order: 1, criteria: 2 },
+  { code: 'RUB-03', th: 'การทำงานเป็นทีม', en: 'Teamwork', order: 2, criteria: 0 },
+  { code: 'RUB-04', th: 'การเขียนโปรแกรม', en: 'Programming', order: 5, criteria: 0 },
+  { code: 'RUB-05', th: 'การออกแบบระบบ', en: 'System design', order: 4, criteria: 0 },
+  { code: 'RUB-06', th: 'การทดสอบซอฟต์แวร์', en: 'Software testing', order: 6, criteria: 0 },
+  { code: 'RUB-07', th: 'การวิเคราะห์ปัญหา', en: 'Problem analysis', order: 6, criteria: 0 },
+  { code: 'RUB-08', th: 'การใช้เครื่องมือทางวิศวกรรม', en: 'Use of engineering tools', order: 7, criteria: 0 },
+  { code: 'RUB-09', th: 'จรรยาบรรณวิชาชีพ', en: 'Professional ethics', order: 8, criteria: 0 },
+  { code: 'RUB-10', th: 'การสื่อสารภาษาอังกฤษ', en: 'English communication', order: 9, criteria: 0 },
+  { code: 'RUB-11', th: 'การเรียนรู้ด้วยตนเอง', en: 'Self-directed learning', order: 10, criteria: 0 },
+];
+
+/**
+ * 0503's own two, and their codes do not repeat 0501's.
+ *
+ * This is where #21 parts company with #19. A PLO code belongs to its
+ * หลักสูตร and two curricula each holding a PLO-1 is that ticket's fifth
+ * criterion; `rubrics.rubric_code` is UNIQUE on its own, so RUB-01 exists once
+ * in the institution and 0503's rubrics have to be numbered elsewhere. A seed
+ * that gave both curricula a RUB-01 would not load at all, which is the
+ * clearest possible statement of the difference.
+ */
+const RUBRICS_INTL = [
+  { code: 'RUB-51', th: 'การทำงานข้ามวัฒนธรรม', en: 'Cross-cultural collaboration', order: 2, criteria: 0 },
+  { code: 'RUB-52', th: 'การนำเสนอเป็นภาษาอังกฤษ', en: 'Presenting in English', order: 1, criteria: 0 },
+];
+
+/**
  * How strongly 01076105 serves each PLO. Only the outcomes the subject
  * genuinely touches get a row: 0002 settles that an unmapped subject is one
  * with no rows, and 'E' now means "this named PLO is not served", which is a
@@ -780,6 +833,60 @@ async function seedLearningOutcomes(client) {
 }
 
 /**
+ * The rubrics of both curricula, and the criteria of the two that have any.
+ *
+ * Written by each หลักสูตร's own committee member, because who last touched a
+ * rubric is a column the screen shows.
+ */
+async function seedRubrics(client) {
+  const sets = [
+    { rubrics: RUBRICS, program: PROGRAM, author: byAlias('U_COM') },
+    { rubrics: RUBRICS_INTL, program: PROGRAM_INTL, author: byAlias('U_COM2') },
+  ];
+
+  for (const { rubrics, program, author } of sets) {
+    for (const rubric of rubrics) {
+      const row = await findOrCreate(client, {
+        find: `SELECT id FROM rubrics WHERE rubric_code = $1`,
+        findParams: [rubric.code],
+        insert: `INSERT INTO rubrics (
+                   rubric_code, rubric_name_th, rubric_name_en, program_id,
+                   display_order, created_by, updated_by
+                 )
+                 VALUES ($1, $2, $3, $4, $5, $6, $6) RETURNING id`,
+        insertParams: [rubric.code, rubric.th, rubric.en, program, rubric.order, author],
+      });
+
+      for (let n = 1; n <= rubric.criteria; n += 1) {
+        await findOrCreate(client, {
+          find: `SELECT id FROM rubric_details WHERE rubric_id = $1 AND display_order = $2`,
+          findParams: [row.id, n],
+          insert: `INSERT INTO rubric_details (
+                     rubric_id, criteria_name_th, criteria_name_en, weight,
+                     level_4_description, level_3_description,
+                     level_2_description, level_1_description,
+                     display_order, created_by, updated_by
+                   )
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10) RETURNING id`,
+          insertParams: [
+            row.id,
+            `${rubric.th} — เกณฑ์ที่ ${n}`,
+            `${rubric.en} — criterion ${n}`,
+            1,
+            'ทำได้ครบถ้วนและดีเยี่ยม',
+            'ทำได้ครบถ้วน',
+            'ทำได้บางส่วน',
+            'ยังทำไม่ได้',
+            n,
+            author,
+          ],
+        });
+      }
+    }
+  }
+}
+
+/**
  * One year's CLOs, their measurable behaviours and achievement criteria, and
  * the weighting scheme they are marked under. All four are at ADR-0003's
  * grain, so each academic year gets its own.
@@ -1159,6 +1266,7 @@ async function seed({ schema } = {}) {
     await seedAccounts(client);
     await seedSubject(client);
     const mainOutcomeIds = await seedLearningOutcomes(client);
+    await seedRubrics(client);
 
     for (const cohort of COHORTS) {
       const { cloIds, ratioIds } = await seedOutcomesForYear(client, {
@@ -1223,6 +1331,8 @@ module.exports = {
   ROLES,
   PLOS,
   PLOS_INTL,
+  RUBRICS,
+  RUBRICS_INTL,
   CLOS,
   SCORE_RATIOS,
   ACTIVITIES,

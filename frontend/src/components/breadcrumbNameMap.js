@@ -7,6 +7,7 @@ export const breadcrumbNameMap = {
   subjects: 'ข้อมูลรายวิชา',
   rubrics: 'ข้อมูล Rubric กลาง',
   'edit-rubric': 'แก้ไขข้อมูล Rubric',
+  criteria: 'เกณฑ์การให้คะแนนของ Rubric',
   'course-in-program': 'รายวิชาในหลักสูตร',
   'student-data': 'ข้อมูลนักศึกษากลาง',
   plos: 'การกำหนดผลการเรียนรู้ระดับหลักสูตร PLO',
