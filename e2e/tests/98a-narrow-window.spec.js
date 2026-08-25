@@ -23,14 +23,19 @@ const { openUsers, listTable } = require('../support/users-screen');
  * #98 — a table wider than the window scrolls inside its own frame instead of
  * being clipped, so the rightmost column stays reachable.
  *
- * **Why this file sets its own viewport.** Every other spec in this suite runs
- * at `devices['Desktop Chrome']`, one fixed width, and so does the browser the
- * hand-walk uses until somebody drags its edge. That single width is exactly
- * why all three test seams missed the defect: the criteria table wants about
- * 1,060px, the desktop window is wider than that, and nothing overflows.
- * Narrowing the window is the whole experiment, so it belongs to this file
- * rather than to the project — changing the project default would re-run
- * twenty-five specs at a width none of them was written for.
+ * **Why this file sets its own viewport.** The project default is
+ * `devices['Desktop Chrome']`, and so is the browser the hand-walk uses until
+ * somebody drags its edge. That default width is exactly why all three test
+ * seams missed the defect: the criteria table wants about 1,060px, the desktop
+ * window is wider than that, and nothing overflows. Narrowing the window is the
+ * whole experiment, so it belongs to this file rather than to the project —
+ * changing the project default would re-run twenty-five specs at a width none
+ * of them was written for.
+ *
+ * This is not the first file to override the viewport: `55a-notice-in-view`
+ * takes 900×400, the same width. It narrows for the height, to put a notice
+ * below the fold. This is the first file to narrow *for* the width, and the
+ * only one whose assertions are about what the width does.
  *
  * **Why it clicks rather than looks.** A clipped button is still in the DOM,
  * still has a bounding box, and `toBeVisible()` is true of it. It is even still
@@ -52,9 +57,8 @@ const { openUsers, listTable } = require('../support/users-screen');
  * found, and the second screen runs at the width its own table needs.
  *
  * **Why the rows are not `serial`, unlike #21's and #22's.** They share one
- * rubric — the seed is laid down once per run and a rubric left behind would
- * change a count another spec asserts — but `openMine` makes it only if it is
- * not already there, and removing it is `afterAll`'s job rather than a row's.
+ * rubric, but `openMine` makes it only if it is not already there, and removing
+ * it is `afterAll`'s job rather than a row's.
  * So each row stands up its own state instead of inheriting it, and a row that
  * fails no longer skips the ones below it. That mattered while proving these
  * assertions: under the mutant that puts the defect back, `serial` reported one
@@ -126,6 +130,12 @@ async function openMine(page) {
  * Not a row, because it asserts nothing about #98 and a row that cannot fail
  * when the code is broken does not belong in a file whose whole point is that
  * its assertions notice.
+ *
+ * Nothing downstream depends on this running: the schema is reseeded every run
+ * and this file sorts last, so a rubric left behind would outlive no other
+ * spec's assertions. It is here so that a run stopped halfway leaves the
+ * database as it found it, and so a person opening the walk stack afterwards
+ * does not meet a rubric no seed ever made.
  */
 test.afterAll(async ({ browser }) => {
   const page = await browser.newPage();
