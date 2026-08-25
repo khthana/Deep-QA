@@ -187,6 +187,41 @@ const REFUSALS = {
   ploParentCycle: 'ไม่สามารถย้ายผลการเรียนรู้ไปอยู่ใต้ข้อย่อยของตัวเองได้',
   ploHasChildren: 'ผลการเรียนรู้ข้อนี้ยังมีข้อย่อยอยู่ กรุณาลบข้อย่อยก่อน',
 
+  // Outcome-to-Subject mapping - #20. How strongly each รายวิชา of a หลักสูตร
+  // serves each PLO of it, as a grid. Four keys, and three of them are
+  // decisions rather than wording.
+  //
+  // `mappingProgramNotYours` is its own key rather than #19's
+  // `ploProgramNotYours`, because the two sentences are about different verbs.
+  // A person refused here was not writing an outcome; they were saying which
+  // subject serves one. Reusing #19's would tell them to go and look at a
+  // screen they were not on.
+  //
+  // `mappingSubjectNotInProgram` and `mappingOutcomeNotInProgram` are two keys
+  // for what the composite foreign keys would refuse as one violation. They are
+  // separate because they are different mistakes on different axes - a row that
+  // is not on this grid, and a column that is not - and a person who has just
+  // been told "not in this curriculum" needs to know which of the two they got
+  // wrong. Neither provides the safety; the keys on subject_plo_mapping do.
+  // This is ADR-0003's argument for subject_clo, applied twice.
+  //
+  // `invalidMapping` names the level rather than the cell, because that is the
+  // field a person can get wrong: the row and the column are chosen by clicking
+  // a grid the server drew, and the level is chosen from a list.
+  //
+  // `mappingProgramMissing` is separate from it, and the separation is the point.
+  // Reading a grid and writing a cell fail differently: a read that names no
+  // หลักสูตร has one field missing, and telling that caller to supply a
+  // รายวิชา, an outcome and a level is three instructions they cannot act on
+  // and one they can. Asking for every curriculum at once is not what the empty
+  // query string means either - the columns of one are not the columns of
+  // another, so there is no grid of all of them to ask for.
+  mappingProgramNotYours: 'ไม่สามารถจัดการการเชื่อมโยงผลการเรียนรู้ของหลักสูตรที่ไม่ได้รับผิดชอบได้',
+  mappingSubjectNotInProgram: 'ไม่พบรายวิชานี้ในหลักสูตรที่ระบุ',
+  mappingOutcomeNotInProgram: 'ไม่พบผลการเรียนรู้ข้อนี้ในหลักสูตรที่ระบุ',
+  mappingProgramMissing: 'กรุณาระบุหลักสูตรที่ต้องการดูการเชื่อมโยง',
+  invalidMapping: 'ข้อมูลการเชื่อมโยงไม่ครบถ้วน กรุณาระบุหลักสูตร รายวิชา ผลการเรียนรู้ และระดับที่เป็นหนึ่งใน E, I, D, P, A',
+
   // Rubrics - #21. The หลักสูตร's reusable scoring guides. Four keys, and the
   // first of them is the one that copying #19 would get exactly backwards.
   //

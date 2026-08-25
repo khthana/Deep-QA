@@ -49,6 +49,7 @@ const { offeringRoutes } = require('./routes/offerings');
 const { teachingRoutes } = require('./routes/teaching');
 const { cloRoutes } = require('./routes/clos');
 const { ploRoutes } = require('./routes/plos');
+const { ploMappingRoutes } = require('./routes/ploMapping');
 const { programRoutes } = require('./routes/programs');
 const { rubricRoutes } = require('./routes/rubrics');
 const { rubricCriteriaRoutes } = require('./routes/rubricCriteria');
@@ -100,6 +101,7 @@ function createApp({ pool }) {
   app.use('/api', teachingRoutes(pool));
   app.use('/api', cloRoutes(pool));
   app.use('/api', ploRoutes(pool));
+  app.use('/api', ploMappingRoutes(pool));
   app.use('/api', rubricRoutes(pool));
   app.use('/api', rubricCriteriaRoutes(pool));
 

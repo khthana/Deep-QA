@@ -49,7 +49,15 @@ Sections of one Offering share a CLO set and each year's set is frozen once scor
 
 **Mapping Level** (ระดับการเชื่อมโยง):
 How strongly a Subject serves a PLO, on a five-point scale: `I` Introduced, `D` Developed, `P` Practiced,
-`A` Assessed, `E` Empty.
+`A` Assessed, `E` **Not served** — somebody has looked at this named PLO and recorded that this Subject does
+not teach towards it.
+
+`E` is a decision, not an absence, and the two are different rows. A Subject nobody has assessed against a
+PLO has **no row at all** in `subject_plo_mapping`; `db/migrations/0002` settles this by leaving
+`createEmptyMapping` uncalled. So "not yet decided" is silence and `E` is a narrower statement than silence —
+the coverage grid (#20) and its PDF both draw them differently, and a report that drew both blank would throw
+the distinction away on the one document it exists for. The letter's older reading, `E` for *Empty*, is what
+the delivered student system implemented, writing a placeholder row that meant the same thing as silence.
 
 **Measurable Behavior** (พฤติกรรมบ่งชี้):
 An observable behaviour that evidences a CLO, tagged with a cognitive level (remember … create).

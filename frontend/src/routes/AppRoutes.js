@@ -9,6 +9,7 @@ import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Offerings from '../pages/Offerings'
 import Plos from '../pages/Plos'
+import PloMapping from '../pages/PloMapping'
 import RubricCriteria from '../pages/RubricCriteria'
 import Rubrics from '../pages/Rubrics'
 import Programs from '../pages/Programs'
@@ -125,7 +126,7 @@ export default function AppRoutes() {
         <Route path="student-data" element={<Students />} />
         <Route path="course-in-term" element={<Offerings />} />
         <Route path="plos" element={<Plos />} />
-        <Route path="mapping-plo" element={<NotBuiltYet ticket="#20" />} />
+        <Route path="mapping-plo" element={<PloMapping />} />
         <Route
           path="programLevelByIntake"
           element={<NotBuiltYet ticket="#42" />}
