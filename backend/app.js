@@ -48,6 +48,7 @@ const { meRoutes } = require('./routes/me');
 const { offeringRoutes } = require('./routes/offerings');
 const { teachingRoutes } = require('./routes/teaching');
 const { cloRoutes } = require('./routes/clos');
+const { enrolmentRoutes } = require('./routes/enrolment');
 const { ploRoutes } = require('./routes/plos');
 const { ploMappingRoutes } = require('./routes/ploMapping');
 const { programRoutes } = require('./routes/programs');
@@ -100,6 +101,7 @@ function createApp({ pool }) {
   app.use('/api', offeringRoutes(pool));
   app.use('/api', teachingRoutes(pool));
   app.use('/api', cloRoutes(pool));
+  app.use('/api', enrolmentRoutes(pool));
   app.use('/api', ploRoutes(pool));
   app.use('/api', ploMappingRoutes(pool));
   app.use('/api', rubricRoutes(pool));

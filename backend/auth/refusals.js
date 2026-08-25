@@ -364,6 +364,42 @@ const REFUSALS = {
   cloInUse: 'ผลการเรียนรู้ข้อนี้ถูกผูกไว้กับกิจกรรมการวัดผล จึงลบไม่ได้ ให้ยกเลิกการผูกที่กิจกรรมก่อน',
   cloInPlan: 'ผลการเรียนรู้ข้อนี้ถูกอ้างถึงในแผนการสอนรายสัปดาห์ จึงลบไม่ได้ ให้นำออกจากแผนก่อน',
 
+  // Section enrolment - #25. The class list a Teacher builds for their own
+  // ตอนเรียน. None of these is one of #17's, which is the whole point of the
+  // block: the register and the class list are two different questions about
+  // one student code, and the sentences have to say which one is being
+  // answered. The one key this block does *not* add is the spreadsheet naming
+  // one code twice - that is `repeatedStudentId` above, unchanged, because the
+  // mistake is a property of the file rather than of either question.
+  //
+  // `studentNotInRegister` is the third criterion in as many words. #17's
+  // `studentNotFound` says only that the code was not found, which on this
+  // screen reads as "not in this class" - the very thing the person is trying
+  // to change. So this one names the register as the place to add them, because
+  // what to do next is to go there, and doing it here would create the
+  // half-formed student record the ticket exists to prevent.
+  //
+  // `duplicateEnrolment` is not `duplicateStudentId` for the same reason
+  // inverted: the code is in the register, correctly, and what is already there
+  // is the enrolment. The database refuses it either way - ADR-0001 tier 2 made
+  // (student_id, section_id) the key - and this is the sentence that 23505 is
+  // turned into.
+  //
+  // The two removal refusals mirror `cloHasScores` and `cloInUse` one grain
+  // down, and they exist for the reason those do: nothing references
+  // `student_course`, so a DELETE would succeed and leave the marks and the
+  // group membership pointing at somebody no longer in the class. The route
+  // looks for both itself, before the DELETE, and each names its own way out.
+  studentNotInRegister:
+    'ไม่พบรหัสนี้ในทะเบียนนักศึกษากลาง กรุณาเพิ่มนักศึกษาที่หน้าข้อมูลนักศึกษากลางก่อน',
+  duplicateEnrolment: 'นักศึกษาคนนี้อยู่ในตอนเรียนนี้แล้ว',
+  enrolmentHasScores:
+    'นักศึกษาคนนี้มีคะแนนบันทึกไว้แล้ว จึงนำออกจากตอนเรียนไม่ได้',
+  enrolmentInGroup:
+    'นักศึกษาคนนี้อยู่ในกลุ่มงานของตอนเรียนนี้ จึงนำออกไม่ได้ ให้นำออกจากกลุ่มก่อน',
+  invalidEnrolment:
+    'รหัสนักศึกษาไม่ถูกต้อง กรุณาตรวจสอบรหัสนักศึกษา (ตัวเลข 8 หลัก)',
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.

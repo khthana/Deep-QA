@@ -19,6 +19,7 @@ import Subjects from '../pages/Subjects'
 import TeacherDashboard from '../pages/TeacherDashboard'
 import TeacherSection from '../pages/TeacherSection'
 import CourseOutcomes from '../pages/CourseOutcomes'
+import SubjectStudents from '../pages/SubjectStudents'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
 import LoadingScreen from '../components/LoadingScreen'
@@ -163,6 +164,7 @@ export default function AppRoutes() {
         */}
         <Route path=":sectionId">
           <Route index element={<TeacherSection />} />
+          <Route path="subjectStudents" element={<SubjectStudents />} />
           <Route path="courseOutcomes" element={<CourseOutcomes />} />
           <Route path="*" element={<NotBuiltYet />} />
         </Route>
