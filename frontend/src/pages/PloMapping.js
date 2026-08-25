@@ -267,8 +267,8 @@ export default function PloMapping() {
                   title={`${outcome.outcome_code} ${outcome.outcome_title}`}
                   className={`whitespace-nowrap px-2 py-3 text-center text-xs ${
                     outcome.level_depth > 1
-                      ? 'font-normal text-slate-400'
-                      : 'text-gray-600'
+                      ? 'font-normal text-slate-500'
+                      : 'font-semibold text-gray-800'
                   }`}
                 >
                   {outcome.outcome_code}
