@@ -8,7 +8,7 @@
  * coverage grid the accreditation submission is built from — #18 gives it its
  * rows, #19 gives it its columns, and nothing below it reads it.
  *
- * Six things here are decisions rather than habit.
+ * Seven things here are decisions rather than habit.
  *
  * *There is one read, not three.* Every other screen in the house lists one
  * table and the routes follow. A grid is not a list: it is two axes and the
@@ -34,6 +34,15 @@
  * both reaching for `subjectPloMappingModel` — and this rebuild does not. So
  * `mapping_level` is required on the way in: there is no "save nothing" here,
  * because saving nothing is what not saving already does.
+ *
+ * *The outcome axis is ข้อหลัก only — #100.* "Every PLO of the หลักสูตร" read
+ * literally gives a ข้อย่อย its own column, which is fifty-two columns for the
+ * seed's 0501 and a printed page nobody can read. So the read stops at
+ * `parent_outcome_id IS NULL` on both the axis and the cells. The write is left
+ * permissive on purpose — see the note above the upsert — so a cell an import
+ * put under a ข้อย่อย is dropped by the read rather than refused at the door.
+ * What this costs is stated rather than hidden: the grid can say a subject
+ * serves ข้อหลัก 3, not which ข้อย่อย of it.
  *
  * *Both axes are the active ones.* A pairing #18 switched off is a subject the
  * curriculum no longer teaches; an outcome #19 switched off is one no longer
@@ -166,11 +175,20 @@ function ploMappingRoutes(pool) {
    * halves that are facts about the API.
    *
    * Three arrays and the curriculum they belong to, from one call. The rows are
-   * its active รายวิชา by code; the columns are its active PLOs in the tree
-   * order `/api/plos` walks, each carrying the `level_depth` the header groups
-   * by; and the cells are only the ones somebody has set, which is what makes
-   * the fourth criterion visible from outside — a subject just placed and an
-   * outcome just written appear on their axis and in no cell.
+   * its active รายวิชา by code; the columns are its active ข้อหลัก in
+   * ข้อ order — since #100 there is no walk down to ข้อย่อย and nothing here
+   * groups by depth; and the cells are only the ones somebody has set, which is
+   * what makes the fourth criterion visible from outside — a subject just
+   * placed and an outcome just written appear on their axis and in no cell.
+   *
+   * `parent_outcome_id` is the authority for that, not `level_depth`. #100
+   * words its first criterion as `level_depth = 1`, and the two agree on every
+   * row because `/api/plos` computes depth from the parent it was given and
+   * refuses to read it off a request body. But the column is `DEFAULT 1` with
+   * no CHECK behind it (`plos.js`, *Depth is the server's answer*), so it is
+   * the derived field of the pair and parentage is the fact. Filtering on the
+   * fact means a row whose depth was written wrong by some future import still
+   * lands on the side of the axis it belongs to.
    *
    * `coveredScopes` is not used here, unlike every list route in the house.
    * This one is about a single curriculum the caller has named, so the narrower
@@ -199,34 +217,28 @@ function ploMappingRoutes(pool) {
         [programId],
       );
 
-      // The same walk /api/plos does, narrowed to one curriculum and to the
-      // outcomes still in force. Ordering on the path of sequence_orders is
-      // what puts a ข้อย่อย directly under its own ข้อหลัก; outcome_id is
-      // appended at each step so two siblings given the same order still have a
-      // settled answer rather than whichever the plan happened to produce.
+      // ข้อหลัก only, and only the ones still in force. #100: the grid maps at the
+      // main-PLO grain, so there is no walk down to ข้อย่อย here — a column per
+      // ข้อย่อย is fifty-two columns nobody can read on one page. outcome_id
+      // breaks the tie so two ข้อ given the same order still have a settled
+      // answer rather than whichever the plan happened to produce.
       const outcomes = await pool.query(
-        `WITH RECURSIVE tree AS (
-           SELECT lo.*, ARRAY[lo.sequence_order, lo.outcome_id] AS path
-             FROM learning_outcomes lo
-            WHERE lo.program_id = $1 AND lo.parent_outcome_id IS NULL AND lo.is_active = true
-           UNION ALL
-           SELECT child.*, t.path || child.sequence_order || child.outcome_id
-             FROM learning_outcomes child
-             JOIN tree t
-               ON child.parent_outcome_id = t.outcome_id
-              AND child.program_id = t.program_id
-            WHERE child.is_active = true
-         )
-         SELECT outcome_id, outcome_code, outcome_title, outcome_type,
+        `SELECT outcome_id, outcome_code, outcome_title, outcome_type,
                 parent_outcome_id, sequence_order, level_depth
-           FROM tree
-          ORDER BY path ASC`,
+           FROM learning_outcomes
+          WHERE program_id = $1
+            AND parent_outcome_id IS NULL
+            AND is_active = true
+          ORDER BY sequence_order ASC, outcome_id ASC`,
         [programId],
       );
 
       // Cells on both live axes only, so the grid never carries one it has no
-      // square to draw in. The rows themselves stay in the table; see the note
-      // at the top of the file for why they are not deleted with the axis.
+      // square to draw in — and since #100 an axis is ข้อหลัก only, so a cell
+      // written against a ข้อย่อย by an import is dropped here rather than sent
+      // to a screen with no column for it. The rows themselves stay in the
+      // table; see the note at the top of the file for why they are not
+      // deleted with the axis.
       const mappings = await pool.query(
         `SELECT ${CELL}
            FROM subject_plo_mapping m
@@ -235,7 +247,8 @@ function ploMappingRoutes(pool) {
              ON ps.program_id = m.program_id AND ps.subject_id = m.subject_id
            JOIN learning_outcomes lo
              ON lo.program_id = m.program_id AND lo.outcome_id = m.outcome_id
-          WHERE m.program_id = $1 AND ps.is_active = true AND lo.is_active = true`,
+          WHERE m.program_id = $1 AND ps.is_active = true AND lo.is_active = true
+            AND lo.parent_outcome_id IS NULL`,
         [programId],
       );
 

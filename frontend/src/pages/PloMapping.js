@@ -7,13 +7,20 @@ import { LEVELS, keyOf, mark } from '../components/ploMapping/levels'
 /**
  * การเชื่อมโยงผลการเรียนรู้กับรายวิชา — ticket #20.
  *
- * A grid: one row per รายวิชา of the chosen หลักสูตร, one column per PLO of it,
+ * A grid: one row per รายวิชา of the chosen หลักสูตร, one column per ข้อหลัก of it,
  * and in each square how strongly that subject serves that outcome. It is the
  * coverage the accreditation submission is built from, and the only screen in
  * the house whose subject is the *relationship* between two other screens'
  * records rather than records of its own.
  *
- * Five things about it are decisions rather than habit.
+ * Six things about it are decisions rather than habit.
+ *
+ * *A ข้อย่อย is not a column — #100.* A หลักสูตร with thirteen ข้อหลัก has
+ * thirty-nine ข้อย่อย under them, and fifty-two columns on one landscape page
+ * is not a thing anybody reads. What is given up is said plainly: this grid can
+ * say a subject serves ข้อหลัก 3, not which of its ข้อย่อย it serves. The
+ * delivered system had made that trade already; the rebuild undid it by reading
+ * "every PLO" literally, and this is the correction.
  *
  * *Every square is a control, and there is no บันทึก.* A grid with a save
  * button is a grid somebody fills in and then loses when the session ends
@@ -23,8 +30,8 @@ import { LEVELS, keyOf, mark } from '../components/ploMapping/levels'
  * committee members working down two different columns must not overwrite each
  * other's work by both posting the whole thing.
  *
- * *The first column stays put while the rest scrolls.* Fifty-two columns is
- * wider than any window, and a coverage grid whose subject name has scrolled
+ * *The first column stays put while the rest scrolls.* Thirteen columns and a
+ * named subject is wider than a laptop half-screen, and a grid whose subject name has scrolled
  * off the left is a grid of squares nobody can attribute. `sticky left-0` on the
  * subject cells is what keeps the row readable at the right-hand edge. The
  * frame around the table scrolls, not the page — #98, whose whole subject was
@@ -265,11 +272,7 @@ export default function PloMapping() {
                 <th
                   key={outcome.outcome_id}
                   title={`${outcome.outcome_code} ${outcome.outcome_title}`}
-                  className={`whitespace-nowrap px-2 py-3 text-center text-xs ${
-                    outcome.level_depth > 1
-                      ? 'font-normal text-slate-500'
-                      : 'font-semibold text-gray-800'
-                  }`}
+                  className="whitespace-nowrap px-2 py-3 text-center text-xs font-semibold text-gray-800"
                 >
                   {outcome.outcome_code}
                 </th>

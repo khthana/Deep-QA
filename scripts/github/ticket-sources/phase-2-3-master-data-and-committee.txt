@@ -147,7 +147,7 @@ A Curriculum Committee member records how strongly each Subject in the Program s
 A PLO must already exist before it can be mapped; the grid does not create outcomes implicitly.
 
 ## Acceptance criteria
-- [ ] The grid shows every Program Subject against every PLO of the Program
+- [ ] The grid shows every Program Subject against every main PLO of the Program (edited by #100: a sub-outcome is not a column)
 - [ ] A cell can be set to any of the five levels and the change persists
 - [ ] Saving an already-set cell updates it rather than creating a second mapping
 - [ ] Cells default to empty for a newly placed Subject or newly created PLO

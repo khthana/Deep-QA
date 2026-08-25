@@ -52,17 +52,26 @@ FILES = {
 }
 
 MUTANTS = {
-    # The columns stop arriving in tree order and arrive by depth instead: every
-    # ข้อหลัก first, then every ข้อย่อย. Kills the assertion that PLO-1-1 is the
-    # column directly after PLO-1, which is the half of the first criterion
-    # about *every* PLO being a column in a readable order.
+    # The outcome axis stops being ข้อหลัก-only and every ข้อย่อย becomes a
+    # column of its own again - the grain the rebuild had before #100, and the
+    # fifty-two-column page that ticket was opened over.
     #
-    # Not `ORDER BY outcome_code`, which was the obvious mutant and is a dud:
-    # lexicographic on these codes puts PLO-1-1 straight after PLO-1 anyway, so
-    # the row would have passed under it and proved nothing.
-    "flatorder": ("route",
-                  "          ORDER BY path ASC",
-                  "          ORDER BY level_depth ASC, outcome_id ASC"),
+    # This replaces `flatorder`, which mutated the tree ordering of a recursive
+    # walk that no longer exists. The row it now watches is *no ข้อย่อย appears
+    # as a column*.
+    #
+    # Restoring the old grain is a real thing somebody could do by accident, so
+    # the mutant is the accident rather than a contrivance. It looked blunt
+    # enough to take other rows with it - fifty-two columns changes what the
+    # export and the scrolling row see too - and the run says otherwise: exactly
+    # one test dies, *the grid draws every subject of the curriculum against
+    # every ข้อหลัก of it*, on the assertion that no code has two hyphens in it.
+    # The scrolling row survives because its window was narrowed by #100 to a
+    # width thirteen columns already overflow, so its claim does not depend on
+    # the grain. That count is read off the run, not reasoned about.
+    "subcolumn": ("route",
+                  "            AND parent_outcome_id IS NULL",
+                  "            AND (parent_outcome_id IS NULL OR true)"),
 
     # A square nobody has written to draws `E` instead of blank. It is the exact
     # shape the delivered system took: `createEmptyMapping` wrote a placeholder
@@ -130,8 +139,16 @@ MUTANTS = {
     # The รหัสวิชา scrolls away with the rest of the row. The frame still
     # scrolls, so the first half of that row still passes; what dies is the
     # assertion that the first cell is still against the left edge afterwards -
-    # a square reached at the right-hand end of fifty-two columns belonging to a
-    # row nobody can name.
+    # a square reached at the right-hand end of the grid belonging to a row
+    # nobody can name.
+    #
+    # Re-run under #100. The row this kills now runs at an 800px viewport rather
+    # than the default one, because thirteen columns no longer overflow a full
+    # window and the row's own walk step has always said *ย่อหน้าต่างให้แคบ
+    # กว่าตาราง*. A ⚙ row is only a ⚙ row if the mutant kills the assertion
+    # as it is actually written, so this was run again at that width rather than
+    # carried over: 1 failed, 7 passed, the death on *the grid scrolls inside
+    # its own frame, and the subject column stays put*.
     "nosticky": ("screen",
                  'className="sticky left-0 z-10 bg-white px-4 py-3"',
                  'className="z-10 bg-white px-4 py-3"'),

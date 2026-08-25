@@ -152,8 +152,10 @@ construction rather than retrofitted.
     framework.
 42. As a Curriculum Committee member, I want each Program to hold its own PLO codes independently, so that two
     Programs may each have a "PLO1".
-43. As a Curriculum Committee member, I want to map each Subject to each PLO at one of five levels — Introduced,
-    Developed, Practiced, Assessed, or Empty — so that outcome coverage across the curriculum is visible.
+43. As a Curriculum Committee member, I want to map each Subject to each main PLO at one of five levels — Introduced,
+    Developed, Practiced, Assessed, or Empty — so that outcome coverage across the curriculum is visible. The grain is the main PLO and not
+    every node of the tree, narrowed by #100: a sub-outcome is not a column, so the grid says a Subject serves a
+    main PLO somewhere beneath it and not which sub-outcome it serves.
 44. As a Curriculum Committee member, I want to export the outcome-to-Subject mapping as a PDF with Thai text
     rendering correctly, so that I can submit it as accreditation evidence.
 45. As a Curriculum Committee member, I want to define reusable Rubrics for my Program with weighted criteria

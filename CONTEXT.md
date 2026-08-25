@@ -48,7 +48,10 @@ Sections of one Offering share a CLO set and each year's set is frozen once scor
 [ADR-0003](./docs/adr/0003-clo-belongs-to-program-subject-year.md).
 
 **Mapping Level** (ระดับการเชื่อมโยง):
-How strongly a Subject serves a PLO, on a five-point scale: `I` Introduced, `D` Developed, `P` Practiced,
+How strongly a Subject serves a **main** PLO — the coverage grid (#20) maps at the main-PLO grain, not at
+every node of the tree, which #100 settled after fifty-two columns proved unreadable on one printed page.
+The cost is stated rather than hidden: the grid can say a Subject serves main PLO 3, not which sub-outcome
+of it. On a five-point scale: `I` Introduced, `D` Developed, `P` Practiced,
 `A` Assessed, `E` **Not served** — somebody has looked at this named PLO and recorded that this Subject does
 not teach towards it.
 

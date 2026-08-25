@@ -34,12 +34,16 @@ import { LEVELS, NOT_SERVED, keyOf, mark } from './levels'
  * bytes as the *bold style of the same family* is what makes `fontStyle: 'bold'`
  * in a header style mean anything.
  *
- * *The page is as wide as the curriculum needs.* A หลักสูตร with thirteen ข้อหลัก
- * and thirty-nine ข้อย่อย is fifty-two columns, and fifty-two columns on A4
- * landscape is about five millimetres each — narrower than the letter inside
- * them. So the page is built to the table rather than the table squeezed onto
- * the page: A4 landscape when that is enough, and wider by the column count when
- * it is not. A wide sheet is what a coverage matrix is printed on.
+ * *The page is as wide as the curriculum needs.* Since #100 the columns are
+ * ข้อหลัก only, so the seed's thirteen fit A4 landscape with room to spare.
+ * `OUTCOME_WIDTH` sizes the *page*, not the column: only column 0 is given a
+ * width, and autoTable spreads the rest across whatever is left, so thirteen
+ * outcomes on A4 get about 16mm each against a `PLO-13` that needs ten. That is
+ * arithmetic rather than luck, and it stops being true for a หลักสูตร with far
+ * more ข้อหลัก than that — so
+ * the page is still built to the table rather than the table squeezed onto the
+ * page: A4 landscape when that is enough, and wider by the column count when it
+ * is not. A wide sheet is what a coverage matrix is printed on.
  *
  * *An empty cell and an `E` are drawn differently.* They are different rows in
  * the database — no row at all against a row saying this outcome is *not*

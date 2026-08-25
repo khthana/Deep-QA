@@ -40,6 +40,13 @@
  * but #79 names A10 - this screen - as one of the four it binds: the faculty
  * keeps the list of หลักสูตร, and what is inside one is decided below it.
  *
+ * *The grid is ข้อหลัก wide, not every-PLO wide.* #100 corrected the first
+ * criterion after the export was looked at: fifty-two columns on one landscape
+ * page is not something a person reads. So a ข้อย่อย is not a column, and the
+ * coverage a subject is credited with is coverage of the ข้อหลัก somewhere
+ * beneath it - the trade the delivered system had already made, and which the
+ * rebuild had undone by reading "every PLO" literally.
+ *
  * *The fifth criterion is not here at all.* "Exports to PDF with Thai
  * characters rendering correctly" is a fact about a file a browser builds, and
  * this seam never sees it. Its halves are in `e2e/tests/20a-plo-mapping.spec.js`
@@ -122,19 +129,20 @@ async function place(programId, { active = true } = {}) {
 }
 
 /** An outcome of a หลักสูตร, written straight in, for the same reason. */
-async function outcome(programId, { active = true, code = null } = {}) {
+async function outcome(programId, { active = true, code = null, parent = null } = {}) {
   const { rows } = await api.pool.query(
     `INSERT INTO learning_outcomes (
-       program_id, outcome_code, outcome_title, outcome_type, sequence_order, level_depth, is_active
+       program_id, outcome_code, outcome_title, outcome_type, sequence_order, level_depth,
+       parent_outcome_id, is_active
      )
-     VALUES ($1, $2, 'ผลการเรียนรู้สำหรับการทดสอบ', 'knowledge', 90, 1, $3)
+     VALUES ($1, $2, 'ผลการเรียนรู้สำหรับการทดสอบ', 'knowledge', 90, $4, $5, $3)
      RETURNING outcome_id`,
-    [programId, code ?? nextSubject(), active],
+    [programId, code ?? nextSubject(), active, parent ? 2 : 1, parent],
   );
   return rows[0].outcome_id;
 }
 
-test('the grid answers with every subject of the curriculum against every outcome of it', async () => {
+test('the grid answers with every subject of the curriculum against every ข้อหลัก of it', async () => {
   // The first criterion. Both axes are asserted against the seed rather than
   // against rows this test made, because the criterion is about what the screen
   // shows a person who has not touched anything.
@@ -151,20 +159,32 @@ test('the grid answers with every subject of the curriculum against every outcom
     'a subject is named, not only numbered - the column a person reads',
   );
 
-  // Every active outcome of the curriculum, sub-outcomes included: the ticket
-  // says every PLO, and a ข้อย่อย is a PLO. The seed's 0501 holds thirteen
-  // ข้อหลัก and thirty-nine ข้อย่อย.
+  // Every active ข้อหลัก of the curriculum and nothing below it (#100). The
+  // seed's 0501 holds thirteen ข้อหลัก and thirty-nine ข้อย่อย; the grid is
+  // thirteen columns wide, because fifty-two is a page nobody can read.
   const codes = response.body.outcomes.map((row) => row.outcome_code);
   assert.ok(codes.includes('PLO-1'), 'a ข้อหลัก is a column');
-  assert.ok(codes.includes('PLO-1-1'), 'a ข้อย่อย is a column too');
+  assert.equal(codes.length, 13, 'thirteen ข้อหลัก, not fifty-two outcomes');
+  assert.ok(!codes.includes('PLO-1-1'), 'a ข้อย่อย is not a column');
+  assert.ok(
+    response.body.outcomes.every((row) => row.level_depth === 1),
+    'every column the grid draws is a ข้อหลัก',
+  );
+  assert.ok(
+    response.body.outcomes.every((row) => row.parent_outcome_id === null),
+    'and none of them hangs under another',
+  );
 
-  // In tree order, carrying the depth the grid groups its header by - the same
-  // answer /api/plos gives, and for the same reason: sorting on this side would
-  // move the decision somewhere no test watches.
-  const first = codes.indexOf('PLO-1');
-  assert.equal(codes[first + 1], 'PLO-1-1', 'a ข้อย่อย follows its own ข้อหลัก');
-  assert.equal(response.body.outcomes[first].level_depth, 1);
-  assert.equal(response.body.outcomes[first + 1].level_depth, 2);
+  // In sequence order, the order a person reads them in on the หลักสูตร - sorting
+  // on this side would move the decision somewhere no test watches.
+  const ordered = [...response.body.outcomes].sort(
+    (a, b) => a.sequence_order - b.sequence_order || (a.outcome_id < b.outcome_id ? -1 : 1),
+  );
+  assert.deepEqual(
+    response.body.outcomes.map((row) => row.outcome_id),
+    ordered.map((row) => row.outcome_id),
+    'the columns come back in sequence order',
+  );
 
   // And the cells the seed filled: 01076105 is mapped to eight of the thirteen.
   const mapped = response.body.mappings.filter((row) => row.subject_id === SUBJECT.id);
@@ -477,6 +497,39 @@ test('a switched-off outcome leaves the grid while the cells it had stay in the 
   const rows = await rowsFor(PROGRAM, subjectId, outcomeId);
   assert.equal(rows.length, 1, 'its cell is still in the table');
   assert.equal(rows[0].mapping_level, 'D');
+});
+
+test('a cell written against a ข้อย่อย is left out of the grid rather than breaking it', async () => {
+  // #100's fourth criterion. The write path is deliberately permissive - see
+  // the note above the upsert - so an import or a restore of a grid built at
+  // the old grain can put a row under a ข้อย่อย. There is no column for it any
+  // more, so the read drops it: the alternative is a cell keyed on an outcome
+  // the screen has never heard of.
+  const cookie = await signInAs('U_COM');
+  const subjectId = await place(PROGRAM);
+  const parentId = await outcome(PROGRAM);
+  const childId = await outcome(PROGRAM, { parent: parentId });
+
+  await save(cookie, {
+    program_id: PROGRAM,
+    subject_id: subjectId,
+    outcome_id: childId,
+    mapping_level: 'D',
+  });
+
+  const response = await grid(cookie, `?program_id=${PROGRAM}`);
+  assert.equal(response.status, 200, 'the grid still answers');
+  assert.ok(
+    !response.body.outcomes.some((row) => row.outcome_id === childId),
+    'the ข้อย่อย is not a column',
+  );
+  assert.ok(
+    !response.body.mappings.some((row) => row.outcome_id === childId),
+    'and its cell is not sent to a screen with nowhere to draw it',
+  );
+
+  const rows = await rowsFor(PROGRAM, subjectId, childId);
+  assert.equal(rows.length, 1, 'the row itself is still in the table');
 });
 
 test('the grid says who last set a cell, and the answer changes when somebody else sets it', async () => {

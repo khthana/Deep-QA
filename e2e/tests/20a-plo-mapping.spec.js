@@ -47,11 +47,12 @@ const {
  * the page. That half is a hand-walked row in `docs/acceptance/20`, and no
  * assertion in this file should be read as covering it.
  *
- * *The grid is the widest table in the application.* Fifty-two columns is what
- * #98 was fixed for, three days before this screen existed. The row about the
- * frame scrolling is a regression guard on that fix, asserted here on the table
- * that actually needs it rather than on the one that happened to be widest when
- * #98 was written.
+ * *The grid is the widest table in the application.* It was fifty-two columns
+ * when #98 was fixed for it; #100 cut it to thirteen ข้อหลัก, which fits a
+ * full-screen window and does not fit a half-screen one. So that row now runs
+ * at a narrowed viewport. It is still a regression guard on #98's fix, asserted
+ * on the table that needs it most rather than on the one that happened to be
+ * widest when #98 was written.
  *
  * **Why the setup is API calls and not clicks.** Two rows need a รายวิชา that
  * has just been placed in the curriculum and has never been mapped. Making one
@@ -167,7 +168,7 @@ test.afterAll(async ({ playwright }) => {
   }
 });
 
-test('the grid draws every subject of the curriculum against every outcome of it', async ({
+test('the grid draws every subject of the curriculum against every ข้อหลัก of it', async ({
   page,
 }) => {
   // The first criterion, as a person meets it: two axes on one screen, with the
@@ -177,9 +178,13 @@ test('the grid draws every subject of the curriculum against every outcome of it
 
   const codes = await listedCodes(page);
   expect(codes).toContain('PLO-1');
-  // A ข้อย่อย is a PLO and is a column of its own, directly after its own
-  // ข้อหลัก — the tree order the server answers in, drawn without re-sorting.
-  expect(codes[codes.indexOf('PLO-1') + 1]).toBe('PLO-1-1');
+  // #100: the columns are ข้อหลัก and nothing under them. 0501 has thirteen
+  // ข้อหลัก and thirty-nine ข้อย่อย; the second number must not be on screen.
+  // Both halves are asserted — the count alone would pass on a grid that drew
+  // thirteen ข้อย่อย, and the absence alone on a grid that drew nothing.
+  expect(codes).toHaveLength(13);
+  expect(codes.filter(code => code.split('-').length > 2)).toEqual([]);
+  expect(codes).not.toContain('PLO-1-1');
 
   await expect(subjectRow(page, SEEDED_SUBJECT)).toHaveCount(1);
   await expect(subjectRow(page, MINE)).toHaveCount(1);
@@ -279,26 +284,34 @@ test('the export hands over a PDF named for the curriculum, with a Thai face emb
   expect(raw).toContain('/FontFile2');
 });
 
-test('the grid scrolls inside its own frame, and the subject column stays put', async ({
-  page,
-}) => {
-  // #98 on the table it was fixed for. Fifty-two columns is wider than any
-  // window, so the frame has to scroll rather than the page — and the รหัสวิชา
-  // has to stay at the left edge while it does, or a square scrolled to at the
-  // right belongs to a row nobody can name.
-  await signIn(page, ACCOUNTS.committee0501);
-  await openMapping(page);
+test.describe('การเชื่อมโยงผลการเรียนรู้กับรายวิชา ที่ครึ่งจอ', () => {
+  // Before #100 this row ran at the default window, because fifty-two columns
+  // were wider than any of them. Thirteen ข้อหลัก and a 16rem subject column
+  // come to roughly 1050px, which fits 1280 — so the window is narrowed here to
+  // the half-screen #98 was actually reported on. The claim the row makes is
+  // unchanged; only the width at which it becomes true has moved.
+  test.use({ viewport: { width: 800, height: 800 } });
 
-  const frame = frameOf(page.locator('table'));
-  const before = await frame.evaluate(box => ({
-    client: box.clientWidth,
-    scroll: box.scrollWidth,
-  }));
-  expect(before.scroll).toBeGreaterThan(before.client);
+  test('the grid scrolls inside its own frame, and the subject column stays put', async ({
+    page,
+  }) => {
+    // #98 on the table it was fixed for. The grid is wider than a half-screen
+    // window, so the frame has to scroll rather than the page — and the รหัสวิชา
+    // has to stay at the left edge while it does, or a square scrolled to at the
+    // right belongs to a row nobody can name.
+    await signIn(page, ACCOUNTS.committee0501);
+    await openMapping(page);
 
-  const reached = await frame.evaluate(box => {
-    box.scrollLeft = box.scrollWidth;
-    return box.scrollLeft;
+    const frame = frameOf(page.locator('table'));
+    const before = await frame.evaluate(box => ({
+      client: box.clientWidth,
+      scroll: box.scrollWidth,
+    }));
+    expect(before.scroll).toBeGreaterThan(before.client);
+
+    const reached = await frame.evaluate(box => {
+      box.scrollLeft = box.scrollWidth;
+      return box.scrollLeft;
   });
   expect(reached).toBeGreaterThan(0);
 
@@ -317,6 +330,7 @@ test('the grid scrolls inside its own frame, and the subject column stays put', 
   const last = (await listedCodes(page)).at(-1);
   expect((await choose(page, MINE, last, 'P')).status()).toBe(200);
   await expect(square(page, MINE, last)).toHaveValue('P');
+  });
 });
 
 test('a committee member is refused the coverage of a curriculum that is not theirs', async ({
