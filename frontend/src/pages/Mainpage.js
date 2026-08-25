@@ -81,7 +81,17 @@ export default function MainPage() {
           />
         </div>
 
-        <main className="relative flex h-full flex-1 flex-col ">
+        {/*
+          `min-w-0` is not decoration. A flex item defaults to `min-width: auto`,
+          which is its content's min-content width, so without this `<main>`
+          refuses to shrink below the widest table inside it — the criteria
+          screen wants about 1,100px — and is pushed off the right of a narrow
+          window. The `overflow-x-hidden` below then clips what hangs over, and
+          the จัดการ column with its แก้ไข and ลบ buttons becomes unreachable
+          rather than scrollable. Each table's own `overflow-x-auto` cannot help
+          while its frame is as wide as its contents: nothing overflows it. #98.
+        */}
+        <main className="relative flex h-full min-w-0 flex-1 flex-col ">
           <div className="sticky top-0 z-40 flex w-full items-center border-b border-slate-200 bg-white/50 px-4 py-3 backdrop-blur-sm lg:px-8">
             <div className="w-full max-w-[1920px]">
               <Breadcrumb items={breadcrumbItem} />
