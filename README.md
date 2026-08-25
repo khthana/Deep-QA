@@ -48,6 +48,7 @@ directories are never edited — they are copied from, and deleted once the rebu
 | [`docs/handoff/`](./docs/handoff/) | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | [`mutation/`](./mutation/) | The mutations that proved each browser-covered acceptance row. |
 | [`docs/01`–`05`](./docs/) | Extracted from the thesis and from scanning the student code. **Descriptive of what was delivered, not prescriptive of what to build** — each carries a note where the rebuild diverges. |
+| [`docs/thesis/`](./docs/thesis/) | The thesis itself, the source `docs/01`–`04` were extracted from. Read it only to check an extraction against the original — `docs/02` cites its table and figure numbers. |
 
 Work is tracked as [GitHub issues](https://github.com/khthana/Deep-QA/issues): #1 is the spec, #2–#45 are the
 original 44 tickets, wired with native blocking dependencies. Numbers above that are gaps and defects found during
@@ -301,5 +302,5 @@ accounts; nothing about the session is stubbed. [`e2e/README.md`](./e2e/README.m
 ## Provenance
 
 Built as undergraduate thesis project CE68-25 by Chanakan Sue-suwan, Narongrit Khajeejit and Teerachat Sutthi,
-supervised at the Department of Computer Engineering, KMITL. The thesis PDF is in the repository root and is the
-source for `docs/01`–`04`.
+supervised at the Department of Computer Engineering, KMITL. The thesis PDF is at
+[`docs/thesis/CE68-25-deep-core.pdf`](./docs/thesis/CE68-25-deep-core.pdf) and is the source for `docs/01`–`04`.

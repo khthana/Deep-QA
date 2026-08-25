@@ -43,6 +43,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `CONTEXT.md` | Domain glossary. Use its vocabulary in issues, tests and commits. |
 | `docs/adr/` | Decisions that are hard to reverse. Read before touching keys, authorisation or the CLO grain. |
 | `docs/01`–`05` | Extracted from the thesis and from scanning the student code. **Descriptive of what was delivered, not prescriptive of what to build** — each carries a note where the rebuild diverges. |
+| `docs/thesis/` | The thesis `docs/01`–`04` were extracted from. Only for checking an extraction against the original. |
 | `docs/06-implementation-plan.md` | The spec the rebuild implements. |
 | `docs/acceptance/` | One checklist per screen ticket, and the record of how each row was proved. A ticket closes on it. |
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
