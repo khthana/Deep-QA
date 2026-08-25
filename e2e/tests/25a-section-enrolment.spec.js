@@ -3,8 +3,9 @@
 const { test, expect } = require('@playwright/test');
 
 const { REFUSALS } = require('../../backend/auth/refusals');
-const { ACCOUNTS, PASSWORD } = require('../support/accounts');
-const { BACKEND_URL } = require('../support/env');
+const { ACCOUNTS } = require('../support/accounts');
+const { createPool } = require('../../db/pool');
+const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { switchTo } = require('../support/shell');
 const {
@@ -67,24 +68,36 @@ const SUBJECT = '01076105';
 /**
  * Whatever a row enrolled, gone again — pass or fail.
  *
- * Signed in over the API with its own request context, so it is unaffected by
- * whatever state the page was left in. Every status is accepted: 204 for a code
- * the row enrolled, 404 for one it removed itself or never added.
+ * Straight into the schema rather than through the removal route, and that is
+ * the point rather than a shortcut. The first draft sent `DELETE` to the same
+ * endpoint row 5 is about, which makes the tidying up depend on the code under
+ * test: a mutant that stops the removal from removing anything also stops this
+ * from cleaning up, every later row then fails at 409 on a code it thought was
+ * free, and the sweep reads as though the mutant broke nine rows when what it
+ * broke was the teardown. Teardown that shares a defect with the subject
+ * cannot be evidence about the subject.
+ *
+ * Scoped to teacher.one's own ตอนเรียน rather than deleting the codes outright:
+ * `65010001` is seeded into last year's ตอนเรียน, which is what makes it a code the
+ * register holds and this class does not, and a blanket delete would quietly
+ * take that fact away from every run after the first.
  */
-test.afterEach(async ({ request }) => {
-  const signedIn = await request.post(`${BACKEND_URL}/api/auth/login`, {
-    data: { email: ACCOUNTS.teacherOne, password: PASSWORD },
-  });
-  expect(signedIn.status()).toBe(200);
-  const mine = await request.get(`${BACKEND_URL}/api/teaching/sections`);
-  const { sections } = await mine.json();
-  for (const section of sections) {
-    for (const code of SPARE_CODES) {
-      await request.delete(
-        `${BACKEND_URL}/api/teaching/sections/${section.section_id}/students/${code}`,
-      );
-    }
-  }
+const cleanUp = createPool({ schema: E2E_SCHEMA });
+
+test.afterEach(async () => {
+  await cleanUp.query(
+    `DELETE FROM student_course
+      WHERE student_id = ANY($1)
+        AND section_id IN (SELECT cst.section_id
+                             FROM course_sections_teacher cst
+                             JOIN users u ON u.user_id = cst.user_id
+                            WHERE lower(u.email) = lower($2))`,
+    [SPARE_CODES, ACCOUNTS.teacherOne],
+  );
+});
+
+test.afterAll(async () => {
+  await cleanUp.end();
 });
 
 /** teacher.one@ and their ตอนเรียน of the current term, where every row starts. */
@@ -150,6 +163,30 @@ test('row 2: a Teacher enrols a student by code and they appear in the list', as
   // On the screen, not only in the count. The list is sorted by code and the
   // prior-year cohort sorts first, so the new row is on page 1.
   expect(await keysOn(listTable(page))).toContain(code);
+});
+
+test('row 2: the student appears in the list from whichever page they were enrolled on', async ({
+  page,
+}) => {
+  const section = await asTeacherOne(page);
+  await openEnrolment(page, section);
+  const [code] = SPARE_CODES;
+
+  // The row above enrols from page 1, where a code that sorts first was going
+  // to be drawn whatever the screen did about the page. This one enrols from
+  // page 2, where it was not, and that is the whole of the difference: "they
+  // appear in the list" is a claim about the screen the person is looking at,
+  // and a reload of page 2 answers it with a table the student is not in.
+  expect((await step(page, 'forward', waitForList)).status()).toBe(200);
+  expect((await reading(page, listTable(page))).shown).toBe(2);
+
+  const reloaded = waitForList(page);
+  expect((await enrol(page, code)).status()).toBe(201);
+  expect((await reloaded).status()).toBe(200);
+
+  const table = listTable(page);
+  expect((await reading(page, table)).shown).toBe(1);
+  expect(await keysOn(table)).toContain(code);
 });
 
 test('row 3: a code the register does not hold is refused, naming the register', async ({
@@ -247,6 +284,34 @@ test('row 7: a valid spreadsheet enrols every student listed in it', async ({ pa
 
   const { total: after } = await reading(page, listTable(page));
   expect(after).toBe(before + SPARE_CODES.length);
+});
+
+test('row 7: the imported students are drawn, from whichever page the import began on', async ({
+  page,
+}) => {
+  const section = await asTeacherOne(page);
+  await openEnrolment(page, section);
+
+  // The row above reads the count, which a screen showing the wrong page would
+  // still get right — the count is the whole class either way. This one reads
+  // the table, from page 2, where a reload of the page being shown draws ten
+  // people none of whom were in the file.
+  expect((await step(page, 'forward', waitForList)).status()).toBe(200);
+
+  const template = await downloadTemplate(page);
+  const reloaded = waitForList(page);
+  const sent = await importCsv(page, {
+    path: IMPORT(section),
+    text: csv(headerOf(template), ...SPARE_CODES),
+    name: 'section-students.csv',
+  });
+  expect(sent.status()).toBe(201);
+  expect((await reloaded).status()).toBe(200);
+
+  const table = listTable(page);
+  expect((await reading(page, table)).shown).toBe(1);
+  const drawn = await keysOn(table);
+  expect(SPARE_CODES.filter(code => !drawn.includes(code))).toEqual([]);
 });
 
 test('row 8: a spreadsheet with an unknown code reports that row and applies nothing', async ({

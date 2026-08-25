@@ -92,6 +92,22 @@ export default function SubjectStudents() {
   }, [load])
 
   /**
+   * The read a write asks for, which is not always the read `load` would do.
+   *
+   * A student who has just been enrolled is somewhere in a list sorted by code,
+   * and that somewhere is almost never the page the person was looking at when
+   * they typed it. Reloading the current page leaves the banner saying somebody
+   * was added above a table that does not contain them. Students.js answers the
+   * same question the same way: go to the first page, unless that is where we
+   * already are, in which case nothing would refetch and the reload has to be
+   * asked for directly.
+   */
+  const reload = useCallback(async () => {
+    if (page === 1) await load()
+    else setPage(1)
+  }, [page, load])
+
+  /**
    * Adding one student.
    *
    * The list is reloaded rather than having the new row pushed onto it: the
@@ -105,7 +121,7 @@ export default function SubjectStudents() {
     try {
       const { student } = await enrolStudent(sectionId, code.trim())
       setCode('')
-      await load()
+      await reload()
       setNotice({
         error: false,
         message: `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
@@ -207,7 +223,7 @@ export default function SubjectStudents() {
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importEnrolments(sectionId, csv)}
             onStart={() => setNotice(null)}
-            onImported={load}
+            onImported={reload}
             onError={error => {
               if (!error.expired)
                 setNotice({ error: true, message: error.message })

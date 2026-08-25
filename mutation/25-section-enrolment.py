@@ -2,7 +2,7 @@
 """
 #25 รายชื่อนักศึกษาของรายวิชา - the class list of one ตอนเรียน.
 
-Eleven mutants. Most of them break the server, because most of what #25 asks
+Fourteen mutants. Most of them break the server, because most of what #25 asks
 for is a rule rather than a picture - but four break the screen instead, and
 those are the ones worth reading first: they are how the rows prove they are
 about what a person sees rather than about what the API answered. `silentadd`
@@ -109,6 +109,15 @@ MUTANTS = {
     "noduplicate": ("route",
                     "          if (isDuplicate(error)) {\n            return res.status(409).json({ message: REFUSALS.duplicateEnrolment });\n          }",
                     "          if (false) {\n            return res.status(409).json({ message: REFUSALS.duplicateEnrolment });\n          }"),
+    # The DELETE matches nothing, and the route still answers 204. Kills the
+    # first row 5 at `not.toContain(code)` - the banner says the student was
+    # taken out, the dialog closes, and the row is redrawn by the reload. This
+    # is the mutant that separates "the screen agreed to remove somebody" from
+    # "somebody was removed", and `cancelremoves` above cannot do it: that one
+    # removes too much rather than too little.
+    "silentremove": ("route",
+                     "'DELETE FROM student_course WHERE student_id = $1 AND section_id = $2'",
+                     "'DELETE FROM student_course WHERE student_id = $1 AND section_id = $2 AND false'"),
     # The marks guard goes. Nothing in the schema refuses the DELETE, so the
     # removal succeeds and `activity_scores` is left naming somebody who is not
     # in the class. Kills the second row 5 at the 409.
@@ -137,6 +146,21 @@ MUTANTS = {
     # This is why that row watches the network rather than asserting the row is
     # still drawn: a cancel wired to the removal leaves the row on screen for
     # the length of a round trip, and `toHaveCount(1)` matches on its first poll.
+    # The page is not reset, so the reload is a reload of whichever page the
+    # person was on. Kills the second row 2 - the banner still names the
+    # student, the count still moves, and the table still draws ten people who
+    # are not them. Nothing else, because every other row enrols from page 1,
+    # where `reload` and `load` do the same thing.
+    "addstaysonpage": ("screen",
+                       "      await reload()",
+                       "      await load()"),
+    # The same hole on the import path, which reaches the same reload through a
+    # different prop. Kills the second row 7 only. Two mutants and not one
+    # because the two paths are two edits, and a single mutant covering both
+    # would let either of them be repaired alone without a row noticing.
+    "importstaysonpage": ("screen",
+                          "            onImported={reload}",
+                          "            onImported={load}"),
     "cancelremoves": ("screen",
                       "        onCancel={() => setRemoving(null)}",
                       "        onCancel={remove}"),

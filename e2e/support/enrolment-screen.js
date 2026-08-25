@@ -2,7 +2,8 @@
 
 const { expect } = require('@playwright/test');
 
-const { DASHBOARD, openDashboard } = require('./teaching-screen');
+const { BACKEND_URL } = require('./env');
+const { DASHBOARD } = require('./teaching-screen');
 
 /**
  * รายชื่อนักศึกษาของรายวิชา — #25, as a browser reaches it.
@@ -40,9 +41,26 @@ async function openEnrolment(page, sectionId) {
   return response;
 }
 
-/** The section ids this account teaches this term, straight off its own dashboard. */
+/**
+ * The section ids this account teaches this term.
+ *
+ * Asked over the browser context's own request rather than read off the
+ * dashboard's response, and the difference is a flake this file spent three
+ * sweeps reading around. `waitForResponse` resolves when the headers land, and
+ * Chromium keeps the *body* only until the page navigates away from it — so a
+ * helper that opens a screen and then reads that screen's JSON is racing
+ * whatever the screen does next. `teaching-screen.js` pre-buffers for exactly
+ * this reason and the pre-buffer itself lost, twice, with *Response body is not
+ * available for a response that was navigated away from*.
+ *
+ * A `page.request` response is not attached to a navigation and cannot be
+ * evicted by one. It carries the same cookies, so it is the same account. What
+ * it gives up is the assertion that the dashboard fetched anything — which is
+ * 24a's row to make, not a precondition every row in this file should be
+ * paying a flake for.
+ */
 async function mySectionIds(page) {
-  const answer = await openDashboard(page);
+  const answer = await page.request.get(`${BACKEND_URL}/api/teaching/sections`);
   expect(answer.status()).toBe(200);
   const { sections } = await answer.json();
   return sections.map(section => section.section_id);
