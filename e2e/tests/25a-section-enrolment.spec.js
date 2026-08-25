@@ -160,8 +160,10 @@ test('row 2: a Teacher enrols a student by code and they appear in the list', as
   const { total: after } = await reading(page, listTable(page));
   expect(after).toBe(before + 1);
 
-  // On the screen, not only in the count. The list is sorted by code and the
-  // prior-year cohort sorts first, so the new row is on page 1.
+  // On the screen, not only in the count. This row cannot tell how it got
+  // there: the screen returns to page 1 after a write, and the code sorts first
+  // anyway, so page 1 is where the row lands either way. The row below is the
+  // one that separates those two reasons.
   expect(await keysOn(listTable(page))).toContain(code);
 });
 
