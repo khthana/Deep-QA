@@ -62,20 +62,30 @@ const { REFUSALS } = require('../auth/refusals');
  * - `verify(draft)` is the check that needs the database or the caller's
  *   authority - is this scope yours, is this grant yours to make. Returns a
  *   REFUSALS key to refuse the row, or null to keep it. Optional.
+ * - `whole(drafts)` is the check that is about the file rather than any row of
+ *   it - #30's weights totalling one hundred is the first, and BR-11 will be
+ *   the second. Runs only when every row read clean, because a per-row report
+ *   outranks a sum the bad rows would falsify. Returns the refusal *sentence*
+ *   rather than a REFUSALS key - the sentence carries a computed value, which
+ *   is the reason the rule cannot be a row's - or null to proceed. Optional.
  * - `insert(client, draft)` writes one row inside the transaction. Returns
  *   `{ ok: true, row }` or `{ ok: false, reason }`.
  * - `onCommit(client)` runs once, inside the transaction, after every row has
- *   been written and before COMMIT. Where an audit line belongs. Optional.
+ *   been written and before COMMIT. Where an audit line belongs - and, since
+ *   #30, where a replace-style import removes what the file no longer names:
+ *   returning `{ ok: false, message }` rolls the whole import back and refuses
+ *   with that sentence. Any other return value commits as before. Optional.
  *
  * Answers `{ ok: true, created: [row] }`, or `{ ok: false, empty: true }` for a
  * file with no rows in it, or `{ ok: false, wrongTemplate: true }` for a file
  * whose header is some other screen's, or `{ ok: false, errors: [{ line,
- * message }] }`.
+ * message }] }`, or `{ ok: false, message }` from `whole` or a refusing
+ * `onCommit`.
  */
 async function importRows(
   pool,
   text,
-  { readRow, required = [], keys = [], verify, insert, onCommit },
+  { readRow, required = [], keys = [], verify, whole, insert, onCommit },
 ) {
   const { headers, records } = parseTable(typeof text === 'string' ? text : '');
   if (records.length === 0) return { ok: false, empty: true };
@@ -130,6 +140,11 @@ async function importRows(
     drafts.push({ line: record.line, draft });
   }
 
+  if (errors.length === 0 && whole) {
+    const message = await whole(drafts.map(({ draft }) => draft));
+    if (message) return { ok: false, message };
+  }
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -151,7 +166,13 @@ async function importRows(
       return { ok: false, errors: errors.sort((a, b) => a.line - b.line) };
     }
 
-    if (onCommit) await onCommit(client);
+    if (onCommit) {
+      const outcome = await onCommit(client);
+      if (outcome && outcome.ok === false) {
+        await client.query('ROLLBACK');
+        return { ok: false, message: outcome.message };
+      }
+    }
     await client.query('COMMIT');
     return { ok: true, created };
   } catch (error) {
@@ -186,6 +207,12 @@ function sendImport(res, result, key) {
     return res
       .status(400)
       .json({ message: REFUSALS.importWrongTemplate, errors: [], created: 0 });
+  }
+  // A whole-file refusal - `whole`, or a refusing `onCommit` - carries its own
+  // sentence and no rows, and it is asked before the per-row branch for the
+  // reason `empty` is: `errors` is undefined on it, not a report.
+  if (!result.ok && result.message) {
+    return res.status(400).json({ message: result.message, errors: [], created: 0 });
   }
   if (!result.ok) {
     return res

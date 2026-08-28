@@ -21,6 +21,7 @@ import TeacherSection from '../pages/TeacherSection'
 import CourseOutcomes from '../pages/CourseOutcomes'
 import MeasurableBehaviors from '../pages/MeasurableBehaviors'
 import AchievementCriteria from '../pages/AchievementCriteria'
+import GradingWeights from '../pages/GradingWeights'
 import SubjectStudents from '../pages/SubjectStudents'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
@@ -176,6 +177,7 @@ export default function AppRoutes() {
             path="courseOutcomes/:cloId/criteria"
             element={<AchievementCriteria />}
           />
+          <Route path="gradingWeights" element={<GradingWeights />} />
           <Route path="*" element={<NotBuiltYet />} />
         </Route>
       </Route>

@@ -423,6 +423,26 @@ const REFUSALS = {
   invalidEnrolment:
     'รหัสนักศึกษาไม่ถูกต้อง กรุณาตรวจสอบรหัสนักศึกษา (ตัวเลข 8 หลัก)',
 
+  // Weighting scheme - #30. สัดส่วนคะแนน, saved whole because the hundred
+  // rule is about the whole. Two of these are functions — the first in this
+  // file — and each earns it: the ticket's second criterion says the refusal
+  // states the current total, and a person told a deletion was refused needs
+  // to read which หมวด it was about, since the save they sent named several.
+  // The wording still lives here and only here; a function is one sentence
+  // with a hole in it, not a second site.
+  //
+  // `weightNotFound` is the pairing refusal one grain over from
+  // `behaviorNotFound`: an id in the body that this Offering does not hold,
+  // whether it was never made or belongs to another year's scheme.
+  invalidWeight:
+    'ข้อมูลสัดส่วนคะแนนไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบชื่อหมวดคะแนนและน้ำหนัก (จำนวนเต็ม 0 ถึง 100)',
+  duplicateWeightCategory: 'ชื่อหมวดคะแนนซ้ำกัน',
+  weightNotFound: 'ไม่พบหมวดคะแนนที่ระบุ',
+  weightsNotHundred: (total) =>
+    `น้ำหนักทุกหมวดรวมกันต้องเท่ากับ 100 ขณะนี้รวมได้ ${total} ระบบไม่ได้บันทึกการแก้ไข`,
+  weightInUse: (category) =>
+    `หมวดคะแนน "${category}" มีกิจกรรมการวัดผลอ้างอิงอยู่ จึงลบไม่ได้ ให้ย้ายหรือลบกิจกรรมในหมวดนี้ก่อน`,
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.
