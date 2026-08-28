@@ -374,6 +374,19 @@ const REFUSALS = {
   invalidBehavior:
     'ข้อมูลพฤติกรรมบ่งชี้ไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบรายละเอียด ระดับพุทธิพิสัย และประเภทกิจกรรมการเรียนรู้',
 
+  // Achievement Criteria - #29. เกณฑ์การบรรลุผล hangs off its CLO exactly as a
+  // พฤติกรรมบ่งชี้ does, so `achievementNotFound` covers the same two cases
+  // `behaviorNotFound` does. It is a different key from #22's
+  // `criterionNotFound` on purpose: that sentence says เกณฑ์การให้คะแนน, and a
+  // Teacher told about a scoring rubric while editing attainment bands would
+  // go looking at a screen they were not on. `invalidAchievement` names the
+  // two required fields and not the optional description; the CHECK on the
+  // band would refuse a stray value too, but as a 23514 raised into
+  // `unexpected`, which is the wrong sentence for a value a person picked.
+  achievementNotFound: 'ไม่พบเกณฑ์การบรรลุผลที่ระบุ',
+  invalidAchievement:
+    'ข้อมูลเกณฑ์การบรรลุผลไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบระดับการบรรลุผลและเกณฑ์การประเมิน',
+
   // Section enrolment - #25. The class list a Teacher builds for their own
   // ตอนเรียน. None of these is one of #17's, which is the whole point of the
   // block: the register and the class list are two different questions about

@@ -145,7 +145,8 @@ export default function CourseOutcomes() {
               assertion matches on a fragment rather than on the whole sentence.
             */}
             <p className="mt-2 text-sm text-slate-500">
-              ปีการศึกษา {data.offering.academic_year} · ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
+              ปีการศึกษา {data.offering.academic_year} ·
+              ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
               และปีการศึกษาอื่นมีชุดของตัวเอง
             </p>
           </div>
@@ -170,7 +171,8 @@ export default function CourseOutcomes() {
 
           {data.clos.length === 0 && (
             <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
-              ยังไม่มีผลการเรียนรู้รายวิชาในปีการศึกษา {data.offering.academic_year}
+              ยังไม่มีผลการเรียนรู้รายวิชาในปีการศึกษา{' '}
+              {data.offering.academic_year}
             </p>
           )}
 
@@ -219,27 +221,40 @@ export default function CourseOutcomes() {
                 <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
                   <div>
                     <dt className="text-xs text-slate-400">วิธีการสอน</dt>
-                    <dd className="text-slate-600">{clo.teaching_method || '—'}</dd>
+                    <dd className="text-slate-600">
+                      {clo.teaching_method || '—'}
+                    </dd>
                   </div>
                   <div>
                     <dt className="text-xs text-slate-400">วิธีการวัดผล</dt>
-                    <dd className="text-slate-600">{clo.assessment_method || '—'}</dd>
+                    <dd className="text-slate-600">
+                      {clo.assessment_method || '—'}
+                    </dd>
                   </div>
                 </dl>
 
-                {/* The way into #28, and it carries the CLO — the criteria
-                    link on a rubric card, one screen over. */}
-                <Link
-                  to={`/teacher/teacherDashboard/${sectionId}/courseOutcomes/${clo.clo_id}/behaviors`}
-                  aria-label={`พฤติกรรมบ่งชี้ของ ${clo.clo_number}`}
-                  className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
-                >
-                  พฤติกรรมบ่งชี้
-                </Link>
+                {/* The ways into #28 and #29, and each carries the CLO — the
+                    criteria link on a rubric card, one screen over. */}
+                <div className="mt-3 flex gap-4">
+                  <Link
+                    to={`/teacher/teacherDashboard/${sectionId}/courseOutcomes/${clo.clo_id}/behaviors`}
+                    aria-label={`พฤติกรรมบ่งชี้ของ ${clo.clo_number}`}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    พฤติกรรมบ่งชี้
+                  </Link>
+                  <Link
+                    to={`/teacher/teacherDashboard/${sectionId}/courseOutcomes/${clo.clo_id}/criteria`}
+                    aria-label={`เกณฑ์การบรรลุผลของ ${clo.clo_number}`}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    เกณฑ์การบรรลุผล
+                  </Link>
+                </div>
 
                 <p className="mt-3 text-xs text-slate-400">
-                  แก้ไขล่าสุดโดย {clo.updated_by_name || clo.updated_by || '—'} เมื่อ{' '}
-                  {changedAt(clo.updated_at)}
+                  แก้ไขล่าสุดโดย {clo.updated_by_name || clo.updated_by || '—'}{' '}
+                  เมื่อ {changedAt(clo.updated_at)}
                 </p>
               </li>
             ))}

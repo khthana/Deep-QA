@@ -20,6 +20,7 @@ import TeacherDashboard from '../pages/TeacherDashboard'
 import TeacherSection from '../pages/TeacherSection'
 import CourseOutcomes from '../pages/CourseOutcomes'
 import MeasurableBehaviors from '../pages/MeasurableBehaviors'
+import AchievementCriteria from '../pages/AchievementCriteria'
 import SubjectStudents from '../pages/SubjectStudents'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
@@ -170,6 +171,10 @@ export default function AppRoutes() {
           <Route
             path="courseOutcomes/:cloId/behaviors"
             element={<MeasurableBehaviors />}
+          />
+          <Route
+            path="courseOutcomes/:cloId/criteria"
+            element={<AchievementCriteria />}
           />
           <Route path="*" element={<NotBuiltYet />} />
         </Route>
