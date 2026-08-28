@@ -364,6 +364,16 @@ const REFUSALS = {
   cloInUse: 'ผลการเรียนรู้ข้อนี้ถูกผูกไว้กับกิจกรรมการวัดผล จึงลบไม่ได้ ให้ยกเลิกการผูกที่กิจกรรมก่อน',
   cloInPlan: 'ผลการเรียนรู้ข้อนี้ถูกอ้างถึงในแผนการสอนรายสัปดาห์ จึงลบไม่ได้ ให้นำออกจากแผนก่อน',
 
+  // Measurable Behaviors - #28. พฤติกรรมบ่งชี้ hangs off its CLO and off
+  // nothing else, so `behaviorNotFound` covers the row that does not exist and
+  // the row that belongs to another CLO, for `cloNotFound`'s reason one tier
+  // down. `invalidBehavior` names the three fields the form owns; the two
+  // enums would refuse a stray value too, but as a 22P02 raised into
+  // `unexpected`, which is the wrong sentence for a value a person picked.
+  behaviorNotFound: 'ไม่พบพฤติกรรมบ่งชี้ที่ระบุ',
+  invalidBehavior:
+    'ข้อมูลพฤติกรรมบ่งชี้ไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบรายละเอียด ระดับพุทธิพิสัย และประเภทกิจกรรมการเรียนรู้',
+
   // Section enrolment - #25. The class list a Teacher builds for their own
   // ตอนเรียน. None of these is one of #17's, which is the whole point of the
   // block: the register and the class list are two different questions about

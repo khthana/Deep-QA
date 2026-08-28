@@ -92,11 +92,15 @@ MUTANTS = {
     # The CLO looked up by id alone, without the Offering it has to belong to.
     # Every id in the system is reachable from every Section the caller teaches,
     # so last year's set becomes editable through this year's screen.
+    # Rewritten 2026-08-28: #28 hoisted `cloOf` to module level (to share it,
+    # as rubrics shares `reachableRubric`) and the indentation the old string
+    # was bound to went with it. Re-proved the same day - dies at the same
+    # subtest as before.
     "anyclo": ("routes",
-               "        WHERE c.clo_id = $1 AND c.program_id = $2 AND c.subject_id = $3\n"
-               "          AND c.academic_year = $4`,",
-               "        WHERE c.clo_id = $1 AND (c.program_id = $2 OR TRUE) AND (c.subject_id = $3 OR TRUE)\n"
-               "          AND (c.academic_year = $4 OR TRUE)`,"),
+               "      WHERE c.clo_id = $1 AND c.program_id = $2 AND c.subject_id = $3\n"
+               "        AND c.academic_year = $4`,",
+               "      WHERE c.clo_id = $1 AND (c.program_id = $2 OR TRUE) AND (c.subject_id = $3 OR TRUE)\n"
+               "        AND (c.academic_year = $4 OR TRUE)`,"),
     # The picker built from the หลักสูตร's outcomes rather than from the
     # coverage grid. Every PLO of the Program is offered, sub-outcomes included,
     # and the CLO ladder can bypass the grid - the second criterion's whole

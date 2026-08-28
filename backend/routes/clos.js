@@ -117,31 +117,47 @@ function readClo(body) {
 
 const isDuplicate = (error) => error && error.code === '23505';
 
+/**
+ * The Offering behind a Section id, or nothing.
+ *
+ * The register is the whole of the WHERE clause, exactly as in #24: a
+ * colleague's Section is in the same department and is not theirs. Nothing
+ * here is restricted to the current term, for #24's reason — a Teacher
+ * following a link to last year's Section is asking for a Section they
+ * taught, and the dashboard's listing rule is not an authorisation rule.
+ *
+ * Module-level and exported, as `rubrics.js` exports `reachableRubric` and for
+ * the same reason: #28's behaviours are authorised by exactly this question,
+ * and two answers to one question drift.
+ */
+async function offeringOf(pool, req, sectionId) {
+  if (!/^\d+$/.test(String(sectionId))) return null;
+  const { rows } = await pool.query(
+    `SELECT sc.id AS semester_course_id, sc.program_id, sc.subject_id,
+            sc.academic_year, sc.semester
+       FROM course_sections_teacher cst
+       JOIN course_sections cs ON cs.section_id = cst.section_id
+       JOIN semester_courses sc ON sc.id = cs.semester_course_id
+      WHERE cs.section_id = $1 AND cst.user_id = $2`,
+    [sectionId, req.session.userId],
+  );
+  return rows[0] ?? null;
+}
+
+/** One CLO of this Offering, by id, or nothing — see the note on the grain. */
+async function cloOf(pool, offering, cloId) {
+  if (!/^\d+$/.test(String(cloId))) return null;
+  const { rows } = await pool.query(
+    `SELECT ${RETURNED} ${FROM}
+      WHERE c.clo_id = $1 AND c.program_id = $2 AND c.subject_id = $3
+        AND c.academic_year = $4`,
+    [cloId, offering.program_id, offering.subject_id, offering.academic_year],
+  );
+  return rows[0] ?? null;
+}
+
 function cloRoutes(pool) {
   const router = express.Router();
-
-  /**
-   * The Offering behind a Section id, or nothing.
-   *
-   * The register is the whole of the WHERE clause, exactly as in #24: a
-   * colleague's Section is in the same department and is not theirs. Nothing
-   * here is restricted to the current term, for #24's reason — a Teacher
-   * following a link to last year's Section is asking for a Section they
-   * taught, and the dashboard's listing rule is not an authorisation rule.
-   */
-  async function offeringOf(req, sectionId) {
-    if (!/^\d+$/.test(String(sectionId))) return null;
-    const { rows } = await pool.query(
-      `SELECT sc.id AS semester_course_id, sc.program_id, sc.subject_id,
-              sc.academic_year, sc.semester
-         FROM course_sections_teacher cst
-         JOIN course_sections cs ON cs.section_id = cst.section_id
-         JOIN semester_courses sc ON sc.id = cs.semester_course_id
-        WHERE cs.section_id = $1 AND cst.user_id = $2`,
-      [sectionId, req.session.userId],
-    );
-    return rows[0] ?? null;
-  }
 
   /** The PLOs of the หลักสูตร that this รายวิชา's coverage grid carries. */
   async function offeredPlos(offering) {
@@ -156,18 +172,6 @@ function cloRoutes(pool) {
       [offering.program_id, offering.subject_id],
     );
     return rows;
-  }
-
-  /** One CLO of this Offering, by id, or nothing — see the note on the grain. */
-  async function cloOf(offering, cloId) {
-    if (!/^\d+$/.test(String(cloId))) return null;
-    const { rows } = await pool.query(
-      `SELECT ${RETURNED} ${FROM}
-        WHERE c.clo_id = $1 AND c.program_id = $2 AND c.subject_id = $3
-          AND c.academic_year = $4`,
-      [cloId, offering.program_id, offering.subject_id, offering.academic_year],
-    );
-    return rows[0] ?? null;
   }
 
   const load = (cloId) =>
@@ -215,7 +219,7 @@ function cloRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        const offering = await offeringOf(req, req.params.sectionId);
+        const offering = await offeringOf(pool, req, req.params.sectionId);
         if (!offering) return res.status(404).json({ message: REFUSALS.sectionNotFound });
 
         const { rows } = await pool.query(
@@ -240,7 +244,7 @@ function cloRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        const offering = await offeringOf(req, req.params.sectionId);
+        const offering = await offeringOf(pool, req, req.params.sectionId);
         if (!offering) return res.status(404).json({ message: REFUSALS.sectionNotFound });
 
         const draft = readClo(req.body);
@@ -286,10 +290,10 @@ function cloRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        const offering = await offeringOf(req, req.params.sectionId);
+        const offering = await offeringOf(pool, req, req.params.sectionId);
         if (!offering) return res.status(404).json({ message: REFUSALS.sectionNotFound });
 
-        const existing = await cloOf(offering, req.params.cloId);
+        const existing = await cloOf(pool, offering, req.params.cloId);
         if (!existing) return res.status(404).json({ message: REFUSALS.cloNotFound });
 
         const draft = readClo(req.body);
@@ -341,10 +345,10 @@ function cloRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        const offering = await offeringOf(req, req.params.sectionId);
+        const offering = await offeringOf(pool, req, req.params.sectionId);
         if (!offering) return res.status(404).json({ message: REFUSALS.sectionNotFound });
 
-        const existing = await cloOf(offering, req.params.cloId);
+        const existing = await cloOf(pool, offering, req.params.cloId);
         if (!existing) return res.status(404).json({ message: REFUSALS.cloNotFound });
 
         const inUse = await removalRefusal(existing.clo_id);
@@ -383,4 +387,4 @@ function cloRoutes(pool) {
   return router;
 }
 
-module.exports = { cloRoutes };
+module.exports = { cloRoutes, offeringOf, cloOf };

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
 
 import CloForm from '../components/clos/CloForm'
@@ -226,6 +226,16 @@ export default function CourseOutcomes() {
                     <dd className="text-slate-600">{clo.assessment_method || '—'}</dd>
                   </div>
                 </dl>
+
+                {/* The way into #28, and it carries the CLO — the criteria
+                    link on a rubric card, one screen over. */}
+                <Link
+                  to={`/teacher/teacherDashboard/${sectionId}/courseOutcomes/${clo.clo_id}/behaviors`}
+                  aria-label={`พฤติกรรมบ่งชี้ของ ${clo.clo_number}`}
+                  className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+                >
+                  พฤติกรรมบ่งชี้
+                </Link>
 
                 <p className="mt-3 text-xs text-slate-400">
                   แก้ไขล่าสุดโดย {clo.updated_by_name || clo.updated_by || '—'} เมื่อ{' '}
