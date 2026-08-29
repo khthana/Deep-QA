@@ -476,6 +476,41 @@ const REFUSALS = {
   activityHasEvidence: (fileName, count) =>
     `กิจกรรมนี้มีหลักฐานการประเมินแนบอยู่ (${fileName}${count > 1 ? ` และอีก ${count - 1} ไฟล์` : ''}) จึงลบไม่ได้ ให้ลบหลักฐานออกก่อน`,
 
+  // Activity editor - #33. Writing the work, and attributing it to the
+  // outcomes it assesses. Four refusals here are one refusal in four places -
+  // an id in the body belonging to a grain the caller is not on - and three of
+  // them reuse the sentence a neighbouring ticket already owns, because the
+  // thing refused is the same thing: `weightNotFound` for a หมวดคะแนน of
+  // another Offering (#30), `weekNotFound` for a week of another Section
+  // (#31), `cloNotFound` for a CLO of another Subject or year (#27). One word
+  // for one thing, as CONTEXT.md asks; a fourth spelling of ไม่พบ would only
+  // be a fourth thing to keep in step.
+  //
+  // `duplicateActivityClo` names the CLO because the save carried several rows
+  // and the person has to know which one to fix. `activityCloWeights` names
+  // the total for `weightsNotHundred`'s reason, but says เกิน rather than
+  // demanding exactly a hundred: a weight is a share of this Activity's mark,
+  // so more than the whole is impossible, while less than the whole is a
+  // half-finished attribution somebody is entitled to save and come back to.
+  //
+  // `activityCloHasMarks` guards what the schema does not. `activity_scores`
+  // references `subject_clo` directly rather than the mapping row, so taking a
+  // marked CLO off an Activity leaves a cohort's marks attributed to an
+  // outcome the Activity no longer claims to assess, and no foreign key says a
+  // word. It is `cloHasScores` one grain down, and it offers no way out for
+  // the same reason `activityHasMarks` does not.
+  invalidActivity:
+    'ข้อมูลกิจกรรมไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบชื่อกิจกรรม ประเภท (งานเดี่ยวหรืองานกลุ่ม) คะแนนเต็ม และวันที่',
+  invalidActivityClo:
+    'ข้อมูลการเชื่อมโยงผลการเรียนรู้ไม่ถูกต้อง กรุณาตรวจสอบผลการเรียนรู้ที่เลือกและน้ำหนัก (จำนวนเต็ม 0 ถึง 100)',
+  activityCloNeedsCategory: 'ต้องเลือกหมวดคะแนนของกิจกรรมก่อน จึงจะเชื่อมโยงผลการเรียนรู้ได้',
+  duplicateActivityClo: (cloNumber) =>
+    `ผลการเรียนรู้ ${cloNumber} ถูกเพิ่มไว้มากกว่าหนึ่งครั้ง หนึ่งข้อเพิ่มได้ครั้งเดียวต่อกิจกรรม`,
+  activityCloWeights: (total) =>
+    `น้ำหนักของผลการเรียนรู้ในกิจกรรมนี้รวมกันต้องไม่เกิน 100 ขณะนี้รวมได้ ${total} ระบบไม่ได้บันทึกการแก้ไข`,
+  activityCloHasMarks: (cloNumber) =>
+    `ผลการเรียนรู้ ${cloNumber} มีคะแนนบันทึกไว้ในกิจกรรมนี้แล้ว จึงนำออกจากกิจกรรมไม่ได้`,
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.

@@ -96,6 +96,80 @@ async function removeActivity(page, name, { confirm = true } = {}) {
   return response;
 }
 
+/**
+ * The editor — #33 — which opens in place of the add button, as #31's does.
+ *
+ * Everything here is addressed by the label a person reads, because that is
+ * what the row is about: a picker that offered the wrong set would still be
+ * found by a `nth(1)` selector, and would not be found by its own name.
+ */
+const openEditor = (page, name) =>
+  name
+    ? page.getByRole('button', { name: `แก้ไขกิจกรรม ${name}`, exact: true }).click()
+    : page.getByRole('button', { name: 'เพิ่มกิจกรรม', exact: true }).click();
+
+const field = (page, label) => page.getByLabel(label, { exact: true });
+
+/** One attribution row's two controls, by the position a person sees. */
+const cloRow = (page, index) => ({
+  clo: field(page, `ผลการเรียนรู้แถวที่ ${index}`),
+  weight: field(page, `น้ำหนักแถวที่ ${index}`),
+  drop: page.getByRole('button', { name: `นำผลการเรียนรู้แถวที่ ${index} ออก`, exact: true }),
+});
+
+/** Types a whole draft into the open form; anything absent is left alone. */
+async function fillActivity(page, draft) {
+  if (draft.name !== undefined) await field(page, 'ชื่อกิจกรรม').fill(draft.name);
+  if (draft.type !== undefined) await field(page, 'ประเภท').selectOption(draft.type);
+  if (draft.mark !== undefined) await field(page, 'คะแนนเต็ม').fill(String(draft.mark));
+  if (draft.category !== undefined) {
+    await field(page, 'หมวดคะแนน').selectOption({ label: draft.category });
+  }
+  if (draft.announced !== undefined) await field(page, 'วันที่ประกาศ').fill(draft.announced);
+  if (draft.due !== undefined) await field(page, 'กำหนดส่ง').fill(draft.due);
+
+  for (const [at, row] of (draft.clos ?? []).entries()) {
+    const index = at + 1;
+    if (!(await field(page, `ผลการเรียนรู้แถวที่ ${index}`).count())) {
+      await page.getByRole('button', { name: 'เพิ่มผลการเรียนรู้', exact: true }).click();
+    }
+    const controls = cloRow(page, index);
+    if (row.clo !== undefined) await controls.clo.selectOption({ label: row.clo });
+    if (row.weight !== undefined) await controls.weight.fill(String(row.weight));
+  }
+}
+
+/**
+ * Presses บันทึก and hands back the write.
+ *
+ * The reload wait is registered before the click, 32a's `removeActivity`
+ * lesson: a refused save answers 400 and reloads nothing, so the wait is only
+ * collected when the write succeeded.
+ */
+async function saveActivity(page) {
+  const written = page.waitForResponse(
+    answer =>
+      API.test(new URL(answer.url()).pathname) &&
+      ['POST', 'PUT'].includes(answer.request().method()),
+  );
+  const reloaded = waitForActivities(page);
+  await page.getByRole('button', { name: 'บันทึก', exact: true }).click();
+
+  const response = await written;
+  if (response.ok()) await reloaded;
+  else reloaded.catch(() => {});
+  return response;
+}
+
+/**
+ * What a card says it is attributed to, as `ผลการเรียนรู้ CLO-1 (60%) · …`.
+ *
+ * By its own label rather than by position: the line is two spans, so a text
+ * selector would find the label span and report the label back.
+ */
+const attributionOf = (page, name) =>
+  page.getByLabel(`ผลการเรียนรู้ของ ${name}`, { exact: true }).innerText();
+
 module.exports = {
   API,
   path,
@@ -108,4 +182,10 @@ module.exports = {
   namesOnScreen,
   namesInCategory,
   removeActivity,
+  openEditor,
+  field,
+  cloRow,
+  fillActivity,
+  saveActivity,
+  attributionOf,
 };

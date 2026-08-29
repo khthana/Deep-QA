@@ -60,10 +60,36 @@ const integerId = (value) => {
   return Number.isSafeInteger(id) && id >= 1 && id <= INT4_MAX ? id : null;
 };
 
+/**
+ * A whole number a person typed, inside the bounds its column allows —
+ * extracted at the third copy, like everything else here.
+ *
+ * A JSON number and a typed string both arrive at these routes, so both shapes
+ * are read; `4.5` and `สี่` are refused rather than rounded, because a number
+ * the server silently changed is one the person cannot reconcile with what
+ * they typed. The bound belongs with the shape for `integerId`'s reason: a
+ * week of 40000 refused here is a sentence, and refused by the smallint is a
+ * 22003 reported as เกิดข้อผิดพลาดในระบบ.
+ *
+ * The copies it replaces were `readWeekNo` in `routes/teachingPlan.js` (#31),
+ * `readWeight` in `routes/weights.js` (#30) and `readWeight` in
+ * `routes/activities.js` (#33), which is the third and the reason this exists.
+ */
+const boundedInteger = (value, { min, max }) => {
+  const number =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string' && /^\d+$/.test(value.trim())
+        ? Number(value.trim())
+        : NaN;
+  if (!Number.isInteger(number) || number < min || number > max) return null;
+  return number;
+};
+
 /** Postgres says a unique index was violated; which one is not the point. */
 const isDuplicate = (error) => error.code === '23505';
 
 /** Something still references the row that was asked to be destroyed. */
 const isReferenced = (error) => error.code === '23503';
 
-module.exports = { trimmed, blankToNull, integerId, isDuplicate, isReferenced };
+module.exports = { trimmed, blankToNull, integerId, boundedInteger, isDuplicate, isReferenced };

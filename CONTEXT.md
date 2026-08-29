@@ -84,6 +84,16 @@ A piece of assessed work within a Section, either individual or group, carrying 
 per-CLO weights.
 _Avoid_: assignment, task
 
+**Attribution** (ความเชื่อมโยงกับผลการเรียนรู้):
+The rows that say which CLOs an Activity assesses and what share of its mark each one accounts for — the table
+`activity_clo_mapping`, one row per CLO. An Activity with no rows is legal and contributes to no outcome, which is why
+the share is a percentage of the Activity's own mark rather than a mark typed twice. Weights may total less than 100
+(an unfinished attribution) but never more, and a CLO a cohort has been marked under may not be taken off (#33).
+_Avoid_: mapping, as the name of the concept — a **PLO Mapping** is the curriculum-level grid and a
+different thing, so "the mapping" alone names neither. The table `activity_clo_mapping` and a row of it
+keep their own names: prose that says *a mapping row* is naming the table, which is exact, and prose that
+says *the mapping* where it means this is not. Also avoid: CLO link
+
 **Teaching Plan** (แผนการสอน):
 The week-by-week plan of one **Section** — each row a week number, a topic and optional detail and remarks. Unlike
 CLOs and the weighting scheme, it belongs to the Section and not to the Offering, so two Sections of one Offering may

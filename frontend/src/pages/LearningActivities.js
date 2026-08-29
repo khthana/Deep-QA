@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { HiOutlineTrash } from 'react-icons/hi2'
+import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
 
+import ActivityForm from '../components/activity/ActivityForm'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
-import { deleteActivity, getActivities } from '../api/activities'
+import { createActivity, deleteActivity, getActivities, updateActivity } from '../api/activities'
 
 /**
  * กิจกรรมการเรียนรู้ในรายวิชา — ticket #32.
@@ -32,7 +33,14 @@ import { deleteActivity, getActivities } from '../api/activities'
  * will go with it, because for the ones that *are* deletable nothing else is
  * watching: an Activity nobody has marked is one press from gone.
  *
- * Creating and editing is #33's screen; this one lists and removes.
+ * ## The editor is on this screen and not on another — #33
+ *
+ * A piece of work is written, attributed and read in one place, because the
+ * thing a person checks after writing it is where it landed: which group it
+ * fell into, and what the attribution adds up to. The form opens in place of
+ * the list's own add button, as #31's does, and each card carries the CLOs it
+ * is attributed to — so *editing loads what is there* is visible before the
+ * form is even opened.
  */
 export default function LearningActivities() {
   const { sectionId } = useParams()
@@ -40,6 +48,7 @@ export default function LearningActivities() {
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
 
   const load = useCallback(async () => {
@@ -57,6 +66,25 @@ export default function LearningActivities() {
   useEffect(() => {
     load()
   }, [load])
+
+  const save = async draft => {
+    setBusy(true)
+    setNotice(null)
+    try {
+      if (editing === 'new') await createActivity(sectionId, draft)
+      else await updateActivity(sectionId, editing.id, draft)
+      setEditing(null)
+      await load()
+      setNotice({ error: false, message: 'บันทึกกิจกรรมแล้ว' })
+    } catch (error) {
+      // The form stays open on a refusal, unlike the delete dialog: the draft
+      // in it is the person's work, and a refusal about a weight or a repeated
+      // ผลการเรียนรู้ is something they fix in the form they are looking at.
+      if (!error.expired) setNotice({ error: true, message: error.message })
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const remove = async () => {
     setBusy(true)
@@ -101,6 +129,26 @@ export default function LearningActivities() {
               และหมวดคะแนนที่ใช้จัดกลุ่มเป็นของรายวิชาที่เปิดสอน ใช้ร่วมกันทุกตอนเรียน
             </p>
           </div>
+
+          {editing ? (
+            <ActivityForm
+              activity={editing === 'new' ? null : editing}
+              categories={data.categories}
+              clos={data.clos}
+              weeks={data.weeks}
+              busy={busy}
+              onSubmit={save}
+              onCancel={() => setEditing(null)}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditing('new')}
+              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
+            >
+              เพิ่มกิจกรรม
+            </button>
+          )}
 
           {data.activities.length === 0 && (
             <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
@@ -153,9 +201,37 @@ export default function LearningActivities() {
                                 <dd className="text-slate-600">{dateOf(activity.deadline_date)}</dd>
                               </div>
                             </dl>
+
+                            {/* What this piece of work is attributed to. Drawn
+                                on the card and not only inside the editor,
+                                because "counts towards nothing" is a state a
+                                Teacher needs to see from the list — it is the
+                                one that makes an Activity invisible to every
+                                attainment figure downstream. */}
+                            <p
+                              aria-label={`ผลการเรียนรู้ของ ${activity.activity_name}`}
+                              className="mt-2 text-sm"
+                            >
+                              <span className="text-slate-400">ผลการเรียนรู้ </span>
+                              <span className="text-slate-600">
+                                {activity.clo_rows.length === 0
+                                  ? 'ยังไม่ได้เชื่อมโยง'
+                                  : activity.clo_rows
+                                      .map(row => `${row.clo_number} (${row.weight}%)`)
+                                      .join(' · ')}
+                              </span>
+                            </p>
                           </div>
 
                           <div className="flex shrink-0 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditing(activity)}
+                              aria-label={`แก้ไขกิจกรรม ${activity.activity_name}`}
+                              className="rounded-lg p-2 text-primary hover:bg-blue-50"
+                            >
+                              <HiOutlinePencil className="h-5 w-5" />
+                            </button>
                             <button
                               type="button"
                               onClick={() => setRemoving(activity)}

@@ -54,6 +54,7 @@ const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
+const { boundedInteger } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { offeringOf } = require('./clos');
 
@@ -78,16 +79,7 @@ function text(value) {
  * read; 40.5 and สี่สิบ are refused rather than rounded, because a weight the
  * server silently changed is a total the person cannot reconcile.
  */
-function readWeight(value) {
-  const number =
-    typeof value === 'number'
-      ? value
-      : typeof value === 'string' && /^\d+$/.test(value.trim())
-        ? Number(value.trim())
-        : NaN;
-  if (!Number.isInteger(number) || number < 0 || number > 100) return null;
-  return number;
-}
+const readWeight = (value) => boundedInteger(value, { min: 0, max: 100 });
 
 /** One row of the scheme as the caller owns it: a name and a weight. */
 function readCategory(source) {

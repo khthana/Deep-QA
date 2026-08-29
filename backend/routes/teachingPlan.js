@@ -47,7 +47,7 @@ const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull, integerId } = require('../lib/fields');
+const { blankToNull, boundedInteger, integerId } = require('../lib/fields');
 const { sectionOf } = require('./enrolment');
 
 /** The plan is the Teacher's own, as in `enrolment.js` — the same door. */
@@ -55,22 +55,16 @@ const TEACHING = ['TEACHER'];
 
 const RETURNED = 'id, week_no, title, description, remark';
 
+/** What `week_no`'s smallint holds; one more is a 22003. */
+const SMALLINT_MAX = 32767;
+
 /**
  * A week number as the calendar means it: a positive integer that fits the
  * column. A JSON number and a typed string both arrive here; 4.5 and สี่ are
  * refused rather than rounded, and 40000 is refused here rather than as the
  * smallint's 22003.
  */
-function readWeekNo(value) {
-  const number =
-    typeof value === 'number'
-      ? value
-      : typeof value === 'string' && /^\d+$/.test(value.trim())
-        ? Number(value.trim())
-        : NaN;
-  if (!Number.isInteger(number) || number < 1 || number > 32767) return null;
-  return number;
-}
+const readWeekNo = (value) => boundedInteger(value, { min: 1, max: SMALLINT_MAX });
 
 /**
  * One week as the caller owns it. The number and the title are the row —
