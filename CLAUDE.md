@@ -15,10 +15,14 @@ edited. The rebuild lands in fresh `backend/`, `frontend/`, `db/` and `e2e/` tre
 at a time, and the reference directories are deleted when it completes.
 
 Work is tracked as GitHub issues: [#1](https://github.com/khthana/Deep-QA/issues/1) is
-the spec, [#2](https://github.com/khthana/Deep-QA/issues/2)–[#46](https://github.com/khthana/Deep-QA/issues/46)
-are the tickets, wired with native blocking dependencies. Take work from the
-frontier — tickets whose blockers are all closed. #2–#45 are the original 44 from
-`docs/07`; numbers above that are gaps found during the rebuild and opened since.
+the spec and everything from [#2](https://github.com/khthana/Deep-QA/issues/2) up is a ticket,
+wired with native blocking dependencies. Take work from the frontier — tickets whose blockers are
+all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
+found during the rebuild and opened since.
+
+Closed through #33 except [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups), which
+has no blockers. Every acceptance checklist has been walked; the five rows that are not ticked are
+each blocked on something other than a person at a screen, and the newest handoff names them.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time. Read it before taking work. Each handoff names the one it supersedes for state,
@@ -50,10 +54,11 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 
-Three decisions govern most of the work and are easy to violate by accident:
+Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the
-database and never from a request body (ADR-0002); and CLOs and the weighting scheme
-belong to a (Program, Subject, academic year), not to a Section (ADR-0003).
+database and never from a request body (ADR-0002); CLOs and the weighting scheme
+belong to a (Program, Subject, academic year), not to a Section (ADR-0003); and which
+Section a teacher screen is looking at lives in the URL and nowhere else (ADR-0004).
 
 ## Agent skills
 

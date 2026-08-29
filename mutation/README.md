@@ -74,8 +74,15 @@ python mutation/18-program-subjects.py restore     # คืนโค้ดเด
 | `32-activity-list.py` | #32 กิจกรรมการเรียนรู้ | 15 |
 | `33-activity-editor.py` | #33 การสร้างแก้ไขกิจกรรมและการเชื่อมโยง CLO | 14 |
 
-รวม 289 ตัว — **288 ตัวยังใช้ได้กับโค้ดปัจจุบัน** ดูรายละเอียดของแต่ละตัวว่าฆ่า assertion ไหน
-ได้ที่หัวข้อ mutation ของเอกสารตรวจรับใบนั้น ๆ
+รวม **292 ตัว** — **291 ตัวยังใช้ได้กับโค้ดปัจจุบัน** (ที่เหลือคือ `13:N6` ดูหัวข้อ *เมื่อ MISS*)
+ดูรายละเอียดของแต่ละตัวว่าฆ่า assertion ไหนได้ที่หัวข้อ mutation ของเอกสารตรวจรับใบนั้น ๆ
+
+ตัวเลขรวมนี้คือ**ผลบวกของตารางข้างบน** อย่าบวกเพิ่มทีละตั๋วด้วยมือ — เคยหลุดไปสามตัวเพราะทำแบบนั้น
+นับใหม่ทุกครั้งที่แก้ตาราง:
+
+```bash
+cd mutation && python -c "import ast,io,glob; print(sum(len(n.value.keys) for f in glob.glob('*.py') if f!='harness.py' for n in ast.parse(io.open(f,encoding='utf-8').read()).body if isinstance(n,ast.Assign) and getattr(n.targets[0],'id','')=='MUTANTS'))"
+```
 
 `harness.py` คือส่วนที่ใช้ร่วมกัน — save / restore / apply ไฟล์ที่เหลือมีแต่ *ข้อมูล* คือ
 "แก้ไฟล์ไหน จากข้อความนี้ เป็นข้อความนี้"
