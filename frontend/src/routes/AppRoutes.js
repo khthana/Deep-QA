@@ -23,6 +23,7 @@ import MeasurableBehaviors from '../pages/MeasurableBehaviors'
 import AchievementCriteria from '../pages/AchievementCriteria'
 import GradingWeights from '../pages/GradingWeights'
 import TeachingPlan from '../pages/TeachingPlan'
+import LearningActivities from '../pages/LearningActivities'
 import SubjectStudents from '../pages/SubjectStudents'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
@@ -180,6 +181,7 @@ export default function AppRoutes() {
           />
           <Route path="gradingWeights" element={<GradingWeights />} />
           <Route path="teachingPlan" element={<TeachingPlan />} />
+          <Route path="learningActivities" element={<LearningActivities />} />
           <Route path="*" element={<NotBuiltYet />} />
         </Route>
       </Route>

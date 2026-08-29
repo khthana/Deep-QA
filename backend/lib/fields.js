@@ -32,10 +32,38 @@ const blankToNull = (value) => {
   return text === '' || text === undefined ? null : text;
 };
 
+/** The largest value an `integer` column will take; one more is a 22003. */
+const INT4_MAX = 2147483647;
+
+/**
+ * An id from a URL, if it is one this schema could actually hold.
+ *
+ * Every route that addresses a surrogate key guards it with `/^\d+$/` before
+ * querying, because the column is an `integer` and a non-numeric id would be
+ * a 22P02 from the database rather than the 404 the caller is owed. The
+ * regular expression alone is not the whole guard: `99999999999999999999` is
+ * all digits and still overflows, and 22003 reaches the error handler as
+ * เกิดข้อผิดพลาดในระบบ — a system fault, reported for a URL somebody typed.
+ *
+ * So the bound belongs with the shape. Anything outside it is `null`, which
+ * every caller already turns into its own ไม่พบ.
+ *
+ * Found by #32's own tests. The routes still guarding by hand — `clos.js`,
+ * `behaviors.js`, `achievementCriteria.js`, `offerings.js` — are
+ * [#107](https://github.com/khthana/Deep-QA/issues/107); the three on #32's
+ * own path (this ticket's route, `teachingPlan.js` and `sectionOf`) use it.
+ */
+const integerId = (value) => {
+  const text = String(value);
+  if (!/^\d+$/.test(text)) return null;
+  const id = Number(text);
+  return Number.isSafeInteger(id) && id >= 1 && id <= INT4_MAX ? id : null;
+};
+
 /** Postgres says a unique index was violated; which one is not the point. */
 const isDuplicate = (error) => error.code === '23505';
 
 /** Something still references the row that was asked to be destroyed. */
 const isReferenced = (error) => error.code === '23503';
 
-module.exports = { trimmed, blankToNull, isDuplicate, isReferenced };
+module.exports = { trimmed, blankToNull, integerId, isDuplicate, isReferenced };

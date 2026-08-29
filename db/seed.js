@@ -41,7 +41,7 @@
 const bcrypt = require('bcrypt');
 
 const { createPool, schemaName } = require('./pool');
-const { currentTerm } = require('./term');
+const { currentTerm, BUDDHIST_OFFSET } = require('./term');
 
 /**
  * The password every seeded account shares.
@@ -465,6 +465,64 @@ const SCORE_RATIOS = [
  * seed that violated it would make every attainment figure computed from it
  * wrong.
  */
+/**
+ * The one Activity the seed leaves unmapped and unmarked, on purpose - #32.
+ *
+ * Every other Activity here carries CLO rows and a mark for every enrolled
+ * student, which is what the results screens need. That also means every
+ * other Activity is *undeletable*: `activity_scores.activity_id` CASCADEs, so
+ * #32's route refuses rather than let a delete take a cohort's marks with it.
+ * Without this row there would be nothing in the whole seed a person could
+ * delete, and the browser cannot make one until #33 builds the editor.
+ *
+ * So this is a Teacher's freshly created piece of work, before any marking:
+ * legal (an Activity with no CLO rows contributes to no outcome, which #33
+ * says in as many words), realistic, and the only row #32's successful-delete
+ * rows have to work with. `db/test/seed.test.js` exempts it by name from the
+ * two invariants it is deliberately outside of, and pins what it is instead.
+ *
+ * The name bakes the ตอนเรียน and the year for the plan's reason: Activities
+ * are Section-bound, and a walk should be able to read that off the screen
+ * rather than trust the address.
+ */
+const UNMARKED_ACTIVITY = {
+  category: 'โครงงาน',
+  type: 'individual',
+  score: 20,
+  // The only Activity in the seed carrying dates, and carrying them for the
+  // same reason it carries nothing else: so that something proves a date
+  // reaches the screen. Every other row leaves both columns NULL, which is
+  // legal and which the screen draws as an em dash - a screen that rendered
+  // `Invalid Date` would look identical until one real date arrived.
+  //
+  // August, and not January: `term.js` puts June-October in semester 1 and
+  // gives January-May the *previous* academic year, so a January date on a
+  // row whose name says ปีการศึกษา 2569 would be a date from 2568's term -
+  // the fixture would contradict itself, and the sheet reads the year off
+  // that name.
+  announcedOn: [8, 10],
+  dueOn: [8, 24],
+};
+
+/**
+ * The fixture's two dates, in the academic year it belongs to.
+ *
+ * พ.ศ. to ค.ศ. through `term.js`'s own constant rather than a literal 543:
+ * one offset, in the file that owns the calendar.
+ */
+const unmarkedActivityDates = (year) => {
+  const gregorian = Number(year) - BUDDHIST_OFFSET;
+  const at = ([month, day]) =>
+    `${gregorian}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00`;
+  return {
+    announcement_date: at(UNMARKED_ACTIVITY.announcedOn),
+    deadline_date: at(UNMARKED_ACTIVITY.dueOn),
+  };
+};
+
+const unmarkedActivityName = (sectionNumber, year) =>
+  `แบบฝึกหัดท้ายบท (ตอนเรียนที่ ${sectionNumber} ปีการศึกษา ${year})`;
+
 const ACTIVITIES = [
   {
     name: 'โครงงานย่อยที่ 1 — คลาสและอ็อบเจกต์',
@@ -1128,7 +1186,7 @@ async function seedAssessment(client, { section, students, cloIds, ratioIds, yea
         ratioIds.get(spec.category),
         spec.type,
         spec.name,
-        `${spec.name} ของกลุ่มเรียนที่ ${section.number} ปีการศึกษา ${year}`,
+        `${spec.name} ของตอนเรียนที่ ${section.number} ปีการศึกษา ${year}`,
         spec.score,
       ],
     });
@@ -1182,6 +1240,31 @@ async function seedAssessment(client, { section, students, cloIds, ratioIds, yea
     rows: marks,
     conflictTarget: 'student_id, activity_id, clo_id',
   });
+
+  // Last, and outside both loops above: the unmapped, unmarked one. See
+  // UNMARKED_ACTIVITY - it is the only Activity in the seed that can be
+  // deleted, and it is that precisely because nothing points at it.
+  const dates = unmarkedActivityDates(year);
+  await findOrCreate(client, {
+    find: `SELECT id FROM activities WHERE section_id = $1 AND activity_name = $2`,
+    findParams: [section.id, unmarkedActivityName(section.number, year)],
+    insert: `INSERT INTO activities (
+               section_id, score_ratio_id, activity_type, activity_name,
+               description, score_number, announcement_date, deadline_date
+             )
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+    insertParams: [
+      section.id,
+      ratioIds.get(UNMARKED_ACTIVITY.category),
+      UNMARKED_ACTIVITY.type,
+      unmarkedActivityName(section.number, year),
+      'ใบงานที่เพิ่งสร้าง ยังไม่ได้ผูกกับผลการเรียนรู้และยังไม่ได้บันทึกคะแนน',
+      UNMARKED_ACTIVITY.score,
+      dates.announcement_date,
+      dates.deadline_date,
+    ],
+  });
+  activityCount += 1;
 
   return { activities: activityCount, marks: written };
 }
@@ -1427,6 +1510,9 @@ module.exports = {
   CLOS,
   SCORE_RATIOS,
   ACTIVITIES,
+  UNMARKED_ACTIVITY,
+  unmarkedActivityName,
+  unmarkedActivityDates,
   TEACHING_PLAN,
   PLAN_REFERENCED_ACTIVITY,
   planWeeksFor,

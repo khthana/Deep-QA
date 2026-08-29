@@ -455,6 +455,27 @@ const REFUSALS = {
   weekInUse: (weekNo) =>
     `สัปดาห์ที่ ${weekNo} มีกิจกรรมการวัดผลอ้างอิงอยู่ จึงลบไม่ได้ ให้ย้ายหรือลบกิจกรรมออกจากสัปดาห์นี้ก่อน`,
 
+  // Activities - #32. กิจกรรมการเรียนรู้, Section-bound like the plan. Two
+  // refusals stand between a delete and a loss, and they are two because the
+  // schema fails in two different directions underneath them.
+  //
+  // `activityHasMarks` guards a CASCADE: the delete would succeed and take a
+  // cohort's marks with it, silently, so the sentence does not offer a way to
+  // remove the marks first (there is none, and there should be none) - it
+  // says what would be lost and why the answer is no.
+  //
+  // `activityHasEvidence` guards a RESTRICT: the database would refuse on its
+  // own, but as 23503 through the error handler, which reads as
+  // เกิดข้อผิดพลาดในระบบ for something a person can fix. The ticket asks for
+  // the evidence to be named, so the sentence carries a file name - and the
+  // count, because soft-deleted evidence still pins the row and a person
+  // looking at an empty evidence screen deserves to know that.
+  activityNotFound: 'ไม่พบกิจกรรมที่ระบุ',
+  activityHasMarks: (marks) =>
+    `กิจกรรมนี้มีคะแนนที่บันทึกไว้แล้ว ${marks} รายการ การลบกิจกรรมจะลบคะแนนทั้งหมดไปด้วย จึงไม่อนุญาตให้ลบ`,
+  activityHasEvidence: (fileName, count) =>
+    `กิจกรรมนี้มีหลักฐานการประเมินแนบอยู่ (${fileName}${count > 1 ? ` และอีก ${count - 1} ไฟล์` : ''}) จึงลบไม่ได้ ให้ลบหลักฐานออกก่อน`,
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.

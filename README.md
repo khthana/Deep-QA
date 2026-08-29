@@ -178,10 +178,10 @@ database and the accounts it opens have nothing behind them; nothing here is a c
 | `U_DEPT2` | `dept.admin.01@kmitl.ac.th` | ผู้ดูแลระบบระดับภาควิชา | ภาควิชา `01` — **cross-scope** |
 | `U_COM` | `prog.manager@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0501` |
 | `U_COM2` | `prog.manager.0503@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0503` — **cross-scope** |
-| `U_TEACH` | `teacher.one@kmitl.ac.th` | อาจารย์ผู้สอน | กลุ่มเรียน 1 of `01076105` |
+| `U_TEACH` | `teacher.one@kmitl.ac.th` | อาจารย์ผู้สอน | ตอนเรียน 1 of `01076105` |
 | `U_TEACH2` | `teacher.two@kmitl.ac.th` | อาจารย์ผู้สอน | **teaches nothing** |
 | `U_EXT` | `external.assessor@kmitl.ac.th` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
-| `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and กลุ่มเรียน 2 |
+| `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and ตอนเรียน 2 |
 | `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | outside `@kmitl.ac.th` (R010) |
 
 The last five rows are the point of the list. A permission rule is only tested by an account that should be refused,

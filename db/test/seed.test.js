@@ -17,6 +17,7 @@ const {
   CLOS,
   SCORE_RATIOS,
   ACTIVITIES,
+  unmarkedActivityName,
   COHORTS,
   MAX_GROUP_SIZE,
   SUBJECT,
@@ -212,15 +213,54 @@ test('the weighting scheme, the activities and the marks', async (t) => {
     });
   }
 
+  // Both of the next two invariants are stated *except for the one Activity
+  // the seed deliberately leaves outside them* (#32's deletable fixture -
+  // see UNMARKED_ACTIVITY). The exemption is by name and is followed
+  // immediately by a subtest pinning what that row is, so it cannot quietly
+  // grow to cover a real regression: an unmapped Activity that is not this
+  // one still fails here.
+  const EXEMPT = `a.activity_name LIKE 'แบบฝึกหัดท้ายบท (%'`;
+
   await t.test('every activity is weighed in a band and mapped to CLOs', async () => {
     const unbanded = await count(`SELECT count(*) FROM activities WHERE score_ratio_id IS NULL`);
     assert.equal(unbanded, 0);
 
     const unmapped = await count(
       `SELECT count(*) FROM activities a
-       WHERE NOT EXISTS (SELECT 1 FROM activity_clo_mapping m WHERE m.activity_id = a.id)`,
+       WHERE NOT ${EXEMPT}
+         AND NOT EXISTS (SELECT 1 FROM activity_clo_mapping m WHERE m.activity_id = a.id)`,
     );
     assert.equal(unmapped, 0);
+  });
+
+  await t.test('one activity per section is left deletable, and is the only one', async () => {
+    // What #32 rests on: a row nothing points at. If a later ticket gives it
+    // marks or CLO rows, the browser seam loses its only successful delete,
+    // and this is where that shows up rather than in a Playwright timeout.
+    const { rows } = await pool.query(
+      `SELECT cs.section_id, cs.section_number, sc.academic_year, a.id,
+              (SELECT count(*)::int FROM activity_clo_mapping m WHERE m.activity_id = a.id) AS clo_rows,
+              (SELECT count(*)::int FROM activity_scores s WHERE s.activity_id = a.id) AS marks
+         FROM course_sections cs
+         JOIN semester_courses sc ON sc.id = cs.semester_course_id
+         JOIN activities a ON a.section_id = cs.section_id AND ${EXEMPT}
+        ORDER BY cs.section_id`,
+    );
+
+    const sections = await count(`SELECT count(*) FROM course_sections`);
+    assert.equal(rows.length, sections, 'expected exactly one deletable Activity per Section');
+
+    for (const row of rows) {
+      assert.equal(row.clo_rows, 0);
+      assert.equal(row.marks, 0);
+      // The name carries the grain, so a walk can read which Section's list
+      // it is looking at without trusting the address.
+      const { rows: named } = await pool.query(
+        `SELECT activity_name FROM activities WHERE id = $1`,
+        [row.id],
+      );
+      assert.equal(named[0].activity_name, unmarkedActivityName(row.section_number, row.academic_year));
+    }
   });
 
   // BR-11, the same shape of rule one level down.
@@ -236,6 +276,9 @@ test('the weighting scheme, the activities and the marks', async (t) => {
   });
 
   await t.test('every enrolled student is marked on every activity of their section', async () => {
+    // The join through activity_clo_mapping already excludes the deletable
+    // fixture, which has no CLO rows - it is named here so the next reader
+    // does not have to work that out.
     const missing = await count(
       `SELECT count(*) FROM student_course sc
        JOIN activities a ON a.section_id = sc.section_id

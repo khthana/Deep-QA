@@ -53,7 +53,7 @@ const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull, isDuplicate } = require('../lib/fields');
+const { blankToNull, integerId, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 
@@ -73,9 +73,11 @@ const CODE = /^\d{8}$/;
 /**
  * This Section, if this account teaches it — and null for every other case.
  *
- * The `/^\d+$/` guard is ahead of the query for `teaching.js`' reason: the
+ * The `integerId` guard is ahead of the query for `teaching.js`' reason: the
  * column is an integer and a non-numeric id would be a 22P02 from the
- * database rather than the 404 the caller is owed.
+ * database rather than the 404 the caller is owed. It bounds as well as
+ * shapes — an all-digit id too large for `integer` is a 22003 with the same
+ * consequence, which #32's tests caught here.
  *
  * Module-level and exported, as `clos.js` exports `offeringOf` and for the
  * same reason: #31's teaching plan is Section-bound and is authorised by
@@ -86,7 +88,8 @@ const CODE = /^\d{8}$/;
  * to the Offering.
  */
 async function sectionOf(pool, req, sectionId) {
-  if (!/^\d+$/.test(String(sectionId))) return null;
+  const id = integerId(sectionId);
+  if (id === null) return null;
   const { rows } = await pool.query(
     // The รายวิชา comes back with the Section because the heading says it, as
     // #27's does. It is display, not authorisation: what decides the answer
@@ -98,7 +101,7 @@ async function sectionOf(pool, req, sectionId) {
        JOIN semester_courses sc ON sc.id = cs.semester_course_id
        JOIN subjects s ON s.subject_id = sc.subject_id
       WHERE cs.section_id = $1 AND cst.user_id = $2`,
-    [sectionId, req.session.userId],
+    [id, req.session.userId],
   );
   return rows[0] ?? null;
 }

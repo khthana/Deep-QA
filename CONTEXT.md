@@ -32,9 +32,10 @@ and PLO mappings hang off.
 A Program Subject opened for a specific academic year and semester. One Offering splits into Sections.
 _Avoid_: semester course, course in term
 
-**Section** (กลุ่มเรียน):
+**Section** (ตอนเรียน):
 A teaching group within an Offering, with its own teachers, enrolled students, activities and scores.
-_Avoid_: class, course
+_Avoid_: class, course, กลุ่มเรียน — the older Thai term, too easily read as **Work Group** (กลุ่มงาน); the
+rebuild says ตอนเรียน everywhere
 
 ### Learning outcomes
 

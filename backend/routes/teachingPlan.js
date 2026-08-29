@@ -47,7 +47,7 @@ const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull } = require('../lib/fields');
+const { blankToNull, integerId } = require('../lib/fields');
 const { sectionOf } = require('./enrolment');
 
 /** The plan is the Teacher's own, as in `enrolment.js` — the same door. */
@@ -116,10 +116,11 @@ function teachingPlanRoutes(pool) {
    * edited from here.
    */
   async function weekOf(sectionId, weekId) {
-    if (!/^\d+$/.test(String(weekId))) return null;
+    const id = integerId(weekId);
+    if (id === null) return null;
     const { rows } = await pool.query(
       `SELECT ${RETURNED} FROM course_syllabus WHERE id = $1 AND section_id = $2`,
-      [weekId, sectionId],
+      [id, sectionId],
     );
     return rows[0] ?? null;
   }
@@ -170,14 +171,15 @@ function teachingPlanRoutes(pool) {
         // the pairing in the UPDATE's own WHERE, so the write and the
         // ownership check cannot disagree — an id that is not this Section's,
         // or vanished under a colleague's hand, is the empty RETURNING.
-        if (!/^\d+$/.test(String(req.params.weekId))) return notThisWeek(res);
+        const weekId = integerId(req.params.weekId);
+        if (weekId === null) return notThisWeek(res);
         const { week_no, title, description, remark } = read.values;
         const { rows } = await pool.query(
           `UPDATE course_syllabus
               SET week_no = $3, title = $4, description = $5, remark = $6, updated_at = now()
             WHERE id = $1 AND section_id = $2
             RETURNING ${RETURNED}`,
-          [req.params.weekId, section.section_id, week_no, title, description, remark],
+          [weekId, section.section_id, week_no, title, description, remark],
         );
         if (!rows[0]) return notThisWeek(res);
         res.json({ week: rows[0] });
