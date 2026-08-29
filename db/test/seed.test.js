@@ -445,6 +445,7 @@ test('seeding twice changes nothing', async () => {
   const TABLES = [
     'student',
     'activities',
+    'course_syllabus',
     'activity_scores',
     'student_group',
     'student_group_member',

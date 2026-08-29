@@ -70,9 +70,14 @@ MUTANTS = {
     # eleven that have nothing to do with whose ตอนเรียน it is. `::text` and not
     # `::int`, which was the second: a user id here is `teach01`, and the cast
     # that looked right for a key is the one the third tier of ADR-0001 is about.
+    #
+    # Rewritten 2026-08-29: #104 hoisted `sectionOf` to module level so #31
+    # could import it, and the query lost two spaces of indentation with the
+    # move - same MISS, same cause, as `27:anyclo` when `offeringOf` was
+    # hoisted. Re-proved against 25a after the rewrite.
     "anysection": ("route",
-                   "        WHERE cs.section_id = $1 AND cst.user_id = $2`,",
-                   "        WHERE cs.section_id = $1 AND $2::text IS NOT NULL`,"),
+                   "      WHERE cs.section_id = $1 AND cst.user_id = $2`,",
+                   "      WHERE cs.section_id = $1 AND $2::text IS NOT NULL`,"),
     # Authorisation intact, grain widened: the list is drawn from the Offering
     # the way `clos.js` resolves one, so both ตอนเรียน of this รายวิชา show all
     # 113. Kills the second row 9 at the disjointness of the two class lists,

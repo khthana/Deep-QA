@@ -25,3 +25,26 @@ own a `PLO1`. Scoping each of those to its parent fixes a real defect while keep
   keep their current API shape.
 - Tier 2 tables lose their `id` column, so any student code that selects or passes `program_subjects.id` or
   `user_roles.id` must be rewritten during the copy-and-modify pass rather than carried over.
+
+## Amended by #31 — the one tier 3 table with no natural key to enforce
+
+[#31](https://github.com/khthana/Deep-QA/issues/31) built แผนการสอน on `course_syllabus`, and that table is the
+exception to the paragraph above: it is listed in tier 3, it keeps its surrogate `id`, and it has **no `UNIQUE`
+constraint** — migration 0002 left `(section_id, week_no)` deliberately open, and the ticket's behaviour depends on
+that being so.
+
+The reason is that `(section_id, week_no)` is not a natural key. A week number is not an identifier the record earns
+by being that record; it is a date, written by the person, and one week of a semester may hold two topics for the
+same honest reason a Tuesday may hold two lectures. Nothing in the system addresses a plan row by its week: the FK
+that matters is `activities.course_syllabus_id`, which points at the surrogate. Declaring the pair unique would not
+be enforcing a natural key, it would be inventing a rule the domain does not have — and it would fail at the first
+week somebody wanted to split.
+
+So tier 3's sentence reads, more precisely: *a surrogate primary key is kept for FK and URL use, and the full natural
+key is enforced with a `UNIQUE` constraint where there is one*. The tier is about what a key is for, and the three
+tables the thesis schema got wrong (`course_sections.section_number`, `subject_clo.clo_number`,
+`learning_outcomes.outcome_code`) all had a real key scoped wrongly. `course_syllabus` has none to scope.
+
+Where the row order comes from instead: `ORDER BY week_no ASC, id ASC` in `backend/routes/teachingPlan.js` — the
+calendar first, then insertion order within a week — and the screen names its rows by number *and* title, because the
+number alone does not identify one.

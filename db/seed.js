@@ -504,6 +504,54 @@ const ACTIVITIES = [
 ];
 
 /**
+ * The weekly teaching plan every section carries - #31. Three weeks, one per
+ * shape the screen draws: a full row, a row with no remark, and a title alone.
+ * `composePlanWeek` bakes the section number and year into the text because
+ * the plan's grain is the Section - two sections of one Offering must read
+ * differently on a screen, and so must two years, or a grain test has nothing
+ * to see (the behaviour/criteria seeds are identical across years by
+ * construction, and their acceptance walks had to prove year isolation by
+ * editing instead of reading).
+ */
+const TEACHING_PLAN = [
+  {
+    week_no: 1,
+    title: 'แนะนำรายวิชาและแนวคิดเชิงวัตถุ',
+    description: 'ภาพรวมรายวิชา เกณฑ์การวัดผล และเครื่องมือที่ใช้ตลอดภาคเรียน',
+    remark: 'ยังไม่มีการเก็บคะแนนในสัปดาห์นี้',
+  },
+  {
+    week_no: 2,
+    title: 'คลาสและอ็อบเจกต์',
+    description: 'การประกาศคลาส สมาชิก และการสร้างอ็อบเจกต์',
+    remark: null,
+  },
+  { week_no: 3, title: 'การสืบทอดและการซ่อนรายละเอียด', description: null, remark: null },
+];
+
+/**
+ * The activity the seed attaches to week 1 of every section's plan, so that
+ * #31's delete guard has a referenced week to refuse - the foreign key is
+ * SET NULL, so without a seeded reference the guard could only be tested by
+ * building the reference first.
+ */
+const PLAN_REFERENCED_ACTIVITY = 'สอบกลางภาค';
+
+/** One plan row as the seed writes it - tests assert against this, not a copy. */
+function composePlanWeek(spec, sectionNumber, year) {
+  return {
+    week_no: spec.week_no,
+    title: `${spec.title} (ตอนเรียนที่ ${sectionNumber} ปีการศึกษา ${year})`,
+    description: spec.description,
+    remark: spec.remark,
+  };
+}
+
+/** The whole seeded plan of one section, in week order. */
+const planWeeksFor = (sectionNumber, year) =>
+  TEACHING_PLAN.map((spec) => composePlanWeek(spec, sectionNumber, year));
+
+/**
  * The two cohorts. docs/04 §1.3 gives the current year 113 students; the prior
  * year is smaller and is there for one reason - #6 asks for "a second academic
  * year of completed marks ... for the same Subject", which is what the
@@ -1002,7 +1050,7 @@ async function seedOffering(client, cohort) {
       [section.section_id, byAlias(spec.teacher)],
     );
 
-    sections.push({ id: section.section_id, number: spec.number });
+    sections.push({ id: section.section_id, number: spec.number, teacher: spec.teacher });
   }
 
   return { offeringId: offering.id, sections };
@@ -1139,6 +1187,39 @@ async function seedAssessment(client, { section, students, cloIds, ratioIds, yea
 }
 
 /**
+ * The section's weekly plan, and the one activity attached to week 1.
+ *
+ * Found-or-created on (section_id, week_no): the schema deliberately has no
+ * unique key there - one week may hold several topics - but the seed writes
+ * one row per week, so the pair is a natural key *of the seed's own rows* and
+ * makes the rerun a no-op. Runs after seedAssessment because the attachment
+ * needs the activity to exist.
+ */
+async function seedTeachingPlan(client, { section, year, performedBy }) {
+  let firstWeekId = null;
+
+  for (const spec of TEACHING_PLAN) {
+    const week = composePlanWeek(spec, section.number, year);
+    const row = await findOrCreate(client, {
+      find: `SELECT id FROM course_syllabus WHERE section_id = $1 AND week_no = $2`,
+      findParams: [section.id, week.week_no],
+      insert: `INSERT INTO course_syllabus (
+                 section_id, week_no, title, description, remark, created_by
+               )
+               VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      insertParams: [section.id, week.week_no, week.title, week.description, week.remark, performedBy],
+    });
+    if (firstWeekId === null) firstWeekId = row.id;
+  }
+
+  await client.query(
+    `UPDATE activities SET course_syllabus_id = $1
+      WHERE section_id = $2 AND activity_name = $3 AND course_syllabus_id IS DISTINCT FROM $1`,
+    [firstWeekId, section.id, PLAN_REFERENCED_ACTIVITY],
+  );
+}
+
+/**
  * Work groups for one section: BR-06's ten-student ceiling respected, and
  * BR-07 honoured by construction - the roll is walked once and each student is
  * placed in exactly one group.
@@ -1238,6 +1319,7 @@ async function summarise(client) {
       (SELECT count(*) FROM student)              AS students,
       (SELECT count(*) FROM course_sections)      AS sections,
       (SELECT count(*) FROM activities)           AS activities,
+      (SELECT count(*) FROM course_syllabus)      AS plan_weeks,
       (SELECT count(*) FROM activity_scores)      AS marks,
       (SELECT count(*) FROM student_group)        AS groups,
       (SELECT count(*) FROM student_group_member) AS group_members
@@ -1285,6 +1367,15 @@ async function seed({ schema } = {}) {
           cloIds,
           ratioIds,
           year: cohort.year,
+        });
+
+        // After the assessment, because week 1's attachment needs the
+        // activity to exist. Both years: the plan is Section-bound, and the
+        // prior year's sections need their own for the grain to be visible.
+        await seedTeachingPlan(client, {
+          section,
+          year: cohort.year,
+          performedBy: byAlias(section.teacher),
         });
 
         // Groups are for the current year only. The prior year is there to be
@@ -1336,6 +1427,9 @@ module.exports = {
   CLOS,
   SCORE_RATIOS,
   ACTIVITIES,
+  TEACHING_PLAN,
+  PLAN_REFERENCED_ACTIVITY,
+  planWeeksFor,
   COHORTS,
   MAX_GROUP_SIZE,
   // The organisation, exported because #9's scope tests are about it: which
@@ -1360,6 +1454,7 @@ if (require.main === module) {
       console.log(`  ${counts.accounts} accounts, one per row of docs/04 §1.2`);
       console.log(`  ${counts.students} students across ${counts.sections} sections`);
       console.log(`  ${counts.activities} activities and ${counts.marks} marks`);
+      console.log(`  ${counts.plan_weeks} teaching-plan weeks`);
       console.log(`  ${counts.groups} work groups holding ${counts.group_members} students`);
       console.log(`\nEvery account signs in with the password documented in README.md.`);
     })

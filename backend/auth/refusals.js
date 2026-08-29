@@ -443,6 +443,18 @@ const REFUSALS = {
   weightInUse: (category) =>
     `หมวดคะแนน "${category}" มีกิจกรรมการวัดผลอ้างอิงอยู่ จึงลบไม่ได้ ให้ย้ายหรือลบกิจกรรมในหมวดนี้ก่อน`,
 
+  // Teaching plan - #31. แผนการสอน, Section-bound. `weekInUse` is a function
+  // for `weightInUse`'s reason: the person deleted one week of a plan that
+  // holds many, and the sentence has to name which one was refused. The week
+  // number is the person's own (the schema deliberately has no key on it - a
+  // week may hold several topics), which is why `invalidWeek` speaks about
+  // the number's shape and not about collisions.
+  invalidWeek:
+    'ข้อมูลแผนการสอนไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบสัปดาห์ (จำนวนเต็มตั้งแต่ 1) และหัวข้อ',
+  weekNotFound: 'ไม่พบสัปดาห์ที่ระบุ',
+  weekInUse: (weekNo) =>
+    `สัปดาห์ที่ ${weekNo} มีกิจกรรมการวัดผลอ้างอิงอยู่ จึงลบไม่ได้ ให้ย้ายหรือลบกิจกรรมออกจากสัปดาห์นี้ก่อน`,
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.

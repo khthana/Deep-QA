@@ -83,6 +83,19 @@ A piece of assessed work within a Section, either individual or group, carrying 
 per-CLO weights.
 _Avoid_: assignment, task
 
+**Teaching Plan** (แผนการสอน):
+The week-by-week plan of one **Section** — each row a week number, a topic and optional detail and remarks. Unlike
+CLOs and the weighting scheme, it belongs to the Section and not to the Offering, so two Sections of one Offering may
+teach the same subject to different plans. An Activity may name the week it belongs to.
+_Avoid_: syllabus — the table is `course_syllabus`, but a syllabus in Thai practice (มคอ.3) is the whole course
+specification and this is one part of it; course outline
+
+**Week** (สัปดาห์):
+One row of a Teaching Plan. The number is the week of the semester as the teacher means it, not a position: it is
+typed rather than assigned, two rows may share one, and deleting a row never renumbers the others (ADR-0001, amended
+by #31).
+_Avoid_: session, period
+
 **Work Group** (กลุ่มงาน):
 A group of at most 10 students within a Section for group Activities. A student belongs to at most one Work Group per
 Section.

@@ -70,33 +70,41 @@ const IMPORT_COLUMNS = ['student_id'];
 /** Eight digits, the same shape #17's register refuses anything else in. */
 const CODE = /^\d{8}$/;
 
+/**
+ * This Section, if this account teaches it — and null for every other case.
+ *
+ * The `/^\d+$/` guard is ahead of the query for `teaching.js`' reason: the
+ * column is an integer and a non-numeric id would be a 22P02 from the
+ * database rather than the 404 the caller is owed.
+ *
+ * Module-level and exported, as `clos.js` exports `offeringOf` and for the
+ * same reason: #31's teaching plan is Section-bound and is authorised by
+ * exactly this question, and a fourth copy of the register join is what
+ * [#104](https://github.com/khthana/Deep-QA/issues/104) exists to prevent.
+ * The two names stay two shapes on purpose — this one stops at the Section
+ * (see the grain note at the top of this file), `offeringOf` resolves through
+ * to the Offering.
+ */
+async function sectionOf(pool, req, sectionId) {
+  if (!/^\d+$/.test(String(sectionId))) return null;
+  const { rows } = await pool.query(
+    // The รายวิชา comes back with the Section because the heading says it, as
+    // #27's does. It is display, not authorisation: what decides the answer
+    // is the join through `course_sections_teacher` and nothing else.
+    `SELECT cs.section_id, cs.section_number, sc.academic_year, sc.semester,
+            sc.subject_id, s.subject_name_en
+       FROM course_sections_teacher cst
+       JOIN course_sections cs ON cs.section_id = cst.section_id
+       JOIN semester_courses sc ON sc.id = cs.semester_course_id
+       JOIN subjects s ON s.subject_id = sc.subject_id
+      WHERE cs.section_id = $1 AND cst.user_id = $2`,
+    [sectionId, req.session.userId],
+  );
+  return rows[0] ?? null;
+}
+
 function enrolmentRoutes(pool) {
   const router = express.Router();
-
-  /**
-   * This Section, if this account teaches it — and null for every other case.
-   *
-   * The `/^\d+$/` guard is ahead of the query for `teaching.js`' reason: the
-   * column is an integer and a non-numeric id would be a 22P02 from the
-   * database rather than the 404 the caller is owed.
-   */
-  async function sectionOf(req, sectionId) {
-    if (!/^\d+$/.test(String(sectionId))) return null;
-    const { rows } = await pool.query(
-      // The รายวิชา comes back with the Section because the heading says it, as
-      // #27's does. It is display, not authorisation: what decides the answer
-      // is the join through `course_sections_teacher` and nothing else.
-      `SELECT cs.section_id, cs.section_number, sc.academic_year, sc.semester,
-              sc.subject_id, s.subject_name_en
-         FROM course_sections_teacher cst
-         JOIN course_sections cs ON cs.section_id = cst.section_id
-         JOIN semester_courses sc ON sc.id = cs.semester_course_id
-         JOIN subjects s ON s.subject_id = sc.subject_id
-        WHERE cs.section_id = $1 AND cst.user_id = $2`,
-      [sectionId, req.session.userId],
-    );
-    return rows[0] ?? null;
-  }
 
   const notThisSection = (res) => res.status(404).json({ message: REFUSALS.sectionNotFound });
 
@@ -146,7 +154,7 @@ function enrolmentRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        const section = await sectionOf(req, req.params.sectionId);
+        const section = await sectionOf(pool, req, req.params.sectionId);
         if (!section) return notThisSection(res);
 
         const { page, perPage, offset } = pageOf(req);
@@ -190,7 +198,7 @@ function enrolmentRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        if (!(await sectionOf(req, req.params.sectionId))) return notThisSection(res);
+        if (!(await sectionOf(pool, req, req.params.sectionId))) return notThisSection(res);
         return sendTemplate(res, 'section-students-template.csv', IMPORT_COLUMNS, {
           student_id: '66019999',
         });
@@ -217,7 +225,7 @@ function enrolmentRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        const section = await sectionOf(req, req.params.sectionId);
+        const section = await sectionOf(pool, req, req.params.sectionId);
         if (!section) return notThisSection(res);
 
         const result = await importRows(pool, req.body, {
@@ -256,7 +264,7 @@ function enrolmentRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        const section = await sectionOf(req, req.params.sectionId);
+        const section = await sectionOf(pool, req, req.params.sectionId);
         if (!section) return notThisSection(res);
 
         const draft = readCode(req.body ?? {});
@@ -299,7 +307,7 @@ function enrolmentRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        const section = await sectionOf(req, req.params.sectionId);
+        const section = await sectionOf(pool, req, req.params.sectionId);
         if (!section) return notThisSection(res);
 
         const studentId = req.params.studentId;
@@ -334,4 +342,4 @@ function enrolmentRoutes(pool) {
   return router;
 }
 
-module.exports = { enrolmentRoutes };
+module.exports = { enrolmentRoutes, sectionOf };
