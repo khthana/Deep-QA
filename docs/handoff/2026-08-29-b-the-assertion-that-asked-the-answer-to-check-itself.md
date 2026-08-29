@@ -131,6 +131,12 @@ git branch -m master main && git fetch origin --prune && git branch -u origin/ma
 
 **รีสตาร์ต backend ก่อนเดินใบตรวจด้วยมือ** — `node server.js` ไม่มี reload
 
+**สภาพเครื่อง ณ จบเซสชัน** — สแตกเดินมือยังเปิดค้าง: backend `node server.js` ที่ 3000 (ตัวที่
+รีสตาร์ตไว้ก่อนเดิน #33) และ CRA ที่ 5000 · schema `deep_core` อยู่ในสภาพ seed สะอาด (reset +
+migrate + seed ก่อนเดิน และการเดินไม่ได้เขียนอะไรลงไป) · container `deep-core-postgres` รันอยู่
+ที่พอร์ต 5433 · `grader-app-1` ที่เคยนั่งทับพอร์ต 3000 ยังถูก stop ไว้ คืนได้ด้วย
+`docker start grader-app-1`
+
 ## 8. ข้อตกลงยืนพื้น
 
 ไม่เปลี่ยน — ดูฉบับ `2026-08-25-b-...` และ `2026-08-25-c-...`: สองแกนของ code-review ·
