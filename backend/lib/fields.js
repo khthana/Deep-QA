@@ -86,10 +86,27 @@ const boundedInteger = (value, { min, max }) => {
   return number;
 };
 
+/**
+ * A number to the hundredth, which is how far every mark in this system counts.
+ *
+ * Three routes reached for it independently — a mark being read, a share being
+ * divided, an average being taken — and three copies of a rounding rule is
+ * three places for the hundredth to be decided differently.
+ */
+const round2 = (value) => Math.round(value * 100) / 100;
+
 /** Postgres says a unique index was violated; which one is not the point. */
 const isDuplicate = (error) => error.code === '23505';
 
 /** Something still references the row that was asked to be destroyed. */
 const isReferenced = (error) => error.code === '23503';
 
-module.exports = { trimmed, blankToNull, integerId, boundedInteger, isDuplicate, isReferenced };
+module.exports = {
+  trimmed,
+  blankToNull,
+  integerId,
+  boundedInteger,
+  round2,
+  isDuplicate,
+  isReferenced,
+};

@@ -95,7 +95,7 @@ const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull, boundedInteger, integerId } = require('../lib/fields');
+const { blankToNull, boundedInteger, integerId, round2 } = require('../lib/fields');
 const { sectionOf } = require('./enrolment');
 
 /** The one role these routes open for, as in enrolment.js and teachingPlan.js. */
@@ -161,7 +161,7 @@ function readMark(value) {
         ? Number(value.trim())
         : NaN;
   if (!Number.isFinite(number) || number < 0 || number > MAX_MARK) return null;
-  return Math.round(number * 100) / 100;
+  return round2(number);
 }
 
 /**

@@ -62,7 +62,7 @@ const express = require('express');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { parseTable } = require('../lib/csv');
-const { blankToNull, integerId } = require('../lib/fields');
+const { blankToNull, integerId, round2 } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { sectionOf, notThisSection } = require('./enrolment');
 
@@ -76,7 +76,6 @@ const WHO_COLUMNS = ['student_id', 'full_name_th'];
 const WHOLE_MARK_COLUMN = 'score';
 
 /** Marks are `numeric(5,2)`; two decimals is what the column keeps. */
-const round2 = (value) => Math.round(value * 100) / 100;
 
 /**
  * A mark as a person writes it: blank means *not marked yet* and is a null,
