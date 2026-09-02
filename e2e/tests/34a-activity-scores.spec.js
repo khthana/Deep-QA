@@ -525,3 +525,45 @@ test('row 13: a student marked on only some outcomes shows no whole-Activity tot
   await expect(cloCell(page, who, clos[0])).not.toHaveValue('');
   await expect(cloCell(page, who, clos[1])).toHaveValue('');
 });
+
+test('row 14: a total added back up from stored shares is a mark, not a floating point tail', async ({
+  page,
+}) => {
+  const midterm = await activityNamed(MIDTERM);
+  const students = await roll();
+  const who = students[0].student_id;
+  await remember(midterm.id, [who]);
+
+  const { rows: mapping } = await db.query(
+    `SELECT clo_id FROM activity_clo_mapping
+      WHERE activity_id = $1 ORDER BY sequence_order ASC, id ASC`,
+    [midterm.id],
+  );
+
+  // Shares that are exact in the column and inexact when added up in
+  // JavaScript: 0.1 + 0.2 is 0.30000000000000004. The screen reads a whole
+  // Activity mark by adding the outcomes' shares, so the arithmetic that the
+  // division was careful about on the way in happens again on the way out.
+  await db.query('UPDATE activity_scores SET score = 0 WHERE activity_id = $1 AND student_id = $2', [
+    midterm.id,
+    who,
+  ]);
+  await db.query(
+    'UPDATE activity_scores SET score = 0.1 WHERE activity_id = $1 AND student_id = $2 AND clo_id = $3',
+    [midterm.id, who, mapping[0].clo_id],
+  );
+  await db.query(
+    'UPDATE activity_scores SET score = 0.2 WHERE activity_id = $1 AND student_id = $2 AND clo_id = $3',
+    [midterm.id, who, mapping[1].clo_id],
+  );
+
+  await openScores(page, section);
+  await chooseActivity(page, section, midterm.id);
+  await setEntry(page, 'student');
+  await setMode(page, 'activity');
+
+  // Two decimals, because that is all the column can hold and all a mark can
+  // mean. Found by hand-walking the sheet: the seed's own marks add up to
+  // 88.66999999999999, and that is what a teacher was shown in a mark box.
+  await expect(wholeCell(page, who)).toHaveValue('0.3');
+});

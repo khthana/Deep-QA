@@ -61,6 +61,19 @@ function byStudent(marks) {
 /** A number as a cell holds it: the empty string for "not marked", never a zero. */
 const asText = value => (value === null || value === undefined ? '' : String(Number(value)))
 
+/**
+ * Two decimals, which is what the column keeps and therefore all a mark can
+ * mean — `backend/routes/activityScores.js` rounds the same way for the same
+ * reason.
+ *
+ * Adding the shares back up is floating point arithmetic on numbers that were
+ * exact when they were stored: 32.08 + 31.27 + 25.32 is 88.66999999999999, and
+ * a teacher who opened this screen was shown that, in a box, as somebody's
+ * mark. The division was already careful to be exact on the way in; this is the
+ * same care on the way out.
+ */
+const round2 = value => Math.round(value * 100) / 100
+
 /** What every member holds, or null when they do not all hold the same thing. */
 function agreed(values) {
   if (values.length === 0) return null
@@ -169,7 +182,7 @@ export default function ActivityScores() {
       // back it would fill the untouched outcomes with a division of it.
       const values = clos.map(clo => mine.get(clo) ?? null)
       if (values.some(value => value === null)) return ''
-      return asText(values.reduce((sum, value) => sum + Number(value), 0))
+      return asText(round2(values.reduce((sum, value) => sum + Number(value), 0)))
     }
 
     const grid = {}

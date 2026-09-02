@@ -2,23 +2,29 @@
 """
 #34 คะแนนกิจกรรมการเรียนรู้ - a grid under two toggles.
 
-Fourteen mutants. The ticket is one storage shape and two ways of typing into it,
+Fifteen mutants. The ticket is one storage shape and two ways of typing into it,
 so most of these break the translation between the two: a whole-Activity mark
 that is not divided, a group mark that reaches one member, a ceiling that stops
 being a ceiling, an upsert that stops being one.
 
-Five are about the screen rather than the routes. Two are there because they are
+Six are about the screen rather than the routes. Two are there because they are
 failures that read as an empty screen rather than as a wrong one: a grid that
 opens blank over marks that exist invites a teacher to save a class of nulls,
 and a grid whose columns are the Offering's outcomes rather than this Activity's
 invites a mark against work that was never assessed.
 
-The last three are each a defect the /code-review of this ticket found, and each
-restores what the screen did before it was fixed. They are grouped because they
-are one mistake in three places: a blank cell means *not marked*, and a screen
-that draws a cell blank for a reason of its own — a group whose members
+Three of the rest are each a defect the /code-review of this ticket found, and
+each restores what the screen did before it was fixed. They are grouped because
+they are one mistake in three places: a blank cell means *not marked*, and a
+screen that draws a cell blank for a reason of its own — a group whose members
 disagree, a student marked on only some outcomes — then submits it as though a
-teacher had cleared it, erases the very marks the blank was reporting.
+teacher had cleared it, erasing the very marks the blank was reporting.
+
+The last one is not from a review at all. `totalkeepsfloattail` came from
+hand-walking the acceptance sheet, which is the only place it could have come
+from: it needs a mark whose stored shares do not add cleanly in binary, and
+every number the other seams type divides and re-adds exactly. On the seed's own
+marks the screen read 88.66999999999999, in a box, as somebody's mark.
 
 Row 10 of `34a` has no mutant here on purpose. What it asserts - a ตอนเรียน that
 is not this account's is refused before the grid is drawn - is refused by #32's
@@ -150,6 +156,16 @@ MUTANTS = {
     "savesendseveryrow": ("screen",
                           "        .filter(row => changed(draft[row.key], recorded[row.key]))",
                           "        .filter(row => changed(draft[row.key], recorded[row.key]) || true)"),
+    # The total stops being rounded on the way out, so a mark whose shares do
+    # not add cleanly in binary is shown as 88.66999999999999 in a box a
+    # teacher is invited to type into. The stored numbers are exact and the
+    # arithmetic that displays them is not - which is why every test that types
+    # a number and reads it back stayed green: 61 and 12.5 divide and re-add
+    # perfectly. Found by hand-walking the sheet, on the seed's own marks.
+    # Kills row 14.
+    "totalkeepsfloattail": ("screen",
+                            "      return asText(round2(values.reduce((sum, value) => sum + Number(value), 0)))",
+                            "      return asText(values.reduce((sum, value) => sum + Number(value), 0))"),
     # A student marked on only some outcomes gets a whole-Activity cell again,
     # holding the sum of the marks that happen to be there. It is lower than
     # the work that was marked and nobody typed it, and the next save divides
