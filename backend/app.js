@@ -54,6 +54,7 @@ const { weightRoutes } = require('./routes/weights');
 const { teachingPlanRoutes } = require('./routes/teachingPlan');
 const { activityRoutes } = require('./routes/activities');
 const { enrolmentRoutes } = require('./routes/enrolment');
+const { workGroupRoutes } = require('./routes/workGroups');
 const { ploRoutes } = require('./routes/plos');
 const { ploMappingRoutes } = require('./routes/ploMapping');
 const { programRoutes } = require('./routes/programs');
@@ -112,6 +113,7 @@ function createApp({ pool }) {
   app.use('/api', teachingPlanRoutes(pool));
   app.use('/api', activityRoutes(pool));
   app.use('/api', enrolmentRoutes(pool));
+  app.use('/api', workGroupRoutes(pool));
   app.use('/api', ploRoutes(pool));
   app.use('/api', ploMappingRoutes(pool));
   app.use('/api', rubricRoutes(pool));

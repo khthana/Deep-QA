@@ -652,6 +652,25 @@ const COHORTS = [
 const GROUP_SIZE = 8;
 const MAX_GROUP_SIZE = 10;
 
+/**
+ * Students at the end of each roll left out of the grouping — #26.
+ *
+ * A fully grouped class is a fixture on which the กลุ่มงาน screen can do
+ * nothing: every one of its actions starts by choosing somebody to put in a
+ * group, and BR-07 says that somebody must not already be in one. So a few of
+ * each roll are left out, and they are not a contrivance - a class always has
+ * the people who enrolled after the groups were drawn up.
+ *
+ * Eleven, and the number is BR-06's rather than a taste: the only way a
+ * browser or a person can prove the ceiling is to stand a group at ten and be
+ * refused the eleventh, and the only students they can build that group from
+ * are the ones no group holds. Ten fills a group and the eleventh is the one
+ * that gets refused, which is the largest thing this fixture has to be able to
+ * do. Everything else - adding somebody, moving them, taking them out again -
+ * is one or two of the same pool.
+ */
+const UNGROUPED_TAIL = MAX_GROUP_SIZE + 1;
+
 const FIRST_NAMES = [
   'ณัฐพล', 'ศิริพร', 'ธนวัฒน์', 'พิมพ์ชนก', 'กิตติศักดิ์', 'อารยา', 'ชนาธิป', 'ปวีณา',
   'ภาณุพงศ์', 'สุภาวดี', 'วรเมธ', 'ณิชากร', 'อดิศร', 'เบญจวรรณ', 'ปรมินทร์', 'ธัญญาเรศ',
@@ -1316,17 +1335,20 @@ async function seedWorkGroups(client, { section, students, performedBy }) {
   let created = 0;
   let memberCount = 0;
 
+  // The last few of the roll are not grouped at all - UNGROUPED_TAIL says why.
+  const grouped = students.slice(0, Math.max(students.length - UNGROUPED_TAIL, 0));
+
   // The roll is divided into as few groups as the ceiling allows and then
   // spread evenly across them, rather than filled eight at a time. Filling
   // leaves the remainder in a group of its own - a section of 57 ends with a
   // group of one - and a work group with one student in it is not a fixture
   // anything can be tested against.
-  const groupCount = Math.ceil(students.length / GROUP_SIZE);
+  const groupCount = Math.ceil(grouped.length / GROUP_SIZE);
 
   for (let number = 1; number <= groupCount; number += 1) {
-    const members = students.slice(
-      Math.floor(((number - 1) * students.length) / groupCount),
-      Math.floor((number * students.length) / groupCount),
+    const members = grouped.slice(
+      Math.floor(((number - 1) * grouped.length) / groupCount),
+      Math.floor((number * grouped.length) / groupCount),
     );
     const name = `กลุ่มที่ ${number}`;
 
@@ -1518,6 +1540,7 @@ module.exports = {
   planWeeksFor,
   COHORTS,
   MAX_GROUP_SIZE,
+  UNGROUPED_TAIL,
   // The organisation, exported because #9's scope tests are about it: which
   // faculty a department hangs off and which department a programme hangs off
   // is what decides who reaches what, and a test that spelled the codes out

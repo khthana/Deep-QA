@@ -20,6 +20,7 @@ const {
   unmarkedActivityName,
   COHORTS,
   MAX_GROUP_SIZE,
+  UNGROUPED_TAIL,
   SUBJECT,
   PROGRAM,
   CURRENT_YEAR,
@@ -373,20 +374,32 @@ test('the work groups', async (t) => {
     }
   });
 
-  await t.test('every enrolled student of the current year has a group', async () => {
-    const ungrouped = await count(
-      `SELECT count(*) FROM student_course sc
+  // Every current-year student used to be in a group, and #26 is why that
+  // changed. A fully grouped class is a fixture on which the กลุ่มงาน screen
+  // can do nothing - each of its actions starts by choosing somebody BR-07
+  // allows to be placed - so the seed leaves `UNGROUPED_TAIL` of each roll out,
+  // and the number is BR-06's: ten to fill a group and an eleventh to be
+  // refused. The count is asserted per section rather than in total, because
+  // the total is also right when one section is grouped twice over and the
+  // other not at all.
+  await t.test('each current-year section leaves exactly the ungrouped tail loose', async () => {
+    const { rows } = await pool.query(
+      `SELECT sc.section_id, count(*)::int AS loose FROM student_course sc
        JOIN course_sections cs ON cs.section_id = sc.section_id
        JOIN semester_courses o ON o.id = cs.semester_course_id
        WHERE o.academic_year = $1 AND NOT EXISTS (
          SELECT 1 FROM student_group_member m
          JOIN student_group g ON g.group_id = m.group_id
          WHERE m.student_id = sc.student_id AND g.section_id = sc.section_id
-       )`,
+       )
+       GROUP BY sc.section_id ORDER BY sc.section_id`,
       [CURRENT_YEAR],
     );
 
-    assert.equal(ungrouped, 0);
+    assert.ok(rows.length > 1, 'the current year has more than one section');
+    for (const row of rows) {
+      assert.equal(row.loose, UNGROUPED_TAIL, `section ${row.section_id}`);
+    }
   });
 });
 

@@ -44,7 +44,26 @@ const { formatCsv, parseTable } = require('./csv');
 const { REFUSALS } = require('../auth/refusals');
 
 /**
+ * What a refusing hook said, whichever way it said it.
+ *
+ * A `reason` is looked up; a `message` is already the sentence. Nothing else
+ * is accepted, so a hook that returns `{ reason: 'typo' }` reports `undefined`
+ * rather than silently reporting nothing at all — which is what a bare
+ * `REFUSALS[reason]` did, and is a mistake worth keeping visible.
+ */
+const sentenceOf = (refusal) =>
+  typeof refusal === 'string' ? REFUSALS[refusal] : (refusal.message ?? REFUSALS[refusal.reason]);
+
+/**
  * Read a spreadsheet and apply it, or refuse the whole of it.
+ *
+ * Three of the hooks refuse a row, and each may do it in either of two ways: a
+ * `reason` naming a key of REFUSALS, or a `message` that is the sentence
+ * itself. The second exists for #26 and for the reason `whole` already returned
+ * a sentence rather than a key — a refusal that has to name the group somebody
+ * is already in, or the group that is full, is one sentence with a hole in it
+ * and cannot be a constant. `sentenceOf` below is where the two meet, so no
+ * hook has to know which kind it is handing back.
  *
  * - `readRow(record)` judges one row on its own. Returns `{ ok: true, draft }`
  *   or `{ ok: false, reason }`, where `reason` is a key of REFUSALS. `draft` is
@@ -61,7 +80,8 @@ const { REFUSALS } = require('../auth/refusals');
  *   skipped, so an optional column does not collide with every other blank.
  * - `verify(draft)` is the check that needs the database or the caller's
  *   authority - is this scope yours, is this grant yours to make. Returns a
- *   REFUSALS key to refuse the row, or null to keep it. Optional.
+ *   REFUSALS key, or `{ message }` for a sentence that names a value, to refuse
+ *   the row - or null to keep it. Optional.
  * - `whole(drafts)` is the check that is about the file rather than any row of
  *   it - #30's weights totalling one hundred is the first, and BR-11 will be
  *   the second. Runs only when every row read clean, because a per-row report
@@ -69,7 +89,8 @@ const { REFUSALS } = require('../auth/refusals');
  *   rather than a REFUSALS key - the sentence carries a computed value, which
  *   is the reason the rule cannot be a row's - or null to proceed. Optional.
  * - `insert(client, draft)` writes one row inside the transaction. Returns
- *   `{ ok: true, row }` or `{ ok: false, reason }`.
+ *   `{ ok: true, row }`, or `{ ok: false, reason }`, or `{ ok: false, message }`
+ *   where the sentence names a value the key could not carry.
  * - `onCommit(client)` runs once, inside the transaction, after every row has
  *   been written and before COMMIT. Where an audit line belongs - and, since
  *   #30, where a replace-style import removes what the file no longer names:
@@ -107,7 +128,7 @@ async function importRows(
   for (const record of records) {
     const read = await readRow(record);
     if (!read.ok) {
-      errors.push({ line: record.line, message: REFUSALS[read.reason] });
+      errors.push({ line: record.line, message: sentenceOf(read) });
       continue;
     }
     const { draft } = read;
@@ -133,7 +154,7 @@ async function importRows(
 
     const refusal = verify ? await verify(draft) : null;
     if (refusal) {
-      errors.push({ line: record.line, message: REFUSALS[refusal] });
+      errors.push({ line: record.line, message: sentenceOf(refusal) });
       continue;
     }
 
@@ -157,7 +178,7 @@ async function importRows(
         created.push(result.row);
       } else {
         await client.query('ROLLBACK TO SAVEPOINT row');
-        errors.push({ line, message: REFUSALS[result.reason] });
+        errors.push({ line, message: sentenceOf(result) });
       }
     }
 

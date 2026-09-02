@@ -8,22 +8,22 @@ evidence for TABEE accreditation.
 authorisation layer are done, and the screens on top of them now run from the master data through the outcomes to a
 Section's own teaching: accounts, grants and activity history; departments, curricula, subjects, the student register
 and the subjects of a curriculum; programme learning outcomes, the map from outcomes to subjects, rubrics and their
-criteria; offerings and sections; and — inside one ตอนเรียน — its class list, its course learning outcomes with their
-measurable behaviours and achievement criteria, its weighting scheme, its weekly teaching plan, and its assessed work
-with the outcomes each piece of it is attributed to. Two test suites run against them: `backend`'s 508 tests at the
-HTTP surface and `e2e`'s 231 in a real browser, with 292 mutations recorded in `mutation/` as the proof that the
-browser rows would notice a fault. Alongside all of it sits the student implementation exactly as delivered, which is
+criteria; offerings and sections; and — inside one ตอนเรียน — its class list, the work groups that class is divided
+into, its course learning outcomes with their measurable behaviours and achievement criteria, its weighting scheme,
+its weekly teaching plan, and its assessed work with the outcomes each piece of it is attributed to. Two test suites
+run against them: `backend`'s 531 tests at the HTTP surface and `e2e`'s 242 in a real browser, with 305 mutations
+recorded in `mutation/` as the proof that the browser rows would notice a fault. Alongside all of it sits the student implementation exactly as delivered, which is
 read-only reference and is deleted when the rebuild completes.
 
-Every acceptance checklist has been walked — a ticket here closes on its checklist, not on its tests. Five rows across
-the whole project are not ticked, and none of them is waiting for a person at a screen: one waits on a specification
+Every acceptance checklist but the newest has been walked — a ticket here closes on its checklist, not on its tests.
+[#26](https://github.com/khthana/Deep-QA/issues/26)'s sheet is written and waiting for a person at a screen; of the
+rows on every other sheet, five are not ticked and none of them is waiting for a person: one waits on a specification
 nobody has written ([#49](https://github.com/khthana/Deep-QA/issues/49)), one on the evidence screen that does not
 exist yet ([#35](https://github.com/khthana/Deep-QA/issues/35)), and three are unreachable from a browser by
 construction and are proved at the HTTP surface instead. The newest file in
 [`docs/handoff/`](./docs/handoff/) names them.
 
-Next is marking: [#26](https://github.com/khthana/Deep-QA/issues/26) Work Groups, then
-[#34](https://github.com/khthana/Deep-QA/issues/34) Activity marks and
+Next is marking: [#34](https://github.com/khthana/Deep-QA/issues/34) Activity marks and
 [#35](https://github.com/khthana/Deep-QA/issues/35) Assessment evidence — after which the results and reporting half
 ([#36](https://github.com/khthana/Deep-QA/issues/36)–[#45](https://github.com/khthana/Deep-QA/issues/45)) becomes
 reachable.

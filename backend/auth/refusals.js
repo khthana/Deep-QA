@@ -423,6 +423,46 @@ const REFUSALS = {
   invalidEnrolment:
     'รหัสนักศึกษาไม่ถูกต้อง กรุณาตรวจสอบรหัสนักศึกษา (ตัวเลข 8 หลัก)',
 
+  // Work groups - #26. กลุ่มงาน, Section-bound like the class list above and
+  // for the same reason: two ตอนเรียน are two rooms, and a group spanning them
+  // would be a group nobody can meet with.
+  //
+  // Three of these are functions, which is more than any other block here, and
+  // each one is a criterion that says *name it*. BR-06's ceiling is named
+  // rather than implied because "เพิ่มไม่ได้" over a full group reads as a
+  // fault; BR-07's other group is named because the person is looking at a
+  // roll of fifty-seven and cannot see where else the student already is; and
+  // a deletion names its member count because that is the number the
+  // confirmation is really about.
+  //
+  // `studentInAnotherGroup` points at the move rather than at the removal, and
+  // that sentence is the ticket's fifth criterion in the negative: a screen
+  // that answered this by quietly moving the student would be the delete-and-
+  // add the criterion forbids, and the history would lose the fact that
+  // somebody was moved at all.
+  //
+  // `studentNotGrouped` is its mirror and exists for the same reason - a move
+  // has a place to come from, and a request to move somebody who is in no
+  // group is an add that has been asked for by the wrong verb. Answering it
+  // with the add would be the same silent guess in the other direction.
+  //
+  // `groupNotEmpty` is *not* here. Deleting a group takes its members out
+  // rather than refusing, and writes their removals to the log before it goes -
+  // see `routes/workGroups.js`. Nothing is lost by that delete: the students
+  // stay enrolled, and their marks were never the group's.
+  groupNotFound: 'ไม่พบกลุ่มงานที่ระบุ',
+  invalidGroup: 'ชื่อกลุ่มงานไม่ถูกต้อง กรุณาตั้งชื่อกลุ่ม ความยาวไม่เกิน 100 ตัวอักษร',
+  duplicateGroupName: 'ชื่อกลุ่มงานนี้มีอยู่ในตอนเรียนนี้แล้ว',
+  groupFull: (groupName) =>
+    `กลุ่ม "${groupName}" มีนักศึกษาครบ 10 คนแล้ว กลุ่มงานหนึ่งกลุ่มรับได้ไม่เกิน 10 คน`,
+  studentInAnotherGroup: (groupName) =>
+    `นักศึกษาคนนี้อยู่ในกลุ่ม "${groupName}" ของตอนเรียนนี้แล้ว หนึ่งคนอยู่ได้กลุ่มเดียว หากต้องการเปลี่ยนกลุ่มให้ใช้คำสั่งย้ายเข้ากลุ่มนี้`,
+  studentNotEnrolled: 'นักศึกษาคนนี้ไม่ได้อยู่ในตอนเรียนนี้ กรุณาเพิ่มเข้าตอนเรียนก่อนจึงจะจัดกลุ่มได้',
+  studentNotInGroup: 'ไม่พบนักศึกษาคนนี้ในกลุ่มงานนี้',
+  studentNotGrouped:
+    'นักศึกษาคนนี้ยังไม่ได้อยู่ในกลุ่มใดของตอนเรียนนี้ จึงย้ายไม่ได้ ให้เพิ่มเข้ากลุ่มแทน',
+  studentAlreadyHere: 'นักศึกษาคนนี้อยู่ในกลุ่มนี้อยู่แล้ว',
+
   // Weighting scheme - #30. สัดส่วนคะแนน, saved whole because the hundred
   // rule is about the whole. Two of these are functions — the first in this
   // file — and each earns it: the ticket's second criterion says the refusal

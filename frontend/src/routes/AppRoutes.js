@@ -25,6 +25,7 @@ import GradingWeights from '../pages/GradingWeights'
 import TeachingPlan from '../pages/TeachingPlan'
 import LearningActivities from '../pages/LearningActivities'
 import SubjectStudents from '../pages/SubjectStudents'
+import StudentGroups from '../pages/StudentGroups'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
 import LoadingScreen from '../components/LoadingScreen'
@@ -170,6 +171,7 @@ export default function AppRoutes() {
         <Route path=":sectionId">
           <Route index element={<TeacherSection />} />
           <Route path="subjectStudents" element={<SubjectStudents />} />
+          <Route path="studentGroups" element={<StudentGroups />} />
           <Route path="courseOutcomes" element={<CourseOutcomes />} />
           <Route
             path="courseOutcomes/:cloId/behaviors"

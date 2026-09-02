@@ -53,6 +53,7 @@ test('reset and migrate build the schema from nothing', async (t) => {
     '0004_user_profile_image.sql',
     '0005_external_assessor_validity.sql',
     '0006_user_log_target.sql',
+    '0007_work_group_name_unique.sql',
   ]);
 });
 

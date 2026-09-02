@@ -106,10 +106,23 @@ async function sectionOf(pool, req, sectionId) {
   return rows[0] ?? null;
 }
 
+/**
+ * The one sentence a Section that is not this account's gets — and the one a
+ * Section that does not exist gets, deliberately the same.
+ *
+ * Module-level and exported beside `sectionOf`, because the two are one act:
+ * resolve the ตอนเรียน, or refuse it. #26 was about to be the fourth verbatim
+ * copy, and `lib/fields.js` documents the rule it would have broken - extract
+ * at the third. The two copies still in `teachingPlan.js` and `activities.js`
+ * are [#104](https://github.com/khthana/Deep-QA/issues/104)'s to fold in; they
+ * are not touched here because those files sit in other tickets' mutation
+ * sets, and a refactor inside a sweep's reach is how a mutant quietly starts
+ * missing.
+ */
+const notThisSection = (res) => res.status(404).json({ message: REFUSALS.sectionNotFound });
+
 function enrolmentRoutes(pool) {
   const router = express.Router();
-
-  const notThisSection = (res) => res.status(404).json({ message: REFUSALS.sectionNotFound });
 
   /**
    * One student code, judged on its own — the shape, and nothing else.
@@ -345,4 +358,4 @@ function enrolmentRoutes(pool) {
   return router;
 }
 
-module.exports = { enrolmentRoutes, sectionOf };
+module.exports = { enrolmentRoutes, sectionOf, notThisSection };
