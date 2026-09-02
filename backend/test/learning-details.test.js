@@ -386,6 +386,15 @@ test('the figures agree with the marks in the database, not only with each other
   );
   assert.equal(summary.student_count, enrolled[0].n);
   assert.equal(students.length, enrolled[0].n);
+
+  // The fraction the cards show, so the percentage on screen is not the only
+  // place the grain is stated.
+  assert.equal(summary.scored_count, expected.length);
+  assert.equal(summary.passed_count, expected.filter((score) => score >= 3).length);
+  assert.equal(
+    summary.pass_rate,
+    Math.round((summary.passed_count / summary.scored_count) * 1000) / 10,
+  );
 });
 
 test('the flagged mark and the lowest band are the same line, at every edge', async () => {

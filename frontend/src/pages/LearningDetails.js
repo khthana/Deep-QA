@@ -74,11 +74,19 @@ function spoken(student, clo, cell) {
   return `${student.student_id} ${clo.clo_number} ${score}${cell.flagged ? ' ต่ำกว่าเกณฑ์' : ''}`
 }
 
-/** The three figures, as one card each. */
-const card = (label, value) => (
+/**
+ * The three figures, as one card each.
+ *
+ * `note` is where a figure says what it counted. Two of these three are pooled
+ * over every (student, outcome) that has a score rather than over students, and
+ * a percentage sitting beside a card reading *57 คน* is read as a share of
+ * students however the label is worded. A fraction is not open to that.
+ */
+const card = (label, value, note) => (
   <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
     <p className="text-xs font-medium text-slate-400">{label}</p>
     <p className="mt-1 text-2xl font-semibold text-primary">{value}</p>
+    {note && <p className="mt-1 text-xs text-slate-400">{note}</p>}
   </div>
 )
 
@@ -127,9 +135,17 @@ export default function LearningDetails() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {card('จำนวนนักศึกษา', `${data.summary.student_count} คน`)}
-            {card('คะแนนเฉลี่ย', figure(data.summary.mean, ' / 5'))}
-            {card('ผ่านเกณฑ์ (ทุกข้อรวมกัน)', figure(data.summary.pass_rate, '%'))}
+            {card('จำนวนนักศึกษา', `${data.summary.student_count} คน`, 'ที่ลงทะเบียนตอนเรียนนี้')}
+            {card(
+              'คะแนนเฉลี่ยรายคนรายข้อ',
+              figure(data.summary.mean, ' / 5'),
+              `จาก ${data.summary.scored_count} ช่องที่มีคะแนน`,
+            )}
+            {card(
+              'ผ่านเกณฑ์รายคนรายข้อ',
+              figure(data.summary.pass_rate, '%'),
+              `${data.summary.passed_count} จาก ${data.summary.scored_count} ช่องที่มีคะแนน`,
+            )}
           </div>
 
           {data.empty ? (

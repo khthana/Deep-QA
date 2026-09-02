@@ -244,6 +244,12 @@ function learningDetailRoutes(pool) {
             student_count: roll.length,
             mean: meanOf(scored),
             pass_rate: passRateOf(scored),
+            // The denominator, so the screen can show the fraction rather than
+            // hope a label carries the grain. A percentage beside the words
+            // *57 students* is read as a share of students however it is
+            // titled; `473 of 506` cannot be.
+            scored_count: scored.length,
+            passed_count: scored.filter((score) => score >= PASS).length,
           },
           // Named rather than left to be read off the colours, which is the
           // ticket's fourth criterion in its own words.

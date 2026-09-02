@@ -243,6 +243,10 @@ test('row 4: the three figures are on the screen and agree with the column feet'
   const enrolled = await roll();
   await expect(page.getByText(`${enrolled.length} คน`, { exact: true })).toBeVisible();
 
+  // The two pooled figures show the fraction behind them, because a percentage
+  // beside a card reading *57 คน* is read as a share of students otherwise.
+  await expect(page.getByText(/^\d+ จาก \d+ ช่องที่มีคะแนน$/)).toBeVisible();
+
   // The foot of a column carries that outcome's own mean, its pass rate and
   // the Y or N that BR-17 decides — the same rule the attention list uses.
   const foot = await summaryOf(page, 'CLO-1').innerText();

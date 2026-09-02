@@ -20,10 +20,13 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed through #34, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups) and
-[#34](https://github.com/khthana/Deep-QA/issues/34) (Activity marks) included.
-Every acceptance checklist has been walked; the eight rows that are not ticked are each blocked on
-something other than a person at a screen, and the newest handoff names them.
+Closed through #38, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups),
+[#34](https://github.com/khthana/Deep-QA/issues/34) (Activity marks) and
+[#38](https://github.com/khthana/Deep-QA/issues/38) (Learning detail heatmap) included.
+Every acceptance checklist has been walked; not one row anywhere is unwalked. The rows that are
+not ticked are each blocked on something other than a person at a screen — an arithmetic claim a
+seam proves better than an eye can, or a wording the person who wrote it should not tick — and the
+newest handoff names them.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time. Read it before taking work. Each handoff names the one it supersedes for state,
