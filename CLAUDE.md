@@ -21,8 +21,10 @@ all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are 
 found during the rebuild and opened since.
 
 Closed through #33, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups) included.
-Every acceptance checklist has been walked; the six rows that are not ticked are each blocked on
-something other than a person at a screen, and the newest handoff names them.
+[#34](https://github.com/khthana/Deep-QA/issues/34) (Activity marks) is built and tested at all
+three seams but **not closed**: its acceptance sheet is the one waiting for a walk. Of the
+eighteen rows that are not ticked across every sheet, six are blocked on something other than a
+person at a screen and twelve are #34's; the newest handoff names them.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time. Read it before taking work. Each handoff names the one it supersedes for state,

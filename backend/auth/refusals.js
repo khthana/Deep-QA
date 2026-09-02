@@ -551,6 +551,48 @@ const REFUSALS = {
   activityCloHasMarks: (cloNumber) =>
     `ผลการเรียนรู้ ${cloNumber} มีคะแนนบันทึกไว้ในกิจกรรมนี้แล้ว จึงนำออกจากกิจกรรมไม่ได้`,
 
+  // Marks — #34. คะแนนกิจกรรมการเรียนรู้, where a grid meets two toggles.
+  //
+  // Most of these are functions, and they are functions for one reason: a
+  // teacher correcting a whole class needs to be told *which cell* was
+  // refused. A screen can highlight one; a file cannot, and the file is half
+  // this ticket. So the sentence carries the code, the outcome number, or the
+  // ceiling that was passed.
+  //
+  // `activityHasNoClo` is the refusal that looks like a schema detail and is
+  // not. `activity_scores.clo_id` is NOT NULL, so an Activity attributed to
+  // nothing has nowhere to put a mark — and a screen that answered that with
+  // ไม่สำเร็จ would send a teacher hunting for a typo in a number. The way out
+  // is on the other screen, so the sentence names it.
+  //
+  // The four import sentences are the ticket's own list — count, code, name,
+  // columns — and each says which of the four failed, because "ไฟล์ไม่ตรงกับ
+  // ตอนเรียนนี้" is true of all four and useful for none.
+  activityHasNoClo:
+    'กิจกรรมนี้ยังไม่ได้เชื่อมโยงกับผลการเรียนรู้ จึงบันทึกคะแนนไม่ได้ กรุณาเพิ่มผลการเรียนรู้ให้กิจกรรมนี้ที่หน้ากิจกรรมการเรียนรู้ในรายวิชาก่อน',
+  markOverActivity: (fullMark) =>
+    `คะแนนต้องไม่เกินคะแนนเต็มของกิจกรรมนี้ ซึ่งเท่ากับ ${fullMark}`,
+  markOverClo: (cloNumber, ceiling) =>
+    `คะแนนของผลการเรียนรู้ ${cloNumber} ต้องไม่เกิน ${ceiling} ซึ่งเป็นคะแนนที่กิจกรรมนี้แบ่งให้ข้อนั้น`,
+  invalidMark: 'คะแนนไม่ถูกต้อง กรุณากรอกเป็นตัวเลขตั้งแต่ 0 ขึ้นไป หรือเว้นว่างไว้หากยังไม่ให้คะแนน',
+  markStudentNotEnrolled: (studentId) =>
+    `รหัส ${studentId} ไม่ได้อยู่ในตอนเรียนนี้ จึงบันทึกคะแนนให้ไม่ได้`,
+  marksCountMismatch: (expected, found) =>
+    `จำนวนนักศึกษาในไฟล์ไม่ตรงกับตอนเรียนนี้ ตอนเรียนนี้มี ${expected} คน แต่ไฟล์มี ${found} แถว`,
+  marksStudentMissing: (studentId) =>
+    `ไฟล์ไม่มีรหัส ${studentId} ซึ่งเป็นนักศึกษาของตอนเรียนนี้ ไฟล์ต้องมีครบทุกคน`,
+  marksNameMismatch: (studentId, expected) =>
+    `ชื่อของรหัส ${studentId} ในไฟล์ไม่ตรงกับทะเบียน ซึ่งบันทึกไว้ว่า "${expected}"`,
+  marksCloColumns: (expected) =>
+    `คอลัมน์คะแนนในไฟล์ไม่ตรงกับผลการเรียนรู้ของกิจกรรมนี้ ซึ่งต้องเป็น ${expected} ตามลำดับ`,
+  // The same disagreement as the line above, arriving without a file. The
+  // screen sends what it drew, so a mark against an outcome this Activity does
+  // not assess means the grid is older than the Activity — not that somebody
+  // built the wrong spreadsheet, which is the only thing the sentence above
+  // can mean.
+  markCloNotInActivity: (expected) =>
+    `กิจกรรมนี้ให้คะแนนได้เฉพาะผลการเรียนรู้ ${expected} เท่านั้น กรุณาเปิดหน้านี้ใหม่อีกครั้ง`,
+
   // What the error handler in app.js says. It names nothing, because an
   // unhandled throw is by definition something nobody decided the wording
   // of, and whatever is in the stack is not the caller's business.
