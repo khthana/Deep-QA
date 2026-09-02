@@ -104,6 +104,9 @@ export default function LearningDetails() {
     load()
   }, [load])
 
+  // Outcomes with no verdict at all: not passed, not failed, not asked.
+  const unassessed = data ? data.clos.filter((clo) => clo.passed === null) : []
+
   return (
     <ContentMotionDIV className="space-y-4 px-6 py-6">
       <Notice notice={notice} />
@@ -240,9 +243,24 @@ export default function LearningDetails() {
                   ข้อที่มีสัดส่วนนักศึกษาผ่านเกณฑ์ไม่เกิน 60% ตามเกณฑ์การประเมิน
                 </p>
                 {data.attention.length === 0 ? (
-                  <p className="text-sm text-emerald-700">
-                    ทุกผลการเรียนรู้ผ่านเกณฑ์ ไม่มีข้อที่ต้องปรับปรุง
-                  </p>
+                  // An outcome nobody has been marked on has not passed, so
+                  // *every outcome passed* is a sentence this screen is only
+                  // entitled to when there are none of them. Otherwise it says
+                  // the opposite of the dash in that column's own foot, three
+                  // inches above.
+                  unassessed.length === 0 ? (
+                    <p className="text-sm text-emerald-700">
+                      ทุกผลการเรียนรู้ผ่านเกณฑ์ ไม่มีข้อที่ต้องปรับปรุง
+                    </p>
+                  ) : (
+                    <p className="text-sm text-slate-600">
+                      ข้อที่ประเมินแล้วผ่านเกณฑ์ทุกข้อ ส่วน{' '}
+                      <span className="font-semibold">
+                        {unassessed.map((clo) => clo.clo_number).join(' · ')}
+                      </span>{' '}
+                      ยังไม่มีกิจกรรมใดวัด จึงยังตัดสินไม่ได้
+                    </p>
+                  )
                 ) : (
                   <ul className="space-y-2">
                     {data.attention.map((clo) => (

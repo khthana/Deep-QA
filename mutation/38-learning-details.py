@@ -2,12 +2,12 @@
 """
 #38 รายละเอียดผลการเรียนรู้ - a heatmap, and the rules that colour it.
 
-Eleven mutants. This is the first screen in the rebuild that computes rather
+Twelve mutants. This is the first screen in the rebuild that computes rather
 than records, so most of what could go wrong here is a *plausible wrong
 number* rather than a crash - which is what docs/06 warns about and why the
 arithmetic is pinned at the HTTP surface instead.
 
-These eleven are therefore the other half: what only exists once the numbers
+These twelve are therefore the other half: what only exists once the numbers
 are drawn. A heatmap is a claim about colour, and a colour can be wrong in
 ways a JSON body cannot - every band the same shade, the ramp shifted by one
 so the edges land in the wrong colour, the flag that is only a hue, a grid
@@ -97,6 +97,15 @@ MUTANTS = {
     "labelomitsflag": ("screen",
                        "  return `${student.student_id} ${clo.clo_number} ${score}${cell.flagged ? ' ต่ำกว่าเกณฑ์' : ''}`",
                        "  return `${student.student_id} ${clo.clo_number} ${score}`"),
+    # The outcomes-needing-attention box goes back to reading an empty list as
+    # good news, so a Section with an outcome nobody has been marked on is told
+    # that every outcome passed - on a page whose last column shows a dash for
+    # that exact verdict. This is what the hand-walk of the sheet caught, and
+    # the only mutant here written after a person looked at the screen rather
+    # than before. Kills row 9.
+    "attentionclaimsallpassed": ("screen",
+                                 "                  unassessed.length === 0 ? (",
+                                 "                  true ? ("),
     # The foot of each column loses the Y or N, so whether an outcome cleared
     # BR-17 is left to be inferred from a percentage the reader has to compare
     # against sixty in their head. The mean and the rate are still there, which

@@ -319,6 +319,25 @@ test('row 7: a Section with no marks says so instead of drawing a grid of dashes
   await expect(page.locator('table')).toHaveCount(0);
 });
 
+test('row 9: an outcome nobody has been asked about is not counted as one that passed', async ({
+  page,
+}) => {
+  // The walk of this sheet found the screen saying *every outcome passed* on a
+  // page whose last column showed a dash for that very verdict. Nothing failed,
+  // so the attention list was empty, and an empty list was being read as good
+  // news rather than as an unfinished question.
+  await unassessedOutcome('CLO-92');
+
+  await openDetails(page, section);
+
+  const box = page.locator('div', { hasText: 'ผลการเรียนรู้ที่ควรปรับปรุง' }).last();
+  await expect(box).toContainText('CLO-92');
+  await expect(box).not.toContainText('ทุกผลการเรียนรู้ผ่านเกณฑ์');
+
+  // And the column's own foot agrees: no verdict there either.
+  await expect(summaryOf(page, 'CLO-92')).not.toContainText('Y');
+});
+
 test('row 8: the ตอนเรียน of another account is refused rather than drawn', async ({ page }) => {
   await page.context().clearCookies();
   await signIn(page, ACCOUNTS.teacherTwo);
