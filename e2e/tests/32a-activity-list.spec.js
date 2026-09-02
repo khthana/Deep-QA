@@ -11,7 +11,7 @@ const {
 } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { switchTo } = require('../support/shell');
+const { menuLink, switchTo } = require('../support/shell');
 const { DASHBOARD } = require('../support/teaching-screen');
 const {
   openActivities,
@@ -80,7 +80,7 @@ test('row 1: the menu entry lands on this section\'s work, filed under the schem
   await page.goto(`${DASHBOARD}/${section}`);
   const [answer] = await Promise.all([
     waitForActivities(page),
-    page.getByRole('link', { name: 'กิจกรรมการเรียนรู้ในรายวิชา' }).click(),
+    menuLink(page, 'กิจกรรมการเรียนรู้ในรายวิชา').click(),
   ]);
 
   expect(answer.status()).toBe(200);

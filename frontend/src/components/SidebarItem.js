@@ -114,125 +114,139 @@ function SidebarItem({
       </button>
 
       <div className="flex h-full flex-col overflow-hidden">
-        <ul className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3">
-          {menuForRole.map((item, index) => {
-            const isActive =
-              (role === 'TEACHER' ? !openSection(location.pathname) : true) &&
-              location.pathname.startsWith(item.path)
-            const isMenuOpen = openMenu.includes(item.key)
+        {/*
+          A landmark, because this is not the only navigation on the page: the
+          breadcrumb names the screen you are on with a link of its own, so the
+          two carry a link of the same name whenever you are inside a Section.
+          Labelled, one is *the menu* and the other is *where you are*;
+          unlabelled, they are two anonymous lists of links saying the same
+          words, and a reader who cannot see which is down the side has no way
+          to tell them apart. #109 — where a test hit exactly that ambiguity.
+        */}
+        <nav
+          aria-label="เมนูหลัก"
+          className="custom-scrollbar flex-1 overflow-y-auto px-3"
+        >
+          <ul className="space-y-1">
+            {menuForRole.map((item, index) => {
+              const isActive =
+                (role === 'TEACHER' ? !openSection(location.pathname) : true) &&
+                location.pathname.startsWith(item.path)
+              const isMenuOpen = openMenu.includes(item.key)
 
-            return (
-              <div key={`${item.key}-${index}`}>
-                <li className="group relative">
-                  <NavLink
-                    to={item.path || '#'}
-                    className={`flex items-center rounded-xl px-3 py-3 transition-all duration-200 ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-600'
-                        : 'text-primary hover:bg-blue-50 hover:text-primary'
-                    }`}
-                    onClick={e => {
-                      if (item.sub) {
-                        e.preventDefault()
-                        if (isCollapsed) setIsCollapsed(false)
-                        handleToggleSubmenu(item.key)
-                      }
-                    }}
-                  >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center text-[20px]">
-                      {item.icon ? (
-                        item.icon
-                      ) : (
-                        <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />
-                      )}
-                    </div>
-
-                    {!isCollapsed && (
-                      <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="ml-3 flex flex-1 items-center justify-between overflow-hidden whitespace-nowrap"
-                      >
-                        <span className="text font-medium">{item.label}</span>
-                        {item.sub && (
-                          <FaChevronDown
-                            size={10}
-                            className={`transition-transform duration-200 ${
-                              isMenuOpen ? 'rotate-180' : ''
-                            }`}
-                          />
-                        )}
-                      </motion.div>
-                    )}
-
-                    {/* Tooltip เมื่อหุบ Sidebar */}
-                    {isCollapsed && (
-                      <div className="invisible absolute left-full z-[60] ml-4 whitespace-nowrap rounded-md bg-slate-900 px-3 py-2 text-xs text-white opacity-0 transition-all group-hover:visible group-hover:opacity-100">
-                        {item.label}
-                      </div>
-                    )}
-                  </NavLink>
-                </li>
-
-                {/* Submenu */}
-                <AnimatePresence>
-                  {!isCollapsed && item.sub && isMenuOpen && (
-                    <motion.ul
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="ml-9 mt-1 space-y-1 border-l border-slate-100"
-                    >
-                      {item.sub.map((sub, idx) => {
-                        // 1. คำนวณ Path สำหรับบทบาทอาจารย์
-                        let subPath = sub.path
-
-                        if (role === 'TEACHER') {
-                          const section = openSection(location.pathname)
-
-                          // ถ้ายังไม่ได้เลือกตอนเรียน ไม่ต้องแสดง Submenu ของตอนเรียนนั้น
-                          if (!section) return null
-
-                          subPath = sub.path.replace(SECTION_TOKEN, section)
+              return (
+                <div key={`${item.key}-${index}`}>
+                  <li className="group relative">
+                    <NavLink
+                      to={item.path || '#'}
+                      className={`flex items-center rounded-xl px-3 py-3 transition-all duration-200 ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-600'
+                          : 'text-primary hover:bg-blue-50 hover:text-primary'
+                      }`}
+                      onClick={e => {
+                        if (item.sub) {
+                          e.preventDefault()
+                          if (isCollapsed) setIsCollapsed(false)
+                          handleToggleSubmenu(item.key)
                         }
+                      }}
+                    >
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center text-[20px]">
+                        {item.icon ? (
+                          item.icon
+                        ) : (
+                          <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                        )}
+                      </div>
 
-                        return (
-                          <li key={`${sub.key}-${idx}`}>
-                            <NavLink
-                              to={subPath}
-                              className={({ isActive }) => `
-          group relative flex items-center gap-3 rounded-lg px-4 py-2  font-medium transition-all duration-200
-          ${
-            isActive
-              ? 'bg-blue-50 text-blue-600'
-              : 'text-primary hover:bg-blue-50 hover:text-primary'
-          }
-        `}
-                            >
-                              {/* เส้นขีดด้านข้างเมื่อ Active เพื่อความมินิมอล */}
-                              {({ isActive }) => (
-                                <>
-                                  <div
-                                    className={`h-1 w-1 rounded-full transition-all ${
-                                      isActive
-                                        ? 'scale-125 bg-blue-600'
-                                        : 'bg-blue-100 group-hover:bg-primary'
-                                    }`}
-                                  />
-                                  <span>{sub.label}</span>
-                                </>
-                              )}
-                            </NavLink>
-                          </li>
-                        )
-                      })}
-                    </motion.ul>
-                  )}
-                </AnimatePresence>
-              </div>
-            )
-          })}
-        </ul>
+                      {!isCollapsed && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="ml-3 flex flex-1 items-center justify-between overflow-hidden whitespace-nowrap"
+                        >
+                          <span className="text font-medium">{item.label}</span>
+                          {item.sub && (
+                            <FaChevronDown
+                              size={10}
+                              className={`transition-transform duration-200 ${
+                                isMenuOpen ? 'rotate-180' : ''
+                              }`}
+                            />
+                          )}
+                        </motion.div>
+                      )}
+
+                      {/* Tooltip เมื่อหุบ Sidebar */}
+                      {isCollapsed && (
+                        <div className="invisible absolute left-full z-[60] ml-4 whitespace-nowrap rounded-md bg-slate-900 px-3 py-2 text-xs text-white opacity-0 transition-all group-hover:visible group-hover:opacity-100">
+                          {item.label}
+                        </div>
+                      )}
+                    </NavLink>
+                  </li>
+
+                  {/* Submenu */}
+                  <AnimatePresence>
+                    {!isCollapsed && item.sub && isMenuOpen && (
+                      <motion.ul
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="ml-9 mt-1 space-y-1 border-l border-slate-100"
+                      >
+                        {item.sub.map((sub, idx) => {
+                          // 1. คำนวณ Path สำหรับบทบาทอาจารย์
+                          let subPath = sub.path
+
+                          if (role === 'TEACHER') {
+                            const section = openSection(location.pathname)
+
+                            // ถ้ายังไม่ได้เลือกตอนเรียน ไม่ต้องแสดง Submenu ของตอนเรียนนั้น
+                            if (!section) return null
+
+                            subPath = sub.path.replace(SECTION_TOKEN, section)
+                          }
+
+                          return (
+                            <li key={`${sub.key}-${idx}`}>
+                              <NavLink
+                                to={subPath}
+                                className={({ isActive }) => `
+            group relative flex items-center gap-3 rounded-lg px-4 py-2  font-medium transition-all duration-200
+            ${
+              isActive
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-primary hover:bg-blue-50 hover:text-primary'
+            }
+          `}
+                              >
+                                {/* เส้นขีดด้านข้างเมื่อ Active เพื่อความมินิมอล */}
+                                {({ isActive }) => (
+                                  <>
+                                    <div
+                                      className={`h-1 w-1 rounded-full transition-all ${
+                                        isActive
+                                          ? 'scale-125 bg-blue-600'
+                                          : 'bg-blue-100 group-hover:bg-primary'
+                                      }`}
+                                    />
+                                    <span>{sub.label}</span>
+                                  </>
+                                )}
+                              </NavLink>
+                            </li>
+                          )
+                        })}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )
+            })}
+          </ul>
+        </nav>
       </div>
 
       {/* Logout Button */}

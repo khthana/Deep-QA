@@ -6,7 +6,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { planWeeksFor } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { switchTo } = require('../support/shell');
+const { menuLink, switchTo } = require('../support/shell');
 const { DASHBOARD } = require('../support/teaching-screen');
 const {
   openPlan,
@@ -77,7 +77,7 @@ test('row 1: the menu entry lands on this section\'s plan, drawn in calendar ord
   await page.goto(`${DASHBOARD}/${section}`);
   const [answer] = await Promise.all([
     waitForPlan(page),
-    page.getByRole('link', { name: 'แผนการสอน' }).click(),
+    menuLink(page, 'แผนการสอน').click(),
   ]);
 
   expect(answer.status()).toBe(200);

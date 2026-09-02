@@ -21,6 +21,7 @@ const {
   openChangePassword,
   submitPasswordChange,
   signOut,
+  menuLink,
 } = require('../support/shell');
 
 /**
@@ -135,13 +136,13 @@ test.describe('the shell, in a browser', () => {
   test('row 6: a session that has ended says so', async ({ page }) => {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await page.goto(PROGRAMS);
-    await expect(page.getByRole('link', { name: USERS_MENU })).toBeVisible();
+    await expect(menuLink(page, USERS_MENU)).toBeVisible();
 
     // What a person does through DevTools. From here on the browser is a
     // browser with no session, which is the state the criterion is about.
     await page.context().clearCookies();
 
-    await page.getByRole('link', { name: USERS_MENU }).click();
+    await menuLink(page, USERS_MENU).click();
 
     // The point of the row: an explanation, not an unannounced return to the
     // sign-in screen.
@@ -196,7 +197,7 @@ test.describe('the shell, in a browser', () => {
     await openAndSettle(page, PROGRAMS);
     await expireSession(page);
     const dead = await sessionCookie(page);
-    await page.getByRole('link', { name: USERS_MENU }).click();
+    await menuLink(page, USERS_MENU).click();
     await expect(expiryDialog(page)).toBeVisible();
 
     // The same dead cookie, not merely some cookie: `toBeDefined` would also

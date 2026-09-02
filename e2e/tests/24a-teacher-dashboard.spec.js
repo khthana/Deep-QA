@@ -5,7 +5,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { currentTerm } = require('../../db/term');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { switchTo } = require('../support/shell');
+const { breadcrumb, menuLink, switchTo } = require('../support/shell');
 const {
   DASHBOARD,
   openDashboard,
@@ -120,15 +120,22 @@ test('row 3: a section-specific menu entry leads to that section and not to a pl
   await chooseSection(page, SUBJECT);
   const chosen = sectionInUrl(page);
 
-  await page.getByRole('link', { name: 'รายชื่อนักศึกษาของรายวิชา' }).click();
+  await menuLink(page, 'รายชื่อนักศึกษาของรายวิชา').click();
   await page.waitForURL(`${DASHBOARD}/${chosen}/subjectStudents`);
+
+  // Wait for the breadcrumb before asking about the menu, so this row always
+  // runs in the state it used to fail in. It named the screen with a link of
+  // its own all along; the assertion below simply used to get in first, about
+  // two runs in three, and read one match where there were about to be two.
+  await expect(breadcrumb(page)).toContainText('รายชื่อนักศึกษาของรายวิชา');
 
   // And the group stays open behind them: the sidebar reads the section out of
   // a path that now has a screen name after it, so the row that keeps the menu
   // in place is the same match that put it there.
-  await expect(
-    page.getByRole('link', { name: 'รายชื่อนักศึกษาของรายวิชา' }),
-  ).toBeVisible();
+  //
+  // Asked of the menu by name rather than of the page, because the page has two
+  // navigations and both hold this link — which is what #109 turned out to be.
+  await expect(menuLink(page, 'รายชื่อนักศึกษาของรายวิชา')).toBeVisible();
 });
 
 test('row 5: the chosen section survives a reload, without being remembered', async ({ page }) => {

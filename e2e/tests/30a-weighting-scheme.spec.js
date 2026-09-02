@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { switchTo } = require('../support/shell');
+const { menuLink, switchTo } = require('../support/shell');
 const { DASHBOARD } = require('../support/teaching-screen');
 const { importCsv, reportedLines, reportedReason } = require('../support/import-panel');
 const {
@@ -71,7 +71,7 @@ test('row 1: the menu entry lands on the scheme, and it reads one hundred', asyn
 
   const [answer] = await Promise.all([
     waitForWeights(page),
-    page.getByRole('link', { name: 'สัดส่วนคะแนน' }).click(),
+    menuLink(page, 'สัดส่วนคะแนน').click(),
   ]);
   expect(answer.status()).toBe(200);
   expect(new URL(page.url()).pathname).toBe(`${DASHBOARD}/${section}/gradingWeights`);

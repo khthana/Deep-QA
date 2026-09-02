@@ -66,9 +66,35 @@ async function switchTo(page, label) {
 /** The shell's expiry dialog, by its heading. */
 const expiryDialog = page => page.getByText('Session หมดอายุ');
 
+/**
+ * The shell's three navigations, by name.
+ *
+ * There are three: the bar across the top, the menu down the side and the
+ * breadcrumb. The menu and the breadcrumb hold links of the *same name*
+ * whenever you are on a screen the menu can reach — which is what #109 turned
+ * out to be, after a row that asked the page for such a link matched two
+ * things about one run in three and read that as the menu having closed.
+ *
+ * So nothing here asks the page for a link the menu holds. It asks the menu.
+ */
+const navbar = page => page.getByRole('navigation', { name: 'แถบด้านบน' });
+const menu = page => page.getByRole('navigation', { name: 'เมนูหลัก' });
+const breadcrumb = page => page.getByRole('navigation', { name: 'Breadcrumb' });
+
+/**
+ * One entry of the side menu, by its exact name.
+ *
+ * `exact` because the accessible-name match is a substring by default, and the
+ * names in this shell nest: ข้อมูลผู้ใช้งาน is inside แก้ไขข้อมูลผู้ใช้งาน, and
+ * ข้อมูลหลัก is inside ข้อมูลหลักสูตร. A row that matched loosely would pass
+ * until somebody stood on the longer screen.
+ */
+const menuLink = (page, name) =>
+  menu(page).getByRole('link', { name, exact: true });
+
 /** The avatar menu: the one button in the navigation bar carrying no text. */
 const avatarButton = page =>
-  page.locator('nav').getByRole('button').filter({ hasNotText: /\S/ });
+  navbar(page).getByRole('button').filter({ hasNotText: /\S/ });
 
 async function openUserMenu(page) {
   await avatarButton(page).click();
@@ -118,6 +144,8 @@ async function signOut(page) {
 }
 
 module.exports = {
+  breadcrumb,
+  menuLink,
   PROGRAMS,
   PROGRAM_SUBJECTS,
   PROGRAM_SUBJECTS_API,

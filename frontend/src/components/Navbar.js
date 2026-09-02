@@ -84,7 +84,11 @@ function Navber({ setAlert }) {
   }
 
   return (
-    <nav className="h-[64px]  bg-primary px-6 shadow-sm backdrop-blur-md">
+    /* Named for the same reason the side menu is — see SidebarItem.js. */
+    <nav
+      aria-label="แถบด้านบน"
+      className="h-[64px]  bg-primary px-6 shadow-sm backdrop-blur-md"
+    >
       <div className="mx-auto flex h-full  items-center justify-between">
         {/* --- ฝั่งซ้าย: Logo --- */}
         <div className="flex w-1/3 justify-start">
