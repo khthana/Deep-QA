@@ -144,6 +144,14 @@ MUTANTS = {
     "importwrongreason": ("route",
                           "            if (!standing) return 'studentNotEnrolled';",
                           "            if (!standing) return 'invalidEnrolment';"),
+    # The history panel stops rereading, so a change made while it is open
+    # leaves it showing the class as it stood before that change. Every other
+    # row opens the panel after the act it asks about and cannot see this.
+    # Kills row 12.
+    "historystaleafterwrite": ("screen",
+                               "            <GroupHistory\n"
+                               "              key={writes}\n",
+                               "            <GroupHistory\n"),
     # A ตอนเรียน that is not this account's answers with an empty screen rather
     # than a refusal, so the address bar becomes a way of learning which ids
     # exist. Bound to the list route's own use of the shared refusal, because

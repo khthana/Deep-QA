@@ -381,3 +381,23 @@ test('row 11: the groups of a ตอนเรียน that is not this account�
   await said(page, REFUSALS.sectionNotFound);
   expect(await groupNames(page)).toEqual([]);
 });
+
+test('row 12: a change made while the history is open reaches it without reopening', async ({
+  page,
+}) => {
+  await openGroups(page, section);
+  await createGroup(page, section, `${MARK} ฎ`);
+
+  await openHistory(page, section);
+  expect((await historyLines(page))[0]).toBe(`สร้างกลุ่ม ${MARK} ฎ`);
+
+  // The panel is not closed and reopened between the write and the read, and
+  // that is the whole row. A history left open across a change and still
+  // answering with the class as it stood before it is the one state a history
+  // is not allowed to be in — and it is invisible to every other row here,
+  // because they all open the panel after the act they ask about.
+  await place(page, section, `${MARK} ฎ`, tail[7], 'add');
+  await expect
+    .poll(async () => (await historyLines(page))[0])
+    .toMatch(new RegExp(`^เพิ่ม .+ เข้ากลุ่ม ${MARK} ฎ$`));
+});

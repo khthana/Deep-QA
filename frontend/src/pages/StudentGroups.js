@@ -75,6 +75,7 @@ export default function StudentGroups() {
   const [renaming, setRenaming] = useState(null)
   const [removingGroup, setRemovingGroup] = useState(null)
   const [showHistory, setShowHistory] = useState(false)
+  const [writes, setWrites] = useState(0)
 
   /**
    * `loading` swaps the body of the screen and nothing above it —
@@ -109,6 +110,7 @@ export default function StudentGroups() {
    */
   const after = async message => {
     await load()
+    setWrites(count => count + 1)
     setNotice({ error: false, message })
   }
 
@@ -251,8 +253,17 @@ export default function StudentGroups() {
             </div>
           </form>
 
+          {/*
+           * `key` counts the writes, so a change made while the panel is open
+           * remounts it and it reads again. The panel is a page of a list that
+           * every act on this screen adds to, and one left open across a
+           * deletion showed the class as it stood before it — the one state a
+           * history is not allowed to be in. Remounting also returns the pager
+           * to the first page, which is where the new line is.
+           */}
           {showHistory && (
             <GroupHistory
+              key={writes}
               fetchPage={page => listGroupHistory(sectionId, { page })}
               onError={failed}
             />
