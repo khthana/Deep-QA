@@ -21,8 +21,14 @@
  * not an option even if it were wanted: the two settings are mutually
  * exclusive by specification.
  *
- * Still deliberately absent: the static evidence directory, which belongs to
- * #35 and #47, where evidence is first served from disk.
+ * The static evidence directory this header once said was coming never
+ * arrived, and #35 is the reason. That ticket serves evidence from disk, and
+ * it does it through a route that reads the row, decides whether this caller
+ * may open this file, and only then reads the bytes — because the delivered
+ * system's `express.static('/data/evidence')` was one of the two security
+ * defects the ticket exists to fix. There is no static mount here and there
+ * should not be one; #47's profile photos will want the same argument made
+ * again rather than a directory opened for them.
  *
  * There is no express-session either, and there will not be one: #8's session
  * is a signed JWT in an HttpOnly cookie, which needs a cookie parser and no
@@ -56,6 +62,7 @@ const { activityRoutes } = require('./routes/activities');
 const { activityScoreRoutes } = require('./routes/activityScores');
 const { learningDetailRoutes } = require('./routes/learningDetails');
 const { enrolmentRoutes } = require('./routes/enrolment');
+const { evidenceRoutes } = require('./routes/evidence');
 const { workGroupRoutes } = require('./routes/workGroups');
 const { ploRoutes } = require('./routes/plos');
 const { ploMappingRoutes } = require('./routes/ploMapping');
@@ -118,6 +125,7 @@ function createApp({ pool }) {
   app.use('/api', activityScoreRoutes(pool));
   app.use('/api', learningDetailRoutes(pool));
   app.use('/api', enrolmentRoutes(pool));
+  app.use('/api', evidenceRoutes(pool));
   app.use('/api', workGroupRoutes(pool));
   app.use('/api', ploRoutes(pool));
   app.use('/api', ploMappingRoutes(pool));

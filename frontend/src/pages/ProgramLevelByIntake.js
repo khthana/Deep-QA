@@ -5,6 +5,7 @@ import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import { BANDS, figure, score } from '../lib/bands'
 import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/results/CohortPickers'
+import { getEvidenceFile, showPdf } from '../api/evidence'
 import { getOutcomeContributions, getResultsByIntake } from '../api/programResults'
 
 /**
@@ -88,6 +89,24 @@ export default function ProgramLevelByIntake() {
   const [drill, setDrill] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+
+  /**
+   * Opens one evidence file — #35's authenticated retrieval, from the side that
+   * is not teaching anything.
+   *
+   * A committee member reaches it because the Activity is attributed to a CLO
+   * of a curriculum they read, which is the road this drill-down itself came
+   * down. If they are not, the server refuses and the refusal is shown here in
+   * its own words rather than as a broken tab.
+   */
+  const openEvidence = async file => {
+    setNotice(null)
+    try {
+      showPdf(await getEvidenceFile(file.evidence_id), file.file_name)
+    } catch (error) {
+      if (!error.expired) setNotice({ error: true, message: error.message })
+    }
+  }
 
   const report = (error) => {
     if (!error.expired) setNotice({ error: true, message: error.message })
@@ -304,7 +323,20 @@ export default function ProgramLevelByIntake() {
                                       <ul className="mt-2 space-y-1">
                                         {activity.evidence.map(file => (
                                           <li key={file.evidence_id} className="text-xs text-slate-500">
-                                            หลักฐาน {file.file_name}
+                                            {/* #35 landed, so this is a request
+                                                and no longer a name on a page.
+                                                The file is fetched with the
+                                                session and shown from the bytes
+                                                that come back — a link straight
+                                                at the API would be the static
+                                                mount that ticket removed. */}
+                                            <button
+                                              type="button"
+                                              onClick={() => openEvidence(file)}
+                                              className="text-primary hover:underline"
+                                            >
+                                              หลักฐาน {file.file_name}
+                                            </button>
                                             {file.description ? ` — ${file.description}` : ''}
                                           </li>
                                         ))}
@@ -319,21 +351,11 @@ export default function ProgramLevelByIntake() {
                               </ul>
                             </div>
                           ))}
-                          {/* Said once, at the bottom, rather than as a dead
-                              button beside every file: #35 owns both the upload
-                              and the retrieval that checks who is asking.
-
-                              `text-slate-400` at first, and the hand-walk sent
-                              it back: the reader could find the sentence but
-                              had to look for it. A note nobody reads is a note
-                              that is not there, and this one is the answer to
-                              *why can I not open this file* — so `text-slate-600`
-                              on a `bg-gray-50` panel, which clears 4.5:1 where
-                              the old one was near 2.5:1. Quiet, not hidden. */}
-                          <p className="text-xs text-slate-600">
-                            การเปิดไฟล์หลักฐานจะทำได้เมื่องาน #35 เสร็จ
-                            ซึ่งเป็นงานที่ดูแลทั้งการแนบไฟล์และการตรวจสิทธิ์ก่อนให้ดาวน์โหลด
-                          </p>
+                          {/* The sentence that used to stand here said the
+                              files could not be opened yet and named the ticket
+                              that would change it. #35 is that ticket, and it
+                              is done — so the note is gone and each file is a
+                              control. #42's own sheet was ◐ for this half. */}
                         </div>
                       )}
                     </>

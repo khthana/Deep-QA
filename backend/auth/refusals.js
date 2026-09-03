@@ -516,6 +516,32 @@ const REFUSALS = {
   activityHasEvidence: (fileName, count) =>
     `กิจกรรมนี้มีหลักฐานการประเมินแนบอยู่ (${fileName}${count > 1 ? ` และอีก ${count - 1} ไฟล์` : ''}) จึงลบไม่ได้ ให้ลบหลักฐานออกก่อน`,
 
+  // Assessment evidence - #35. Two of these five sentences exist because of a
+  // security defect rather than because of a form field.
+  //
+  // `evidenceNotPdf` is BR-15, and it is deliberately about the file and not
+  // about its name: the extension and the Content-Type are the uploader's to
+  // write, so the check is on the first five bytes and the sentence has to be
+  // true of a PNG called `brief.pdf`. Saying "นามสกุลไฟล์ไม่ถูกต้อง" would be
+  // a sentence the check does not make.
+  //
+  // `evidenceNotFound` is the one a caller gets for a file that is not theirs,
+  // for one that has been removed, and for one that never existed - the same
+  // sentence for all three, `sectionNotFound`'s reason: which evidence rows
+  // exist is not something an unentitled caller learns by being refused.
+  evidenceNotFound: 'ไม่พบหลักฐานที่ระบุ',
+  evidenceNoFile: 'กรุณาแนบไฟล์',
+  evidenceUploadUnreadable: 'อ่านไฟล์ที่แนบมาไม่ได้ กรุณาแนบใหม่อีกครั้ง',
+  evidenceNotPdf: 'หลักฐานการประเมินรองรับเฉพาะไฟล์ PDF เท่านั้น ไฟล์ที่แนบมาไม่ใช่ PDF',
+  evidenceTooLarge: (megabytes) =>
+    `ไฟล์มีขนาดเกินที่ระบบรับได้ ขนาดสูงสุดคือ ${megabytes} MB`,
+  evidenceTypeUnknown: 'ประเภทหลักฐานไม่ถูกต้อง กรุณาเลือกจากรายการที่มีให้',
+  // The row survived and its bytes did not, which is the one evidence failure
+  // that is nobody's mistake. It is separated from ไม่พบ because the answer is
+  // different: a file that was never uploaded is uploaded, and this one is
+  // reported.
+  evidenceFileMissing: 'ไฟล์นี้หายไปจากที่จัดเก็บ กรุณาแจ้งผู้ดูแลระบบ',
+
   // Activity editor - #33. Writing the work, and attributing it to the
   // outcomes it assesses. Four refusals here are one refusal in four places -
   // an id in the body belonging to a grain the caller is not on - and three of

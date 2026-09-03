@@ -2,6 +2,7 @@
 
 const { defineConfig, devices } = require('@playwright/test');
 const { E2E_SCHEMA, BACKEND_PORT, FRONTEND_PORT, BACKEND_URL, FRONTEND_URL } = require('./support/env');
+const { EVIDENCE_DIR } = require('./support/env');
 
 /**
  * The browser seam - #65.
@@ -65,6 +66,11 @@ module.exports = defineConfig({
         PORT: String(BACKEND_PORT),
         DB_SCHEMA: E2E_SCHEMA,
         FRONTEND_URL,
+        // #35's uploads land here rather than in `_local/evidence`, for the
+        // reason `reuseExistingServer: false` exists a few lines up: this suite
+        // stays out of the data somebody is working in. Under the OS temp
+        // directory, so a run leaves nothing in the tree.
+        EVIDENCE_DIR: EVIDENCE_DIR,
       },
     },
     {

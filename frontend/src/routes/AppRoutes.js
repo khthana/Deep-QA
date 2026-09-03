@@ -26,6 +26,7 @@ import AchievementCriteria from '../pages/AchievementCriteria'
 import GradingWeights from '../pages/GradingWeights'
 import TeachingPlan from '../pages/TeachingPlan'
 import LearningActivities from '../pages/LearningActivities'
+import ActivityEvidence from '../pages/ActivityEvidence'
 import ActivityScores from '../pages/ActivityScores'
 import LearningDetails from '../pages/LearningDetails'
 import SubjectStudents from '../pages/SubjectStudents'
@@ -182,6 +183,10 @@ export default function AppRoutes() {
           <Route path="gradingWeights" element={<GradingWeights />} />
           <Route path="teachingPlan" element={<TeachingPlan />} />
           <Route path="learningActivities" element={<LearningActivities />} />
+          <Route
+            path="learningActivities/:activityId/evidence"
+            element={<ActivityEvidence />}
+          />
           <Route path="activityScores" element={<ActivityScores />} />
           <Route path="learningDetails" element={<LearningDetails />} />
           <Route path="*" element={<NotBuiltYet />} />

@@ -140,3 +140,34 @@ The pairing of a password sign-in role with a Google one is *not* refused here, 
 Refusing it at the grant would forbid a `FULL_ADMIN` from holding any second role, which is #12's fourth criterion
 inverted. The gate belongs on `PUT /api/me/acting-role` — the switch is where a password session reaches a grant it did
 not sign in under — and that is [#53](https://github.com/khthana/Deep-QA/issues/53).
+
+## Amended by #35 — a second road to one record
+
+[#35](https://github.com/khthana/Deep-QA/issues/35) is the first record in this system that **two different roles
+reach by two different routes**, and it is worth writing down here rather than leaving in a route header, because the
+shape invites a shortcut that would breach this ADR.
+
+An evidence file belongs to an Activity of a ตอนเรียน. A Teacher reaches it the way they reach everything
+Section-grained: `sectionOf`, which is the join through `course_sections_teacher` and nothing else.
+
+A Curriculum Committee member and an External Assessor reach it too, and they teach nothing — so the Section join can
+never answer for them. Their entitlement is **the outcome, not the Section**: the file hangs off an Activity attributed
+to a CLO of a curriculum their acting grant reaches. That is the same path [#42](https://github.com/khthana/Deep-QA/issues/42)'s
+drill-down walks down to name the file in the first place, which is what makes it the right one — a reader may open the
+evidence behind a figure they can already see, and nothing else.
+
+Three things follow, and each is a way this could have gone wrong:
+
+- **The ticket's own criterion is narrower than what was built.** It says *"an authenticated caller entitled to that
+  Section"*, which read literally is the teacher road alone — and would leave #42's drill-down naming files nobody
+  reading that screen can open. The wider road is deliberate and is stated here because a later reader comparing the
+  route against the ticket would otherwise find code doing more than it was asked.
+- **Wider is not looser.** The reader road is still a database question about the acting grant, asked per file. A
+  reader of one curriculum is refused the student work of another, and there is a test for it in both directions.
+  What would have breached this ADR is the easy version: *any signed-in reader may open any evidence*.
+- **The endpoint carries the guard, because it carries no Section.** `GET /api/evidence/:id/file` is addressed by the
+  evidence id alone — it cannot sit under `/teaching/sections/:sectionId`, where a committee member has no business,
+  nor under `/program-results`, where a Teacher opening their own brief has none. So it borrows no guard from its
+  mounting and asks both questions itself.
+
+The two questions are asked in that order, either is enough, and neither is read from the request body.

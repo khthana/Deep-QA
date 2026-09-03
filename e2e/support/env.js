@@ -1,5 +1,8 @@
 'use strict';
 
+const os = require('node:os');
+const path = require('node:path');
+
 /**
  * Where this suite's servers live, and which schema they sit on.
  *
@@ -29,11 +32,21 @@ const port = (name, fallback) => {
 };
 
 const E2E_SCHEMA = 'deep_core_e2e';
+/**
+ * Where #35's uploads land during a run.
+ *
+ * Named here beside the schema because it is the same decision: this suite
+ * writes real rows and now real files, and both belong somewhere nobody is
+ * working in. Under the OS temp directory rather than in the tree, so a run
+ * leaves nothing behind to gitignore or to mistake for source.
+ */
+const EVIDENCE_DIR = path.join(os.tmpdir(), 'deep-core-e2e-evidence');
 const BACKEND_PORT = port('E2E_BACKEND_PORT', 3100);
 const FRONTEND_PORT = port('E2E_FRONTEND_PORT', 5100);
 
 module.exports = {
   E2E_SCHEMA,
+  EVIDENCE_DIR,
   BACKEND_PORT,
   FRONTEND_PORT,
   BACKEND_URL: `http://localhost:${BACKEND_PORT}`,

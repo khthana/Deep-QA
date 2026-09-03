@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
+import { Link, useParams } from 'react-router-dom'
+import { HiOutlinePaperClip, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
 
 import ActivityForm from '../components/activity/ActivityForm'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -224,6 +224,18 @@ export default function LearningActivities() {
                           </div>
 
                           <div className="flex shrink-0 gap-2">
+                            {/* The way in to #35. A link rather than a button
+                                because it is a place and not an act, and on the
+                                card rather than in the editor because the
+                                evidence is about the work rather than part of
+                                writing it. */}
+                            <Link
+                              to={`/teacher/teacherDashboard/${sectionId}/learningActivities/${activity.id}/evidence`}
+                              aria-label={`หลักฐานการประเมินของ ${activity.activity_name}`}
+                              className="rounded-lg p-2 text-primary hover:bg-blue-50"
+                            >
+                              <HiOutlinePaperClip className="h-5 w-5" />
+                            </Link>
                             <button
                               type="button"
                               onClick={() => setEditing(activity)}

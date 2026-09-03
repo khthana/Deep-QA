@@ -62,15 +62,20 @@ async function api(
   // caller named: #11 posts an import file as text/csv rather than wrapping a
   // spreadsheet inside a JSON string. Everything else is JSON, as before.
   const raw = typeof body === 'string'
+  // ...except a form, which #35's PDF upload sends. Its Content-Type carries a
+  // boundary that only the browser knows, so naming the type here would produce
+  // a header the body does not match and a multipart parser that finds nothing.
+  // The one case where saying less is saying it correctly.
+  const multipart = typeof FormData !== 'undefined' && body instanceof FormData
   const response = await fetch(`${BASE}${path}`, {
     method,
     credentials: 'include',
     signal,
     headers:
-      body === undefined
+      body === undefined || multipart
         ? undefined
         : { 'Content-Type': contentType ?? 'application/json' },
-    body: body === undefined ? undefined : raw ? body : JSON.stringify(body),
+    body: body === undefined || raw || multipart ? body : JSON.stringify(body),
   })
 
   // A refusal is JSON whatever was asked for, because the error handler and
@@ -98,6 +103,11 @@ async function api(
   }
 
   if (accept === 'text') return response.text()
+  // A PDF comes back as bytes rather than as prose. It is fetched rather
+  // than linked to for `saveAsFile`'s reason one function down: the endpoint
+  // needs the session cookie, and the caller wants the refusal in this
+  // application's words rather than as a browser error page.
+  if (accept === 'blob') return response.blob()
   // A 204 fails to parse and should not become a parse error the caller has
   // to read as a status.
   return response.json().catch(() => ({}))
