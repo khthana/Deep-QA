@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
+import { BANDS, figure, rangeOf, score } from '../lib/bands'
 import { getLearningDetails } from '../api/learningDetails'
 
 /**
@@ -17,7 +18,9 @@ import { getLearningDetails } from '../api/learningDetails'
  * ranges and BR-17's sixty per cent are business rules, and a browser that
  * banded the numbers itself would be a second place for them to be wrong — one
  * that no backend test could reach. So `band` is read, never computed, and the
- * only judgement here is which colour a band is drawn in.
+ * only judgement here is which colour a band is drawn in — and since #42 draws
+ * the same bands one level up, even that judgement lives in `lib/bands.js`
+ * rather than twice.
  *
  * ## The colours are a scale, and the flag is not part of it
  *
@@ -33,34 +36,6 @@ import { getLearningDetails } from '../api/learningDetails'
  * columns. It is the outcomes that did not clear BR-17 — the same rule the
  * Y/N column uses, so the list and the table cannot disagree.
  */
-
-/**
- * BR-20's bands, as the screen draws them — the colours and nothing else.
- *
- * Indexed by the band the server sent, so a band nobody has a colour for is a
- * missing key rather than a silently wrong shade. The *ranges* are not here:
- * they arrive as `band_floors` with the data, because a legend that kept its
- * own copy of the numbers would go on saying 3.0 – 3.4 after the rule moved.
- */
-const BANDS = {
-  1: { cell: 'bg-red-100 text-red-900', chip: 'bg-red-500' },
-  2: { cell: 'bg-amber-100 text-amber-900', chip: 'bg-amber-400' },
-  3: { cell: 'bg-yellow-50 text-yellow-800', chip: 'bg-yellow-300' },
-  4: { cell: 'bg-lime-100 text-lime-900', chip: 'bg-lime-400' },
-  5: { cell: 'bg-emerald-100 text-emerald-900', chip: 'bg-emerald-500' },
-}
-
-/** A number as a figure, or an em dash where there is no number to show. */
-const figure = (value, suffix = '') =>
-  value === null || value === undefined ? '—' : `${value}${suffix}`
-
-/** One band's range, said in words, from the floors the rule was read off. */
-function rangeOf(floors, band) {
-  const next = floors[band]
-  if (band === 1) return `ต่ำกว่า ${floors[1].toFixed(1)}`
-  if (next === undefined) return `${floors[band - 1].toFixed(1)} ขึ้นไป`
-  return `${floors[band - 1].toFixed(1)} – ${(next - 0.1).toFixed(1)}`
-}
 
 /**
  * What a cell says when it is read aloud rather than looked at.
@@ -138,7 +113,7 @@ export default function LearningDetails() {
             {card('จำนวนนักศึกษา', `${data.summary.student_count} คน`, 'ที่ลงทะเบียนตอนเรียนนี้')}
             {card(
               'คะแนนเฉลี่ยรายคนรายข้อ',
-              figure(data.summary.mean, ' / 5'),
+              score(data.summary.mean, ' / 5'),
               `จาก ${data.summary.scored_count} ช่องที่มีคะแนน`,
             )}
             {card(
@@ -229,7 +204,7 @@ export default function LearningDetails() {
                             aria-label={`สรุป ${clo.clo_number}`}
                             className="px-2 py-3 text-center text-slate-600"
                           >
-                            <span className="block font-semibold">{figure(clo.mean)}</span>
+                            <span className="block font-semibold">{score(clo.mean)}</span>
                             <span className="block">{figure(clo.pass_rate, '%')}</span>
                             {/* Three states, not two: an outcome nobody has been
                                 marked on has not passed and has not failed, and
@@ -287,7 +262,7 @@ export default function LearningDetails() {
                       >
                         <span className="font-semibold">{clo.clo_number}</span> {clo.clo_detail}
                         <span className="ml-2 text-red-700">
-                          (ผ่าน {clo.pass_rate}% · เฉลี่ย {figure(clo.mean)})
+                          (ผ่าน {clo.pass_rate}% · เฉลี่ย {score(clo.mean)})
                         </span>
                       </li>
                     ))}

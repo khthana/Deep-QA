@@ -47,6 +47,13 @@ Playwright's `reuseExistingServer` defaults to true off CI, so on the usual port
 whatever `npm start` is already serving, and the import specs would write students into the database somebody is
 working in. Dedicated ports and an explicit `reuseExistingServer: false` are what close that.
 
+Both ports may be overridden for one run — `E2E_BACKEND_PORT` and `E2E_FRONTEND_PORT` — and the reason is Windows
+rather than preference. Hyper-V reserves blocks of ephemeral ports and re-randomises them on every boot, so a machine
+can wake up with 5100 inside an excluded range; the symptom is not a port in use but `EACCES` on bind, which CRA
+reports as *Something is already running on port 5100* and which sends whoever reads it hunting for a process that
+does not exist. `netsh interface ipv4 show excludedportrange protocol=tcp` is what says so. The defaults do not move:
+a suite whose ports drifted per machine would make every *it works here* less informative.
+
 The schema is dropped, migrated and seeded in `support/global-setup.js` at the **start** of a run rather than the end,
 so a failed run leaves its data behind to be looked at.
 

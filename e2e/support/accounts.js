@@ -19,6 +19,7 @@ const ACCOUNTS = {
   teacherOne: 'teacher.one@kmitl.ac.th',
   teacherTwo: 'teacher.two@kmitl.ac.th',
   multiRole: 'multi.role@kmitl.ac.th',
+  externalAssessor: 'external.assessor@kmitl.ac.th',
 };
 
 /**
@@ -36,6 +37,7 @@ const IDS = {
   teacherOne: 'teach01',
   teacherTwo: 'teach02',
   multiRole: 'multi01',
+  externalAssessor: 'ext01',
 };
 
 module.exports = { ACCOUNTS, IDS, PASSWORD };

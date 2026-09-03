@@ -23,10 +23,12 @@ found during the rebuild and opened since.
 Closed through #38, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups),
 [#34](https://github.com/khthana/Deep-QA/issues/34) (Activity marks) and
 [#38](https://github.com/khthana/Deep-QA/issues/38) (Learning detail heatmap) included.
-Every acceptance checklist has been walked. Five rows in the whole store are not ticked, and each
-is blocked on something other than a person at a screen: four name a request no control on any
-screen can produce, and one is a wording the person who wrote it should not tick. The newest
-handoff names all five.
+[#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results by intake) is built
+and tested at both seams but **not closed**: its sheet still has four rows that are colours and
+wording, and those are walked with an eye. Every other acceptance checklist has been walked, and
+five rows across them are not ticked, each blocked on something other than a person at a screen —
+four name a request no control on any screen can produce, and one is a wording the person who
+wrote it should not tick. The newest handoff names all five.
 
 An earlier version of this paragraph said the same of fifteen rows. Eleven of those turned out to
 be walkable after all — they were waiting not on a person but on a **situation the seed does not

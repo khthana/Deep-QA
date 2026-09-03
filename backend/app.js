@@ -59,6 +59,7 @@ const { enrolmentRoutes } = require('./routes/enrolment');
 const { workGroupRoutes } = require('./routes/workGroups');
 const { ploRoutes } = require('./routes/plos');
 const { ploMappingRoutes } = require('./routes/ploMapping');
+const { programResultRoutes } = require('./routes/programResults');
 const { programRoutes } = require('./routes/programs');
 const { rubricRoutes } = require('./routes/rubrics');
 const { rubricCriteriaRoutes } = require('./routes/rubricCriteria');
@@ -120,6 +121,7 @@ function createApp({ pool }) {
   app.use('/api', workGroupRoutes(pool));
   app.use('/api', ploRoutes(pool));
   app.use('/api', ploMappingRoutes(pool));
+  app.use('/api', programResultRoutes(pool));
   app.use('/api', rubricRoutes(pool));
   app.use('/api', rubricCriteriaRoutes(pool));
 

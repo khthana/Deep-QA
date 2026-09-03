@@ -5,7 +5,13 @@
  *
  * The first screen in the rebuild that computes rather than records. Nothing
  * here is stored: every number is an opinion about the marks #34 wrote, and
- * the whole of this file is the four rules that turn one into the other.
+ * this file is what turns one into the other for a Section.
+ *
+ * The four rules themselves moved to `lib/attainment.js` when #42 needed every
+ * one of them to say the same about an intake. They are still described below,
+ * because the query in this file is written to them and a reader here should
+ * not have to open another file to know what the numbers mean — but the
+ * constants and the arithmetic have one home now, and it is not this one.
  *
  * ## The fraction, and what a blank leaves out of it
  *
@@ -51,53 +57,20 @@
 const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
-const { round2 } = require('../lib/fields');
+const {
+  PASS,
+  BAND_FLOORS,
+  bandOf,
+  outcomeScore,
+  meanOf,
+  passRateOf,
+  outcomePassed,
+} = require('../lib/attainment');
 const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
 
 /** A ผู้สอน's own ตอนเรียน, as in `enrolment.js`, `activities.js` and `activityScores.js`. */
 const TEACHING = ['TEACHER'];
-
-/** BR-18: every outcome score is out of five, whatever the Activities were worth. */
-const SCALE = 5;
-
-/** The line a student passes an outcome on, and the line BR-20 stops flagging on. */
-const PASS = 3;
-
-/** BR-17: an outcome passes when *more than* this share of its students did. */
-const OUTCOME_PASS_PERCENT = 60;
-
-const round1 = (value) => Math.round(value * 10) / 10;
-
-/**
- * BR-20's five ranges, as the boundary each band starts at.
- *
- * Read as *the last band whose floor the score has reached*, so the edges
- * belong to the band above: 3.0 is the second band and not the first, 4.5 is
- * the fifth. Band one is the flagged one and the only one the ticket names.
- */
-const BAND_FLOORS = [0, 3.0, 3.5, 4.0, 4.5];
-
-function bandOf(score) {
-  if (score === null) return null;
-  let band = 1;
-  for (const [index, floor] of BAND_FLOORS.entries()) {
-    if (score >= floor) band = index + 1;
-  }
-  return band;
-}
-
-/** The mean of what is there, or null when nothing is. */
-function meanOf(scores) {
-  if (scores.length === 0) return null;
-  return round2(scores.reduce((sum, score) => sum + score, 0) / scores.length);
-}
-
-/** The share of scores at or above the pass line, to a tenth, or null when there are none. */
-function passRateOf(scores) {
-  if (scores.length === 0) return null;
-  return round1((scores.filter((score) => score >= PASS).length / scores.length) * 100);
-}
 
 function learningDetailRoutes(pool) {
   const router = express.Router();
@@ -196,10 +169,7 @@ function learningDetailRoutes(pool) {
           const scores = {};
           for (const clo of clos) {
             const row = earnedBy.get(`${student.student_id}:${clo.clo_id}`);
-            const score =
-              row && Number(row.available) > 0
-                ? round2((Number(row.earned) / Number(row.available)) * SCALE)
-                : null;
+            const score = row ? outcomeScore(row.earned, row.available) : null;
             if (score !== null) perClo.get(clo.clo_id).push(score);
             scores[clo.clo_id] = {
               score,
@@ -218,10 +188,7 @@ function learningDetailRoutes(pool) {
             student_count: scores.length,
             mean: meanOf(scores),
             pass_rate: passRate,
-            // An outcome nobody has been marked on has not failed; it has not
-            // been assessed, and saying otherwise would put every outcome on
-            // the attention list on the first day of term.
-            passed: passRate === null ? null : passRate > OUTCOME_PASS_PERCENT,
+            passed: outcomePassed(passRate),
           };
         });
 
