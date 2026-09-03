@@ -2,7 +2,7 @@
 """
 #43 ผลการเรียนรู้ระดับหลักสูตรของนักศึกษาทุกคน - the whole cohort as a grid.
 
-Six mutants, one per claim `43a` makes.
+Seven mutants, one per claim `43a` makes.
 
 The arithmetic is not among them, deliberately. Every figure in a cell, the
 band it is drawn in, what a blank leaves out of the fraction, the two counts
@@ -95,6 +95,17 @@ MUTANTS = {
         "menu",
         "        path: '/main/programLevelAllStudents',",
         "        path: '/main/programLevelCompare',",
+    ),
+    # The refused screen goes back to waiting for ever. `loading` starts true
+    # and the fetch returns early when there is no curriculum to ask about, so
+    # an account the server refuses reads the refusal with *กำลังโหลดข้อมูล…*
+    # sitting under it and never going away. Nothing to ask for is an answer,
+    # not a wait - and every other row signs in as an account that reaches the
+    # screen, which is exactly why none of them can see this. Kills row 5.
+    "refusalkeepsloading": (
+        "screen",
+        "      setLoading(false)\n      return\n    }",
+        "      return\n    }",
     ),
 }
 

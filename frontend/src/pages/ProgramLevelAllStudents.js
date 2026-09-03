@@ -91,6 +91,11 @@ export default function ProgramLevelAllStudents() {
   const load = useCallback(async () => {
     if (!program || !intake) {
       setData(null)
+      // Nothing to ask for is an answer, not a wait. Without this an
+      // account the server refuses — a ผู้สอน who typed this address — reads the
+      // refusal and *กำลังโหลดข้อมูล…* underneath it, for ever. Found by the
+      // hand-walk of #43; #42's screen had it too.
+      setLoading(false)
       return
     }
     setLoading(true)

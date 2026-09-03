@@ -2,6 +2,8 @@
 
 const { test, expect } = require('@playwright/test');
 
+const { REFUSALS } = require('../../backend/auth/refusals');
+
 const { ACCOUNTS } = require('../support/accounts');
 const { COHORTS, PROGRAM } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
@@ -205,4 +207,25 @@ test('an intake nobody has marked reads as a sentence, not as a grid of dashes',
     await db.query(`DELETE FROM student_course WHERE student_id = $1`, [QUIET_STUDENT]);
     await db.query(`DELETE FROM student WHERE student_id = $1`, [QUIET_STUDENT]);
   }
+});
+
+test('a teacher who types the address is refused, and is not left waiting for an answer that will never come', async ({
+  page,
+}) => {
+  // Criterion 6, and the defect the hand-walk found underneath it.
+  //
+  // The refusal itself is the server's and is proved at the HTTP seam. What is
+  // only here is what the refused screen then *does*: `loading` starts true and
+  // the fetch returns early when there is no curriculum to ask about, so the
+  // screen used to sit under its own refusal saying *กำลังโหลดข้อมูล…* for ever.
+  // Nothing to ask for is an answer, not a wait.
+  //
+  // Every other row in this file signs in as an account that reaches the
+  // screen, which is exactly why none of them could see it.
+  await signIn(page, ACCOUNTS.teacherOne);
+  await page.goto(PATH);
+
+  await expect(page.getByText(REFUSALS.forbidden)).toBeVisible();
+  await expect(page.getByRole('table')).toHaveCount(0);
+  await expect(page.getByText('กำลังโหลดข้อมูล')).toHaveCount(0);
 });
