@@ -10,6 +10,7 @@ import NotBuiltYet from '../pages/NotBuiltYet'
 import Offerings from '../pages/Offerings'
 import Plos from '../pages/Plos'
 import PloMapping from '../pages/PloMapping'
+import ProgramLevelAllStudents from '../pages/ProgramLevelAllStudents'
 import ProgramLevelByIntake from '../pages/ProgramLevelByIntake'
 import RubricCriteria from '../pages/RubricCriteria'
 import Rubrics from '../pages/Rubrics'
@@ -146,10 +147,7 @@ export default function AppRoutes() {
           path="programLevelIndividual"
           element={<NotBuiltYet ticket="#45" />}
         />
-        <Route
-          path="programLevelAllStudents"
-          element={<NotBuiltYet ticket="#43" />}
-        />
+        <Route path="programLevelAllStudents" element={<ProgramLevelAllStudents />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 

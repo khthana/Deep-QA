@@ -25,6 +25,8 @@ Closed through #38, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Gr
 [#38](https://github.com/khthana/Deep-QA/issues/38) (Learning detail heatmap) included.
 [#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results by intake) included —
 its sheet was hand-walked on 3 September 2569, and the walk found and fixed one defect of its own.
+[#43](https://github.com/khthana/Deep-QA/issues/43) (Whole-cohort heatmap) is built and tested at
+both seams; four rows of its sheet are colours, wording and a tooltip, and wait for an eye.
 Every acceptance checklist has been walked. Nine rows across the whole store are not ticked: five
 name a request no control on any screen can produce, two are halves another ticket owns outright
 (#49's menu set, #35's file retrieval), one is an arithmetic difference too small for an eye to

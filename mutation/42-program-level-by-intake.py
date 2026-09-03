@@ -32,6 +32,9 @@ FILES = {
     "route": "backend/routes/programResults.js",
     "screen": "frontend/src/pages/ProgramLevelByIntake.js",
     "menu": "frontend/src/components/SidebarItem/ProgManager.js",
+    # The two pickers were lifted out of the screen when #43 became the second
+    # caller of them, so the mutant about the intake control lives here now.
+    "pickers": "frontend/src/components/results/CohortPickers.js",
 }
 
 MUTANTS = {
@@ -68,9 +71,9 @@ MUTANTS = {
     # the first report never loads either - and a mutant that takes the whole
     # screen away proves nothing about the row it was written for.
     "intakefrozen": (
-        "screen",
-        "            onChange={event => setIntake(event.target.value)}",
-        "            onChange={() => setIntake(intakes[0].admission_year)}",
+        "pickers",
+        "          onChange={event => setIntake(event.target.value)}",
+        "          onChange={() => setIntake(intakes[0].admission_year)}",
     ),
     # The drill-down opens and will not close. Pressing the button a second
     # time re-fetches the same outcome instead of putting it away, so a person
@@ -116,7 +119,7 @@ MUTANTS = {
     # happened yet* and *this is what the marking says*. Kills row 5.
     "emptydrawsthetable": (
         "route",
-        "        empty: marks.length === 0,",
+        "        empty: plos.every((plo) => plo.student_count === 0),",
         "        empty: false,",
     ),
     # The external assessor is dropped from the list of readers. Their menu

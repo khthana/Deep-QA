@@ -1,9 +1,9 @@
 import { get, query } from './client'
 
 /**
- * ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า — #42.
+ * ผลการเรียนรู้ระดับหลักสูตร — #42 and #43.
  *
- * Four reads and no write: this screen owns no data at all. Every figure on it
+ * Five reads and no write: this screen owns no data at all. Every figure on it
  * is an opinion about marks that #34 stored, and every one of those opinions is
  * formed on the server — BR-17's sixty per cent, BR-18's scale of five and the
  * two-step roll-up from CLO to PLO are business rules, and a browser that
@@ -42,6 +42,24 @@ export const getResultsByIntake = (programId, admissionYear) =>
 export const getOutcomeContributions = (programId, admissionYear, outcomeId) =>
   get(
     `/api/program-results/by-intake/outcomes/${outcomeId}${query({
+      program_id: programId,
+      admission_year: admissionYear,
+    })}`,
+  )
+
+/**
+ * Every student of one intake against every main outcome — #43.
+ *
+ * The whole cohort in one answer rather than a page at a time, because the
+ * question the screen exists for is *how is this spread*, and a distribution
+ * read a page at a time is not read at all. The order the rows arrive in is
+ * the register's; the sorting a reader asks for happens in the browser, on
+ * data it already holds, because it changes nothing about what the figures are
+ * and a round-trip per sort would make a reader think twice about looking.
+ */
+export const getStudentHeatmap = (programId, admissionYear) =>
+  get(
+    `/api/program-results/by-intake/students${query({
       program_id: programId,
       admission_year: admissionYear,
     })}`,

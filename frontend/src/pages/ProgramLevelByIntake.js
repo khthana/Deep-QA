@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import BandLegend from '../components/results/BandLegend'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
-import { BANDS, figure, rangeOf, score } from '../lib/bands'
-import {
-  getOutcomeContributions,
-  getResultsByIntake,
-  listIntakes,
-  listResultPrograms,
-} from '../api/programResults'
+import { BANDS, figure, score } from '../lib/bands'
+import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/results/CohortPickers'
+import { getOutcomeContributions, getResultsByIntake } from '../api/programResults'
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า — #42.
@@ -86,10 +83,6 @@ function verdict(plo) {
 }
 
 export default function ProgramLevelByIntake() {
-  const [programs, setPrograms] = useState([])
-  const [program, setProgram] = useState('')
-  const [intakes, setIntakes] = useState([])
-  const [intake, setIntake] = useState('')
   const [data, setData] = useState(null)
   const [open, setOpen] = useState(null)
   const [drill, setDrill] = useState(null)
@@ -100,40 +93,8 @@ export default function ProgramLevelByIntake() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }
 
-  useEffect(() => {
-    let cancelled = false
-    listResultPrograms()
-      .then(({ programs: rows }) => {
-        if (cancelled) return
-        setPrograms(rows)
-        // One curriculum is the committee member's ordinary case and the
-        // assessor's only one; choosing it for them saves a click that has no
-        // alternative to offer.
-        if (rows.length > 0) setProgram(rows[0].program_id)
-      })
-      .catch(report)
-      .finally(() => !cancelled && setLoading(false))
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!program) return undefined
-    let cancelled = false
-    setIntakes([])
-    setIntake('')
-    listIntakes(program)
-      .then(({ intakes: rows }) => {
-        if (cancelled) return
-        setIntakes(rows)
-        if (rows.length > 0) setIntake(rows[0].admission_year)
-      })
-      .catch(report)
-    return () => {
-      cancelled = true
-    }
-  }, [program])
+  const { programs, program, setProgram, intakes, intake, setIntake, asked } =
+    useCohortPickers(report)
 
   const load = useCallback(async () => {
     if (!program || !intake) {
@@ -172,8 +133,6 @@ export default function ProgramLevelByIntake() {
     }
   }
 
-  const chosen = programs.find(entry => entry.program_id === program)
-
   return (
     <ContentMotionDIV className="space-y-4 px-6 py-6">
       <Notice notice={notice} />
@@ -186,56 +145,18 @@ export default function ProgramLevelByIntake() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        {programs.length > 1 ? (
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            หลักสูตร
-            <select
-              value={program}
-              onChange={event => setProgram(event.target.value)}
-              className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-            >
-              {programs.map(entry => (
-                <option key={entry.program_id} value={entry.program_id}>
-                  {entry.program_id} {entry.program_name_th}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : (
-          chosen && (
-            <span className="flex items-center gap-2 text-sm text-slate-600">
-              หลักสูตร
-              <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                {chosen.program_id} {chosen.program_name_th}
-              </span>
-            </span>
-          )
-        )}
-
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          ปีรับเข้า
-          <select
-            value={intake}
-            onChange={event => setIntake(event.target.value)}
-            className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-          >
-            {intakes.map(entry => (
-              <option key={entry.admission_year} value={entry.admission_year}>
-                {entry.admission_year} ({entry.student_count} คน)
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <CohortPickers
+        programs={programs}
+        program={program}
+        setProgram={setProgram}
+        intakes={intakes}
+        intake={intake}
+        setIntake={setIntake}
+      />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
 
-      {!loading && intakes.length === 0 && program && (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center">
-          <p className="text-sm text-slate-500">หลักสูตรนี้ยังไม่มีนักศึกษาในทะเบียน</p>
-        </div>
-      )}
+      {asked && intakes.length === 0 && program && <NoStudentsYet />}
 
       {data && (
         <>
@@ -263,14 +184,7 @@ export default function ProgramLevelByIntake() {
                 <h2 className="text-lg font-medium text-primary">
                   ผลการเรียนรู้ระดับหลักสูตร (เต็ม 5)
                 </h2>
-                <div className="flex flex-wrap items-center gap-3">
-                  {Object.entries(BANDS).map(([band, look]) => (
-                    <span key={band} className="flex items-center gap-1.5 text-xs text-slate-500">
-                      <span className={`inline-block h-3 w-3 rounded-sm ${look.chip}`} />
-                      {rangeOf(data.band_floors, Number(band))}
-                    </span>
-                  ))}
-                </div>
+                <BandLegend floors={data.band_floors} />
               </div>
 
               {/* The table scrolls in its own frame so the page never does — #98. */}

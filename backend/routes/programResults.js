@@ -7,15 +7,13 @@
  * how one Section did on one CLO; this asks how an intake did on one PLO,
  * across every Subject that intake has sat.
  *
- * ## Where the roll-up lives, and why not in a lib yet
+ * ## Where the roll-up lives
  *
- * The five-point rules are in `lib/attainment.js`, because #38 and this screen
- * both apply them and a second copy of a *rule* goes wrong quietly. The two
- * steps of the cohort roll-up — `marksOf` and `rollUp` — are still here, with
- * one caller, for the reason `attainment.js` was extracted at its second use
- * and not its first: what #43 to #45 will need is not knowable from one use,
- * and a module shaped for a caller that does not exist yet is shaped by a
- * guess. #43 is where the second use arrives and where this moves.
+ * The five-point rules are in `lib/attainment.js` and the intake's marks and
+ * their per-student roll-up are in `lib/cohort.js`, both extracted at their
+ * second use rather than their first. What is left in this file is the part
+ * only this screen does: reducing each outcome's column of per-student scores
+ * to a mean, a pass rate and a verdict, and assembling the drill-down.
  */
 
 const express = require('express');
@@ -24,10 +22,11 @@ const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { integerId } = require('../lib/fields');
 const { programInReach, reachablePrograms } = require('../lib/reach');
+const { cohortMarks, scoresByStudent } = require('../lib/cohort');
 const {
+  PASS,
   BAND_FLOORS,
   bandOf,
-  outcomeScore,
   meanOf,
   passRateOf,
   outcomePassed,
@@ -70,45 +69,6 @@ function programResultRoutes(pool) {
   }
 
   /**
-   * What each student of the intake earned and what was available to them, per
-   * CLO, with the outcome that CLO names carried alongside.
-   *
-   * The grain is (student, CLO) and not (student, PLO), because the roll-up
-   * has two steps and they are not interchangeable: averaging the CLOs first
-   * gives each outcome of the curriculum one vote per CLO that serves it,
-   * where pooling the marks would give it one vote per mark. The join to
-   * `student_course` is what keeps the marks to the Sections the student is
-   * actually enrolled in, so a mark left behind by an unenrolment stops
-   * counting the moment the roll does.
-   *
-   * `s.score IS NOT NULL` is #34's blank rule, and it is why the sum is taken
-   * over the attribution row rather than over the Activity: an Activity nobody
-   * has marked for this student contributes to neither half of the fraction.
-   */
-  async function marksOf(programId, admissionYear) {
-    const { rows } = await pool.query(
-      `SELECT s.student_id, s.clo_id, c.plo_id,
-              SUM(s.score)::float AS earned,
-              SUM(m.score)::float AS available
-         FROM activity_scores s
-         JOIN activities a ON a.id = s.activity_id
-         JOIN activity_clo_mapping m
-           ON m.activity_id = s.activity_id AND m.clo_id = s.clo_id
-         JOIN subject_clo c ON c.clo_id = s.clo_id
-         JOIN student st ON st.student_id = s.student_id
-         JOIN student_course sc
-           ON sc.student_id = s.student_id AND sc.section_id = a.section_id
-        WHERE st.program_id = $1
-          AND st.admission_year = $2
-          AND c.program_id = $1
-          AND s.score IS NOT NULL
-        GROUP BY s.student_id, s.clo_id, c.plo_id`,
-      [programId, admissionYear],
-    );
-    return rows;
-  }
-
-  /**
    * The cohort's score for each outcome, in two steps.
    *
    * First every (student, CLO) mark becomes one five-point score. Then each
@@ -119,20 +79,18 @@ function programResultRoutes(pool) {
    * of *students* and not a share of marks.
    */
   function rollUp(plos, marks) {
-    // outcome -> student -> the CLO scores that student has for it.
-    const perOutcome = new Map(plos.map((plo) => [plo.outcome_id, new Map()]));
-    for (const row of marks) {
-      const score = outcomeScore(row.earned, row.available);
-      if (score === null || !perOutcome.has(row.plo_id)) continue;
-      const students = perOutcome.get(row.plo_id);
-      if (!students.has(row.student_id)) students.set(row.student_id, []);
-      students.get(row.student_id).push(score);
+    // outcome -> the students who have a score for it, one number each.
+    const perOutcome = new Map(plos.map((plo) => [plo.outcome_id, []]));
+    for (const outcomes of scoresByStudent(marks).values()) {
+      for (const [outcomeId, score] of outcomes) {
+        if (perOutcome.has(outcomeId)) perOutcome.get(outcomeId).push(score);
+      }
     }
 
     return plos.map((plo) => {
       // One number per student, not one per CLO — which is what makes the pass
       // rate a share of students.
-      const scores = [...perOutcome.get(plo.outcome_id).values()].map(meanOf);
+      const scores = perOutcome.get(plo.outcome_id);
       const passRate = passRateOf(scores);
       const mean = meanOf(scores);
       return {
@@ -233,7 +191,7 @@ function programResultRoutes(pool) {
 
       const [outcomes, marks, cohort] = await Promise.all([
         outcomesOf(programId),
-        marksOf(programId, admissionYear),
+        cohortMarks(pool, programId, admissionYear),
         cohortOf(programId, admissionYear),
       ]);
 
@@ -247,17 +205,120 @@ function programResultRoutes(pool) {
         // moved. #38 does the same and was walked proving it.
         band_floors: BAND_FLOORS,
         plos,
-        // About the marks, not about the outcomes: a cohort measured against
-        // three outcomes of thirteen has a report worth reading, and one
-        // measured against none has a sentence instead of a table. Zeroes
-        // would say the intake scored nothing, which is a different claim and
-        // not one anybody has made.
-        empty: marks.length === 0,
+        // About what came out of the roll-up, not about what went into it. A
+        // cohort measured against three outcomes of thirteen has a report
+        // worth reading, and one measured against none has a sentence instead
+        // of a table — zeroes would say the intake scored nothing, which is a
+        // different claim and not one anybody has made.
+        //
+        // Counted from the columns rather than from `marks.length`, because
+        // marks can exist and reach no column: `subject_clo.plo_id` is
+        // nullable, so a CLO naming no outcome carries marks that belong to no
+        // row of this report, and an Activity worth nothing has a score but no
+        // fraction. Either would have answered *not empty* and then drawn
+        // thirteen rows of dashes, which is the case this flag exists to stop.
+        empty: plos.every((plo) => plo.student_count === 0),
       });
     } catch (error) {
       return next(error);
     }
   });
+
+  /**
+   * Everybody on the intake's roll, in code order.
+   *
+   * From the register rather than from the marks, which is the whole of #43's
+   * first criterion: a heatmap built by asking *who has a score* draws no row
+   * for the student nobody has assessed, and that student is the one a
+   * committee most needs to find. The order is the code because a heatmap the
+   * reader can sort needs something stable to sort *from*.
+   */
+  async function rollOf(programId, admissionYear) {
+    const { rows } = await pool.query(
+      `SELECT student_id, full_name_th
+         FROM student
+        WHERE program_id = $1 AND admission_year = $2
+        ORDER BY student_id ASC`,
+      [programId, admissionYear],
+    );
+    return rows;
+  }
+
+  /**
+   * The grid, one row per student on the roll and one cell per main outcome.
+   *
+   * `below_count` and `measured_count` are what the screen sorts on, and they
+   * are counts rather than an average on purpose. No rule says what a student's
+   * score across a whole curriculum is — BR-17 is about one outcome across a
+   * cohort, BR-18 and BR-20 about one student on one outcome — so an average
+   * over a student's outcomes would be a figure this ticket invented and then
+   * ordered people by. *Below the line on 2 of the 7 they were measured on* is
+   * made of nothing but rules that already exist, and a reader can check it
+   * against the row it sits beside.
+   */
+  function grid(plos, roll, marks) {
+    const byStudent = scoresByStudent(marks);
+
+    return roll.map((student) => {
+      const outcomes = byStudent.get(student.student_id) || new Map();
+      const scores = {};
+      let measured = 0;
+      let below = 0;
+
+      for (const plo of plos) {
+        const score = outcomes.has(plo.outcome_id) ? outcomes.get(plo.outcome_id) : null;
+        // #38's word for the same thing, and the same reason: the flag has to
+        // survive being printed, and two shades of a ramp do not. Read once,
+        // so the count a reader is ordered by and the mark they see on the
+        // cell cannot come from two readings of the line.
+        const flagged = score !== null && score < PASS;
+        if (score !== null) measured += 1;
+        if (flagged) below += 1;
+        scores[plo.outcome_id] = { score, band: bandOf(score), flagged };
+      }
+
+      return { ...student, scores, measured_count: measured, below_count: below };
+    });
+  }
+
+  router.get(
+    '/program-results/by-intake/students',
+    requireRole(...READERS),
+    async (req, res, next) => {
+      try {
+        const admissionYear = req.query.admission_year;
+
+        // ADR-0002 again, and the same refusal as the report beside it.
+        const program = await programInReach(pool, req.auth.acting.scope_id, req.query.program_id);
+        if (!program) return res.status(404).json({ message: REFUSALS.programNotFound });
+        const programId = program.program_id;
+
+        const [outcomes, roll, marks] = await Promise.all([
+          outcomesOf(programId),
+          rollOf(programId, admissionYear),
+          cohortMarks(pool, programId, admissionYear),
+        ]);
+
+        const students = grid(outcomes, roll, marks);
+
+        return res.status(200).json({
+          admission_year: admissionYear,
+          band_floors: BAND_FLOORS,
+          plos: outcomes,
+          students,
+          // About what reached a cell, not about the roll and not about the
+          // rows the marks query returned. A cohort with students and no marks
+          // gets a sentence; a grid of dashes would invite a reader to look
+          // for a pattern in the fact that no marking has happened — and marks
+          // can exist and reach no cell, since a CLO naming no outcome belongs
+          // to no column here.
+          empty: students.every((student) => student.measured_count === 0),
+        });
+      } catch (error) {
+        return next(error);
+      }
+    },
+  );
 
   /**
    * One main outcome of this Program, or null.
