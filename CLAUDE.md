@@ -23,10 +23,15 @@ found during the rebuild and opened since.
 Closed through #38, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups),
 [#34](https://github.com/khthana/Deep-QA/issues/34) (Activity marks) and
 [#38](https://github.com/khthana/Deep-QA/issues/38) (Learning detail heatmap) included.
-Every acceptance checklist has been walked; not one row anywhere is unwalked. The rows that are
-not ticked are each blocked on something other than a person at a screen — an arithmetic claim a
-seam proves better than an eye can, or a wording the person who wrote it should not tick — and the
-newest handoff names them.
+Every acceptance checklist has been walked. Five rows in the whole store are not ticked, and each
+is blocked on something other than a person at a screen: four name a request no control on any
+screen can produce, and one is a wording the person who wrote it should not tick. The newest
+handoff names all five.
+
+An earlier version of this paragraph said the same of fifteen rows. Eleven of those turned out to
+be walkable after all — they were waiting not on a person but on a **situation the seed does not
+contain**, and building the situation and restoring it afterwards is a normal part of a walk. Read
+a row that claims a seam proves it better than an eye as a claim to check, not a conclusion.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time. Read it before taking work. Each handoff names the one it supersedes for state,
