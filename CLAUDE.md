@@ -23,17 +23,21 @@ found during the rebuild and opened since.
 Closed through #38, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups),
 [#34](https://github.com/khthana/Deep-QA/issues/34) (Activity marks) and
 [#38](https://github.com/khthana/Deep-QA/issues/38) (Learning detail heatmap) included.
-[#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results by intake) included —
-its sheet was hand-walked on 3 September 2569, and the walk found and fixed one defect of its own.
-[#43](https://github.com/khthana/Deep-QA/issues/43) (Whole-cohort heatmap) is built and tested at
-both seams; four rows of its sheet are colours, wording and a tooltip, and wait for an eye.
-Every acceptance checklist has been walked. Nine rows across the whole store are not ticked: five
-name a request no control on any screen can produce, two are halves another ticket owns outright
-(#49's menu set, #35's file retrieval), one is an arithmetic difference too small for an eye to
-decide and pinned exactly at the HTTP seam — and **one is walkable and simply has not been
-walked**: a ผู้สอน typing this screen's address and being refused. The address bar is a control,
-so that row is a walk nobody has done rather than a walk nobody can do, and it should be read that
-way.
+[#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results by intake),
+[#43](https://github.com/khthana/Deep-QA/issues/43) (Whole-cohort heatmap) and
+[#35](https://github.com/khthana/Deep-QA/issues/35) (Assessment evidence) are closed too — each was
+hand-walked on 3 September 2569, and **each walk found a defect its green suite could not see**.
+#43's was a screen that showed a refusal and *กำลังโหลดข้อมูล…* underneath it for ever, on two
+screens; #35's were two accessible names and a breadcrumb that read a piece of the URL at a person.
+
+Every acceptance checklist has been walked. Eleven rows across the whole store are not ticked, and
+the count is worth taking from the sheets rather than from here — one is ☐ and is half of a ticket
+somebody else owns (#49's menu set); of the ten ◐, most name a request no control on any screen can
+produce, one is an arithmetic difference too small for an eye to decide and pinned exactly at the
+HTTP seam, and **one is walkable and simply has not been walked**: a ผู้สอน typing #42's address
+and being refused. That is the twin of a row #43's walk closed with a spec, and the fix it was
+about is already in both screens — so it is a walk nobody has done rather than a walk nobody can
+do, and it should be read that way.
 
 An earlier version of this paragraph said the same of fifteen rows. Eleven of those turned out to
 be walkable after all — they were waiting not on a person but on a **situation the seed does not
