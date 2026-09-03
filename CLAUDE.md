@@ -30,19 +30,17 @@ hand-walked on 3 September 2569, and **each walk found a defect its green suite 
 #43's was a screen that showed a refusal and *กำลังโหลดข้อมูล…* underneath it for ever, on two
 screens; #35's were two accessible names and a breadcrumb that read a piece of the URL at a person.
 
-Every acceptance checklist has been walked. Eleven rows across the whole store are not ticked, and
-the count is worth taking from the sheets rather than from here — one is ☐ and is half of a ticket
-somebody else owns (#49's menu set); of the ten ◐, most name a request no control on any screen can
-produce, one is an arithmetic difference too small for an eye to decide and pinned exactly at the
-HTTP seam, and **one is walkable and simply has not been walked**: a ผู้สอน typing #42's address
-and being refused. That is the twin of a row #43's walk closed with a spec, and the fix it was
-about is already in both screens — so it is a walk nobody has done rather than a walk nobody can
-do, and it should be read that way.
+Every acceptance checklist has been walked, and as of 3 September 2569 **there is no row left
+anywhere that a person could walk and has not**. Ten rows are not ticked, and the count is worth
+taking from the sheets rather than from here — one is ☐ and is half of a ticket somebody else owns
+(#49's menu set); of the nine ◐, all but one name a request no control on any screen can produce,
+and the last is an arithmetic difference too small for an eye to decide and pinned exactly at the
+HTTP seam. Read a row that claims a seam proves it better than an eye as a claim to check, not a
+conclusion — that is how the last of the walkable ones were found.
 
-An earlier version of this paragraph said the same of fifteen rows. Eleven of those turned out to
-be walkable after all — they were waiting not on a person but on a **situation the seed does not
-contain**, and building the situation and restoring it afterwards is a normal part of a walk. Read
-a row that claims a seam proves it better than an eye as a claim to check, not a conclusion.
+Earlier versions of this paragraph said fifteen, then nine. Most of those turned out to be walkable
+after all — they were waiting not on a person but on a **situation the seed does not contain**, and
+building the situation and restoring it afterwards is a normal part of a walk.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time. Read it before taking work. Each handoff names the one it supersedes for state,
