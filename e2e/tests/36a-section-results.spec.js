@@ -187,6 +187,47 @@ test('an outcome nobody was measured on leaves a gap, not a point at the centre'
   await expect(tableCell(page, 'CLO-2', thisYear)).toHaveText('—');
 });
 
+test('a ตอนเรียน with no comparable year draws its own chart and offers no picker', async ({
+  page,
+}) => {
+  // The oldest year of a Subject has nothing behind it, so `available_years`
+  // comes back empty — a branch the other three rows never enter, because they
+  // all open the newest year. The hand-walk went looking for the sentence this
+  // branch shows and the browser stopped answering, which was reason enough to
+  // stop assuming and cover the branch: a screen that cannot render is a worse
+  // finding than a sentence that reads badly.
+  const { rows } = await db.query(
+    `SELECT cs.section_id
+       FROM course_sections cs
+       JOIN semester_courses sc ON sc.id = cs.semester_course_id
+       JOIN course_sections_teacher t ON t.section_id = cs.section_id
+      WHERE t.user_id = 'teach01'
+        AND NOT EXISTS (
+              SELECT 1 FROM semester_courses older
+               WHERE older.program_id = sc.program_id
+                 AND older.subject_id = sc.subject_id
+                 AND older.academic_year < sc.academic_year)
+      ORDER BY cs.section_id
+      LIMIT 1`,
+  );
+  expect(rows.length, 'the seed should hold an oldest year of some Subject').toBe(1);
+
+  const answer = await openResults(page, rows[0].section_id);
+  expect(answer.status()).toBe(200);
+  const body = await answer.json();
+  expect(body.available_years).toEqual([]);
+
+  // The screen still draws — it is a ตอนเรียน with marks, and having no year to
+  // compare against is not having nothing to show.
+  await expect(page.locator('svg[role="img"]')).toHaveCount(1);
+  const drawn = await pointsOf(page);
+  expect(Object.keys(drawn)).toEqual([`ปีการศึกษา ${body.section.academic_year}`]);
+
+  // No picker, and no ticked box left over from anywhere.
+  await expect(page.locator('input[type="checkbox"]')).toHaveCount(0);
+  await expect(page.getByText('กำลังโหลดข้อมูล')).toHaveCount(0);
+});
+
 test('a ผู้สอน who types another ตอนเรียน’s address is refused, and is not left waiting', async ({
   page,
 }) => {
