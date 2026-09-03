@@ -62,9 +62,8 @@ const {
   BAND_FLOORS,
   bandOf,
   outcomeScore,
-  meanOf,
-  passRateOf,
-  outcomePassed,
+  columnOf,
+  summaryOf,
 } = require('../lib/attainment');
 const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
@@ -180,17 +179,7 @@ function learningDetailRoutes(pool) {
           return { ...student, scores };
         });
 
-        const columns = clos.map((clo) => {
-          const scores = perClo.get(clo.clo_id);
-          const passRate = passRateOf(scores);
-          return {
-            ...clo,
-            student_count: scores.length,
-            mean: meanOf(scores),
-            pass_rate: passRate,
-            passed: outcomePassed(passRate),
-          };
-        });
+        const columns = clos.map((clo) => ({ ...clo, ...columnOf(perClo.get(clo.clo_id)) }));
 
         const scored = [...perClo.values()].flat();
         return res.json({
@@ -202,22 +191,10 @@ function learningDetailRoutes(pool) {
           band_floors: BAND_FLOORS,
           clos: columns,
           students,
-          // Every (student, outcome) that has a score, pooled. There is no
-          // per-student roll-up here because no rule says when a student passes
-          // a *Section* — BR-17 is about one outcome across a cohort, BR-20
-          // about one student on one outcome, and inventing the third would be
-          // a threshold nobody agreed to. The screen labels the grain it shows.
-          summary: {
-            student_count: roll.length,
-            mean: meanOf(scored),
-            pass_rate: passRateOf(scored),
-            // The denominator, so the screen can show the fraction rather than
-            // hope a label carries the grain. A percentage beside the words
-            // *57 students* is read as a share of students however it is
-            // titled; `473 of 506` cannot be.
-            scored_count: scored.length,
-            passed_count: scored.filter((score) => score >= PASS).length,
-          },
+          // Every (student, outcome) that has a score, pooled. Both the fold
+          // and the reasons for its shape moved to `lib/attainment.js` when
+          // #36 needed the same five figures from a different query.
+          summary: summaryOf(scored, roll.length),
           // Named rather than left to be read off the colours, which is the
           // ticket's fourth criterion in its own words.
           attention: columns

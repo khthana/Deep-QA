@@ -100,6 +100,55 @@ function outcomePassed(passRate) {
   return passRate === null ? null : passRate > OUTCOME_PASS_PERCENT;
 }
 
+/**
+ * One outcome's line, from the scores its students earned on it.
+ *
+ * #38 and #36 report the same four things about an outcome — how many students
+ * were measured on it, their mean, the share that passed, and whether the
+ * outcome itself passed — from two entirely different queries. The query is
+ * what differs and stays in the routes; this fold is what does not, and it was
+ * written twice before it was written here.
+ *
+ * The order matters and is easy to get subtly wrong by hand: `passed` must be
+ * read off the same `pass_rate` that goes on screen, or an outcome can be shown
+ * at sixty-point-nought and marked as passing on a fraction that was not.
+ */
+function columnOf(scores) {
+  const passRate = passRateOf(scores);
+  return {
+    student_count: scores.length,
+    mean: meanOf(scores),
+    pass_rate: passRate,
+    passed: outcomePassed(passRate),
+  };
+}
+
+/**
+ * The headline figures, from every (student, outcome) that has a score.
+ *
+ * `studentCount` is passed in rather than derived, because it is the only one
+ * of the five that counts students: the other four count *scores*, and a
+ * Section of fifty-seven students across nine outcomes has five hundred and
+ * thirteen of those. `scored_count` and `passed_count` travel so the screen can
+ * show the fraction rather than hope a label carries the grain — a percentage
+ * next to a card reading *57 คน* is read as a share of students however it is
+ * worded, and `473 of 506` cannot be.
+ *
+ * There is no per-student roll-up here and there is not meant to be. No rule
+ * says when a student passes a *Section*: BR-17 is about one outcome across a
+ * cohort and BR-20 about one student on one outcome, and inventing the third
+ * would be a threshold nobody agreed to.
+ */
+function summaryOf(scored, studentCount) {
+  return {
+    student_count: studentCount,
+    mean: meanOf(scored),
+    pass_rate: passRateOf(scored),
+    scored_count: scored.length,
+    passed_count: scored.filter((score) => score >= PASS).length,
+  };
+}
+
 // `SCALE` and `OUTCOME_PASS_PERCENT` are deliberately not exported. Both are
 // rules rather than numbers a caller has any business applying itself — five
 // is inside `outcomeScore` and sixty is inside `outcomePassed` — and a route
@@ -115,4 +164,6 @@ module.exports = {
   meanOf,
   passRateOf,
   outcomePassed,
+  columnOf,
+  summaryOf,
 };

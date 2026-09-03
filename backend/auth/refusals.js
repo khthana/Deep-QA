@@ -331,6 +331,16 @@ const REFUSALS = {
   teacherNotRegistered: 'ไม่พบผู้ใช้งานตามรหัสที่ระบุ ผู้สอนต้องถูกลงทะเบียนเป็นผู้ใช้งานก่อนจึงจะกำหนดให้สอนได้',
   teacherNotActive: 'บัญชีผู้ใช้งานนี้ถูกระงับการใช้งาน จึงกำหนดให้สอนไม่ได้',
 
+  // Section results - #36. A year is refused rather than dropped, because
+  // dropping it draws a chart missing a line the person asked for and says
+  // nothing about why. The one sentence covers the year that has no offering
+  // of this Subject, the year whose CLO numbers are not this year's, the year
+  // with nothing marked in it, and this Section's own year - all four are
+  // *there is nothing here that can be drawn on these axes*, and separating
+  // them would tell a caller which years exist elsewhere in the faculty.
+  yearNotComparable:
+    'ปีการศึกษาที่เลือกเทียบกับปีนี้ไม่ได้ เพราะไม่มีผลการเรียนรู้รายวิชาชุดเดียวกันที่บันทึกคะแนนไว้',
+
   // Course Learning Outcomes - #27. ADR-0003 puts the CLO set at the
   // (Program, Subject, academic year) grain, so none of these name a Section
   // even though a Section id is what the caller arrived holding: the thing

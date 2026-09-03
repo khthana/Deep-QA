@@ -171,3 +171,36 @@ Three things follow, and each is a way this could have gone wrong:
   mounting and asks both questions itself.
 
 The two questions are asked in that order, either is enough, and neither is read from the request body.
+
+## Amended by #36 — reading past a ตอนเรียน one does not teach
+
+[#36](https://github.com/khthana/Deep-QA/issues/36) overlays previous years of the same รายวิชา on a Section's radar,
+and every rule in this ADR up to here says a ผู้สอน reaches Section-grained data through `course_sections_teacher` and
+nothing else. A comparison across years cannot: a ผู้สอน who took the subject over last term taught none of the years
+worth comparing against, and those are exactly the years the question is about.
+
+So the read is wider than `sectionOf`, and this is what bounds it.
+
+**The unit is a year of a รายวิชา, never a ตอนเรียน of it.** A comparison year is every ตอนเรียน of
+`(program_id, subject_id, academic_year)` pooled into one set of figures. That is not a filter applied after fetching
+per-Section rows — **there is no per-Section grain in the answer at all.** The response carries no `section_id`, no
+section number, no teacher, and no student; the parameter is `years`, and there is no parameter that could name one
+ตอนเรียน of a past year. A reader learns how the รายวิชา did and nothing about anybody who taught or sat it.
+
+**The base ตอนเรียน is still `sectionOf`.** Everything the screen says about *this* class — the roll, the figures, the
+radar's own line — comes through the teaching register as before. Only the overlay is pooled, and the overlay is
+addressed by year rather than by Section precisely so that the two guards cannot be confused for one another.
+
+**It is bounded by the Subject and by the past.** Only earlier academic years, only the same `(program_id, subject_id)`,
+and only years whose CLO numbers match this year's exactly — which is [ADR-0003](0003-clo-grain.md)'s consequence
+rather than a permission rule, but has the same effect of keeping the read inside the thing the caller already teaches.
+
+**Why this is not the easy version.** The breach this ADR exists to prevent would be *any ผู้สอน may read any
+Section's results by asking for its id*. What is here cannot express that request. The widening is in the **grain of
+the answer**, not in the strength of the guard, and a widening that removes the ability to name an individual is the
+opposite of the one this ADR forbids.
+
+R079 is what asks for it: *เปรียบเทียบผลการเรียนรู้ระดับรายวิชาย้อนหลังด้วย Radar Chart*, which is a question about a
+รายวิชา and not about a class. The ticket's own criteria say only *"previous years of the same Subject"* without saying
+whose ตอนเรียน those are, so the decision was the implementer's to make and is recorded here rather than left in a
+route header — for #35's reason, one ticket earlier.
