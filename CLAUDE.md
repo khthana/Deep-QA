@@ -23,12 +23,15 @@ found during the rebuild and opened since.
 Closed through #38, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups),
 [#34](https://github.com/khthana/Deep-QA/issues/34) (Activity marks) and
 [#38](https://github.com/khthana/Deep-QA/issues/38) (Learning detail heatmap) included.
-[#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results by intake) is built
-and tested at both seams but **not closed**: its sheet still has four rows that are colours and
-wording, and those are walked with an eye. Every other acceptance checklist has been walked, and
-five rows across them are not ticked, each blocked on something other than a person at a screen —
-four name a request no control on any screen can produce, and one is a wording the person who
-wrote it should not tick. The newest handoff names all five.
+[#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results by intake) included —
+its sheet was hand-walked on 3 September 2569, and the walk found and fixed one defect of its own.
+Every acceptance checklist has been walked. Nine rows across the whole store are not ticked: five
+name a request no control on any screen can produce, two are halves another ticket owns outright
+(#49's menu set, #35's file retrieval), one is an arithmetic difference too small for an eye to
+decide and pinned exactly at the HTTP seam — and **one is walkable and simply has not been
+walked**: a ผู้สอน typing this screen's address and being refused. The address bar is a control,
+so that row is a walk nobody has done rather than a walk nobody can do, and it should be read that
+way.
 
 An earlier version of this paragraph said the same of fifteen rows. Eleven of those turned out to
 be walkable after all — they were waiting not on a person but on a **situation the seed does not

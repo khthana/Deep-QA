@@ -402,8 +402,16 @@ export default function ProgramLevelByIntake() {
                           ))}
                           {/* Said once, at the bottom, rather than as a dead
                               button beside every file: #35 owns both the upload
-                              and the retrieval that checks who is asking. */}
-                          <p className="text-xs text-slate-400">
+                              and the retrieval that checks who is asking.
+
+                              `text-slate-400` at first, and the hand-walk sent
+                              it back: the reader could find the sentence but
+                              had to look for it. A note nobody reads is a note
+                              that is not there, and this one is the answer to
+                              *why can I not open this file* — so `text-slate-600`
+                              on a `bg-gray-50` panel, which clears 4.5:1 where
+                              the old one was near 2.5:1. Quiet, not hidden. */}
+                          <p className="text-xs text-slate-600">
                             การเปิดไฟล์หลักฐานจะทำได้เมื่องาน #35 เสร็จ
                             ซึ่งเป็นงานที่ดูแลทั้งการแนบไฟล์และการตรวจสิทธิ์ก่อนให้ดาวน์โหลด
                           </p>
