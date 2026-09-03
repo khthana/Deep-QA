@@ -20,13 +20,14 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed through #38, [#26](https://github.com/khthana/Deep-QA/issues/26) (Work Groups),
-[#34](https://github.com/khthana/Deep-QA/issues/34) (Activity marks) and
-[#38](https://github.com/khthana/Deep-QA/issues/38) (Learning detail heatmap) included.
-[#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results by intake),
-[#43](https://github.com/khthana/Deep-QA/issues/43) (Whole-cohort heatmap) and
-[#35](https://github.com/khthana/Deep-QA/issues/35) (Assessment evidence) are closed too — each was
-hand-walked on 3 September 2569, and **each walk found a defect its green suite could not see**.
+Closed: #2–#35 unbroken, plus #38, #42 and #43. **Not** #36, #37, #39, #40 or #41 — the run of
+closed numbers stops at #35, and an earlier version of this line said *closed through #38*, which
+read as though it took those four with it. Of the original 44, seven are open: #36, #37, #39, #40,
+#41, #44, #45. Every one of their blockers is closed, so all seven are on the frontier at once.
+The three most recent — [#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level
+results by intake), [#43](https://github.com/khthana/Deep-QA/issues/43) (Whole-cohort heatmap) and
+[#35](https://github.com/khthana/Deep-QA/issues/35) (Assessment evidence) — were each hand-walked
+on 3 September 2569, and **each walk found a defect its green suite could not see**.
 #43's was a screen that showed a refusal and *กำลังโหลดข้อมูล…* underneath it for ever, on two
 screens; #35's were two accessible names and a breadcrumb that read a piece of the URL at a person.
 
