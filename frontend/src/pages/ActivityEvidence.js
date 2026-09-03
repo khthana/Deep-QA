@@ -176,12 +176,16 @@ export default function ActivityEvidence() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h2 className="font-medium text-gray-900">{nameOfType(file.evidence_type)}</h2>
-                    {/* The button carries the file name rather than a word like
-                        เปิด, so a reader who cannot see the row still hears which
-                        file they are opening. */}
+                    {/* The name a reader hears is *เปิดหลักฐาน <ชื่อไฟล์>* and
+                        not the filename alone. The hand-walk is what settled
+                        that: on screen the arrow icon says *press this to open
+                        it*, and to anybody not looking at the icon the button
+                        was called `walk-brief.pdf` — which names the file and
+                        not the act, where its two neighbours name both. */}
                     <button
                       type="button"
                       onClick={() => open(file)}
+                      aria-label={`เปิดหลักฐาน ${file.file_name}`}
                       className="mt-1 inline-flex items-center gap-1 text-sm text-primary hover:underline"
                     >
                       <HiOutlineArrowDownTray className="h-4 w-4" />

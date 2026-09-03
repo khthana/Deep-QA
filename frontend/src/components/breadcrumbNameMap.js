@@ -32,6 +32,7 @@ export const breadcrumbNameMap = {
   AddNewActivity: 'เพิ่มกิจกรรมใหม่',
   AssessmentCLO: 'การประเมินผลการเรียนรู้',
   AssessmentCriteria: 'หลักฐานการประเมิน',
+  evidence: 'หลักฐานการประเมิน',
   ContinuousImprove: 'การปรับปรุงอย่างต่อเนื่อง',
   programLevelByIntake: 'ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า',
   programLevelIndividual: 'ผลการเรียนรู้ระดับหลักสูตรรายบุคคล',

@@ -191,7 +191,7 @@ test('a committee member opens the evidence behind a figure from the drill-down'
       await sourceButton(readerPage, code).click();
       await expect(drillDown(readerPage)).toBeVisible();
 
-      const answer = await openFile(readerPage, 'หลักฐาน หลักฐานสำหรับกรรมการ.pdf');
+      const answer = await openFile(readerPage, 'หลักฐานสำหรับกรรมการ.pdf');
       expect(answer.status()).toBe(200);
       expect(answer.headers()['content-type']).toContain('application/pdf');
     } finally {

@@ -76,7 +76,7 @@ async function openFile(page, fileName) {
         /\/api\/evidence\/\d+\/file$/.test(new URL(response.url()).pathname) &&
         response.request().method() === 'GET',
     ),
-    page.getByRole('button', { name: fileName, exact: true }).click(),
+    page.getByRole('button', { name: `เปิดหลักฐาน ${fileName}`, exact: true }).click(),
   ]);
   return answer;
 }

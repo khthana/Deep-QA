@@ -333,6 +333,7 @@ export default function ProgramLevelByIntake() {
                                             <button
                                               type="button"
                                               onClick={() => openEvidence(file)}
+                                              aria-label={`เปิดหลักฐาน ${file.file_name}`}
                                               className="text-primary hover:underline"
                                             >
                                               หลักฐาน {file.file_name}
