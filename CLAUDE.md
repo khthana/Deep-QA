@@ -20,22 +20,36 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: #2–#36 unbroken, plus #38, #42 and #43. **Not** #37, #39, #40 or #41 — the run of closed
-numbers stops at #36, and an older version of this line said *closed through #38*, which read as
-though it took those four with it. Of the original 44, six are open: #37, #39, #40, #41, #44, #45.
-Every one of their blockers is closed, so all six are on the frontier at once.
+Closed: #2–#39 unbroken, plus #42 and #43. **Not** #40 or #41 — #37 and #39 closed on
+4 September 2569 and the run of closed numbers now reaches #39. Of the original 44, four are
+open: #40, #41, #44, #45. Every one of their blockers is closed, so all four are on the frontier
+at once.
 
-The four most recent — [#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results
+Take the state from that list rather than from a phrase. An older version of this line said
+*closed through #38* while #37 was open, which read as though the run took four open tickets
+with it — the reason the exceptions are now named twice.
+
+The six most recent — [#42](https://github.com/khthana/Deep-QA/issues/42) (Programme-level results
 by intake), [#43](https://github.com/khthana/Deep-QA/issues/43) (Whole-cohort heatmap),
 [#35](https://github.com/khthana/Deep-QA/issues/35) (Assessment evidence) and
-[#36](https://github.com/khthana/Deep-QA/issues/36) (Section results) — were all hand-walked on
-3 September 2569. #43's walk found a screen that showed a refusal and *กำลังโหลดข้อมูล…* underneath
+[#36](https://github.com/khthana/Deep-QA/issues/36) (Section results) on 3 September 2569, then
+[#37](https://github.com/khthana/Deep-QA/issues/37) (Individual results) and
+[#39](https://github.com/khthana/Deep-QA/issues/39) (Outcome-to-Activity map) on the 4th — were
+all hand-walked. #43's walk found a screen that showed a refusal and *กำลังโหลดข้อมูล…* underneath
 it for ever, on two screens; #35's found two accessible names and a breadcrumb that read a piece of
-the URL at a person. **#36's found nothing on screen**, which is worth recording as plainly as the
-other two: a walk that ticks every row is not a walk that was wasted, and the store now has three
-consecutive tickets where the walk paid and one where it did not.
+the URL at a person; #39's found three things about the drawing that no assertion could state —
+labels cut too short and set too small, a blank node six pixels tall, bands too faint to tell
+apart — plus [#115](https://github.com/khthana/Deep-QA/issues/115) and
+[#116](https://github.com/khthana/Deep-QA/issues/116). **#36's found nothing on screen**, which is
+worth recording as plainly as the rest: a walk that ticks every row is not a walk that was wasted,
+and the store now has five tickets where the walk paid and one where it did not.
 
-Every acceptance checklist has been walked, and as of 3 September 2569 **there is no row left
+**What a walk is for is the appearance, and appearance is where it keeps paying.** #39's three
+findings were all judgements about size, weight and contrast — the class of thing a browser test
+can measure but cannot have an opinion about. Ask the person to look, and ask about one property
+at a time.
+
+Every acceptance checklist has been walked, and as of 4 September 2569 **there is no row left
 anywhere that a person could walk and has not**. Ten rows are not ticked, and the count is worth
 taking from the sheets rather than from here — one is ☐ and is half of a ticket somebody else owns
 (#49's menu set); of the nine ◐, all but one name a request no control on any screen can produce,
@@ -44,8 +58,9 @@ HTTP seam. Read a row that claims a seam proves it better than an eye as a claim
 conclusion — that is how the last of the walkable ones were found.
 
 **A ⚙ that was never earned is the mark to distrust most.** #42's fifth criterion carried one until
-#35's ticket caught it, and #36's sheet shipped nine before its own review caught them — two
-tickets running, the same mistake. The tell both times: a row proved at *both* seams reads exactly
+#35's ticket caught it, #36's sheet shipped nine before its own review caught them, #37's carried
+two, and #39's carried two — **four tickets running, the same mistake**, each caught by that
+ticket's own review rather than by the one that wrote it. The tell both times: a row proved at *both* seams reads exactly
 like a row covered by the browser seam alone. ⚙ means a mutant killed **that row's own assertion**
 in `36a`, `35a`, `38a` and so on; a row proved only at the HTTP surface is ☑.
 
