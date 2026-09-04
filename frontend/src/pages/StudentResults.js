@@ -366,9 +366,20 @@ export default function StudentResults() {
             </div>
 
             {picked.length === 0 && (
-              <p className="mt-4 text-sm text-slate-500">
-                ยังไม่ได้เลือกนักศึกษา —
-                กราฟกำลังแสดงเฉพาะค่าเฉลี่ยของทั้งตอนเรียน
+              // An invitation, not a report of absence. The first version said
+              // *ยังไม่ได้เลือกนักศึกษา* and read as a fault being reported
+              // rather than a next step being offered; the hand-walk asked for
+              // it to be changed. It names the ceiling too, so somebody
+              // arriving here knows it before they start rather than after the
+              // fifth box greys out.
+              //
+              // **No direction word.** It said *ทางซ้าย* until the walk pointed
+              // out that the picker is only on the left above `lg`: below it
+              // the grid collapses to one column and the list sits *above* the
+              // chart, where the sentence would have been pointing at nothing.
+              <p className="mt-4 text-sm text-slate-900">
+                เลือกนักศึกษาจากรายการ ครั้งละไม่เกิน {MAX_STUDENTS} คน
+                เพื่อวางเส้นของแต่ละคนทับบนค่าเฉลี่ยของตอนเรียน
               </p>
             )}
 
