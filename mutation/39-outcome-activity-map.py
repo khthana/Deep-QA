@@ -70,8 +70,8 @@ MUTANTS = {
     # Kills row 2.
     "unassessednodedrawnatnothing": (
         "flow",
-        "    return { node, bands, height: bands.length === 0 ? MIN_NODE : height }",
-        "    return { node, bands, height }",
+        "  for (const one of laid) if (one.bands.length === 0) one.height = blank",
+        "  for (const one of laid) if (one.bands.length === 0) one.height = 0",
     ),
     # The outcomes nothing assesses stop being named under the diagram. They are
     # still drawn, so a ผู้สอน who reads the picture carefully finds them - which

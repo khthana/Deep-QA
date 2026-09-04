@@ -81,13 +81,44 @@ const RIGHT_LABEL_START = RIGHT_X + NODE_W + 8
 /** The height the taller column aims for, before its gaps are added. */
 const BODY = 400
 const GAP = 16
-/** A node with no marks attached is still a node, and this is how tall. */
+/**
+ * How tall a node with nothing attached is, when there is nothing to measure it
+ * against — an empty ตอนเรียน, where every node is blank.
+ *
+ * Otherwise it takes the height of the smallest node in its own column that
+ * *does* carry something: see `stackedColumn`.
+ */
 const MIN_NODE = 6
 /** A band worth almost nothing is still a band, and this is how thick. */
 const MIN_BAND = 1.5
 
-/** How many characters of an Activity's name fit beside the diagram. */
-const LABEL_CHARS = 30
+/**
+ * How many characters of an Activity's name fit beside the diagram.
+ *
+ * Chosen against the room and the size the label is written at, not by taste:
+ * the labels start at `RIGHT_LABEL_START` and the drawing ends at `WIDTH`, and
+ * at `LABEL_SIZE` a Thai character comes to about six units of that, so fifty
+ * is where the room runs out and forty-eight is just inside it. The first walk
+ * had it at thirty, which cut names in half with a fifth of the room still
+ * empty to their right.
+ *
+ * That reasoning holds only for the alphabet it was measured in. A count of
+ * characters does not bound a width, and forty-eight Roman capitals come to
+ * nearly twice the room there is — clipped by the `viewBox` with no `…` to say
+ * so. Every Activity in the seed is named in Thai, so nothing here shows it;
+ * [#115](https://github.com/khthana/Deep-QA/issues/115) is to cut on the width
+ * the label actually measures instead.
+ */
+const LABEL_CHARS = 48
+
+/**
+ * How big the labels are written.
+ *
+ * Eleven was too small to read comfortably at the size the diagram renders —
+ * the walk's words — and the diagram is the one place on this screen where a
+ * label cannot be enlarged by zooming without taking the drawing with it.
+ */
+const LABEL_SIZE = 'text-[13px]'
 
 const shorten = text =>
   text.length > LABEL_CHARS ? `${text.slice(0, LABEL_CHARS - 1)}…` : text
@@ -121,8 +152,23 @@ function stackedColumn(nodes, linksOf, scale) {
     // The bar is exactly as tall as what is stacked in it, so a band can never
     // start outside the node it leaves.
     const height = bands.reduce((sum, band) => sum + band.thickness, 0)
-    return { node, bands, height: bands.length === 0 ? MIN_NODE : height }
+    return { node, bands, height }
   })
+
+  // A node with nothing attached takes the height of the smallest node in its
+  // own column that carries something, rather than a few pixels of its own.
+  // Scaled honestly it would be nothing at all, and the walk's word for the
+  // six-pixel compromise was *แปลก* — it read as a speck of dust rather than as
+  // a part of the diagram.
+  //
+  // The cost is that a bar with a body is read as a bar carrying marks, and
+  // this one carries none. Three things say so and none of them is its size:
+  // it is hollow where every other bar is filled, its outline is dashed, and
+  // its title reads 0.00 คะแนน. It is also named in a sentence under the
+  // diagram, which is where a ผู้สอน is actually told about it.
+  const bodies = laid.filter(one => one.bands.length > 0).map(one => one.height)
+  const blank = bodies.length > 0 ? Math.min(...bodies) : MIN_NODE
+  for (const one of laid) if (one.bands.length === 0) one.height = blank
 
   const total =
     laid.reduce((sum, one) => sum + one.height, 0) +
@@ -248,7 +294,7 @@ export default function OutcomeActivityFlow({
             fill="none"
             stroke={colourOf(cloIndex.get(link.clo_id))}
             strokeWidth={thicknessOf(link, scale)}
-            strokeOpacity="0.4"
+            strokeOpacity="0.6"
             aria-label={said}
           >
             <title>{said}</title>
@@ -283,7 +329,7 @@ export default function OutcomeActivityFlow({
               y={y + h / 2}
               textAnchor="end"
               dominantBaseline="middle"
-              className="fill-slate-600 text-[11px]"
+              className={`fill-slate-600 ${LABEL_SIZE}`}
             >
               {node.clo_number}
             </text>
@@ -313,7 +359,7 @@ export default function OutcomeActivityFlow({
               x={RIGHT_LABEL_START}
               y={y + h / 2}
               dominantBaseline="middle"
-              className="fill-slate-600 text-[11px]"
+              className={`fill-slate-600 ${LABEL_SIZE}`}
             >
               {shorten(node.activity_name)}
               <title>{node.activity_name}</title>
