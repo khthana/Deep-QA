@@ -120,6 +120,14 @@ function columnOf(scores) {
     mean: meanOf(scores),
     pass_rate: passRate,
     passed: outcomePassed(passRate),
+    // `summaryOf`'s argument, one grain down. #40's report prints *55 / 57*
+    // beside *96.5%* because a percentage on a formal document is read as a
+    // share of the class however it is labelled, and this one is a share of
+    // the students who have a mark for **this outcome**. Counted here rather
+    // than in that route so the fraction and the percentage are folded from
+    // one array by one rule: a route applying `PASS` itself would be a second
+    // place the pass line lives.
+    passed_count: scores.filter((score) => score >= PASS).length,
   };
 }
 
@@ -149,15 +157,34 @@ function summaryOf(scored, studentCount) {
   };
 }
 
-// `SCALE` and `OUTCOME_PASS_PERCENT` are deliberately not exported. Both are
-// rules rather than numbers a caller has any business applying itself — five
-// is inside `outcomeScore` and sixty is inside `outcomePassed` — and a route
-// that imported one would be a route about to re-implement the function it
-// belongs to. `PASS` and `BAND_FLOORS` are exported because a caller does have
-// business with them: one asks *did this one score pass*, the other travels to
-// the browser so the legend is drawn from the rule rather than from a copy.
+// There are two things a caller can want from a rule, and only one of them was
+// a reason to export until #40.
+//
+// **Applying it** is the one that stays here. Nothing outside this file divides
+// by five or compares against sixty: `outcomeScore` and `outcomePassed` are
+// where those happen, and a route importing either number would be a route
+// about to re-implement the function it belongs to.
+//
+// **Stating it** is the other, and it is why `BAND_FLOORS` already travels —
+// #38's legend draws BR-20's ranges from the rule instead of keeping a second
+// copy of them in the browser, which would go on saying 3.0 – 3.4 after the
+// floors moved. #40's report has to print the criterion it judged by, in words,
+// on a document that goes in a course file: *คะแนน ≥ 3.00 จาก 5 และผู้ผ่าน
+// มากกว่าร้อยละ 60 ของผู้มีคะแนน* — of the students measured on that outcome,
+// which is the denominator `columnOf` folds and not the size of the class.
+// Every number in that sentence is one of these, and a
+// sentence typed out in a page component is exactly the copy that goes stale
+// in silence — the failure the acceptance sheets call a screen saying one word
+// while the code proves another.
+//
+// So `SCALE` and `OUTCOME_PASS_PERCENT` are exported to be **printed**, never
+// to be applied. `PASS` was already both: it is what `bandOf`'s caller asks
+// *did this one score pass* with, and it is now also the three in that
+// sentence.
 module.exports = {
   PASS,
+  SCALE,
+  OUTCOME_PASS_PERCENT,
   BAND_FLOORS,
   bandOf,
   outcomeScore,

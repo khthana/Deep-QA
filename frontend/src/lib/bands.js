@@ -60,6 +60,58 @@ export const score = (value, suffix = '') =>
  */
 export const marks = value => value.toFixed(2)
 
+/**
+ * The criterion an outcome was judged by, said in words, from the rule itself.
+ *
+ * #40's report has to print what it judged by, because the document leaves the
+ * application and is read by people who cannot ask. Two lines, because there
+ * are two thresholds and they are about different things: the first is one
+ * student against one outcome, the second is the outcome against its cohort.
+ *
+ * Every number comes from `rule`, which the server folds out of
+ * `backend/lib/attainment.js`. Written out here as a literal instead, this
+ * would be a sentence that goes on claiming three of five after the pass line
+ * moved — on a page whose entire purpose is to state the rule correctly, which
+ * makes it the worst possible place for a stale copy.
+ *
+ * `มากกว่า` is not decoration. BR-17 is strict, `outcomePassed` implements it
+ * strictly, and an outcome exactly at sixty per cent has not passed — so a
+ * sentence reading *ไม่น้อยกว่า* would describe a different rule from the one
+ * that produced the verdict beside it.
+ *
+ * Neither clause carries a conjunction. They are joined differently in the
+ * three places they appear — one above the table, one inside a cell, one on a
+ * PDF — and a leading *และ* baked in here means every caller that wants the
+ * clause on its own has to cut it back off, which is a caller editing a
+ * sentence it did not write.
+ */
+export const criterionLines = rule => [
+  `คะแนน ≥ ${rule.pass_score.toFixed(2)} จาก ${rule.scale}`,
+  `ผู้ผ่านมากกว่าร้อยละ ${rule.pass_percent} ของผู้มีคะแนน`,
+]
+
+/**
+ * Whether an outcome passed, as the word a person reads.
+ *
+ * Three states and not two. `outcomePassed` answers `null` for an outcome
+ * nobody has been measured on, because such an outcome has not failed its
+ * criterion — the term has not reached it — and a formal report saying
+ * *ไม่ผ่าน* there is an accusation the marks do not support.
+ *
+ * Here rather than in the page because #40 says it twice, once on screen and
+ * once on the PDF, and the two are read side by side by the person filing the
+ * course file. Written out in both places, the labels drift the way any second
+ * copy drifts: silently, with both artefacts still rendering plausibly. It is
+ * the same argument this file already makes for `criterionLines`.
+ *
+ * The colours stay with the screen. A chip's shade is that screen's business
+ * and the PDF has no chips — what has to agree is the word.
+ */
+export const verdictLabel = passed => {
+  if (passed === null || passed === undefined) return 'ยังไม่ประเมิน'
+  return passed ? 'ผ่าน' : 'ไม่ผ่าน'
+}
+
 /** One band's range, said in words, from the floors the rule was read off. */
 export function rangeOf(floors, band) {
   const next = floors[band]
