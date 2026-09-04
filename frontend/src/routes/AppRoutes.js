@@ -31,6 +31,7 @@ import ActivityScores from '../pages/ActivityScores'
 import LearningDetails from '../pages/LearningDetails'
 import SectionResults from '../pages/SectionResults'
 import StudentResults from '../pages/StudentResults'
+import OutcomeActivityMapping from '../pages/OutcomeActivityMapping'
 import SubjectStudents from '../pages/SubjectStudents'
 import StudentGroups from '../pages/StudentGroups'
 import Users from '../pages/Users'
@@ -150,7 +151,10 @@ export default function AppRoutes() {
           path="programLevelIndividual"
           element={<NotBuiltYet ticket="#45" />}
         />
-        <Route path="programLevelAllStudents" element={<ProgramLevelAllStudents />} />
+        <Route
+          path="programLevelAllStudents"
+          element={<ProgramLevelAllStudents />}
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
@@ -193,6 +197,10 @@ export default function AppRoutes() {
           <Route path="learningDetails" element={<LearningDetails />} />
           <Route path="courseResults" element={<SectionResults />} />
           <Route path="studentResults" element={<StudentResults />} />
+          <Route
+            path="outcomeActivityMapping"
+            element={<OutcomeActivityMapping />}
+          />
           <Route path="*" element={<NotBuiltYet />} />
         </Route>
       </Route>

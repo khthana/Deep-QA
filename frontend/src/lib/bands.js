@@ -48,6 +48,18 @@ export const figure = (value, suffix = '') =>
 export const score = (value, suffix = '') =>
   value === null || value === undefined ? '—' : `${value.toFixed(2)}${suffix}`
 
+/**
+ * A number of marks, always to two decimal places.
+ *
+ * Not a `score`. A score is out of five and a mark is out of whatever the work
+ * happened to be worth; the two are written the same way and that is the whole
+ * of what they have in common. It is here for the reason the file exists at
+ * all — how many places a figure is written to is this module's question — and
+ * because #39 had written it twice, once in a diagram and once in the table
+ * beside it, under two different names.
+ */
+export const marks = value => value.toFixed(2)
+
 /** One band's range, said in words, from the floors the rule was read off. */
 export function rangeOf(floors, band) {
   const next = floors[band]
