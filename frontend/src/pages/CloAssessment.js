@@ -193,49 +193,49 @@ export default function CloAssessment() {
                   </thead>
                   <tbody>
                     {data.clos.map(clo => (
-                        <tr
-                          key={clo.clo_id}
-                          className="border-b border-gray-100 last:border-0 align-top"
+                      <tr
+                        key={clo.clo_id}
+                        className="border-b border-gray-100 align-top last:border-0"
+                      >
+                        <td className="px-4 py-3">
+                          <span className="font-medium text-slate-700">
+                            {clo.clo_number}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-slate-500">
+                            {clo.clo_detail}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-slate-500">
+                          {ruleScore}
+                          <span className="block">และ{ruleShare}</span>
+                        </td>
+                        <td
+                          className="px-4 py-3 text-right tabular-nums text-slate-700"
+                          aria-label={`ผ่าน ${clo.clo_number} ${clo.passed_count} จาก ${clo.student_count}`}
                         >
-                          <td className="px-4 py-3">
-                            <span className="font-medium text-slate-700">
-                              {clo.clo_number}
-                            </span>
-                            <span className="mt-0.5 block text-xs text-slate-500">
-                              {clo.clo_detail}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-500">
-                            {ruleScore}
-                            <span className="block">และ{ruleShare}</span>
-                          </td>
-                          <td
-                            className="px-4 py-3 text-right tabular-nums text-slate-700"
-                            aria-label={`ผ่าน ${clo.clo_number} ${clo.passed_count} จาก ${clo.student_count}`}
+                          {clo.passed_count} / {clo.student_count}
+                        </td>
+                        <td
+                          className="px-4 py-3 text-right font-medium tabular-nums text-slate-700"
+                          aria-label={`ร้อยละ ${clo.clo_number} ${figure(clo.pass_rate)}`}
+                        >
+                          {figure(clo.pass_rate, '%')}
+                        </td>
+                        <td
+                          className="px-4 py-3 text-right tabular-nums text-slate-700"
+                          aria-label={`เฉลี่ย ${clo.clo_number} ${score(clo.mean)}`}
+                        >
+                          {score(clo.mean)}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${chipOf(clo.passed)}`}
+                            aria-label={`ผลการประเมิน ${clo.clo_number} ${verdictLabel(clo.passed)}`}
                           >
-                            {clo.passed_count} / {clo.student_count}
-                          </td>
-                          <td
-                            className="px-4 py-3 text-right tabular-nums font-medium text-slate-700"
-                            aria-label={`ร้อยละ ${clo.clo_number} ${figure(clo.pass_rate)}`}
-                          >
-                            {figure(clo.pass_rate, '%')}
-                          </td>
-                          <td
-                            className="px-4 py-3 text-right tabular-nums text-slate-700"
-                            aria-label={`เฉลี่ย ${clo.clo_number} ${score(clo.mean)}`}
-                          >
-                            {score(clo.mean)}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span
-                              className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${chipOf(clo.passed)}`}
-                              aria-label={`ผลการประเมิน ${clo.clo_number} ${verdictLabel(clo.passed)}`}
-                            >
-                              {verdictLabel(clo.passed)}
-                            </span>
-                          </td>
-                        </tr>
+                            {verdictLabel(clo.passed)}
+                          </span>
+                        </td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
@@ -245,55 +245,67 @@ export default function CloAssessment() {
 
           {/* The rubric, per outcome and behind a disclosure. It is what #29
               wrote and it is worth reading, but it decided none of the figures
-              above, so it does not sit among them. */}
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-            <button
-              type="button"
-              onClick={() => setShowRubric(one => !one)}
-              aria-expanded={showRubric}
-              className="flex w-full items-center justify-between px-4 py-3 text-left"
-            >
-              <span className="text-sm font-medium text-slate-700">
-                เกณฑ์การบรรลุผลสี่ระดับของแต่ละข้อ (อ้างอิง)
-              </span>
-              <span className="text-xs text-slate-400">
-                {showRubric ? 'ซ่อน' : 'แสดง'}
-              </span>
-            </button>
+              above, so it does not sit among them.
 
-            {showRubric && (
-              <div className="space-y-4 border-t border-gray-100 px-4 py-4">
-                {data.clos.map(clo => (
-                  <div key={clo.clo_id}>
-                    <p className="text-xs font-medium text-slate-500">
-                      {clo.clo_number}
-                    </p>
-                    {clo.criteria.length === 0 ? (
-                      <p className="mt-1 text-xs text-slate-400">
-                        ยังไม่ได้กำหนดเกณฑ์การบรรลุผลของข้อนี้
+              Not offered at all when the รายวิชา has no outcomes, which #40's
+              hand-walk found: the disclosure was drawn in all three states, so
+              a subject nobody has written outcomes for still offered *แสดง*
+              and opened onto an empty box. A control that does nothing is
+              worse than an absent one — the person presses it and learns that
+              the screen has nothing to say, which the sentence above already
+              said better. It stays for `empty`: those outcomes exist and their
+              rubric is real reference material, and it is only the marks that
+              have not been recorded yet. */}
+          {!data.no_outcomes && (
+            <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+              <button
+                type="button"
+                onClick={() => setShowRubric(one => !one)}
+                aria-expanded={showRubric}
+                className="flex w-full items-center justify-between px-4 py-3 text-left"
+              >
+                <span className="text-sm font-medium text-slate-700">
+                  เกณฑ์การบรรลุผลสี่ระดับของแต่ละข้อ (อ้างอิง)
+                </span>
+                <span className="text-xs text-slate-400">
+                  {showRubric ? 'ซ่อน' : 'แสดง'}
+                </span>
+              </button>
+
+              {showRubric && (
+                <div className="space-y-4 border-t border-gray-100 px-4 py-4">
+                  {data.clos.map(clo => (
+                    <div key={clo.clo_id}>
+                      <p className="text-xs font-medium text-slate-500">
+                        {clo.clo_number}
                       </p>
-                    ) : (
-                      <dl className="mt-1 space-y-1">
-                        {clo.criteria.map(one => (
-                          <div
-                            key={one.criteria_no}
-                            className="flex gap-3 text-xs"
-                          >
-                            <dt className="w-24 shrink-0 font-medium text-slate-600">
-                              {one.achievement_level}
-                            </dt>
-                            <dd className="text-slate-500">
-                              {one.criteria_detail}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                      {clo.criteria.length === 0 ? (
+                        <p className="mt-1 text-xs text-slate-400">
+                          ยังไม่ได้กำหนดเกณฑ์การบรรลุผลของข้อนี้
+                        </p>
+                      ) : (
+                        <dl className="mt-1 space-y-1">
+                          {clo.criteria.map(one => (
+                            <div
+                              key={one.criteria_no}
+                              className="flex gap-3 text-xs"
+                            >
+                              <dt className="w-24 shrink-0 font-medium text-slate-600">
+                                {one.achievement_level}
+                              </dt>
+                              <dd className="text-slate-500">
+                                {one.criteria_detail}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
     </ContentMotionDIV>

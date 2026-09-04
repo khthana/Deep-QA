@@ -2,7 +2,7 @@
 """
 #40 การประเมินผลการเรียนรู้ - the formal assessment table and its PDF.
 
-Fifteen mutants, all of them in the browser. The route and the arithmetic are
+Sixteen mutants, all of them in the browser. The route and the arithmetic are
 covered at the HTTP seam - `backend/test/clo-assessment.test.js` holds both
 thresholds from both sides, the agreement with #38, and the refusals - so
 breaking any of that would fail the backend suite rather than `40a`.
@@ -69,8 +69,8 @@ MUTANTS = {
     # numbers that disagree, and only one of them is wrong. Kills row 1.
     "fractionsayseverybodypassed": (
         "screen",
-        "                            {clo.passed_count} / {clo.student_count}",
-        "                            {clo.student_count} / {clo.student_count}",
+        "                          {clo.passed_count} / {clo.student_count}",
+        "                          {clo.student_count} / {clo.student_count}",
     ),
     # The criterion column stops being drawn from the rule and states a literal
     # instead - the exact number the rule happens to carry today. Everything on
@@ -106,10 +106,10 @@ MUTANTS = {
     # claim. Kills rows 2 and 3.
     "verdictisonlyacolour": (
         "screen",
-        "                              {verdictLabel(clo.passed)}\n"
-        "                            </span>",
-        "                              {'\\u00a0'}\n"
-        "                            </span>",
+        "                            {verdictLabel(clo.passed)}\n"
+        "                          </span>",
+        "                            {'\\u00a0'}\n"
+        "                          </span>",
     ),
     # The criterion says *ไม่น้อยกว่า* where the rule is *มากกว่า*. One word, and
     # it describes a different rule: BR-17 is strict, so an outcome at exactly
@@ -160,8 +160,8 @@ MUTANTS = {
     # the sentences produced it, and none of them did. Kills row 6.
     "rubricalwaysopen": (
         "screen",
-        "            {showRubric && (",
-        "            {true && (",
+        "              {showRubric && (",
+        "              {true && (",
     ),
     # The file is called the same thing every time. It downloads, it opens, it
     # is entirely correct - and a course file collecting one of these per
@@ -205,6 +205,20 @@ MUTANTS = {
         "screen",
         "          ) : data.empty ? (",
         "          ) : false ? (",
+    ),
+    # The rubric disclosure comes back on a รายวิชา that has no outcomes at
+    # all, where it opens onto an empty box. This is what #40's hand-walk
+    # found, and it is the one defect on the sheet that no assertion could
+    # have caught: every automated row asked whether the disclosure *worked*,
+    # and it worked perfectly - on nothing.
+    #
+    # It is the shape of #43's finding one screen over: a control that answers
+    # nothing, offered to a person who has to press it to learn that. The
+    # sentence above it already said the useful thing. Kills row 9.
+    "rubricofferedwithnorubric": (
+        "screen",
+        "          {!data.no_outcomes && (",
+        "          {true && (",
     ),
     # The export stays pressable with nothing to export, and hands over a PDF of
     # a table of dashes - a document that would go in a course file and say

@@ -57,7 +57,7 @@ test.beforeEach(async ({ page }) => {
   await signIn(page, ACCOUNTS.teacherOne);
   if (section === undefined) [section] = await mySectionIds(page);
   restoreMarks = [];
-  invented = { clos: [], sections: [] };
+  invented = { clos: [], sections: [], offerings: [] };
 });
 
 test.afterEach(async () => {
@@ -73,6 +73,10 @@ test.afterEach(async () => {
   for (const sectionId of invented.sections) {
     await db.query('DELETE FROM course_sections_teacher WHERE section_id = $1', [sectionId]);
     await db.query('DELETE FROM course_sections WHERE section_id = $1', [sectionId]);
+  }
+  // After the ตอนเรียน that point at them, and in the order they were made.
+  for (const offeringId of invented.offerings) {
+    await db.query('DELETE FROM semester_courses WHERE id = $1', [offeringId]);
   }
 });
 
@@ -120,6 +124,42 @@ async function unmeasuredOutcome(number) {
   );
   invented.clos.push(rows[0].clo_id);
   return rows[0].clo_id;
+}
+
+/**
+ * A ตอนเรียน of a รายวิชา whose outcomes nobody has written yet.
+ *
+ * A whole Offering rather than a bare ตอนเรียน, because outcomes hang off
+ * (program, subject, year) and not off the ตอนเรียน — ADR-0003 — so the only
+ * way to have none is to ask about a year nobody has written any for. The
+ * same shape `backend/test/clo-assessment.test.js` builds, and for the same
+ * reason: every seeded outcome has marks and mappings pointing at it, so
+ * carving this case out of the fixture would dismantle what every other row
+ * reads.
+ */
+async function outcomelessSection(year) {
+  const { rows: offering } = await db.query(
+    `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+     SELECT sc.program_id, sc.subject_id, $2, 1
+       FROM course_sections cs
+       JOIN semester_courses sc ON sc.id = cs.semester_course_id
+      WHERE cs.section_id = $1
+     RETURNING id`,
+    [section, year],
+  );
+  invented.offerings.push(offering[0].id);
+  const { rows } = await db.query(
+    `INSERT INTO course_sections (semester_course_id, section_number)
+     VALUES ($1, '1') RETURNING section_id`,
+    [offering[0].id],
+  );
+  const bare = rows[0].section_id;
+  invented.sections.push(bare);
+  await db.query('INSERT INTO course_sections_teacher (section_id, user_id) VALUES ($1, $2)', [
+    bare,
+    IDS.teacherOne,
+  ]);
+  return bare;
 }
 
 /** A ตอนเรียน of the same Offering with nothing marked in it. */
@@ -284,4 +324,21 @@ test('row 8: the ตอนเรียน of another account is refused rather t
   // underneath it for ever. The `finally` in this page's loader is why that
   // sentence is gone rather than merely covered.
   await expect(page.getByText('กำลังโหลดข้อมูล…')).toBeHidden();
+});
+
+test('row 9: a รายวิชา with no outcomes is not offered a rubric it cannot fill', async ({
+  page,
+}) => {
+  const bare = await outcomelessSection('2500');
+  await openReport(page, bare);
+
+  await expect(
+    page.getByRole('status').filter({ hasText: 'ยังไม่ได้กำหนดผลการเรียนรู้' }),
+  ).toBeVisible();
+
+  // #40's hand-walk pressed it and got an empty box. The disclosure is drawn
+  // from `data.clos`, so with no outcomes there is nothing for it to open
+  // onto — and a control that answers nothing is worse than an absent one,
+  // because pressing it is how the person finds out.
+  await expect(rubricToggle(page)).toHaveCount(0);
 });
