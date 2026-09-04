@@ -8,15 +8,8 @@ const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { mySectionIds } = require('../support/enrolment-screen');
-const {
-  addYear,
-  axesOf,
-  openResults,
-  path,
-  pointsOf,
-  tableCell,
-  yearBox,
-} = require('../support/section-results-screen');
+const { axesOf, pointsOf, tableCell } = require('../support/radar-chart');
+const { addYear, openResults, path, yearBox } = require('../support/section-results-screen');
 
 /**
  * docs/acceptance/36-section-results.md — the half a browser can prove.

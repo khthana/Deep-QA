@@ -74,6 +74,44 @@ export const SERIES = [
 export const seriesStyle = index => SERIES[index % SERIES.length]
 
 /**
+ * The stroke for a line that is context rather than a subject — #37's Section
+ * average, behind the students being read against it.
+ *
+ * Outside `SERIES` on purpose, and it buys two things. A comparison of four
+ * students needs four palette entries, and an average that took one of them
+ * would cap the spread at three. And the average is not a peer of the lines
+ * over it: grey and finely dotted, it reads as the ground the shapes stand on,
+ * which is what a ผู้สอน is actually looking at it for.
+ *
+ * It is filled, and it is the only series on #37's chart that is. A fill under
+ * every line would be four washes over one another and none of them readable;
+ * a fill under the one line nobody is comparing *to* anything is a backdrop.
+ */
+export const AVERAGE_STYLE = {
+  stroke: '#64748B',
+  fill: 'rgba(100, 116, 139, 0.12)',
+  dash: '1 3',
+  dashLabel: 'เส้นประถี่',
+}
+
+/**
+ * How many outcomes this chart can carry round the circle and stay readable —
+ * #37's fourth criterion, which asks for the cap *and* for the screen to say so
+ * when it bites.
+ *
+ * Ten is the ticket's number rather than a taste. What decides it in the
+ * drawing is the labels: they sit on a ring of 154 and grow outwards, and past
+ * ten they start meeting one another at the top and bottom of the circle where
+ * the angle between two axes is narrowest. A screen that drew fifteen would be
+ * legible only in the table underneath it.
+ *
+ * The cap is the *chart's* and not the data's. Every outcome stays in the
+ * table, which is where the numbers were always going to be read from — see
+ * the note on #36's screen about what a radar is good and bad at.
+ */
+export const MAX_AXES = 10
+
+/**
  * How many lines this chart can draw and still tell apart — the base year plus
  * this many comparisons.
  *
@@ -83,6 +121,16 @@ export const seriesStyle = index => SERIES[index % SERIES.length]
  * way to draw, rather than drawing it wrongly.
  */
 export const MAX_COMPARISONS = SERIES.length - 1
+
+/**
+ * How many students #37 can put on one chart — the whole palette, because its
+ * base line is `AVERAGE_STYLE` and takes none of it.
+ *
+ * The same reasoning as `MAX_COMPARISONS` and the same failure it prevents: a
+ * fifth student comes back solid navy, identical to the first in both colour
+ * and dash, with a legend listing two rows a reader cannot tell apart.
+ */
+export const MAX_STUDENTS = SERIES.length
 
 /** Where one axis points. Twelve o'clock first, then clockwise, as a compass is read. */
 function angleOf(index, count) {
@@ -141,12 +189,33 @@ const pathOf = (values, run) =>
     .join(' ') + (run.closed ? ' Z' : '')
 
 /**
- * @param {{label: string, values: (number|null)[]}[]} series — the base year first.
+ * @param {{label: string, values: (number|null)[], style?: object}[]} series
+ *   — drawn in order. A series may carry its own `style`; without one it takes
+ *   the palette entry at its index, which is what #36 relies on. #37 passes
+ *   every style explicitly, because its first line is the average and its
+ *   students must still start at the top of the palette rather than one in.
  * @param {string[]} axes — one label per axis, the same length as every series.
  */
 export default function RadarChart({ axes, series, title }) {
   const count = axes.length
-  if (count < 3) return null
+  if (count < 3) {
+    // Three axes is the fewest a polygon has. Two outcomes draw a line and one
+    // draws a dot, and neither is a shape anybody can read — so the figures
+    // stand alone in the table below, and the reason is written rather than
+    // left as a gap on the page.
+    //
+    // The sentence is here rather than at the callers because the component is
+    // the one that knows it cannot draw. Both screens had a byte-identical copy
+    // of this branch, which is the second use `lib/attainment.js` says to
+    // extract at; returning `null` had made every caller responsible for
+    // explaining a decision it did not make. Found by review.
+    return (
+      <p className="text-sm text-slate-500">
+        รายวิชานี้มีผลการเรียนรู้ {count} ข้อ ซึ่งน้อยเกินกว่าจะวาดเป็นกราฟเรดาร์ได้
+        ตัวเลขทั้งหมดอยู่ในตารางด้านล่าง
+      </p>
+    )
+  }
 
   return (
     <svg
@@ -210,7 +279,7 @@ export default function RadarChart({ axes, series, title }) {
       })}
 
       {series.map((one, seriesIndex) => {
-        const style = seriesStyle(seriesIndex)
+        const style = one.style ?? seriesStyle(seriesIndex)
         const runs = runsOf(one.values)
         return (
           <g key={one.label}>

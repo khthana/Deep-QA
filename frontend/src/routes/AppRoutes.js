@@ -30,6 +30,7 @@ import ActivityEvidence from '../pages/ActivityEvidence'
 import ActivityScores from '../pages/ActivityScores'
 import LearningDetails from '../pages/LearningDetails'
 import SectionResults from '../pages/SectionResults'
+import StudentResults from '../pages/StudentResults'
 import SubjectStudents from '../pages/SubjectStudents'
 import StudentGroups from '../pages/StudentGroups'
 import Users from '../pages/Users'
@@ -191,6 +192,7 @@ export default function AppRoutes() {
           <Route path="activityScores" element={<ActivityScores />} />
           <Route path="learningDetails" element={<LearningDetails />} />
           <Route path="courseResults" element={<SectionResults />} />
+          <Route path="studentResults" element={<StudentResults />} />
           <Route path="*" element={<NotBuiltYet />} />
         </Route>
       </Route>

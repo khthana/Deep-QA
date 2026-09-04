@@ -254,23 +254,16 @@ export default function SectionResults() {
           )}
 
           <div className="mt-6 flex flex-col items-center gap-6 lg:flex-row lg:items-start">
-            {axes.length < 3 ? (
-              // Three axes is the fewest a polygon has. Two outcomes draw a
-              // line and one draws a dot, and neither is a shape anybody can
-              // read — so the figures stand alone in the table below, and the
-              // reason is written rather than left as a gap on the page.
-              <p className="text-sm text-slate-500">
-                รายวิชานี้มีผลการเรียนรู้ {axes.length} ข้อ
-                ซึ่งน้อยเกินกว่าจะวาดเป็นกราฟเรดาร์ได้
-                ตัวเลขทั้งหมดอยู่ในตารางด้านล่าง
-              </p>
-            ) : (
-              <RadarChart
-                axes={axes}
-                series={series}
-                title={`ผลการเรียนรู้รายข้อของตอนเรียน ${data.section.section_number} เทียบเป็นคะแนนเต็ม 5`}
-              />
-            )}
+            {/* The chart says so itself when there are too few axes to draw a
+                polygon. It was written here first and copied to #37, which is
+                the second use `lib/attainment.js` names as the point to
+                extract at — the sentence now lives in the component. Same
+                words, same place on the page. */}
+            <RadarChart
+              axes={axes}
+              series={series}
+              title={`ผลการเรียนรู้รายข้อของตอนเรียน ${data.section.section_number} เทียบเป็นคะแนนเต็ม 5`}
+            />
 
             <ul className="space-y-2">
               {series.map((one, index) => {
