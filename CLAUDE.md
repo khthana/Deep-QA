@@ -20,9 +20,9 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#43 unbroken**. #41 closed on 5 September 2569, which joined the run to #42 and #43
-and took it to #43. Of the original 44, two are open: **#44 and #45**. Every one of their
-blockers is closed, so both are on the frontier at once.
+Closed: **#2–#44 unbroken**. #41 and #44 both closed on 5 September 2569 — #41 joined the run to
+#42 and #43, and #44 extended it by one. Of the original 44, **one is open: #45**, and its blockers
+are closed, so it is the whole of the frontier.
 
 Take the state from that list rather than from a phrase. An older version of this line said
 *closed through #38* while #37 was open, which read as though the run took four open tickets
@@ -42,12 +42,14 @@ labels cut too short and set too small, a blank node six pixels tall, bands too 
 apart — plus [#115](https://github.com/khthana/Deep-QA/issues/115) and
 [#116](https://github.com/khthana/Deep-QA/issues/116); #40's found a disclosure that opened onto an
 empty box on a รายวิชา with no outcomes, and a PDF that breaks lines mid-word in Thai
-([#117](https://github.com/khthana/Deep-QA/issues/117)); and
-[#41](https://github.com/khthana/Deep-QA/issues/41)'s (Continuous improvement plan) on the 5th found
-four things about the drawing that its own tests all passed through, plus
-[#118](https://github.com/khthana/Deep-QA/issues/118). **#36's found nothing on screen**, which is
-worth recording as plainly as the rest: a walk that ticks every row is not a walk that was wasted,
-and the store now has seven tickets where the walk paid and one where it did not.
+([#117](https://github.com/khthana/Deep-QA/issues/117)); and on the 5th
+[#41](https://github.com/khthana/Deep-QA/issues/41)'s (Continuous improvement plan) found four
+things about the drawing that its own tests all passed through, plus
+[#118](https://github.com/khthana/Deep-QA/issues/118), and
+[#44](https://github.com/khthana/Deep-QA/issues/44)'s (Programme-level comparison across intakes)
+found one. **#36's found nothing on screen**, which is worth recording as plainly as the rest: a
+walk that ticks every row is not a walk that was wasted, and the store now has eight tickets where
+the walk paid and one where it did not.
 
 **#40's first finding is the shape to remember.** Every automated row asked whether the disclosure
 *worked*, and it worked perfectly — on nothing. A test can ask whether a control responds; only a
@@ -64,13 +66,23 @@ same as not leaving a hole where it was.** The other three were the same class �
 narrow for its own longest option, cards that never named the outcome they were about once the
 picker had scrolled away, and the citation an accreditation panel reads set as grey small print.
 
+**#44's single finding is the one to read next to #41's.** That screen draws a column for a year
+nobody was admitted in, *so that a reader can see the years are evenly spaced* — the gap is the
+whole point, and a mutant proves the column is drawn. The columns then sized themselves to their
+contents, and the sentence under an empty year's heading is longer than *113 คน*, so the empty
+columns came out **wider** than the real intakes. The axis was not to scale, which is exactly the
+misreading the gap columns were added to prevent. **Drawing a thing is not the same as drawing it
+truthfully**, and the property that was wrong — how wide — is one a browser can measure and cannot
+have an opinion about.
+
 **What a walk is for is the appearance, and appearance is where it keeps paying.** #39's three
 findings were all judgements about size, weight and contrast — the class of thing a browser test
 can measure but cannot have an opinion about. Ask the person to look, and ask about one property
 at a time.
 
 Every acceptance checklist has been walked, and as of 5 September 2569 **there is no row left
-anywhere that a person could walk and has not**. The count is worth taking from the sheets rather
+anywhere that a person could walk and has not**. #44's sheet is the first in a while to close with
+**no ◐ and no ☐ at all**. The count is worth taking from the sheets rather
 than from here — one ☐ that is half of a ticket somebody else owns (#49's menu set); of the ten ◐,
 all but one name a request no control on any screen can produce (#41's added the tenth: the year a
 plan is written for comes from the ตอนเรียน in the address, so no browser can send a different
@@ -95,6 +107,12 @@ first row read *บันทึกได้ครบทั้งสี่หั�
 nothing whatever about the year. The row was split: the CLO half keeps its ⚙, the year half is a ◐
 naming the seam that does prove it. A row marked ⚙ has to be a row the cited assertions cover
 **whole**, not one they cover most of.
+
+**#44 made it seven, in both of the shapes at once.** One row claimed *both ends of the range drive
+the report* over a mutant that froze one end — the row now moves each end on its own and has a
+mutant for each. The other carried a ⚙ **naming no mutant at all**, which is the plainest form of
+the mistake and the easiest to check for: read down the ⚙ rows and make sure every one of them
+points at a line of the mutant table.
 
 Earlier versions of this paragraph said fifteen, then nine. Most of those turned out to be walkable
 after all — they were waiting not on a person but on a **situation the seed does not contain**, and

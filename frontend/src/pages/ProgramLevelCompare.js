@@ -260,22 +260,31 @@ export default function ProgramLevelCompare() {
             {/* The grid scrolls in its own frame so the page never does — #98.
                 Its floor grows with the range, because a ten-year range on a
                 narrow window has to scroll rather than squeeze ten columns
-                into the width of four. */}
+                into the width of four.
+
+                `table-fixed`, and every year column the same width, because
+                this is a time axis. Left to size themselves, the columns take
+                their width from the sentence in the header — so a year nobody
+                was admitted in, which has the longest sentence, comes out
+                *wider* than the intakes either side of it. The gap columns
+                exist so that a reader can see the years are evenly spaced;
+                drawing them unevenly gives back the misreading they were
+                added to prevent. The hand-walk found this. */}
             <div className="overflow-x-auto">
               <table
-                className="w-full text-left text-sm"
+                className="w-full table-fixed text-left text-sm"
                 style={{ minWidth: `${20 + data.years.length * 7}rem` }}
               >
                 <thead className="border-b border-gray-200 text-xs text-slate-500">
                   <tr>
                     <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
-                    <th className="px-4 py-3 text-center font-medium">
+                    <th className="w-24 px-4 py-3 text-center font-medium">
                       ประเภท
                     </th>
                     {data.years.map(year => (
                       <th
                         key={year.admission_year}
-                        className="px-4 py-3 text-center font-medium"
+                        className="w-28 px-4 py-3 text-center font-medium"
                       >
                         <span className="block text-sm text-slate-600">
                           {year.admission_year}
