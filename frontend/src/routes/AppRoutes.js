@@ -33,6 +33,7 @@ import SectionResults from '../pages/SectionResults'
 import StudentResults from '../pages/StudentResults'
 import OutcomeActivityMapping from '../pages/OutcomeActivityMapping'
 import CloAssessment from '../pages/CloAssessment'
+import ContinuousImprovement from '../pages/ContinuousImprovement'
 import SubjectStudents from '../pages/SubjectStudents'
 import StudentGroups from '../pages/StudentGroups'
 import Users from '../pages/Users'
@@ -203,6 +204,7 @@ export default function AppRoutes() {
             element={<OutcomeActivityMapping />}
           />
           <Route path="AssessmentCLO" element={<CloAssessment />} />
+          <Route path="ContinuousImprove" element={<ContinuousImprovement />} />
           <Route path="*" element={<NotBuiltYet />} />
         </Route>
       </Route>

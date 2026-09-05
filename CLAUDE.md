@@ -23,7 +23,8 @@ found during the rebuild and opened since.
 Closed: #2–#40 unbroken, plus #42 and #43. **Not** #41 — #37, #39 and #40 closed on
 4 September 2569 and the run of closed numbers now reaches #40. Of the original 44, three are
 open: #41, #44, #45. Every one of their blockers is closed, so all three are on the frontier
-at once.
+at once. **#41 is built and its two seams are green as of 5 September 2569; it stays open until
+its sheet is walked**, which is the ticket's other half and not a formality.
 
 Take the state from that list rather than from a phrase. An older version of this line said
 *closed through #38* while #37 was open, which read as though the run took four open tickets
@@ -57,13 +58,14 @@ findings were all judgements about size, weight and contrast — the class of th
 can measure but cannot have an opinion about. Ask the person to look, and ask about one property
 at a time.
 
-Every acceptance checklist has been walked, and as of 4 September 2569 **there is no row left
-anywhere that a person could walk and has not**. Ten rows are not ticked, and the count is worth
-taking from the sheets rather than from here — one is ☐ and is half of a ticket somebody else owns
-(#49's menu set); of the nine ◐, all but one name a request no control on any screen can produce,
-and the last is an arithmetic difference too small for an eye to decide and pinned exactly at the
-HTTP seam. Read a row that claims a seam proves it better than an eye as a claim to check, not a
-conclusion — that is how the last of the walkable ones were found.
+Every acceptance checklist had been walked as of 4 September 2569, and **#41's is the one that has
+not**: its screen was built on the 5th and its sheet carries ten ☐ rows waiting for a person. The
+ticket does not close until they are walked. Everywhere else the count is worth taking from the
+sheets rather than from here — one ☐ that is half of a ticket somebody else owns (#49's menu set);
+of the nine ◐, all but one name a request no control on any screen can produce, and the last is an
+arithmetic difference too small for an eye to decide and pinned exactly at the HTTP seam. Read a
+row that claims a seam proves it better than an eye as a claim to check, not a conclusion — that is
+how the last of the walkable ones were found.
 
 **A ⚙ that was never earned is the mark to distrust most.** #42's fifth criterion carried one until
 #35's ticket caught it, #36's sheet shipped nine before its own review caught them, #37's carried

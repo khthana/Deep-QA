@@ -397,6 +397,23 @@ const REFUSALS = {
   invalidAchievement:
     'ข้อมูลเกณฑ์การบรรลุผลไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบระดับการบรรลุผลและเกณฑ์การประเมิน',
 
+  // Continuous improvement plan - #41. แผนการปรับปรุงอย่างต่อเนื่อง sits at the
+  // same (Program, Subject, academic year) grain the CLO set does, so
+  // `improvementEntryNotFound` covers the entry that does not exist and the
+  // entry belonging to another ปีการศึกษา of the same รายวิชา, for
+  // `cloNotFound`'s reason one table over.
+  //
+  // `invalidImprovementEntry` names the two fields a person fills and the one
+  // they pick, and covers a third case they cannot reach from the screen: a
+  // `detail_type` outside the four. The CHECK would refuse that too, but as a
+  // 23514 raised into `unexpected` - and this route's caller may equally have
+  // sent no type at all, which the CHECK never sees because the column is NOT
+  // NULL and the failure is a 23502. One sentence for both, because from the
+  // screen they are one mistake: a section of the form that was not chosen.
+  improvementEntryNotFound: 'ไม่พบรายการของแผนการปรับปรุงที่ระบุ',
+  invalidImprovementEntry:
+    'ข้อมูลแผนการปรับปรุงไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบผลการเรียนรู้ หัวข้อ และข้อความ',
+
   // Section enrolment - #25. The class list a Teacher builds for their own
   // ตอนเรียน. None of these is one of #17's, which is the whole point of the
   // block: the register and the class list are two different questions about

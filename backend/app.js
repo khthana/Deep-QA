@@ -64,6 +64,7 @@ const { learningDetailRoutes } = require('./routes/learningDetails');
 const { sectionResultRoutes } = require('./routes/sectionResults');
 const { outcomeActivityMapRoutes } = require('./routes/outcomeActivityMap');
 const { cloAssessmentRoutes } = require('./routes/cloAssessment');
+const { improvementPlanRoutes } = require('./routes/improvementPlan');
 const { enrolmentRoutes } = require('./routes/enrolment');
 const { evidenceRoutes } = require('./routes/evidence');
 const { workGroupRoutes } = require('./routes/workGroups');
@@ -130,6 +131,7 @@ function createApp({ pool }) {
   app.use('/api', sectionResultRoutes(pool));
   app.use('/api', outcomeActivityMapRoutes(pool));
   app.use('/api', cloAssessmentRoutes(pool));
+  app.use('/api', improvementPlanRoutes(pool));
   app.use('/api', enrolmentRoutes(pool));
   app.use('/api', evidenceRoutes(pool));
   app.use('/api', workGroupRoutes(pool));
