@@ -21,15 +21,21 @@ const { MAX_INTAKE_SPAN } = require('../routes/programResults');
 const { startApi } = require('./helpers');
 
 /**
- * docs/acceptance/42-program-level-by-intake.md and
- * docs/acceptance/44-program-level-across-intakes.md — the server half of both.
+ * docs/acceptance/42-program-level-by-intake.md,
+ * docs/acceptance/44-program-level-across-intakes.md and
+ * docs/acceptance/45-program-level-individual.md — the server half of three
+ * reports. (#43's is `program-results-students.test.js`, which seeds a cohort
+ * of its own to draw a grid from.)
  *
- * They are in one file because #44's whole claim is that it reports the same
- * figures #42 does, one year at a time, and the assertion that says so has to
- * be able to ask both. Splitting them would leave that assertion in a file that
- * seeds its own cohort and compares two answers about it — which proves the two
- * routes agree about *that* data and nothing about the fixture this one already
- * has, where the arithmetic was chosen to be checkable on paper.
+ * They are in one file because two of them exist to *agree* with another
+ * report, and the assertion that says so has to be able to ask both sides. #44
+ * claims a year reads the same here as on #42's report; #45 claims a student
+ * reads the same as the row #43's heatmap draws for them. Split apart, each of
+ * those would seed its own cohort and compare two answers about it — proving
+ * the routes agree about *that* data and nothing about the fixture this file
+ * already has, where the arithmetic was chosen to be checkable on paper. #45's
+ * agreement rows therefore *call* the heatmap route without owning any of its
+ * figures, which is the one direction of borrowing that adds no second claim.
  *
  * #42 is the first screen that reports on a *cohort* rather than on a room.
  * Everything it says is an opinion about the same marks #34 stored and #38
@@ -850,4 +856,302 @@ test('the trend is not a screen a teacher or a stranger reaches', async () => {
 
   assert.equal(refused.status, 403);
   assert.equal(anonymous.status, 401);
+});
+
+
+/* --------------------------------------------------------------------------
+ * #45 — one student, against every outcome their curriculum promises.
+ *
+ * #43 draws the whole cohort as a grid and #45 pulls one row out of it. That is
+ * the ticket in one sentence, and it is also the whole of what can go wrong:
+ * two screens that are supposed to be one view at two grains, drawing figures
+ * that quietly differ. So the cells here come out of the same `cellsFor` the
+ * heatmap builds its rows with, and the test below compares them outcome by
+ * outcome rather than trusting that they do.
+ *
+ * The intake is **not** a query string on these routes. It is read off the
+ * student, because a student belongs to exactly one and a caller who could name
+ * a different one could ask for a real student of a year they did not sit — and
+ * be answered, correctly and uselessly, that they have no marks.
+ * -------------------------------------------------------------------------- */
+
+const forStudent = (cookie, studentId, program = PROGRAM) =>
+  request(api.app)
+    .get(`/api/program-results/students/${studentId}?program_id=${program}`)
+    .set('Cookie', cookie);
+
+const studentDrill = (cookie, studentId, outcomeId, program = PROGRAM) =>
+  request(api.app)
+    .get(
+      `/api/program-results/students/${studentId}/outcomes/${outcomeId}?program_id=${program}`,
+    )
+    .set('Cookie', cookie);
+
+const heatmap = (cookie, admissionYear, program = PROGRAM) =>
+  request(api.app)
+    .get(
+      `/api/program-results/by-intake/students?program_id=${program}&admission_year=${admissionYear}`,
+    )
+    .set('Cookie', cookie);
+
+/** One outcome's line of a student's report, by its code. */
+const lineOf = (body, code) => body.plos.find((row) => row.outcome_code === code);
+
+test('the roll of one intake is offered for the picker, from the register', async () => {
+  // The first criterion, and #43's first reason underneath it: the list is the
+  // register's, so the student nobody has assessed is on it. That student is
+  // the one a committee looking at an appeal is most likely to be asking about.
+  const cookie = await signInAs('U_COM');
+
+  const response = await request(api.app)
+    .get(`/api/program-results/by-intake/roll?program_id=${PROGRAM}&admission_year=${FIXTURE_INTAKE}`)
+    .set('Cookie', cookie);
+
+  assert.equal(response.status, 200, response.body.message);
+  assert.deepEqual(
+    response.body.students.map((row) => row.student_id),
+    FIXTURE_MARKS.map((student) => student.student),
+    'in code order, and only this intake',
+  );
+  assert.ok(response.body.students[0].full_name_th);
+
+  const quiet = await request(api.app)
+    .get(`/api/program-results/by-intake/roll?program_id=${PROGRAM}&admission_year=${UNMARKED_INTAKE}`)
+    .set('Cookie', cookie);
+  assert.deepEqual(
+    quiet.body.students.map((row) => row.student_id),
+    [UNMARKED_STUDENT],
+    'an intake nobody has marked still has a roll',
+  );
+});
+
+test('a student is reported against every main outcome, measured or not', async () => {
+  // The second criterion. Every outcome of the curriculum, not only the ones
+  // this student was measured on — #38's reason, at the grain of one person:
+  // the outcome nobody has assessed them against is the row an appeal turns on.
+  const cookie = await signInAs('U_COM');
+
+  const { rows } = await api.pool.query(
+    `SELECT count(*)::int AS main FROM learning_outcomes
+      WHERE program_id = $1 AND parent_outcome_id IS NULL`,
+    [PROGRAM],
+  );
+
+  const response = await forStudent(cookie, FIXTURE_MARKS[0].student);
+
+  assert.equal(response.status, 200, response.body.message);
+  assert.equal(response.body.plos.length, rows[0].main);
+  assert.equal(response.body.student.student_id, FIXTURE_MARKS[0].student);
+  // The intake is read off the student rather than taken from the caller.
+  assert.equal(response.body.student.admission_year, FIXTURE_INTAKE);
+  assert.equal(lineOf(response.body, 'PLO-2').score, FIXTURE_MARKS[0].plo2);
+  assert.equal(lineOf(response.body, 'PLO-1').score, null);
+});
+
+test('a student reads the same here as they do in the whole-cohort heatmap', async () => {
+  // The fifth criterion and the eighth, which are one claim asked of a person
+  // and of a test. Every figure of every outcome, both counts included — a spot
+  // check on the outcome that happens to carry marks is exactly the check that
+  // would miss a disagreement.
+  const cookie = await signInAs('U_COM');
+
+  for (const student of [FIXTURE_MARKS[0].student, BLANK_STUDENT, UNMARKED_STUDENT]) {
+    const alone = await forStudent(cookie, student);
+    assert.equal(alone.status, 200, alone.body.message);
+
+    const grid = await heatmap(cookie, alone.body.student.admission_year);
+    const row = grid.body.students.find((entry) => entry.student_id === student);
+    assert.ok(row, `${student} is expected on the heatmap of their own intake`);
+
+    assert.equal(alone.body.measured_count, row.measured_count);
+    assert.equal(alone.body.below_count, row.below_count);
+    for (const line of alone.body.plos) {
+      assert.deepEqual(
+        { score: line.score, band: line.band, flagged: line.flagged },
+        row.scores[line.outcome_id],
+        `${student} disagrees with the heatmap on ${line.outcome_code}`,
+      );
+    }
+  }
+});
+
+test('a piece of work nobody marked is left out of this student\'s roll-up too', async () => {
+  // #38's blank rule, at the grain this screen reports on. The fixture's third
+  // intake is one student marked on two of PLO-2's three CLOs and left blank on
+  // the last: 4.0 and 3.0 average to 3.50, where a nought read into the blank
+  // would give 2.33. The two readings cannot both be right and this can tell.
+  const cookie = await signInAs('U_COM');
+
+  const response = await forStudent(cookie, BLANK_STUDENT);
+
+  assert.equal(lineOf(response.body, 'PLO-2').score, 3.5);
+  assert.notEqual(lineOf(response.body, 'PLO-2').score, 2.33);
+});
+
+test('a student nobody has marked is said in words, not drawn as noughts', async () => {
+  // The sixth criterion. This student is on the roll and has sat nothing that
+  // has been marked. Every line is blank, both counts are nought, and `empty`
+  // says so — thirteen rows of noughts would be a report that this person
+  // failed everything, which is an accusation the marks do not support.
+  const cookie = await signInAs('U_COM');
+
+  const response = await forStudent(cookie, UNMARKED_STUDENT);
+
+  assert.equal(response.status, 200, response.body.message);
+  assert.equal(response.body.empty, true);
+  assert.equal(response.body.measured_count, 0);
+  assert.equal(response.body.below_count, 0);
+  assert.ok(response.body.plos.every((line) => line.score === null));
+  assert.ok(response.body.plos.every((line) => line.band === null));
+  assert.ok(response.body.plos.every((line) => line.flagged === false));
+
+  const marked = await forStudent(cookie, FIXTURE_MARKS[0].student);
+  assert.equal(marked.body.empty, false, 'a student with marks is not an empty report');
+});
+
+test('the drill-down shows what this student was marked on, and not what the cohort was', async () => {
+  // The third criterion. The cohort's drill-down for PLO-2 lists the Activity
+  // the whole fixture intake sat; one student's lists the same Activity because
+  // they sat it, and a student who sat nothing under an outcome gets nothing —
+  // an Activity this person was never marked on is not evidence for a figure
+  // about this person.
+  const cookie = await signInAs('U_COM');
+  const second = await outcomeId('PLO-2');
+
+  const mine = await studentDrill(cookie, FIXTURE_MARKS[0].student, second);
+  const cohort = await contributions(
+    cookie,
+    second,
+    `?program_id=${PROGRAM}&admission_year=${FIXTURE_INTAKE}`,
+  );
+
+  assert.equal(mine.status, 200, mine.body.message);
+  assert.equal(mine.body.student.student_id, FIXTURE_MARKS[0].student);
+  assert.deepEqual(
+    mine.body.subjects.flatMap((subject) => subject.activities.map((a) => a.id)),
+    cohort.body.subjects.flatMap((subject) => subject.activities.map((a) => a.id)),
+    'this student sat the whole of what the fixture intake sat',
+  );
+
+  const untouched = await studentDrill(cookie, UNMARKED_STUDENT, second);
+  assert.equal(untouched.status, 200, untouched.body.message);
+  assert.deepEqual(
+    untouched.body.subjects,
+    [],
+    'a student with no marks under an outcome is offered no evidence for one',
+  );
+});
+
+test('the evidence behind a student\'s figure is named, and the removed file is not', async () => {
+  // The fourth criterion as far as this route takes it: the file is named and
+  // typed here, and #35 owns opening it — the same authenticated retrieval #42's
+  // drill-down already goes through, reached down the same road.
+  const cookie = await signInAs('U_COM');
+  const second = await outcomeId('PLO-2');
+
+  const response = await studentDrill(cookie, FIXTURE_MARKS[0].student, second);
+
+  const activity = response.body.subjects[0].activities.find(
+    (row) => row.id === fixture.activityId,
+  );
+  assert.deepEqual(
+    activity.evidence.map((file) => file.file_name),
+    [EVIDENCE_FILE],
+  );
+  assert.equal(activity.evidence[0].evidence_id, fixture.evidenceId);
+});
+
+test('a student outside the caller\'s curriculum is not found, either way round', async () => {
+  // The seventh criterion, and ADR-0002 where every report in this file applies
+  // it. `U_COM2` holds the other curriculum: this student is not theirs to read,
+  // and naming our curriculum in the query does not make them ours.
+  const ours = await signInAs('U_COM');
+  const theirs = await signInAs('U_COM2');
+
+  const throughTheirProgram = await forStudent(
+    ours,
+    FIXTURE_MARKS[0].student,
+    PROGRAM_INTL,
+  );
+  const fromTheirAccount = await forStudent(theirs, FIXTURE_MARKS[0].student);
+
+  assert.equal(throughTheirProgram.status, 404);
+  assert.equal(throughTheirProgram.body.message, REFUSALS.programNotFound);
+  assert.equal(fromTheirAccount.status, 404);
+  assert.equal(fromTheirAccount.body.message, REFUSALS.programNotFound);
+});
+
+test('a student of another curriculum is not found through a curriculum the caller does reach', async () => {
+  // The seventh criterion at the point `programInReach` cannot reach. The two
+  // refusals above are both caught by the reach check — the curriculum named is
+  // one the account does not hold — so neither of them says anything about the
+  // clause that scopes the *student*. This one names a curriculum `U_COM2`
+  // really does hold and asks it for somebody else's student: the reach check
+  // passes and the lookup has to be what refuses.
+  //
+  // Written because a review pointed out that `program_id` could be deleted
+  // from `studentOf` with every test in this file still green.
+  const theirs = await signInAs('U_COM2');
+
+  const response = await forStudent(theirs, FIXTURE_MARKS[0].student, PROGRAM_INTL);
+  const drill = await studentDrill(
+    theirs,
+    FIXTURE_MARKS[0].student,
+    await outcomeId('PLO-2', PROGRAM_INTL),
+    PROGRAM_INTL,
+  );
+
+  assert.equal(response.status, 404);
+  assert.equal(response.body.message, REFUSALS.studentNotFound);
+  assert.equal(drill.status, 404);
+  assert.equal(drill.body.message, REFUSALS.studentNotFound);
+});
+
+test('a student code that is not on this curriculum is a ไม่พบ, not a system error', async () => {
+  // A code that was never issued, and one longer than the column that holds it.
+  // The second is #107's class of defect kept out of this route: a value past
+  // what the column can store reaches PostgreSQL as an error the caller reads
+  // as *the system broke*, when what happened is that they asked for something
+  // that cannot exist.
+  const cookie = await signInAs('U_COM');
+
+  const missing = await forStudent(cookie, 'NOSUCHSTUDENT');
+  const overlong = await forStudent(cookie, '9'.repeat(64));
+  const drill = await studentDrill(cookie, '9'.repeat(64), await outcomeId('PLO-2'));
+
+  assert.equal(missing.status, 404);
+  assert.equal(missing.body.message, REFUSALS.studentNotFound);
+  assert.equal(overlong.status, 404);
+  assert.equal(overlong.body.message, REFUSALS.studentNotFound);
+  assert.equal(drill.status, 404);
+  assert.equal(drill.body.message, REFUSALS.studentNotFound);
+});
+
+test('an outcome of another curriculum is not a way into this student', async () => {
+  // The drill-down checks the outcome inside the curriculum, the way the
+  // cohort's does one table up — so an outcome id belonging elsewhere is not
+  // found rather than found and then refused.
+  const cookie = await signInAs('U_COM');
+  const theirs = await outcomeId('PLO-2', PROGRAM_INTL);
+
+  const response = await studentDrill(cookie, FIXTURE_MARKS[0].student, theirs);
+
+  assert.equal(response.status, 404);
+  assert.equal(response.body.message, REFUSALS.ploNotFound);
+});
+
+test('one student\'s report is not a screen a teacher or a stranger reaches', async () => {
+  const teacher = await signInAs('U_TEACH');
+
+  const refused = await forStudent(teacher, FIXTURE_MARKS[0].student);
+  const anonymous = await request(api.app).get(
+    `/api/program-results/students/${FIXTURE_MARKS[0].student}?program_id=${PROGRAM}`,
+  );
+  const roll = await request(api.app).get(
+    `/api/program-results/by-intake/roll?program_id=${PROGRAM}&admission_year=${FIXTURE_INTAKE}`,
+  );
+
+  assert.equal(refused.status, 403);
+  assert.equal(anonymous.status, 401);
+  assert.equal(roll.status, 401);
 });

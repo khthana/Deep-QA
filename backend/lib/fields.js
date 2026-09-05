@@ -60,6 +60,28 @@ const integerId = (value) => {
   return Number.isSafeInteger(id) && id >= 1 && id <= INT4_MAX ? id : null;
 };
 
+/** What `student.student_id` holds: varchar(20), and a code is never blank. */
+const STUDENT_CODE_MAX = 20;
+
+/**
+ * A student's code from a URL, if it is one this schema could actually hold.
+ *
+ * `integerId`'s argument with a different column under it. A code past twenty
+ * characters is a 22001 from the database, which reaches the error handler as
+ * เกิดข้อผิดพลาดในระบบ — the system reporting a fault for a URL somebody typed,
+ * when what happened is that they asked for something that cannot exist. So
+ * the bound belongs with the shape here too, and anything outside it is `null`
+ * for the caller to turn into its own ไม่พบ.
+ *
+ * Unlike `integerId` the shape is only *length*: a student code is a string
+ * the registry issues and this system does not get to have an opinion about
+ * what one looks like.
+ */
+const studentCode = (value) => {
+  const text = trimmed(String(value ?? ''));
+  return text.length >= 1 && text.length <= STUDENT_CODE_MAX ? text : null;
+};
+
 /**
  * A whole number a person typed, inside the bounds its column allows —
  * extracted at the third copy, like everything else here.
@@ -105,6 +127,7 @@ module.exports = {
   trimmed,
   blankToNull,
   integerId,
+  studentCode,
   boundedInteger,
   round2,
   isDuplicate,

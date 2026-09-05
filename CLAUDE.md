@@ -20,9 +20,12 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#44 unbroken**. #41 and #44 both closed on 5 September 2569 — #41 joined the run to
-#42 and #43, and #44 extended it by one. Of the original 44, **one is open: #45**, and its blockers
-are closed, so it is the whole of the frontier.
+Closed: **#2–#45 unbroken**. #41, #44 and #45 all closed on 5 September 2569, and #45 was the last
+of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the numbers
+above 45: the gaps and defects the rebuild found and opened as it went.
+
+**The frontier is now those, not a screen list.** Take work from the open issues above #45 and from
+the ◐ rows the sheets still carry; there is no next screen waiting.
 
 Take the state from that list rather than from a phrase. An older version of this line said
 *closed through #38* while #37 was open, which read as though the run took four open tickets
@@ -47,9 +50,10 @@ empty box on a รายวิชา with no outcomes, and a PDF that breaks lin
 things about the drawing that its own tests all passed through, plus
 [#118](https://github.com/khthana/Deep-QA/issues/118), and
 [#44](https://github.com/khthana/Deep-QA/issues/44)'s (Programme-level comparison across intakes)
-found one. **#36's found nothing on screen**, which is worth recording as plainly as the rest: a
-walk that ticks every row is not a walk that was wasted, and the store now has eight tickets where
-the walk paid and one where it did not.
+found one, and [#45](https://github.com/khthana/Deep-QA/issues/45)'s (Programme-level results for
+one student) found two. **#36's found nothing on screen**, which is worth recording as plainly as
+the rest: a walk that ticks every row is not a walk that was wasted, and the store now has nine
+tickets where the walk paid and one where it did not.
 
 **#40's first finding is the shape to remember.** Every automated row asked whether the disclosure
 *worked*, and it worked perfectly — on nothing. A test can ask whether a control responds; only a
@@ -75,13 +79,29 @@ misreading the gap columns were added to prevent. **Drawing a thing is not the s
 truthfully**, and the property that was wrong — how wide — is one a browser can measure and cannot
 have an opinion about.
 
+**#45's first finding is the plainest statement of what a walk is for that the store has.** Its
+whole purpose is a drill-down: pick an outcome, see the Subjects and Activities behind that
+student's figure. The screen puts a 20rem picker beside the report, so its table gets 545px — and
+the table carried `min-w-[40rem]`, copied from #42's `48rem` without re-deciding the number against
+a narrower pane. The *ที่มา* column began exactly on the frame's right edge and was cut off whole:
+**the control the screen exists for was not on screen at all, and nothing said it was missing.**
+Two `45a` rows click that button on every run and never noticed, because Playwright finds a control
+by role and not by whether a person can see it. **Every automated row asks whether a control works;
+only a person asks whether it is there to be found.** Its second was the third sighting of one
+class — a tag that carries weight set as though it did not (#41's grey citation, #42's
+`text-slate-400`, now #45's *ยังไม่มีคะแนน*).
+
+**A number copied from a sibling screen is a decision, not an inheritance.** #45 borrowed a table's
+minimum width from a screen whose table has the whole page. Whenever a value moves between screens,
+check what it is a proportion *of*.
+
 **What a walk is for is the appearance, and appearance is where it keeps paying.** #39's three
 findings were all judgements about size, weight and contrast — the class of thing a browser test
 can measure but cannot have an opinion about. Ask the person to look, and ask about one property
 at a time.
 
 Every acceptance checklist has been walked, and as of 5 September 2569 **there is no row left
-anywhere that a person could walk and has not**. #44's sheet is the first in a while to close with
+anywhere that a person could walk and has not**. #44's and #45's sheets both close with
 **no ◐ and no ☐ at all**. The count is worth taking from the sheets rather
 than from here — one ☐ that is half of a ticket somebody else owns (#49's menu set); of the ten ◐,
 all but one name a request no control on any screen can produce (#41's added the tenth: the year a
@@ -113,6 +133,16 @@ the report* over a mutant that froze one end — the row now moves each end on i
 mutant for each. The other carried a ⚙ **naming no mutant at all**, which is the plainest form of
 the mistake and the easiest to check for: read down the ⚙ rows and make sure every one of them
 points at a line of the mutant table.
+
+**#45 made it eight, and added a second way to find it.** Its row read *เลือกนักศึกษาได้ และกรอง
+ด้วยปีรับเข้า* over `searchignoresthecode`, a mutant about the search box alone; the intake half is
+now a ☑ naming the seam that does prove it. What is new is that **the sweep caught the other one
+before the review did**: a mutant transplanted from #44 applied cleanly, ran, and killed nothing,
+because the defect it names cannot happen on that screen. A surviving mutant is not always a hole
+in the tests — sometimes it is a claim the code makes structurally, and the honest answer is to
+delete the mutant and mark the row ☑ rather than keep a ⚙ nothing earns. **Read a MISS and a
+survivor differently: the first means the anchor moved, the second means the claim was never at
+risk.**
 
 Earlier versions of this paragraph said fifteen, then nine. Most of those turned out to be walkable
 after all — they were waiting not on a person but on a **situation the seed does not contain**, and

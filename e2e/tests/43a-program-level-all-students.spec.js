@@ -157,6 +157,13 @@ test('the heatmap scrolls in its own frame, so the far outcomes stay reachable',
   // earlier in this suite enrol a newer intake than the seed has, the screen
   // opens on it, and an unmarked intake draws the sentence instead. #42's
   // lesson, and this row is where it was learned a second time.
+  //
+  // This comment was right and the guard under it was not: `showIntake` waited
+  // for the report to arrive and not for the screen to draw it, so this row
+  // read `document.querySelector('table')` in the gap and got null. It passed
+  // twenty times alone and failed in the full suite, which is the only place
+  // the previous intake is an unmarked one. The wait now ends on the cohort
+  // line; see the helper.
   await showIntake(page, COHORTS[0].admission);
   await page.setViewportSize({ width: 640, height: 900 });
 

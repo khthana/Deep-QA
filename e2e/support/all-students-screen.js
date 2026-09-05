@@ -44,17 +44,36 @@ const intakePicker = (page) => page.getByLabel('ปีรับเข้า');
  * enrol students whose codes make them a later intake than anything the seed
  * has. A row that read whatever the screen opened on would pass alone and fail
  * in the suite.
+ *
+ * ## And waiting for the answer is not waiting for the screen
+ *
+ * The last line is the one this helper was missing. `waitForResponse` resolves
+ * when the report *arrives*, which is some renders before it is drawn, and in
+ * that gap the screen still holds the previous intake — which, in the suite, is
+ * the unmarked one the import rows created, and an unmarked intake draws a
+ * sentence and **no table at all**. Rows that read the DOM through a locator
+ * survived it, because Playwright retries those; the two rows here that read it
+ * through `page.evaluate` and `allTextContents` do not retry, and both failed
+ * in the full suite while passing twenty times alone.
+ *
+ * So the wait ends on the line that names the cohort, which the screen draws
+ * from the answer it is actually holding. It is drawn in both states — a cohort
+ * with marks and one without — so it is a wait for *this* intake being on
+ * screen rather than for a table existing.
  */
 async function showIntake(page, admissionYear) {
   const picker = intakePicker(page);
   await expect(picker).not.toHaveValue('');
-  if ((await picker.inputValue()) === admissionYear) return null;
-  const [response] = await Promise.all([
-    page.waitForResponse(
-      (answer) => new URL(answer.url()).searchParams.get('admission_year') === admissionYear,
-    ),
-    picker.selectOption(admissionYear),
-  ]);
+  let response = null;
+  if ((await picker.inputValue()) !== admissionYear) {
+    [response] = await Promise.all([
+      page.waitForResponse(
+        (answer) => new URL(answer.url()).searchParams.get('admission_year') === admissionYear,
+      ),
+      picker.selectOption(admissionYear),
+    ]);
+  }
+  await expect(page.getByText(new RegExp(`^ปีรับเข้า ${admissionYear} · `))).toBeVisible();
   return response;
 }
 

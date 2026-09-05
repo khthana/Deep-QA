@@ -8,11 +8,12 @@
  * marks out of the database, and rolling them up to **one score per student
  * per outcome**.
  *
- * It exists because three screens now need exactly that and no more. #42 takes
+ * It exists because four screens now need exactly that and no more. #42 takes
  * these per-student scores and reduces them to one figure per outcome; #43
  * hands them over as a grid; #44 asks #42's question once per year of a range,
- * which is why the reduction itself moved here when that ticket landed. All
- * three are the same two steps of arithmetic up to the point where they part,
+ * which is why the reduction itself moved here when that ticket landed; and #45
+ * asks #43's question about one row of its grid. All four are the same two
+ * steps of arithmetic up to the point where they part,
  * and a second copy of those steps is the kind of debt #42's own header warned
  * about — screens drawing plausible numbers that disagree, with nobody holding
  * both printouts at once.
@@ -29,10 +30,11 @@
  * why the CLO-level scoping is still written out in `learningDetails.js`. It
  * simply does not apply to these callers, because every one of them asks about
  * **one intake of one curriculum**: #42 and #43 ask it once at two levels of
- * detail, and #44 asks it once per year and lays the answers side by side —
- * which is a different question made of the same scope, not a different scope.
+ * detail, #44 asks it once per year and lays the answers side by side, and #45
+ * narrows #43's scope to one of the students inside it — all of which are
+ * different questions made of the same scope, not different scopes.
  * Splitting the query from the roll-up here would put one half in a lib and
- * leave the other duplicated in three routes, which is the arrangement that
+ * leave the other duplicated in four routes, which is the arrangement that
  * goes wrong quietly.
  */
 
@@ -58,8 +60,16 @@ const {
  * `s.score IS NOT NULL` is #34's blank rule, and it is why the sum is taken
  * over the attribution row rather than over the Activity: an Activity nobody
  * has marked for this student contributes to neither half of the fraction.
+ *
+ * `studentId` narrows the answer to one row of it, for #45. It is a filter on
+ * the same query rather than a query of its own, and that is the point: the
+ * grain, the joins and the blank rule are what decide what a student's score
+ * *is*, so a second query would be a second answer to that question, free to
+ * drift from the heatmap the screen promises to agree with. Filtering after
+ * the GROUP BY would do as well arithmetically and read a whole intake to
+ * throw it away.
  */
-async function cohortMarks(pool, programId, admissionYear) {
+async function cohortMarks(pool, programId, admissionYear, studentId = null) {
   const { rows } = await pool.query(
     `SELECT s.student_id, s.clo_id, c.plo_id,
             SUM(s.score)::float AS earned,
@@ -76,8 +86,9 @@ async function cohortMarks(pool, programId, admissionYear) {
         AND st.admission_year = $2
         AND c.program_id = $1
         AND s.score IS NOT NULL
+        AND ($3::varchar IS NULL OR s.student_id = $3)
       GROUP BY s.student_id, s.clo_id, c.plo_id`,
-    [programId, admissionYear],
+    [programId, admissionYear, studentId],
   );
   return rows;
 }

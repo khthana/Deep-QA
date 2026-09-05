@@ -1,9 +1,9 @@
 import { get, query } from './client'
 
 /**
- * ผลการเรียนรู้ระดับหลักสูตร — #42, #43 and #44.
+ * ผลการเรียนรู้ระดับหลักสูตร — #42, #43, #44 and #45.
  *
- * Six reads and no write: this screen owns no data at all. Every figure on it
+ * Nine reads and no write: these screens own no data at all. Every figure on it
  * is an opinion about marks that #34 stored, and every one of those opinions is
  * formed on the server — BR-17's sixty per cent, BR-18's scale of five and the
  * two-step roll-up from CLO to PLO are business rules, and a browser that
@@ -81,5 +81,52 @@ export const getStudentHeatmap = (programId, admissionYear) =>
     `/api/program-results/by-intake/students${query({
       program_id: programId,
       admission_year: admissionYear,
+    })}`,
+  )
+
+/**
+ * The intake's roll, for the picker #45 opens on.
+ *
+ * The register's list and not the marks', so the student nobody has assessed
+ * is choosable — which is the case a committee looking into an appeal is most
+ * likely to be looking for. `measured_count` comes with each row so the list
+ * can say which of them that is before a person clicks.
+ *
+ * Not read off the heatmap, though that answer contains this one. The heatmap
+ * is every student's thirteen cells and this is a list of names, and a picker
+ * that waits for the larger answer is a picker that is slow for no reason a
+ * reader could name.
+ */
+export const listRoll = (programId, admissionYear) =>
+  get(
+    `/api/program-results/by-intake/roll${query({
+      program_id: programId,
+      admission_year: admissionYear,
+    })}`,
+  )
+
+/**
+ * One student against every main outcome of their curriculum — #45.
+ *
+ * The intake is not sent. A student belongs to exactly one and the server
+ * reads it off their record, so there is no way to ask about a real student
+ * under a year they did not sit and be told they have no marks.
+ */
+export const getStudentResults = (programId, studentId) =>
+  get(
+    `/api/program-results/students/${studentId}${query({ program_id: programId })}`,
+  )
+
+/**
+ * What this student was marked on under one outcome.
+ *
+ * The same drill-down #42 opens, narrowed to one person by the server rather
+ * than filtered here — what a student is offered as evidence for their own
+ * figure has to be what actually went into it.
+ */
+export const getStudentContributions = (programId, studentId, outcomeId) =>
+  get(
+    `/api/program-results/students/${studentId}/outcomes/${outcomeId}${query({
+      program_id: programId,
     })}`,
   )

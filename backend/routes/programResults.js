@@ -1,12 +1,13 @@
 'use strict';
 
 /**
- * ผลการเรียนรู้ระดับหลักสูตร — #42, #43 and #44.
+ * ผลการเรียนรู้ระดับหลักสูตร — #42, #43, #44 and #45.
  *
  * The reports that are about a cohort rather than about a room. #38 asks how
  * one Section did on one CLO; these ask how an intake did on one PLO across
  * every Subject that intake has sat — one intake at a time (#42), student by
- * student (#43), and year after year (#44).
+ * student (#43), year after year (#44), and one named student on their own
+ * (#45).
  *
  * ## Where the roll-up lives
  *
@@ -24,7 +25,7 @@ const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { integerId } = require('../lib/fields');
+const { integerId, studentCode } = require('../lib/fields');
 const { programInReach, reachablePrograms } = require('../lib/reach');
 const { cohortMarks, scoresByStudent, rollUpOutcomes } = require('../lib/cohort');
 const { PASS, BAND_FLOORS, bandOf } = require('../lib/attainment');
@@ -277,6 +278,44 @@ function programResultRoutes(pool) {
   }
 
   /**
+   * One student's cells, and the two counts that summarise them.
+   *
+   * A cell per main outcome, whether or not this student has been measured
+   * against it — #38's rule at the grain of one person, and the reason #45 can
+   * be read as an appeal: the outcome nobody has assessed them on is a row a
+   * committee has to be able to see is blank.
+   *
+   * This is where #43 and #45 are made to agree. The heatmap builds a row with
+   * it and #45's report builds its whole answer with it, so the two cannot
+   * disagree about a band, a flag or a count — there is one reading, not two
+   * that match today. The alternative was an assertion comparing the outputs,
+   * which proves they agreed about the fixture at the moment it ran.
+   *
+   * The shape is keyed by `outcome_id` because the heatmap draws its columns
+   * from the outcome list and looks each cell up by id; #45 reads the same
+   * object back into the outcome list to make its rows.
+   */
+  function cellsFor(plos, outcomes) {
+    const scores = {};
+    let measured = 0;
+    let below = 0;
+
+    for (const plo of plos) {
+      const score = outcomes.has(plo.outcome_id) ? outcomes.get(plo.outcome_id) : null;
+      // #38's word for the same thing, and the same reason: the flag has to
+      // survive being printed, and two shades of a ramp do not. Read once, so
+      // the count a reader is ordered by and the mark they see on the cell
+      // cannot come from two readings of the line.
+      const flagged = score !== null && score < PASS;
+      if (score !== null) measured += 1;
+      if (flagged) below += 1;
+      scores[plo.outcome_id] = { score, band: bandOf(score), flagged };
+    }
+
+    return { scores, measured_count: measured, below_count: below };
+  }
+
+  /**
    * The grid, one row per student on the roll and one cell per main outcome.
    *
    * `below_count` and `measured_count` are what the screen sorts on, and they
@@ -290,27 +329,10 @@ function programResultRoutes(pool) {
    */
   function grid(plos, roll, marks) {
     const byStudent = scoresByStudent(marks);
-
-    return roll.map((student) => {
-      const outcomes = byStudent.get(student.student_id) || new Map();
-      const scores = {};
-      let measured = 0;
-      let below = 0;
-
-      for (const plo of plos) {
-        const score = outcomes.has(plo.outcome_id) ? outcomes.get(plo.outcome_id) : null;
-        // #38's word for the same thing, and the same reason: the flag has to
-        // survive being printed, and two shades of a ramp do not. Read once,
-        // so the count a reader is ordered by and the mark they see on the
-        // cell cannot come from two readings of the line.
-        const flagged = score !== null && score < PASS;
-        if (score !== null) measured += 1;
-        if (flagged) below += 1;
-        scores[plo.outcome_id] = { score, band: bandOf(score), flagged };
-      }
-
-      return { ...student, scores, measured_count: measured, below_count: below };
-    });
+    return roll.map((student) => ({
+      ...student,
+      ...cellsFor(plos, byStudent.get(student.student_id) || new Map()),
+    }));
   }
 
   router.get(
@@ -379,8 +401,14 @@ function programResultRoutes(pool) {
    * Activity attributed to the outcome that nobody in this cohort was marked on
    * contributed nothing to the figure, and listing it would offer a person
    * evidence for a number it is not evidence for.
+   *
+   * `studentId` narrows the same phrase to one person, for #45, and narrowing
+   * rather than re-asking is what makes a student's evidence provably a subset
+   * of their cohort's. The Activity the cohort sat and this student did not is
+   * not evidence about this student, and on a screen an appeal is read from
+   * that is not a cosmetic difference.
    */
-  async function contributionsOf(programId, admissionYear, outcomeId) {
+  async function contributionsOf(programId, admissionYear, outcomeId, studentId = null) {
     const { rows } = await pool.query(
       `SELECT DISTINCT
               sub.subject_id, sub.subject_name_th, sub.subject_name_en,
@@ -401,8 +429,9 @@ function programResultRoutes(pool) {
           AND c.program_id = $1
           AND c.plo_id = $3
           AND s.score IS NOT NULL
+          AND ($4::varchar IS NULL OR s.student_id = $4)
         ORDER BY sub.subject_id ASC, c.clo_number ASC, a.id ASC`,
-      [programId, admissionYear, outcomeId],
+      [programId, admissionYear, outcomeId, studentId],
     );
     return rows;
   }
@@ -622,6 +651,190 @@ function programResultRoutes(pool) {
       return next(error);
     }
   });
+
+  /**
+   * The intake's roll, for the picker #45 opens on.
+   *
+   * The register's list rather than the marks', which is #43's first criterion
+   * borrowed whole: the student nobody has assessed has to be *choosable*, or
+   * the screen a committee opens to look into an appeal cannot be opened on
+   * the case most likely to be appealed. `measured_count` rides along so the
+   * picker can say which of them that is before a person clicks.
+   *
+   * Separate from `/by-intake/students` rather than read off it, because the
+   * heatmap sends every student's thirteen cells and the picker draws a name.
+   *
+   * The count comes out of `cellsFor`, the same function the report and the
+   * heatmap build their cells with, rather than off the size of the student's
+   * score map. Those two are not the same number: `subject_clo.plo_id` is only
+   * required to name *an* outcome of the curriculum, so a CLO may name a
+   * sub-outcome, and the map would then count something no report has a column
+   * for. A student marked only under a sub-outcome would go untagged in this
+   * list and land on *ยังไม่มีคะแนนของนักศึกษาคนนี้* — two readings of one
+   * count, disagreeing, which is the exact failure extracting `cellsFor` was
+   * meant to make impossible. **Found by review.**
+   */
+  router.get('/program-results/by-intake/roll', requireRole(...READERS), async (req, res, next) => {
+    try {
+      const program = await programInReach(pool, req.auth.acting.scope_id, req.query.program_id);
+      if (!program) return res.status(404).json({ message: REFUSALS.programNotFound });
+
+      const programId = program.program_id;
+      const [outcomes, roll, marks] = await Promise.all([
+        outcomesOf(programId),
+        rollOf(programId, req.query.admission_year),
+        cohortMarks(pool, programId, req.query.admission_year),
+      ]);
+      const byStudent = scoresByStudent(marks);
+
+      return res.status(200).json({
+        admission_year: req.query.admission_year,
+        students: roll.map((student) => ({
+          ...student,
+          measured_count: cellsFor(outcomes, byStudent.get(student.student_id) || new Map())
+            .measured_count,
+        })),
+      });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  /**
+   * One student of this Program, or null — the guard every #45 route opens on.
+   *
+   * The Program is checked first and the student looked up *within* it, the
+   * shape `outcomeOf` uses one report up, so a student of another curriculum
+   * is not found rather than found and then refused. That is ADR-0002 and it
+   * matters more here than anywhere else in the file: everything the other
+   * reports return is an aggregate, and this one is a named person's record.
+   *
+   * `program_id = $1` is doing work that `programInReach` cannot do for it, and
+   * the case that needs it is the one a review had to point out: a committee
+   * member of 0503 asking about a 0501 student **through 0503**. The
+   * curriculum is theirs, so the reach check passes; the student is not in it,
+   * and only this clause says so. Both of the refusals written first were
+   * caught one line earlier, and the guard could have been deleted with every
+   * test still green.
+   *
+   * `studentCode` is why a code longer than the column can hold is a ไม่พบ
+   * rather than a 22001 read to a person as เกิดข้อผิดพลาดในระบบ — #107's class
+   * of defect, kept out of a route rather than added to the list of four.
+   */
+  async function studentOf(programId, studentId) {
+    const code = studentCode(studentId);
+    if (!code) return null;
+    const { rows } = await pool.query(
+      `SELECT student_id, full_name_th, admission_year, status
+         FROM student
+        WHERE program_id = $1 AND student_id = $2`,
+      [programId, code],
+    );
+    return rows[0] || null;
+  }
+
+  /**
+   * One student, against every outcome their curriculum promises — #45.
+   *
+   * #43 draws a cohort as a grid and this pulls one row out of it, which is
+   * the whole ticket and also the whole of what can go wrong. Both build their
+   * cells with `cellsFor` over marks read by `cohortMarks`, so the row a person
+   * clicks on the heatmap and the report they land on are one reading of the
+   * marks rendered twice, not two readings that happen to agree.
+   *
+   * **The intake is not a query string.** A student belongs to exactly one and
+   * it is on their record; taking it from the caller would let a real student
+   * be asked about under a year they did not sit, and be answered — correctly,
+   * and uselessly — that they have no marks at all.
+   */
+  router.get(
+    '/program-results/students/:studentId',
+    requireRole(...READERS),
+    async (req, res, next) => {
+      try {
+        const program = await programInReach(pool, req.auth.acting.scope_id, req.query.program_id);
+        if (!program) return res.status(404).json({ message: REFUSALS.programNotFound });
+        const programId = program.program_id;
+
+        const student = await studentOf(programId, req.params.studentId);
+        if (!student) return res.status(404).json({ message: REFUSALS.studentNotFound });
+
+        const [outcomes, marks] = await Promise.all([
+          outcomesOf(programId),
+          cohortMarks(pool, programId, student.admission_year, student.student_id),
+        ]);
+
+        const { scores, measured_count, below_count } = cellsFor(
+          outcomes,
+          scoresByStudent(marks).get(student.student_id) || new Map(),
+        );
+
+        return res.status(200).json({
+          student,
+          band_floors: BAND_FLOORS,
+          // The outcome list with each student's cell folded into its row,
+          // rather than the heatmap's list-plus-lookup. One student is one
+          // column of that grid stood on its end, and a row of this report is
+          // read as a whole — the outcome, what they scored on it, and whether
+          // that is below the line.
+          plos: outcomes.map((outcome) => ({ ...outcome, ...scores[outcome.outcome_id] })),
+          measured_count,
+          below_count,
+          // Said, not drawn. A person nobody has marked gets a sentence,
+          // because thirteen rows of dashes reads as a report that they failed
+          // everything — an accusation the marks do not support, made about a
+          // named student rather than about a cohort.
+          empty: measured_count === 0,
+        });
+      } catch (error) {
+        return next(error);
+      }
+    },
+  );
+
+  /**
+   * What this student was marked on under one outcome — #45's drill-down.
+   *
+   * The cohort's drill-down narrowed to one person, through the same query, so
+   * what a student is offered as evidence for their own figure is provably a
+   * subset of what the cohort was offered for theirs. The evidence is listed
+   * and not served, for the reason `evidenceFor` gives: #35 owns retrieval,
+   * and this screen's button goes there.
+   */
+  router.get(
+    '/program-results/students/:studentId/outcomes/:outcomeId',
+    requireRole(...READERS),
+    async (req, res, next) => {
+      try {
+        const program = await programInReach(pool, req.auth.acting.scope_id, req.query.program_id);
+        if (!program) return res.status(404).json({ message: REFUSALS.programNotFound });
+        const programId = program.program_id;
+
+        const student = await studentOf(programId, req.params.studentId);
+        if (!student) return res.status(404).json({ message: REFUSALS.studentNotFound });
+
+        const requested = integerId(req.params.outcomeId);
+        const outcome = requested && (await outcomeOf(programId, requested));
+        if (!outcome) return res.status(404).json({ message: REFUSALS.ploNotFound });
+
+        const rows = await contributionsOf(
+          programId,
+          student.admission_year,
+          outcome.outcome_id,
+          student.student_id,
+        );
+        const evidence = await evidenceFor([...new Set(rows.map((row) => row.activity_id))]);
+
+        return res.status(200).json({
+          student,
+          outcome,
+          subjects: bySubject(rows, evidence),
+        });
+      } catch (error) {
+        return next(error);
+      }
+    },
+  );
 
   return router;
 }
