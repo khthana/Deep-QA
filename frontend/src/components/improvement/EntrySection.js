@@ -23,6 +23,7 @@ import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
  * first cycle a รายวิชา ever has is not missing anything.
  */
 export default function EntrySection({
+  cloNumber,
   label,
   hint,
   entry,
@@ -46,6 +47,15 @@ export default function EntrySection({
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
+          {/* The outcome the card is about, above its own heading. The picker
+              is at the top of the page and scrolls away, and the walk found
+              that by the fourth section there was nothing on screen saying
+              which ผลการเรียนรู้ was being written about. It is an eyebrow
+              rather than part of the heading so the section's accessible name
+              stays the label alone. */}
+          {cloNumber && (
+            <p className="text-xs font-medium text-slate-400">{cloNumber}</p>
+          )}
           <h2 className="font-medium text-gray-900">{label}</h2>
           <p className="mt-0.5 text-xs text-slate-400">{hint}</p>
         </div>
@@ -110,8 +120,13 @@ export default function EntrySection({
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
             {entry.detail_text}
           </p>
+          {/* Set at `text-sm` on a tinted strip rather than as grey small
+              print. This line is the citation an accreditation panel follows —
+              it is what makes the change a response to last year rather than a
+              coincidence — and the walk found it reading as a caption on the
+              paragraph above it. */}
           {entry.reference_academic_year && (
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
               ต่อเนื่องจากการสะท้อนคิดของปีการศึกษา{' '}
               {entry.reference_academic_year}
             </p>

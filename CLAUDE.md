@@ -20,11 +20,9 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: #2–#40 unbroken, plus #42 and #43. **Not** #41 — #37, #39 and #40 closed on
-4 September 2569 and the run of closed numbers now reaches #40. Of the original 44, three are
-open: #41, #44, #45. Every one of their blockers is closed, so all three are on the frontier
-at once. **#41 is built and its two seams are green as of 5 September 2569; it stays open until
-its sheet is walked**, which is the ticket's other half and not a formality.
+Closed: **#2–#43 unbroken**. #41 closed on 5 September 2569, which joined the run to #42 and #43
+and took it to #43. Of the original 44, two are open: **#44 and #45**. Every one of their
+blockers is closed, so both are on the frontier at once.
 
 Take the state from that list rather than from a phrase. An older version of this line said
 *closed through #38* while #37 was open, which read as though the run took four open tickets
@@ -44,28 +42,41 @@ labels cut too short and set too small, a blank node six pixels tall, bands too 
 apart — plus [#115](https://github.com/khthana/Deep-QA/issues/115) and
 [#116](https://github.com/khthana/Deep-QA/issues/116); #40's found a disclosure that opened onto an
 empty box on a รายวิชา with no outcomes, and a PDF that breaks lines mid-word in Thai
-([#117](https://github.com/khthana/Deep-QA/issues/117)). **#36's found nothing on screen**, which is
+([#117](https://github.com/khthana/Deep-QA/issues/117)); and
+[#41](https://github.com/khthana/Deep-QA/issues/41)'s (Continuous improvement plan) on the 5th found
+four things about the drawing that its own tests all passed through, plus
+[#118](https://github.com/khthana/Deep-QA/issues/118). **#36's found nothing on screen**, which is
 worth recording as plainly as the rest: a walk that ticks every row is not a walk that was wasted,
-and the store now has six tickets where the walk paid and one where it did not.
+and the store now has seven tickets where the walk paid and one where it did not.
 
 **#40's first finding is the shape to remember.** Every automated row asked whether the disclosure
 *worked*, and it worked perfectly — on nothing. A test can ask whether a control responds; only a
 person asks whether responding was worth offering. That is the second time a walk has found a
 control that answers nothing, after #43's.
 
+**#41 wrote that lesson into an assertion and then met it again in a shape the assertion did not
+cover.** Its reference panel is not drawn where there is no earlier year, and a mutant proves the
+row that says so — with it applied the other eight rows all pass, which is #40's defect stated as a
+number. What the walk found anyway: the *space the panel would have occupied* was still reserved,
+so the sections sat in two thirds of the page with an empty third beside them, which reads as a
+panel that failed to load rather than one that was never offered. **Not drawing a thing is not the
+same as not leaving a hole where it was.** The other three were the same class — a picker too
+narrow for its own longest option, cards that never named the outcome they were about once the
+picker had scrolled away, and the citation an accreditation panel reads set as grey small print.
+
 **What a walk is for is the appearance, and appearance is where it keeps paying.** #39's three
 findings were all judgements about size, weight and contrast — the class of thing a browser test
 can measure but cannot have an opinion about. Ask the person to look, and ask about one property
 at a time.
 
-Every acceptance checklist had been walked as of 4 September 2569, and **#41's is the one that has
-not**: its screen was built on the 5th and its sheet carries ten ☐ rows waiting for a person. The
-ticket does not close until they are walked. Everywhere else the count is worth taking from the
-sheets rather than from here — one ☐ that is half of a ticket somebody else owns (#49's menu set);
-of the nine ◐, all but one name a request no control on any screen can produce, and the last is an
-arithmetic difference too small for an eye to decide and pinned exactly at the HTTP seam. Read a
-row that claims a seam proves it better than an eye as a claim to check, not a conclusion — that is
-how the last of the walkable ones were found.
+Every acceptance checklist has been walked, and as of 5 September 2569 **there is no row left
+anywhere that a person could walk and has not**. The count is worth taking from the sheets rather
+than from here — one ☐ that is half of a ticket somebody else owns (#49's menu set); of the ten ◐,
+all but one name a request no control on any screen can produce (#41's added the tenth: the year a
+plan is written for comes from the ตอนเรียน in the address, so no browser can send a different
+one), and the last is an arithmetic difference too small for an eye to decide and pinned exactly at
+the HTTP seam. Read a row that claims a seam proves it better than an eye as a claim to check, not
+a conclusion — that is how the last of the walkable ones were found.
 
 **A ⚙ that was never earned is the mark to distrust most.** #42's fifth criterion carried one until
 #35's ticket caught it, #36's sheet shipped nine before its own review caught them, #37's carried
@@ -78,6 +89,12 @@ surface is ☑.
 Two of #40's were worse than a miscount: one row's assertion was also **weaker than the row
 claimed** — a filename matched as `assessment-.+\.pdf` under a row about naming the ตอนเรียน and the
 year. Check what the assertion actually says, not only that one exists.
+
+**#41 carried that second species too, and its own review caught it — six tickets running.** Its
+first row read *บันทึกได้ครบทั้งสี่หัวข้อ สำหรับ CLO และปีที่เลือก* over three assertions that say
+nothing whatever about the year. The row was split: the CLO half keeps its ⚙, the year half is a ◐
+naming the seam that does prove it. A row marked ⚙ has to be a row the cited assertions cover
+**whole**, not one they cover most of.
 
 Earlier versions of this paragraph said fifteen, then nine. Most of those turned out to be walkable
 after all — they were waiting not on a person but on a **situation the seed does not contain**, and

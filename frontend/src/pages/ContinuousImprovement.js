@@ -237,7 +237,13 @@ export default function ContinuousImprovement() {
             </div>
           ) : (
             <>
-              <label className="block sm:max-w-md">
+              {/* Wide enough for the longest outcome this curriculum holds.
+                  At `sm:max-w-md` the walk found CLO-3 cut at
+                  …ในการเขียนโปรแกร — a native <select> clips without an
+                  ellipsis, so a truncated option reads as a typo rather than
+                  as an overflow, and the closed box is the only place the
+                  chosen outcome is spelled out. */}
+              <label className="block sm:max-w-3xl">
                 <span className="mb-1 block text-sm text-gray-500">
                   ผลการเรียนรู้ที่กำลังเขียนถึง
                 </span>
@@ -258,11 +264,22 @@ export default function ContinuousImprovement() {
                 </select>
               </label>
 
-              <div className="grid gap-4 lg:grid-cols-3">
-                <div className="space-y-4 lg:col-span-2">
+              {/* Two thirds beside the reference panel, and the whole width
+                  when there is none — the walk found the sections sitting in
+                  two thirds of the page with the remaining third empty, which
+                  reads as a panel that failed to load rather than as one that
+                  was never offered. The grid columns are the panel's, so they
+                  are declared where the panel is. */}
+              <div
+                className={`grid gap-4 ${data.previous ? 'lg:grid-cols-3' : ''}`}
+              >
+                <div
+                  className={`space-y-4 ${data.previous ? 'lg:col-span-2' : ''}`}
+                >
                   {SECTIONS.map(section => (
                     <EntrySection
                       key={section.type}
+                      cloNumber={clo?.clo_number}
                       label={section.label}
                       hint={section.hint}
                       entry={entries[section.type]}
