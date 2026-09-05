@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
+import { OUTCOME_TYPES } from '../../lib/outcomes'
 
 /**
  * The form for writing a ผลการเรียนรู้ระดับหลักสูตร down and for changing one — #19.
@@ -41,14 +42,6 @@ const EMPTY = {
   parent_outcome_id: '',
   sequence_order: 1,
   is_active: true,
-}
-
-/** `outcome_type`, in the words the หลักสูตร committee uses for them. */
-export const TYPES = {
-  knowledge: 'ความรู้',
-  skills: 'ทักษะ',
-  ethics: 'จริยธรรม',
-  character: 'ลักษณะบุคคล',
 }
 
 const field =
@@ -204,7 +197,7 @@ export default function PloForm({ value, plos, programs, defaultProgram, busy, o
               disabled={busy}
               required
             >
-              {Object.entries(TYPES).map(([code, label]) => (
+              {Object.entries(OUTCOME_TYPES).map(([code, label]) => (
                 <option key={code} value={code}>
                   {label}
                 </option>

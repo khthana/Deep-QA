@@ -111,6 +111,13 @@ const REFUSALS = {
   // names the department a programme is to be filed under, and a department
   // administrator naming somebody else's is refused rather than obeyed.
   programNotFound: 'ไม่พบหลักสูตรที่ระบุ',
+  // #44. The one query string on the programme reports that names the size of
+  // the answer rather than which answer. A reader reaches it by widening the
+  // range on a curriculum whose register is longer than the report, which is
+  // why the sentence says what the limit is rather than only that there is
+  // one - the next thing they will do is narrow it.
+  intakeRangeTooWide: (years) =>
+    `ช่วงปีรับเข้าที่เลือกกว้างเกินไป เปรียบเทียบได้ครั้งละไม่เกิน ${years} รุ่น`,
   duplicateProgramId: 'รหัสหลักสูตรนี้ถูกใช้งานแล้ว',
   invalidProgram: 'ข้อมูลหลักสูตรไม่ครบถ้วนหรือไม่ถูกต้อง',
   departmentNotYours: 'ไม่สามารถจัดการหลักสูตรนอกภาควิชาที่รับผิดชอบได้',

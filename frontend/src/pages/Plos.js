@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
+import { OUTCOME_TYPES } from '../lib/outcomes'
 import Notice from '../components/Notice'
-import PloForm, { TYPES } from '../components/plos/PloForm'
+import PloForm from '../components/plos/PloForm'
 import {
   createPlo,
   deletePlo,
@@ -287,7 +288,7 @@ export default function Plos() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs text-blue-800">
-                          {TYPES[plo.outcome_type] ?? plo.outcome_type}
+                          {OUTCOME_TYPES[plo.outcome_type] ?? plo.outcome_type}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-slate-500">{plo.sequence_order}</td>

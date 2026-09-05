@@ -1,9 +1,9 @@
 import { get, query } from './client'
 
 /**
- * ผลการเรียนรู้ระดับหลักสูตร — #42 and #43.
+ * ผลการเรียนรู้ระดับหลักสูตร — #42, #43 and #44.
  *
- * Five reads and no write: this screen owns no data at all. Every figure on it
+ * Six reads and no write: this screen owns no data at all. Every figure on it
  * is an opinion about marks that #34 stored, and every one of those opinions is
  * formed on the server — BR-17's sixty per cent, BR-18's scale of five and the
  * two-step roll-up from CLO to PLO are business rules, and a browser that
@@ -44,6 +44,25 @@ export const getOutcomeContributions = (programId, admissionYear, outcomeId) =>
     `/api/program-results/by-intake/outcomes/${outcomeId}${query({
       program_id: programId,
       admission_year: admissionYear,
+    })}`,
+  )
+
+/**
+ * Every year of a range against every main outcome — #44.
+ *
+ * The whole range in one answer, because the question is the *shape* of the
+ * line and a shape read a year at a time is not read at all. The server caps
+ * how wide a range may be and says so in words when it is exceeded; the two
+ * ends come from the same intake list the screen beside this one picks a single
+ * year from, so a range that reaches the cap is one this curriculum's register
+ * really is that long.
+ */
+export const getResultsAcrossIntakes = (programId, fromYear, toYear) =>
+  get(
+    `/api/program-results/across-intakes${query({
+      program_id: programId,
+      from_year: fromYear,
+      to_year: toYear,
     })}`,
   )
 

@@ -4,6 +4,7 @@ import BandLegend from '../components/results/BandLegend'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import { BANDS, figure, score } from '../lib/bands'
+import { OUTCOME_TYPES } from '../lib/outcomes'
 import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/results/CohortPickers'
 import { getEvidenceFile, showPdf } from '../api/evidence'
 import { getOutcomeContributions, getResultsByIntake } from '../api/programResults'
@@ -52,14 +53,6 @@ import { getOutcomeContributions, getResultsByIntake } from '../api/programResul
  * defects that ticket exists to fix. A download button here would be #35's
  * acceptance criterion written a second time without its guard.
  */
-
-/** What an outcome's type is called where a person reads it. */
-const TYPES = {
-  knowledge: 'ความรู้',
-  skills: 'ทักษะ',
-  ethics: 'จริยธรรม',
-  character: 'ลักษณะบุคคล',
-}
 
 /**
  * What an outcome's row says when it is read aloud rather than looked at.
@@ -236,7 +229,7 @@ export default function ProgramLevelByIntake() {
                             <p className="text-xs text-slate-500">{plo.outcome_title}</p>
                           </td>
                           <td className="px-4 py-3 text-center text-xs text-slate-500">
-                            {TYPES[plo.outcome_type] || plo.outcome_type}
+                            {OUTCOME_TYPES[plo.outcome_type] || plo.outcome_type}
                           </td>
                           <td className="px-4 py-3 text-center text-slate-600">
                             {plo.student_count}

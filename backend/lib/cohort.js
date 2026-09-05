@@ -8,12 +8,14 @@
  * marks out of the database, and rolling them up to **one score per student
  * per outcome**.
  *
- * It exists because two screens now need exactly that and no more. #42 takes
+ * It exists because three screens now need exactly that and no more. #42 takes
  * these per-student scores and reduces them to one figure per outcome; #43
- * hands them over as a grid. Both are the same two steps of arithmetic up to
- * the point where they part, and a second copy of those steps is the kind of
- * debt #42's own header warned about — two screens drawing plausible numbers
- * that disagree, with nobody holding both printouts at once.
+ * hands them over as a grid; #44 asks #42's question once per year of a range,
+ * which is why the reduction itself moved here when that ticket landed. All
+ * three are the same two steps of arithmetic up to the point where they part,
+ * and a second copy of those steps is the kind of debt #42's own header warned
+ * about — screens drawing plausible numbers that disagree, with nobody holding
+ * both printouts at once.
  *
  * It was not written until the second caller arrived, which is the rule this
  * repository keeps for extractions: a module shaped for a caller that does not
@@ -25,13 +27,22 @@
  * as *the marks in scope* is exactly what differs between #38 and #42 — one
  * asks about a Section, the other about an intake. That reasoning holds and is
  * why the CLO-level scoping is still written out in `learningDetails.js`. It
- * simply does not apply to these two callers: #42 and #43 are the same scope,
- * one intake of one curriculum, asked at two levels of detail. Splitting the
- * query from the roll-up here would put one half in a lib and leave the other
- * duplicated in two routes, which is the arrangement that goes wrong quietly.
+ * simply does not apply to these callers, because every one of them asks about
+ * **one intake of one curriculum**: #42 and #43 ask it once at two levels of
+ * detail, and #44 asks it once per year and lays the answers side by side —
+ * which is a different question made of the same scope, not a different scope.
+ * Splitting the query from the roll-up here would put one half in a lib and
+ * leave the other duplicated in three routes, which is the arrangement that
+ * goes wrong quietly.
  */
 
-const { outcomeScore, meanOf } = require('./attainment');
+const {
+  bandOf,
+  outcomeScore,
+  meanOf,
+  passRateOf,
+  outcomePassed,
+} = require('./attainment');
 
 /**
  * What each student of the intake earned and what was available to them, per
@@ -105,4 +116,49 @@ function scoresByStudent(marks) {
   return rolled;
 }
 
-module.exports = { cohortMarks, scoresByStudent };
+/**
+ * One intake's figures for each outcome — the whole of #42's report, and one
+ * column of #44's.
+ *
+ * Written inside `routes/programResults.js` while #42 was the only caller and
+ * moved here when #44 arrived, which is this repository's rule for extractions
+ * and, here, is also the fourth acceptance criterion of that ticket. #44 claims
+ * that a year read on the trend says what the same year says on the report
+ * beside it; the assertion that checks it is in `program-results.test.js`, but
+ * what makes the claim *true* is that there is one function and both routes
+ * call it. Two copies would go on drawing plausible trends, and only somebody
+ * holding two printouts at once would ever see the step in the line that no
+ * teaching produced.
+ *
+ * The banding is done here rather than in the browser, and from the rounded
+ * mean the screen shows rather than from the number behind it, for #38's two
+ * reasons: BR-20 is a business rule, and a figure that reads 3.50 in one colour
+ * and 3.5 in another is a screen arguing with itself.
+ */
+function rollUpOutcomes(plos, marks) {
+  // outcome -> the students who have a score for it, one number each.
+  const perOutcome = new Map(plos.map((plo) => [plo.outcome_id, []]));
+  for (const outcomes of scoresByStudent(marks).values()) {
+    for (const [outcomeId, score] of outcomes) {
+      if (perOutcome.has(outcomeId)) perOutcome.get(outcomeId).push(score);
+    }
+  }
+
+  return plos.map((plo) => {
+    // One number per student, not one per CLO — which is what makes the pass
+    // rate a share of students.
+    const scores = perOutcome.get(plo.outcome_id);
+    const passRate = passRateOf(scores);
+    const mean = meanOf(scores);
+    return {
+      ...plo,
+      student_count: scores.length,
+      mean,
+      band: bandOf(mean),
+      pass_rate: passRate,
+      passed: outcomePassed(passRate),
+    };
+  });
+}
+
+module.exports = { cohortMarks, scoresByStudent, rollUpOutcomes };

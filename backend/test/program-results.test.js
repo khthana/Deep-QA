@@ -14,10 +14,22 @@ const {
   PROGRAM_INTL,
 } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
+// Imported to be *read*, never to be applied: the width a range is refused at
+// is the route's rule, and a test that wrote `10` here would go on passing
+// against a route that had moved to twelve.
+const { MAX_INTAKE_SPAN } = require('../routes/programResults');
 const { startApi } = require('./helpers');
 
 /**
- * docs/acceptance/42-program-level-by-intake.md — the server half.
+ * docs/acceptance/42-program-level-by-intake.md and
+ * docs/acceptance/44-program-level-across-intakes.md — the server half of both.
+ *
+ * They are in one file because #44's whole claim is that it reports the same
+ * figures #42 does, one year at a time, and the assertion that says so has to
+ * be able to ask both. Splitting them would leave that assertion in a file that
+ * seeds its own cohort and compares two answers about it — which proves the two
+ * routes agree about *that* data and nothing about the fixture this one already
+ * has, where the arithmetic was chosen to be checkable on paper.
  *
  * #42 is the first screen that reports on a *cohort* rather than on a room.
  * Everything it says is an opinion about the same marks #34 stored and #38
@@ -602,4 +614,240 @@ test('an outcome id too large for its column is a ไม่พบ, not a system 
   assert.equal(overflowing.body.message, REFUSALS.ploNotFound);
   assert.equal(notANumber.status, 404);
   assert.equal(notANumber.body.message, REFUSALS.ploNotFound);
+});
+
+
+/* --------------------------------------------------------------------------
+ * #44 — the same outcomes, across a range of intakes.
+ *
+ * Everything below asks one question in several ways: is this the *same*
+ * report as the one above, drawn once per year? It has to be. A committee
+ * looking at a trend is looking for the effect of a change they made to the
+ * curriculum, and a trend assembled by arithmetic of its own would put a step
+ * in the line that nothing in the teaching produced.
+ *
+ * The fixture is the one this file already seeds, and it happens to hold every
+ * column state the ticket names: 2500 marked, 2501 on the roll and unmarked,
+ * 2502 marked through a blank, and 2503 a year nobody was ever admitted in.
+ * -------------------------------------------------------------------------- */
+
+const acrossIntakes = (cookie, query) =>
+  request(api.app).get(`/api/program-results/across-intakes${query}`).set('Cookie', cookie);
+
+const forRange = (cookie, from, to, program = PROGRAM) =>
+  acrossIntakes(cookie, `?program_id=${program}&from_year=${from}&to_year=${to}`);
+
+/** One outcome's row of the trend, by its code. */
+const trend = (body, code) => body.plos.find((row) => row.outcome_code === code);
+
+/** One cell of that row, by the year it stands under. */
+const cellOf = (row, year) => row.years.find((cell) => cell.admission_year === year);
+
+/** The year after the last intake this file seeds. Nobody was ever admitted in it. */
+const GAP_INTAKE = '2503';
+
+test('the range has a column for every year in it, including one nobody was admitted in', async () => {
+  // The first criterion, and the decision underneath it. The range is every
+  // year between the two ends and not every year the register happens to hold:
+  // an intake that was never taken is a fact about the curriculum, and a chart
+  // that closes the gap puts 2502 next to 2500 where a reader will read them
+  // as consecutive.
+  const cookie = await signInAs('U_COM');
+
+  const response = await forRange(cookie, FIXTURE_INTAKE, GAP_INTAKE);
+
+  assert.equal(response.status, 200, response.body.message);
+  assert.deepEqual(
+    response.body.years.map((year) => year.admission_year),
+    [FIXTURE_INTAKE, UNMARKED_INTAKE, BLANK_INTAKE, GAP_INTAKE],
+  );
+  // From the register, so *nobody is here* and *nobody has been marked yet* are
+  // two different columns rather than one.
+  assert.deepEqual(
+    response.body.years.map((year) => year.student_count),
+    [2, 1, 1, 0],
+  );
+  // How many outcomes that year reached. The fixture marks PLO-2 and nothing
+  // else, so a year with marks reads 1 and a year without reads 0.
+  assert.deepEqual(
+    response.body.years.map((year) => year.measured_count),
+    [1, 0, 1, 0],
+  );
+});
+
+test('a year that appears on both screens reports the same figures', async () => {
+  // The fourth criterion and the seventh, which are the same claim asked of a
+  // person and of a test. Every figure of every outcome, not a spot check: the
+  // way this goes wrong is one quantity drifting, and a spot check on PLO-2 is
+  // exactly the check that would miss it.
+  //
+  // Two years, and the second one is the reason this row is worth running. The
+  // fixture intake has marks on PLO-2 and nowhere else, so twelve of its
+  // thirteen comparisons are `null` against `null` — an agreement between two
+  // screens that have both said nothing. The seeded cohort has been marked
+  // across seven outcomes by two Sections of a real Offering, so its
+  // comparison is between two screens that have both said something.
+  const cookie = await signInAs('U_COM');
+
+  const ranges = [
+    [FIXTURE_INTAKE, [FIXTURE_INTAKE, BLANK_INTAKE]],
+    [CURRENT_COHORT.admission, [CURRENT_COHORT.admission, CURRENT_COHORT.admission]],
+  ];
+
+  for (const [year, [from, to]] of ranges) {
+    const [alone, inRange] = await Promise.all([
+      forCohort(cookie, { admission: year }),
+      forRange(cookie, from, to),
+    ]);
+
+    assert.equal(alone.status, 200, alone.body.message);
+    assert.equal(inRange.status, 200, inRange.body.message);
+    assert.ok(inRange.body.plos.length > 0);
+
+    for (const row of inRange.body.plos) {
+      const single = plo(alone.body, row.outcome_code);
+      assert.deepEqual(
+        cellOf(row, year),
+        {
+          admission_year: year,
+          student_count: single.student_count,
+          mean: single.mean,
+          band: single.band,
+          pass_rate: single.pass_rate,
+          passed: single.passed,
+        },
+        `${row.outcome_code} of ${year} does not agree with the by-intake report`,
+      );
+    }
+
+    // And that the second range is not another pair of empty hands: the seeded
+    // cohort is expected to have been measured on more than one outcome, so an
+    // agreement about it is an agreement about figures.
+    const measured = inRange.body.plos.filter((row) => cellOf(row, year).mean !== null);
+    assert.ok(
+      year === FIXTURE_INTAKE || measured.length > 1,
+      'the seeded cohort is expected to carry marks on more than one outcome',
+    );
+  }
+});
+
+test('a year with students and nobody marked is absent, not nought', async () => {
+  // The third criterion. 2501 has a student on the roll and no marks anywhere,
+  // and every one of the five figures has to say *not asked* rather than
+  // *asked and got nothing* — a nought on a trend line is a drop, and a drop
+  // is what a committee acts on.
+  const cookie = await signInAs('U_COM');
+
+  const response = await forRange(cookie, FIXTURE_INTAKE, BLANK_INTAKE);
+  const row = trend(response.body, 'PLO-2');
+
+  assert.equal(cellOf(row, FIXTURE_INTAKE).mean, 3.5, 'the marked year still reports its mean');
+
+  const unmarked = cellOf(row, UNMARKED_INTAKE);
+  assert.equal(unmarked.student_count, 0);
+  assert.equal(unmarked.mean, null, 'nobody measured is not a mean of nought');
+  assert.equal(unmarked.band, null, 'and no band, so no colour claims a level');
+  assert.equal(unmarked.pass_rate, null);
+  assert.equal(unmarked.passed, null, 'an outcome nobody was asked about has not failed');
+});
+
+test('the trend has a row for every main outcome, measured or not', async () => {
+  // #42's first criterion, one dimension over. An outcome no year of the range
+  // reached is the row a committee is looking for, and selecting through the
+  // marks would have drawn no row at all.
+  const cookie = await signInAs('U_COM');
+
+  const { rows } = await api.pool.query(
+    `SELECT count(*)::int AS main FROM learning_outcomes
+      WHERE program_id = $1 AND parent_outcome_id IS NULL`,
+    [PROGRAM],
+  );
+
+  const response = await forRange(cookie, FIXTURE_INTAKE, BLANK_INTAKE);
+
+  assert.equal(response.body.plos.length, rows[0].main);
+  assert.ok(rows[0].main > 1, 'the curriculum is expected to have more than one main outcome');
+  const untouched = trend(response.body, 'PLO-1');
+  assert.deepEqual(
+    untouched.years.map((cell) => cell.mean),
+    [null, null, null],
+    'an outcome nothing measures is a row of blanks, not a row of noughts',
+  );
+});
+
+test('a range nobody in it has been marked in says so, rather than drawing a grid of dashes', async () => {
+  // The fifth criterion. `empty` is read off the cells that came out of the
+  // roll-up rather than off the register or off the number of mark rows, for
+  // the reason #43's review found on the screen beside this one: marks can
+  // exist and reach no column, because a CLO naming no outcome belongs to no
+  // row of this report.
+  const cookie = await signInAs('U_COM');
+
+  const nothing = await forRange(cookie, UNMARKED_INTAKE, UNMARKED_INTAKE);
+  const something = await forRange(cookie, FIXTURE_INTAKE, UNMARKED_INTAKE);
+
+  assert.equal(nothing.body.empty, true);
+  assert.equal(something.body.empty, false, 'one marked year in the range is not an empty range');
+});
+
+test('a range that ends before it starts asks for no years, and is not an error', async () => {
+  // #42's rule for a nonsensical intake, applied to a pair of them: the years
+  // are not identifiers that open anything, so a range that contains none of
+  // them is an honest empty answer rather than a refusal. The screen cannot
+  // produce this - both ends come from the register - but a query string can.
+  const cookie = await signInAs('U_COM');
+
+  const backwards = await forRange(cookie, BLANK_INTAKE, FIXTURE_INTAKE);
+  const unasked = await acrossIntakes(cookie, `?program_id=${PROGRAM}`);
+
+  assert.equal(backwards.status, 200, backwards.body.message);
+  assert.deepEqual(backwards.body.years, []);
+  assert.equal(backwards.body.empty, true);
+  assert.equal(unasked.status, 200, unasked.body.message);
+  assert.deepEqual(unasked.body.years, []);
+});
+
+test('a range wider than a person can read across is refused, and the sentence says how wide', async () => {
+  // The one place this route can be driven off a cliff by its own query
+  // string. A reader can reach it — both ends come from the register, and a
+  // curriculum with more intakes than the report draws has two of them far
+  // enough apart — which is why the sentence carries the number rather than
+  // only saying no.
+  const cookie = await signInAs('U_COM');
+
+  const wide = await forRange(cookie, '2500', '2599');
+  const widest = await forRange(cookie, '2500', String(2500 + MAX_INTAKE_SPAN - 1));
+
+  assert.equal(wide.status, 400);
+  assert.equal(wide.body.message, REFUSALS.intakeRangeTooWide(MAX_INTAKE_SPAN));
+  assert.equal(widest.status, 200, 'the widest range that is allowed is allowed');
+  assert.equal(widest.body.years.length, MAX_INTAKE_SPAN);
+});
+
+test('a committee member is refused a curriculum they do not hold, at the server', async () => {
+  // The sixth criterion, and ADR-0002 in the same place #42 applies it: the
+  // curriculum a caller may read comes from the grant the session put on the
+  // request, never from a query string agreeing with itself.
+  const ours = await signInAs('U_COM');
+  const theirs = await signInAs('U_COM2');
+
+  const acrossTheirs = await forRange(ours, FIXTURE_INTAKE, BLANK_INTAKE, PROGRAM_INTL);
+  const acrossOurs = await forRange(theirs, FIXTURE_INTAKE, BLANK_INTAKE, PROGRAM);
+
+  assert.equal(acrossTheirs.status, 404);
+  assert.equal(acrossTheirs.body.message, REFUSALS.programNotFound);
+  assert.equal(acrossOurs.status, 404, 'and the other way round, from the other account');
+  assert.equal(acrossOurs.body.message, REFUSALS.programNotFound);
+});
+
+test('the trend is not a screen a teacher or a stranger reaches', async () => {
+  const teacher = await signInAs('U_TEACH');
+
+  const refused = await forRange(teacher, FIXTURE_INTAKE, BLANK_INTAKE);
+  const anonymous = await request(api.app).get(
+    `/api/program-results/across-intakes?program_id=${PROGRAM}&from_year=${FIXTURE_INTAKE}&to_year=${BLANK_INTAKE}`,
+  );
+
+  assert.equal(refused.status, 403);
+  assert.equal(anonymous.status, 401);
 });

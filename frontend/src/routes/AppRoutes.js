@@ -11,6 +11,7 @@ import Offerings from '../pages/Offerings'
 import Plos from '../pages/Plos'
 import PloMapping from '../pages/PloMapping'
 import ProgramLevelAllStudents from '../pages/ProgramLevelAllStudents'
+import ProgramLevelCompare from '../pages/ProgramLevelCompare'
 import ProgramLevelByIntake from '../pages/ProgramLevelByIntake'
 import RubricCriteria from '../pages/RubricCriteria'
 import Rubrics from '../pages/Rubrics'
@@ -145,10 +146,7 @@ export default function AppRoutes() {
         <Route path="plos" element={<Plos />} />
         <Route path="mapping-plo" element={<PloMapping />} />
         <Route path="programLevelByIntake" element={<ProgramLevelByIntake />} />
-        <Route
-          path="programLevelCompare"
-          element={<NotBuiltYet ticket="#44" />}
-        />
+        <Route path="programLevelCompare" element={<ProgramLevelCompare />} />
         <Route
           path="programLevelIndividual"
           element={<NotBuiltYet ticket="#45" />}

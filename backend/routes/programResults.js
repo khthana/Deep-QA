@@ -1,19 +1,23 @@
 'use strict';
 
 /**
- * ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า — #42.
+ * ผลการเรียนรู้ระดับหลักสูตร — #42, #43 and #44.
  *
- * The first screen that reports on a cohort rather than on a room. #38 asks
- * how one Section did on one CLO; this asks how an intake did on one PLO,
- * across every Subject that intake has sat.
+ * The reports that are about a cohort rather than about a room. #38 asks how
+ * one Section did on one CLO; these ask how an intake did on one PLO across
+ * every Subject that intake has sat — one intake at a time (#42), student by
+ * student (#43), and year after year (#44).
  *
  * ## Where the roll-up lives
  *
- * The five-point rules are in `lib/attainment.js` and the intake's marks and
- * their per-student roll-up are in `lib/cohort.js`, both extracted at their
- * second use rather than their first. What is left in this file is the part
- * only this screen does: reducing each outcome's column of per-student scores
- * to a mean, a pass rate and a verdict, and assembling the drill-down.
+ * The five-point rules are in `lib/attainment.js`; the intake's marks, the
+ * per-student roll-up and the reduction of an outcome's column to a mean, a
+ * pass rate and a verdict are in `lib/cohort.js`. All of them were extracted at
+ * their second use rather than their first. The last of them moved out when
+ * #44 arrived, and moving it *is* that ticket's fourth criterion: a year read
+ * on the trend has to say what the same year says on #42's report, and what
+ * makes that true is that there is one `rollUpOutcomes` and both routes call
+ * it. What is left in this file is what each report does with the answer.
  */
 
 const express = require('express');
@@ -22,15 +26,66 @@ const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { integerId } = require('../lib/fields');
 const { programInReach, reachablePrograms } = require('../lib/reach');
-const { cohortMarks, scoresByStudent } = require('../lib/cohort');
-const {
-  PASS,
-  BAND_FLOORS,
-  bandOf,
-  meanOf,
-  passRateOf,
-  outcomePassed,
-} = require('../lib/attainment');
+const { cohortMarks, scoresByStudent, rollUpOutcomes } = require('../lib/cohort');
+const { PASS, BAND_FLOORS, bandOf } = require('../lib/attainment');
+
+/**
+ * How many intakes #44 will compare in one answer.
+ *
+ * Ten, for two reasons that happen to agree. A curriculum is revised on a
+ * five-year cycle, so ten years is two of them and a committee asking about
+ * the effect of a revision is asking about a range this wide at most. And a
+ * table wider than that stops being a thing a person reads across — the
+ * lesson #100 learned at fifty-two columns, arrived at from the other side.
+ *
+ * Exported to be *read* — by the sentence that refuses a wider range, and by
+ * the test that checks the boundary. Nothing outside this file applies it.
+ */
+const MAX_INTAKE_SPAN = 10;
+
+/** What `student.admission_year` holds: four digits, and nothing else. */
+const YEAR = /^\d{4}$/;
+
+/**
+ * The years a range covers — **every** year between its ends, not every year
+ * the register happens to have somebody in.
+ *
+ * This is #44's one real decision. An intake that was never taken is a fact
+ * about the curriculum, and a chart that closes the gap draws 2566 next to
+ * 2564 where every reader will take them for consecutive years — which is
+ * exactly the misreading a trend is read to avoid. So a year nobody was
+ * admitted in gets a column, and the column says so.
+ *
+ * Both ends are taken as they arrive rather than checked against anything.
+ * They are not identifiers that open something: `admission_year` is a
+ * four-character column, and a year nobody was admitted in simply matches no
+ * students. A missing or nonsensical end, and a range that finishes before it
+ * starts, therefore answer *no years* rather than a refusal — #42's rule for a
+ * single intake, applied to a pair of them.
+ *
+ * Width is the exception, and the reason it is one is that this is the only
+ * query string on these reports that names the *size* of the answer instead of
+ * which answer. `{ tooWide }` rather than a clamped range, because silently
+ * returning eleven years of a hundred asked for is a report that does not say
+ * what it is.
+ *
+ * The screen can reach this: both ends come from the register, so a curriculum
+ * whose register is longer than the cap has two the reader may pick. What the
+ * screen cannot do is *open* on it — the cap travels with the intake list, and
+ * the range the screen starts from is cut back to fit.
+ */
+function intakeRange(from, to) {
+  if (!YEAR.test(String(from ?? '')) || !YEAR.test(String(to ?? ''))) return { years: [] };
+
+  const start = Number(from);
+  const end = Number(to);
+  if (end < start) return { years: [] };
+  if (end - start + 1 > MAX_INTAKE_SPAN) return { tooWide: true, years: [] };
+
+  const years = [];
+  for (let year = start; year <= end; year += 1) years.push(String(year));
+  return { years };
+}
 
 /**
  * Who reads this screen.
@@ -69,59 +124,31 @@ function programResultRoutes(pool) {
   }
 
   /**
-   * The cohort's score for each outcome, in two steps.
-   *
-   * First every (student, CLO) mark becomes one five-point score. Then each
-   * student gets one score per outcome — the mean of their CLO scores for the
-   * CLOs that name it — and the outcome's figures are taken across those, one
-   * number per student rather than one per CLO. A student sitting three CLOs of
-   * an outcome therefore counts once, which is what makes the pass rate a share
-   * of *students* and not a share of marks.
-   */
-  function rollUp(plos, marks) {
-    // outcome -> the students who have a score for it, one number each.
-    const perOutcome = new Map(plos.map((plo) => [plo.outcome_id, []]));
-    for (const outcomes of scoresByStudent(marks).values()) {
-      for (const [outcomeId, score] of outcomes) {
-        if (perOutcome.has(outcomeId)) perOutcome.get(outcomeId).push(score);
-      }
-    }
-
-    return plos.map((plo) => {
-      // One number per student, not one per CLO — which is what makes the pass
-      // rate a share of students.
-      const scores = perOutcome.get(plo.outcome_id);
-      const passRate = passRateOf(scores);
-      const mean = meanOf(scores);
-      return {
-        ...plo,
-        student_count: scores.length,
-        mean,
-        // Banded here rather than in the browser, and banded from the rounded
-        // mean the screen shows rather than from the number behind it, for
-        // #38's two reasons: BR-20 is a business rule, and a figure that reads
-        // 3.50 in one colour and 3.5 in another is a screen arguing with itself.
-        band: bandOf(mean),
-        pass_rate: passRate,
-        passed: outcomePassed(passRate),
-      };
-    });
-  }
-
-  /**
-   * How many students the intake has on the roll of this Program.
+   * How many students each of these intakes has on the roll of this Program.
    *
    * Counted from the register rather than from the marks, which is the whole
    * of the difference between *nobody is here* and *nobody has been marked
-   * yet*. The screen says something different for each.
+   * yet*. Every screen here says something different for each, and #44 has a
+   * third thing to say about a year the register does not mention at all —
+   * which is why a year with nobody in it is simply absent from these rows and
+   * is nought at the caller.
    */
-  async function cohortOf(programId, admissionYear) {
+  async function cohortsIn(programId, years) {
+    if (years.length === 0) return new Map();
     const { rows } = await pool.query(
-      `SELECT count(*)::int AS student_count FROM student
-        WHERE program_id = $1 AND admission_year = $2`,
-      [programId, admissionYear],
+      `SELECT admission_year, count(*)::int AS student_count
+         FROM student
+        WHERE program_id = $1 AND admission_year = ANY($2)
+        GROUP BY admission_year`,
+      [programId, years],
     );
-    return rows[0];
+    return new Map(rows.map((row) => [row.admission_year, row.student_count]));
+  }
+
+  /** The same count for one intake, in the shape #42's report reads it in. */
+  async function cohortOf(programId, admissionYear) {
+    const counts = await cohortsIn(programId, [admissionYear]);
+    return { student_count: counts.get(admissionYear) || 0 };
   }
 
   /**
@@ -164,7 +191,12 @@ function programResultRoutes(pool) {
           ORDER BY admission_year DESC`,
         [program.program_id],
       );
-      return res.status(200).json({ intakes: rows });
+      // #44's cap travels with the list its two ends are chosen from, for
+      // `band_floors`' reason one screen over: a browser holding its own copy
+      // of the number would go on offering an eleven-year range after the
+      // route moved to twelve, and would open every such curriculum on a
+      // refusal. The screen that picks a single year ignores it.
+      return res.status(200).json({ intakes: rows, max_span: MAX_INTAKE_SPAN });
     } catch (error) {
       return next(error);
     }
@@ -195,7 +227,7 @@ function programResultRoutes(pool) {
         cohortOf(programId, admissionYear),
       ]);
 
-      const plos = rollUp(outcomes, marks);
+      const plos = rollUpOutcomes(outcomes, marks);
       return res.status(200).json({
         admission_year: admissionYear,
         cohort,
@@ -491,7 +523,107 @@ function programResultRoutes(pool) {
     },
   );
 
+  /**
+   * The same report as `/by-intake`, once per year of a range — #44.
+   *
+   * A committee changes a curriculum and then wants to know whether it worked.
+   * One intake cannot answer that: a cohort is a hundred-odd people who also
+   * had a particular set of teachers in a particular year, and a single figure
+   * carries all of it at once. A line of them carries rather less.
+   *
+   * **Every figure here comes back through `rollUpOutcomes`, the function
+   * `/by-intake` reduces its own column with.** That is the ticket's fourth
+   * criterion and it is met structurally rather than by agreement: the two
+   * routes cannot drift because there is nothing to drift. What is added here
+   * is the shape — the columns transposed so a row is an outcome and a cell is
+   * one year of it, which is the way the question is asked.
+   *
+   * The transpose is keyed by `outcome_id` and not by position. `rollUpOutcomes`
+   * maps over the outcomes it is handed and so preserves their order, but a
+   * report where PLO-3's 2566 figure could land on PLO-4's row if that ever
+   * stopped being true is not a report worth the saving.
+   *
+   * There is no drill-down. #42 has one and a person opens it on the year they
+   * are asking about; a drill-down here would have to name a year as well as an
+   * outcome, which is #42's question with two extra clicks in front of it.
+   */
+  router.get('/program-results/across-intakes', requireRole(...READERS), async (req, res, next) => {
+    try {
+      // ADR-0002, and the same refusal every report in this file gives: the
+      // curriculum comes from the grant the session put on the request, and a
+      // curriculum in somebody else's department, a retired one and one that
+      // was never there answer alike.
+      const program = await programInReach(pool, req.auth.acting.scope_id, req.query.program_id);
+      if (!program) return res.status(404).json({ message: REFUSALS.programNotFound });
+
+      const { years, tooWide } = intakeRange(req.query.from_year, req.query.to_year);
+      if (tooWide) {
+        return res
+          .status(400)
+          .json({ message: REFUSALS.intakeRangeTooWide(MAX_INTAKE_SPAN) });
+      }
+
+      const programId = program.program_id;
+      const outcomes = await outcomesOf(programId);
+      const [cohorts, columns] = await Promise.all([
+        cohortsIn(programId, years),
+        // One column per year, each of them the whole of #42's arithmetic. The
+        // marks are read a year at a time rather than in one query grouped by
+        // intake, because `cohortMarks` is the query #42 asks and asking a
+        // different one here would be the first half of the drift the shared
+        // roll-up exists to prevent.
+        Promise.all(
+          years.map(async (year) =>
+            rollUpOutcomes(outcomes, await cohortMarks(pool, programId, year)),
+          ),
+        ),
+      ]);
+
+      const byOutcome = columns.map((column) => new Map(column.map((row) => [row.outcome_id, row])));
+
+      const plos = outcomes.map((outcome) => ({
+        ...outcome,
+        years: years.map((year, at) => {
+          const cell = byOutcome[at].get(outcome.outcome_id);
+          return {
+            admission_year: year,
+            student_count: cell.student_count,
+            mean: cell.mean,
+            band: cell.band,
+            pass_rate: cell.pass_rate,
+            passed: cell.passed,
+          };
+        }),
+      }));
+
+      return res.status(200).json({
+        // The range is not echoed back. #42 echoes its `admission_year`
+        // because the line above its table reads it; here every column names
+        // its own year, so a second statement of the range would be a field
+        // nothing renders.
+        band_floors: BAND_FLOORS,
+        years: years.map((year, at) => ({
+          admission_year: year,
+          // From the register.
+          student_count: cohorts.get(year) || 0,
+          // From the marks. The two disagreeing is the whole of what a column
+          // header has to say: a hundred and thirteen students and nothing
+          // measured is a different sentence from nobody admitted.
+          measured_count: columns[at].filter((row) => row.student_count > 0).length,
+        })),
+        plos,
+        // Read off the columns that came out of the roll-up, never off the
+        // number of mark rows — #43's review found that mistake on the screen
+        // beside this one. Marks can exist and reach no cell, because a CLO
+        // naming no outcome belongs to no row of this report.
+        empty: years.every((year, at) => columns[at].every((row) => row.student_count === 0)),
+      });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   return router;
 }
 
-module.exports = { programResultRoutes };
+module.exports = { programResultRoutes, MAX_INTAKE_SPAN };

@@ -70,10 +70,16 @@ MUTANTS = {
     # instead. That killed all six rows, because with the year out of the deps
     # the first report never loads either - and a mutant that takes the whole
     # screen away proves nothing about the row it was written for.
+    #
+    # Rewritten when #44 pulled the dropdown itself out into `IntakeSelect` -
+    # the string this used to point at is gone. It deliberately still mutates
+    # what `CohortPickers` *passes* rather than the shared control: a mutant
+    # inside `IntakeSelect` would freeze #44's two ends as well, and a mutant
+    # that takes three screens down proves nothing about one of them.
     "intakefrozen": (
         "pickers",
-        "          onChange={event => setIntake(event.target.value)}",
-        "          onChange={() => setIntake(intakes[0].admission_year)}",
+        "        onChange={setIntake}",
+        "        onChange={() => setIntake(intakes[0].admission_year)}",
     ),
     # The drill-down opens and will not close. Pressing the button a second
     # time re-fetches the same outcome instead of putting it away, so a person
