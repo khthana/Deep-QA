@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import Login from '../pages/Login'
 import MainPage from '../pages/Mainpage'
-import SelectApp from '../pages/SelectApp'
 import NotFoundPage from '../pages/PageNotFound'
 import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
@@ -108,14 +107,19 @@ export default function AppRoutes() {
           sign-in belongs on the sign-in screen, which is where `?error=<key>`
           already puts it, keyed rather than matched on prose. #50 deleted the
           page. */}
-      <Route
-        path="/select-app"
-        element={
-          <ProtectedRoute>
-            <SelectApp />
-          </ProtectedRoute>
-        }
-      />
+      {/* `/select-app`, the two-application chooser, is gone — #66. There is
+          one application now, so there is nothing to choose between; the
+          owner's decision, taken on the ticket rather than assumed here.
+
+          It is worth recording what it did while it existed, because the
+          ticket's own description had it wrong. It was not unreachable: the
+          measured sequence on the password path was
+          `/` → `/select-app` → `/main` → the first menu entry. `Login.js`
+          navigated to it, `GuestRoute` redirected away from it, and
+          `SidebarItem` finished the job — so it drew and was taken away again.
+          Three components each holding an opinion about where a signed-in
+          caller belongs is the defect; `GuestRoute` is now the only one that
+          does, and `SidebarItem` the only one that finishes it. */}
       <Route path="/page-not-found" element={<NotFoundPage />} />
 
       <Route

@@ -172,28 +172,28 @@ test('the page nothing navigated to is gone, and its address is a 404 like any o
   await expect(page.getByText('บัญชีของคุณถูกระงับการใช้งาน')).toHaveCount(0);
 });
 
-test('the chooser is behind the session, and draws the person who is signed in', async ({
+/**
+ * A declared-but-protected address is not a missing one.
+ *
+ * This row used to be about the two-application chooser, which #66 deleted —
+ * there is one application now. What it was actually proving survives the
+ * chooser and belongs to the sign-in screens either way: an address a stranger
+ * is not allowed to see sends them *here*, to a screen they can do something
+ * about, rather than to the 404 that an address nobody declared gets. Telling
+ * those two apart is the whole of `ProtectedRoute`'s job, and #50's own
+ * `/user-not-found` row is the other side of the same coin.
+ */
+test('a protected address typed by a stranger returns the sign-in screen, not a 404', async ({
   page,
 }) => {
-  // Typed by a stranger: not a chooser, and not a 404 either — the sign-in
-  // screen, because `/select-app` is declared and protected rather than
-  // missing.
-  await page.goto('/select-app');
+  await page.goto('/main/rubrics');
+
   await expect(page.getByRole('heading', { name: SIGN_IN_HEADING })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'ไม่พบหน้าที่คุณต้องการ' })).toHaveCount(0);
 
-  await signIn(page, ACCOUNTS.teacherOne);
-
-  // Reached by address rather than by signing in, and that is not an oversight
-  // in this row: sign-in lands on `/main` today because `GuestRoute` redirects
-  // before `Login.js` can navigate. Which screen it *should* land on is #66,
-  // and a row here that asserted either answer would have to be rewritten the
-  // day #66 is decided. What this row settles is the part #66 does not touch:
-  // the chooser is behind the session and knows who is behind it.
-  await page.goto('/select-app');
-  await expect(page.getByRole('heading', { name: 'ยินดีต้อนรับ' })).toBeVisible();
-  // Named, not merely welcomed. A chooser that greets everyone identically is
-  // the same screen a session that had gone stale would draw, and the greeting
-  // is the only thing on it that reads the profile at all.
-  await expect(page.getByText('ดร.อนันต์ สอนดี')).toBeVisible();
-  await expect(page.getByText('ระบบบริหารจัดการหลักสูตร (Curriculum Management)')).toBeVisible();
+  // And it is the same address once there is a session behind it, which is
+  // what makes the line above a guard rather than a broken route.
+  await signIn(page, ACCOUNTS.committee0501);
+  await page.goto('/main/rubrics');
+  expect(new URL(page.url()).pathname).toBe('/main/rubrics');
 });

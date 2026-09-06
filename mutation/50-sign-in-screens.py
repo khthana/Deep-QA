@@ -2,11 +2,15 @@
 """
 #50 หน้าจอลงชื่อเข้าใช้ - the screens #8's criteria were about, and nobody held.
 
-Twelve mutants over five files, which is more files than any other set here
-touches. That is what the ticket is: the sign-in screens were built inside #10
-as a side effect, so what they are made of was never gathered anywhere - a page,
-a form, a chooser, the router that declares them and the one backend route whose
-answer is rendered rather than read.
+Eleven mutants over four files. That is what the ticket is: the sign-in screens
+were built inside #10 as a side effect, so what they are made of was never
+gathered anywhere - a page, a form, the router that declares them and the one
+backend route whose answer is rendered rather than read.
+
+It was twelve over five until #66, one day later, deleted the two-application
+chooser. `chooserforgetswhoisthere` went with it, having nothing left to be
+about; `chooserisnotbehindthesession` became `shellisnotbehindthesession`,
+which is the same claim carried by a route that still exists.
 
 Two of them are the defects this ticket actually found, put back:
 `googlerefusalmissesone` is the missing `outsideValidity`, and
@@ -46,7 +50,6 @@ from harness import main
 FILES = {
     "screen": "frontend/src/pages/Login.js",
     "form": "frontend/src/components/LoginForm.js",
-    "chooser": "frontend/src/pages/SelectApp.js",
     "routes": "frontend/src/routes/AppRoutes.js",
     "route": "backend/routes/auth.js",
 }
@@ -142,22 +145,20 @@ MUTANTS = {
         '      <Route path="/user-not-found" element={<Login />} />\n'
         '      <Route path="/page-not-found" element={<NotFoundPage />} />',
     ),
-    # The chooser is declared outside the session guard. It draws for a
-    # stranger who types the address - with no profile, so no name and no
-    # greeting, but both doors and a sign-out button. Kills row 9's first half.
-    "chooserisnotbehindthesession": (
+    # The shell is declared outside the session guard, so a stranger typing a
+    # screen's address gets the screen's frame rather than the sign-in page.
+    # Nothing behind it answers - every request is still refused server-side,
+    # which is #10's eighth criterion and is asserted elsewhere - so what this
+    # breaks is only the *answer given to the person*: an application that
+    # looks entered, instead of a page they can do something about.
+    #
+    # It replaced `chooserisnotbehindthesession` when #66 deleted the chooser.
+    # The claim is the same claim; the route carrying it is one that still
+    # exists. Kills row 9.
+    "shellisnotbehindthesession": (
         "routes",
-        "          <ProtectedRoute>\n            <SelectApp />\n          </ProtectedRoute>",
-        "          <SelectApp />",
-    ),
-    # The chooser greets everybody identically. Every door still works and the
-    # page is not wrong about anything; what is gone is the one thing on it
-    # that reads the profile, and with it any sign that this screen knows whose
-    # session it is. Kills row 9's second half.
-    "chooserforgetswhoisthere": (
-        "chooser",
-        "        ? `${profile.first_name_th || ''} ${profile.last_name_th || ''}`",
-        "        ? ''",
+        "        path=\"/main/*\"\n        element={\n          <ProtectedRoute>\n            <MainPage />\n          </ProtectedRoute>\n        }",
+        "        path=\"/main/*\"\n        element={<MainPage />}",
     ),
 }
 

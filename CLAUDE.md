@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50 and #66**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -33,6 +33,37 @@ UI criteria were held by a closed ticket and **the one screen every person in th
 through was the only screen with no checklist behind it**. Closing that hole is what found four
 defects. Entries 4, 6 and the second half of 8 in `10-application-shell.md`'s open list are struck
 with it.
+
+**#66 is the second, and it carries the other thing to expect from this frontier: some of these
+tickets contain a decision that is not yours to make.** Its body asked whether the
+two-application chooser should exist at all before it asked for any fix, and `docs/06` §Out of
+Scope settles who answers that — *"The UI is reproduced as-is. Any proposal to change it is raised
+as a question, not implemented."* The owner answered on 6 September 2569: **there is one
+application now**, so the chooser and the *ไปที่ Deep Portfolio* entry beside it are both deleted
+rather than repaired into the flow. Read a defect ticket for a question before reading it for a
+task; answering one yourself is how a rebuild acquires opinions nobody asked it to have.
+
+**And #66's own account of the defect was out of date, which is worth checking before building on
+any ticket's diagnosis.** It says the chooser is never reached on the password path. Recording
+every navigation says otherwise: `/` → `/select-app` → `/main` → the first menu entry. It was
+reached, drawn, and taken away again — three components each holding an opinion about where a
+signed-in caller belongs. That is worse than the stated defect, not milder: a screen nobody reaches
+is dead code, and a screen that appears and is yanked away is one that cannot be used.
+**A ticket's *What is wrong* is a claim from the day it was written; measure it before you fix it.**
+Three of the five rows in `66a` were drafted from the ticket's account and all three were wrong
+until the sequence was recorded.
+
+**The same discipline, applied a second time, is what kept #66 from growing.** Its second criterion
+reads *no component navigates to a route another component has already redirected away from*, and
+after the fix two components still hold that shape — `GuestRoute` navigates to `/main`, `SidebarItem`
+redirects off it. The tempting moves are to declare it met or to start extracting `MENUS` into a
+shared module. Instead it was measured, one sample per composited frame through the real sign-in:
+**one frame out of forty-five, with the body's text not yet laid out.** No state a person can see.
+So it is [#120](https://github.com/khthana/Deep-QA/issues/120) with the numbers in it, not a
+refactor inside a ticket scoped to deleting a chooser — and the ticket says why the bound is an
+accident rather than a guarantee (nothing in the hop waits on the network *yet*).
+**When a criterion is met literally but arguably not in substance, the question is usually
+measurable; measuring it is cheaper than either arguing or refactoring.**
 
 Take the state from that list rather than from a phrase. An older version of this line said
 *closed through #38* while #37 was open, which read as though the run took four open tickets
@@ -154,6 +185,17 @@ mutant for each. The other carried a ⚙ **naming no mutant at all**, which is t
 the mistake and the easiest to check for: read down the ⚙ rows and make sure every one of them
 points at a line of the mutant table.
 
+**#66 made it ten, and its version is the one a checklist cannot catch: the row was true of
+the half that was tested.** Its landing row read *ทั้งทางรหัสผ่านและทาง Google ส่งต่อที่จุดเดียวกัน*
+over `66a` rows 1–2, which drive the password form and nothing else. Every earlier instance was a
+row claiming more than its mutant proved; this one claimed a **second path** the seam never enters.
+What makes it worth its own line is where the honest half landed: the Google success branch cannot
+be driven at either seam — the consent screen is not scriptable, and both the e2e stack and this
+machine run with the credentials deliberately blank — so the split half is not a ☑ pointing at
+another seam, it is a **☐ with a ticket** ([#119](https://github.com/khthana/Deep-QA/issues/119)).
+**A row that names two ways in is two rows.** Read every *both … and* in a sheet as a claim about
+two things, and check the spec enters both.
+
 **#50 made it nine, and its version is the one to be most careful about: the gap was already
 written down.** Its first row read *every reason the Google path can refuse with* over a `50a` row
 that **iterates the list of reasons** — so deleting a reason from the list shortens the loop and
@@ -189,6 +231,15 @@ assertion is made of, not only that it names the right thing.
 Earlier versions of this paragraph said fifteen, then nine. Most of those turned out to be walkable
 after all — they were waiting not on a person but on a **situation the seed does not contain**, and
 building the situation and restoring it afterwards is a normal part of a walk.
+
+**#66 also retired two rows that had been walked the previous day**, and the shape of that is
+worth knowing before it happens again. #50's walk ticked the chooser and the *ไปที่ Deep Portfolio*
+entry; #66 deleted both screens within hours. The first attempt to record this invented a `—` mark
+for *retired*, which is a fifth mark in a store that defines four — and an undefined mark is worse
+than a missing row, because a later reader has to guess. The rows are gone from the table and the
+retirement is prose in the walk record instead. **If a ticket on the frontier is about to decide the
+fate of a screen, walk that screen after it, not before** — and never invent a mark to hold the
+difference.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time. Read it before taking work. Each handoff names the one it supersedes for state,

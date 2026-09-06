@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 
 import { useAuth } from '../context/AuthContext'
@@ -40,7 +40,6 @@ const GOOGLE_REFUSALS = {
 
 export default function Login() {
   const { reload, setLoading } = useAuth()
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [LoadLogin, setLoadLogin] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -83,6 +82,15 @@ export default function Login() {
    * the server's own words rather than a sentence invented here, so a
    * suspended account is told it is suspended instead of being told its
    * password was wrong.
+   *
+   * And it navigates nowhere — #66. It used to end on
+   * `navigate('/select-app')`, which put a third opinion about where a
+   * signed-in caller belongs in a file that has no business holding one: the
+   * moment `reload()` sets the profile, `GuestRoute` redirects this route, and
+   * the recorded sequence was `/` → `/select-app` → `/main` → the first menu
+   * entry. The chooser drew and was taken away again. Where a signed-in caller
+   * goes is `GuestRoute`'s to say and `SidebarItem`'s to finish; this function
+   * signs in and stops.
    */
   const handleSubmit = async e => {
     e.preventDefault()
@@ -96,7 +104,6 @@ export default function Login() {
     try {
       await post('/api/auth/login', { email: username, password })
       await reload()
-      navigate('/select-app', { replace: true })
     } catch (error) {
       setErrorMessage(error.message)
     } finally {

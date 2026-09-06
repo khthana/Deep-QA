@@ -131,10 +131,18 @@ function authRoutes(pool) {
 
       if (!admission) return refuseToBrowser(res, refusal?.reason ?? 'unknown');
 
-      const body = await admitted(res, pool, admission, 'GOOGLE_LOGIN');
-      return res.redirect(
-        `${frontendUrl()}/select-app?role=${encodeURIComponent(body.role.role_id)}`,
-      );
+      // `/main` — #66. This used to send people to `/select-app?role=<id>`,
+      // and both halves of that were wrong. The chooser is gone, there being
+      // one application now; and the `role` was read by nothing at the other
+      // end, which it could not usefully be — the acting grant is decided
+      // server-side from the database (ADR-0002) and travels in the cookie,
+      // not in a query string the browser could edit on the way.
+      //
+      // `/main` rather than a particular screen, because which screen a person
+      // lands on is their menu's first entry and the shell is what knows that.
+      // Both ways in now hand over at the same place.
+      await admitted(res, pool, admission, 'GOOGLE_LOGIN');
+      return res.redirect(`${frontendUrl()}/main`);
     })(req, res, next);
   });
 

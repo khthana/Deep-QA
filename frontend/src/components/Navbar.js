@@ -6,8 +6,6 @@ import { RiLockPasswordFill } from 'react-icons/ri'
 import ContentMotionDIV from './ContentMotionDIV'
 import { AnimatePresence } from 'framer-motion'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
-import { HiArrowsRightLeft } from 'react-icons/hi2'
-import { PORTFOLIO_URL } from '../lib/links'
 
 function Navber({ setAlert }) {
   const { profile, logout, changePassword, sessionExpired } = useAuth()
@@ -144,19 +142,13 @@ function Navber({ setAlert }) {
                     </p>
                   </div>
 
+                  {/* The *ไปที่ Deep Portfolio* entry stood here and is gone —
+                      #66. One application now, so there is nowhere else to be
+                      sent. It is also what made the chooser's second door
+                      redundant while both existed: this menu offered the same
+                      destination on every screen, permanently, where the
+                      chooser offered it once at sign-in. */}
                   <div className="py-1">
-                    <button
-                      onClick={() => {
-                        window.location.href = PORTFOLIO_URL
-                      }}
-                      className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-secondary"
-                    >
-                      <HiArrowsRightLeft
-                        className=""
-                        size={18} // ปรับขนาดตามความเหมาะสม (ปกติ 18-20 จะกำลังดี)
-                      />
-                      ไปที่ Deep Portfolio
-                    </button>
                     <button
                       onClick={() => {
                         setIsOpen(false)

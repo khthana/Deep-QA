@@ -97,7 +97,7 @@ Deep-QA/
 | # | Route | ชื่อหน้าจอ | ไฟล์หลัก (Frontend) | Role |
 |---|---|---|---|---|
 | S01 | `/` | เข้าสู่ระบบ | `pages/Login.js` | ทุกคน (GuestRoute) |
-| S02 | `/select-app` | เลือกแอป / บทบาท | `pages/SelectApp.js` | ผู้ล็อกอินแล้ว |
+| ~~S02~~ | ~~`/select-app`~~ | ~~เลือกแอป / บทบาท~~ | ~~`pages/SelectApp.js`~~ | **ลบแล้วที่ [#66](https://github.com/khthana/Deep-QA/issues/66)** — มีแอปเดียว ดูหมายเหตุท้ายเอกสาร |
 | ~~S03~~ | ~~`/user-not-found`~~ | ~~ไม่พบผู้ใช้ในระบบ~~ | ~~`pages/UserNotFound.js`~~ | **ลบแล้วที่ [#50](https://github.com/khthana/Deep-QA/issues/50)** — ไม่มีที่ใดพาไปถึง ดูหมายเหตุท้ายเอกสาร |
 | S04 | `/page-not-found` | 404 | `pages/PageNotFound.js` | ทุกคน |
 | S05 | `/load` | หน้าจอโหลด | `components/LoadingScreen.js` | ทุกคน |
@@ -177,19 +177,26 @@ Deep-QA/
 | Callback จาก Google | `GET /api/auth/google/callback` | Google redirect | `routes/auth.js` | `authController.googleCallback` | `userModel.existsStudentById`, `addUserLog` |
 
 > `google/callback` จะ `generateToken` → `setTokenCookie` → บันทึก log `GOOGLE_LOGIN` → redirect ไป `${FRONTEND_URL}/select-app?login=success&user_id=..&is_student=..`
+> **ระบบที่รื้อใหม่ต่างจากนี้** ตาม [#66](https://github.com/khthana/Deep-QA/issues/66) — redirect ไป `${FRONTEND_URL}/main` เฉย ๆ แล้วปล่อยให้กฎฝั่ง client
+> พาไปรายการแรกของเมนู ส่วน query string สามตัวนั้นไม่มีใครอ่านเลยแม้แต่ในของเดิม และ `role`/`is_student`
+> เดินทางใน URL ไม่ได้อยู่แล้วตาม ADR-0002 (สิทธิ์มาจาก server ไม่ใช่จากสิ่งที่ผู้เรียกส่งมา)
 > `/api/auth/*` เป็น mount เดียวที่ประกาศ **ก่อน** `blockDirectAccess`
 
 ---
 
-### S02 · `/select-app` — เลือกแอป / บทบาท
+### ~~S02~~ · ~~`/select-app`~~ — เลือกแอป / บทบาท
 
-**Frontend:** `src/pages/SelectApp.js`
+> **ลบแล้วที่ [#66](https://github.com/khthana/Deep-QA/issues/66)** — มีแอปเดียว หัวข้อนี้อธิบายของที่ส่งมอบมา ไม่ใช่ของที่รื้อใหม่
+> ฝั่งที่รื้อใหม่มีหน้านี้อยู่จริงจนถึงวันนั้น — `pages/SelectApp.js` กับ `lib/links.js` ที่ #50 เพิ่งแยกออกมาหนึ่งวันก่อน — ถูกลบทั้งคู่ ดูหมายเหตุท้ายเอกสาร
+
+**Frontend:** ~~`src/pages/SelectApp.js`~~
 
 | การกระทำ | Method + Endpoint | เรียกจาก | routes | controller | model |
 |---|---|---|---|---|---|
 | ดึงบทบาททั้งหมดของผู้ใช้ | `POST /api/user_roles/user-roles` | `SelectApp.js:28` | `routes/user_roles.js` | `user_rolesController` | `user_rolesModel`, `userModel`, `rolesModel` |
 
 > ถ้าผู้ใช้มี role `STUDENT` หน้านี้จะ redirect ไป `https://portfolio.deep-core.net/student` หลัง 2 วินาที
+> URL นั้นคือ URL ที่ #50 ย้ายไปเป็น `REACT_APP_PORTFOLIO_URL` และ #66 ลบทิ้งวันรุ่งขึ้น พร้อมกับหน้านี้
 
 ---
 
@@ -783,7 +790,7 @@ Deep-QA/
 | `DELETE /api/user/delete/:user_id` | A11 | `UserTable.js` |
 | `POST /api/user/upload-profile-image` | *(ไม่มีผู้เรียก)* | — |
 | `GET /api/user/profile` | *(ไม่มีผู้เรียก — ใช้ `/protected/profile` แทน)* | — |
-| `POST /api/user_roles/user-roles` | S02, S06, A12 | `SelectApp.js`, `Mainpage.js`, `hooks/useUserRoles.js` |
+| `POST /api/user_roles/user-roles` | ~~S02~~, S06, A12 | ~~`SelectApp.js`~~ (ลบที่ #66), `Mainpage.js`, `hooks/useUserRoles.js` |
 | `POST /api/user_roles/add-user-role` | A12 | `hooks/useAddUserRole.js` |
 | `POST /api/user_roles/assignable-roles` | A11, A12 | `hooks/useAssignableRoles.js` |
 | `POST /api/user_roles/get-scope` | A11, A12 | `hooks/useScope.js` |
@@ -1036,6 +1043,13 @@ Deep-QA/
 > §9.5 ข้อ 5–6 เรื่องไฟล์หลักฐาน → [#35](https://github.com/khthana/Deep-QA/issues/35)
 > ข้อยกเว้น: §9.5 ข้อ 2 ที่ระบุว่า sidebar ของ FULL_ADMIN ขัดกับวิทยานิพนธ์ — ตรวจแล้วว่าเป็นการอ่านเล่มผิด
 > เล่มจำกัดบทบาทนี้ไว้ที่การจัดการผู้ใช้และสิทธิ์ ซึ่งตรงกับโค้ด จึงไม่แก้ ·
+> **S02 (`/select-app`) ไม่มีในระบบที่รื้อใหม่** ตาม [#66](https://github.com/khthana/Deep-QA/issues/66)
+> ระบบที่ส่งมอบมามีสองแอปย่อย เจ้าของข้อกำหนดตัดสินเมื่อ 6 ก.ย. 2569 ว่าจากนี้มีแอปเดียว
+> ส่วนที่เป็น Portfolio จึงถูกตัดออกทั้งหมด ทั้งหน้าเลือกแอปและรายการ *ไปที่ Deep Portfolio*
+> ในเมนูผู้ใช้ ตอนที่ลบ หน้านี้ไม่ได้ *เข้าไม่ถึง* อย่างที่ #66 เขียนไว้ — ลำดับการเปลี่ยนหน้าจริงคือ
+> `/` → `/select-app` → `/main` → รายการแรกของเมนู มันถูกวาดขึ้นแล้วถูกดึงออกไป ·
+> ลงชื่อเข้าใช้ตอนนี้ไปจบที่รายการแรกของเมนูของบัญชีนั้น — ทางรหัสผ่านพิสูจน์แล้วที่ `66a` ส่วนทาง Google
+> ไปบรรจบกฎเดียวกันที่ `/main` แต่บรรทัดที่ส่งต่อยังไม่มี seam ใดยืนยัน ([#119](https://github.com/khthana/Deep-QA/issues/119)) ·
 > **S03 (`/user-not-found`) ไม่มีในระบบที่รื้อใหม่** ตาม [#50](https://github.com/khthana/Deep-QA/issues/50)
 > หน้านั้นไม่เคยถูกพาไปถึงจากที่ใดเลย และมันอ่านเหตุผลจาก `?reason` ด้วยการเทียบกับ*ประโยคภาษาไทยทั้งประโยค*
 > การแก้คำใน `backend/auth/refusals.js` จึงเปลี่ยน *บัญชีถูกระงับ* ให้กลายเป็น *ไม่พบผู้ใช้* ได้เงียบ ๆ
