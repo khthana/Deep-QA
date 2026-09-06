@@ -45,6 +45,50 @@ import ContentMotionDIV from './ContentMotionDIV'
  * render and gets a scroll on every render with it. `UserHistory` keeps its
  * notice as a bare string and every one of them is a refusal, so it builds the
  * object with `useMemo` for that reason.
+ *
+ * ## Announced, not only drawn - #111
+ *
+ * The banner carried no `role` and no `aria-live`. A sighted person watches it
+ * appear; somebody using a screen reader gets nothing, because it is inserted
+ * into a region they are not reading and nothing declares it. The button they
+ * pressed does not report back at all.
+ *
+ * **#111 says there is no live region anywhere in `frontend/src`, and that is
+ * not true** - recorded here because the evidence looked conclusive. The ticket
+ * ran `grep -rn 'role="alert"\|aria-live'`, got nothing, and pasted the empty
+ * result. That pattern cannot match `role="status"`, and four screens were
+ * already using it for their empty-state sentences (`CloAssessment`,
+ * `ContinuousImprovement`, `OutcomeActivityMapping`, `StudentResults`). The
+ * banner really was silent, so the defect stands; the *nowhere in the app* half
+ * was an artefact of the search. **A grep is evidence for the pattern you
+ * typed, not for the claim you wanted.**
+ *
+ * **The assertive-or-polite judgement is made here and nowhere else**, which is
+ * what #111 asks for. `role="alert"` is `aria-live="assertive"`: it interrupts
+ * whatever the reader is in the middle of. That is right for a refusal the
+ * person just caused by pressing a button - they are waiting for exactly this
+ * answer, and it is the reason the thing they asked for did not happen.
+ * `role="status"` is `aria-live="polite"`: announced, but queued behind the
+ * current sentence. That is right for *saved* - worth hearing, not worth
+ * cutting somebody off for.
+ *
+ * The component already knows which it is, because `notice.error` is the same
+ * flag that picks red or green. **No caller decides this**, which is the point:
+ * twenty screens each making an accessibility judgement is twenty chances to
+ * make it differently.
+ *
+ * ## Why the region is not persistent
+ *
+ * The textbook live region is always in the DOM and only its contents change,
+ * because a region inserted at the same moment as its text is announced less
+ * reliably on some older readers. That was tried and rejected: `Notice` returns
+ * `null` when there is nothing to say, and it sits inside `space-y-*` stacks on
+ * 34 screens, so an always-rendered empty wrapper adds a gap to every one of
+ * them. **Changing the spacing of 34 screens is not a side effect an ARIA fix
+ * gets to have** - the same rule that kept `ContentMotionDIV` from taking
+ * `...rest` in #85. Current NVDA, JAWS and VoiceOver all announce an inserted
+ * `alert`; whether a real reader does is the half of this the browser seam
+ * cannot ask, and the sheet marks it ◐.
  */
 export default function Notice({ notice }) {
   const box = useRef(null)
@@ -59,6 +103,7 @@ export default function Notice({ notice }) {
   return (
     <div ref={box}>
       <ContentMotionDIV
+        role={notice.error ? 'alert' : 'status'}
         className={`rounded-lg p-3 text-sm ${
           notice.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'
         }`}

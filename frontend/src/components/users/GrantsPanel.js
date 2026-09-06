@@ -104,8 +104,27 @@ export default function GrantsPanel({ user, onError }) {
         หรือหลักสูตรหนึ่งแห่ง
       </p>
 
+      {/*
+        Announced as well as drawn - #111, with the same assertive-for-a-refusal
+        rule `Notice` applies.
+
+        **This markup is a copy of `components/Notice.js` and stays a copy, for
+        now.** #111 prefers one component to twenty copies and is right, but
+        swapping this one costs two things it did not ask for: `Notice` carries
+        no `mb-4`, and this panel spaces its children with explicit margins
+        rather than a `space-y-*` stack, so the gap above the table would go;
+        and `Notice` scrolls itself into view (#55), which is a behaviour this
+        panel has never had. An accessibility fix does not get to change
+        spacing and scrolling on the way past.
+
+        That `Notice` was never used here looks like an oversight in #55 rather
+        than a decision, and a refusal in this panel can be below the fold for
+        the same reason #55 was opened - see
+        [#121](https://github.com/khthana/Deep-QA/issues/121).
+      */}
       {notice && (
         <div
+          role={notice.error ? 'alert' : 'status'}
           className={`mb-4 rounded-lg p-3 text-sm ${
             notice.error
               ? 'bg-red-50 text-red-800'

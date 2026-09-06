@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97 and #85**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85 and #111**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -307,6 +307,66 @@ frontend file `85` touches. It fixed the dialog drawn over the refusal (`client.
 `AuthContext.js`); `85` fixed the refusal's own lifetime (`Login.js`). Two tickets landing on one
 screen the same day makes the collision feel too obvious to check. **What corrupts a sweep is a
 repeated path — compare `FILES`, not subject matter.**
+
+**#111 is the fourth of the new frontier, and it is the strongest case yet for measuring a
+ticket's diagnosis before building on it.** Its body says the refusal banners *are drawn inline in
+each page rather than by a shared component, so the fix is either a small `<Refusal>` that owns the
+attributes, or the attributes added at each of the twenty sites*, and names twenty files. None of
+that survived contact: `components/Notice.js` already existed — #55 wrote it, for the unrelated
+reason that a banner above the fold is a banner nobody reads — and **34 screens use it**. Of the
+twenty files named, most of the `bg-red-50` matches in the store turned out to be `hover:bg-red-50`
+on delete buttons, and `LearningDetails`'s is a list of CLOs needing attention rather than a refusal
+at all. **The real work was one attribute in one component plus three stragglers**, where the ticket
+described a component to write and twenty edits to make. A ticket that proposes a solution has
+usually diagnosed the code as it stood on the day it was written; check both halves, because the
+proposed fix ages faster than the symptom.
+
+**And its headline claim was false in a way worth studying, because the evidence looked
+airtight.** The ticket's title is *no live region anywhere in the app*, and under it sits a pasted
+terminal session: `grep -rn 'role="alert"\|aria-live' frontend/src` returning no matches. That
+pattern cannot match `role="status"` — and four screens were already using it for their empty-state
+sentences (`CloAssessment`, `ContinuousImprovement`, `OutcomeActivityMapping`, `StudentResults`),
+while #85 had since put `role="alert"` on the sign-in banner. The banner really was silent, so the
+defect stood; the *anywhere in the app* half was an artefact of the search. **A grep is evidence
+for the pattern you typed, not for the claim you wanted** — and a pasted empty result is the most
+persuasive form that mistake takes, because it reads as a measurement rather than as an argument.
+This one was repeated rather than re-derived: the first pass here ran the ticket's own command and
+believed its own output for the same reason. **Re-run a ticket's commands, then ask what they could
+not have found.**
+
+**What #111 asked to be decided once is a politeness level, and that is a claim like any other.**
+`role="alert"` is assertive and interrupts; `role="status"` is polite and queues. `Notice` picks
+from `notice.error`, the flag that already chooses red or green, so no caller decides it. The
+mutant worth knowing about is `everythingisanalert`: with it applied every refusal row still passes,
+the screens are pixel-identical, and the only change is that saving a form now cuts off a
+screen-reader user mid-sentence to say it worked. **A defect nobody can see needs a mutant or it is
+not proved** — and its twin `everythingispolite` exists because *polite everywhere* is the more
+tempting mistake, being the safer-sounding one, and it is wrong for exactly the case the ticket was
+opened about.
+
+**#111 also shows where #85's locator trap does and does not apply.** `111a` finds these banners
+by `getByRole`, which is the thing #85 warned about — but it is safe here, and the difference is
+worth stating: those are the rows *about* the role, and they are the only rows that use it for
+these banners. Every other row in the store still finds them by their text. Removing the attribute
+kills exactly the rows that claim it. **The trap is not using a role in a locator; it is using it
+in the locator every other row shares.**
+
+**Adding a role is still a change to every locator that reads roles, including in files the diff
+never opens.** `37a-student-results.spec.js` held two unfiltered `page.getByRole('status')`
+assertions, and `StudentResults` renders `<Notice>` — which now emits `role="status"` on a success.
+Green today only because that spec never makes the page save anything; one saved form away from a
+strict-mode violation. `39a` and `40a` already filtered theirs, so the convention existed and one
+file was the outlier. **After adding a role or a label anywhere shared, grep the specs for
+unfiltered `getByRole` on it** — the breakage lands in files that have nothing to do with the
+ticket.
+
+**And a fix that lands in a shared component and misses the copies is the shape this ticket exists
+to catch**, so three of its six mutants exist only to fail a copy: the change-password dialog, the
+import report and the grants panel each draw their own banner. `GrantsPanel` is a near-byte-for-byte
+copy of `Notice` that #55 appears to have missed, and #111 gave it the attribute rather than
+switching it to the component — swapping it would have changed spacing and added scroll behaviour,
+neither asked for. That is [#121](https://github.com/khthana/Deep-QA/issues/121). **An accessibility fix does not get to change layout on the
+way past** — the same rule that stopped `ContentMotionDIV` taking `...rest` in #85.
 
 **#66 also retired two rows that had been walked the previous day**, and the shape of that is
 worth knowing before it happens again. #50's walk ticked the chooser and the *ไปที่ Deep Portfolio*

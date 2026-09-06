@@ -119,8 +119,14 @@ export default function ImportPanel({
         </p>
       )}
 
+      {/*
+        Announced as well as drawn - #111. The role is on the block rather
+        than on the sentence inside it, so the table of offending lines is
+        part of what gets read out: *nothing was saved* on its own tells
+        somebody that they have to go and find out why.
+      */}
       {report && !report.ok && (
-        <div className="mt-4 rounded-lg bg-red-50 p-3">
+        <div role="alert" className="mt-4 rounded-lg bg-red-50 p-3">
           <p className="text-sm font-medium text-red-800">
             ไม่ได้บันทึกรายการใด กรุณาแก้ไขแถวต่อไปนี้แล้วอัปโหลดใหม่
           </p>

@@ -210,8 +210,19 @@ function Navber({ setAlert }) {
                       </p>
                     </div>
 
+                    {/*
+                      Announced as well as drawn - #111. This banner is not
+                      `Notice`: it lives inside a modal, it is styled to it,
+                      and `Notice`'s one job besides being on the page is to
+                      scroll the content pane into view (#55), which is the
+                      wrong act inside a dialog that does not scroll. So it
+                      keeps its own markup and takes the role directly.
+                    */}
                     {error && (
-                      <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+                      <p
+                        role="alert"
+                        className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600"
+                      >
                         {error}
                       </p>
                     )}

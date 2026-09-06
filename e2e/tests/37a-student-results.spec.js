@@ -269,9 +269,14 @@ test('a student with no marks is named rather than drawn as a shape they did not
   expect(Object.keys(drawn)).toEqual([AVERAGE]);
   // Instead the screen says whose line is missing and why — and says it in a
   // live region, because it is the answer to something the reader just did.
-  await expect(page.getByRole('status')).toHaveText(
-    new RegExp(`${student.student_id}.*ยังไม่มีคะแนน`),
-  );
+  // Filtered - #111. This page renders `<Notice>`, which since #111 also
+  // carries `role="status"` on a success, so an unfiltered `getByRole('status')`
+  // here is one saved form away from a strict-mode violation. It is green today
+  // only because this test never makes that page save anything. `39a` and `40a`
+  // already filter; this file was the outlier.
+  await expect(
+    page.getByRole('status').filter({ hasText: 'ยังไม่มีคะแนน' }),
+  ).toHaveText(new RegExp(`${student.student_id}.*ยังไม่มีคะแนน`));
   // The average is still drawn: one unmarked student is not an unmarked class.
   expect(Object.keys(drawn[AVERAGE]).length).toBeGreaterThan(0);
 });
@@ -311,9 +316,9 @@ test('a student marked only past the tenth axis is told that, not left with an u
   expect(Object.keys(await pointsOf(page))).toEqual([AVERAGE]);
   // And the reason is the one that is true: they have marks, the chart does not
   // reach them. Not *ยังไม่มีคะแนน*, which would be a lie about their marking.
-  await expect(page.getByRole('status')).toHaveText(
-    new RegExp(`${student.student_id}.*ไม่ได้อยู่บนกราฟ`),
-  );
+  await expect(
+    page.getByRole('status').filter({ hasText: 'ไม่ได้อยู่บนกราฟ' }),
+  ).toHaveText(new RegExp(`${student.student_id}.*ไม่ได้อยู่บนกราฟ`));
   // The score is still on the page, in the row the cap does not apply to.
   await expect(tableCell(page, 'CLO-9', student.student_id)).toHaveText(
     student.scores[marked[0].clo_id].score.toFixed(2),
