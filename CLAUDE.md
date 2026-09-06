@@ -466,7 +466,8 @@ found `10:nowrite` sitting in `mutation/10-application-shell.py` and in no table
 mutants and this was a mutant without a row. Both directions, or neither.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 6 September 2569 that is
+`2026-09-06-b-a-true-sentence-read-as-another-answer.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Two test seams
