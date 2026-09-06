@@ -9,11 +9,17 @@
  * existed in appearance, and a suite that fakes its way past sign-in would
  * reproduce exactly that.
  *
- * The Google paths are asserted through `resolveGoogleAccount` rather than
- * through a request. Google's consent screen is not something a suite can
+ * The Google *decisions* are asserted through `resolveGoogleAccount` rather
+ * than through a request. Google's consent screen is not something a suite can
  * drive, so the callback is written to decide nothing on its own - the domain
  * rule, the account, its status and its grants are all that function - and it
  * is that function the acceptance criteria are checked against.
+ *
+ * Where the callback *sends* somebody is a different question, and #119 is the
+ * ticket for having read the sentence above as an answer to it. The last block
+ * in this file drives the route itself with Google's two network calls stubbed
+ * and everything after them real; its header says what that does and does not
+ * buy.
  *
  * #8's sixth criterion - an external assessor outside their validity window -
  * was left unasserted here until #50, on the grounds that `user_roles` has no
@@ -30,6 +36,7 @@ const { readFileSync } = require('node:fs');
 const path = require('node:path');
 
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
 const request = require('supertest');
 
 const { PASSWORD, byAlias } = require('../../db/seed');
@@ -42,6 +49,7 @@ const {
   COOKIE_LIFETIME_SECONDS,
   requireSession,
 } = require('../auth/session');
+const { createApp } = require('../app');
 const { startApi, guardedApp } = require('./helpers');
 
 /**
@@ -93,6 +101,41 @@ const guarded = () => guardedApp(requireSession);
 
 const sessionOf = (userId, seconds) =>
   `${COOKIE_NAME}=${jwt.sign({ user_id: userId }, process.env.SECRET_KEY, { expiresIn: seconds })}`;
+
+/**
+ * The two OAuth variables set to something, or to nothing, for the length of
+ * one run - and put back exactly as they were found.
+ *
+ * `undefined` and `''` are different states here and the difference is the
+ * whole reason this is a function. Both blocks below first wrote their own
+ * `finally` as `if (id !== undefined) process.env.GOOGLE_CLIENT_ID = id`,
+ * which restores a value and leaks one: the block that *sets* the variables
+ * leaves them set on any machine whose `.env` does not carry the keys at all,
+ * and the next test to read `googleConfigured()` sees stub credentials. On
+ * this machine `.env` carries them blank, so `id` is `''` rather than
+ * `undefined` and the bug cannot fire - which is what makes it worth a
+ * function rather than a second correction. **A restore guarded on
+ * `!== undefined` is only symmetric for the caller that deletes.**
+ */
+const withOAuthCredentials = async (credentials, run) => {
+  const apply = (values) => {
+    for (const [name, value] of Object.entries(values)) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  };
+  const before = {
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  };
+
+  apply(credentials);
+  try {
+    await run();
+  } finally {
+    apply(before);
+  }
+};
 
 const logCount = async (pool, userId, activity) => {
   const { rows } = await pool.query(
@@ -533,17 +576,11 @@ test('Google sign-in', async (t) => {
  * API's own origin, which is where this used to leave people.
  */
 test('the Google routes without OAuth credentials', async (t) => {
-  const withoutGoogle = async run => {
-    const { GOOGLE_CLIENT_ID: id, GOOGLE_CLIENT_SECRET: secret } = process.env;
-    delete process.env.GOOGLE_CLIENT_ID;
-    delete process.env.GOOGLE_CLIENT_SECRET;
-    try {
-      await run();
-    } finally {
-      if (id !== undefined) process.env.GOOGLE_CLIENT_ID = id;
-      if (secret !== undefined) process.env.GOOGLE_CLIENT_SECRET = secret;
-    }
-  };
+  const withoutGoogle = run =>
+    withOAuthCredentials(
+      { GOOGLE_CLIENT_ID: undefined, GOOGLE_CLIENT_SECRET: undefined },
+      run,
+    );
 
   await t.test('send the browser back to the sign-in screen with the reason', () =>
     withoutGoogle(async () => {
@@ -560,6 +597,139 @@ test('the Google routes without OAuth credentials', async (t) => {
         // body is once a browser is the thing reading it.
         assert.equal(response.headers['content-type']?.includes('application/json'), false, path);
       }
+    }),
+  );
+});
+
+/**
+ * #119. Where a Google sign-in lands, asked of the route rather than of the
+ * function behind it.
+ *
+ * Everything above drives `resolveGoogleAccount` directly, and the paragraph
+ * at the top of this file says why: Google's consent screen is not something a
+ * suite can drive. That is true, and it is a statement about *Google's* half
+ * of the round trip. It was read as a statement about the whole of it, and so
+ * the two lines that decide where a caller Google has answered for ends up
+ * were asserted by nothing at either seam — the redirect to `/main` on the way
+ * in, and the redirect back to `/login?error=<reason>` on a refusal. Not the
+ * whole of `refuseToBrowser`: the block above runs it on the branch that
+ * answers before passport is entered at all, and that covered branch is a good
+ * part of why the uncovered ones read as covered. `50a` iterates the reasons
+ * by typing each one into the address bar, which proves the screen can read a
+ * reason and not that the route ever sends one.
+ *
+ * What is stubbed here is exactly Google: the token exchange and the profile
+ * lookup, which are the two calls that leave this machine. Everything after
+ * them is the shipped code — the real strategy, the real `resolveGoogleAccount`,
+ * the real seeded database, a real cookie. docs/06's Testing Decisions forbid
+ * stubbing the database and stubbing sign-in, and neither is stubbed: a
+ * stubbed profile asserts that Google said this address, which is the one
+ * thing in the exchange Google is the authority on and the only thing the
+ * strategy takes from it.
+ *
+ * This is option (1) of #119 and it does not close the walk. Nobody has seen
+ * this path on a screen; what is proved is where the server sends a browser
+ * and what it sends it with.
+ */
+test('the Google callback, with Google stubbed and everything after it real', async (t) => {
+  /**
+   * The application built a second time, with the credentials set.
+   *
+   * `authRoutes` registers the strategy only when they are — the constructor
+   * throws without a clientID, which is why it is guarded — and they were not
+   * when `api.app` was built in `before`. So the env is set, an app is built
+   * on the same seeded pool, and both are put back afterwards — the env by
+   * `withOAuthCredentials`, which is shared with #50's block above and says
+   * why the restore is a function rather than two lines.
+   */
+  const throughGoogle = (email, run) =>
+    withOAuthCredentials(
+      { GOOGLE_CLIENT_ID: 'stub-client-id', GOOGLE_CLIENT_SECRET: 'stub-client-secret' },
+      async () => {
+        try {
+          const app = createApp({ pool: api.pool });
+          const strategy = passport._strategy('google');
+
+          // The two calls that would leave this machine, and nothing else. The
+          // code is never redeemed and the profile is never fetched; what the
+          // strategy is handed is what Google would have said.
+          strategy._oauth2.getOAuthAccessToken = (code, params, done) =>
+            done(null, 'stub-access-token', 'stub-refresh-token', {});
+          strategy.userProfile = (accessToken, done) =>
+            done(null, { emails: [{ value: email }] });
+
+          await run(request(app).get('/api/auth/google/callback?code=stub-code'));
+        } finally {
+          // `passport` is a module-level singleton, so a strategy left
+          // registered outlives the test that wanted it.
+          passport.unuse('google');
+        }
+      },
+    );
+
+  /**
+   * Two subtests and not one, because a redirect to `/main` without a session
+   * is a redirect to `/login` a moment later: the destination and the cookie
+   * are two claims, and the first mutation sweep of this file had two mutants
+   * failing the same row between them, which is the shape this repo has
+   * learned to split rather than explain.
+   *
+   * `/main` and not a screen — #66 put the choice of screen in the shell,
+   * which reads the first entry of this person's own menu, and both ways in
+   * now hand over at the same place. The regression this catches is the one
+   * #66 removed and somebody could put back: `/select-app`, or a `role` in the
+   * query string that the other end cannot trust and does not read.
+   */
+  await t.test('sends the browser to /main, the same place the password path hands over at', () =>
+    throughGoogle(EMAILS.multi, async (callback) => {
+      const response = await callback;
+
+      assert.equal(response.status, 302);
+      assert.equal(response.headers.location, `${frontendUrl()}/main`);
+    }),
+  );
+
+  await t.test('sends it signed in, and names the way in that was used', () =>
+    throughGoogle(EMAILS.multi, async (callback) => {
+      const before = await logCount(api.pool, byAlias('U_MULTI'), 'GOOGLE_LOGIN');
+
+      const response = await callback;
+
+      const cookie = sessionCookie(response);
+      assert.ok(cookie, 'no session cookie');
+      assert.equal(claimsOf(cookie).user_id, byAlias('U_MULTI'));
+
+      // `GOOGLE_LOGIN` and not `LOGIN`, which is what lets #13's history screen
+      // say which door somebody came through.
+      assert.equal(await logCount(api.pool, byAlias('U_MULTI'), 'GOOGLE_LOGIN'), before + 1);
+    }),
+  );
+
+  /**
+   * The other half of *where a Google sign-in lands*, and it lands on the
+   * sign-in screen carrying the reason it was refused with.
+   *
+   * Not what #119 asked for — the ticket scopes its option (1) to the `/main`
+   * line, and reads as though the refusals were already routed. They are not:
+   * what runs today is `refuseToBrowser` on the `!googleConfigured()` branch,
+   * which answers before passport is entered. The branch that carries an
+   * *account* refusal was unrun, and the reasons it names are produced above
+   * through `resolveGoogleAccount` and read off a query string in `50a`, with
+   * nothing in between running the line that has to put one there.
+   *
+   * Kept in this ticket rather than deferred because the stub the block above
+   * needed is the whole cost of reaching it, and no shipped code changes for
+   * it.
+   */
+  await t.test('refuses an address outside the domain back onto the sign-in screen', () =>
+    throughGoogle(EMAILS.outsider, async (callback) => {
+      const response = await callback;
+
+      assert.equal(response.status, 302);
+      assert.equal(response.headers.location, `${frontendUrl()}/login?error=domain`);
+      // Refused, so nothing was issued. `50a` cannot see this: a browser
+      // parked on the sign-in screen looks the same either way.
+      assert.equal(sessionCookie(response), undefined);
     }),
   );
 });

@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111 and #121**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121 and #119**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -154,13 +154,16 @@ refusal only a server in production mode can produce, and a ☐ for a criterion 
 today** because a wrong password raises the session-expired dialog over the sign-in screen (#97).
 A ☐ is also how a sheet says *this is true of somebody else's open ticket*, not only *nobody has
 looked*. The count is worth taking from the sheets rather
-than from here — two ☐: one is half of a ticket somebody else owns (#49's menu set), and the other
-is the Google half of where a sign-in lands, which no seam on this machine can reach (#119). #50's
-☐ — the criterion that was not true — is gone, closed by #97. Of the ◐,
-all but one name a request no control on any screen can produce (#41's added the tenth: the year a
-plan is written for comes from the ตอนเรียน in the address, so no browser can send a different
-one), and the last is an arithmetic difference too small for an eye to decide and pinned exactly at
-the HTTP seam. Read a row that claims a seam proves it better than an eye as a claim to check, not
+than from here — **one ☐, and it is half of a ticket somebody else owns** (#49's menu set). #50's
+☐ — the criterion that was not true — is gone, closed by #97, and the Google half of where a
+sign-in lands is gone too, closed by #119 with the seam the sentence beside it said could not
+reach it. Of the ◐ — **fifteen, counted from the sheets on 6 September 2569, and this
+sentence used to describe eleven** — the original eleven are a request no control on any screen can
+produce (#41's added the tenth: the year a plan is written for comes from the ตอนเรียน in the
+address, so no browser can send a different one) plus one arithmetic difference too small for an
+eye to decide and pinned exactly at the HTTP seam. The other four are a second kind and arrived
+with #85 and #111: an attribute reached the DOM and **whether anybody hears it needs an ear**.
+Neither kind is waiting on somebody who has not got round to it. Read a row that claims a seam proves it better than an eye as a claim to check, not
 a conclusion — that is how the last of the walkable ones were found.
 
 **A ⚙ that was never earned is the mark to distrust most.** #42's fifth criterion carried one until
@@ -191,12 +194,14 @@ points at a line of the mutant table.
 the half that was tested.** Its landing row read *ทั้งทางรหัสผ่านและทาง Google ส่งต่อที่จุดเดียวกัน*
 over `66a` rows 1–2, which drive the password form and nothing else. Every earlier instance was a
 row claiming more than its mutant proved; this one claimed a **second path** the seam never enters.
-What makes it worth its own line is where the honest half landed: the Google success branch cannot
-be driven at either seam — the consent screen is not scriptable, and both the e2e stack and this
-machine run with the credentials deliberately blank — so the split half is not a ☑ pointing at
-another seam, it is a **☐ with a ticket** ([#119](https://github.com/khthana/Deep-QA/issues/119)).
+What makes it worth its own line is where the honest half landed: it was written up as a branch
+that **cannot be driven at either seam** — the consent screen is not scriptable, and both the e2e
+stack and this machine run with the credentials deliberately blank — so the split half was not a ☑
+pointing at another seam but a **☐ with a ticket**
+([#119](https://github.com/khthana/Deep-QA/issues/119)).
 **A row that names two ways in is two rows.** Read every *both … and* in a sheet as a claim about
-two things, and check the spec enters both.
+two things, and check the spec enters both. That much still holds; the sentence about the seams
+did not, and #119 is where it came apart.
 
 **#50 made it nine, and its version is the one to be most careful about: the gap was already
 written down.** Its first row read *every reason the Google path can refuse with* over a `50a` row
@@ -394,6 +399,56 @@ own kill count grew from two rows to three in the process**, which is a number w
 after any ticket that consolidates code. What replaced it puts the copy back *with* its role, so it
 fails the scroll and not the announcement: two claims owned by two tickets have to be able to fail
 apart.
+
+**#119's find is a true sentence read as an answer to a question it does not address.** `backend/test/auth.test.js` opens by saying the Google paths
+are asserted through `resolveGoogleAccount` because Google's consent screen is not something a
+suite can drive. Both halves of that are correct, and both are about **Google's** half of the round
+trip. The two lines that decide where a person actually ends up are on this side of it — the
+redirect to `/main`, and the redirect back to `/login?error=<reason>` — and nothing at either seam
+ever ran either one for a caller Google had answered for. **A reason that explains why one half of
+a thing cannot be tested is not a statement about the other half.** It read like one for long
+enough that #66 rewrote the destination on that line with no test watching it. The first write-up
+of this said *nothing ran either line*, full stop, which is a step too far and was caught by the
+ticket's own review: `refuseToBrowser` **is** run today, on the branch that answers before passport
+is entered. **A covered branch beside an uncovered one is what makes the uncovered one look
+covered** — name the branch, not the function.
+
+**The trap is that a near-miss looks like coverage.** `50a` iterates `GOOGLE_REFUSAL_REASONS` and
+asserts the screen shows the right sentence for each — by **typing each reason into the address
+bar**. That proves the screen can read a reason out of a query string, not that the route ever
+puts one there. Between the function that decides a reason and the screen that renders it sits the
+line that carries it, and both seams stepped over it while appearing to cover it from either side.
+**When two tests sit either side of a line, check whether anything runs the line.**
+
+**Covering that refusal line was not in the ticket, and the reason for doing it anyway is worth
+being explicit about**, because this repo's usual move is the opposite — #66 opened #120, #111
+opened #121 and #122, #121 opened #123, all rather than grow the ticket in hand. What made this
+one different is that it is not work: the stub the success branch needed makes the refusal branch
+reachable in six more lines and no production code changes at all, and the alternative was to close
+the box on *where a Google sign-in lands* while leaving the other place it lands unrun. **Defer
+adjacent work; do not defer the second half of the sentence you are closing.** The sheet row says
+in its own words that it was not in the ticket.
+
+**What made it testable was drawing the stub boundary at the machine's edge rather than at the
+feature's.** The token exchange and the profile lookup are the only two calls that leave this
+machine; stub exactly those and the strategy, `resolveGoogleAccount`, the seeded database and the
+real cookie all run. docs/06 forbids stubbing the database and stubbing sign-in and neither is
+stubbed — a stubbed profile asserts *Google said this address*, which is the one fact in the
+exchange Google is the authority on. **Ask what actually cannot be reached, not what the feature is
+called.**
+
+**And the mark is not the mutant.** These three mutants are killed by `node --test`, so the rows
+they back are ☑ and not ⚙: the mark says which seam proved a row, the sweep says whether it was
+proved at all, and those are different questions. Two of the three first killed the *same* row —
+the destination and the session cookie were written as one claim — which is the #85 shape without
+the #85 cause: not a premise a locator stands on, just two claims sharing a row. **Two mutants
+failing one row is a reason to go back and read the row.**
+
+**#119 also found the stale summary line on the sheet it was closing**, which is the same species
+as `mutation/README.md`'s collision count: `10-application-shell.md` said *14 ⚙ · 3 ☑ · 2 ☐* while
+the table held 15 ⚙, 3 ☑, 2 ☐ **and a ◐ the sentence did not mention at all** — #111 added a row of
+each the day before and did not touch the total. **A hand-kept number in a file that grows every
+ticket is a number that is already wrong**; count the table.
 
 **#66 also retired two rows that had been walked the previous day**, and the shape of that is
 worth knowing before it happens again. #50's walk ticked the chooser and the *ไปที่ Deep Portfolio*
