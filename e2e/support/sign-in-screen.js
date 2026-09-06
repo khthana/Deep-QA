@@ -47,18 +47,20 @@ async function openSignIn(page, query = '') {
 /**
  * The red banner, whatever it currently says.
  *
- * Located by its styling, which is not where a locator belongs and is the best
- * that is available: the banner carries no role, no label and no test id, so
- * there is nothing else on it that is *the banner* rather than *this
- * sentence*. Asserting the sentence through a locator found by that sentence
- * would be circular, which is exactly what these rows are about.
+ * Located by its role — #85. It was `div.bg-red-50\/50` until then, which is
+ * not where a locator belongs and was the best available: the banner carried
+ * no role, no label and no test id, so there was nothing on it that was *the
+ * banner* rather than *this sentence*, and asserting the sentence through a
+ * locator found by that sentence would be circular.
  *
- * The honest fix is a role — a refusal nothing announces is drawn for people
- * who can see it and for nobody else — and that is [#111], which is open and
- * covers every refusal in the application rather than this one. When it lands,
- * this becomes `getByRole('alert')` and the class comes out.
+ * #85 asked for the role for its own reason — a refusal that nothing announces
+ * is drawn for people who can see it and for nobody else — and the locator
+ * follows it for free. **This is one banner of twenty.**
+ * [#111](https://github.com/khthana/Deep-QA/issues/111) still owns the other
+ * nineteen and the question of whether they share a component; nothing here
+ * settles that.
  */
-const refusalBanner = (page) => page.locator('div.bg-red-50\\/50');
+const refusalBanner = (page) => page.getByRole('alert');
 
 /**
  * Fills the form the way a person does and presses the button.

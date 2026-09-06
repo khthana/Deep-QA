@@ -14,7 +14,27 @@ import React from 'react'
  * and nothing is restyled — this is not the redesign the rebuild defers, it is
  * the markup meaning what it already says.
  */
-function LoginForm({ handleSubmit, setUsername, setPassword }) {
+/**
+ * Three props changed for #85, and both changes are about the refusal.
+ *
+ * `onUsernameChange`/`onPasswordChange` are named for what they are called
+ * *on* rather than what they set. They no longer only set a field: a change
+ * also clears whatever refusal is on screen, and a prop called `setUsername`
+ * that does two things is a prop the next reader will call somewhere it should
+ * not be called.
+ *
+ * `refusalId` is the id of the refusal banner while one is on screen, and
+ * `undefined` when there is none. Both fields point at it with
+ * `aria-describedby`, so the reason the last attempt was refused is the
+ * description of the fields it is about - available to somebody who tabs back
+ * into one of them, rather than only in the instant it was announced.
+ */
+function LoginForm({
+  handleSubmit,
+  onUsernameChange,
+  onPasswordChange,
+  refusalId,
+}) {
   return (
     <form
       onSubmit={handleSubmit}
@@ -38,7 +58,8 @@ function LoginForm({ handleSubmit, setUsername, setPassword }) {
           </span>
           <input
             id="username"
-            onChange={e => setUsername(e.target.value)}
+            aria-describedby={refusalId}
+            onChange={e => onUsernameChange(e.target.value)}
             type="text"
             className="block w-full min-w-0 flex-1 rounded-none rounded-e-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="engineering@kmitl.ac.th"
@@ -66,7 +87,8 @@ function LoginForm({ handleSubmit, setUsername, setPassword }) {
           </span>
           <input
             id="password"
-            onChange={e => setPassword(e.target.value)}
+            aria-describedby={refusalId}
+            onChange={e => onPasswordChange(e.target.value)}
             type="password"
             className="block w-full min-w-0 flex-1 rounded-none rounded-e-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="•••••••••••••"

@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66 and #97**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97 and #85**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -226,9 +226,13 @@ draws one every time killed nothing. A probe confirmed the banner was on screen,
 moment the row believed it was looking. **A retrying negative against an element that removes itself
 is an assertion that cannot fail.** The fix is to read the count *once*, at a named settle point,
 and compare it as a value. The store was then swept for the same shape: 112 retrying negatives
-across 40 spec files, but `frontend/src` contains exactly **one** element that removes itself on a
-timer — this banner — so the other 111 stand on things that are simply not there. Check what an
-assertion is made of, not only that it names the right thing.
+across 40 spec files, and on 5 September `frontend/src` contained exactly **one** element that
+removed itself on a timer — this banner — so the other 111 stood on things that are simply not
+there. Check what an assertion is made of, not only that it names the right thing.
+**#85 then deleted that timer, so today the count is zero and all 112 are safe** — which is worth
+keeping as a pair rather than editing down to the current number: **a survey of the store has a
+date on it, and a successful fix is what expires one.** Read the date before the figure, in that
+paragraph and in every one like it.
 
 Earlier versions of this paragraph said fifteen, then nine. Most of those turned out to be walkable
 after all — they were waiting not on a person but on a **situation the seed does not contain**, and
@@ -261,6 +265,48 @@ row it was aimed at and forty other things first, and a run like that says nothi
 assertion was holding what. **A mutant has to be able to fail one row and leave the rest standing.**
 What replaced them names the defect directly - `credentialsisanexpiry` adds `credentials` to the
 condition - and kills exactly the two rows it is about.
+
+**#85 adds a fourth, and it is the one that looks most like a hole in the tests.** Both mutants
+it wrote for `role="alert"` — one taking the attribute off the banner, one making `ContentMotionDIV`
+swallow it a component further out — killed **nine of thirteen rows, the same nine**, and no spec
+could tell them apart. The cause is that #85 moved the banner's locator from a Tailwind class to
+`getByRole('alert')`, so the role became what the banner *is* as far as `50a` is concerned. Take it
+away and every row that mentions the banner stops finding its subject. **An attribute a locator is
+built on stops being provable by mutation: it becomes the premise of those rows rather than a claim
+any of them makes**, and a whole spec file going red is what that looks like. Its presence is
+already load-bearing in the plainest way — were it missing, the suite would not be green — so a
+mutant asserting it proves the tests can run. Both were deleted and the announcement half is a ◐
+that says which half reached the DOM and which half needs an ear. **Moving a locator onto an
+attribute is a trade: a locator in the right place, paid for with that attribute's provability.**
+The trade is usually worth taking; what is not optional is writing it down, so the next reader
+meets an explanation rather than a red file.
+
+**And the counter-example is in the same ticket, which is what makes the line drawable.** #85's
+review found that only half of *tie the refusal to the form* had shipped — the sentence was
+announced but described neither field — so `aria-describedby` was added and a mutant written for
+it. That mutant kills **one row**. Same screen, same ticket, same class of accessibility
+attribute, opposite result. **What decides whether an attribute can be proved is not how much it
+matters but whether the suite finds elements *by* it.** An attribute the tests locate through is a
+premise; an attribute they read off a located element is a claim.
+
+**The same four `50a` citations moved three times in one day, and the third time says the most.**
+#97 inserted two tests mid-file (6·7·8·9 → 8·9·10·11), #85 inserted two more (→ 10·11·12·13), and
+#85's review forced a fifth (→ 11·12·13·14). The first drift was caught by `/code-review`, the
+second by two sheet rows both citing *row 8* — and the third by `/code-review` again, in a place
+the first two passes had never looked. **`50-sign-in-screens.md` has two tables, and only the
+criteria table had ever been renumbered**; the mutation table's *kills* column was still carrying
+pre-#97 numbers, two paragraphs below prose explaining that exact shift. **Chase every place a
+number is cited, not every row of the table you are already in.** After inserting a test, count the
+tests in the spec file and then grep the store for the number — both tables, and every mutation
+file swept with that spec — or append tests to the end, where nothing moves, which is much
+cheaper.
+
+**And *two tickets on the same screen* is not evidence they share a file.** `85`'s header first
+warned against sweeping it beside `97-*.py` because *all three hold `Login.js`*; `97` holds no
+frontend file `85` touches. It fixed the dialog drawn over the refusal (`client.js`,
+`AuthContext.js`); `85` fixed the refusal's own lifetime (`Login.js`). Two tickets landing on one
+screen the same day makes the collision feel too obvious to check. **What corrupts a sweep is a
+repeated path — compare `FILES`, not subject matter.**
 
 **#66 also retired two rows that had been walked the previous day**, and the shape of that is
 worth knowing before it happens again. #50's walk ticked the chooser and the *ไปที่ Deep Portfolio*

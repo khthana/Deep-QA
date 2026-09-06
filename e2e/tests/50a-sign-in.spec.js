@@ -190,6 +190,97 @@ test('an address nobody registered is refused the same way, and as quietly', asy
   expect(await expiryDialog(page).count()).toBe(0);
 });
 
+/**
+ * #85 — the refusal used to be on screen for three seconds.
+ *
+ * Found on 21 August 2569 while walking #11's suspended-account row: the
+ * sentence could not be photographed, because a screenshot through CDP takes
+ * two to three seconds and the banner was gone by the second one. A person
+ * looking at the keyboard while they type is in exactly that position, and
+ * what they see when they look up is a form that did nothing.
+ *
+ * The five seconds is the ticket's own number and it is worth the wall-clock:
+ * three would prove the old timer is gone and nothing more, and a row that
+ * only just clears the bar it was written against is a row that starts
+ * failing when a timer is nudged rather than when the behaviour changes.
+ */
+test('the refusal is still there five seconds later, because nothing dismissed it', async ({
+  page,
+}) => {
+  await openSignIn(page);
+
+  await attemptSignIn(page, {
+    email: ACCOUNTS.teacherOne,
+    password: 'not-the-password',
+  });
+  await expect(refusalBanner(page)).toHaveText(REFUSALS.credentials);
+
+  await page.waitForTimeout(5000);
+
+  // Read once, as a value. A retrying assertion here would pass on its first
+  // attempt whatever happened afterwards, which is the shape #50 was caught by
+  // on this very banner.
+  expect(await refusalBanner(page).count()).toBe(1);
+  await expect(refusalBanner(page)).toHaveText(REFUSALS.credentials);
+});
+
+test('typing in the form is what clears the refusal', async ({ page }) => {
+  await openSignIn(page);
+
+  await attemptSignIn(page, {
+    email: ACCOUNTS.teacherOne,
+    password: 'not-the-password',
+  });
+  await expect(refusalBanner(page)).toHaveText(REFUSALS.credentials);
+
+  // The other half of *stays until the person acts*: a sentence that can never
+  // be got rid of is its own defect, and the act that gets rid of it is the
+  // one that makes it out of date. Correcting the password is that act.
+  await passwordField(page).fill('x');
+
+  await expect(refusalBanner(page)).toHaveCount(0);
+});
+
+/**
+ * #85 asks for the refusal to be *tied to the form*, not only announced once.
+ *
+ * `role="alert"` is heard when the sentence appears and then it is over. A
+ * person who tabs back into the password field ten seconds later hears the
+ * field's name and nothing about why the last attempt failed - which is the
+ * position #85's own *why it hurts* describes, somebody looking at the
+ * keyboard rather than at the screen. `aria-describedby` is what closes that:
+ * the sentence becomes the description of the fields it is about, readable on
+ * demand rather than only in the instant it arrives.
+ *
+ * Asserted through the element the description points *at*, not by reading the
+ * attribute back. An `aria-describedby` naming an id that is not in the
+ * document describes nothing, and reading the raw attribute cannot tell that
+ * apart from a working one.
+ */
+test('the refusal describes the fields it is about, not only the screen', async ({
+  page,
+}) => {
+  await openSignIn(page);
+
+  // Before there is anything to describe, neither field claims a description.
+  expect(await emailField(page).getAttribute('aria-describedby')).toBeNull();
+  expect(await passwordField(page).getAttribute('aria-describedby')).toBeNull();
+
+  await attemptSignIn(page, {
+    email: ACCOUNTS.teacherOne,
+    password: 'not-the-password',
+  });
+  await expect(refusalBanner(page)).toHaveText(REFUSALS.credentials);
+
+  for (const field of [emailField(page), passwordField(page)]) {
+    const describedBy = await field.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    await expect(page.locator('#' + describedBy)).toHaveText(
+      REFUSALS.credentials,
+    );
+  }
+});
+
 test('an empty form is refused by the screen, without asking the server', async ({ page }) => {
   await openSignIn(page);
 

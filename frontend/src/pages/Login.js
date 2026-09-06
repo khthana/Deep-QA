@@ -38,6 +38,23 @@ const GOOGLE_REFUSALS = {
     'ยังไม่ได้ตั้งค่าการเข้าสู่ระบบด้วย Google บนเซิร์ฟเวอร์นี้',
 }
 
+/**
+ * The id the refusal banner carries, so the two fields can point at it - #85.
+ *
+ * `role="alert"` gets the sentence *announced* when it appears. It does not
+ * get it *attached* to anything: a person who tabs back into the password
+ * field a moment later hears the field's name and nothing about why the last
+ * attempt was refused. #85 asked for the refusal to be tied to the form, and
+ * `aria-describedby` is what ties it - the sentence becomes the description of
+ * the fields it is about, readable on demand rather than only once.
+ *
+ * It is passed down and applied only while there is a refusal on screen. An
+ * `aria-describedby` pointing at an id that is not in the document describes
+ * nothing, and is worse than no attribute because it reads as though somebody
+ * had thought about it.
+ */
+const REFUSAL_ID = 'sign-in-refusal'
+
 export default function Login() {
   const { reload, setLoading } = useAuth()
   const [searchParams] = useSearchParams()
@@ -69,11 +86,26 @@ export default function Login() {
     )
   }, [searchParams])
 
-  useEffect(() => {
-    if (!errorMessage) return
-    const timer = setTimeout(() => setErrorMessage(''), 3000)
-    return () => clearTimeout(timer)
-  }, [errorMessage])
+  /**
+   * Typing is what clears a refusal - #85.
+   *
+   * It used to be a three-second `setTimeout`, which is short enough that the
+   * sentence could not be photographed: a screenshot through CDP takes two to
+   * three seconds, and the walk that found this had to install a
+   * `MutationObserver` to catch the words at all. A person looking at the
+   * keyboard while they type is in the same position, and what they see when
+   * they look up is a form that appears to have done nothing - so they press
+   * the button again, none the wiser about which of the two things was wrong.
+   *
+   * WCAG 2.2 §2.2.1 is about exactly this: a time limit the reader did not set
+   * and cannot extend. The replacement has no clock in it. The sentence is
+   * true until the person changes one of the fields it is about, and changing
+   * a field is the act that makes it out of date.
+   */
+  const clearRefusalAndSet = setter => value => {
+    setter(value)
+    setErrorMessage('')
+  }
 
   /**
    * Nothing is written to localStorage on the way in. The inherited page set
@@ -198,7 +230,11 @@ export default function Login() {
 
                 <AnimatePresence>
                   {errorMessage && (
-                    <ContentMotionDIV className="animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border border-red-100 bg-red-50/50 p-4 text-sm text-red-600">
+                    <ContentMotionDIV
+                      role="alert"
+                      id={REFUSAL_ID}
+                      className="animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border border-red-100 bg-red-50/50 p-4 text-sm text-red-600"
+                    >
                       <svg
                         className="h-5 w-5 shrink-0"
                         fill="none"
@@ -220,8 +256,9 @@ export default function Login() {
                 <div className="group">
                   <LoginForm
                     handleSubmit={handleSubmit}
-                    setUsername={setUsername}
-                    setPassword={setPassword}
+                    onUsernameChange={clearRefusalAndSet(setUsername)}
+                    onPasswordChange={clearRefusalAndSet(setPassword)}
+                    refusalId={errorMessage ? REFUSAL_ID : undefined}
                   />
                 </div>
               </ContentMotionDIV>
