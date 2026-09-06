@@ -15,19 +15,27 @@
  * rule, the account, its status and its grants are all that function - and it
  * is that function the acceptance criteria are checked against.
  *
- * Not asserted here: an external assessor outside their validity window,
- * ticket #8's sixth criterion. `user_roles` has no window to be outside of.
- * The columns, the admin field that sets them and the check are ticket #48.
+ * #8's sixth criterion - an external assessor outside their validity window -
+ * was left unasserted here until #50, on the grounds that `user_roles` has no
+ * window to be outside of. That is true and was the wrong place to look: the
+ * window is on `users`, `admit` has read it since #11, and the refusal it
+ * produces is one of the seven a person can be shown through Google. So it is
+ * driven below. What is still #48's is the half above the check - the columns
+ * per grant, and the administrator's field that sets them.
  */
 
 const { after, before, test } = require('node:test');
 const assert = require('node:assert/strict');
+const { readFileSync } = require('node:fs');
+const path = require('node:path');
 
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
 
 const { PASSWORD, byAlias } = require('../../db/seed');
-const { resolveGoogleAccount } = require('../auth/accounts');
+const { resolveGoogleAccount, GOOGLE_REFUSAL_REASONS } = require('../auth/accounts');
+const { REFUSALS } = require('../auth/refusals');
+const { frontendUrl } = require('../config');
 const {
   COOKIE_NAME,
   LIFETIME_SECONDS,
@@ -419,4 +427,115 @@ test('Google sign-in', async (t) => {
     const refused = await signIn(api.app, 'teacher.two@kmitl.ac.th');
     assert.equal(refused.status, 403);
   });
+
+  // #48 is the ticket that gives an administrator a way to set the window and
+  // an assessor a reason to be outside one. The column is already on `users`
+  // and `withinValidity` already reads it, so the refusal exists today and can
+  // be produced today - which is what the list below has to be able to claim.
+  await t.test('refuses an account whose validity window has closed', async () => {
+    await api.pool.query(`UPDATE users SET valid_until = current_date - 1 WHERE user_id = $1`, [
+      byAlias('U_EXT'),
+    ]);
+
+    const admission = await resolveGoogleAccount(api.pool, EMAILS.assessor);
+
+    assert.equal(admission.ok, false);
+    assert.equal(admission.reason, 'outsideValidity');
+    await api.pool.query(`UPDATE users SET valid_until = NULL WHERE user_id = $1`, [
+      byAlias('U_EXT'),
+    ]);
+  });
+
+  /**
+   * #50. The list is a contract with a screen in another package, and a
+   * contract nothing drives is a comment. Each of the six account reasons is
+   * produced above by a subtest of this one; what is left to say here is that
+   * the list names no reason the refusals table has no words for, and that it
+   * has not fallen behind the `refuse` calls it describes.
+   *
+   * The second half is the one worth having. `GOOGLE_REFUSAL_REASONS` could be
+   * kept honest by hand right up until somebody adds a rule to `admit`, and
+   * the person who then meets that rule through Google gets the fallback
+   * sentence rather than the reason. So the reasons are read out of the source
+   * of the two functions that own them — `admit` and `resolveGoogleAccount`,
+   * and neither of the two beside them — rather than listed a second time.
+   *
+   * This is also the half that catches what `50a` structurally cannot: that
+   * spec iterates `GOOGLE_REFUSAL_REASONS`, so a reason deleted from the list
+   * shortens the loop and fails nothing there.
+   */
+  await t.test('the list of reasons is the list the rules can actually produce', () => {
+    for (const reason of GOOGLE_REFUSAL_REASONS) {
+      assert.ok(REFUSALS[reason], `no sentence for ${reason}`);
+    }
+
+    const source = readFileSync(path.join(__dirname, '..', 'auth', 'accounts.js'), 'utf8');
+    // Only the two functions the Google path is made of. `admit` ends where
+    // `sessionAdmission` begins, and `resolveGoogleAccount` ends where the
+    // password form's own rules begin.
+    //
+    // Slicing precisely is the point. A first draft took everything from
+    // `admit` onwards and then deleted `credentials` and `passwordNotAllowed`
+    // by name — which is the same hand-kept list this test exists to abolish,
+    // moved somewhere less visible, and it would have failed the day a new
+    // password-only refusal was added, reading as *the screen is out of date*.
+    const between = (from, to) => {
+      const start = source.indexOf(from);
+      const end = source.indexOf(to);
+      assert.ok(start !== -1 && end > start, `cannot find ${from} .. ${to}`);
+      return source.slice(start, end);
+    };
+    const rules =
+      between('async function admit(', 'async function sessionAdmission(') +
+      between('async function resolveGoogleAccount(', 'async function resolvePasswordAccount(');
+    const produced = new Set(
+      [...rules.matchAll(/refuse\(\d+, '([a-zA-Z]+)'\)/g)].map(match => match[1]),
+    );
+
+    assert.deepEqual(
+      [...produced].sort(),
+      GOOGLE_REFUSAL_REASONS.filter(reason => reason !== 'googleUnavailable').sort(),
+    );
+  });
+});
+
+/**
+ * #50. What the two Google routes do on a server whose OAuth credentials are
+ * not set - which is every server a fresh `cp .env.example .env` produces, and
+ * the one the browser suite runs against.
+ *
+ * Both routes are entered by a top-level navigation, so what they answer is
+ * not read by any code: it is rendered. A JSON body is a page of JSON on the
+ * API's own origin, which is where this used to leave people.
+ */
+test('the Google routes without OAuth credentials', async (t) => {
+  const withoutGoogle = async run => {
+    const { GOOGLE_CLIENT_ID: id, GOOGLE_CLIENT_SECRET: secret } = process.env;
+    delete process.env.GOOGLE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_SECRET;
+    try {
+      await run();
+    } finally {
+      if (id !== undefined) process.env.GOOGLE_CLIENT_ID = id;
+      if (secret !== undefined) process.env.GOOGLE_CLIENT_SECRET = secret;
+    }
+  };
+
+  await t.test('send the browser back to the sign-in screen with the reason', () =>
+    withoutGoogle(async () => {
+      for (const path of ['/api/auth/google-login', '/api/auth/google/callback']) {
+        const response = await request(api.app).get(path);
+
+        assert.equal(response.status, 302, path);
+        assert.equal(
+          response.headers.location,
+          `${frontendUrl()}/login?error=googleUnavailable`,
+          path,
+        );
+        // Not a page of JSON on the API's origin, which is what a 503 with a
+        // body is once a browser is the thing reading it.
+        assert.equal(response.headers['content-type']?.includes('application/json'), false, path);
+      }
+    }),
+  );
 });

@@ -7,6 +7,7 @@ import ContentMotionDIV from './ContentMotionDIV'
 import { AnimatePresence } from 'framer-motion'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 import { HiArrowsRightLeft } from 'react-icons/hi2'
+import { PORTFOLIO_URL } from '../lib/links'
 
 function Navber({ setAlert }) {
   const { profile, logout, changePassword, sessionExpired } = useAuth()
@@ -146,8 +147,7 @@ function Navber({ setAlert }) {
                   <div className="py-1">
                     <button
                       onClick={() => {
-                        window.location.href =
-                          'https://portfolio.deep-core.net/teacher'
+                        window.location.href = PORTFOLIO_URL
                       }}
                       className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-secondary"
                     >

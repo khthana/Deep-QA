@@ -4,7 +4,6 @@ import Login from '../pages/Login'
 import MainPage from '../pages/Mainpage'
 import SelectApp from '../pages/SelectApp'
 import NotFoundPage from '../pages/PageNotFound'
-import UserNotFound from '../pages/UserNotFound'
 import Departments from '../pages/Departments'
 import NotBuiltYet from '../pages/NotBuiltYet'
 import Offerings from '../pages/Offerings'
@@ -99,14 +98,16 @@ export default function AppRoutes() {
           </GuestRoute>
         }
       />
-      <Route
-        path="/user-not-found"
-        element={
-          <GuestRoute>
-            <UserNotFound />
-          </GuestRoute>
-        }
-      />
+      {/* `/user-not-found` was declared here and reached by nothing — entry 8
+          of docs/acceptance/10-application-shell.md's open list, parked on #50.
+          It was the inherited application's way of showing a refusal, and it
+          read the refusal out of `?reason` by comparing it against a whole Thai
+          sentence, so a reworded message in backend/auth/refusals.js would have
+          silently turned "your account is suspended" into "we could not find
+          you". Nothing navigated there, and nothing should: a refusal at
+          sign-in belongs on the sign-in screen, which is where `?error=<key>`
+          already puts it, keyed rather than matched on prose. #50 deleted the
+          page. */}
       <Route
         path="/select-app"
         element={

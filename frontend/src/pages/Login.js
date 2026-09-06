@@ -17,6 +17,14 @@ import ContentMotionDIV from '../components/ContentMotionDIV'
  * in; the keys are the contract, and backend/auth/refusals.js is where they are
  * decided. A reason this list does not know still says something rather than
  * nothing.
+ *
+ * The seven keys are `GOOGLE_REFUSAL_REASONS` in backend/auth/accounts.js, and
+ * that list is checked against the rules that produce it rather than kept by
+ * hand. This end shipped one short: `outsideValidity` was missing, so the
+ * account the window exists for — an external assessor whose review round has
+ * ended, the only person who meets it — was the one told *เข้าสู่ระบบด้วย
+ * Google ไม่สำเร็จ* instead of what was actually wrong. The fallback is for a
+ * reason nobody has written yet, not for a hole in this table. #50.
  */
 const GOOGLE_REFUSALS = {
   domain: 'กรุณาใช้เมล @kmitl.ac.th ในการเข้าใช้งาน',
@@ -25,6 +33,7 @@ const GOOGLE_REFUSALS = {
     'บัญชีนี้ยังไม่ได้รับสิทธิ์การใช้งาน กรุณาติดต่อเจ้าหน้าที่เพื่อกำหนดบทบาท',
   inactive: 'บัญชีนี้ถูกระงับการใช้งาน',
   unverified: 'บัญชีนี้ยังไม่ได้ผ่านการยืนยันตัวตน',
+  outsideValidity: 'บัญชีนี้อยู่นอกช่วงเวลาที่กำหนดให้ใช้งาน',
   googleUnavailable:
     'ยังไม่ได้ตั้งค่าการเข้าสู่ระบบด้วย Google บนเซิร์ฟเวอร์นี้',
 }

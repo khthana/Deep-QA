@@ -20,12 +20,19 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken**. #41, #44 and #45 all closed on 5 September 2569, and #45 was the last
-of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the numbers
-above 45: the gaps and defects the rebuild found and opened as it went.
+Closed: **#2–#45 unbroken, plus #50**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
+numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
 **The frontier is now those, not a screen list.** Take work from the open issues above #45 and from
 the ◐ rows the sheets still carry; there is no next screen waiting.
+
+**#50 was the first of that new frontier, and it is the shape to expect from it.** It built no
+screen. The sign-in pages shipped inside #10 as a consequence of the CRA scaffold arriving, so #8's
+UI criteria were held by a closed ticket and **the one screen every person in the system passes
+through was the only screen with no checklist behind it**. Closing that hole is what found four
+defects. Entries 4, 6 and the second half of 8 in `10-application-shell.md`'s open list are struck
+with it.
 
 Take the state from that list rather than from a phrase. An older version of this line said
 *closed through #38* while #37 was open, which read as though the run took four open tickets
@@ -53,7 +60,16 @@ things about the drawing that its own tests all passed through, plus
 found one, and [#45](https://github.com/khthana/Deep-QA/issues/45)'s (Programme-level results for
 one student) found two. **#36's found nothing on screen**, which is worth recording as plainly as
 the rest: a walk that ticks every row is not a walk that was wasted, and the store now has nine
-tickets where the walk paid and one where it did not.
+tickets where the walk paid and two where it did not.
+
+**#50's walk is the second of those, and it says something #36's could not.** #36 found nothing
+because there was nothing. #50's walk ticked all three of its rows while the ticket itself found
+**four** defects — every one of them caught by reading the code against the criteria, and every one
+of them invisible to an eye on a screen that behaves correctly in ordinary conditions: a refusal key
+missing from a table, a 503 nobody navigates into, two `htmlFor` attributes pointing at ids that are
+not on the page, and a route nothing reaches. **A walk asks whether what was drawn can be read; it
+cannot ask whether what should exist is all there.** Those are different questions, and a ticket
+that finds nothing by one method has not been told anything about the other.
 
 **#40's first finding is the shape to remember.** Every automated row asked whether the disclosure
 *worked*, and it worked perfectly — on nothing. A test can ask whether a control responds; only a
@@ -100,10 +116,14 @@ findings were all judgements about size, weight and contrast — the class of th
 can measure but cannot have an opinion about. Ask the person to look, and ask about one property
 at a time.
 
-Every acceptance checklist has been walked, and as of 5 September 2569 **there is no row left
+Every acceptance checklist has been walked, and as of 6 September 2569 **there is no row left
 anywhere that a person could walk and has not**. #44's and #45's sheets both close with
-**no ◐ and no ☐ at all**. The count is worth taking from the sheets rather
-than from here — one ☐ that is half of a ticket somebody else owns (#49's menu set); of the ten ◐,
+**no ◐ and no ☐ at all**; #50's does not, and the two rows it adds are the honest kind — a ◐ for a
+refusal only a server in production mode can produce, and a ☐ for a criterion that **is not met
+today** because a wrong password raises the session-expired dialog over the sign-in screen (#97).
+A ☐ is also how a sheet says *this is true of somebody else's open ticket*, not only *nobody has
+looked*. The count is worth taking from the sheets rather
+than from here — two ☐, one of them half of a ticket somebody else owns (#49's menu set); of the ◐,
 all but one name a request no control on any screen can produce (#41's added the tenth: the year a
 plan is written for comes from the ตอนเรียน in the address, so no browser can send a different
 one), and the last is an arithmetic difference too small for an eye to decide and pinned exactly at
@@ -134,6 +154,16 @@ mutant for each. The other carried a ⚙ **naming no mutant at all**, which is t
 the mistake and the easiest to check for: read down the ⚙ rows and make sure every one of them
 points at a line of the mutant table.
 
+**#50 made it nine, and its version is the one to be most careful about: the gap was already
+written down.** Its first row read *every reason the Google path can refuse with* over a `50a` row
+that **iterates the list of reasons** — so deleting a reason from the list shortens the loop and
+fails nothing, and the completeness half is proved only at the HTTP seam. That is not a subtle
+point that went unnoticed: `mutation/50-sign-in-screens.py` says it in a paragraph of its own, and
+so did the sheet. The row carried a ⚙ anyway. **Explaining a gap in prose is not the same as
+marking it** — the mark is what a later reader trusts, and prose beside a wrong mark reads as
+context rather than as a correction. The row is now split, the completeness half a ☑ naming
+`auth.test.js`.
+
 **#45 made it eight, and added a second way to find it.** Its row read *เลือกนักศึกษาได้ และกรอง
 ด้วยปีรับเข้า* over `searchignoresthecode`, a mutant about the search box alone; the intake half is
 now a ☑ naming the seam that does prove it. What is new is that **the sweep caught the other one
@@ -143,6 +173,18 @@ in the tests — sometimes it is a claim the code makes structurally, and the ho
 delete the mutant and mark the row ☑ rather than keep a ⚙ nothing earns. **Read a MISS and a
 survivor differently: the first means the anchor moved, the second means the claim was never at
 risk.**
+
+**#50 found a third species, and it is not a miscount at all — the tool was wrong, not the claim.**
+Its row asserting *no refusal on an ordinary arrival* was `await expect(banner).toHaveCount(0)`,
+which is a web-first assertion and **retries for ten seconds** — and that banner dismisses itself
+after three (#85). So it passed on a screen showing a refusal nobody had earned, and the mutant that
+draws one every time killed nothing. A probe confirmed the banner was on screen, count 1, at the
+moment the row believed it was looking. **A retrying negative against an element that removes itself
+is an assertion that cannot fail.** The fix is to read the count *once*, at a named settle point,
+and compare it as a value. The store was then swept for the same shape: 112 retrying negatives
+across 40 spec files, but `frontend/src` contains exactly **one** element that removes itself on a
+timer — this banner — so the other 111 stand on things that are simply not there. Check what an
+assertion is made of, not only that it names the right thing.
 
 Earlier versions of this paragraph said fifteen, then nine. Most of those turned out to be walkable
 after all — they were waiting not on a person but on a **situation the seed does not contain**, and

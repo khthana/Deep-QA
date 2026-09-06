@@ -23,7 +23,6 @@ const {
   resolvePasswordAccount,
   profileOf,
 } = require('../auth/accounts');
-const { REFUSALS } = require('../auth/refusals');
 const {
   issueSession,
   clearSession,
@@ -82,11 +81,39 @@ function authRoutes(pool) {
     );
   }
 
-  const googleUnavailable = (res) =>
-    res.status(503).json({ message: REFUSALS.googleUnavailable });
+  /**
+   * A refusal the browser can read — #50.
+   *
+   * Both Google routes are entered by a top-level navigation: the sign-in
+   * screen sets `window.location` rather than fetching, and Google sends the
+   * person back the same way. So a status code is not something anybody sees.
+   * `googleUnavailable` used to answer `503` with a JSON body, which left the
+   * browser parked on the API's own origin reading `{"message":"..."}` — off
+   * the application, with no way back but the back button and no sign-in
+   * screen to return to.
+   *
+   * That is not an edge: `cp .env.example .env` leaves the OAuth credentials
+   * blank, on purpose and with a note saying so, and they are exactly what
+   * `googleConfigured` reads. Every developer and the browser suite meet this
+   * refusal, and until now every one of them met it as a JSON page.
+   *
+   * The callback's own refusal already answered the right way, and the reason
+   * written there is this reason: what a browser needs is the sign-in page
+   * again with something to show. This is that answer, given a name so both
+   * routes give it.
+   *
+   * One consequence to know before this is deployed: a monitoring probe on
+   * `/api/auth/google-login` now sees a 302 where it used to see a 5xx, so
+   * missing OAuth credentials no longer announce themselves as a server error.
+   * They announce themselves to the person instead, which is the trade this
+   * makes on purpose — but a check that watched for the 5xx has to watch for
+   * `?error=googleUnavailable` now.
+   */
+  const refuseToBrowser = (res, reason) =>
+    res.redirect(`${frontendUrl()}/login?error=${encodeURIComponent(reason)}`);
 
   router.get('/auth/google-login', (req, res, next) => {
-    if (!googleConfigured()) return googleUnavailable(res);
+    if (!googleConfigured()) return refuseToBrowser(res, 'googleUnavailable');
     // session: false - the cookie above is the whole session, so there is no
     // express-session store for passport to write a login into.
     return passport.authenticate('google', { scope: ['profile', 'email'], session: false })(
@@ -97,22 +124,17 @@ function authRoutes(pool) {
   });
 
   router.get('/auth/google/callback', (req, res, next) => {
-    if (!googleConfigured()) return googleUnavailable(res);
+    if (!googleConfigured()) return refuseToBrowser(res, 'googleUnavailable');
 
     return passport.authenticate('google', { session: false }, async (error, admission, refusal) => {
       if (error) return next(error);
 
-      const frontend = frontendUrl();
-      if (!admission) {
-        // The refusal travels in the redirect rather than as a status code:
-        // the caller here is a browser following Google back, and what it
-        // needs is the sign-in page again with something to show.
-        const reason = refusal?.reason ?? 'unknown';
-        return res.redirect(`${frontend}/login?error=${encodeURIComponent(reason)}`);
-      }
+      if (!admission) return refuseToBrowser(res, refusal?.reason ?? 'unknown');
 
       const body = await admitted(res, pool, admission, 'GOOGLE_LOGIN');
-      return res.redirect(`${frontend}/select-app?role=${encodeURIComponent(body.role.role_id)}`);
+      return res.redirect(
+        `${frontendUrl()}/select-app?role=${encodeURIComponent(body.role.role_id)}`,
+      );
     })(req, res, next);
   });
 

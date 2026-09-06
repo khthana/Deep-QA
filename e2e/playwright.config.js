@@ -66,6 +66,15 @@ module.exports = defineConfig({
         PORT: String(BACKEND_PORT),
         DB_SCHEMA: E2E_SCHEMA,
         FRONTEND_URL,
+        // Pinned empty rather than inherited — #50. One row asserts what the
+        // Google button does on a server whose OAuth credentials are not set,
+        // which is every server `cp .env.example .env` produces and so is the
+        // condition almost everybody meets. Inheriting it would make that row
+        // pass or fail according to whether the person running the suite
+        // happens to have configured Google, which is the one thing a browser
+        // seam must not do.
+        GOOGLE_CLIENT_ID: '',
+        GOOGLE_CLIENT_SECRET: '',
         // #35's uploads land here rather than in `_local/evidence`, for the
         // reason `reuseExistingServer: false` exists a few lines up: this suite
         // stays out of the data somebody is working in. Under the OS temp

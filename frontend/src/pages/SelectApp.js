@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import LoadingScreen from '../components/LoadingScreen'
+import { PORTFOLIO_URL } from '../lib/links'
 
 /**
  * The two-application chooser, shown once after signing in.
@@ -83,10 +84,7 @@ export default function SelectApp() {
                 </button>
 
                 <button
-                  onClick={() =>
-                    (window.location.href =
-                      'https://portfolio.deep-core.net/teacher')
-                  }
+                  onClick={() => (window.location.href = PORTFOLIO_URL)}
                   className="group relative flex flex-col items-start rounded-3xl border border-white/20 bg-white p-10 shadow-2xl transition-all duration-300 hover:scale-[1.03] hover:shadow-white/10 focus:outline-none"
                 >
                   <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-orange-400 transition-all group-hover:bg-orange-400 group-hover:text-white">

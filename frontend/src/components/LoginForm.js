@@ -1,5 +1,19 @@
 import React from 'react'
 
+/**
+ * The two fields, and the labels that now name them — #50.
+ *
+ * Both `htmlFor` attributes pointed at ids the inputs did not carry: the
+ * password's read `website-admin`, which is the id from the Flowbite snippet
+ * this markup was lifted from and is not on this page at all. A label bound to
+ * nothing is not a label. Clicking it moved no focus, and a screen reader read
+ * the fields out as an unnamed textbox and an unnamed password field on the
+ * one screen every person in the system passes through.
+ *
+ * Fixing it is two `id` attributes and one corrected `htmlFor`. Nothing moves
+ * and nothing is restyled — this is not the redesign the rebuild defers, it is
+ * the markup meaning what it already says.
+ */
 function LoginForm({ handleSubmit, setUsername, setPassword }) {
   return (
     <form
@@ -23,6 +37,7 @@ function LoginForm({ handleSubmit, setUsername, setPassword }) {
             </svg>
           </span>
           <input
+            id="username"
             onChange={e => setUsername(e.target.value)}
             type="text"
             className="block w-full min-w-0 flex-1 rounded-none rounded-e-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -31,10 +46,7 @@ function LoginForm({ handleSubmit, setUsername, setPassword }) {
         </div>
       </div>
       <div>
-        <label
-          htmlFor="website-admin"
-          className="text-l mb-2 block text-gray-500"
-        >
+        <label htmlFor="password" className="text-l mb-2 block text-gray-500">
           Password
         </label>
         <div className="flex">
@@ -53,6 +65,7 @@ function LoginForm({ handleSubmit, setUsername, setPassword }) {
             </svg>
           </span>
           <input
+            id="password"
             onChange={e => setPassword(e.target.value)}
             type="password"
             className="block w-full min-w-0 flex-1 rounded-none rounded-e-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"

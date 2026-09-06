@@ -13,9 +13,14 @@ const { PASSWORD } = require('./accounts');
  * itself a session would reproduce that blind spot at the one seam built to
  * catch it.
  *
- * The two fields are located by input type rather than by label: the inherited
- * markup's `htmlFor` attributes point at ids the inputs do not carry, and
- * fixing that is a change to a UI this project is instructed not to redesign.
+ * The two fields are located by their labels. They were located by input type
+ * until #50, because the inherited markup's `htmlFor` attributes pointed at
+ * ids the inputs did not carry — the password's at `website-admin`, which is
+ * not on this page at all — and the note here read that fixing it would be a
+ * redesign this project defers. It is not: two `id` attributes move nothing
+ * and restyle nothing, and until they were added the one screen everybody
+ * passes through read out as two unnamed fields. `e2e/tests/50a-sign-in.spec.js`
+ * is where that is asserted rather than merely relied on.
  *
  * What is asserted is the sign-in's own answer, not the page that follows it.
  * Where the browser lands afterwards is not this helper's business, and is in
@@ -27,8 +32,8 @@ const { PASSWORD } = require('./accounts');
  */
 async function signIn(page, email, password = PASSWORD) {
   await page.goto('/');
-  await page.locator('input[type="text"]').fill(email);
-  await page.locator('input[type="password"]').fill(password);
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill(password);
 
   const [response] = await Promise.all([
     page.waitForResponse(

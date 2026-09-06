@@ -98,7 +98,7 @@ Deep-QA/
 |---|---|---|---|---|
 | S01 | `/` | เข้าสู่ระบบ | `pages/Login.js` | ทุกคน (GuestRoute) |
 | S02 | `/select-app` | เลือกแอป / บทบาท | `pages/SelectApp.js` | ผู้ล็อกอินแล้ว |
-| S03 | `/user-not-found` | ไม่พบผู้ใช้ในระบบ | `pages/UserNotFound.js` | ทุกคน |
+| ~~S03~~ | ~~`/user-not-found`~~ | ~~ไม่พบผู้ใช้ในระบบ~~ | ~~`pages/UserNotFound.js`~~ | **ลบแล้วที่ [#50](https://github.com/khthana/Deep-QA/issues/50)** — ไม่มีที่ใดพาไปถึง ดูหมายเหตุท้ายเอกสาร |
 | S04 | `/page-not-found` | 404 | `pages/PageNotFound.js` | ทุกคน |
 | S05 | `/load` | หน้าจอโหลด | `components/LoadingScreen.js` | ทุกคน |
 | S06 | `/main/*`, `/teacher/*` | Shell (Navbar + Sidebar + Outlet) | `pages/Mainpage.js` | ผู้ล็อกอินแล้ว |
@@ -1035,4 +1035,8 @@ Deep-QA/
 > §9.2 endpoint ที่ไม่มี `verifyToken` → [#9](https://github.com/khthana/Deep-QA/issues/9) ·
 > §9.5 ข้อ 5–6 เรื่องไฟล์หลักฐาน → [#35](https://github.com/khthana/Deep-QA/issues/35)
 > ข้อยกเว้น: §9.5 ข้อ 2 ที่ระบุว่า sidebar ของ FULL_ADMIN ขัดกับวิทยานิพนธ์ — ตรวจแล้วว่าเป็นการอ่านเล่มผิด
-> เล่มจำกัดบทบาทนี้ไว้ที่การจัดการผู้ใช้และสิทธิ์ ซึ่งตรงกับโค้ด จึงไม่แก้
+> เล่มจำกัดบทบาทนี้ไว้ที่การจัดการผู้ใช้และสิทธิ์ ซึ่งตรงกับโค้ด จึงไม่แก้ ·
+> **S03 (`/user-not-found`) ไม่มีในระบบที่รื้อใหม่** ตาม [#50](https://github.com/khthana/Deep-QA/issues/50)
+> หน้านั้นไม่เคยถูกพาไปถึงจากที่ใดเลย และมันอ่านเหตุผลจาก `?reason` ด้วยการเทียบกับ*ประโยคภาษาไทยทั้งประโยค*
+> การแก้คำใน `backend/auth/refusals.js` จึงเปลี่ยน *บัญชีถูกระงับ* ให้กลายเป็น *ไม่พบผู้ใช้* ได้เงียบ ๆ
+> คำปฏิเสธตอนลงชื่อเข้าใช้อยู่บนหน้าลงชื่อเข้าใช้ ซึ่ง `?error=<key>` พาไปถึงอยู่แล้วโดยใช้กุญแจ ไม่ใช่ข้อความ

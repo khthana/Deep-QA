@@ -207,6 +207,31 @@ async function sessionAdmission(pool, userId) {
   return null;
 }
 
+/**
+ * Every reason a sign-in through Google can end in, in the shape the browser
+ * is handed it: `/login?error=<reason>`.
+ *
+ * It is a list rather than a comment because it is a contract with a screen in
+ * another package. A redirect carries no body, so the sign-in page keeps its
+ * own map from these keys to sentences, and a key that arrives without one
+ * shows the person a fallback instead of the reason they were turned away.
+ * Six of them come from the rules below; `googleUnavailable` comes from the
+ * route, and is the one a server without OAuth credentials answers with.
+ *
+ * `backend/test/auth.test.js` drives each of the six to prove the list is not
+ * longer than the code, and `e2e/tests/50a-sign-in.spec.js` reads the other
+ * end — that each key reaches a person as this table's own words.
+ */
+const GOOGLE_REFUSAL_REASONS = [
+  'domain',
+  'unknown',
+  'inactive',
+  'unverified',
+  'outsideValidity',
+  'noRole',
+  'googleUnavailable',
+];
+
 /** The rules the Google callback applies, minus the part Google owns. */
 async function resolveGoogleAccount(pool, email) {
   if (!email?.toLowerCase().endsWith(KMITL_DOMAIN)) return refuse(403, 'domain');
@@ -272,6 +297,7 @@ module.exports = {
   ABSENT_PASSWORD,
   KMITL_DOMAIN,
   PASSWORD_ROLES,
+  GOOGLE_REFUSAL_REASONS,
   findByEmail,
   allRoles,
   withinValidity,
