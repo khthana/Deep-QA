@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
 import GrantPicker from './GrantPicker'
+import Notice from '../Notice'
 import useGrantable from './useGrantable'
 import { roleName } from '../MapRole'
 import { grantRole, listGrants, revokeGrant } from '../../api/users'
@@ -105,33 +106,31 @@ export default function GrantsPanel({ user, onError }) {
       </p>
 
       {/*
-        Announced as well as drawn - #111, with the same assertive-for-a-refusal
-        rule `Notice` applies.
+        The component the other six screens got - #121.
 
-        **This markup is a copy of `components/Notice.js` and stays a copy, for
-        now.** #111 prefers one component to twenty copies and is right, but
-        swapping this one costs two things it did not ask for: `Notice` carries
-        no `mb-4`, and this panel spaces its children with explicit margins
-        rather than a `space-y-*` stack, so the gap above the table would go;
-        and `Notice` scrolls itself into view (#55), which is a behaviour this
-        panel has never had. An accessibility fix does not get to change
-        spacing and scrolling on the way past.
+        This was a copy of `components/Notice.js`, near enough byte for byte,
+        and #55 missed it: that ticket said *six screens had this block byte for
+        byte* and fixed six. This was the seventh, so the panel drew a refusal
+        and never scrolled it into view - on a panel whose controls all sit
+        below the banner, the revoke buttons in the table and the add picker
+        below that. The measurements are in `mutation/121-grants-notice.py`
+        rather than repeated here.
 
-        That `Notice` was never used here looks like an oversight in #55 rather
-        than a decision, and a refusal in this panel can be below the fold for
-        the same reason #55 was opened - see
-        [#121](https://github.com/khthana/Deep-QA/issues/121).
+        The wrapper carries the `mb-4` this panel spaces its children with and
+        `Notice` does not have. It is inside the `notice &&` guard so it costs
+        no gap when there is nothing to say; the header of `Notice` says why it
+        is here rather than a prop on the component.
+
+        **Two things came with the swap that this ticket did not ask for**, and
+        both are wanted: #111's `role`, which the copy already had, and
+        `ContentMotionDIV`'s 180ms fade, which the copy did not - the banner now
+        arrives the way every other screen's does, which is the consistency the
+        swap was for. `grantsstaysilent` went the other way, deleted with the
+        copy it was anchored to.
       */}
       {notice && (
-        <div
-          role={notice.error ? 'alert' : 'status'}
-          className={`mb-4 rounded-lg p-3 text-sm ${
-            notice.error
-              ? 'bg-red-50 text-red-800'
-              : 'bg-green-50 text-green-800'
-          }`}
-        >
-          {notice.message}
+        <div className="mb-4">
+          <Notice notice={notice} />
         </div>
       )}
 
@@ -149,7 +148,10 @@ export default function GrantsPanel({ user, onError }) {
           <tbody className="divide-y divide-gray-100">
             {grants.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
+                <td
+                  colSpan={5}
+                  className="px-4 py-6 text-center text-slate-500"
+                >
                   บัญชีนี้ยังไม่ได้รับบทบาทใด
                 </td>
               </tr>

@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85 and #111**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111 and #121**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -367,6 +367,33 @@ copy of `Notice` that #55 appears to have missed, and #111 gave it the attribute
 switching it to the component — swapping it would have changed spacing and added scroll behaviour,
 neither asked for. That is [#121](https://github.com/khthana/Deep-QA/issues/121). **An accessibility fix does not get to change layout on the
 way past** — the same rule that stopped `ContentMotionDIV` taking `...rest` in #85.
+
+**#121 is the measure-first rule applied to a ticket this repo wrote itself, and the first
+measurement found nothing.** It was opened during #111 with the below-the-fold half marked
+explicitly as unmeasured. Run at the 900×400 viewport `55a` uses, the grants panel's heading stayed
+fully in view — no defect visible. Two wrong conclusions were available there: *there is nothing
+here*, and *there must be, so loosen the test until it fails*. Reading the geometry off the page
+gave the real answer: a 291px pane, 264px from the banner to the add button, 48px per grant row —
+**it fits by 27px, and one grant row more than the seed's largest account holds puts it over.**
+The defect was real and the seeded data sat just under the line. **When the first measurement finds
+nothing, go and read the numbers; do not conclude absence and do not move the test until it
+passes.** The spec then reaches that geometry by shrinking the window rather than by writing grants
+into a schema every other spec shares — same defect, approached from the side that touches nobody's
+data.
+
+**#55's own count was the tell, and it was checkable the day it landed.** It says *six screens had
+this block byte for byte* and fixed six; there were seven. **A ticket that states how many places
+it changed has published a claim a one-minute grep can check** — and nobody did for fifteen days.
+Read that number as an assertion, not as prose.
+
+**A mutant outlives its ticket but not its anchor.** #111's `grantsstaysilent` was anchored to the
+`role` on the copy of `Notice` the grants panel held; #121 deleted the copy the same day, so the
+line was gone. The move is to delete the mutant, not to re-aim it at something it was not written
+about — `refusalisnotannounced` covers that panel now along with the other 34 screens, and **its
+own kill count grew from two rows to three in the process**, which is a number worth re-reading
+after any ticket that consolidates code. What replaced it puts the copy back *with* its role, so it
+fails the scroll and not the announcement: two claims owned by two tickets have to be able to fail
+apart.
 
 **#66 also retired two rows that had been walked the previous day**, and the shape of that is
 worth knowing before it happens again. #50's walk ticked the chooser and the *ไปที่ Deep Portfolio*

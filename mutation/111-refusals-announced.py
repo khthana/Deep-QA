@@ -2,8 +2,19 @@
 """
 #111 คำปฏิเสธถูกวาด แต่ไม่มีใครประกาศมัน.
 
-Six mutants. Twenty screens drew a refusal and none of them told anybody it
+Five mutants. Twenty screens drew a refusal and none of them told anybody it
 had arrived.
+
+There were six. `grantsstaysilent` took the `role` off the grants panel's own
+copy of the banner, and [#121](https://github.com/khthana/Deep-QA/issues/121)
+deleted that copy the same day - the panel calls `Notice` now, so the line the
+mutant was anchored to does not exist and `refusalisnotannounced` covers it
+along with the other 34 screens. **A mutant outlives its ticket but not its
+anchor**, and the honest move when a later ticket removes the code is to delete
+the mutant rather than re-aim it at something it was not written about. What
+replaced it is `grantskeepsitscopy` in `mutation/121-grants-notice.py`, which
+puts the copy back *with* its role - so it fails the scroll and not the
+announcement, and the two claims stay separable.
 
 **The ticket's evidence was a grep, and the grep was narrower than the claim it
 was used for.** `grep -rn 'role="alert"\\|aria-live' frontend/src` returned
@@ -60,8 +71,9 @@ Killing them:
 **Never sweep this file with `10-application-shell.py`, `66-sign-in-landing.py`
 (both hold `Navbar.js`), `55-notice-in-view.py` (holds `Notice.js`) or
 `91-stale-notice.py` (holds `ImportPanel.js`).** Four collisions is what a
-cross-cutting fix looks like: this ticket is not about a screen, it is about
-one thing every screen does, so its files belong to whoever owns each screen.
+cross-cutting fix looks like: this ticket is not about a
+screen, it is about one thing every screen does, so its files belong to whoever
+owns each screen.
 
 Row numbers below are `111a`'s tests in the order they are written. This file
 was appended to rather than inserted into, so they have not moved - which is
@@ -74,14 +86,19 @@ FILES = {
     "notice": "frontend/src/components/Notice.js",
     "navbar": "frontend/src/components/Navbar.js",
     "import": "frontend/src/components/ImportPanel.js",
-    "grants": "frontend/src/components/users/GrantsPanel.js",
 }
 
 MUTANTS = {
-    # The state before the ticket: drawn, and announced to nobody. Kills rows 1
-    # and 2 - the refusal has no assertive region and the success has no polite
-    # one - and nothing else, because every other row in the store finds these
-    # banners by their text.
+    # The state before the ticket: drawn, and announced to nobody. Kills rows
+    # 1, 2 and 3 - the refusal has no assertive region, the success has no
+    # polite one, and the grants panel has neither since #121 moved it onto
+    # this component. Nothing else, because every other row in the store finds
+    # these banners by their text.
+    #
+    # It killed two when it was written. #121 landed the same day and the third
+    # came with it: a mutant's reach grows when a screen joins the component it
+    # is anchored to, and the count here is worth re-reading after any ticket
+    # that consolidates.
     "refusalisnotannounced": (
         "notice",
         "        role={notice.error ? 'alert' : 'status'}\n",
@@ -120,12 +137,6 @@ MUTANTS = {
         "import",
         '<div role="alert" className="mt-4 rounded-lg bg-red-50 p-3">',
         '<div className="mt-4 rounded-lg bg-red-50 p-3">',
-    ),
-    # The grants panel, which is the third copy. Kills row 3.
-    "grantsstaysilent": (
-        "grants",
-        "          role={notice.error ? 'alert' : 'status'}\n",
-        "",
     ),
 }
 

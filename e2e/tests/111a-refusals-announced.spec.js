@@ -106,7 +106,7 @@ test.describe('#111: a refusal is announced, not only drawn', () => {
     await expect(announced(page, 'alert', SAVED)).toHaveCount(0);
   });
 
-  test('the grants panel announces its refusal, from its own copy of the banner', async ({
+  test('the grants panel announces its refusal, through the shared component', async ({
     page,
   }) => {
     await signIn(page, ACCOUNTS.departmentAdmin05);
@@ -114,6 +114,13 @@ test.describe('#111: a refusal is announced, not only drawn', () => {
     await openEditor(page, ACCOUNTS.departmentAdmin05);
 
     // Revoking your own grant, refused at the server - 12a row 6's driver.
+    //
+    // This panel drew its own copy of the banner when this row was written, and
+    // had its own mutant for it. #121 replaced the copy with `Notice` the same
+    // day, so the row is now killed by `refusalisnotannounced` along with every
+    // other screen - it is kept because *this panel announces* is still a claim
+    // worth a row, and because it is the one that would catch the panel drifting
+    // back out of the shared component.
     const refused = await revoke(page, ROLE_NAMES.DEPT_ADMIN, '05');
     expect(refused.status()).toBe(403);
 

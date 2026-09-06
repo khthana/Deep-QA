@@ -38,6 +38,26 @@ import ContentMotionDIV from './ContentMotionDIV'
  * the banner stayed above the fold on exactly the attempt where the person had
  * scrolled back down to fix something. `55a`'s third test is that case.
  *
+ * ## The prop this did not get - #121
+ *
+ * The seventh caller (`components/users/GrantsPanel.js`) spaces its children
+ * with explicit margins rather than a `space-y-*` stack, so it needs a `mb-4`
+ * this component does not carry. The first attempt added an optional
+ * `className` here and `/code-review` was right to push back: #85 gave
+ * `ContentMotionDIV` two *named* props rather than a spread precisely so no
+ * caller could make a per-screen decision about a shared component, and #111
+ * put the politeness choice in here for the same reason. **An unrestricted
+ * `className` is the escape hatch both of those were closing** - it would let a
+ * caller pass `bg-blue-50` and quietly undo the red-or-green contract this
+ * component exists to hold.
+ *
+ * The caller wraps instead. #121 had ruled that out on the grounds that a
+ * wrapper would always be rendered and so leave a permanent 1rem gap, which is
+ * true of an unconditional one and not of `{notice && <div className="mb-4">}`.
+ * **The objection was to a variant nobody had to write.** It costs one repeated
+ * `notice &&` at one call site and no public API on a component 34 screens
+ * share.
+ *
  * ## The shape
  *
  * `{ message, error }`, as all six screens already held it, and held in state —
