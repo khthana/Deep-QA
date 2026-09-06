@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50 and #66**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66 and #97**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -154,7 +154,9 @@ refusal only a server in production mode can produce, and a ☐ for a criterion 
 today** because a wrong password raises the session-expired dialog over the sign-in screen (#97).
 A ☐ is also how a sheet says *this is true of somebody else's open ticket*, not only *nobody has
 looked*. The count is worth taking from the sheets rather
-than from here — two ☐, one of them half of a ticket somebody else owns (#49's menu set); of the ◐,
+than from here — two ☐: one is half of a ticket somebody else owns (#49's menu set), and the other
+is the Google half of where a sign-in lands, which no seam on this machine can reach (#119). #50's
+☐ — the criterion that was not true — is gone, closed by #97. Of the ◐,
 all but one name a request no control on any screen can produce (#41's added the tenth: the year a
 plan is written for comes from the ตอนเรียน in the address, so no browser can send a different
 one), and the last is an arithmetic difference too small for an eye to decide and pinned exactly at
@@ -232,6 +234,34 @@ Earlier versions of this paragraph said fifteen, then nine. Most of those turned
 after all — they were waiting not on a person but on a **situation the seed does not contain**, and
 building the situation and restoring it afterwards is a normal part of a walk.
 
+**#97 is the third of the new frontier, and it is the one that says what a ☐ is for.** #50's
+sheet carried a ☐ that meant *this criterion is not true today* - a wrong password drew the shell's
+full-screen expiry dialog over the sentence saying the password was wrong, to somebody who had
+never had a session. The ☐ named the open ticket rather than describing the defect twice, and
+closing that ticket is what turned it into a ⚙. **A ☐ that names a ticket is a working link between
+two sheets, not a gap in one of them** - take the count of open work from the ☐ rows and the open
+issues together, and expect closing a defect to move a mark on a sheet the defect is not filed
+under.
+
+**What #97 measured is worth more than what it fixed, and it is about redundancy.** Two components
+both raised that dialog - `client.js` for any 401 its caller had not flagged, and
+`AuthContext.load()` again for the bootstrap read. The sweep says what that cost: `silentexpiry`,
+the mutant that removes the second raise, **killed nothing**, and `silent401`, the mutant that
+removes the first, **could not kill the reload row**. Each covered for the other. With the
+duplicate opinion removed, `silent401` goes from killing two rows to killing **five**.
+**Two places holding one opinion is not a safety margin; it is a claim neither of them can be shown
+to hold.** When a mutant survives, ask whether the code says the thing twice before concluding the
+test is missing.
+
+**And #97 adds a third way to read a sweep, after #45's MISS and survivor: the mutant that kills
+too much.** Its first two mutants each killed **eighteen rows out of twenty-two** - the same
+eighteen - because both raised the dialog on the 401 that `GET /api/me` answers on a first visit,
+so no spec in the suite could sign in at all. A mutant that stops the application working kills the
+row it was aimed at and forty other things first, and a run like that says nothing about which
+assertion was holding what. **A mutant has to be able to fail one row and leave the rest standing.**
+What replaced them names the defect directly - `credentialsisanexpiry` adds `credentials` to the
+condition - and kills exactly the two rows it is about.
+
 **#66 also retired two rows that had been walked the previous day**, and the shape of that is
 worth knowing before it happens again. #50's walk ticked the chooser and the *ไปที่ Deep Portfolio*
 entry; #66 deleted both screens within hours. The first attempt to record this invented a `—` mark
@@ -240,6 +270,12 @@ than a missing row, because a later reader has to guess. The rows are gone from 
 retirement is prose in the walk record instead. **If a ticket on the frontier is about to decide the
 fate of a screen, walk that screen after it, not before** — and never invent a mark to hold the
 difference.
+
+**Read the mutation file for mutants that are missing from a sheet, not only sheets for ⚙ that
+name no mutant.** #44 taught the first direction and it has been run down the ⚙ rows since. #97
+found `10:nowrite` sitting in `mutation/10-application-shell.py` and in no table anywhere, under a
+⚙ row that cited nothing - which the ⚙-first pass cannot see, because it looks for rows without
+mutants and this was a mutant without a row. Both directions, or neither.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time. Read it before taking work. Each handoff names the one it supersedes for state,

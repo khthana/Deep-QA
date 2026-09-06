@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react'
 
@@ -33,22 +34,83 @@ export const AuthProvider = ({ children }) => {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      // `anonymous`: nobody signed in yet is the sign-in page's ordinary
-      // state, and a 401 here is that rather than a session that ended.
-      setState(await get('/api/me', { anonymous: true }))
-    } catch (error) {
-      // Not signed in is the ordinary state of the sign-in page, and is not
-      // an expiry dialog: there is nothing to have expired yet. A cookie that
-      // has run out is the other thing, and this is the request it arrives on:
-      // a tab left open past the half hour and then reloaded asks this first
-      // and would otherwise be dropped at the sign-in page without a word.
-      if (error.reason === 'expired') setExpired(true)
+      // No flag any more - #97. This call used to pass `anonymous: true` to
+      // stop `client.js` counting its 401 as an expiry, back when it counted
+      // every 401 it was not told to ignore. It now reads the server's reason,
+      // and the reason this call gets on a first visit is `anonymous`.
+      setState(await get('/api/me'))
+    } catch {
+      // Nobody signed in, and that is all this knows - #97. A tab left open
+      // past the half hour and then reloaded arrives here too, and it is the
+      // one request that identifies it, but raising the dialog *from here* is
+      // no longer this function's job: the listener below sees the same 401
+      // with the same reason and decides for every request in the
+      // application, this one included.
+      //
+      // It used to do both, and the sweep is what said so. `silentexpiry` -
+      // the mutant that took the raise out of this catch - killed nothing,
+      // because the listener covered it; and `silent401` - the mutant that
+      // stops the listener being called at all - could not kill the reload
+      // row, because this catch covered *that*. Two components holding one
+      // opinion is not redundancy that makes a thing safer. It is an opinion
+      // neither of them can be shown to hold.
       setState(null)
     } finally {
       setLoading(false)
     }
   }, [])
 
+  /**
+   * Whether anybody is signed in, readable from the listener below.
+   *
+   * A ref rather than the state itself because the listener is registered
+   * once: `state` captured inside it would be the `null` it held on mount,
+   * for ever.
+   *
+   * Written from an effect rather than during render, so it describes a tree
+   * that actually committed. Writing it during render is the shorter version
+   * and is correct today - every `setState` here happens outside render - but
+   * a render React throws away (a transition, a suspended tree) would leave
+   * this describing something nobody ever saw, and the thing it would get
+   * wrong is *whether to tell somebody their session ended*.
+   */
+  const signedIn = useRef(false)
+  useEffect(() => {
+    signedIn.current = state !== null
+  }, [state])
+
+  /**
+   * Registered once, so a 401 from any request anywhere raises the dialog
+   * without that screen having had to remember to. The alternative - each
+   * caller catching and calling - is one the first screen to forget breaks
+   * silently, and #10's sixth criterion is precisely about silence.
+   *
+   * **Which 401s mean a session ended - #97.** Two of them do, and they are
+   * not distinguishable by status alone, which is what the old rule got wrong:
+   *
+   * - `expired`, whatever the client believed. A tab left open past the half
+   *   hour and then reloaded asks `GET /api/me` before anything is signed in
+   *   here, so nothing but the server's word identifies it.
+   * - *any* 401 arriving while somebody **is** signed in. The cookie went away
+   *   mid-session - cleared by hand, or a token this server did not sign - and
+   *   the server answers `anonymous`, because from where it stands there is
+   *   nothing to have expired. Only this side knows there was.
+   *
+   * Everything else is an ordinary refusal on a screen nobody has entered:
+   * a first visit reading `/api/me`, and a wrong password. Those are the two
+   * the dialog used to be drawn over.
+   */
+  useEffect(() => {
+    onSessionExpired(reason => {
+      if (reason === 'expired' || signedIn.current) setExpired(true)
+    })
+    return () => onSessionExpired(null)
+  }, [])
+
+  // After the listener above. The order is not what makes this safe - `load`
+  // is async, so its rejection lands a task later, after every effect in this
+  // commit has run, and the listener would be registered either way. It reads
+  // in the order it happens, which is worth more than it costs.
   useEffect(() => {
     load()
   }, [load])
@@ -87,21 +149,13 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  /**
-   * What a screen calls when a request came back 401: the sixth criterion,
-   * an idle session ending with an explanation. It is held here rather than
-   * per screen so there is one dialog however many requests fail at once.
+  /*
+   * `sessionExpired` was exported here for a screen to call when a request
+   * came back 401. #97 removed its one caller - `Navbar`, on a failed password
+   * change - because a screen calling it is a screen deciding what a 401
+   * means, and that decision now happens in exactly one place, below. A hatch
+   * with no user is a way for the next screen to reintroduce the defect.
    */
-  const sessionExpired = useCallback(() => setExpired(true), [])
-
-  // Registered once, so a 401 from any request anywhere raises the dialog
-  // without that screen having had to remember to. The alternative - each
-  // caller catching and calling - is one the first screen to forget breaks
-  // silently, and #10's sixth criterion is precisely about silence.
-  useEffect(() => {
-    onSessionExpired(() => setExpired(true))
-    return () => onSessionExpired(null)
-  }, [])
 
   return (
     <AuthContext.Provider
@@ -112,7 +166,6 @@ export const AuthProvider = ({ children }) => {
         loading,
         setLoading,
         expired,
-        sessionExpired,
         reload: load,
         switchRole,
         changePassword,

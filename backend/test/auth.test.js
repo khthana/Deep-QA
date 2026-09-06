@@ -194,6 +194,30 @@ test('sign in', async (t) => {
     assert.equal(sessionCookie(wrong), undefined);
   });
 
+  /**
+   * #97. Every other 401 in this application names why it is one - the session
+   * guard sends `anonymous`, `expired` or `invalid` - and the sign-in refusal
+   * was the exception, sending only a sentence. That is not a cosmetic gap: it
+   * is the whole reason the browser could not tell a wrong password from an
+   * ended session, and so drew the *Session หมดอายุ* dialog over the sentence
+   * saying the password was wrong.
+   *
+   * The client is what changes, but it can only read what is sent. This is the
+   * half that has to be true first.
+   */
+  await t.test('names its reason, the way every other 401 here does', async () => {
+    const wrong = await signIn(api.app, EMAILS.admin, 'not-the-password');
+    const unknown = await signIn(api.app, 'nobody@kmitl.ac.th');
+
+    assert.equal(wrong.body.reason, 'credentials');
+    assert.equal(unknown.body.reason, 'credentials');
+    // The same reason as the same message, for the same purpose: which of the
+    // two happened is not the browser's business either.
+    assert.equal(wrong.body.reason, unknown.body.reason);
+    // And not the session guard's word, which is what the dialog answers to.
+    assert.notEqual(wrong.body.reason, 'expired');
+  });
+
   await t.test('a request with neither field is refused rather than crashing', async () => {
     const response = await request(api.app).post('/api/auth/login').send({});
 

@@ -151,7 +151,19 @@ function authRoutes(pool) {
       const { email, password } = req.body ?? {};
       const admission = await resolvePasswordAccount(pool, email, password);
       if (!admission.ok) {
-        return res.status(admission.status).json({ message: admission.message });
+        // `reason` as well as `message` — #97. `refuse()` has always carried
+        // one and this route dropped it, which made this the only 401 in the
+        // application that arrived at a browser unnamed. The client cannot
+        // tell an unnamed 401 from a session that ended, so it treated a wrong
+        // password as one and drew the expiry dialog over the sentence that
+        // said what was actually wrong.
+        //
+        // Sending it costs nothing and tells nobody anything they could not
+        // already read: the sentence is the same for a wrong password and an
+        // unregistered address, and so is the reason.
+        return res
+          .status(admission.status)
+          .json({ message: admission.message, reason: admission.reason });
       }
       return res.status(200).json(await admitted(res, pool, admission, 'LOGIN'));
     } catch (error) {

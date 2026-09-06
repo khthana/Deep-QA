@@ -39,6 +39,12 @@ Row numbers in the comments below are `50a`'s tests in the order they are
 written, not the numbering of the acceptance sheet - the sheet has three rows
 that no mutant backs, because they are about whether a thing can be read.
 
+**They move
+when a test is inserted rather than appended**, and #97 inserted two after row
+5, which shifted four of these by two. If a number here does not match the
+spec, count the tests rather than trusting the comment - and renumber both this
+file and the sheet when you add one in the middle.
+
 `labelnamesnothing` is the loud one: it takes every other spec in the suite down
 with it, because `support/auth.js` signs in by label and every spec signs in.
 That is not noise to be tidied - it is the size of what two missing `id`
@@ -113,14 +119,14 @@ MUTANTS = {
     # refusal a wrong password gets - so the screen still shows a red banner and
     # a row asserting only the banner would pass. What is lost is that nobody
     # should be told their credentials are wrong for not having typed any.
-    # Kills row 6 at the assertion that nothing was sent.
+    # Kills row 8 at the assertion that nothing was sent.
     "emptyformgoesthroughanyway": (
         "screen",
         "    if (username === '' || password === '') {\n      setErrorMessage('กรุณากรอกอีเมล และ รหัสผ่าน')\n      return\n    }",
         "",
     ),
     # The form is refused and the person is not told why - the button does
-    # nothing, twice, and there is nothing on the screen to read. Kills row 6.
+    # nothing, twice, and there is nothing on the screen to read. Kills row 8.
     "emptyformsaysnothing": (
         "screen",
         "      setErrorMessage('กรุณากรอกอีเมล และ รหัสผ่าน')\n      return",
@@ -129,7 +135,7 @@ MUTANTS = {
     # The password label points at `website-admin` again - the id from the
     # Flowbite snippet this markup was lifted from, which is not on the page.
     # Nothing moves, nothing is restyled, and the label stops naming anything.
-    # Kills row 7, and every spec in the suite with it.
+    # Kills row 9, and every spec in the suite with it.
     "labelnamesnothing": (
         "form",
         '        <label htmlFor="password" className="text-l mb-2 block text-gray-500">',
@@ -137,8 +143,8 @@ MUTANTS = {
     ),
     # `/user-not-found` is declared again. Not the deleted page - nothing can
     # restore a file by substitution - but something, which is the whole claim
-    # row 8 makes: that address is a 404 like any other address nobody
-    # declared, not a route quietly kept alive. Kills row 8.
+    # row 10 makes: that address is a 404 like any other address nobody
+    # declared, not a route quietly kept alive. Kills row 10.
     "usernotfoundcomesback": (
         "routes",
         '      <Route path="/page-not-found" element={<NotFoundPage />} />',
@@ -154,7 +160,7 @@ MUTANTS = {
     #
     # It replaced `chooserisnotbehindthesession` when #66 deleted the chooser.
     # The claim is the same claim; the route carrying it is one that still
-    # exists. Kills row 9.
+    # exists. Kills row 11.
     "shellisnotbehindthesession": (
         "routes",
         "        path=\"/main/*\"\n        element={\n          <ProtectedRoute>\n            <MainPage />\n          </ProtectedRoute>\n        }",

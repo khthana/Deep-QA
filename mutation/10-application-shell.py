@@ -46,13 +46,17 @@ MUTANTS = {
                    "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];",
                    "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN', 'TEACHER'];"),
     # row 6a: a 401 anywhere raises the dialog
+    #
+    # Re-anchored at #97: the condition lost its `anonymous` flag and the call
+    # gained the reason. What the mutant says is unchanged - nothing is
+    # announced - and it is still the row's own claim.
     "silent401": ("client",
-                  "if (response.status === 401 && !anonymous) sessionExpiredListener?.()",
-                  "if (response.status === 401 && false) sessionExpiredListener?.()"),
+                  "if (response.status === 401) sessionExpiredListener?.(payload.reason)",
+                  "if (false) sessionExpiredListener?.(payload.reason)"),
     # row 6c: a 403 is not a 401 - the inherited client's own defect
     "lump403": ("client",
-                "if (response.status === 401 && !anonymous) sessionExpiredListener?.()",
-                "if ((response.status === 401 || response.status === 403) && !anonymous) sessionExpiredListener?.()"),
+                "if (response.status === 401) sessionExpiredListener?.(payload.reason)",
+                "if (response.status === 401 || response.status === 403) sessionExpiredListener?.(payload.reason)"),
     # row 3b: the trigger reads the grant being worn, not the senior one held
     "stalelabel": ("dropdown", "{label(acting)}", "{label(roles[0])}"),
     # row 8: a teacher is not an administrator of accounts
@@ -63,10 +67,15 @@ MUTANTS = {
     "shortcookie": ("session",
                     "const COOKIE_LIFETIME_SECONDS = LIFETIME_SECONDS * 2;",
                     "const COOKIE_LIFETIME_SECONDS = LIFETIME_SECONDS;"),
-    # row 6 reload: an expired first call is read as nobody having signed in
-    "silentexpiry": ("authctx",
-                     "if (error.reason === 'expired') setExpired(true)",
-                     "if (false) setExpired(true)"),
+    # `silentexpiry` was here, and #97 deleted it rather than re-anchoring it.
+    # It removed the raise from `AuthContext.load()`'s catch, and after #97
+    # made the one listener decide for every request, it killed **nothing**:
+    # the line it broke was a second opinion about the same 401. The line is
+    # gone, so the mutant has nothing to be about. What the reload row rests on
+    # now is `silent401`, which is the claim stated once.
+    #
+    # A survivor is not always a hole in the tests. Sometimes it is a claim the
+    # code no longer makes.
     # row 6 button: signing out put back behind the session, which is #92
     # itself - the box still draws and its button still exists, and only the
     # press comes back with the cookie untouched

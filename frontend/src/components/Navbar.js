@@ -8,7 +8,7 @@ import { AnimatePresence } from 'framer-motion'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 
 function Navber({ setAlert }) {
-  const { profile, logout, changePassword, sessionExpired } = useAuth()
+  const { profile, logout, changePassword } = useAuth()
   const [username, setUsername] = useState('')
   const [isOpen, setIsOpen] = useState(false) // State สำหรับเปิด/ปิดเมนู
   const dropdownRef = useRef(null) // สำหรับใช้เช็คการคลิกข้างนอกเพื่อปิดเมนู
@@ -73,9 +73,18 @@ function Navber({ setAlert }) {
       setShowChangePwd(false)
       setPwdData({ old_password: '', new_password: '', confirm_password: '' })
     } catch (err) {
+      // Close the box, and nothing else - #97. This used to call
+      // `sessionExpired()` here as well, which was a second component with an
+      // opinion about what a 401 means, and the same shape #97 removed from
+      // `AuthContext.load()`. It is not needed: `client.js` announces every
+      // 401 and the context decides, and this screen is only reachable by
+      // somebody signed in, so the decision is always the same one.
+      //
+      // What is still needed is the close. A dialog drawn over an open modal
+      // is not the same thing as a dialog, and the expiry box has to be the
+      // only thing on the screen for its one button to be findable.
       if (err.expired) {
         setShowChangePwd(false)
-        sessionExpired()
         return
       }
       setError(err.message)

@@ -6,6 +6,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { GOOGLE_REFUSAL_REASONS } = require('../../backend/auth/accounts');
 const { ACCOUNTS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { expiryDialog } = require('../support/shell');
 const {
   FALLBACK_REFUSAL,
   EMPTY_FORM,
@@ -130,6 +131,63 @@ test('the wrong password is refused in the server’s words, on the screen it wa
   // one message arrives where the person is.
   expect(new URL(page.url()).pathname).toBe('/');
   await expect(emailField(page)).toBeVisible();
+});
+
+/**
+ * #97 — the row this sheet carried as a ☐ because the criterion was not true.
+ *
+ * `client.js` raised the shell's expiry dialog on *every* 401 that had not
+ * been flagged anonymous by its caller, and `POST /api/auth/login` is a 401
+ * when the password is wrong. So the sentence above arrived, and a full-screen
+ * `fixed inset-0 z-[9999]` dialog was drawn over it saying the session had
+ * ended — to somebody who had never had one. Its only button returned to this
+ * same screen, so pressing it looped.
+ *
+ * Why this is a second row rather than an assertion added to the one above:
+ * that row's assertions cannot see this. The banner is still in the DOM
+ * *underneath* the dialog, and `emailField` is still `toBeVisible` with a
+ * fixed overlay on top of it, because visibility is about the element and not
+ * about what is painted over it. Both rows passed throughout. A ⚙ on the row
+ * above would have claimed this ground and never held it.
+ */
+test('the refusal is the only thing on the screen — no dialog is drawn over it', async ({
+  page,
+}) => {
+  await openSignIn(page);
+
+  const answer = await attemptSignIn(page, {
+    email: ACCOUNTS.teacherOne,
+    password: 'not-the-password',
+  });
+  expect(answer.status()).toBe(401);
+
+  // Read once, at a settle point, rather than as a retrying negative: a
+  // `toHaveCount(0)` that starts before the dialog is drawn passes on its
+  // first attempt and never looks again. #50 learned this from the banner
+  // that dismisses itself; the shape is the same wherever the thing being
+  // denied appears *late*.
+  await expect(refusalBanner(page)).toHaveText(REFUSALS.credentials);
+  expect(await expiryDialog(page).count()).toBe(0);
+});
+
+test('an address nobody registered is refused the same way, and as quietly', async ({
+  page,
+}) => {
+  await openSignIn(page);
+
+  // The other half of #97's first two criteria. It is a separate row because
+  // it takes a different path through `resolvePasswordAccount` — no user row
+  // at all, rather than a row whose hash did not match — and arrives at the
+  // same refusal. If one day only one of them carried `reason`, one of these
+  // two rows would fail and the other would not.
+  const answer = await attemptSignIn(page, {
+    email: 'nobody@kmitl.ac.th',
+    password: PASSWORD,
+  });
+  expect(answer.status()).toBe(401);
+
+  await expect(refusalBanner(page)).toHaveText(REFUSALS.credentials);
+  expect(await expiryDialog(page).count()).toBe(0);
 });
 
 test('an empty form is refused by the screen, without asking the server', async ({ page }) => {

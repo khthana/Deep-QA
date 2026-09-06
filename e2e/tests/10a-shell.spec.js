@@ -177,9 +177,11 @@ test.describe('the shell, in a browser', () => {
     await expireSession(page);
     await page.reload();
 
-    // The shell's own first call is flagged anonymous - it has to be, or the
-    // sign-in page would accuse everyone of an expiry - so this is the answer's
-    // `reason` doing the work and nothing else.
+    // Nobody is signed in at this point - the page has just reloaded, so the
+    // context holds nothing yet - which means the `signedIn` half of the rule
+    // is false and this is the answer's `reason` doing the work and nothing
+    // else. Before #97 the same sentence was true for a different reason: the
+    // call carried an `anonymous` flag that no longer exists.
     await expect(expiryDialog(page)).toBeVisible();
     await expect(page.getByRole('button', { name: 'เข้าสู่ระบบใหม่' })).toBeVisible();
   });

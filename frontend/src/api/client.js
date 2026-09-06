@@ -8,16 +8,27 @@
  * place, and a refusal is turned into an error carrying the server's own words
  * rather than a status the caller has to interpret.
  *
- * A 401 is also announced here rather than at each call site. The shell shows
- * one dialog when a session ends (#10's sixth criterion), and a dialog that
- * depends on every future screen remembering to raise it is a dialog that
- * will be missing from most of them. `onSessionExpired` registers the one
- * listener; a call that expects an anonymous answer - the sign-in page asking
- * who is signed in, before anyone is - passes `anonymous` and is not counted,
- * because nothing has expired yet. Such a call still has to distinguish the
- * two, and does it by the `reason` the guard sends rather than by its wording:
- * a tab left open past the half hour and then reloaded is an ended session and
- * gets the dialog, where a first visit is neither.
+ * A session that has ended is announced here rather than at each call site.
+ * The shell shows one dialog when that happens (#10's sixth criterion), and a
+ * dialog that depends on every future screen remembering to raise it is a
+ * dialog that will be missing from most of them. `onSessionExpired` registers
+ * the one listener.
+ *
+ * What is announced is every 401, *with the reason the server gave for it* -
+ * #97. It used to be every 401 whose caller had not flagged the call
+ * `anonymous`, which is the same rule stated backwards: it asked each call
+ * site to know in advance whether a refusal would be ordinary, and counted the
+ * ones that forgot. `POST /api/auth/login` is the call that forgot, and it is
+ * a 401 every time somebody mistypes a password - so the dialog was drawn over
+ * the sentence saying the password was wrong, telling a person who had never
+ * had a session that theirs had ended. Its one button returned to the screen
+ * they were already on.
+ *
+ * What this file does *not* do is decide what a 401 means. It cannot: half the
+ * answer is the server's `reason` and the other half is whether anybody was
+ * signed in a moment ago, which is state this module does not hold and should
+ * not start holding. So it reports, and `AuthContext` - which does hold it -
+ * decides. See the listener there for the rule.
  *
  * 401 and 403 are kept apart. The inherited utils/session.js treated them as
  * one state — `isSessionExpired` returned true for both — so an idle session
@@ -35,12 +46,27 @@ export class ApiError extends Error {
     this.name = 'ApiError'
     this.status = status
     /**
-     * The server's own word for why, where it sends one. Only the session
-     * guard does today: 'anonymous', 'expired' or 'invalid'. It exists so the
-     * shell can tell those apart without matching on Thai prose.
+     * The server's own word for why. The session guard sends 'anonymous',
+     * 'expired' or 'invalid'; the sign-in route sends 'credentials'; the
+     * account rules send the six a refusal can name. It exists so the shell
+     * can tell those apart without matching on Thai prose, and since #97 it
+     * is half of what decides whether the expiry dialog is drawn - the other
+     * half being whether anybody was signed in, which only AuthContext knows.
      */
     this.reason = reason
-    /** The session ended; the shell shows the sign-in-again dialog. */
+    /**
+     * This was a 401.
+     *
+     * Sixty-odd call sites read it as *the shell is handling this, so do not
+     * also show a notice*, and that reading was exact while every 401 raised
+     * the dialog. Since #97 it is one step off: a 401 the shell decided to say
+     * nothing about still arrives here as `expired`. Nothing is wrong today,
+     * because the only 401 that is not a session ending comes from
+     * `POST /api/auth/login` and the one screen that makes that call reads
+     * `error.message` rather than this flag. A screen that both signs somebody
+     * in and uses the `if (!error.expired)` idiom would swallow its own
+     * refusal, so read the name as *was a 401* and not as *was handled*.
+     */
     this.expired = status === 401
     /** Signed in, but not allowed this; the shell says so and stays put. */
     this.forbidden = status === 403
@@ -56,7 +82,7 @@ export const onSessionExpired = listener => {
 
 async function api(
   path,
-  { method = 'GET', body, signal, anonymous = false, contentType, accept } = {}
+  { method = 'GET', body, signal, contentType, accept } = {}
 ) {
   // A body that is already a string is sent as it stands, under the type the
   // caller named: #11 posts an import file as text/csv rather than wrapping a
@@ -82,7 +108,7 @@ async function api(
   // the guards answer in JSON on every route.
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}))
-    if (response.status === 401 && !anonymous) sessionExpiredListener?.()
+    if (response.status === 401) sessionExpiredListener?.(payload.reason)
     // The fallback speaks only about what is known here, which is the status
     // and nothing else. It used to say the connection had failed, and that is
     // never what this branch means: the response reached this line, so the
