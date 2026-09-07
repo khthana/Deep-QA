@@ -32,6 +32,12 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * half-finished attribution somebody may come back to. Each row also shows the
  * mark it works out to, because that number — not the percentage — is what
  * #34 will enter marks against.
+ *
+ * *The way #30 draws its hundred* was truer than intended: both screens said
+ * *this is too much* by turning a number red and changing nothing else, which
+ * is a fact delivered only to people who can see two shades apart. #122 gave
+ * each the sentence its own rule needs — and the rules are not the same one,
+ * which is why the words are written here rather than shared with #30.
  */
 export default function ActivityForm({ activity, categories, clos, weeks, busy, onSubmit, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
@@ -189,9 +195,38 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
         <section aria-label="ความเชื่อมโยงกับผลการเรียนรู้" className="border-t border-gray-200 pt-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h3 className="text-sm font-medium text-slate-600">ความเชื่อมโยงกับผลการเรียนรู้</h3>
-            <p className="text-sm text-slate-400">
-              รวมน้ำหนัก <span className={total > 100 ? 'font-medium text-red-600' : 'font-medium text-slate-600'}>{total}</span> / 100
-            </p>
+            <div className="flex flex-wrap items-baseline justify-end gap-y-1">
+              <p className="text-sm text-slate-400">
+                รวมน้ำหนัก <span className={total > 100 ? 'font-medium text-red-600' : 'font-medium text-slate-600'}>{total}</span> / 100
+              </p>
+              {/*
+                The red on that number was the whole of what said it was too
+                much — #122. Here the sentence appears only over a hundred,
+                because that is the only state this screen refuses: under is a
+                half-finished attribution somebody may come back to, and
+                announcing the ordinary case on every keystroke is the noise a
+                polite live region is supposed to avoid. สัดส่วนคะแนน has three
+                states to report and reports all three; the difference is the
+                rule, not the styling.
+
+                The element is here whether or not it has anything to say,
+                because a live region added to the page at the same moment as
+                its text is a region a reader may never have been told about.
+
+                `total > 100` is spelt out three times rather than hoisted to
+                one `const`. The colour and the words really are the same rule
+                on this screen, but `editorcopiesthescheme` mutates the words
+                and nothing else; fuse the two and that mutant moves the colour
+                as well, and stops being able to say that the *sentence* is
+                what follows this screen's rule rather than #30's.
+              */}
+              <p
+                aria-live="polite"
+                className={total > 100 ? 'ml-3 text-sm font-medium text-red-600' : ''}
+              >
+                {total > 100 ? 'เกิน 100 จึงยังบันทึกไม่ได้' : ''}
+              </p>
+            </div>
           </div>
 
           {draft.clo_rows.length === 0 ? (

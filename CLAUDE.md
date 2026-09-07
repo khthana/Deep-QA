@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119 and #123**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123 and #122**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -157,13 +157,15 @@ looked*. The count is worth taking from the sheets rather
 than from here — **one ☐, and it is half of a ticket somebody else owns** (#49's menu set). #50's
 ☐ — the criterion that was not true — is gone, closed by #97, and the Google half of where a
 sign-in lands is gone too, closed by #119 with the seam the sentence beside it said could not
-reach it. Of the ◐ — **fifteen, counted from the sheets on 6 September 2569, and this
-sentence used to describe eleven** — the original eleven are a request no control on any screen can
+reach it. Of the ◐ — **seventeen, counted from the sheets on 7 September 2569, and this
+sentence used to describe eleven and then fifteen** — the original eleven are a request no control on any screen can
 produce (#41's added the tenth: the year a plan is written for comes from the ตอนเรียน in the
 address, so no browser can send a different one) plus one arithmetic difference too small for an
-eye to decide and pinned exactly at the HTTP seam. The other four are a second kind and arrived
-with #85 and #111: an attribute reached the DOM and **whether anybody hears it needs an ear**.
-Neither kind is waiting on somebody who has not got round to it. Read a row that claims a seam proves it better than an eye as a claim to check, not
+eye to decide and pinned exactly at the HTTP seam. The other six are a second kind and arrived
+with #85, #111 and now #122: an attribute reached the DOM and **whether anybody hears it needs
+an ear**. The first kind is not waiting on anybody and never will be; the second is waiting on an
+ear, which is a real queue, and counting the two as one block is how six rows come to look
+unreachable when only eleven are. Read a row that claims a seam proves it better than an eye as a claim to check, not
 a conclusion — that is how the last of the walkable ones were found.
 
 **A ⚙ that was never earned is the mark to distrust most.** #42's fifth criterion carried one until
@@ -501,6 +503,39 @@ one of them a row about a reported line number. That is not #97's *kills too muc
 assert the claim — but no sheet knew, because a sweep is run one ticket at a time and the
 *other rows that died with it* column reads as though it were about the store.
 **When a mutant lives in shared code, its sheet is one of the places it kills, not the list.**
+
+**#122 is one defect described on two screens, and it was two — which is a new way for a
+ticket's diagnosis to be wrong.** Both screens carried a fact in colour and nothing else, and that
+half of the ticket was exactly right. But it said both turn red *เมื่อ `total > 100`*, and only the
+Activity editor does: สัดส่วนคะแนน's condition is `total === 100 ? green : red`, so **the colour
+there never meant *over* at all — it meant *not exactly a hundred*, and 80 was as red as 120.** The
+rules are different (`= 100` against `<= 100`, because a half-finished attribution is legal and a
+half-finished weighting scheme is not), so the right fix for one shared symptom was two different
+sentences: three states on one screen, one state and a deliberate silence on the other. A single
+sentence written from the ticket's account would have left the person stuck at 90 hearing nothing
+at all. **A ticket that generalises across screens has usually generalised the symptom; check
+whether the rule generalises before the fix does.** `editorcopiesthescheme` and
+`schemeonlycomplains` are the two mutants that exist to fail exactly that merge, and each kills one
+row and nothing else.
+
+**Where the words go is part of the fix, not styling.** The number is *outside* the live region and
+the verdict is inside it, because a region holding `รวม {total} / 100` re-announces the running
+total on every keystroke — which is how a polite region becomes something people switch off. And it
+is `aria-live="polite"` rather than `role="status"`: the roles this app announces with belong to
+`Notice`, specs across the store filter `getByRole('status')` by expected text, and #111's own
+§Note on scope had already set aside *a validation hint that appears while typing* as not the
+`Notice` case. **Adding a role is joining a set every unfiltered lookup in the store searches;
+`aria-live` announces without joining it.**
+
+**And the line the sentence joined was measured rather than argued about.** #111's rule that an
+accessibility fix does not get to change layout on the way past is a claim about geometry, so
+both reviews asking whether a second element had moved the pre-existing total and บันทึก were
+answered with numbers at 1280, 900 and 500: everything stays on one line, the button's right
+edge sits 84px inside the narrowest frame, and `scrollWidth` equals `clientWidth` throughout.
+The `flex-wrap` never fires down to 500px — it is insurance — while the editor's new wrapper
+`div` **does** earn its place there, keeping the sentence beside its number when the heading
+wraps away. **A rule about layout is checked with numbers, and the reading cost one throwaway
+spec that was deleted the same hour.**
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 6 September 2569 that is

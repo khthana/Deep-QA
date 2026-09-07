@@ -31,6 +31,12 @@ import {
  * one that enforces it — the total line here is a courtesy, and the refusal
  * sentence (which carries the server's own total) is shown as sent.
  *
+ * That courtesy said its half in a colour until #122: green at exactly a
+ * hundred, red at anything else, with the same words either way. It now says
+ * it in words as well, and the button stays pressable — the screen is not the
+ * authority (ADR-0002), and a disabled control explains nothing to the person
+ * who cannot work out what to fix.
+ *
  * ## Removal is a draft edit behind a confirmation
  *
  * The dialog says the removal takes effect on save, because that is true —
@@ -224,7 +230,7 @@ export default function GradingWeights() {
                 เพิ่มหมวดคะแนน
               </button>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1">
                 {/* The courtesy copy of the rule the server enforces. */}
                 <p
                   className={`text-sm font-medium ${
@@ -232,6 +238,35 @@ export default function GradingWeights() {
                   }`}
                 >
                   รวม {total} / 100
+                </p>
+                {/*
+                  The same fact in words — #122. The line above said it in a
+                  colour and in nothing else, and red against green is the
+                  distinction most likely not to arrive. Note what that colour
+                  actually meant here: `=== 100`, so it never said *over* at
+                  all, and short of a hundred is refused just as firmly.
+
+                  Its own element, and the number stays out of it. A live
+                  region holding `รวม {total} / 100` would read the running
+                  total out again on every keystroke; this one changes only
+                  when the answer changes, which is three times in a session
+                  rather than three times a number.
+
+                  `aria-live` rather than `role="status"`: the roles this app
+                  announces refusals with belong to `Notice`, and specs across
+                  the store filter `getByRole('status')` on the text they
+                  expect. A validation hint that appears while typing is the
+                  case #111 set aside for exactly this reason, and adding a
+                  fifth `status` to a screen would put a second one inside
+                  every unfiltered lookup that ever visits it.
+                */}
+                <p
+                  aria-live="polite"
+                  className={`text-sm ${
+                    total === 100 ? 'text-green-700' : 'text-red-600'
+                  }`}
+                >
+                  {verdictOf(total)}
                 </p>
                 <button
                   type="button"
@@ -276,4 +311,20 @@ export default function GradingWeights() {
       />
     </ContentMotionDIV>
   )
+}
+
+/**
+ * Which side of a hundred the draft is on, as a sentence — #122.
+ *
+ * Three states, because BR-05 is an equality: short is as unsaveable as over,
+ * and the sentence says which. The Activity editor's total carries two states
+ * under a different rule — at most a hundred, where short is merely
+ * half-finished — so it says its own words rather than importing these. They
+ * are two rules that happen to share a number, and `editorcopiesthescheme` in
+ * `mutation/122-weight-total-in-words.py` is what stops them being merged.
+ */
+const verdictOf = total => {
+  if (total > 100) return 'เกิน 100 จึงยังบันทึกไม่ได้'
+  if (total < 100) return 'ยังไม่ถึง 100 จึงยังบันทึกไม่ได้'
+  return 'ครบ 100 แล้ว บันทึกได้'
 }
