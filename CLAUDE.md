@@ -701,8 +701,8 @@ undercounting, none of them lying — each was right on the day it was written.
 `grep -c` took a minute.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 6 September 2569 that is
-`2026-09-06-b-a-true-sentence-read-as-another-answer.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 7 September 2569 that is
+`2026-09-07-what-greps-the-same-is-not-the-same.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Two test seams
