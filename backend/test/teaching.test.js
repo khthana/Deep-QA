@@ -15,7 +15,7 @@ const {
 } = require('../../db/seed');
 const { currentTerm } = require('../../db/term');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 /**
  * docs/acceptance/24-teacher-dashboard.md - the server half.
@@ -205,4 +205,16 @@ test('an anonymous caller is refused before any of this is considered', async ()
   const refused = await request(api.app).get('/api/teaching/sections');
   assert.equal(refused.status, 401);
   assert.equal(refused.body.reason, 'anonymous');
+});
+
+test('an id too large for the column is ไม่พบ, not a 500', async () => {
+  // #107. Both of `OVERWIDE_IDS`, whose docstring in `./helpers` says what
+  // they are and why one of them is not enough.
+  const cookie = await signInAs('U_TEACH');
+
+  for (const id of OVERWIDE_IDS) {
+    const answered = await section(cookie, id);
+    assert.equal(answered.status, 404, id + ' answered ' + answered.status);
+    assert.equal(answered.body.message, REFUSALS.sectionNotFound);
+  }
 });

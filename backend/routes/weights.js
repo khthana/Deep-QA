@@ -180,6 +180,14 @@ function weightRoutes(pool) {
         for (const source of sent) {
           const draft = readCategory(source);
           if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
+          // Not `integerId`, and #107 left this line alone on purpose. It
+          // greps like the thirteen sites that ticket changed and is about
+          // the same `integer` column — but null here does not mean *refuse*,
+          // it means *a category this scheme does not have yet*, and the row
+          // is inserted. An id the scheme does not hold is refused by name
+          // below, before it is ever a query parameter, so there is no 22003
+          // to prevent; `integerId` here would turn that refusal into a
+          // silent insert. `weights.test.js` carries the row that says so.
           const id = /^\d+$/.test(String(source?.score_ratio_id ?? ''))
             ? Number(source.score_ratio_id)
             : null;

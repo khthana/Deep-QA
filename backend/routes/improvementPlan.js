@@ -59,6 +59,7 @@ const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { offeringOf, cloOf } = require('./clos');
 const { cloOrder } = require('../lib/cloOrder');
+const { integerId } = require('../lib/fields');
 
 /** The one role these routes open for, spread at the call site as in clos.js. */
 const TEACHING = ['TEACHER'];
@@ -119,10 +120,9 @@ function readEntry(body) {
 
   if (!TYPES.includes(detailType)) return { ok: false, reason: 'invalidImprovementEntry' };
   if (!detailText) return { ok: false, reason: 'invalidImprovementEntry' };
-  if (cloId === undefined || cloId === null || !/^\d+$/.test(String(cloId))) {
-    return { ok: false, reason: 'invalidImprovementEntry' };
-  }
-  return { ok: true, values: { clo_id: cloId, detail_type: detailType, detail_text: detailText } };
+  const id = integerId(cloId);
+  if (id === null) return { ok: false, reason: 'invalidImprovementEntry' };
+  return { ok: true, values: { clo_id: id, detail_type: detailType, detail_text: detailText } };
 }
 
 function improvementPlanRoutes(pool) {
@@ -205,12 +205,13 @@ function improvementPlanRoutes(pool) {
 
   /** One entry by id, if it belongs to this Offering's cycle — the grain again. */
   async function entryOf(offering, entryId) {
-    if (!/^\d+$/.test(String(entryId))) return null;
+    const id = integerId(entryId);
+    if (id === null) return null;
     const { rows } = await pool.query(
       `SELECT ${ENTRY} ${ENTRY_FROM}
         WHERE d.clo_course_cycle_detail_id = $1
           AND y.program_id = $2 AND y.subject_id = $3 AND y.academic_year = $4`,
-      [entryId, offering.program_id, offering.subject_id, offering.academic_year],
+      [id, offering.program_id, offering.subject_id, offering.academic_year],
     );
     return rows[0] ?? null;
   }

@@ -41,6 +41,7 @@ const express = require('express');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { offeringOf, cloOf } = require('./clos');
+const { integerId } = require('../lib/fields');
 
 /** The one role these routes open for, spread at the call site as in clos.js. */
 const TEACHING = ['TEACHER'];
@@ -105,11 +106,12 @@ function achievementRoutes(pool) {
 
   /** One criterion of this CLO, by id — the pairing, never the id alone. */
   async function criterionOf(cloId, criterionId) {
-    if (!/^\d+$/.test(String(criterionId))) return null;
+    const id = integerId(criterionId);
+    if (id === null) return null;
     const { rows } = await pool.query(
       `SELECT ${RETURNED} FROM subject_clo_achievement_criteria
         WHERE id = $1 AND clo_id = $2`,
-      [criterionId, cloId],
+      [id, cloId],
     );
     return rows[0] ?? null;
   }

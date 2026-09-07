@@ -15,7 +15,7 @@ const {
   byAlias,
 } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 /**
  * docs/acceptance/30-weighting-scheme.md — the server half.
@@ -602,4 +602,35 @@ test('an anonymous caller is refused before any of this is considered', async ()
   const refused = await request(api.app).get(url(1));
   assert.equal(refused.status, 401);
   assert.equal(refused.body.reason, 'anonymous');
+});
+
+test('a score_ratio_id too large for the column is refused by name, not by the column', async () => {
+  // #107 swept nine route files and deliberately left this one, and this row
+  // is why. The `/^\\d+$/` here greps identically to the thirteen that were
+  // changed and is about the same `integer` column - but an id this scheme
+  // does not hold is refused two dozen lines further down, by name, before
+  // any query is built from it. There is no 22003 to prevent.
+  //
+  // `integerId` here would be a regression rather than a fix: it answers null
+  // for an unusable id, null means *a category this scheme does not have yet*,
+  // and the request would quietly insert a row instead of refusing.
+  const cookie = await teaching('U_TEACH');
+  const sectionId = await seededSection('U_TEACH', CURRENT_YEAR);
+  const current = await scheme(cookie, sectionId);
+
+  for (const id of OVERWIDE_IDS) {
+    const answered = await save(
+      cookie,
+      sectionId,
+      current.map((row, index) => (index === 0 ? { ...row, score_ratio_id: id } : row)),
+    );
+    assert.equal(answered.status, 404, id + ' answered ' + answered.status);
+    assert.equal(answered.body.message, REFUSALS.weightNotFound);
+  }
+
+  // And the scheme is untouched by the refusal - the ids it had, it still has.
+  assert.deepEqual(
+    (await scheme(cookie, sectionId)).map((row) => row.score_ratio_id),
+    current.map((row) => row.score_ratio_id),
+  );
 });

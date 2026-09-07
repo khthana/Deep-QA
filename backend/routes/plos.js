@@ -58,7 +58,7 @@ const express = require('express');
 
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull, isDuplicate } = require('../lib/fields');
+const { blankToNull, isDuplicate, integerId } = require('../lib/fields');
 const { reachablePrograms, programInReach } = require('../lib/reach');
 const { deleteOrDeactivate } = require('../lib/removal');
 
@@ -180,12 +180,13 @@ function ploRoutes(pool) {
    * server rather than in a menu.
    */
   async function reachable(req, outcomeId) {
-    if (!/^\d+$/.test(String(outcomeId))) return null;
+    const id = integerId(outcomeId);
+    if (id === null) return null;
     const reach = await coveredScopes(pool, req.auth.acting.scope_id);
     const { rows } = await pool.query(
       `SELECT ${RETURNED} ${FROM}
         WHERE lo.outcome_id = $1 AND ($2::text[] IS NULL OR lo.program_id = ANY($2))`,
-      [outcomeId, reach],
+      [id, reach],
     );
     return rows[0] ?? null;
   }

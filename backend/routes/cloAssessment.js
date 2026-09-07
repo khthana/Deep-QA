@@ -172,16 +172,16 @@ function cloAssessmentRoutes(pool) {
         // coming back empty is the same refusal.
         //
         // In sequence rather than in parallel, which is the one place this
-        // route's shape differs from #39's, and it is not about speed. Only
-        // `sectionOf` carries `integerId`; `offeringOf` still guards by hand
-        // with `/^\d+$/`, so an all-digit id too large for an `integer`
-        // reaches its query and comes back 22003 — a five hundred for a URL
-        // somebody mistyped. That is
-        // [#107](https://github.com/khthana/Deep-QA/issues/107), which names
-        // `offeringOf` among eleven call sites and is not half-fixed from
-        // inside this ticket. Asking the deciding guard first is the better
-        // shape anyway: nothing should ask what Offering a ตอนเรียน belongs to
-        // before establishing that this account teaches it.
+        // route's shape differs from #39's, and it is not about speed:
+        // nothing should ask what Offering a ตอนเรียน belongs to before
+        // establishing that this account teaches it.
+        //
+        // It used to be load-bearing for a second reason as well. `sectionOf`
+        // carried `integerId` and `offeringOf` guarded by hand, so this order
+        // was also what kept an overlong id away from the query that would
+        // have answered 22003 for it — a five hundred for a URL somebody
+        // mistyped. #107 gave `offeringOf` the same guard, so the order is now
+        // only the argument it says it is.
         const section = await sectionOf(pool, req, req.params.sectionId);
         if (!section) return notThisSection(res);
         const offering = await offeringOf(pool, req, req.params.sectionId);

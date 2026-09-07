@@ -38,20 +38,29 @@ const INT4_MAX = 2147483647;
 /**
  * An id from a URL, if it is one this schema could actually hold.
  *
- * Every route that addresses a surrogate key guards it with `/^\d+$/` before
- * querying, because the column is an `integer` and a non-numeric id would be
- * a 22P02 from the database rather than the 404 the caller is owed. The
- * regular expression alone is not the whole guard: `99999999999999999999` is
- * all digits and still overflows, and 22003 reaches the error handler as
- * เกิดข้อผิดพลาดในระบบ — a system fault, reported for a URL somebody typed.
+ * A route that addresses a surrogate key has to test the id before querying,
+ * because the column is an `integer` and a non-numeric id would be a 22P02
+ * from the database rather than the 404 the caller is owed. Every route used
+ * to do it with `/^\d+$/` written out by hand, and that is not the whole
+ * guard: `2147483648` is all digits and still overflows, and 22003 reaches the
+ * error handler as เกิดข้อผิดพลาดในระบบ — a system fault, reported for a URL
+ * somebody typed.
  *
  * So the bound belongs with the shape. Anything outside it is `null`, which
  * every caller already turns into its own ไม่พบ.
  *
- * Found by #32's own tests. The routes still guarding by hand — `clos.js`,
- * `behaviors.js`, `achievementCriteria.js`, `offerings.js` — are
- * [#107](https://github.com/khthana/Deep-QA/issues/107); the three on #32's
- * own path (this ticket's route, `teachingPlan.js` and `sectionOf`) use it.
+ * Found by #32's own tests, on the three sites of its own path (that ticket's
+ * route, `teachingPlan.js` and `sectionOf`), and swept across the rest by
+ * [#107](https://github.com/khthana/Deep-QA/issues/107) — **thirteen sites in
+ * nine route files**, where that ticket named seven in four and this docstring
+ * named four. No route guards a surrogate key by hand any more.
+ *
+ * One `/^\d+$/` outlived the sweep on purpose: `weights.js` reads a
+ * `score_ratio_id` out of a body, and null there does not mean *refuse* but
+ * *a category this scheme does not have yet*. An id the scheme does not hold
+ * is refused by name before it is ever a query parameter, so there is no
+ * 22003 to prevent, and answering null for one would turn that refusal into a
+ * silent insert. A guard that greps the same is not the same guard.
  */
 const integerId = (value) => {
   const text = String(value);

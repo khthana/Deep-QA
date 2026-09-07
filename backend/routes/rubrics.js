@@ -65,7 +65,7 @@ const express = require('express');
 
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull, isDuplicate } = require('../lib/fields');
+const { blankToNull, isDuplicate, integerId } = require('../lib/fields');
 const { pageOf } = require('../lib/paging');
 const { reachablePrograms, programInReach } = require('../lib/reach');
 
@@ -169,12 +169,13 @@ function readRubric(source, { editing = false } = {}) {
  * is not.
  */
 async function reachableRubric(pool, req, rubricId) {
-  if (!/^\d+$/.test(String(rubricId))) return null;
+  const id = integerId(rubricId);
+  if (id === null) return null;
   const reach = await coveredScopes(pool, req.auth.acting.scope_id);
   const { rows } = await pool.query(
     `SELECT ${RETURNED} ${FROM}
       WHERE r.id = $1 AND ($2::text[] IS NULL OR r.program_id = ANY($2))`,
-    [rubricId, reach],
+    [id, reach],
   );
   return rows[0] ?? null;
 }

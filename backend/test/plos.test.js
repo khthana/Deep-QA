@@ -49,7 +49,7 @@ const {
   CURRENT_YEAR,
 } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 /**
  * `outcome_type`, exactly - written out rather than imported from the route,
@@ -615,4 +615,16 @@ test('a parent that is not a number, and an order past the column, are refused r
   });
   assert.equal(far.status, 400);
   assert.equal(far.body.message, REFUSALS.invalidPlo);
+});
+
+test('an id too large for the column is ไม่พบ, not a 500', async () => {
+  // #107. Both of `OVERWIDE_IDS`, whose docstring in `./helpers` says what
+  // they are and why one of them is not enough.
+  const cookie = await signInAs('U_COM');
+
+  for (const id of OVERWIDE_IDS) {
+    const answered = await one(cookie, id);
+    assert.equal(answered.status, 404, id + ' answered ' + answered.status);
+    assert.equal(answered.body.message, REFUSALS.ploNotFound);
+  }
 });

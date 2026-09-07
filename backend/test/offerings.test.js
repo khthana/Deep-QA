@@ -47,7 +47,7 @@ const {
   byAlias,
 } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 /**
  * Years the seed does not use, so nothing in this file collides with it.
@@ -912,4 +912,24 @@ test('a copy is refused when either end is not a term, or both are the same', as
     ).status,
     403,
   );
+});
+
+test('an id too large for the column is ไม่พบ, not a 500', async () => {
+  // #107. Both of `OVERWIDE_IDS`, whose docstring in `./helpers` says what
+  // they are and why one of them is not enough.
+  const cookie = await signInAs('U_COM');
+
+  // Past the Offering, on to the Section it holds - a second guard, and the
+  // one an Offering that does resolve is needed to reach at all.
+  const offering = await freshOffering(cookie);
+
+  for (const id of OVERWIDE_IDS) {
+    const answered = await read(cookie, id);
+    assert.equal(answered.status, 404, id + ' offering answered ' + answered.status);
+    assert.equal(answered.body.message, REFUSALS.offeringNotFound);
+
+    const bySection = await dropSection(cookie, offering.id, id);
+    assert.equal(bySection.status, 404, id + ' section answered ' + bySection.status);
+    assert.equal(bySection.body.message, REFUSALS.sectionNotFound);
+  }
 });

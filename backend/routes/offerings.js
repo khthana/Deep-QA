@@ -50,7 +50,7 @@ const express = require('express');
 
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
+const { blankToNull, isDuplicate, isReferenced, integerId } = require('../lib/fields');
 const { pageOf } = require('../lib/paging');
 const { reachablePrograms, programInReach } = require('../lib/reach');
 
@@ -241,8 +241,9 @@ function offeringRoutes(pool) {
    * same 404 as never-made, which is the ninth criterion enforced at the server
    * rather than in a menu.
    */
-  async function reachable(req, id) {
-    if (!/^\d+$/.test(String(id))) return null;
+  async function reachable(req, offeringId) {
+    const id = integerId(offeringId);
+    if (id === null) return null;
     const reach = await coveredScopes(pool, req.auth.acting.scope_id);
     const { rows } = await pool.query(
       `SELECT ${RETURNED} ${FROM}
@@ -305,11 +306,12 @@ function offeringRoutes(pool) {
   async function reachableSection(req, offeringId, sectionId) {
     const offering = await reachable(req, offeringId);
     if (!offering) return { offering: null, section: null };
-    if (!/^\d+$/.test(String(sectionId))) return { offering, section: null };
+    const id = integerId(sectionId);
+    if (id === null) return { offering, section: null };
     const { rows } = await pool.query(
       `SELECT section_id, section_number FROM course_sections
         WHERE section_id = $1 AND semester_course_id = $2`,
-      [sectionId, offering.id],
+      [id, offering.id],
     );
     return { offering, section: rows[0] ?? null };
   }

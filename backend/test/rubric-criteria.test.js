@@ -54,7 +54,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, PROGRAM, RUBRICS } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 let api;
 before(async () => {
@@ -433,6 +433,18 @@ test('a criterion that was never made, and one addressed by nonsense, answer the
 
   assert.equal((await one(cookie, rubric.id, 99999999)).status, 404);
   assert.equal((await one(cookie, rubric.id, 'ห้าสิบ')).status, 404);
+  // #107: all digits, and wider than an `integer` will hold. The sentence is
+  // asserted here and not only the status, because 404 is what this row shared
+  // with a 500 before the ticket - the body is where the two differ.
+  for (const id of OVERWIDE_IDS) {
+    const found = await one(cookie, rubric.id, id);
+    assert.equal(found.status, 404, id);
+    assert.equal(found.body.message, REFUSALS.criterionNotFound, id);
+
+    const parent = await list(cookie, id);
+    assert.equal(parent.status, 404, id);
+    assert.equal(parent.body.message, REFUSALS.rubricNotFound, id);
+  }
   assert.equal((await list(cookie, 'ห้าสิบ')).status, 404);
   assert.equal((await remove(cookie, rubric.id, 'NaN')).status, 404);
 

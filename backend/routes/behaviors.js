@@ -54,6 +54,7 @@ const express = require('express');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { offeringOf, cloOf } = require('./clos');
+const { integerId } = require('../lib/fields');
 
 /** The one role these routes open for, spread at the call site as in clos.js. */
 const TEACHING = ['TEACHER'];
@@ -124,11 +125,12 @@ function behaviorRoutes(pool) {
 
   /** One behaviour of this CLO, by id — the pairing, never the id alone. */
   async function behaviorOf(cloId, behaviorId) {
-    if (!/^\d+$/.test(String(behaviorId))) return null;
+    const id = integerId(behaviorId);
+    if (id === null) return null;
     const { rows } = await pool.query(
       `SELECT ${RETURNED} FROM subject_clo_measurable_behavior
         WHERE id = $1 AND clo_id = $2`,
-      [behaviorId, cloId],
+      [id, cloId],
     );
     return rows[0] ?? null;
   }

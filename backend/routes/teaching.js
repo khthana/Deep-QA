@@ -44,6 +44,7 @@ const express = require('express');
 const { currentTerm } = require('../../db/term');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
+const { integerId } = require('../lib/fields');
 
 /**
  * The one role these routes open for.
@@ -130,14 +131,14 @@ function teachingRoutes(pool) {
    */
   router.get('/teaching/sections/:sectionId', requireRole(...TEACHING), async (req, res, next) => {
     try {
-      const { sectionId } = req.params;
-      if (!/^\d+$/.test(String(sectionId))) {
+      const id = integerId(req.params.sectionId);
+      if (id === null) {
         return res.status(404).json({ message: REFUSALS.sectionNotFound });
       }
 
       const { rows } = await pool.query(
         `SELECT ${RETURNED} ${FROM} WHERE cs.section_id = $1 AND cst.user_id = $2`,
-        [sectionId, req.session.userId],
+        [id, req.session.userId],
       );
       if (!rows[0]) return res.status(404).json({ message: REFUSALS.sectionNotFound });
 

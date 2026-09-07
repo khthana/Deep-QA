@@ -7,7 +7,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, CURRENT_YEAR, PRIOR_YEAR, SEMESTER, byAlias } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 /**
  * docs/acceptance/29-achievement-criteria.md — the server half.
@@ -427,4 +427,18 @@ test('an anonymous caller is refused before any of this is considered', async ()
   const refused = await request(api.app).get(url(1, 1));
   assert.equal(refused.status, 401);
   assert.equal(refused.body.reason, 'anonymous');
+});
+
+test('an id too large for the column is ไม่พบ, not a 500', async () => {
+  // #107. Both of `OVERWIDE_IDS`, whose docstring in `./helpers` says what
+  // they are and why one of them is not enough.
+  const cookie = await teaching('U_TEACH');
+  const sectionId = await seededSection('U_TEACH', CURRENT_YEAR);
+  const clo = (await closOf(cookie, sectionId))[0];
+
+  for (const id of OVERWIDE_IDS) {
+    const answered = await remove(cookie, sectionId, clo.clo_id, id);
+    assert.equal(answered.status, 404, id + ' answered ' + answered.status);
+    assert.equal(answered.body.message, REFUSALS.achievementNotFound);
+  }
 });

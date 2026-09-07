@@ -148,4 +148,21 @@ const inCloOrder = (codes) =>
     return byText();
   });
 
-module.exports = { startApi, guardedApp, inCloOrder };
+/**
+ * Two addresses that are all digits and wider than the column - #107.
+ *
+ * `/^\\d+$/` passes both and an `integer` holds neither, so a route that
+ * guards the shape and not the bound hands one to PostgreSQL and gets a 22003
+ * back. Shared rather than retyped because ten suites assert them: a copy per
+ * suite is ten places to find out on the day the bound moves.
+ *
+ * Both, because they are refused by different halves of `integerId` and a row
+ * carrying only the long one cannot see the half that is about the column.
+ * `Number('99999999999999999999')` is 1e20, which fails `Number.isSafeInteger`
+ * before `id <= INT4_MAX` is consulted at all. `2147483648` is one past the
+ * column and a number JavaScript holds exactly, so the ceiling is the only
+ * thing that can refuse it.
+ */
+const OVERWIDE_IDS = ['2147483648', '99999999999999999999'];
+
+module.exports = { startApi, guardedApp, inCloOrder, OVERWIDE_IDS };

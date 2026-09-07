@@ -55,7 +55,7 @@ const {
   RUBRICS_INTL,
 } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 let api;
 before(async () => {
@@ -496,7 +496,7 @@ test('removing a rubric removes its criteria, and says how many went', async () 
 
 test('a rubric that was never made, and one addressed by nonsense, both answer the same way', async () => {
   const cookie = await signInAs('U_COM');
-  for (const address of ['999999', 'RUB-01', '1e3']) {
+  for (const address of ['999999', 'RUB-01', '1e3', ...OVERWIDE_IDS]) {
     const answered = await one(cookie, address);
     assert.equal(answered.status, 404, address);
     assert.equal(answered.body.message, REFUSALS.rubricNotFound, address);

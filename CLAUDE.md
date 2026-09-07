@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122 and #96**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96 and #107**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -625,6 +625,80 @@ numerically and the helper put one of them last. Green on the seeded data, and a
 failure waiting for a route that is right. **A helper written to restate a rule
 independently has to restate it exactly; agreeing on today's data is what a
 copy-of-the-rule does too.**
+
+**#107 is #96's lesson arriving a second time, one ticket later, which is what
+turns an anecdote into a rule.** #96 found two `ORDER BY`s that grep like the
+eight it fixed and are deliberately not callers. #107 found one `/^\d+$/` that
+greps like the thirteen it fixed and is deliberately not one: `weights.js` reads
+a `score_ratio_id` out of a *body*, and `null` there does not mean *refuse* — it
+means *a category this scheme does not have yet*, and the row is inserted. An id
+the scheme does not hold is refused **by name** forty lines further down, before
+it is ever a query parameter, so there is no 22003 to prevent and `integerId`
+there would have turned a refusal into a silent insert. It was found by writing
+the row first and watching it answer **404, not the 500 every other site
+answered**. **A guard that greps the same is not the same guard — read what it
+does with its `null`**, and let the reproduction tell you, because thirteen of
+fourteen behaving one way is exactly the evidence that makes the fourteenth look
+obvious. The row that pins it is in `weights.test.js`, so the next pass that
+"finishes" #107 fails a test instead of shipping the regression.
+
+**The crafted id the ticket suggests could not see half the guard, and asking
+before the sweep is what caught it.** #96's `nofallback` was found by the review,
+after the sweep had already been written up; here the same question — *what would
+a mutant have to change that no row could see* — was asked first, and the answer
+was arithmetic. `integerId` refuses `Number.isSafeInteger(id) && id >= 1 && id <=
+INT4_MAX`, and `Number('99999999999999999999')` is 1e20, which fails
+`isSafeInteger` **before the ceiling is consulted at all**. Every row written with
+the ticket's own id would have left `id <= INT4_MAX` — the clause that is actually
+about the `integer` column — unproved, and `nobound` would have survived a green
+sweep. `2147483648` is the id only the ceiling can refuse. **When a guard is a
+chain of conditions, one crafted value proves one link**; count the links and
+craft one value per link, and do it before the sweep rather than after.
+
+**And a third clause could not be proved at all, which is a different answer
+again.** `Number.isSafeInteger` **cannot decide anything** here: the regexp has
+already excluded signs, decimals and exponents, so every value reaching it is a
+non-negative integer literal, and every one large enough to be unsafe is far
+larger than `INT4_MAX` and refused one clause later. The mutant was written,
+swept, and killed nothing — #45's rule — so it was deleted rather than left in
+the store as a red mark against rows that are fine. **A clause that is free and
+harmless is still a clause no test can be written for**; say which of the three
+it is (proved, structurally unreachable, or missing a test) rather than leaving a
+reader to assume the first.
+
+**The best thing the sweep found was in another ticket's file, and neither of
+the store's two checks would have found it alone.** `mutation/anchors.py` reported
+two MISSes in `24-teacher-dashboard.py` the moment `teaching.js` was rewritten —
+#123's shape, caught by the tool built for it. Re-aiming `nonumericguard` at the
+new `if` looked right and **killed nothing**, and the reason is the fix itself:
+the route used to test one value and bind another, so deleting its refusal let
+the raw address reach PostgreSQL as a 22P02; it now binds the value it
+validated, so deleting the refusal binds `null`, `WHERE section_id = NULL`
+matches nothing, and the caller gets the same 404 by accident. **A guard that
+returns the value it validated cannot be broken by deleting its refusal alone.**
+That is a property of the fix rather than a gap — but the mutant had to be
+re-aimed at the binding to have anything left to say. **An anchor check tells you
+a mutant no longer applies; only a sweep tells you it no longer proves
+anything**, and a refactor can turn the second into the first without touching
+the mutant's file.
+
+**A helper named for a type is a promise about that type, and one caller was
+wider.** `integerId` is #32's and it is about `integer`; the schema has three
+`bigint` identity columns, and one of #107's thirteen sites guards one of them.
+`nobound` kills nine of ten rows for that reason and not because the tenth is
+weak — `2147483648` is a value that column holds perfectly well. Nothing turns
+on it (the answer is 404 either way, and a sequence would have to pass two
+billion rows before a real row could be addressed by a refused id) but the
+docstring's *an id this schema could actually hold* is one route too broad, and
+it is written down where the next reader will meet it. **Check what a shared
+helper's name promises against every column it is pointed at.**
+
+**And the counts went the way they always go.** The ticket named seven call
+sites in four files; `fields.js`'s own docstring named four files; the code had
+**fourteen hand-rolled guards in ten route files**, of which thirteen in nine
+were the defect. That is three separate written-down diagnoses, all
+undercounting, none of them lying — each was right on the day it was written.
+`grep -c` took a minute.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 6 September 2569 that is

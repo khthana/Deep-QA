@@ -7,7 +7,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, CURRENT_YEAR, PRIOR_YEAR, SEMESTER, byAlias } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 /**
  * docs/acceptance/41-continuous-improvement-plan.md — the server half.
@@ -480,6 +480,12 @@ test('the three things a draft can be missing are one sentence', async () => {
     { clo_id: clo.clo_id, detail_type: 'SUMMARY' },
     { detail_type: 'SUMMARY', detail_text: SUMMARY_TEXT },
     { clo_id: 'not-a-clo', detail_type: 'SUMMARY', detail_text: SUMMARY_TEXT },
+    // #107: all digits, and wider than the column - a 22003 before this.
+    ...OVERWIDE_IDS.map((id) => ({
+      clo_id: id,
+      detail_type: 'SUMMARY',
+      detail_text: SUMMARY_TEXT,
+    })),
   ];
 
   for (const draft of drafts) {
@@ -524,4 +530,17 @@ test('an anonymous caller is refused before any of this is considered', async ()
   const refused = await request(api.app).get(url(1));
   assert.equal(refused.status, 401);
   assert.equal(refused.body.reason, 'anonymous');
+});
+
+test('an id too large for the column is ไม่พบ, not a 500', async () => {
+  // #107. Both of `OVERWIDE_IDS`, whose docstring in `./helpers` says what
+  // they are and why one of them is not enough.
+  const cookie = await teaching('U_TEACH');
+  const sectionId = await seededSection('U_TEACH', CURRENT_YEAR);
+
+  for (const id of OVERWIDE_IDS) {
+    const answered = await drop(cookie, sectionId, id);
+    assert.equal(answered.status, 404, id + ' answered ' + answered.status);
+    assert.equal(answered.body.message, REFUSALS.improvementEntryNotFound);
+  }
 });

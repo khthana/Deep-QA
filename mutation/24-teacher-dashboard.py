@@ -83,8 +83,8 @@ MUTANTS = {
          "`SELECT ${RETURNED} ${FROM} WHERE cs.section_id = $1 AND cst.user_id = $2"
          " AND sc.academic_year = $3`,"),
         ("routes",
-         "        [sectionId, req.session.userId],",
-         "        [sectionId, req.session.userId, currentTerm().academicYear],"),
+         "        [id, req.session.userId],",
+         "        [id, req.session.userId, currentTerm().academicYear],"),
     ],
     # The enrolment count climbing a join it should not: counted over the
     # Offering rather than over the Section. Both numbers are plausible on a
@@ -99,9 +99,31 @@ MUTANTS = {
     # The numeric guard removed, so a non-numeric id reaches PostgreSQL and
     # comes back 22P02 through the error handler instead of the refusal the
     # caller has earned. #23 paid for this once already.
+    #
+    # Re-aimed twice on 7 ก.ย. 2569, and the second time is the one worth
+    # reading. #107 replaced the hand-rolled `/^\d+$/` here with `integerId`,
+    # so the string this was anchored to stopped existing and the mutant
+    # answered MISS - #123's third way to go stale, caught by
+    # `mutation/anchors.py`.
+    #
+    # The obvious re-aim is to disable the `if`, and it was tried: it
+    # **killed nothing**. The refactor moved what the query is given. The route
+    # used to test one value and bind another, so skipping the refusal let the
+    # raw address reach PostgreSQL as a 22P02; it now binds the *validated*
+    # value, so skipping the refusal binds `null`, `WHERE cs.section_id = NULL`
+    # matches no row, and the caller gets the same 404 by accident. The claim
+    # stopped being at risk from that edit - #45's rule, and the sweep is what
+    # said so rather than a reading of the diff.
+    #
+    # So the mutant aims at the line that can still fail: bind the address
+    # instead of the id read out of it. A non-numeric id is a 22P02 again and
+    # an overlong one a 22003, which is the whole of what this mutant has
+    # always claimed. **A guard that returns the value it validated cannot be
+    # broken by deleting its refusal alone** - that is a property of the fix
+    # worth knowing, not a gap.
     "nonumericguard": ("routes",
-                       "      if (!/^\\d+$/.test(String(sectionId))) {",
-                       "      if (false) {"),
+                       "      const id = integerId(req.params.sectionId);",
+                       "      const id = req.params.sectionId;"),
     # The substitution that ADR-0004 is about, made a no-op. Every
     # Section-specific entry then points at a path with `%SECTION%` still in it,
     # which routes to NotBuiltYet - a screen that looks exactly like the ones

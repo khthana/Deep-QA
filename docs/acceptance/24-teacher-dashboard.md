@@ -89,6 +89,7 @@ seed หลังเดินคำสั่งข้างบนจะมีก
 | 7 | สลับกลับไปเป็นกรรมการแล้วยังเข้าหน้าของกรรมการได้ | กด dropdown บทบาท → *กรรมการหลักสูตร* → ไปที่ *การเปิดรายวิชาในภาคการศึกษา* | เข้าได้ตามปกติ และเมนูของผู้สอนหายไป — **ครึ่งนี้ไม่ได้ครอบด้วยเทสต์** ตั๋วเขียนว่า *"switch to that role and back"* และ `24a` แถว 7 เดินแค่ขาไป เพราะสิ่งที่แถวนั้นพิสูจน์คือด่านของหน้านี้ ไม่ใช่กลไกสลับบทบาทของ #10 | ☑ |
 | 8 | มีเทสต์พิสูจน์การปฏิเสธข้ามตอนเรียนด้วยผู้สอนใน seed ที่ไม่ได้สอนอะไร | `cd backend && node --test test/teaching.test.js` | 10 subtests ผ่านทั้งหมด และแถวที่ตั๋วสั่งมีอยู่จริงเป็นแถวแยก คือ *a section the caller does not teach is refused, and refused as not found* กับ *a teacher who teaches nothing gets an empty list, and the term it was empty in* ทั้งคู่ใช้ `teacher.two@` ซึ่งคอมเมนต์ใน seed เขียนไว้ตรง ๆ ว่า *Teaches nothing* | ☑ |
 | 8 | เพื่อนร่วมภาควิชาที่สอนตอนถัดไปของวิชาเดียวกันก็ยังถูกปฏิเสธ | — | แถวนี้อยู่ที่ `backend/test/teaching.test.js` เท่านั้น (`a colleague teaching the next section along of the same subject is still refused`) เป็นคู่ที่ด่าน scope แบบหยาบจะปล่อยผ่าน เพราะทั้งคู่อยู่ภาควิชาเดียวกันและวิชาเดียวกัน | ☑ |
+| — | รหัสที่เป็นตัวเลขล้วนแต่กว้างเกินคอลัมน์ ตอบ*ไม่พบ* ไม่ใช่ *เกิดข้อผิดพลาดในระบบ* | อ่าน `backend/test/teaching.test.js` ข้อ *an id too large for the column is ไม่พบ, not a 500* | ทั้ง `2147483648` และ `99999999999999999999` ได้ 404 พร้อมประโยค *ไม่พบตอนเรียนที่ระบุ* เดิมของโมดูล — ก่อน [#107](https://github.com/khthana/Deep-QA/issues/107) ทั้งคู่เป็น 22003 → 500 · `107:shapeonly` ค้ำไว้ (`107:nobound` ค้ำเฉพาะครึ่งที่เป็นเพดานของ `integer` คือ `2147483648`) | ☑ |
 
 ## บันทึกการเดินด้วยมือ
 
@@ -140,7 +141,7 @@ spec ไฟล์เดียวกันตาย เดินจริงเ�
 | `norolegate` | เอา `requireRole(...TEACHING)` ออกจากหน้าหลัก | 2 subtests คือ *the account holding two roles has to be acting as the teacher* และ *a role that is not a teaching one does not reach these routes at all* — บัญชีผู้สอนบทบาทเดียวทุกบัญชีไม่กระทบ ซึ่งเป็นสิ่งที่ทำให้มันเป็นมัตแตนต์ของแถวสองบทบาทโดยเฉพาะ |
 | `currenttermonly` | เอากฎของ *รายการ* ไปบังคับกับการอ่านทีละตอน | 1 subtest คือ *the section of the year before is still reachable one at a time* — ตัวเดียว ตรงตามแถวที่มันค้ำ |
 | `countjoin` | นับนักศึกษาข้าม join ขึ้นไปถึงรายวิชาที่เปิดสอน | 1 subtest ที่ `student_count` — 113 แทน 57 ทั้งสองเลขอ่านดูสมเหตุสมผลบนการ์ด |
-| `nonumericguard` | เอาด่าน `/^\d+$/` ออก | 1 subtest คือ *an id that is not a number is refused rather than raised* — id ที่ไม่ใช่ตัวเลขทะลุไปถึง PostgreSQL แล้วกลับมาเป็น 22P02 |
+| `nonumericguard` | ผูก query ด้วยที่อยู่ดิบ แทนค่าที่ `integerId` ตรวจแล้ว (เดิมเอาด่าน `/^\d+$/` ออก — #107 ทำให้ต้องเล็งใหม่) | **2 subtests** คือ *an id that is not a number is refused rather than raised* และ *an id too large for the column is ไม่พบ, not a 500* — id ที่ไม่ใช่ตัวเลขทะลุไปถึง PostgreSQL แล้วกลับมาเป็น 22P02 ส่วนตัวเลขล้วนที่กว้างเกินคอลัมน์กลับมาเป็น 22003 ทั้งคู่ผ่าน error handler เป็น 500 |
 
 ### ฝั่งเบราว์เซอร์
 

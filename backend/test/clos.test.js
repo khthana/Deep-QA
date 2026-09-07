@@ -7,7 +7,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, CURRENT_YEAR, PRIOR_YEAR, SEMESTER, byAlias } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, OVERWIDE_IDS } = require('./helpers');
 
 /**
  * docs/acceptance/27-course-learning-outcomes.md — the server half.
@@ -576,5 +576,36 @@ test('a code with no digits in it sorts last instead of bringing the list down',
     assert.equal(listed[9], 'CLO-การสื่อสาร', 'a code with no number in it reads last');
   } finally {
     assert.equal((await remove(cookie, section, response.body.clo.clo_id)).status, 204);
+  }
+});
+
+test('an id too large for the column is ไม่พบ, not a 500', async () => {
+  // #107. Both of `OVERWIDE_IDS`, whose docstring in `./helpers` says what
+  // they are and why one of them is not enough.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+
+  for (const id of OVERWIDE_IDS) {
+    const bySection = await list(cookie, id);
+    assert.equal(bySection.status, 404, id + ' section answered ' + bySection.status);
+    assert.equal(bySection.body.message, REFUSALS.sectionNotFound);
+
+    const byClo = await remove(cookie, section, id);
+    assert.equal(byClo.status, 404, id + ' clo answered ' + byClo.status);
+    assert.equal(byClo.body.message, REFUSALS.cloNotFound);
+  }
+
+  // And the same overflow reached through a body field rather than the
+  // address - the third site the ticket names. Not a 404: an unusable
+  // `plo_id` is the form being wrong, which this module already has a
+  // sentence for.
+  for (const id of OVERWIDE_IDS) {
+    const byPlo = await add(cookie, section, {
+      ...DRAFT,
+      clo_number: 'CLO-107',
+      plo_id: id,
+    });
+    assert.equal(byPlo.status, 400, id + ' plo_id answered ' + byPlo.status);
+    assert.equal(byPlo.body.message, REFUSALS.ploNotMapped);
   }
 });

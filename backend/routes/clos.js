@@ -60,6 +60,7 @@ const express = require('express');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { cloOrder } = require('../lib/cloOrder');
+const { integerId } = require('../lib/fields');
 
 /** The one role these routes open for, spread at the call site as in teaching.js. */
 const TEACHING = ['TEACHER'];
@@ -110,8 +111,10 @@ function readClo(body) {
   };
 
   if (!values.clo_number || !values.clo_detail) return { ok: false, reason: 'invalidClo' };
-  if (values.plo_id !== null && !/^\d+$/.test(String(values.plo_id))) {
-    return { ok: false, reason: 'ploNotMapped' };
+  if (values.plo_id !== null) {
+    const ploId = integerId(values.plo_id);
+    if (ploId === null) return { ok: false, reason: 'ploNotMapped' };
+    values.plo_id = ploId;
   }
   return { ok: true, values };
 }
@@ -132,7 +135,8 @@ const isDuplicate = (error) => error && error.code === '23505';
  * and two answers to one question drift.
  */
 async function offeringOf(pool, req, sectionId) {
-  if (!/^\d+$/.test(String(sectionId))) return null;
+  const id = integerId(sectionId);
+  if (id === null) return null;
   const { rows } = await pool.query(
     `SELECT sc.id AS semester_course_id, sc.program_id, sc.subject_id,
             sc.academic_year, sc.semester
@@ -140,19 +144,20 @@ async function offeringOf(pool, req, sectionId) {
        JOIN course_sections cs ON cs.section_id = cst.section_id
        JOIN semester_courses sc ON sc.id = cs.semester_course_id
       WHERE cs.section_id = $1 AND cst.user_id = $2`,
-    [sectionId, req.session.userId],
+    [id, req.session.userId],
   );
   return rows[0] ?? null;
 }
 
 /** One CLO of this Offering, by id, or nothing — see the note on the grain. */
 async function cloOf(pool, offering, cloId) {
-  if (!/^\d+$/.test(String(cloId))) return null;
+  const id = integerId(cloId);
+  if (id === null) return null;
   const { rows } = await pool.query(
     `SELECT ${RETURNED} ${FROM}
       WHERE c.clo_id = $1 AND c.program_id = $2 AND c.subject_id = $3
         AND c.academic_year = $4`,
-    [cloId, offering.program_id, offering.subject_id, offering.academic_year],
+    [id, offering.program_id, offering.subject_id, offering.academic_year],
   );
   return rows[0] ?? null;
 }
