@@ -31,6 +31,13 @@ the deed; the acceptance document says so.
 Killing them:
 
     cd e2e && npx playwright test 30a
+
+`importlineoff` is the exception, and it was not known to be one until #123
+swept it across the store on 7 September 2569. It breaks a rule the shared
+importer holds for six screens, so it kills row 9 here *and* `11b` row 7, `14b`
+row 7, `14c`'s #91 row, `17b` row 14 and `34a` row 9. Every one of those is a
+row about a reported line number, so this is a rule proved in six places rather
+than a mutant that kills too much - but a per-ticket sweep cannot see any of it.
 """
 
 from harness import main
@@ -140,9 +147,17 @@ MUTANTS = {
     # The shared importer misnumbers its report by one - in lib/importer.js,
     # which is the seventh criterion's own module and #30's own extension.
     # Kills row 9 at `reportedLines` expecting [3] and reading [4].
+    #
+    # Re-anchored 2026-09-07 (#123). #26 replaced the bare `REFUSALS[read.reason]`
+    # with `sentenceOf(read)`, so a hook may refuse with a whole sentence rather
+    # than a key. The push is the same push and the `line:` on it is the same
+    # duty; what moved was the expression beside it. The anchor had to carry
+    # that expression because `line: record.line,` appears at three pushes in
+    # this loop, and an anchor matching more than one place is refused by the
+    # harness - so this mutant is hostage to a neighbour it says nothing about.
     "importlineoff": ("importer",
-                      "      errors.push({ line: record.line, message: REFUSALS[read.reason] });",
-                      "      errors.push({ line: record.line + 1, message: REFUSALS[read.reason] });"),
+                      "      errors.push({ line: record.line, message: sentenceOf(read) });",
+                      "      errors.push({ line: record.line + 1, message: sentenceOf(read) });"),
 }
 
 if __name__ == "__main__":

@@ -21,6 +21,15 @@ and draws them either way. They are proved in `learning-details.test.js`,
 which asks this file's own route directly, and the acceptance sheet marks
 those rows from that seam rather than claiming a browser row it does not have.
 
+One of them no longer lives in this ticket's files. `bandoffbyone` broke the
+band ramp where #38 wrote it, in `routes/learningDetails.js`; `bandOf` moved to
+`lib/attainment.js` when #42 needed BR-20 one level up, and the mutant went on
+naming the old address until #123 found it MISSing. Applying it now breaks the
+banding of every screen that bands - measured 7 September 2569, that is `38a`
+row 2 in the browser and nothing else there, plus four subtests at the HTTP
+seam. `42a` `43a` `44a` `45a` all pass with it applied, because no seeded
+cohort mean lands exactly on a band edge.
+
     python mutation/38-learning-details.py save
     python mutation/38-learning-details.py <mutant>
     python mutation/38-learning-details.py restore
@@ -35,6 +44,13 @@ from harness import main
 FILES = {
     "route": "backend/routes/learningDetails.js",
     "screen": "frontend/src/pages/LearningDetails.js",
+    # `bandOf` left the route for the shared module when #42 needed the same
+    # five figures one level up. No other mutation file holds this path, so
+    # nothing collides with a sweep of this one - but that is also the point:
+    # until #123 the arithmetic every attainment screen shares carried no
+    # mutant anywhere, because the only one aimed at it was aimed at the
+    # address it used to have.
+    "attainment": "backend/lib/attainment.js",
 }
 
 MUTANTS = {
@@ -49,7 +65,16 @@ MUTANTS = {
     # an edge is drawn in the band below it - 3.0 reads as flagged and 4.5 as
     # merely good. The colours are all still different, so nothing looks
     # broken; they are just each one band wrong at the edge. Kills row 2.
-    "bandoffbyone": ("route",
+    #
+    # Re-anchored 2026-09-07 (#123). Not one character of the line changed:
+    # `bandOf` moved out of the route into `lib/attainment.js` when #42 needed
+    # BR-20 one level up, and the mutant went on naming the file it used to be
+    # in. This is the cheapest kind of MISS to fix and the easiest to not
+    # notice, because the string still exists in the tree - just not where the
+    # mutant looks. The blast radius grew with the move: the line is now shared
+    # by every screen that bands a score, so read what this kills across the
+    # store and not only in `38a`.
+    "bandoffbyone": ("attainment",
                      "    if (score >= floor) band = index + 1;",
                      "    if (score > floor) band = index + 1;"),
     # The flag becomes a colour and nothing else. The red is still red, so the

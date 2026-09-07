@@ -27,6 +27,14 @@ FILES = {
 # the call site are one decision, and reverting either alone is not the shape
 # the code used to have.
 
+# Mutants kept as a record of a claim that was proved once, against code that no
+# longer exists. `mutation/anchors.py` reads this set and reports them as
+# deliberate rather than as findings - which is the point of writing it down
+# here rather than only in a comment: an anchor that has gone stale on purpose
+# and one that has gone stale by accident look identical to a checker, and the
+# difference is a decision somebody made.
+SUPERSEDED = {'N6'}
+
 MUTANTS = {
  # newest-last: the top line is no longer what just happened
  'N1': [('history',
@@ -64,8 +72,18 @@ MUTANTS = {
    "  useEffect(() => {\n    setPage(1)\n  }, [user.user_id])",
    "  useEffect(() => {}, [user.user_id])")],
  # signing out not recorded
+ #
+ # Re-anchored 2026-09-07 (#123). #92 rewrote this route: `requireSession` came
+ # off `POST /auth/logout`, so the name is now read out of the cookie by
+ # `accountInDeadCookie` and the call is guarded by whether there was one. The
+ # claim is untouched - sign-out leaves no line in the history - and the line
+ # that owes it is the same line, one identifier over. It had been MISSing
+ # since 22 August under a live ⚙ row, and no check in the store could see it:
+ # the anchor reader took `MUTANTS` in one `literal_eval`, and every mutant in
+ # this file is a *list* of edits, so the guard that asked for a tuple skipped
+ # all nine without saying so.
  'N7': [('auth',
-   "      await recordActivity(pool, req.session.userId, 'LOGOUT');\n",
+   "      if (userId) await recordActivity(pool, userId, 'LOGOUT');\n",
    "")],
  # the accounts list not narrowed to what the acting grant reaches
  'N8': [('users',

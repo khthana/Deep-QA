@@ -251,10 +251,18 @@ MUTANTS = {
     # The row stops saying who last changed it. The data is all still correct;
     # what is gone is the only way two ผู้สอน editing one list find out which of
     # them wrote what is on the screen.
+    #
+    # Re-anchored 2026-09-07 (#123). #29 reflowed this JSX when it added the
+    # เกณฑ์การบรรลุผล link above it - `เมื่อ` moved from the end of the first
+    # line to the start of the second, and `{' '}` with it. The rendered
+    # sentence is character for character what it was; the anchor was bound to
+    # where the source happened to wrap. Nothing about the claim changed, so
+    # this is a re-aim and not a rewrite - but it was MISSing, and a MISS backs
+    # no row at all.
     "noeditorline": ("screen",
                      "                <p className=\"mt-3 text-xs text-slate-400\">\n"
-                     "                  แก้ไขล่าสุดโดย {clo.updated_by_name || clo.updated_by || '—'} เมื่อ{' '}\n"
-                     "                  {changedAt(clo.updated_at)}\n"
+                     "                  แก้ไขล่าสุดโดย {clo.updated_by_name || clo.updated_by || '—'}{' '}\n"
+                     "                  เมื่อ {changedAt(clo.updated_at)}\n"
                      "                </p>",
                      ""),
     # The picker ignores what it was given and offers nothing but the empty

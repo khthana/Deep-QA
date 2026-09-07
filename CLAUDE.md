@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121 and #119**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119 and #123**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -464,6 +464,43 @@ name no mutant.** #44 taught the first direction and it has been run down the �
 found `10:nowrite` sitting in `mutation/10-application-shell.py` and in no table anywhere, under a
 ⚙ row that cited nothing - which the ⚙-first pass cannot see, because it looks for rows without
 mutants and this was a mutant without a row. Both directions, or neither.
+
+**#123 is the third direction, and neither of the first two can see it: the mutant is in the file,
+the sheet cites it by name, and it no longer applies to anything.** A mutant is a string to find
+and a string to put in its place; refactor the file and the string goes, and applying it answers
+MISS — not a kill, not a survivor. What is left is a ⚙ resting on nothing, and nothing about the
+sheet looks wrong. The store had four, and they are worth reading together because each went stale
+a different way: `27:noeditorline` lost its anchor to a **line break** (#29 reflowed the JSX; the
+rendered sentence is identical), `30:importlineoff` to a **neighbour** (#26 changed the expression
+beside the one the mutant is about, which the anchor had to include because the line it cares about
+occurs three times), `38:bandoffbyone` to a **move** (`bandOf` went to `lib/attainment.js` for #42
+without one character changing), and `13:N7` to a **rewrite** (#92 rebuilt the logout route). All
+four still killed the row their sheet named once re-aimed, so nothing here was a wrong claim —
+it was a claim that had quietly stopped being checked.
+
+**The one that matters is `13:N7`, because the reason nobody saw it was the checker.** #121's
+anchor script read each file's whole `MUTANTS` dict with a single `literal_eval` and kept only
+values that were tuples. One entry built from a module constant and the call raises, so *the whole
+file* is skipped in silence — all thirteen of #41 and all seven of #43, where only five and one are
+the entries actually unreadable. Every mutant written as a *list* of edits was skipped too: all
+nine of #13, all fourteen of #16, plus `24:currenttermonly` and `27:bodygrain`. It printed
+`checked: 426` over a store of 471 and read as though the other 45 had each been looked at and
+found unreadable.
+`13:N7` sat under a live ⚙ row for sixteen days inside that blind spot. **A tool that cannot say
+what it did not look at is the same species of claim as the hand-kept numbers it exists to check** —
+`mutation/anchors.py` replaces it, reports `unreadable` as a failure, and is the thing to run
+before believing the store's mutants are worth anything.
+
+**And a mutant's blast radius changes when the code moves under it, with nobody deciding that.**
+Before #42, `bandoffbyone` broke one screen's arithmetic; today it breaks every screen that bands a
+score. Re-aimed and swept across the store it kills `38a` row 2 and nothing else in the browser,
+plus four subtests at the HTTP seam — the programme-level specs band the same way and notice
+nothing, because no seeded cohort mean lands exactly on an edge. `30:importlineoff` went the other
+way: it kills its own row in `30a` **and five more** in `11b`, `14b`, `14c`, `17b` and `34a`, every
+one of them a row about a reported line number. That is not #97's *kills too much* — those rows all
+assert the claim — but no sheet knew, because a sweep is run one ticket at a time and the
+*other rows that died with it* column reads as though it were about the store.
+**When a mutant lives in shared code, its sheet is one of the places it kills, not the list.**
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 6 September 2569 that is
