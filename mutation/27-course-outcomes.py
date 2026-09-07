@@ -72,9 +72,9 @@ MUTANTS = {
     # it - plausible on any screen where only one year has ever been seeded.
     "anyyear": ("routes",
                 "            WHERE c.program_id = $1 AND c.subject_id = $2 AND c.academic_year = $3\n"
-                "            ORDER BY c.clo_number ASC, c.clo_id ASC`,",
+                "            ORDER BY ${cloOrder('c')}, c.clo_id ASC`,",
                 "            WHERE c.program_id = $1 AND c.subject_id = $2 AND (c.academic_year = $3 OR TRUE)\n"
-                "            ORDER BY c.clo_number ASC, c.clo_id ASC`,"),
+                "            ORDER BY ${cloOrder('c')}, c.clo_id ASC`,"),
     # The grain taken from the request body when it offers one - ADR-0002
     # violated in the way that is hardest to see, because the screen sends back
     # exactly what the server gave it and every browser row still passes.
@@ -159,11 +159,11 @@ MUTANTS = {
     # criterion fails while every single-teacher screen still looks right.
     "mineonly": ("routes",
                  "            WHERE c.program_id = $1 AND c.subject_id = $2 AND c.academic_year = $3\n"
-                 "            ORDER BY c.clo_number ASC, c.clo_id ASC`,\n"
+                 "            ORDER BY ${cloOrder('c')}, c.clo_id ASC`,\n"
                  "          [offering.program_id, offering.subject_id, offering.academic_year],",
                  "            WHERE c.program_id = $1 AND c.subject_id = $2 AND c.academic_year = $3\n"
                  "              AND c.created_by = $4\n"
-                 "            ORDER BY c.clo_number ASC, c.clo_id ASC`,\n"
+                 "            ORDER BY ${cloOrder('c')}, c.clo_id ASC`,\n"
                  "          [offering.program_id, offering.subject_id, offering.academic_year,\n"
                  "           req.session.userId],"),
     # The marks check dropped. The foreign key still refuses, so nothing is

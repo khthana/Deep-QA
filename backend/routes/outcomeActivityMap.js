@@ -58,6 +58,7 @@ const { meanOf, outcomeScore } = require('../lib/attainment');
 const { round2 } = require('../lib/fields');
 const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
+const { cloOrder } = require('../lib/cloOrder');
 
 /** A ผู้สอน's own ตอนเรียน, as in `enrolment.js`, `activities.js` and `learningDetails.js`. */
 const TEACHING = ['TEACHER'];
@@ -89,7 +90,7 @@ function outcomeActivityMapRoutes(pool) {
       `SELECT c.clo_id, c.clo_number, c.clo_detail
          FROM subject_clo c
         WHERE c.program_id = $1 AND c.subject_id = $2 AND c.academic_year = $3
-        ORDER BY c.clo_number ASC, c.clo_id ASC`,
+        ORDER BY ${cloOrder('c')}, c.clo_id ASC`,
       [offering.program_id, offering.subject_id, offering.academic_year],
     );
     return rows;

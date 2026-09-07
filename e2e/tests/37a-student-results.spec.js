@@ -72,11 +72,18 @@ async function offeringOf() {
  * is beside the point: the cap is about how many labels fit round a circle.
  *
  * Which outcome falls off the chart is worth knowing and is not asserted
- * anywhere: `clo_number` orders as text, so CLO-10 and CLO-11 land between
- * CLO-1 and CLO-2 and **CLO-9 is the one pushed past the tenth axis**. That is
- * [#96](https://github.com/khthana/Deep-QA/issues/96), an open defect of the
- * ordering rather than of this cap - but the row below leans on it deliberately,
- * because it needs an outcome that is off the chart and still marked.
+ * anywhere. It used to be CLO-9, because `clo_number` ordered as text and
+ * CLO-10 and CLO-11 sorted between CLO-1 and CLO-2 - and the row below leaned
+ * on that deliberately, needing an outcome that was off the chart and still
+ * marked. [#96](https://github.com/khthana/Deep-QA/issues/96) closed that, so
+ * the eleven now read CLO-1..CLO-11 and **the one past the tenth axis is
+ * CLO-11**, which this fixture creates with no marks on it.
+ *
+ * The row therefore builds its situation rather than inheriting it: it moves
+ * one student's marks onto CLO-11 with `moveMarks`. That is longer, and it is
+ * the honest shape - **a row that needs a defect to be reachable is a row that
+ * has to be rewritten the day the defect is fixed**, which is exactly what
+ * happened here.
  */
 async function pastTheCap() {
   const offering = await offeringOf();
@@ -103,6 +110,82 @@ async function pastTheCap() {
     );
   }
   return offering;
+}
+
+/**
+ * Moves one student's marks from one outcome to another, remembering how to put
+ * them back - #96.
+ *
+ * `activity_scores` carries `clo_id` against `subject_clo` directly rather than
+ * against the mapping rows, which is the shape
+ * [#108](https://github.com/khthana/Deep-QA/issues/108) is filed about; here it
+ * is what lets one student's marks be re-pointed at an outcome past the cap
+ * without touching what the rest of the cohort was marked on.
+ *
+ * The undo is pushed after `pastTheCap`'s and before `unmark`'s, and
+ * `afterEach` drains the queue in reverse - so the scores come back first, then
+ * the outcome they hang on, then the outcome itself is deleted. Any other order
+ * would try to delete a `subject_clo` that still has marks against it, which
+ * the schema refuses.
+ */
+async function moveMarks(studentId, { from, to }) {
+  const { rows: outcomes } = await db.query(
+    `SELECT clo_number, clo_id FROM subject_clo c
+      WHERE c.clo_number = ANY($1)
+        AND EXISTS (
+          SELECT 1 FROM semester_courses sc
+           JOIN course_sections cs ON cs.semester_course_id = sc.id
+          WHERE cs.section_id = $2 AND sc.program_id = c.program_id
+            AND sc.subject_id = c.subject_id AND sc.academic_year = c.academic_year
+        )`,
+    [[from, to], section],
+  );
+  const idOf = Object.fromEntries(outcomes.map((row) => [row.clo_number, row.clo_id]));
+  expect(idOf[from], from + ' should be an outcome of this Offering').toBeTruthy();
+  expect(idOf[to], to + ' should be an outcome of this Offering').toBeTruthy();
+
+  const { rows: moved } = await db.query(
+    `UPDATE activity_scores s SET clo_id = $1
+       FROM activities a
+      WHERE a.id = s.activity_id AND a.section_id = $2
+        AND s.student_id = $3 AND s.clo_id = $4
+      RETURNING s.activity_id`,
+    [idOf[to], section, studentId, idOf[from]],
+  );
+  expect(moved.length, 'nothing marked on ' + from + ' for ' + studentId).toBeGreaterThan(0);
+
+  // A score alone is not a mark the report will count: the figures are built
+  // over `activity_clo_mapping`, so an outcome with no row there has no
+  // denominator and reads as unmarked however many scores point at it. The
+  // mapping is added beside the one it was copied from rather than moved off
+  // it, because moving it would take the rest of the cohort's marks with it.
+  const { rows: mappings } = await db.query(
+    `INSERT INTO activity_clo_mapping
+            (activity_id, sequence_order, clo_id, weight, score_ratio_id, score)
+     SELECT m.activity_id,
+            (SELECT MAX(sequence_order) + 1 FROM activity_clo_mapping
+              WHERE activity_id = m.activity_id),
+            $1, m.weight, m.score_ratio_id, m.score
+       FROM activity_clo_mapping m
+      WHERE m.activity_id = ANY($2) AND m.clo_id = $3
+      RETURNING id`,
+    [idOf[to], moved.map((row) => row.activity_id), idOf[from]],
+  );
+  expect(mappings.length, from + ' should be mapped to the activities it is marked on').toBeGreaterThan(0);
+
+  restore.push(async () => {
+    await db.query(`DELETE FROM activity_clo_mapping WHERE id = ANY($1)`, [
+      mappings.map((row) => row.id),
+    ]);
+  });
+
+  restore.push(async () => {
+    await db.query(
+      `UPDATE activity_scores SET clo_id = $1
+        WHERE student_id = $2 AND clo_id = $3 AND activity_id = ANY($4)`,
+      [idOf[from], studentId, idOf[to], moved.map((row) => row.activity_id)],
+    );
+  });
 }
 
 /**
@@ -291,23 +374,25 @@ test('a student marked only past the tenth axis is told that, not left with an u
   // line, so the reader gets the ticked box and the unchanged chart that the
   // sentence exists to prevent. Found by review; this row is the situation.
   //
-  // Which outcome is off the chart is #96's doing and `pastTheCap` explains it:
-  // CLO-10 and CLO-11 sort between CLO-1 and CLO-2, so CLO-9 is the one pushed
-  // past the tenth axis. That is what makes this situation buildable at all.
+  // Which outcome is off the chart: with #96 fixed the eleven read
+  // CLO-1..CLO-11, so it is CLO-11 - and `pastTheCap` creates it with no marks.
+  // The situation is therefore built rather than inherited: this student's
+  // CLO-9 marks are moved onto CLO-11, and everything else is taken away.
   const first = await openStudentResults(page, section);
   const [victim] = (await first.json()).students;
   await pastTheCap();
-  await unmark(victim.student_id, { except: 'CLO-9' });
+  await moveMarks(victim.student_id, { from: 'CLO-9', to: 'CLO-11' });
+  await unmark(victim.student_id, { except: 'CLO-11' });
 
   const answer = await openStudentResults(page, section);
   const body = await answer.json();
   const student = body.students.find((one) => one.student_id === victim.student_id);
   const axes = await axesOf(page);
-  expect(axes, 'CLO-9 should be the outcome the cap left off').not.toContain('CLO-9');
+  expect(axes, 'CLO-11 should be the outcome the cap left off').not.toContain('CLO-11');
 
   const marked = body.clos.filter((clo) => student.scores[clo.clo_id].score !== null);
   expect(marked.map((clo) => clo.clo_number), 'marked on exactly the off-chart outcome').toEqual([
-    'CLO-9',
+    'CLO-11',
   ]);
 
   await choose(page, student.student_id);
@@ -319,8 +404,11 @@ test('a student marked only past the tenth axis is told that, not left with an u
   await expect(
     page.getByRole('status').filter({ hasText: 'ไม่ได้อยู่บนกราฟ' }),
   ).toHaveText(new RegExp(`${student.student_id}.*ไม่ได้อยู่บนกราฟ`));
-  // The score is still on the page, in the row the cap does not apply to.
-  await expect(tableCell(page, 'CLO-9', student.student_id)).toHaveText(
+  // The score is still on the page, in the row the cap does not apply to. The
+  // outcome named here is whichever one the marks are on, which is the same
+  // `marked[0]` the score is read from — naming it twice by hand is how this
+  // line came to say CLO-9 while the marks had moved to CLO-11.
+  await expect(tableCell(page, marked[0].clo_number, student.student_id)).toHaveText(
     student.scores[marked[0].clo_id].score.toFixed(2),
   );
 });
@@ -339,11 +427,11 @@ test('a Subject with more than ten outcomes draws ten of them and says how many 
   const body = await answer.json();
   expect(body.clos.length).toBe(11);
 
-  // Ten axes on the chart — which ten is not asserted, and deliberately: the
-  // order is `clo_number` sorted as text, so CLO-10 lands between CLO-1 and
-  // CLO-2 and CLO-9 is the one left off. That is #96, an open defect of the
-  // ordering rather than of this cap, and a row that pinned the order here
-  // would have to be rewritten when #96 is fixed.
+  // Ten axes on the chart — which ten is still not asserted here, and still
+  // deliberately: this row is about the cap and the sentence beside it, and the
+  // order the eleven come in is `96a`'s claim, proved where CLO-10 is the point
+  // rather than a side effect. Before #96 this comment named CLO-9 as the one
+  // left off; it is CLO-11 now.
   const axes = await axesOf(page);
   expect(axes.length).toBe(10);
 

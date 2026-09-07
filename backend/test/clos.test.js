@@ -502,3 +502,79 @@ test('an anonymous caller is refused before any of this is considered', async ()
   assert.equal(refused.status, 401);
   assert.equal(refused.body.reason, 'anonymous');
 });
+test('the set is ordered by number, so CLO-10 follows CLO-9 rather than CLO-1', async () => {
+  // #96. The seed stops at CLO-9, and on nine single-digit codes sorting as
+  // text and sorting as a number give the same nine rows — which is why every
+  // suite in the store passed over this for months. CLO-10 is the first code
+  // that tells the two apart.
+  //
+  // The sequence is written out literally. Deriving it from a query that
+  // repeats the route's own ORDER BY would compare the route against a copy of
+  // itself, which is the shape this ticket's own comment found in one test file
+  // and which turned out to be in four, and is no proof of an order at all.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+
+  // Added highest-first, so a route that simply returned insertion order would
+  // fail this too.
+  const created = [];
+  for (const code of ['CLO-11', 'CLO-10']) {
+    const response = await add(cookie, section, { ...DRAFT, clo_number: code });
+    assert.equal(response.status, 201, response.body.message);
+    created.push(response.body.clo.clo_id);
+  }
+
+  try {
+    const answer = await list(cookie, section);
+    assert.equal(answer.status, 200);
+    assert.deepEqual(
+      answer.body.clos.map((clo) => clo.clo_number),
+      [
+        'CLO-1', 'CLO-2', 'CLO-3', 'CLO-4', 'CLO-5', 'CLO-6',
+        'CLO-7', 'CLO-8', 'CLO-9', 'CLO-10', 'CLO-11',
+      ],
+    );
+  } finally {
+    // The seeded nine are what every other test in this file counts on, so the
+    // two extras go whether the assertion passed or not.
+    for (const cloId of created) {
+      assert.equal((await remove(cookie, section, cloId)).status, 204);
+    }
+  }
+});
+
+test('a code with no digits in it sorts last instead of bringing the list down', async () => {
+  // #96, and the half of the rule that the ordering row above cannot see.
+  //
+  // The owner settled on 7 ก.ย. 2569 that CLO codes carry no letters, so on the
+  // data this system is meant to hold every code has digits and this branch is
+  // never taken. That is exactly why it needs its own row: `clo_number` is
+  // `varchar(50)` and a person types it, so a code with no digits is one typing
+  // mistake away — and `regexp_replace('CLOX', '[^0-9]', '', 'g')` is the empty
+  // string, which **Postgres refuses to cast to numeric**. Without the `NULLIF`
+  // that turns it into NULL, one such code does not sort oddly: it raises, and
+  // every screen that lists outcomes answers 500 until somebody deletes it.
+  //
+  // So the assertion is two claims in order of severity — the list still comes
+  // back at all, and the digit-less code is at the end rather than the front
+  // (`NULLS LAST`). `nofallback` in `mutation/96-outcome-order.py` is the mutant
+  // that fails it.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+
+  const response = await add(cookie, section, { ...DRAFT, clo_number: 'CLO-การสื่อสาร' });
+  assert.equal(response.status, 201, response.body.message);
+
+  try {
+    const answer = await list(cookie, section);
+    assert.equal(answer.status, 200, 'a code with no digits must not bring the list down');
+    const listed = answer.body.clos.map((clo) => clo.clo_number);
+    assert.equal(listed.length, 10);
+    assert.deepEqual(listed.slice(0, 9), [
+      'CLO-1', 'CLO-2', 'CLO-3', 'CLO-4', 'CLO-5', 'CLO-6', 'CLO-7', 'CLO-8', 'CLO-9',
+    ]);
+    assert.equal(listed[9], 'CLO-การสื่อสาร', 'a code with no number in it reads last');
+  } finally {
+    assert.equal((await remove(cookie, section, response.body.clo.clo_id)).status, 204);
+  }
+});

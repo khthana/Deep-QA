@@ -7,7 +7,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, CURRENT_YEAR, SEMESTER, byAlias } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, inCloOrder } = require('./helpers');
 
 /**
  * docs/acceptance/39-outcome-to-activity-map.md — the server half.
@@ -132,10 +132,12 @@ test('the map answers with every outcome of the Offering and every Activity of t
       WHERE cs.section_id = $1 ORDER BY c.clo_number ASC, c.clo_id ASC`,
     [section],
   );
-  assert.deepEqual(
-    response.body.clos.map((one) => one.clo_number),
-    outcomes.map((row) => row.clo_number),
-  );
+  const listed = response.body.clos.map((one) => one.clo_number);
+  // Membership against the query above; the *order* against the rule
+  // written in JavaScript, not against a second copy of the route's
+  // own ORDER BY — #96.
+  assert.deepEqual(inCloOrder(listed), inCloOrder(outcomes.map((row) => row.clo_number)));
+  assert.deepEqual(listed, inCloOrder(listed), 'the outcomes read in number order');
 
   // In the order #32's list draws them — by หมวดคะแนน, then by age — so that
   // the diagram's rows are the ones the ผู้สอน already knows the order of.

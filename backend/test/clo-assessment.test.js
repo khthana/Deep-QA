@@ -7,7 +7,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, CURRENT_YEAR, SEMESTER, byAlias } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, inCloOrder } = require('./helpers');
 
 /**
  * docs/acceptance/40-clo-assessment-report.md — the server half.
@@ -194,10 +194,12 @@ test('the report answers with every outcome of the Offering, in reading order', 
     [section],
   );
   assert.ok(outcomes.length > 0, 'the seed has no outcomes to report on');
-  assert.deepEqual(
-    response.body.clos.map((one) => one.clo_number),
-    outcomes.map((row) => row.clo_number),
-  );
+  const listed = response.body.clos.map((one) => one.clo_number);
+  // Membership against the query above; the *order* against the rule
+  // written in JavaScript, not against a second copy of the route's
+  // own ORDER BY — #96.
+  assert.deepEqual(inCloOrder(listed), inCloOrder(outcomes.map((row) => row.clo_number)));
+  assert.deepEqual(listed, inCloOrder(listed), 'the outcomes read in number order');
   assert.deepEqual(
     response.body.clos.map((one) => one.clo_detail),
     outcomes.map((row) => row.clo_detail),

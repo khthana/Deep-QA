@@ -25,8 +25,24 @@ import ContentMotionDIV from '../ContentMotionDIV'
  *
  * CLO-1..CLO-9 look like a sequence and are not one: the sixth criterion makes
  * the code unique within the ปีการศึกษา, and a หลักสูตร that renumbers, splits
- * or retires an outcome mid-year needs to be able to say CLO-3ก. The field is
- * text, the person types it, and the server refuses a clash.
+ * or retires an outcome mid-year needs to be able to leave a gap, or to reuse a
+ * number an earlier year has already spent. The field is text, the person types
+ * it, and the server refuses a clash.
+ *
+ * ## What this paragraph used to claim, and why it was wrong
+ *
+ * It justified the free text with `CLO-3ก` — a code with a Thai letter on the
+ * end. The owner settled it on 7 September 2569: **the codes carry no letters,
+ * they are numbers only.** Nobody had asked, and
+ * [#96](https://github.com/khthana/Deep-QA/issues/96) sat open for fifteen days
+ * behind that unasked question, because ordering codes correctly was held to
+ * depend on deciding where `CLO-3ก` sorts.
+ *
+ * The answer is why `backend/lib/cloOrder.js` can sort on the digits at all.
+ * Its text fallback stays: the column is `varchar(50)` and a person types into
+ * it, so a code with no digits in it is still reachable by a typing mistake and
+ * has to land somewhere defined. **The fallback is a safety net now, not the
+ * case the rule was written for.**
  */
 export default function CloForm({ clo, plos, busy, onSubmit, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)

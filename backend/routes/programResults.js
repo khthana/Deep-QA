@@ -29,6 +29,7 @@ const { integerId, studentCode } = require('../lib/fields');
 const { programInReach, reachablePrograms } = require('../lib/reach');
 const { cohortMarks, scoresByStudent, rollUpOutcomes } = require('../lib/cohort');
 const { PASS, BAND_FLOORS, bandOf } = require('../lib/attainment');
+const { cloOrder } = require('../lib/cloOrder');
 
 /**
  * How many intakes #44 will compare in one answer.
@@ -410,7 +411,13 @@ function programResultRoutes(pool) {
    */
   async function contributionsOf(programId, admissionYear, outcomeId, studentId = null) {
     const { rows } = await pool.query(
-      `SELECT DISTINCT
+      // The ordering is applied outside the DISTINCT rather than beside it:
+      // `SELECT DISTINCT` will only order by expressions that are in its own
+      // select list, and #96's sort key is a function of `clo_number` that
+      // nothing wants in the response. Wrapping keeps the returned columns
+      // exactly as they were.
+      `SELECT * FROM (
+        SELECT DISTINCT
               sub.subject_id, sub.subject_name_th, sub.subject_name_en,
               c.clo_id, c.clo_number, c.clo_detail,
               a.id AS activity_id, a.activity_name, a.activity_type,
@@ -430,7 +437,8 @@ function programResultRoutes(pool) {
           AND c.plo_id = $3
           AND s.score IS NOT NULL
           AND ($4::varchar IS NULL OR s.student_id = $4)
-        ORDER BY sub.subject_id ASC, c.clo_number ASC, a.id ASC`,
+       ) AS contributions
+        ORDER BY subject_id ASC, ${cloOrder('')}, activity_id ASC`,
       [programId, admissionYear, outcomeId, studentId],
     );
     return rows;

@@ -97,4 +97,55 @@ function guardedApp(...middleware) {
   return app;
 }
 
-module.exports = { startApi, guardedApp };
+/**
+ * The order #96 says a list of ผลการเรียนรู้ reads in, stated here in
+ * JavaScript so that a test asserting it is not asking the route to confirm
+ * itself.
+ *
+ * Four tests used to build their expected order with a copy of the route's own
+ * `ORDER BY c.clo_number`, which compares a rule against itself and passes
+ * whatever that rule becomes. They now sort with this instead. Note what it
+ * still cannot do: on the seeded `CLO-1..CLO-9` — nine single-digit codes —
+ * ordering as text and ordering as a number give the same nine rows, so these
+ * four rows would pass under either rule today. What they buy is the day the
+ * data is not nine single digits. The rows that actually **discriminate** are
+ * the one in `clos.test.js` that brings CLO-10 with it, the browser row, and
+ * the mutant on `lib/cloOrder.js`, which is the single place the rule now
+ * lives.
+ *
+ * The sweep of 7 ก.ย. 2569 says exactly that, so the paragraph above is a
+ * measurement now rather than a prediction: `ordersastext` — the defect itself
+ * — kills **one** subtest of 703, the one in `clos.test.js`, and these four sit
+ * among the 702 that pass. `descending` kills **nine**, and these four are in
+ * it. So what they buy is not nothing and it is not the ordering rule either:
+ * **they hold the direction, and the day the data stops being nine single
+ * digits they will hold the rest.**
+ */
+const inCloOrder = (codes) =>
+  [...codes].sort((left, right) => {
+    const digits = (code) => (String(code).match(/\d+/g) ?? []).join('');
+    const byText = () => (left < right ? -1 : left > right ? 1 : 0);
+    const [rawLeft, rawRight] = [digits(left), digits(right)];
+
+    // No digits at all is the `NULLIF` case, and the fragment says NULLS LAST.
+    if (rawLeft === '' || rawRight === '') {
+      if (rawLeft === rawRight) return byText();
+      return rawLeft === '' ? 1 : -1;
+    }
+
+    // Leading zeros are not part of a numeric value, and this line is why:
+    // without it `CLO-01` and `CLO-1` compare by digit-count and this helper
+    // puts `CLO-01` last, while `::numeric` reads them as equal and lets the
+    // text tiebreak put it first. Two rules that agree on the seeded data and
+    // disagree on a code nobody has typed yet is the worst shape a helper like
+    // this can have — it would fail a route that is right. Comparing the
+    // stripped digits by length and then lexicographically is exact at any
+    // width, which `Number` stops being past 2^53 and `clo_number` is
+    // `varchar(50)`.
+    const [a, b] = [rawLeft.replace(/^0+/, ''), rawRight.replace(/^0+/, '')];
+    if (a.length !== b.length) return a.length - b.length;
+    if (a !== b) return a < b ? -1 : 1;
+    return byText();
+  });
+
+module.exports = { startApi, guardedApp, inCloOrder };

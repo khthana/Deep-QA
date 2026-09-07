@@ -58,6 +58,7 @@ const express = require('express');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { offeringOf, cloOf } = require('./clos');
+const { cloOrder } = require('../lib/cloOrder');
 
 /** The one role these routes open for, spread at the call site as in clos.js. */
 const TEACHING = ['TEACHER'];
@@ -133,7 +134,7 @@ function improvementPlanRoutes(pool) {
       `SELECT clo_id, clo_number, clo_detail
          FROM subject_clo
         WHERE program_id = $1 AND subject_id = $2 AND academic_year = $3
-        ORDER BY clo_number ASC, clo_id ASC`,
+        ORDER BY ${cloOrder('')}, clo_id ASC`,
       [offering.program_id, offering.subject_id, offering.academic_year],
     );
     return rows;
@@ -175,7 +176,7 @@ function improvementPlanRoutes(pool) {
     const { rows } = await pool.query(
       `SELECT ${ENTRY} ${ENTRY_FROM}
         WHERE y.program_id = $1 AND y.subject_id = $2 AND y.academic_year = $3
-        ORDER BY c.clo_number ASC, c.clo_id ASC,
+        ORDER BY ${cloOrder('c')}, c.clo_id ASC,
                  array_position($4::text[], d.detail_type) ASC`,
       [offering.program_id, offering.subject_id, year, TYPES],
     );

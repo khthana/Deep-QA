@@ -7,7 +7,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, CURRENT_YEAR, SEMESTER, byAlias } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, inCloOrder } = require('./helpers');
 
 /**
  * docs/acceptance/38-learning-detail-heatmap.md — the server half.
@@ -180,10 +180,12 @@ test('the heatmap answers with every enrolled student and every outcome of the S
       WHERE a.section_id = $1 ORDER BY c.clo_number ASC`,
     [section],
   );
-  assert.deepEqual(
-    response.body.clos.map((one) => one.clo_number),
-    rows.map((row) => row.clo_number),
-  );
+  const listed = response.body.clos.map((one) => one.clo_number);
+  // Membership against the query above; the *order* against the rule
+  // written in JavaScript, not against a second copy of the route's
+  // own ORDER BY — #96.
+  assert.deepEqual(inCloOrder(listed), inCloOrder(rows.map((row) => row.clo_number)));
+  assert.deepEqual(listed, inCloOrder(listed), 'the outcomes read in number order');
 });
 
 test('a student’s outcome score is what they earned over what was available, out of five', async () => {

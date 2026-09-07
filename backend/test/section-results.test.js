@@ -7,7 +7,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, CURRENT_YEAR, PRIOR_YEAR, byAlias } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
-const { startApi } = require('./helpers');
+const { startApi, inCloOrder } = require('./helpers');
 
 /**
  * docs/acceptance/36-section-results.md — the server half.
@@ -229,10 +229,12 @@ test('the radar answers with every outcome of the Offering, on a scale of five',
       ORDER BY c.clo_number ASC`,
     [section],
   );
-  assert.deepEqual(
-    response.body.clos.map((one) => one.clo_number),
-    rows.map((row) => row.clo_number),
-  );
+  const listed = response.body.clos.map((one) => one.clo_number);
+  // Membership against the query above; the *order* against the rule
+  // written in JavaScript, not against a second copy of the route's
+  // own ORDER BY — #96.
+  assert.deepEqual(inCloOrder(listed), inCloOrder(rows.map((row) => row.clo_number)));
+  assert.deepEqual(listed, inCloOrder(listed), 'the outcomes read in number order');
 
   // Every axis is a number out of five or a blank, and never anything else.
   for (const clo of response.body.clos) {

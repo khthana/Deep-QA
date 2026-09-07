@@ -63,6 +63,7 @@ const { REFUSALS } = require('../auth/refusals');
 const { BAND_FLOORS, outcomeScore, columnOf, summaryOf } = require('../lib/attainment');
 const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
+const { cloOrder } = require('../lib/cloOrder');
 
 /** A ผู้สอน's own ตอนเรียน, as in `learningDetails.js` and everywhere else Section-grained. */
 const TEACHING = ['TEACHER'];
@@ -96,7 +97,7 @@ function sectionResultRoutes(pool) {
       `SELECT c.clo_id, c.clo_number, c.clo_detail
          FROM subject_clo c
         WHERE c.program_id = $1 AND c.subject_id = $2 AND c.academic_year = $3
-        ORDER BY c.clo_number ASC, c.clo_id ASC`,
+        ORDER BY ${cloOrder('c')}, c.clo_id ASC`,
       [programId, subjectId, academicYear],
     );
     return rows;

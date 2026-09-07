@@ -97,6 +97,7 @@ const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, boundedInteger, integerId, round2 } = require('../lib/fields');
 const { sectionOf } = require('./enrolment');
+const { cloOrder } = require('../lib/cloOrder');
 
 /** The one role these routes open for, as in enrolment.js and teachingPlan.js. */
 const TEACHING = ['TEACHER'];
@@ -320,7 +321,7 @@ function activityRoutes(pool) {
                                  AND sc.academic_year = c.academic_year
          JOIN course_sections cs ON cs.semester_course_id = sc.id
         WHERE cs.section_id = $1
-        ORDER BY c.clo_number ASC, c.clo_id ASC`,
+        ORDER BY ${cloOrder('c')}, c.clo_id ASC`,
       [sectionId],
     );
     return rows;
@@ -483,7 +484,7 @@ function activityRoutes(pool) {
          JOIN subject_clo c ON c.clo_id = s.clo_id
         WHERE s.activity_id = $1 AND NOT (s.clo_id = ANY($2::int[]))
         GROUP BY c.clo_number
-        ORDER BY c.clo_number ASC
+        ORDER BY ${cloOrder('c')}
         LIMIT 1`,
       [activityId, keeping],
     );

@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123 and #122**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122 and #96**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -536,6 +536,95 @@ The `flex-wrap` never fires down to 500px — it is insurance — while the edit
 `div` **does** earn its place there, keeping the sentence beside its number when the heading
 wraps away. **A rule about layout is checked with numbers, and the reading cost one throwaway
 spec that was deleted the same hour.**
+
+**#96 is the ticket that was blocked on a question nobody had asked, and it is the
+counterpart to #66's rule rather than a repeat of it.** #66's lesson is *read a defect
+ticket for a question before reading it for a task*. #96 shows what happens when you do
+that and then stop: its sheet said the fix could not be made until somebody decided where
+`CLO-3ก` sorts, `CloForm.js` carried the same sentence as the reason the code is free text,
+and the ticket sat open for **fifteen days** behind it. The owner settled it in one
+sentence on 7 September 2569 — **the codes carry no letters, they are numbers only** — and
+the premise of the block simply was not true. **Finding the question is half the move;
+asking it is the other half**, and a question that has been written down twice in two
+files is not thereby closer to being answered.
+
+**Its diagnosis undercounted by ten to one, in the now-familiar direction.** The ticket
+names one `ORDER BY`; its own later comment names four across three files; there are
+**ten across eight route files**, every one of them feeding a list a person reads. And two
+sites that grep identically are deliberately *not* callers — `sectionResults.js` builds
+`array_agg(DISTINCT c.clo_number ORDER BY c.clo_number)` twice and compares the two
+arrays, so both sides are built the same way and the answer does not depend on the order
+at all (Postgres would reject a foreign sort key there anyway). **A repeated `ORDER BY` is
+not automatically a repeated defect; read what the order is for.** The same count went the
+other way on the tests: the comment names one assertion that compares the route against a
+copy of the route's own `ORDER BY`; there are four, and the three other grep hits are two
+fixture helpers and a `DESC LIMIT 1` that picks a row rather than claiming an order.
+
+**And the sweep is what found the overclaim, which is a fourth way to read one.** #45 gave
+MISS and survivor, #97 gave *kills too much*; this is **a survivor on a row nobody
+suspected**. Both mutants leave `27a` entirely green, and sheet 27 had its list row reading
+*เก้าแถว `CLO-1` ถึง `CLO-9` เรียงตามรหัส* over `27a` row 1 — whose assertion is
+`codesOnScreen(page)` equals `clos.map(...)`, a claim that the **screen preserves whatever
+order the route sent**, not a claim about what that order is. On the seeded nine, text and
+number order are identical, so nothing in the store was ever in a position to tell them
+apart. The row is split and the ordering half cites `96a` row 1. **Where a sheet says
+*ordered by X*, check whether the assertion reads X or merely passes it through.**
+
+**The two mutants are a matched pair and the asymmetry is the finding.** `ordersastext` is
+the defect itself and kills **one** subtest and two browser rows; `descending` kills
+**nine** subtests and the same two rows. Direction is visible on any set; text-versus-number
+is visible only on a set that contains `CLO-10`. **A defect that survived two green suites
+for months usually survived because no fixture could express it**, and the fix is a fixture,
+not an assertion.
+
+**#96 also landed on a row that had been written to expect it.** `37a`'s off-the-chart row
+needed an outcome past the ten-axis cap that still had marks, and before the fix it got one
+for free — `CLO-9`, pushed off by the text order. Its own note said in as many words that
+this would have to be rewritten when #96 closed. It was, and the row now **builds its
+situation** with a `moveMarks` helper instead of inheriting it. **A row that needs a defect
+to be reachable is a row that has to be rewritten the day the defect is fixed** — write that
+on the row when you notice it, because the note is what makes the rewrite twenty minutes
+instead of an afternoon.
+
+**#96's review found a branch that neither of its mutants could see, and the reason
+generalises.** `ordersastext` and `descending` both vary the same property — **which
+order** the list comes back in — so between them they say nothing about the `NULLIF`
+that wraps the sort key. Deleting it does not reorder anything: `regexp_replace` returns
+the empty string for a code with no digits in it, `''::numeric` is a cast Postgres
+refuses, and one such code answers **500 on every screen that lists outcomes**. Nothing
+at either seam held that, and the whole store stayed green with it gone. **Two mutants
+that vary the same property cannot see a third property**, and the question that finds
+the gap is not *is this line covered* but *what would a mutant have to change to break
+this in a way neither existing one does*. What closed it is a subtest and
+`nofallback`, which kills that row and nothing else in 704.
+
+**The branch was also the one the owner's answer made look unnecessary, which is why it
+nearly went unproved.** Codes carry no letters, so on the data this system is meant to
+hold the fallback is never taken — and that is an argument for proving it, not against.
+`clo_number` is `varchar(50)` and a person types it, so the branch is one typing mistake
+away, and the failure it prevents is a dead screen rather than a row in the wrong order.
+**A branch that correct data never reaches is still reached by incorrect data**, and the
+seed is not the argument.
+
+**And this ticket ran the hand-kept-number lesson on itself, twice over.** *A hand-kept
+number in a file that grows every ticket is a number that is already wrong* was written
+here after #119. #96 then stated *ten across nine route files* — it is eight — in
+**five** places, a first correction pass fixed three and believed itself done, and
+`/code-review` found the other two. The count of tautological tests went the same way:
+*seven* in two comments where the real number is four, the other three grep hits being
+two fixture helpers and a `DESC LIMIT 1`. **Correcting a number in the places you
+remember writing it is not correcting it** — grep for the wrong value afterwards, and
+grep for it again after the fix, because the same wrong figure gets retyped into prose
+that was written at the same time as the code.
+
+**The last thing the review caught is a helper that had quietly become a second rule.**
+`inCloOrder` in `backend/test/helpers.js` exists precisely so that a test is not asking
+the route to confirm itself, and it compared digit-strings by length — which agrees with
+`::numeric` on everything except leading zeros, where `CLO-01` and `CLO-1` tie
+numerically and the helper put one of them last. Green on the seeded data, and a false
+failure waiting for a route that is right. **A helper written to restate a rule
+independently has to restate it exactly; agreeing on today's data is what a
+copy-of-the-rule does too.**
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 6 September 2569 that is

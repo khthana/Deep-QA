@@ -59,6 +59,7 @@ const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
+const { cloOrder } = require('../lib/cloOrder');
 
 /** The one role these routes open for, spread at the call site as in teaching.js. */
 const TEACHING = ['TEACHER'];
@@ -225,7 +226,7 @@ function cloRoutes(pool) {
         const { rows } = await pool.query(
           `SELECT ${RETURNED} ${FROM}
             WHERE c.program_id = $1 AND c.subject_id = $2 AND c.academic_year = $3
-            ORDER BY c.clo_number ASC, c.clo_id ASC`,
+            ORDER BY ${cloOrder('c')}, c.clo_id ASC`,
           [offering.program_id, offering.subject_id, offering.academic_year],
         );
 
