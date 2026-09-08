@@ -338,11 +338,10 @@ test('a student in another department is neither readable nor overwritable', asy
   const cookie = await signInAs('U_DEPT');
   const id = '61050001';
 
-  await api.pool.query(
-    `INSERT INTO programs (program_id, program_name_th, program_name_en, department_id, year)
-     VALUES ('0101', 'วิศวกรรมโยธา', 'Civil Engineering', $1, '2564')`,
-    [DEPT_CIVIL],
-  );
+  // The หลักสูตร this student is filed under used to be inserted here, by this
+  // test, for this test. #102 moved it into the seed, because a dozen other
+  // screens' pickers needed the same situation and each would have built its
+  // own. The student stays: it is this test's subject, not the situation.
   await api.pool.query(
     `INSERT INTO student (student_id, first_name_th, last_name_th, department_id, program_id, admission_year)
      VALUES ($1, 'ของ', 'ภาควิชาอื่น', $2, '0101', '2561')`,

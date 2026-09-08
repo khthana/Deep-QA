@@ -162,3 +162,4 @@ cd frontend && npm start         # http://localhost:5000
 | `hardcancel` | ปุ่ม *ยกเลิก* ในกล่องยืนยันทำสิ่งที่ปุ่มยืนยันทำ | ถามยืนยันก่อนลบ และกดยกเลิกแล้วไม่มีอะไรเปลี่ยน |
 | `criterianotcounted` | ตอบ `criteria_removed: 0` ทั้งที่เกณฑ์ถูกลบไปจริง | ลบแล้วบอกว่าเกณฑ์ย่อยไปด้วยกี่ข้อ |
 | `facultyadmin` | ใส่ `FACULTY_ADMIN` เข้า `MAINTAINERS` ตามที่เกณฑ์ข้อ 7 เขียนไว้ | บัญชีที่ไม่ควรเข้าถึงเลย — ครึ่งที่เป็นกฎ |
+| `102:anydepartmentreachesall` | grant ที่ผูกกับภาควิชา เอื้อมถึงทุกหลักสูตร | ที่ seam ของ HTTP: `the curricula offered are the ones the account holds` — ชื่อแถวอ้างความครบถ้วน แต่ assertion อ่านเพียงการมีอยู่ จน [#102](https://github.com/khthana/Deep-QA/issues/102) |

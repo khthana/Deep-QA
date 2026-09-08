@@ -52,6 +52,10 @@ const COLUMNS = [
 
 const [DEPT_COMPUTER, DEPT_CIVIL] = DEPARTMENTS.map((department) => department.id);
 const [SEEDED] = PROGRAMS;
+/** The one seeded programme outside `05`, added by #102. Found by its
+ * department rather than by index: PROGRAMS is appended to, and an index
+ * would follow the next append somewhere else without saying so. */
+const CIVIL = PROGRAMS.find((program) => program.department === DEPT_CIVIL);
 
 let api;
 before(async () => {
@@ -189,11 +193,16 @@ test('a department administrator is confined to their own department by the serv
   });
   assert.equal(own.status, 201, own.body.message);
 
-  // And the list they see is their own department's, not the faculty's.
+  // And the list they see is their own department's, not the faculty's. Before
+  // #102 the only row here was `T0102` - the one this caller had just made -
+  // so the assertion could not tell *the curricula of my department* from
+  // *every curriculum I have touched*. `0101` is seeded under `01` and belongs
+  // to nobody's test, and `0501`/`0503` sit in `05` and are still absent, so
+  // the list now has a boundary in it rather than an echo.
   const seen = await list(cookie, '?per_page=100');
   assert.deepEqual(
     seen.body.programs.map((row) => row.program_id),
-    ['T0102'],
+    ['0101', 'T0102'],
   );
 
   // Nothing they were refused happened.
@@ -201,6 +210,35 @@ test('a department administrator is confined to their own department by the serv
   assert.equal((await read(admin, 'X0501')).status, 404);
   assert.equal((await read(admin, SEEDED.id)).body.program.program_name_th, SEEDED.th);
   assert.equal((await remove(admin, 'T0102')).status, 204);
+});
+
+test('and the boundary runs the other way, on a curriculum no test made', async () => {
+  // #102's third criterion, and the mirror of the test above. That one is `01`'s
+  // administrator refused on a `05` curriculum; until #102 there was no other
+  // direction to run it in, because every หลักสูตร in the seed lived in `05` and
+  // the `05` administrator could only be refused on rows a test had just written
+  // itself. `0101` is seeded, is in `01`, and belongs to nobody's test - which is
+  // what makes this a boundary rather than a second copy of the same assertion.
+  const cookie = await signInAs('U_DEPT');
+
+  // Answered as though it were not there, for the same reason as the mirror: the
+  // route is not a way of enumerating another department's curricula.
+  assert.equal((await read(cookie, CIVIL.id)).status, 404);
+  assert.equal((await edit(cookie, CIVIL.id, { program_name_th: 'ไม่ควรเกิด' })).status, 404);
+  assert.equal((await remove(cookie, CIVIL.id)).status, 404);
+
+  // And absent from the list rather than present and unopenable, which is the
+  // half `reachablePrograms` decides.
+  const seen = await list(cookie, '?per_page=100');
+  assert.deepEqual(
+    seen.body.programs.map((row) => row.program_id),
+    PROGRAMS.filter((program) => program.department === DEPT_COMPUTER).map((program) => program.id),
+  );
+
+  // Nothing they were refused happened: the row is still there, under its own
+  // name, for an account that may see it.
+  const admin = await signInAs('U_FAC');
+  assert.equal((await read(admin, CIVIL.id)).body.program.program_name_th, CIVIL.th);
 });
 
 test('a department administrator cannot move a programme out of their reach', async () => {

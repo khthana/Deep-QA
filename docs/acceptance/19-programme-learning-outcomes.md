@@ -167,3 +167,4 @@ browser seam ยืนยันได้แค่ว่าแถวข้อย�
 | `statusignored` | `PUT` ไม่เขียน `is_active` | เปิดกลับได้จากหน้าเดิม |
 | `nofilter` | `?program_id=` ไม่ถูกใช้ | ผู้ดูแลภาควิชาเลือกหลักสูตรแล้วรายการเปลี่ยนตาม |
 | `facultyadmin` | ใส่ `FACULTY_ADMIN` กลับเข้า `MAINTAINERS` | บัญชีที่ไม่ควรเข้าถึงเลย — ครึ่งที่เป็นกฎ |
+| `102:anydepartmentreachesall` | grant ที่ผูกกับภาควิชา เอื้อมถึงทุกหลักสูตร | ที่ seam ของ HTTP: `a department administrator reaches both curricula under their department` — แถวนี้เคยอ่านด้วย `includes` สองครั้ง รายการที่กว้างเกินจึงผ่าน [#102](https://github.com/khthana/Deep-QA/issues/102) เปลี่ยนเป็นทั้งรายการ |

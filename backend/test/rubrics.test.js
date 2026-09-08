@@ -423,9 +423,11 @@ test('the curricula offered are the ones the account holds', async () => {
   const admin = await signInAs('U_DEPT');
   const answered = await programs(admin);
   assert.equal(answered.status, 200);
+  // The whole list, for #102's reason: with a curriculum seeded outside this
+  // department, *the ones the account holds* is a claim two `includes` cannot
+  // make.
   const held = answered.body.programs.map((program) => program.program_id);
-  assert.ok(held.includes(PROGRAM));
-  assert.ok(held.includes(PROGRAM_INTL));
+  assert.deepEqual(held, [PROGRAM, PROGRAM_INTL]);
 
   const committee = await programs(await signInAs('U_COM2'));
   assert.deepEqual(

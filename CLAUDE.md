@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96 and #107**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107 and #102**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -699,6 +699,83 @@ sites in four files; `fields.js`'s own docstring named four files; the code had
 were the defect. That is three separate written-down diagnoses, all
 undercounting, none of them lying — each was right on the day it was written.
 `grep -c` took a minute.
+
+**#102 is a new way for a ticket's diagnosis to be wrong, and it is the one
+hardest to catch by reading: the ticket contradicts itself.** Its headline says
+`reachablePrograms` could be deleted whole and *no test would fail*. Replacing
+its filter with `TRUE` failed **seven** subtests on the tree the ticket was
+written against, and eight once #102's own seed row was in. The ticket's own next paragraph
+says why - *the `PROG_MANAGER` half **is** proven* - so the first sentence and
+the third disagree, and both were written the same day by the same person.
+Every earlier instance of a wrong diagnosis here was a claim that had **aged**
+(#66's navigation, #111's twenty files, #55's six screens); this one was never
+true. **Read a ticket to its end before believing its first sentence**, because
+a headline is written to be arresting and the paragraph that qualifies it is
+written to be correct.
+
+**And what was actually unproved was narrower than either sentence.** Not the
+programme filter but the **department branch** of `coveredScopes`: a grant on
+department `05` expands to the programmes of `05`, and every programme was in
+`05`, so *the curricula of my department* and *every curriculum there is* were
+the same two rows. Naming the defect one function too wide is what made the
+headline checkable and wrong. **Aim at the branch, not at the function** - the
+same correction #119 made to *nothing runs either line*.
+
+**The mutant had to be aimed the same way, and the first attempt was #97's
+again.** `OR p.department_id = $1` → `OR TRUE` widens *every* branch, so every
+programme grant reached everything and **27** subtests failed - a run that says
+nothing about which assertion was holding what. Replacing `$1` with *is `$1` a
+department at all* leaves a programme grant untouched and kills **7**. **A
+mutant on a shared expression has to be narrowed to the branch it is about**,
+and the tell is the same as always: a kill count that looks like the suite.
+
+**The best thing it found is that the situation already existed, built by hand,
+in one suite.** `students.test.js` inserted the missing curriculum with raw SQL
+for its own use and asserted the other department's picker off it - and both of
+the mutant's two original kills came from that one fixture. So this was never
+*nobody can express this defect*; it was **one suite paid for it and no other
+screen inherited it**. Moving the row into `db/seed.js` took the mutant from 2
+kills to **7**, across five suites. **A fixture built inside one test file is a
+fixture no other file has** - when a suite builds a situation with raw SQL, ask
+whether the situation is about that test or about the dataset, because the
+second kind is cheaper for everybody in the seed and invisible to everybody
+outside it.
+
+**And the seed and the assertions turned out to be one hole from two ends.**
+With a curriculum finally outside department `05`, two picker tests were found
+whose names claim exactness and whose assertions read inclusion - *a department
+administrator reaches both curricula under their department* and *the curricula
+offered are the ones the account holds*, each `assert.ok(list.includes(a))`
+twice and nothing about what is absent. **Two `includes` cannot fail on a list
+that is too wide.** They could not have been written any better before, because
+no data could tell the two answers apart; the moment the data could, the
+assertions were the thing standing in the way. Fixing data and tightening
+assertions are the same job done at two ends, and doing only the first leaves
+the defect exactly as invisible.
+
+**Report the measured number, not the ticket's - and notice when one number is
+two.** #102 says *one seed change hardens a dozen rows at once*. The mutant
+kills **seven** subtests where it killed **two**, so the kill count is seven
+and the hardening is **five**, and a single figure in a write-up hides
+whichever of them the reader did not have in mind. The first pass here wrote
+*it hardened seven*, which is the kill count wearing the hardening's sentence.
+The habit that keeps being worth it is to write down what the sweep answered
+rather than what the ticket predicted - #107 wrote predicted numbers into a
+file before sweeping and had to replace them, which `96-outcome-order.py` had
+already recorded as a mistake.
+
+**And #96's third-property question was asked here and answered *no gap*,
+which is the answer worth writing down because it looks like nothing.** Both
+of #102's mutants vary which *programmes* a grant covers, so neither says
+anything about the *department* branch beside them - the one the programmes
+screen actually filters on, and the one #102's third acceptance criterion is
+about. Widening it the same narrow way fails **31** subtests across six
+suites: #97's mutant that stops the application working. So that branch is not
+unproved, it is the most heavily proved line in `authorise.js`, and the right
+record is *proved thirty-one times over, no mutant possible* rather than a
+silence a later reader reads as an oversight. **Three answers, not two: a
+clause is proved, or it cannot be reached, or nothing tests it** - and the
+first two both look like an empty mutant table.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 7 September 2569 that is

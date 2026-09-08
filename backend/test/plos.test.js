@@ -458,9 +458,12 @@ test('a committee member reaches only their own curriculum, at every verb', asyn
 test('a department administrator reaches both curricula under their department', async () => {
   const cookie = await signInAs('U_DEPT');
 
+  // The whole list rather than two `includes`, which is what the name of this
+  // test says and what #102 made checkable: `0101` sits under department `01`,
+  // so a picker that stopped narrowing would offer three and pass an inclusive
+  // assertion unchanged.
   const reachable = (await programs(cookie)).body.programs.map((program) => program.program_id);
-  assert.ok(reachable.includes(PROGRAM));
-  assert.ok(reachable.includes(PROGRAM_INTL));
+  assert.deepEqual(reachable, [PROGRAM, PROGRAM_INTL]);
 
   const created = await add(cookie, {
     program_id: PROGRAM_INTL,

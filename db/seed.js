@@ -18,6 +18,15 @@
  * department admin scoped elsewhere, a teacher who teaches nothing - so a
  * permission rule can be verified rather than assumed.
  *
+ * It has grown past §1.3 in one direction since, and the reason is worth
+ * knowing before adding to it again: a rule with one value in the dataset is
+ * a rule nothing can be shown to obey. §1.3 has one department, so *the
+ * curricula of my department* and *every curriculum there is* were the same
+ * two rows and the department boundary was unprovable (#102). The row that
+ * fixed it - `0101`, under department `01` - is here to be **absent** from
+ * things, and it is the shape to copy: a second value on the axis a rule is
+ * about, carrying nothing beneath it that no assertion would read.
+ *
  * Three properties are load-bearing and easy to lose:
  *
  *   * It is deterministic. Every name, every mark and every group membership
@@ -115,6 +124,23 @@ const PROGRAMS = [
     th: 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)',
     en: 'Computer Engineering (International Program)',
     department: '05',
+    year: '2564',
+  },
+  // #102's curriculum, and it is here to be *absent* from things. Until it
+  // existed every หลักสูตร in this dataset belonged to department 05, so
+  // `reachablePrograms` returning *the curricula of my department* and
+  // returning *every curriculum there is* were the same two rows, and no
+  // account or fixture could tell a working department boundary from a broken
+  // one. It carries a name and a department and nothing beneath it: the
+  // pickers it has to be missing from are drawn from the `programs` table
+  // alone, and outcomes underneath would be rows nothing asserts. U_DEPT2
+  // already administers `01` - the account was waiting for a curriculum, not
+  // the other way round.
+  {
+    id: '0101',
+    th: 'วิศวกรรมโยธา',
+    en: 'Civil Engineering',
+    department: '01',
     year: '2564',
   },
 ];

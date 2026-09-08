@@ -140,6 +140,7 @@ seed มีรายวิชาเดียวคือ `01076105` และ **
 | `unordered` | เรียงตามประเภทแทนรหัสวิชา | 18b ข้อ 9 บรรทัด 202 |
 | `listeveryone` | รายการไม่ถูกจำกัดด้วย reach | 18c ข้อ 8 บรรทัด 90 |
 | `maintainerall` | `MAINTAINERS` รวม `FULL_ADMIN`, `TEACHER` กับ `FACULTY_ADMIN` | 18c ข้อ 8 บรรทัด 152 — เขียนใหม่ที่ #79 รันซ้ำแล้ว |
+| `102:anydepartmentreachesall` | grant ที่ผูกกับภาควิชา เอื้อมถึงทุกหลักสูตร ไม่ใช่เฉพาะของภาคตน | ที่ seam ของ HTTP: `the administrator above a programme reaches it` และ `the pickers offer exactly what the writes will accept` — ก่อน [#102](https://github.com/khthana/Deep-QA/issues/102) มัตแตนต์นี้รอดทั้งคลัง |
 
 สามตัวแรกฆ่าข้อทดสอบเดียวกัน (18a ข้อ 1) แต่คนละ assertion — `alwaysfilter` ฆ่าบรรทัดที่ว่า
 ไม่มี dropdown ให้เลือก, `nolabelcode` ฆ่าบรรทัดที่ว่าป้ายบอกรหัสหลักสูตร และ `noautoprogram`
