@@ -961,8 +961,8 @@ gone - a line carrying Thai, which is the first thing a reword or a formatter to
 written to be rewritten.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 7 September 2569 that is
-`2026-09-07-what-greps-the-same-is-not-the-same.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 8 September 2569 that is
+`2026-09-08-run-the-explanation-not-only-the-symptom.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Two test seams
