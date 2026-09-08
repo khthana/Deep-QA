@@ -299,14 +299,30 @@ function studentRoutes(pool) {
   /**
    * The blank file — declared above `/students/:studentId`, or Express would
    * read the word `import-template` as a student code.
+   *
+   * A header and no example row, and #67 is why. The sample used to be
+   * `66010001,สมชาย,ใจดี,0501`, and `66010001` is the first student of the
+   * seeded 66 cohort by the derivation in `db/seed.js`. Downloading the
+   * template and uploading it unchanged — the first thing anybody does with a
+   * template — renamed a real student to สมชาย ใจดี and reported
+   * นำเข้าสำเร็จ 1 รายการ.
+   *
+   * The three sibling screens that import *against* a student — #25's
+   * enrolment, #26's work groups, #34's activity marks — answer the same
+   * ticket with `66019999`, a code no cohort reaches. That convention cannot
+   * be borrowed here, and the difference is not the code but what the two
+   * imports do with one they have not met: those three **refuse** an unknown
+   * student, so their sample uploaded unchanged writes nothing, and this one
+   * **creates** — into a register with no delete route (this file has GET,
+   * POST and the import, and nothing else). No eight-digit code is inert
+   * here, so the inert template is the one with no row in it.
+   *
+   * What the person gets instead is `importRows`' empty-file answer: 400,
+   * `REFUSALS.importEmpty`, `created: 0`. A sentence saying their file has no
+   * rows in it, which is true and is the thing they need to know.
    */
   router.get('/students/import-template', requireRole(...MAINTAINERS), (req, res) =>
-    sendTemplate(res, 'students-template.csv', IMPORT_COLUMNS, {
-      student_id: '66010001',
-      first_name_th: 'สมชาย',
-      last_name_th: 'ใจดี',
-      program_id: '0501',
-    }),
+    sendTemplate(res, 'students-template.csv', IMPORT_COLUMNS),
   );
 
   /**

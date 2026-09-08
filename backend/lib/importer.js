@@ -248,10 +248,16 @@ function sendImport(res, result, key) {
 /**
  * The other half of the pattern: the blank file the screen offers to download.
  *
- * Headers and one example row, because a template of headers alone leaves the
- * person guessing at the formats - and `Content-Disposition`, because the point
- * is a file on their disk with a name they recognise rather than a page of
- * commas in a tab.
+ * Headers, an example row where the caller passes one, and
+ * `Content-Disposition`, because the point is a file on their disk with a name
+ * they recognise rather than a page of commas in a tab.
+ *
+ * Whether to pass an example is the caller's decision and not this helper's,
+ * and #67 is why it has to be. A sample teaches the formats, which is worth
+ * having and is why nine of the ten callers still pass one; it is also a row
+ * that gets uploaded back unchanged, so what it costs depends entirely on what
+ * that import does with a key it already holds. `students.js` passes nothing,
+ * because its import overwrites a person and its register has no delete route.
  */
 function sendTemplate(res, filename, columns, example) {
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');

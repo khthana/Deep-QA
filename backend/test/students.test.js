@@ -57,6 +57,22 @@ const [PROG_MAIN, PROG_INTL] = PROGRAMS.map((program) => program.id);
 /** How many students the seed leaves in the register before any test runs. */
 const SEEDED = COHORTS.reduce((total, cohort) => total + cohort.students, 0);
 
+/**
+ * A code the register already holds, built on the prefix `db/seed.js` numbers
+ * its cohorts from.
+ *
+ * This is the code #67 is about: the import template used to carry it as its
+ * example row, so downloading the template and uploading it unchanged
+ * overwrote a real student. Either cohort would serve - what matters is only
+ * that the seed holds it. The prefix is derived rather than typed so that a
+ * change to the cohorts takes this with it; the `010001` tail is written out,
+ * because restating the seed's own numbering loop would prove nothing. The
+ * same digits appear as
+ * literals further down for an unrelated reason: they are the input the
+ * admission year is derived from, and there the digits are the point.
+ */
+const SEEDED_CODE = `${COHORTS[0].idPrefix}010001`;
+
 let api;
 before(async () => {
   api = await startApi('students', { withSeed: true });
@@ -238,16 +254,60 @@ test('the template downloads and matches what the importer accepts', async () =>
     response.headers['content-disposition'],
     /attachment; filename="students-template\.csv"/,
   );
-  const [header] = response.text.replace(/^﻿/, '').split('\r\n');
+  const [header] = response.text.replace(/^\ufeff/, '').split('\r\n');
   assert.deepEqual(header.split(','), COLUMNS);
 
-  const before = (await list(cookie)).body.total;
-  const accepted = await importCsv(cookie, response.text);
+  // #67 took the example row out, and that changes what a round trip can
+  // prove. `importRows` asks whether a file has any rows in it *before* it
+  // asks whether the header is one it knows, so posting the template as
+  // served answers `importEmpty` without ever reading the header - which is
+  // the next test, and is not this criterion. What proves the header is a row
+  // written underneath the bytes the server actually sent, in the order it
+  // sent them.
+  const [, row] = csvOf([draftOf('64010001')], header.split(',')).split('\r\n');
+  const accepted = await importCsv(cookie, `${response.text.trimEnd()}\r\n${row}\r\n`);
+
   assert.equal(accepted.status, 201, accepted.body.message);
-  // The example row names a student the seed already holds, so accepting it
-  // adds nobody - which is the sixth criterion arriving from an angle nobody
-  // arranged.
+  assert.equal(accepted.body.created, 1);
+  assert.equal((await read(cookie, '64010001')).body.student.program_id, PROG_MAIN);
+});
+
+test('the template names nobody, and uploading it unchanged writes nothing', async () => {
+  // #67. The sample row used to be the first student of the seeded 66 cohort,
+  // and this is the only import in the system that overwrites a *person*
+  // already on a register (`OVERWRITE` in the route, deliberately, so a
+  // correction can be sent through the same file). Weights and activity marks
+  // upsert too, but on a category and on a mark, and both refuse a student
+  // they have not met - so the first thing anybody does with this template,
+  // and only this one, renamed a real student and reported
+  // นำเข้าสำเร็จ 1 รายการ.
+  //
+  // The three sibling screens that import against a student answer the same
+  // ticket with `66019999` instead, and that convention cannot be borrowed
+  // here: those imports refuse a student they do not know, this one creates
+  // one, and this register has no delete route. No eight-digit code is inert,
+  // so the file has to be.
+  const cookie = await signInAs('U_DEPT');
+
+  const response = await template(cookie);
+  const lines = response.text.replace(/^\ufeff/, '').split('\r\n').filter(Boolean);
+  assert.deepEqual(lines, [COLUMNS.join(',')]);
+  // Counting the lines is not the claim. A file may carry a code in a comment
+  // row, or in a second header, and still be one line long by that count.
+  assert.doesNotMatch(response.text, /\d{8}/);
+
+  const named = (await read(cookie, SEEDED_CODE)).body.student;
+  const before = (await list(cookie)).body.total;
+
+  const refused = await importCsv(cookie, response.text);
+
+  assert.equal(refused.status, 400);
+  assert.equal(refused.body.message, REFUSALS.importEmpty);
+  assert.equal(refused.body.created, 0);
   assert.equal((await list(cookie)).body.total, before);
+  // Both halves, because the defect was never a row appearing: it was a row
+  // already there being written over, which no count of the register can see.
+  assert.deepEqual((await read(cookie, SEEDED_CODE)).body.student, named);
 });
 
 test('a valid spreadsheet imports every student in it', async () => {

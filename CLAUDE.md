@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107 and #102**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102 and #67**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -154,7 +154,11 @@ refusal only a server in production mode can produce, and a ☐ for a criterion 
 today** because a wrong password raises the session-expired dialog over the sign-in screen (#97).
 A ☐ is also how a sheet says *this is true of somebody else's open ticket*, not only *nobody has
 looked*. The count is worth taking from the sheets rather
-than from here — **one ☐, and it is half of a ticket somebody else owns** (#49's menu set). #50's
+than from here — **two ☐, and both are half of a ticket somebody else owns**: #49's menu set
+on `10-application-shell.md`, and since #67 the sample row on `11-user-accounts.md`'s
+download row, which is #124. That second one is what a ☐ is for twice over — the sheet
+had described #124 in prose beside a ☑ for the whole row, which is #50's *explaining a gap
+is not marking it* arriving inside the ticket that opened the gap. #50's
 ☐ — the criterion that was not true — is gone, closed by #97, and the Google half of where a
 sign-in lands is gone too, closed by #119 with the seam the sentence beside it said could not
 reach it. Of the ◐ — **seventeen, counted from the sheets on 7 September 2569, and this
@@ -776,6 +780,68 @@ record is *proved thirty-one times over, no mutant possible* rather than a
 silence a later reader reads as an oversight. **Three answers, not two: a
 clause is proved, or it cannot be reached, or nothing tests it** - and the
 first two both look like an empty mutant table.
+
+**#67 had already been answered in three of the ten places it applies, and stayed open
+because the tenth is the one it was filed against.** Its sample row - `66010001`, the
+first student of the seeded 66 cohort - was answered in #25's enrolment, #26's work
+groups and #34's activity marks with `66019999`, *a code no cohort reaches*, the ticket
+cited in all three comments, and `docs/acceptance/25-section-enrolment.md` row 6 is a
+walked ☑ recording that as **#67's answer**. It is the right answer there and it cannot
+be the answer here, and the difference is not the code. Those three imports **refuse** a
+student they do not know, so their sample uploaded unchanged writes nothing; the students
+import **creates** one, into a register whose route file holds GET, POST and the import
+and no delete at all. **A convention is a claim about behaviour, not about a column** -
+#107's *what greps the same is not the same guard*, one ticket later, in the shape of a
+fix rather than a guard. A ticket answered where answering is easy is not a ticket closed.
+
+**Its closing sentence is a new way for a ticket to be wrong, and it is #122's inverted.**
+*`sendTemplate` is shared, so it is one change for every screen* - the helper is shared,
+and the samples were ten literals in ten route files - nine after this diff - so the fix
+is per-route and no mutant in this store can see the rest. #122's lesson was that a ticket which
+generalises across screens has usually generalised the **symptom**; this one generalised
+the **fix**, from a helper it had correctly observed to be shared. **Ask what is actually
+shared: the code that runs, or the value handed to it.**
+
+**Two greps decided the whole ticket and it had neither - and the first one has to be
+read rather than counted.** `ON CONFLICT` across `backend/routes` matches three imports,
+not one: students, weights and activity marks all upsert. What separates them is what the
+key *is* - **students is the only one whose key is a person on a register**, and the other
+two overwrite a weighting category and a mark on screens whose imports refuse a student
+they have not met. That is why its sample rewrote somebody where the other templates'
+samples either created a new row or were refused. The first write-up of this ticket said
+*the only import that overwrites a key it meets* in three files and `/code-review` caught
+all three: **a grep is the start of the sentence, not the sentence.** `router.delete`
+across the same files is the plainer one and says **students and users are the two
+registers with no way to remove a row**. Between them they sort ten
+templates into four behaviours and choose the fix. The survey behind them was ten HTTP
+round trips in a throwaway suite, run once and deleted the same hour. **When a ticket asks
+what the convention should be, measure what each site does with a convention before
+picking one.**
+
+**The defect was invisible to a count, and a test had already written that down as a
+feature.** `students.test.js` posted the template back and asserted the register was the
+same size afterwards, under a comment reading *the example row names a student the seed
+already holds, so accepting it adds nobody - which is the sixth criterion arriving from an
+angle nobody arranged*. The suite had **seen the collision, understood it, and recorded it
+as a bonus**: the row was not added, it was written over, and no assertion about the size
+of a table can tell those two apart. **A test that passes because of a defect tends to
+explain itself in its own comment** - read the comments on the tests around a defect
+before concluding the defect is untested, because the one describing your bug is the one
+to rewrite.
+
+**And a row written to fail on the day of the fix did exactly that, which is #96's rule
+confirmed a second time.** `17b` row 12 asserted `GET /api/students/66010001` answers
+**200** - pinning the collision on purpose, so that the day the sample stopped naming a
+real student the row would fail and point at the ticket. It failed on schedule, the note
+said where to go, and the rewrite took minutes. **Write the rewrite instruction on the row
+the day you notice it**, and expect to be the person who reads it.
+
+**A `mode: 'serial'` spec under-reports its own kill count.** `samplenamesastudent` kills
+rows 12 and 23 of `17b`; a whole-file run stops at row 12 and reports one failure. The two
+were measured with `--grep`, one at a time. **A serial run reports the first row that
+dies and skips every row after it**, so its figure is a lower bound on the kills rather
+than the kills - a fact about the runner and not about the mutant. Measure each row on
+its own.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 7 September 2569 that is

@@ -15,9 +15,10 @@ const {
   reportTable,
 } = require('../support/students-screen');
 const { BACKEND_URL } = require('../support/env');
+const { REFUSALS } = require('../../backend/auth/refusals');
 
 /**
- * docs/acceptance/17-students.md, rows 12-17 — the import.
+ * docs/acceptance/17-students.md, rows 12-17 and 23 — the import.
  *
  * These are the rows the checklist repeats on every screen with an ImportPanel
  * on it, and #25 is about to reuse that panel for section enrolment. What is
@@ -36,14 +37,19 @@ test.beforeEach(async ({ page }) => {
   await openRegister(page);
 });
 
-test('row 12: the template is four columns and one sample, and keeps its byte-order mark', async ({
+test('row 12: the template is four columns and no sample row, and keeps its byte-order mark', async ({
   page,
 }) => {
   const template = await downloadTemplate(page);
 
   expect(template.name).toBe('students-template.csv');
   // #62: the client puts the mark back that reading the response stripped, so
-  // Excel opens a Thai template as UTF-8 rather than as cp874 mojibake.
+  // Excel opens a Thai template as UTF-8 rather than as cp874 mojibake. Since
+  // #67 the file it protects has no Thai left in it - the four column names
+  // are ASCII - so this assertion now proves the mark survives the round trip
+  // and no longer demonstrates the mojibake it exists to prevent. That is one
+  // of the two things #67 cost, and 11b still shows the other end of it: the
+  // users template is Thai from its second line down.
   expect(template.text.startsWith(BOM)).toBe(true);
 
   const lines = template.text.replace(BOM, '').trim().split(/\r?\n/);
@@ -57,14 +63,19 @@ test('row 12: the template is four columns and one sample, and keeps its byte-or
   // column for either is a column somebody fills in and is then believed.
   expect(lines[0]).not.toContain('department_id');
   expect(lines[0]).not.toContain('admission_year');
-  expect(lines).toHaveLength(2);
+  expect(lines).toHaveLength(1);
 
-  // The one sample row is `66010001` — the first student of the seeded 66
-  // cohort. Uploading the template as it arrives therefore does not demonstrate
-  // an import; it renames a real student. Asserted rather than merely noted so
-  // that the day the sample stops colliding, this row says so (#67).
-  const sample = await page.request.get(`${BACKEND_URL}/api/students/${lines[1].split(',')[0]}`);
-  expect(sample.status()).toBe(200);
+  // #67, and this row is the one that asked for it. It used to read
+  // `toHaveLength(2)` and then fetch the sample's code, asserting
+  // `GET /api/students/66010001` answered 200 — pinning the collision on
+  // purpose, so that the day the sample stopped naming a real student the row
+  // would fail and point at the ticket. This is that day, so the row now says
+  // what it was waiting to be able to say.
+  //
+  // Not a line count. A code can arrive in a comment row or a second header
+  // and leave the count at one, and what the ticket is about is a code in the
+  // file, wherever it sits.
+  expect(template.text).not.toMatch(/\d{8}/);
 });
 
 test('row 13: a good file is applied and its students are on the first page', async ({
@@ -184,4 +195,36 @@ test('row 17: a column the template does not have is ignored, not believed', asy
   const row = page.getByRole('row').filter({ hasText: '68060001' });
   await expect(row).toContainText('2568');
   await expect(row).not.toContainText('2599');
+});
+
+test('row 23: the template uploaded unchanged is refused, and renames nobody', async ({
+  page,
+}) => {
+  // #67's other half, and the half a person walks into rather than reads:
+  // download the template, upload it without editing it, and see what the
+  // register looks like afterwards. It used to answer นำเข้าสำเร็จ 1 รายการ
+  // over a real student it had just renamed.
+  //
+  // Appended rather than inserted beside row 12: the specs and the sheet cite
+  // each other by row number, and a number that moves is four files to chase.
+  //
+  // `66010001` is typed here where `students.test.js` derives it from the
+  // seed's cohort prefixes. The literal is the point at this seam: this is the
+  // code the template shipped, and the row is about that code and not about
+  // whichever student the seed happens to number first.
+  const template = await downloadTemplate(page);
+  const before = await total(page);
+  const seeded = await page.request.get(`${BACKEND_URL}/api/students/66010001`);
+  expect(seeded.status()).toBe(200);
+  const { student } = await seeded.json();
+
+  await importCsv(page, template.text);
+
+  await expect(page.getByText(REFUSALS.importEmpty)).toBeVisible();
+  await expect.poll(() => total(page)).toBe(before);
+
+  // The count cannot see this defect: the row was never added, it was written
+  // over, and the register was the same size either way.
+  const after = await page.request.get(`${BACKEND_URL}/api/students/66010001`);
+  expect((await after.json()).student).toEqual(student);
 });
