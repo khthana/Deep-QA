@@ -253,12 +253,31 @@ function ploRoutes(pool) {
    * The set, as a tree — the second and fourth criteria, in the halves that are
    * facts about the API.
    *
-   * Roots first, narrowed by the reach and by `?program_id=`; then each root's
+   * One curriculum's roots, narrowed by the reach as well; then each root's
    * descendants, carrying the path of `sequence_order`s that reaches them.
    * Ordering on that path is what puts a child directly under its parent and
    * siblings in their stated order; `outcome_id` is appended at each step so
    * that two siblings given the same order still have a settled answer rather
    * than whichever the plan happened to produce.
+   *
+   * `program_id` is required, which is #101 and is the fourth criterion made
+   * structural. It used to be optional and the screen offered
+   * ทุกหลักสูตร; on the
+   * seed that answered a department administrator with 56 rows in one scroll
+   * — there is no pager here, deliberately, because a
+   * ข้อย่อย on page two whose
+   * ข้อหลัก is on page one is not a tree
+   * — the second curriculum starting at row 53 and every one of its four
+   * codes already used above it by the first. Codes are unique per curriculum,
+   * so that answer contained two outcomes called `PLO-2` and no way to tell
+   * them apart. A route that cannot be asked the question cannot give that
+   * answer, which is a stronger guarantee than a screen that remembers not to
+   * ask.
+   *
+   * The reach filter stays underneath it. Naming a curriculum is how the
+   * caller says which one they want; whether they may have it is still the
+   * grant's answer, and a curriculum they do not hold comes back empty rather
+   * than refused, for `ploNotFound`'s reason.
    *
    * Inactive outcomes are listed alongside active ones, deliberately: a
    * referenced outcome is switched off rather than removed, and this is the
@@ -266,16 +285,27 @@ function ploRoutes(pool) {
    */
   router.get('/plos', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
+      // A query string can name the same key twice, and Express hands the
+      // pair over as an array. `blankToNull` is about an empty box rather than
+      // about a shape - it passes a non-string straight through - so
+      // `?program_id=0501&program_id=0503`, the one request that literally
+      // asks for two curricula, got past this guard and answered 200 with an
+      // empty list. The criterion is about the question, so the type is part
+      // of the refusal: `/code-review` found this and a throwaway suite
+      // measured it.
+      const asked = req.query.program_id;
+      const program = typeof asked === 'string' ? blankToNull(asked) : null;
+      if (!program) return res.status(400).json({ message: REFUSALS.ploProgramRequired });
+
       const reach = await coveredScopes(pool, req.auth.acting.scope_id);
-      const program = blankToNull(req.query.program_id) ?? null;
 
       const { rows } = await pool.query(
         `WITH RECURSIVE tree AS (
            SELECT lo.*, ARRAY[lo.sequence_order, lo.outcome_id] AS path
              FROM learning_outcomes lo
             WHERE lo.parent_outcome_id IS NULL
+              AND lo.program_id = $2
               AND ($1::text[] IS NULL OR lo.program_id = ANY($1))
-              AND ($2::text IS NULL OR lo.program_id = $2)
            UNION ALL
            SELECT child.*, t.path || child.sequence_order || child.outcome_id
              FROM learning_outcomes child
@@ -286,7 +316,7 @@ function ploRoutes(pool) {
          SELECT ${RETURNED}
            FROM tree lo
            LEFT JOIN users u ON u.user_id = lo.updated_by
-          ORDER BY lo.program_id ASC, lo.path ASC`,
+          ORDER BY lo.path ASC`,
         [reach, program],
       );
 

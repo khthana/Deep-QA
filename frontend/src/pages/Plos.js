@@ -29,6 +29,16 @@ import {
  * not a tree, and no arrangement of the rows on this side puts it back
  * together. The whole set for the chosen curriculum arrives at once.
  *
+ * *A curriculum is always chosen, and that is #101.* The picker used to offer
+ * ทุกหลักสูตร and the screen then drew both trees end to end — on the seed
+ * 56 rows in one scroll, the second curriculum starting at row 53, and every
+ * one of its four รหัส already used above it by the first, because a code is
+ * unique inside its หลักสูตร and nowhere wider. With no pager there was
+ * not even a หน้า 1 จาก 6 to say that anything followed. Two rows reading `PLO-2`
+ * next to a ลบ button is the wrong list to be ambiguous on, so the option is
+ * gone, the first curriculum in reach is chosen on arrival, and no request
+ * leaves this file without one — the route refuses one that does.
+ *
  * *The order is the server's, and this file does not re-sort.* The rows come
  * back already walked — each ข้อย่อย directly after its ข้อหลัก, siblings in
  * their stated ลำดับ — so drawing them in the order they arrived is what makes
@@ -53,8 +63,11 @@ import {
 export default function Plos() {
   const [program, setProgram] = useState('')
   const [plos, setPlos] = useState([])
-  const [everything, setEverything] = useState([])
   const [programs, setPrograms] = useState([])
+  // Which curriculum the *form* is on, and its outcomes when that is not the
+  // one the table is showing. See `parentPool` below.
+  const [formProgram, setFormProgram] = useState('')
+  const [formOutcomes, setFormOutcomes] = useState([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
   const [editing, setEditing] = useState(null)
@@ -68,16 +81,14 @@ export default function Plos() {
   }, [])
 
   const load = useCallback(async () => {
+    // Nothing is asked for until a curriculum is chosen. The effect below
+    // chooses one as soon as the reach is known; an account that reaches none
+    // never gets here, and is told so rather than left loading.
+    if (!program) return
     setLoading(true)
     try {
       const { plos: rows } = await listPlos({ program_id: program })
       setPlos(rows)
-      // The table shows what was asked for; the form's ข้อหลัก picker has to
-      // offer outcomes of whatever curriculum the form is on, which need not be
-      // the one the table is filtered to. An administrator who narrows to one
-      // curriculum and then adds an outcome to the other would otherwise be
-      // offered nothing to put it under, with nothing on screen saying why.
-      setEverything(program ? (await listPlos({})).plos : rows)
     } catch (error) {
       report(error)
     } finally {
@@ -91,17 +102,63 @@ export default function Plos() {
 
   // The curricula in reach, fetched once: what this account covers is a
   // property of the grant and does not change with what is being looked at.
+  // It is also what decides which curriculum the screen opens on, so nothing
+  // is listed until it answers.
   useEffect(() => {
     let cancelled = false
     listReachablePrograms()
       .then(({ programs: reachable }) => {
-        if (!cancelled) setPrograms(reachable)
+        if (cancelled) return
+        setPrograms(reachable)
+        // The first curriculum in reach *that is still running*: a retired one
+        // is a poor thing to open on, and is landed on only when it is all
+        // there is. The form's picker takes the stronger half of the same rule
+        // and does not offer a retired curriculum at all, which it can afford
+        // because a form nobody has filled in yet can start on nothing.
+        //
+        // Every curriculum in the seed is active, so no row at either seam can
+        // tell this apart from `reachable[0]`, and `landsonthelast` breaks both
+        // halves at once. It is the third of #107's three answers - not proved,
+        // not unreachable, untested - and it is written down here rather than
+        // left for a reader to assume the first.
+        const first = reachable.find(entry => entry.is_active !== false) ?? reachable[0]
+        // A ผู้ดูแลภาควิชา of a department that runs no หลักสูตร yet is a legal
+        // account and reaches nothing. `load` will not fire for them, so this
+        // is the only place that can stop the spinner — #43's defect otherwise.
+        if (first) setProgram(current => current || first.program_id)
+        else setLoading(false)
+      })
+      .catch(error => {
+        if (cancelled) return
+        setLoading(false)
+        report(error)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [report])
+
+  // The table shows one curriculum; the form need not be on that one. An
+  // administrator narrowed to 0501 who adds an outcome to 0503 has to be
+  // offered 0503's outcomes as ข้อหลัก, or there is nothing to put it under
+  // and nothing on screen saying why. This used to be a second, unfiltered
+  // request for every outcome in reach; #101 took that shape away, so the
+  // curriculum the form is on asks for its own — and only when it differs from
+  // the one already on screen.
+  useEffect(() => {
+    if (!formProgram || formProgram === program) return undefined
+    let cancelled = false
+    listPlos({ program_id: formProgram })
+      .then(({ plos: rows }) => {
+        if (!cancelled) setFormOutcomes(rows)
       })
       .catch(report)
     return () => {
       cancelled = true
     }
-  }, [report])
+  }, [formProgram, program, report])
+
+  const parentPool = formProgram && formProgram !== program ? formOutcomes : plos
 
   const nameOf = programId =>
     programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId
@@ -127,6 +184,7 @@ export default function Plos() {
       if (editing?.outcome_id) await updatePlo(editing.outcome_id, draft)
       else await createPlo(draft)
       setEditing(null)
+      setFormProgram('')
       setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
       await load()
     } catch (error) {
@@ -167,14 +225,20 @@ export default function Plos() {
       {editing ? (
         <PloForm
           value={editing}
-          plos={everything}
+          plos={parentPool}
           programs={programs}
           defaultProgram={program}
           busy={busy}
           onSave={save}
+          onProgramChange={setFormProgram}
           onCancel={() => {
             setNotice(null)
             setEditing(null)
+            // Forgotten rather than left behind: a curriculum the form was on
+            // and the table is not would otherwise send a request for its
+            // outcomes the next time the filter moves, for a form that is no
+            // longer open.
+            setFormProgram('')
           }}
         />
       ) : (
@@ -194,7 +258,10 @@ export default function Plos() {
                     onChange={event => setProgram(event.target.value)}
                     className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
                   >
-                    <option value="">ทุกหลักสูตร</option>
+                    {/* No ทุกหลักสูตร — #101. A set of outcomes belongs to
+                        one curriculum, so a list of two is not a view of
+                        anything anybody maintains, and #20's grid had already
+                        settled the same question for the same reason. */}
                     {programs.map(entry => (
                       <option key={entry.program_id} value={entry.program_id}>
                         {entry.program_id} {entry.program_name_th}
@@ -254,7 +321,13 @@ export default function Plos() {
                 {!loading && plos.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
-                      ยังไม่มีผลการเรียนรู้ในหลักสูตรนี้
+                      {/* Two different silences. The second is an account that
+                          reaches no หลักสูตร at all: there is no curriculum
+                          to be empty, and saying หลักสูตรนี้ would name one
+                          that is not there. */}
+                      {program
+                        ? 'ยังไม่มีผลการเรียนรู้ในหลักสูตรนี้'
+                        : 'บัญชีนี้ยังไม่ได้ดูแลหลักสูตรใด จึงยังไม่มีผลการเรียนรู้ให้จัดการ'}
                     </td>
                   </tr>
                 )}

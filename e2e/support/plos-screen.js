@@ -14,14 +14,27 @@ const { expect } = require('@playwright/test');
  *
  * *A row is named by its code, but a code is not an identifier.* Two curricula
  * may each hold a `PLO-1`, which is the ticket. So every helper that finds a
- * row takes the list to be narrowed to one curriculum first; `filterTo` is the
- * control that does it, and an administrator reaching two curricula sees both
- * trees at once until they use it.
+ * row takes the list to be narrowed to one curriculum — which since #101 it
+ * always is: the screen lands on the first curriculum in reach and offers no
+ * way to ask for two at once. `filterTo` moves between them, where this
+ * sentence used to say it was what saved an administrator from a mixed list.
  *
  * The pickers are located by an option only each of them has rather than by
  * their labels, for `program-subjects-screen`'s reason: `Field` wraps the
  * control inside the `<label>`, so a select's accessible name is its label
  * *and* every option's text.
+ *
+ * #101 took the list filter's old option away, and the replacement is
+ * deliberately not the inverse of it. It used to be found by `value=""` —
+ * ทุกหลักสูตร — and the obvious move was to find it by *not* having one.
+ * That would put #85's trap under this file: the presence of that option is
+ * what two of #101's rows are about, so a locator built on its absence turns
+ * those rows into rows that cannot fail for the reason they name — restore the
+ * option and the control is simply not found, whatever the assertion said.
+ *
+ * So both curriculum selects are found the same way, by an option carrying a
+ * curriculum code, and what tells them apart is that they are never drawn at
+ * the same time: the form replaces the table rather than sitting beside it.
  */
 
 const PLOS = '/main/plos';
@@ -31,6 +44,22 @@ const API = '/api/plos';
 function waitForList(page) {
   return page.waitForResponse(
     answer => new URL(answer.url()).pathname === API && answer.request().method() === 'GET',
+  );
+}
+
+/**
+ * Waits for the reach — which curricula this account may maintain.
+ *
+ * Since #101 this is the screen's *first* question and the one everything else
+ * waits on: no outcomes are asked for until it answers, because there is no
+ * request for outcomes that does not name a curriculum. It is therefore also
+ * where an account that may not be here is refused, and the row about that
+ * waits here rather than on the list.
+ */
+function waitForReach(page) {
+  return page.waitForResponse(
+    answer =>
+      new URL(answer.url()).pathname === `${API}/programs` && answer.request().method() === 'GET',
   );
 }
 
@@ -63,13 +92,31 @@ const ploRow = (page, code) =>
 /** The columns, by what the table's header calls them. */
 const CELL = { code: 0, title: 1, type: 2, order: 3, program: 4, status: 5 };
 
-/** The form's curriculum picker — the only select offering a curriculum code. */
-const programPicker = page =>
-  page.getByRole('combobox').filter({ has: page.locator('option[value="0501"]') });
+/**
+ * A curriculum select — the only kind offering a curriculum code.
+ *
+ * Both seeded curricula, not just `0501`, and that is not belt and braces. The
+ * rows about a committee member assert that this control is *not drawn*, and
+ * `กรรมการหลักสูตร` of `0503` would be offered a dropdown holding `0503`
+ * alone. A locator that only knew `0501` would answer *not drawn* for a
+ * dropdown that was, and `alwaysadropdown` would stop proving anything.
+ */
+const CURRICULA = 'option[value="0501"], option[value="0503"]';
 
-/** The list's own curriculum filter, drawn only when more than one is reached. */
-const programFilter = page =>
-  page.getByRole('combobox').filter({ has: page.locator('option[value=""]') });
+const curriculumSelect = page =>
+  page.getByRole('combobox').filter({ has: page.locator(CURRICULA) });
+
+/** The form's curriculum picker. Drawn only while the form is. */
+const programPicker = curriculumSelect;
+
+/**
+ * The list's own curriculum filter, drawn only when more than one is reached.
+ *
+ * The same query as the form's picker, for the reason in the header: the two
+ * are never on screen together, and anything that told them apart would have
+ * to be the option #101 is about.
+ */
+const programFilter = curriculumSelect;
 
 /** The form's ประเภท picker. */
 const typePicker = page =>
@@ -179,8 +226,23 @@ const listedCodes = page =>
     .allInnerTexts()
     .then(cells => cells.map(cell => cell.replace('ข้อย่อย', '').trim().split(/\s+/)[0]));
 
-/** Narrows the list to one curriculum through the screen's own filter. */
+/**
+ * Makes sure the list is showing one curriculum, through the screen's own filter.
+ *
+ * *Showing*, rather than *press the control*, and the difference began with
+ * #101. Selecting the value a `<select>` already holds fires no `change`, so
+ * nothing reloads and a wait for the reload hangs until the row times out.
+ * That could not happen while the screen opened on ทุกหลักสูตร - every
+ * curriculum was a move away from it - and it can now that the screen opens on
+ * one of them.
+ *
+ * Reading the value once and comparing it, rather than pressing and hoping, is
+ * also what keeps the rows apart: *which* curriculum the screen lands on is one
+ * row's claim, and a helper that failed whenever the landing moved would make
+ * every row that uses it fail for that row's reason instead of its own.
+ */
 async function filterTo(page, programId) {
+  if ((await programFilter(page).inputValue()) === programId) return;
   await Promise.all([waitForList(page), programFilter(page).selectOption(programId)]);
 }
 
@@ -189,6 +251,7 @@ module.exports = {
   API,
   CELL,
   waitForList,
+  waitForReach,
   openPlos,
   ploRow,
   programPicker,

@@ -2,14 +2,18 @@
 
 const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
-const { PLOS: SEEDED, PLOS_INTL } = require('../../db/seed');
+const { PLOS: SEEDED, PLOS_INTL, PROGRAMS } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const {
   PLOS,
+  CELL,
   waitForList,
+  waitForReach,
   openPlos,
+  programPicker,
   ploRow,
+  programFilter,
   parentPicker,
   statusPicker,
   offeredLabels,
@@ -49,6 +53,18 @@ const {
  * for the reason it is testing - that being switched off is not a one-way door.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * A curriculum's name as the seed spells it, and as the picker draws it.
+ *
+ * Read from `db/seed` rather than retyped: a row comparing the screen against
+ * its own copy of a name is a row that passes whatever the name is.
+ */
+const nameOf = programId => PROGRAMS.find(program => program.id === programId).th;
+const named = programId => `${programId} ${nameOf(programId)}`;
+
+/** Every outcome 0503 holds — its ข้อหลัก and their ข้อย่อย. */
+const INTL_OUTCOMES = PLOS_INTL.reduce((total, plo) => total + 1 + plo.subs.length, 0);
 
 /** The tree this file builds in 0501 and takes apart again. */
 const MAIN = 'PLO-Z1';
@@ -253,11 +269,18 @@ test('the accounts this screen is not for are refused it, not merely kept off it
   // central administrator, and "serving an outcome is not writing one" for the
   // ผู้สอน. The menu entry each of them lacks is a convenience; this is the rule,
   // and it holds for an account that reached the screen by typing its address.
+  //
+  // The request the refusal arrives on moved with #101. This screen used to ask
+  // for the list on arrival and be refused it; it now asks which curricula the
+  // account reaches and asks for no outcomes until that answers, so the 403 is
+  // on `/api/plos/programs` and there is no list request at all. That is the
+  // criterion holding rather than a weaker assertion: a screen that never asks
+  // for outcomes is a screen that cannot be given any.
   for (const account of [ACCOUNTS.facultyAdmin, ACCOUNTS.systemAdmin, ACCOUNTS.teacherOne]) {
     await page.context().clearCookies();
     await signIn(page, account);
 
-    const [answer] = await Promise.all([waitForList(page), page.goto(PLOS)]);
+    const [answer] = await Promise.all([waitForReach(page), page.goto(PLOS)]);
     expect(answer.status(), `${account} should be refused`).toBe(403);
     await expect(page.getByText(REFUSALS.forbidden)).toBeVisible();
 
@@ -283,4 +306,95 @@ test('the add form starts empty and the outcome it makes is not there until it i
   await page.getByRole('button', { name: 'ยกเลิก' }).click();
 
   expect(await listedCodes(page)).toEqual(before);
+});
+
+test('the curriculum filter offers the curricula in reach and nothing wider', async ({ page }) => {
+  // #101's first criterion. The option used to be there and to be what the
+  // screen opened on, so an administrator reaching two curricula met both trees
+  // end to end: 56 rows in one scroll on the seed - there is no pager here -
+  // 0503 starting at row 53, and every one of its four รหัส already used above
+  // it by 0501. `UNIQUE (program_id, outcome_code)` is what makes that list
+  // ambiguous rather than merely long, and it is the reason this screen and
+  // not the four siblings that offer the same option.
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openPlos(page);
+
+  const filter = programFilter(page);
+  await expect(filter).toHaveCount(1);
+  expect(await offeredLabels(filter)).toEqual(['0501', '0503'].map(named));
+});
+
+test('the screen lands on the first curriculum in reach, with that curriculum drawn', async ({
+  page,
+}) => {
+  // #101's second criterion, and a separate row from the one above because it
+  // is a separate claim: a picker with nothing wider in it still has to arrive
+  // pointing at something. Which one is the ticket's own word - the first in
+  // reach - and it is checkable because the reach comes back in a settled
+  // order.
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openPlos(page);
+
+  await expect(programFilter(page)).toHaveValue('0501');
+  expect((await listedCodes(page)).length).toBeGreaterThan(0);
+  await expect(ploRow(page, 'PLO-1')).toContainText(SEEDED[0].title);
+});
+
+test('every row on screen is of the curriculum the filter names, at both settings', async ({
+  page,
+}) => {
+  // #101's fourth criterion, in the half a browser can see: not that the
+  // request cannot be built - `plos.test.js` holds that - but that what is
+  // drawn under the หลักสูตร column is one curriculum's name and not two.
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openPlos(page);
+
+  for (const programId of ['0501', '0503']) {
+    await filterTo(page, programId);
+    const shown = await page
+      .locator(`table tbody tr td:nth-child(${CELL.program + 1})`)
+      .allInnerTexts();
+    expect(shown.length, `at ${programId}`).toBeGreaterThan(0);
+    expect([...new Set(shown.map(cell => cell.trim()))], `at ${programId}`).toEqual([
+      nameOf(programId),
+    ]);
+  }
+});
+
+test('a committee member reaching one curriculum is told which, and is given no filter', async ({
+  page,
+}) => {
+  // #101's third criterion, and the one the fix could most easily have broken:
+  // removing an option from a control that is drawn only when there is a choice
+  // is one edit away from drawing the control when there is not.
+  await signIn(page, ACCOUNTS.committee0503);
+  await openPlos(page);
+
+  await expect(programFilter(page)).toHaveCount(0);
+  await expect(page.getByText(named('0503'), { exact: true })).toBeVisible();
+  await expect(ploRow(page, 'PLO-1')).toContainText(PLOS_INTL[0].title);
+});
+
+test('the add form moved to the other curriculum is offered the ข้อหลัก of that one', async ({
+  page,
+}) => {
+  // The caller #101 said to make the route required *unless one turned up*.
+  // One had: the table shows one curriculum and the form need not be on it, so
+  // the ข้อหลัก picker used to be filled from a second, unfiltered request
+  // for every outcome in reach - the exact request this ticket removed. It now
+  // asks for the curriculum the form is on, and this row is what says so.
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openPlos(page);
+  await expect(programFilter(page)).toHaveValue('0501');
+
+  await openAddForm(page);
+  await Promise.all([waitForList(page), programPicker(page).selectOption('0503')]);
+
+  // 0503 holds four outcomes and 0501 fifty-two, and both hold a `PLO-1`, so
+  // the count is the assertion a code cannot make. The extra option is
+  // ไม่มี — เป็นข้อหลัก.
+  const offered = await offeredLabels(parentPicker(page));
+  expect(offered).toHaveLength(INTL_OUTCOMES + 1);
+  expect(offered.join(' ')).toContain(PLOS_INTL[0].title);
+  expect(offered.join(' ')).not.toContain(SEEDED[0].title);
 });

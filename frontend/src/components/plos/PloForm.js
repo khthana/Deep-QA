@@ -17,6 +17,14 @@ import { OUTCOME_TYPES } from '../../lib/outcomes'
  * outcomes of the same หลักสูตร are offered, because a parent in another one is
  * refused by the server and by the foreign key underneath it.
  *
+ * Which set that is, is the caller's problem and not this component's, so
+ * `onProgramChange` says which curriculum the form has landed on and `plos`
+ * arrives holding that curriculum's outcomes. Before #101 the page fetched
+ * every outcome in reach and let the filter above sort them out; there is no
+ * such request now. It is called from an effect and is one of that effect's
+ * dependencies, so it has to be the same function between renders - `Plos.js`
+ * passes a `useState` setter; an inline lambda would fetch on every render.
+ *
  * *The outcome being edited, and everything under it, is not offered as its own
  * parent.* The server refuses a cycle, but a picker that offers a choice the
  * server will turn down is a picker that lies. The descendants are worked out
@@ -69,7 +77,16 @@ function subtreeOf(plos, rootId) {
   return inside
 }
 
-export default function PloForm({ value, plos, programs, defaultProgram, busy, onSave, onCancel }) {
+export default function PloForm({
+  value,
+  plos,
+  programs,
+  defaultProgram,
+  busy,
+  onSave,
+  onProgramChange,
+  onCancel,
+}) {
   const [draft, setDraft] = useState(EMPTY)
   const editing = Boolean(value?.outcome_id)
 
@@ -92,6 +109,13 @@ export default function PloForm({ value, plos, programs, defaultProgram, busy, o
       outcome_description: value?.outcome_description ?? '',
     })
   }, [value, defaultProgram, onlyOne])
+
+  // The ข้อหลัก options have to come from the curriculum this form is on,
+  // which the caller cannot know from `value` alone — a new outcome starts on
+  // the default and the person may then pick the other one.
+  useEffect(() => {
+    if (onProgramChange) onProgramChange(draft.program_id)
+  }, [draft.program_id, onProgramChange])
 
   const set = name => event => setDraft(current => ({ ...current, [name]: event.target.value }))
 

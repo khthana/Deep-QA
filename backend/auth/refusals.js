@@ -157,7 +157,9 @@ const REFUSALS = {
   programNotYours: 'ไม่สามารถจัดการรายวิชาในหลักสูตรที่ไม่ได้รับผิดชอบได้',
 
   // Programme Learning Outcomes - #19. What a graduate of a หลักสูตร can do,
-  // as a tree. Five keys, and four of them are decisions rather than wording.
+  // as a tree. Eight keys; six of them are explained below because they are
+  // decisions rather than wording. (This line said *five keys* over seven for
+  // long enough to be worth a note: count them.)
   //
   // `ploNotFound` covers the outcome that was never made and the one in a
   // หลักสูตร this caller does not hold, for `programSubjectNotFound`'s reason:
@@ -179,6 +181,17 @@ const REFUSALS = {
   // child of its own descendant. No foreign key can see this, so it is the one
   // check here that is load-bearing.
   //
+  // `ploProgramRequired` is #101, and it is the only key here that refuses a
+  // question rather than an answer. This screen has no pager - it draws the
+  // whole tree, because a ข้อย่อย on page two whose ข้อหลัก is on page
+  // one is not a tree - so a caller reaching two curricula and naming neither
+  // used to get both trees concatenated, 56 rows on the seed, the second
+  // curriculum's first row at number 53, and its codes already used above it
+  // by the first. Codes are unique per curriculum, so that list is a list in
+  // which `PLO-2` means two different outcomes and nothing on the row says
+  // which. Refusing makes *one answer is of one curriculum* structural: there
+  // is no request that asks for two, so there is no answer that mixes them.
+  //
   // `ploHasChildren` is a deletion refused rather than turned into a
   // deactivation. Every other master-data screen lets deleteOrDeactivate turn
   // a foreign key violation into "switched off instead", and for a mapping or
@@ -193,6 +206,7 @@ const REFUSALS = {
   ploParentNotFound: 'ไม่พบผลการเรียนรู้ที่จะใช้เป็นข้อหลัก หรือข้อนั้นอยู่คนละหลักสูตร',
   ploParentCycle: 'ไม่สามารถย้ายผลการเรียนรู้ไปอยู่ใต้ข้อย่อยของตัวเองได้',
   ploHasChildren: 'ผลการเรียนรู้ข้อนี้ยังมีข้อย่อยอยู่ กรุณาลบข้อย่อยก่อน',
+  ploProgramRequired: 'กรุณาเลือกหลักสูตรก่อนดูผลการเรียนรู้',
 
   // Outcome-to-Subject mapping - #20. How strongly each รายวิชา of a หลักสูตร
   // serves each PLO of it, as a grid. Four keys, and three of them are

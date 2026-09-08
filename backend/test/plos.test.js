@@ -238,6 +238,58 @@ test('the seeded curricula each hold their own PLO-1, and 0503 sorts by order ra
   assert.deepEqual(codes, ['PLO-2', 'PLO-1']);
 });
 
+test('the list refuses to answer without a curriculum, so no answer can mix two', async () => {
+  // #101. The screen used to offer ทุกหลักสูตร, and choosing it sent no
+  // `program_id`: the route then answered with every outcome of every
+  // curriculum in reach, ordered by `program_id`. On the seed that is 56 rows
+  // in one scroll - this is the one master-data screen with no pager - with
+  // 0503's first row at number 53, and every one of 0503's four codes already
+  // used above it by 0501.
+  //
+  // Refusing is what makes the fourth acceptance criterion structural rather
+  // than a promise the screen keeps: there is no request anything can build
+  // that asks for two curricula, because there is no such answer.
+  const dept = await signInAs('U_DEPT');
+
+  // The last of these is the request the criterion is named after, and it
+  // used to answer 200 with an empty list: two values of one key arrive as an
+  // array, which is neither empty nor absent.
+  for (const query of ['', '?program_id=', '?program_id=%20', '?program_id=0501&program_id=0503']) {
+    const answered = await list(dept, query);
+    assert.equal(answered.status, 400, `for ${JSON.stringify(query)}`);
+    assert.equal(answered.body.message, REFUSALS.ploProgramRequired);
+    assert.equal(answered.body.plos, undefined);
+  }
+});
+
+test('every answer the list gives is of one curriculum, for a caller who reaches two', async () => {
+  // The other half of that criterion, and the half a refusal cannot state: what
+  // does come back is narrowed. U_DEPT reaches both, so it is the account the
+  // mixed list was drawn for.
+  const dept = await signInAs('U_DEPT');
+  const reach = (await programs(dept)).body.programs.map((program) => program.program_id);
+  assert.deepEqual(reach, [PROGRAM, PROGRAM_INTL]);
+
+  for (const program of reach) {
+    const answered = await list(dept, `?program_id=${program}`);
+    assert.equal(answered.status, 200);
+    assert.ok(answered.body.plos.length > 0, program);
+    assert.deepEqual([...new Set(answered.body.plos.map((plo) => plo.program_id))], [program]);
+  }
+});
+
+test('a curriculum this account does not hold answers with nothing, not with its tree', async () => {
+  // The refusal above is about the shape of the request; this is about the
+  // answer still being filtered by the grant underneath it. A committee member
+  // naming the other curriculum gets an empty list rather than its outcomes -
+  // the same silence #19 chose over saying the curriculum exists.
+  const theirs = await signInAs('U_COM2');
+
+  const answered = await list(theirs, `?program_id=${PROGRAM}`);
+  assert.equal(answered.status, 200);
+  assert.deepEqual(answered.body.plos, []);
+});
+
 test('two curricula may each define the same code, and one curriculum may not define it twice', async () => {
   // The fifth criterion and the ninth, on rows these tests make: the same code
   // is accepted in the other curriculum by the account that holds it, and

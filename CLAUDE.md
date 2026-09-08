@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102 and #67**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102, #67 and #101**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -842,6 +842,123 @@ were measured with `--grep`, one at a time. **A serial run reports the first row
 dies and skips every row after it**, so its figure is a lower bound on the kills rather
 than the kills - a fact about the runner and not about the mutant. Measure each row on
 its own.
+
+**#101 is the fourth kind of wrong diagnosis, after aged (#66, #111, #55), never true
+(#102) and generalised (#122): the ticket describes a mechanism that does not exist.**
+Its *Why it looks that way* says `0501` has fifty outcomes, *a page holds ten*, and five
+pages of `0501` come before the first row of `0503`. **This screen has no pager** -
+`grep -c Pager frontend/src/pages/Plos.js` is 0, and the file's own docstring says the
+absence is deliberate, because a ข้อย่อย on page two whose ข้อหลัก is on page one is not a
+tree. So the defect was **worse** than the ticket's account, not milder: 56 rows in one
+scroll with no *หน้า 1 จาก 6* to say anything followed, the second curriculum starting at row
+53, and every one of its four codes already used above it by the first. A ticket
+explaining *why the defect looks that way* has proposed a cause, and a cause is the
+easiest half to check: **run the explanation, not only the symptom.**
+
+**And the ticket predicted its own uncertainty correctly, in a sentence worth reading as
+an instruction rather than as a preference.** *"Prefer required unless a caller turns
+up."* One had - `Plos.js:80` fetched every outcome in reach to fill the form's ข้อหลัก
+picker, because the table shows one curriculum and the form need not be on it. That is
+why the screen and the form changed in this ticket rather than after it: the route was
+made required *and* its last unfiltered caller was given the request it actually wanted.
+**A ticket that says *unless X* has told you what to go and look for**, and the answer
+decides how big the diff is.
+
+**Which screens may mix curricula turned out to be a schema question, not a taste
+question.** The ticket names four siblings offering the same ทุกหลักสูตร and asks that each
+be read once rather than assumed. Read: all four still offer it, all four **page**, and
+this screen and `PloMapping` are the only two that do not. The line underneath is
+`UNIQUE (program_id, outcome_code)` - **PLO codes are the only row identifier among the
+five that is unique per curriculum rather than institution-wide** (`rubric_code` is
+`UNIQUE` outright, and its migration says why). A mixed list of rubrics is long; a mixed
+list of outcomes contains two rows called `PLO-2` beside a ลบ button. **When asking
+whether two things may be shown together, look at what makes a row nameable.**
+
+**A fix's own diff moved two mutant anchors, which is #123's finding arriving inside the
+ticket that caused it rather than a fortnight later.** `codeorder` was anchored to
+`ORDER BY lo.program_id ASC, lo.path ASC` and `nofilter` to the `($2::text IS NULL OR ...)`
+that made the parameter optional; both were gone by the time the tests were green, and
+`mutation/anchors.py` said so immediately. **Run the anchor check as part of finishing a
+ticket, not only when inheriting one** - the cheapest moment to re-aim a mutant is while
+you still remember what the line was for.
+
+**#101 re-learned #97's *kills too much* twice in one sweep, and the second time the
+cause was a bound parameter.** Re-aiming `nofilter` to `AND true` deleted the only
+mention of `$2` while the array bound to the statement still had two entries, so every
+list answered 500 and row 1 died on `openPlos` before any assertion about curricula ran.
+`AND (lo.program_id = $2 OR true)` is the same defect with the statement still valid.
+**A mutant that removes a condition has to leave the parameters it referenced referenced**,
+or it is testing the query builder rather than the claim.
+
+**The other kills-too-much was avoided by choosing the wrong answer over no answer.** The
+claim was *the screen lands on the first curriculum in reach*. Removing the default leaves
+`program` empty, `load` never fires, and all sixteen rows that begin with `openPlos` wait
+on a list nothing asks for. Choosing the **last** instead leaves the screen working
+perfectly on the wrong curriculum, and exactly one row can fail on that. **When a mutant
+for *does it choose the right thing* stops the application, mutate to a different choice
+rather than to no choice.**
+
+**#85's locator trap was walked up to twice in one file and the second approach was the
+subtle one.** The list's curriculum filter had always been found by `option[value=""]` -
+the ทุกหลักสูตร entry this ticket deletes - and the obvious replacement was to find it by
+*not* having a blank option, which would have made the mutant that restores ทุกหลักสูตร
+kill the row by hiding the control rather than by failing the assertion. Both selects are
+now found by *offering a curriculum code*, and what tells them apart is that the form
+replaces the table rather than sitting beside it. The second approach was worse: written
+as `option[value="0501"]`, the row asserting a `0503` committee member gets **no** filter
+passed under `alwaysadropdown`, because the dropdown it should have found held `0503`
+alone. **A locator built on one seeded value is a locator that can answer *not there*
+about a thing that is** - and it took the sweep, not the reading, to show it.
+
+**A helper that hangs is a helper that has quietly become an assertion.** `filterTo`
+waited for a reload after `selectOption`, which is fine while every value is a change -
+and the screen used to open on ทุกหลักสูตร, so every curriculum was. Landing on a real
+curriculum made asking for that curriculum a no-op, no `change` fires, and three rows
+timed out at sixty seconds each under a mutant that had nothing to do with them. Reading
+the value once and returning early makes it mean *make sure the list is showing this*,
+which is what every caller wanted. **Ask what a helper promises, not what it does**: the
+rows that used it were about curricula, not about pressing a control, and the difference
+only became visible when a mutant moved what the control started on.
+
+**And a criterion that a screen keeps can usually be moved into the route, where it
+cannot be forgotten.** #101's fourth criterion is *no request from this screen can ask
+for outcomes of more than one curriculum*. As a frontend promise that is one edit from
+being untrue; as `REFUSALS.ploProgramRequired` it is a shape that does not exist. The
+frontend gate stayed as well, and is honestly recorded as **unprovable by mutation** -
+remove it and every row's `openPlos` fails, which is #85's premise shape - with the claim
+it guards proved at the HTTP seam by a subtest instead. **Three answers, not two, again:
+proved here, proved elsewhere, or not proved** - and *proved elsewhere* is worth writing
+on the row that cannot prove it.
+
+**#101's review found the criterion escaping through the one request it is named after, and
+the cause was a helper answering a different question.** `blankToNull` is #32's and it is
+about an empty box - `''` and `undefined` both mean *not given* - so it passes anything
+that is not a string straight through. A query string may name a key twice, and Express
+hands that pair over as an array, so `?program_id=0501&program_id=0503` - literally the
+request the fourth criterion forbids - was neither empty nor absent, walked past the
+refusal, bound an array to `$2` and answered **200 with an empty list**. A throwaway suite
+measured it in a minute and was deleted the same hour. #107's rule was *a helper named for
+a type is a promise about that type*; this is its query-string half. **A guard written with
+a form-field helper has been told about values and not about shapes** - when the criterion
+is about the question rather than the answer, the type is part of the guard.
+
+**And a criterion folded into a neighbouring row is a criterion with no row, which the
+store's two mutant checks cannot see.** #101's third criterion - a caller reaching one
+curriculum is told which, not asked - was written into #19's existing *one curriculum
+needs no picker* row as a second sentence, while the mutation table underneath said
+`alwaysadropdown` kills **two** rows. So the *kills* column named a row the criteria table
+did not hold: #97's `10:nowrite` inverted, and invisible to both of the passes that exist,
+because neither a ⚙ without a mutant nor a mutant without a table row is what it looks
+like. **Read the kills column as a claim about the criteria table too** - and when a
+ticket's criterion lands on a screen another ticket already covers, give it its own row
+rather than a clause on somebody else's.
+
+**A mutant anchored to a comment is anchored to the most movable line on the screen.** The
+mutant restoring ทุกหลักสูตร was aimed at the JSX comment explaining why the option is
+gone - a line carrying Thai, which is the first thing a reword or a formatter touches, and
+#123's whole subject. Re-aimed at `{programs.map(entry => (` it kills the same one row.
+**Anchor a mutant to the code it breaks, never to the prose beside it**; the prose is
+written to be rewritten.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 7 September 2569 that is
