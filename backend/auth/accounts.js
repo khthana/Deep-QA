@@ -30,8 +30,8 @@ const KMITL_DOMAIN = '@kmitl.ac.th';
  * Password sign-in is for the two roles that have no KMITL Google account:
  * the central administrator and an external assessor from outside the
  * university. Every other role goes through Google - except in development,
- * where opening it to everyone is what lets an acceptance pass sign in as all
- * eleven seeded accounts without a Google project.
+ * where opening it to everyone is what lets an acceptance pass sign in as any
+ * seeded account without a Google project.
  */
 const PASSWORD_ROLES = new Set(['FULL_ADMIN', 'EXT_ASSESSOR']);
 

@@ -39,7 +39,7 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const request = require('supertest');
 
-const { PASSWORD, byAlias } = require('../../db/seed');
+const { PASSWORD, byAlias, resetValidity } = require('../../db/seed');
 const { resolveGoogleAccount, GOOGLE_REFUSAL_REASONS } = require('../auth/accounts');
 const { REFUSALS } = require('../auth/refusals');
 const { frontendUrl } = require('../config');
@@ -460,8 +460,8 @@ test('Google sign-in', async (t) => {
   });
 
   await t.test('refuses a KMITL account that holds no role, distinctly', async () => {
-    // Not a seeded account: every one of the eleven holds at least one grant,
-    // and this refusal needs an account that holds none.
+    // Not a seeded account: every named account holds at least one grant, and
+    // this refusal needs an account that holds none.
     await api.pool.query(
       `INSERT INTO users (user_id, email, first_name_th, last_name_th, is_verified)
        VALUES ('norole01', 'no.role@kmitl.ac.th', 'ยังไม่มี', 'บทบาท', true)`,
@@ -500,7 +500,9 @@ test('Google sign-in', async (t) => {
   // and `validityRefusal` already reads it, so the refusal exists today and can
   // be produced today - which is what the list below has to be able to claim.
   // Both of these move a column on the shared `U_EXT` and put it back in a
-  // `finally`. It was a plain line after the assertions until #89 swept
+  // `finally` - through `resetValidity`, because since #48 the seed gives that
+  // account an open window and putting back `NULL` would be undoing more than
+  // was done. It was a plain line after the assertions until #89 swept
   // `endsareswapped`, which failed the first one and left an expired window
   // behind for the second - so the second failed about a window it had not set
   // and does not assert, and the mutant's kill count read one too high. #97's
@@ -516,9 +518,7 @@ test('Google sign-in', async (t) => {
       assert.equal(admission.ok, false);
       assert.equal(admission.reason, 'validityEnded');
     } finally {
-      await api.pool.query(`UPDATE users SET valid_until = NULL WHERE user_id = $1`, [
-        byAlias('U_EXT'),
-      ]);
+      await resetValidity(api.pool, 'U_EXT');
     }
   });
 
@@ -537,9 +537,7 @@ test('Google sign-in', async (t) => {
       assert.equal(admission.ok, false);
       assert.equal(admission.reason, 'validityNotStarted');
     } finally {
-      await api.pool.query(`UPDATE users SET valid_from = NULL WHERE user_id = $1`, [
-        byAlias('U_EXT'),
-      ]);
+      await resetValidity(api.pool, 'U_EXT');
     }
   });
 

@@ -10,7 +10,7 @@
  * sign in" and "is refused outside it" are all statements about the sign-in
  * route, and a test that stubbed it would be asserting its own stub.
  *
- * The file owns its schema and seeds it, so the eleven named accounts of
+ * The file owns its schema and seeds it, so the named accounts of
  * docs/04 §1.2 are there to be listed, scoped and refused. Tests that create
  * accounts give them identifiers of their own that no other test names.
  */
@@ -320,6 +320,22 @@ test('deactivating an account', async (t) => {
 // --- the fourth criterion ----------------------------------------------------
 
 test('an external assessor with a validity period', async (t) => {
+  // #48's seventh criterion from the other side. Every other row in this suite
+  // builds its own window and takes it down again; this one asks the question
+  // of an account the seed already put outside its window, which is what makes
+  // it the row that fails if the seed stops shipping one.
+  //
+  // Nothing else signs in as this account, and nothing should: an account that
+  // cannot sign in is the whole of what it is for. #48 asked for the closed
+  // window on `U_NONKMITL`, which was right in August and is wrong now - two
+  // suites have since given that account a job it can only do by signing in.
+  await t.test('the seeded assessor whose round is over cannot sign in', async () => {
+    const refused = await signInWith(emailOf('U_EXT_CLOSED'), PASSWORD);
+
+    assert.equal(refused.status, 403);
+    assert.equal(refused.body.message, REFUSALS.validityEnded);
+  });
+
   await t.test('signs in inside the window and is refused outside it', async () => {
     const admin = await signInAs('U_ADMIN');
     const email = 'roundassessor@tabee-review.org';

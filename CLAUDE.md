@@ -1234,6 +1234,56 @@ prose since #50: row 1 *iterates* the list, so deleting a key shortens the loop 
 **A gap explained in prose is worth re-measuring the day a ticket widens the thing it is about**;
 the paragraph was right, and now it has a figure behind it.
 
+**#48 is the eighth of the new frontier, and it is a fifth kind of wrong diagnosis: the question the
+ticket asks had already been answered, in the opposite direction, in the file it is about.** Its
+*What to build* says *"Nothing in the schema can express it"* and *"The window belongs on
+`user_roles`, not on `users`."* `db/migrations/0005_external_assessor_validity.sql` put the window on
+`users` under #11 — and its own comments argue against #48's proposal **by name**: R005 and ROLE-6
+describe the *account*, not the grant, and a column on `user_roles` would have #11 and #12 writing
+the same row for different reasons. The earlier species were claims about code that had **aged**
+(#66, #111, #55), were **never true** (#102), **generalised** (#122), or described a **mechanism
+that does not exist** (#101). This one was decided, deliberately, with the reasoning written down
+where anybody opening the migration would meet it. **Before building a ticket's proposal, read the
+file it proposes to change — the argument against it may already be in there**, and a ticket cannot
+know what was decided after it was filed.
+
+**What was actually left was a fixture, and the ticket had asked for it — in a place that has since
+stopped being available.** Four of the eight criteria were met by #11 and #89 already; criterion 7
+asks that the seed give the assessors windows and names `U_NONKMITL` as the closed one, which was
+right on 17 August and is wrong now: `authorise.test.js` and `shell.test.js` have each since given
+that account a second job that only works if it can sign in. **Following a criterion to the letter
+would have failed two suites**, so the closed window is a twelfth account, `U_EXT_CLOSED`, rather
+than a change to somebody else's row. A criterion names a fixture by the name it had that day.
+
+**And the role a feature exists for was the one role not exercising it.** Before this ticket the
+seed left both ends `NULL` on **both** assessors, so the seven suites holding `U_EXT` were all
+walking the *no window at all* path — the same path an ordinary staff account takes — while R005
+says the account is created "พร้อมกำหนดช่วงเวลาการใช้งาน" and ROLE-6 calls it *temporary*. #102's
+lesson was that a situation built by hand inside one suite is a situation no other suite has; this
+is stronger, because **no suite had built it at all** — only rows that moved a column and moved it
+back. When a seeded dataset has a role, check that it has the role's distinguishing *property*.
+
+**The prediction was that the fixture would harden #89's mutants, and it did not — which is the
+result worth writing down.** `endsareswapped` kills five subtests before and after, because it is a
+mutant about *which sentence belongs to which end*, and seven suites that merely need `U_EXT` to get
+in assert no sentence at all. **A fixture hardens the claims that had nothing holding them, not
+everything near it**, so the two mutants #48 owns had to be written rather than borrowed:
+`insidewindowisrefused` kills **17** subtests across four suites where it killed **6** across two,
+and `sessionignoresthewindow` kills **1** both before and after. Writing the number that did not
+move down beside the one that did is what makes the second believable — and *17 killed, 11 hardened*
+is #102's two-numbers rule again, one figure hiding whichever the reader did not have in mind.
+
+**Its own count went wrong twice, both times by not measuring, and both were caught by the rule
+the ticket was quoting at the time.** A twelfth account made five hand-kept *eleven*s false; the
+first pass fixed five and believed itself done, and re-running the same grep afterwards found a
+**sixth** in another `README.md` paragraph — #96's *correcting a number in the places you remember
+writing it is not correcting it*, happening inside the diff that cites it. Four of the six were
+reworded to carry **no number at all**, because none of them was about how many accounts there are;
+only the table, which *is* the list, still counts. The second was *ten suites sign in as `U_EXT`*,
+written into a mutation file whose own docstring says its figures are measured before they are
+written. It is seven, six of them through the form. **A number inside a paragraph explaining that
+numbers must be measured still has to be measured.**
+
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 9 September 2569 that is
 `2026-09-09-nothing-protected-the-backup-from-the-tree.md`. Read it before taking work. Each handoff names the one it supersedes for state,

@@ -195,10 +195,16 @@ database and the accounts it opens have nothing behind them; nothing here is a c
 | `U_EXT` | `external.assessor@kmitl.ac.th` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
 | `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and ตอนเรียน 2 |
 | `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | outside `@kmitl.ac.th` (R010) |
+| `U_EXT_CLOSED` | `past.assessor@tabee-review.org` | ผู้ประเมินภายนอก | **window closed** — cannot sign in at all (#48) |
 
-The last five rows are the point of the list. A permission rule is only tested by an account that should be refused,
+Six of these rows are the point of the list. A permission rule is only tested by an account that should be refused,
 so the dataset ships a committee member and a department admin scoped elsewhere, a teacher with no sections, an
-account holding two roles at once, and an address outside the university domain.
+account holding two roles at once, an address outside the university domain, and an assessor whose review round is
+over.
+
+The two ผู้ประเมินภายนอก rows carry a validity window and every other account leaves both ends null: `U_EXT`'s is open
+around today, `U_EXT_CLOSED`'s closed a month ago. Nothing signs in as the second one — that is what it is for. Both
+are written as offsets in days from `current_date`, so a seed checked in today still means the same thing in March.
 
 `U_COM` and `U_COM2` were `committee.0501@` and `committee.0503@` until the seed was aligned with
 `docs/acceptance/18-program-subjects.md`, which names them by the role they hold. Acceptance rows walked
@@ -239,7 +245,7 @@ nothing else, so that the authorisation lookup reads grants from the database pe
 Who may use which way in: the `@kmitl.ac.th` rule applies to Google sign-in only, because an external assessor —
 `U_NONKMITL` above — legitimately signs in with a password from outside the university. Password sign-in is open to
 the central administrator and external assessors everywhere, and to **every role when `NODE_ENV` is not
-`production`**, which is what lets an acceptance pass work through all eleven seeded accounts without a Google
+`production`**, which is what lets an acceptance pass work through every seeded account without a Google
 project.
 
 ### What the caller may do

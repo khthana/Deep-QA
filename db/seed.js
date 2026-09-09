@@ -281,6 +281,14 @@ const ACCOUNTS = [
   {
     alias: 'U_EXT',
     id: 'ext01',
+    // R005 says the account is created "พร้อมกำหนดช่วงเวลาการใช้งาน" and ROLE-6
+    // calls it a บัญชีชั่วคราว, so the window is not decoration on this row -
+    // it is the property that makes the account an assessor's rather than a
+    // guest's. Until #48 the seed left both columns null, which meant every
+    // suite that signs in as U_EXT - ten of them - was exercising the
+    // *no window at all* path, the same path an ordinary staff account takes.
+    // The role the window exists for was the one account not carrying one.
+    validity: [-30, 30],
     email: 'external.assessor@kmitl.ac.th',
     th: ['ศ.', 'ไพโรจน์', 'ประเมินผล'],
     en: ['Prof.', 'Pairoj', 'Pramernphol'],
@@ -303,6 +311,29 @@ const ACCOUNTS = [
       ['TEACHER', '05'],
     ],
   },
+  // The other end of the window, as a standing fixture. #48 asked for this on
+  // U_NONKMITL, and that was right on 17 August and is wrong now: two suites
+  // have since given that account a second job it can only do by signing in
+  // (`authorise.test.js` proves the domain rule belongs to sign-in, and
+  // `shell.test.js` picks it precisely because no other test signs in as it).
+  // An account that cannot sign in cannot hold either job, so the closed
+  // window gets a row of its own rather than a row somebody else is using.
+  //
+  // Nothing signs in as this one - that is the whole point of it. What it is
+  // for is that a test asking *what happens outside the window* no longer has
+  // to UPDATE a column on a shared account and put it back afterwards, which
+  // is how #89's sweep came to report a kill that was not one.
+  {
+    alias: 'U_EXT_CLOSED',
+    id: 'ext02',
+    validity: [-60, -30],
+    email: 'past.assessor@tabee-review.org',
+    th: ['ดร.', 'สุนีย์', 'ครบวาระ'],
+    en: ['Dr.', 'Sunee', 'Krobwara'],
+    department: null,
+    program: '0501',
+    grants: [['EXT_ASSESSOR', '0501']],
+  },
   // R010: an address outside @kmitl.ac.th. An outside assessor is the role
   // that legitimately has one.
   {
@@ -318,6 +349,42 @@ const ACCOUNTS = [
 ];
 
 const byAlias = (alias) => ACCOUNTS.find((account) => account.alias === alias).id;
+
+/**
+ * A validity window is stored as two `date`s and written here as two offsets in
+ * days, so that a seed checked in today still means the same thing in March.
+ * This is the one place that turns the second into the first: the insert below
+ * uses it, and so does `resetValidity`, because a test that moves a window and
+ * puts back what it *thinks* the seed said is a second copy of this rule.
+ *
+ * `null` is open-ended on that side, which is every account but the assessors'.
+ */
+const validityDate = (placeholder) =>
+  `CASE WHEN $${placeholder}::int IS NULL THEN NULL ELSE current_date + $${placeholder}::int END`;
+
+const validityOf = (alias) => {
+  const account = ACCOUNTS.find((entry) => entry.alias === alias);
+  const [from = null, until = null] = account.validity || [];
+  return [account.id, from, until];
+};
+
+/**
+ * Puts a seeded account's window back the way the seed wrote it.
+ *
+ * A test that needs an account outside its window can move a column and undo
+ * it, and before #48 both of the ones that do restored to `NULL` - correct only
+ * while the seed left the column null, which it no longer does. Restoring
+ * through the seed means the undo cannot drift away from the thing it undoes.
+ */
+async function resetValidity(db, alias) {
+  await db.query(
+    `UPDATE users
+        SET valid_from  = ${validityDate(2)},
+            valid_until = ${validityDate(3)}
+      WHERE user_id = $1`,
+    validityOf(alias),
+  );
+}
 
 /**
  * PLO-1..PLO-13 for programme 0501, each with the sub-outcomes docs/04 §1.3
@@ -818,7 +885,7 @@ async function seedAccounts(client) {
   }
 
   // One hash for one password, rather than one per account: bcrypt at cost 10
-  // is deliberately slow, and eleven of them is eleven times slower for no
+  // is deliberately slow, and one per account is that cost per account for no
   // property this dataset needs. Each account still gets its own row, and the
   // salt inside the hash is still random - it is the same salt for all of
   // them, which matters only if these were real credentials.
@@ -827,14 +894,20 @@ async function seedAccounts(client) {
   for (const account of ACCOUNTS) {
     const [titleTh, firstTh, lastTh] = account.th;
     const [titleEn, firstEn, lastEn] = account.en;
+    // Days either side of today rather than two dates, because a seed with a
+    // literal date in it is a seed that expires. `validity` absent means the
+    // account has no window, which is every account but the assessors'.
+    const [validFrom = null, validUntil = null] = account.validity || [];
 
     await client.query(
       `INSERT INTO users (
          user_id, email, title_th, first_name_th, last_name_th,
          title_en, first_name_en, last_name_en,
-         department_id, program_id, is_verified, password
+         department_id, program_id, is_verified, password,
+         valid_from, valid_until
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true, $11)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true, $11,
+               ${validityDate(12)}, ${validityDate(13)})
        ON CONFLICT (user_id) DO NOTHING`,
       [
         account.id,
@@ -848,6 +921,8 @@ async function seedAccounts(client) {
         account.department,
         account.program,
         hashed,
+        validFrom,
+        validUntil,
       ],
     );
 
@@ -1548,6 +1623,7 @@ async function seed({ schema } = {}) {
 module.exports = {
   seed,
   byAlias,
+  resetValidity,
   PASSWORD,
   ACCOUNTS,
   ROLES,

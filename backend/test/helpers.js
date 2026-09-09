@@ -44,7 +44,7 @@ const { createApp } = require('../app');
  * better built from test/fixtures - a few rows a test can name - and because
  * seeding costs a couple of seconds of bcrypt per file. Sign-in is the case
  * that needs it: docs/06 forbids stubbing authentication, so a test signs in
- * as one of the eleven named accounts, which have to be there.
+ * as one of the named accounts, which have to be there.
  */
 async function startApi(label, { withSeed = false } = {}) {
   const schema = testSchema(`api_${label}`);

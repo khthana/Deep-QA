@@ -438,7 +438,11 @@ test('the named accounts', async (t) => {
     assert.equal(rows[0].scope_id, 'FULL_ADMIN');
   });
 
-  await t.test('every account can sign in with the documented password', async () => {
+  // The name used to say *can sign in*, and it never asserted that: it reads
+  // the hash. #48 is what made the difference matter - `U_EXT_CLOSED` carries
+  // the documented password and still cannot sign in, for a reason that has
+  // nothing to do with the password.
+  await t.test('every account carries the documented password', async () => {
     const { rows } = await pool.query(`SELECT user_id, password FROM users`);
 
     assert.equal(rows.length, ACCOUNTS.length);
@@ -448,6 +452,44 @@ test('the named accounts', async (t) => {
         `${row.user_id} should accept the password README.md documents`,
       );
     }
+  });
+
+  // #48's seventh criterion, and the reason it is here rather than only in
+  // `backend/`: this is a claim about the dataset, not about a route.
+  //
+  // A window is the property that makes an account an assessor's rather than a
+  // guest's - R005 creates the account "พร้อมกำหนดช่วงเวลาการใช้งาน" - and until
+  // this ticket the seed left both ends null on both assessors. So every suite
+  // that signs in as `U_EXT`, ten of them, was exercising the *no window at
+  // all* path, the same path an ordinary staff account takes. The role the
+  // window exists for was the one role not carrying one.
+  //
+  // The offsets are not restated here. What is asserted is which side of today
+  // each account falls on, which is the property every caller depends on and
+  // the only one that has to keep being true as the days pass.
+  await t.test('the assessors are the accounts with a window, one open and one closed', async () => {
+    const { rows: windowed } = await pool.query(
+      `SELECT user_id FROM users
+        WHERE valid_from IS NOT NULL OR valid_until IS NOT NULL
+        ORDER BY user_id`,
+    );
+
+    assert.deepEqual(
+      windowed.map((row) => row.user_id),
+      [byAlias('U_EXT'), byAlias('U_EXT_CLOSED')],
+      'a window on any other account would mean an ordinary account had been time-boxed',
+    );
+
+    const { rows: open } = await pool.query(
+      `SELECT user_id FROM users
+        WHERE valid_from <= current_date AND valid_until >= current_date`,
+    );
+    assert.deepEqual(open.map((row) => row.user_id), [byAlias('U_EXT')]);
+
+    const { rows: closed } = await pool.query(
+      `SELECT user_id FROM users WHERE valid_until < current_date`,
+    );
+    assert.deepEqual(closed.map((row) => row.user_id), [byAlias('U_EXT_CLOSED')]);
   });
 
   // The two negative accounts. Both exist so that a permission rule can be
