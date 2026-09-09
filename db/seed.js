@@ -285,8 +285,9 @@ const ACCOUNTS = [
     // calls it a บัญชีชั่วคราว, so the window is not decoration on this row -
     // it is the property that makes the account an assessor's rather than a
     // guest's. Until #48 the seed left both columns null, which meant every
-    // suite that signs in as U_EXT - ten of them - was exercising the
-    // *no window at all* path, the same path an ordinary staff account takes.
+    // suite that reaches U_EXT - seven of them, six by signing in - was
+    // exercising the *no window at all* path, which is what an ordinary staff
+    // account takes.
     // The role the window exists for was the one account not carrying one.
     validity: [-30, 30],
     email: 'external.assessor@kmitl.ac.th',
@@ -358,14 +359,21 @@ const byAlias = (alias) => ACCOUNTS.find((account) => account.alias === alias).i
  * puts back what it *thinks* the seed said is a second copy of this rule.
  *
  * `null` is open-ended on that side, which is every account but the assessors'.
+ * `windowOf` is the same claim on the JavaScript side - an absent `validity` is
+ * open at both ends - and it exists because that reading was written out twice
+ * before `/code-review` asked why a docstring saying *the one place* had two.
  */
 const validityDate = (placeholder) =>
   `CASE WHEN $${placeholder}::int IS NULL THEN NULL ELSE current_date + $${placeholder}::int END`;
 
+const windowOf = (account) => {
+  const [from = null, until = null] = account.validity || [];
+  return [from, until];
+};
+
 const validityOf = (alias) => {
   const account = ACCOUNTS.find((entry) => entry.alias === alias);
-  const [from = null, until = null] = account.validity || [];
-  return [account.id, from, until];
+  return [account.id, ...windowOf(account)];
 };
 
 /**
@@ -897,7 +905,21 @@ async function seedAccounts(client) {
     // Days either side of today rather than two dates, because a seed with a
     // literal date in it is a seed that expires. `validity` absent means the
     // account has no window, which is every account but the assessors'.
-    const [validFrom = null, validUntil = null] = account.validity || [];
+    //
+    // The conflict clause updates these two columns and no others, which is a
+    // deliberate exception to the DO NOTHING every other insert here uses. Two
+    // reasons. The window is the only column on this row the suites *move* -
+    // `resetValidity` exists so they can put it back - so the seed has to be
+    // able to say what it is on a row that already exists, or the fixture
+    // arrives only on a schema that never held these accounts. And it is
+    // written as an offset from `current_date`, so its correct value changes
+    // every day even when nothing else does; DO NOTHING on a date computed
+    // from today is a fixture that goes stale in place. Measured before it was
+    // written: blank both assessors' windows, run this file, and under DO
+    // NOTHING they stay blank. Everything else still yields to whatever is
+    // already there, because a seed has no business overwriting an edited
+    // name.
+    const [validFrom, validUntil] = windowOf(account);
 
     await client.query(
       `INSERT INTO users (
@@ -908,7 +930,9 @@ async function seedAccounts(client) {
        )
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true, $11,
                ${validityDate(12)}, ${validityDate(13)})
-       ON CONFLICT (user_id) DO NOTHING`,
+       ON CONFLICT (user_id) DO UPDATE
+          SET valid_from  = EXCLUDED.valid_from,
+              valid_until = EXCLUDED.valid_until`,
       [
         account.id,
         account.email,

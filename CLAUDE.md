@@ -1268,10 +1268,21 @@ result worth writing down.** `endsareswapped` kills five subtests before and aft
 mutant about *which sentence belongs to which end*, and seven suites that merely need `U_EXT` to get
 in assert no sentence at all. **A fixture hardens the claims that had nothing holding them, not
 everything near it**, so the two mutants #48 owns had to be written rather than borrowed:
-`insidewindowisrefused` kills **17** subtests across four suites where it killed **6** across two,
+`insidewindowisrefused` kills **21** subtests across eight suites where it killed **6** across two,
 and `sessionignoresthewindow` kills **1** both before and after. Writing the number that did not
-move down beside the one that did is what makes the second believable — and *17 killed, 11 hardened*
+move down beside the one that did is what makes the second believable — and *21 killed, 15 hardened*
 is #102's two-numbers rule again, one figure hiding whichever the reader did not have in mind.
+
+**That 21 was first written as 17, and the reason is a hole in this store's own counting rule.**
+`node --test` counts parent suites in `# fail`, so the rule here has been to read leaf kills from the
+**indented** `not ok` lines instead. A test written at the top level of a file has no parent suite,
+so its `not ok` is not indented and reads exactly like a suite header — and four of this mutant's
+kills are that shape, in `evidence`, `offerings`, `program-results` and
+`program-results-students`, four of the six suites the same write-up had already listed as signing
+in with `U_EXT`. The arithmetic that works is *28 failures = 7 parent suites + 17 indented leaves +
+4 top-level leaves*, and the way to get it is to run the whole suite and **read the names**, never
+to run only the files you expect to be involved — the files you do not expect are exactly where the
+missing kills were. **A rule written to correct a wrong number is itself a claim to check.**
 
 **Its own count went wrong twice, both times by not measuring, and both were caught by the rule
 the ticket was quoting at the time.** A twelfth account made five hand-kept *eleven*s false; the

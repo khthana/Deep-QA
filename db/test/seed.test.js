@@ -460,7 +460,7 @@ test('the named accounts', async (t) => {
   // A window is the property that makes an account an assessor's rather than a
   // guest's - R005 creates the account "พร้อมกำหนดช่วงเวลาการใช้งาน" - and until
   // this ticket the seed left both ends null on both assessors. So every suite
-  // that signs in as `U_EXT`, ten of them, was exercising the *no window at
+  // that reaches `U_EXT` - seven of them - was exercising the *no window at
   // all* path, the same path an ordinary staff account takes. The role the
   // window exists for was the one role not carrying one.
   //
@@ -490,6 +490,40 @@ test('the named accounts', async (t) => {
       `SELECT user_id FROM users WHERE valid_until < current_date`,
     );
     assert.deepEqual(closed.map((row) => row.user_id), [byAlias('U_EXT_CLOSED')]);
+  });
+
+  // The half of #48's seventh criterion that a single run cannot see. Every
+  // other column on an account yields to whatever is already in the table -
+  // `ON CONFLICT (user_id) DO NOTHING` - and the window may not, for a reason
+  // that is about dates rather than about seeds: it is stored as an offset
+  // from `current_date`, so the correct value changes overnight even when the
+  // row does not. A fixture that can only arrive on a schema nobody has seeded
+  // before is a fixture that is right once.
+  //
+  // This is the row that would have caught it, and it did not exist until
+  // `/code-review` found the defect by hand: the e2e stack builds a fresh
+  // schema on every run and this suite seeds once in a `before`, so **nothing
+  // anywhere ran the seed twice**. A claim about what a second run does needs
+  // a second run.
+  await t.test('a second run restores a window somebody has moved', async () => {
+    await pool.query(
+      `UPDATE users SET valid_from = NULL, valid_until = NULL
+        WHERE user_id = ANY($1)`,
+      [[byAlias('U_EXT'), byAlias('U_EXT_CLOSED')]],
+    );
+
+    await seed({ schema: SCHEMA });
+
+    const { rows } = await pool.query(
+      `SELECT user_id FROM users
+        WHERE valid_from IS NOT NULL AND valid_until IS NOT NULL
+        ORDER BY user_id`,
+    );
+    assert.deepEqual(
+      rows.map((row) => row.user_id),
+      [byAlias('U_EXT'), byAlias('U_EXT_CLOSED')],
+      'a seed that cannot repair a window it owns is a fixture that is right once',
+    );
   });
 
   // The two negative accounts. Both exist so that a permission rule can be
