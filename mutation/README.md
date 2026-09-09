@@ -44,6 +44,27 @@ python mutation/18-program-subjects.py restore     # คืนโค้ดเด
 แล้วกวาดซ้ำโดยไม่ save ใหม่) วิธีที่ปลอดภัยคือ **อย่าแก้ไฟล์ในชุดระหว่างที่กวาดค้างอยู่** และ
 **`save` เป็นคำสั่งแรกของสคริปต์กวาดเสมอ**
 
+**ตั้งแต่ [#126](https://github.com/khthana/Deep-QA/issues/126) เครื่องมือบังคับข้อนี้เองแล้ว
+ไม่ใช่แค่ README ขอไว้** ก่อนจะเขียนทับ `restore` ถามคำถามเดียว — สิ่งที่อยู่บนดิสก์ตอนนี้
+**เป็นสำเนาที่ save ไว้ หรือเป็นมัตแตนต์ที่เครื่องมือนี้เป็นคนใส่เอง หรือเปล่า** ถ้าไม่ใช่ทั้งสองอย่าง
+มันไม่เขียนอะไรเลย และบอกชื่อไฟล์ออกมา (เก็บลายเซ็นของไฟล์ที่ apply ไว้ที่
+`mutation/.backup/applied.json` คีย์ด้วย path เหมือน backup จึงใช้ร่วมกันข้ามใบได้ถูกต้อง)
+จะข้ามด่านนี้ต้องพิมพ์ `--force` ต่อท้าย ซึ่งตั้งใจให้ต้องพิมพ์ เพราะถ้าไม่มีทางออกเลย ทางออกที่คนจะใช้จริง
+คือ `rm -rf mutation/.backup` ซึ่งแย่กว่าข้อบกพร่องเดิม
+
+**และด่านนี้มีสองทาง** `restore` กัน*ต้นไม้*จาก backup ส่วน `save` กัน *backup* จากต้นไม้ —
+`save` ทับตอนที่มัตแตนต์ยังติดอยู่ จะทำให้มัตแตนต์กลายเป็นสำเนาที่ทุกอย่างถูก restore กลับไปหา
+แล้ว restore ครั้งถัดไปก็ทำให้มันถาวร นี่คือวิธีที่ backup ผิด ๆ เกิดขึ้นตั้งแต่แรก และเป็นรอบของ #33
+ที่ README นี้บันทึกไว้เอง ตอนนี้ `save` ปฏิเสธ บอกชื่อไฟล์ และบอกให้ `restore` ก่อน
+
+```bash
+python mutation/18-program-subjects.py nobom            # ปฏิเสธถ้าต้นไม้ขยับไปจาก backup
+python mutation/18-program-subjects.py save             # ปฏิเสธถ้ายังมีมัตแตนต์ติดอยู่
+python mutation/18-program-subjects.py restore          # แล้วค่อย save ได้
+python mutation/18-program-subjects.py restore --force  # ยืนยันว่าจะทับ
+python mutation/harness_test.py                         # สิบเจ็ดข้อที่ค้ำพฤติกรรมนี้
+```
+
 **และห้ามกวาดใบที่ใช้ไฟล์ร่วมกันพร้อมกัน** การ restore ของใบที่กวาดทีหลังจะเขียนทับสิ่งที่ใบแรก
 กำลังใช้อยู่ ประโยคเดิมตรงนี้ให้เหตุผลว่า *ทุกใบมี backup ของตัวเอง* ซึ่ง**ไม่จริง**
 `mutation/.backup/` เป็นคลังเดียวของทั้งร้าน และ `_backup()` ตั้งชื่อรายการด้วย **path**
@@ -73,9 +94,9 @@ python mutation/18-program-subjects.py restore     # คืนโค้ดเด
 **เลขที่คนดูแลด้วยมือในไฟล์ที่โตทุกตั๋ว คือเลขที่จะผิด** ถามสคริปต์แทน:
 
 ```bash
-cd mutation && python -c "import ast,io,glob,collections; own=collections.defaultdict(set)
+cd mutation && python -c "import ast,io,glob,re,collections; own=collections.defaultdict(set)
 for f in sorted(glob.glob('*.py')):
-    if f in ('harness.py','anchors.py'): continue
+    if not re.match(r'^\d+-',f): continue
     for n in ast.parse(io.open(f,encoding='utf-8').read()).body:
         if isinstance(n,ast.Assign) and getattr(n.targets[0],'id','')=='FILES':
             for v in n.value.values: own[v.value].add(f.split('-')[0])
@@ -140,9 +161,9 @@ for path,tix in sorted(own.items()):
   คือการเลื่อนความผิดไปหนึ่งประโยค** ถามตัวนี้แทน:
 
   ```bash
-  cd mutation && python -c "import ast,io,glob,collections; own=collections.defaultdict(set)
+  cd mutation && python -c "import ast,io,glob,re,collections; own=collections.defaultdict(set)
   for f in sorted(glob.glob('*.py')):
-      if f in ('harness.py','anchors.py'): continue
+      if not re.match(r'^\d+-',f): continue
       for n in ast.parse(io.open(f,encoding='utf-8').read()).body:
           if isinstance(n,ast.Assign) and getattr(n.targets[0],'id','')=='FILES':
               for v in n.value.values: own[v.value].add(f.split('-')[0])
@@ -281,7 +302,7 @@ mutants 494 | anchors checked 495 | superseded on purpose 1 | unreadable 0 | pro
 นับใหม่ทุกครั้งที่แก้ตาราง:
 
 ```bash
-cd mutation && python -c "import ast,io,glob; print(sum(len(n.value.keys) for f in glob.glob('*.py') if f not in ('harness.py','anchors.py') for n in ast.parse(io.open(f,encoding='utf-8').read()).body if isinstance(n,ast.Assign) and getattr(n.targets[0],'id','')=='MUTANTS'))"
+cd mutation && python -c "import ast,io,glob,re; print(sum(len(n.value.keys) for f in glob.glob('*.py') if re.match(r'^\d+-',f) for n in ast.parse(io.open(f,encoding='utf-8').read()).body if isinstance(n,ast.Assign) and getattr(n.targets[0],'id','')=='MUTANTS'))"
 ```
 
 `harness.py` กับ `anchors.py` คือสองไฟล์ที่ไม่ได้ถือมัตแตนต์ — ตัวแรกคือ save / restore / apply
@@ -375,7 +396,8 @@ harness ปฏิเสธตัวที่ข้อความตรงกั
 
 ## ข้อควรระวัง
 
-- `save` ต้องเป็นคำสั่งแรกของรอบ ไม่ใช่ของที่ค้างจากรอบก่อน
+- `save` ต้องเป็นคำสั่งแรกของรอบ ไม่ใช่ของที่ค้างจากรอบก่อน (ตั้งแต่ #126 เครื่องมือปฏิเสธเองถ้าไม่ทำ
+  แต่ข้อนี้ยังอยู่เพราะการถูกปฏิเสธแล้วเผลอเติม `--force` คือทางเดิมที่กลับมาได้เสมอ)
   `save` เก็บสำเนาไฟล์ และ `restore` เอาสำเนานั้นกลับมาทับทั้งไฟล์ สิ่งที่เขียนเพิ่มหลังจาก `save` จึงหายไปโดยไม่มีอะไรบอก
   ใน #92 เหตุนี้กลืนคอมเมนต์ไปหนึ่งย่อหน้าใน `backend/routes/auth.js` โดยที่ `git status` เพิ่งมาฟ้องหลัง push ไปแล้ว
   ครั้งนั้นเสียแค่คอมเมนต์ แต่ลำดับเดิมนี้กินโค้ดจริงได้เงียบ ๆ เท่ากัน — ถ้าไม่แน่ใจว่า snapshot เป็นของรอบนี้ ให้ `save` ใหม่ก่อน

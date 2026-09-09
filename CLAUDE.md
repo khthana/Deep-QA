@@ -1068,6 +1068,42 @@ is enough, and the file it reverts need not be one the mutant touches.** Run `sa
 every mutant, and read `git status` after `apply` as well as after `restore` — the harness's own
 docstring only ever asked for the second.
 
+**Fixing it turned the prose into a question the tool asks, and the question is narrower than
+*did you run `save`*.** A guard that refuses whenever the tree differs from the backup would
+break the one case the restore-first exists for — `apply` over a mutant `apply` put there an
+hour ago. So the harness now records what it wrote (`mutation/.backup/applied.json`, keyed by
+path like the backups, because two sheets naming one file are talking about one file) and
+refuses only when what is on disk is **neither the saved copy nor a mutant of its own**. That is
+the whole difference between a guard people keep and a guard people `--force` past on the second
+day. `mutation/harness_test.py` is seventeen tests about it — the store's first Python tests,
+stdlib `unittest`, pointed at a temporary tree — and the ones that matter most say **nothing was
+written on the path that refused**: a tool that reports a refusal after doing the damage is the
+defect with a message on top.
+
+**Five of those seventeen exist because `/code-review` found the fix had introduced the defect it
+was closing.** `apply` writes its edits in a loop and recorded them all at the end, so a two-edit
+mutant whose *second* edit missed left the first on disk unrecorded — and the restore that MISS
+does then met a file it could not explain, refused, and returned #126's stale-backup message
+about a mutant that had merely moved, **with the file left mutated**. Twenty-five mutants across
+four sheets are written as lists. The other four were the same species one step out: a record
+that parses to `[]` instead of `{}` crashed the function whose whole job is to carry on without
+one; a file missing from the tree became a traceback where `restore` used to simply write it out
+again; and `save` over an applied mutant still baked the mutant into the backup — **the guard
+protects the tree from the backup, and nothing protected the backup from the tree**, which is how
+a wrong backup gets made in the first place and is #33's round again. **A guard that reads the
+world before it writes has to survive every state the world is actually in**, and the states to
+try are the empty one, the wrong-shaped one, the absent one, and the one your own tool just made.
+
+**And the fix nearly broke the number it exists to protect, in the shape #123 is about.**
+`anchors.py` and three snippets in `mutation/README.md` selected mutation sheets by naming the
+two files that are *not* sheets. `harness_test.py` is the third, and it carries a `MUTANTS`
+fixture, so the store's headline count went to **497** the moment the test file landed —
+three mutants nobody wrote, in the census this repository quotes to say its mutants are worth
+something. A list of exceptions is a list somebody has to remember to extend; a sheet is named
+for its ticket, so the rule is now `^\d+-`. **When a tool skips things by name, adding a file is
+enough to make it lie** — and the tell was cheap: run the count before and after, which is what
+the README already tells everybody else to do.
+
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 8 September 2569 that is
 `2026-09-08-run-the-explanation-not-only-the-symptom.md`. Read it before taking work. Each handoff names the one it supersedes for state,

@@ -38,10 +38,12 @@ import ast
 import glob
 import io
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+SHEET = re.compile(r"^\d+-[\w-]+\.py$")
 
 _UNREADABLE = object()
 
@@ -126,7 +128,11 @@ def check():
     total = checked = problems = unreadable = kept = 0
     source = {}
     for path in sorted(glob.glob(os.path.join(HERE, "*.py"))):
-        if os.path.basename(path) in ("harness.py", "anchors.py"):
+        # A sheet is named for its ticket - `124-users-template-sample.py`. The
+        # tooling beside them is not, and `harness_test.py` holds a `MUTANTS`
+        # fixture that a list of names to skip would have counted as three real
+        # mutants the first time somebody forgot to extend it (#126).
+        if not SHEET.match(os.path.basename(path)):
             continue
         short = os.path.relpath(path, ROOT).replace("\\", "/")
         files, mutants, superseded, env = _module(path)
