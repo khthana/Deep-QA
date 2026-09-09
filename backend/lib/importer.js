@@ -254,7 +254,7 @@ function sendImport(res, result, key) {
  *
  * Whether to pass an example is the caller's decision and not this helper's,
  * and #67 is why it has to be. A sample teaches the formats, which is worth
- * having and is why nine of the ten callers still pass one; it is also a row
+ * having and is why eight of the ten callers still pass one; it is also a row
  * that gets uploaded back unchanged, so what it costs depends entirely on what
  * that import does with a key it already holds. `students.js` passes nothing,
  * because its import overwrites a person and its register has no delete route.

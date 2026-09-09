@@ -15,6 +15,24 @@ import { saveAsFile } from '../api/client'
  * functions that fetch the template and post the file - so those are props and
  * everything else is here.
  *
+ * `notes` is the fifth prop and the only optional one - a list of sentences
+ * rather than a string, which is why the guard below asks `Array.isArray`
+ * before it asks for a length: `'x'.length > 0` is true and `.map` is not
+ * there, so a caller passing one sentence would take the panel down with it.
+ * #124. A template that
+ * carries no example row has to say somewhere how its columns are filled, and
+ * the screen is the place: the file teaches nothing until it has been
+ * downloaded, and by then the person is in a spreadsheet and not here. It is
+ * left undefined by the nine other callers - eight of which still ship an
+ * example, `Students.js` having stopped at #67 - so nothing is drawn for them
+ * and no import screen but this one changes shape.
+ *
+ * Drawn as a block rather than as a line of small print under the subtitle,
+ * because for the screen that passes it these sentences are the *only* place
+ * the formats are stated. A rule set as though it were a footnote is #41's grey
+ * citation and #45's `ยังไม่มีคะแนน` again, and this store has met that one
+ * three times.
+ *
  * The report is the part worth getting right. A failed import writes nothing,
  * so what the person needs is not "it did not work" but the line number and the
  * reason for every row that was wrong, all of them at once - otherwise fixing a
@@ -27,6 +45,7 @@ import { saveAsFile } from '../api/client'
 export default function ImportPanel({
   title,
   subtitle,
+  notes,
   templateName,
   fetchTemplate,
   send,
@@ -90,6 +109,17 @@ export default function ImportPanel({
     <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       <h2 className="mb-1 text-lg font-medium text-primary">{title}</h2>
       <p className="mb-4 text-sm text-slate-500">{subtitle}</p>
+
+      {Array.isArray(notes) && notes.length > 0 && (
+        <div className="mb-4 rounded-lg bg-slate-50 p-4">
+          <h3 className="mb-2 text-sm font-medium text-slate-800">รูปแบบข้อมูลในไฟล์</h3>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
+            {notes.map(note => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <button

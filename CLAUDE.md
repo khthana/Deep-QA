@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102, #67 and #101**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102, #67, #101 and #124**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -154,11 +154,13 @@ refusal only a server in production mode can produce, and a ☐ for a criterion 
 today** because a wrong password raises the session-expired dialog over the sign-in screen (#97).
 A ☐ is also how a sheet says *this is true of somebody else's open ticket*, not only *nobody has
 looked*. The count is worth taking from the sheets rather
-than from here — **two ☐, and both are half of a ticket somebody else owns**: #49's menu set
-on `10-application-shell.md`, and since #67 the sample row on `11-user-accounts.md`'s
-download row, which is #124. That second one is what a ☐ is for twice over — the sheet
-had described #124 in prose beside a ☑ for the whole row, which is #50's *explaining a gap
-is not marking it* arriving inside the ticket that opened the gap. #50's
+than from here — **one ☐, and it is half of a ticket somebody else owns**: #49's menu set
+on `10-application-shell.md`. There were two until 9 September 2569, and the second is worth
+keeping in mind for what it was: the sample row on `11-user-accounts.md`'s download row,
+which the sheet had first described in prose beside a ☑ for the whole row — #50's
+*explaining a gap is not marking it* arriving inside the ticket that opened the gap. Marked
+☐ with #124's number on it, it was a working link between two sheets for a day and then it
+was closed, which is the whole life cycle a ☐ is for. #50's
 ☐ — the criterion that was not true — is gone, closed by #97, and the Google half of where a
 sign-in lands is gone too, closed by #119 with the seam the sentence beside it said could not
 reach it. Of the ◐ — **seventeen, counted from the sheets on 7 September 2569, and this
@@ -959,6 +961,112 @@ gone - a line carrying Thai, which is the first thing a reword or a formatter to
 #123's whole subject. Re-aimed at `{programs.map(entry => (` it kills the same one row.
 **Anchor a mutant to the code it breaks, never to the prose beside it**; the prose is
 written to be rewritten.
+
+**#124 is the fifth of the new frontier, and the first ticket here whose fix made a sentence
+on somebody else's sheet false.** When #67 stripped the students template of its Thai sample,
+`17-students.md` recorded the loss honestly and then handed the claim on: the half of #62's
+byte-order mark that *shows* Thai surviving a download, rather than merely that the bytes are
+there, had moved to #11's template, **which still has a Thai example row**. That was true the
+day it was written. #124 removed that row two days later for a reason that has nothing to do
+with Thai, and nothing anywhere linked the two — no test, no mutant, no anchor check. A grep
+for `users-template` across `docs/` and `mutation/` found it in a minute and found it in
+exactly one place. **A sheet that hands a claim to another sheet has written a pointer, and a
+pointer is a thing a later ticket can delete without noticing** — after a fix that removes
+content, grep for the file the removed thing lived in, not only for the numbers quoted about
+it. What holds the claim today was then measured rather than assumed: **five** templates still
+carry Thai in their sample row, two of them under walked rows (`14-departments.md` row 5 and
+`15-programs.md` row 7). That is a reading taken on 9 September 2569 and not a property
+anything tests, so it is written with its date, like every survey here. **The first count
+said five and was wrong**, and the way it was wrong is the store's own lesson arriving inside the
+sentence that states it: the grep was shaped like `sendTemplate(res, …, { … })`, and
+`backend/routes/activityScores.js:470` builds its example into a variable first, so a sixth
+template carrying `full_name_th: 'ตัวอย่าง นักศึกษา'` was invisible to it. **A grep is evidence for
+the shape you typed** — #111's rule, met again by the paragraph two screens above that records it.
+
+**And the answer the owner chose carried a second half the ticket had not priced.** #124's
+three options were three options for the *route*, and the one taken - header alone, as #67
+did for students - is a single argument deleted. The work was somewhere else:
+`ImportPanel` drew no column guidance at all, just a heading, a subtitle and two buttons, so
+with the sample gone the CSV would have been the only teacher and it would have been empty.
+**Before removing something, ask what it was teaching** - and the answer was not the column
+names, which the header still carries all fifteen of, but the rules a header cannot state.
+Two of the seven are the reason it could never have done that job: the name is an either/or
+across two columns, and the password is required for two role codes and useless for every
+other. *Refused* is what the first draft of this said in four places and it is wrong: nothing on
+the import path refuses a password, `users.js:195` hashes whatever it is given, and
+`accounts.js:275` refuses it at **sign-in**. A guard that lives at another seam is not a guard
+this screen's guidance may describe. `backend/routes/users.js` had already written that down in #56's own words - *a header
+cannot say "one of these two"* - and reading it is what turned a deletion into a fix.
+
+**Writing that guidance off the code, one sentence at a time, is what found #125.** The
+seven notes were each read out of `readAccount` rather than remembered, and the third could
+not be written at all without deciding which era a year is in. `2569-09-30` is a well-formed
+ISO date, is accepted, and files the validity window in the year 2569 **of the common era** -
+five centuries out, on an account that is created `active`, cannot sign in
+(`backend/auth/accounts.js:152`) and, this file having no delete route, cannot be removed
+either. **A guard that is strict about a format cannot see a mistake about meaning**:
+`readDate` refuses `01/03/2026` on purpose, with a docstring explaining that Bangkok and
+Boston read it differently, and accepts a Buddhist year in silence - the difference being
+that only one of the two mistakes is about the shape of the string. Until #125 is decided the
+word `ค.ศ.` on the screen is the whole of the defence, which is why a mutant exists that
+changes it to `พ.ศ.`: **a sentence that is load-bearing has to be provably about what it
+says, not merely present.**
+
+**#124's proofreading pass wrote a near-miss inside its own diff up as a defect in the store,
+and the ticket's own spec review caught it before it was committed.** The paragraph here first
+said that `11-user-accounts.md`'s download row cited `11b` row 5 as reading the byte-order mark
+while the row did `template.text.replace(BOM, '')` and stripped it unread — a **sheet claiming
+more than the row looked at**, the inverse of the mistake this store has made ten times, and a
+third thing neither existing pass can see. It reads well and none of it was true at `HEAD`. That
+sheet row cited **no spec at all**: it was a hand-walked ☑ reading *เปิดใน Excel แล้วภาษาไทยไม่เป็น
+ตัวยึกยือ*, and `11b` had no row about the download — its five rows each took
+`headerOf(downloadTemplate(page))` and looked at nothing else. The `replace(BOM, '')` quoted as
+the store's oversight was written **in this diff**, in a row added the same hour, and noticed
+minutes later. **A near-miss caught inside your own change is not a finding about the store**,
+and the tense is the tell: a defect *nobody had noticed* has a date and a commit behind it, and
+this one could not have. What was genuinely stale there is smaller and is #67's pointer lesson
+again — the walked claim was about **Thai** surviving Excel, and this diff is what emptied the
+Thai out of that file. Every other paragraph on this page was written about somebody else's
+work; this is the first one written about work done an hour earlier, and that is the condition
+to be suspicious in.
+
+**The assertion it added is still worth having, and the reason is the convention rather than a
+defect.** `17b` and `18b` assert the mark for their own templates and `11b` did not, which is
+#111's one unfiltered `getByRole` shape: a store where one file is the outlier. A row that
+downloads a file the sheet describes as carrying a BOM may as well look at it.
+
+**Then the assertion was asked what it is at risk from, and the answer was in the other
+seam.** Deleting the BOM at `backend/lib/csv.js:140` — the line all ten templates get theirs
+from — leaves **all eighteen rows** of `11b`, `17b` and `18b` green. `saveAsFile`'s docstring
+has said why since #62: `response.text()` strips a BOM per the Fetch specification, so the
+client puts a fresh one on the blob, and **the byte the browser seam can see is always the
+client's and never the server's**. So the two BOMs are not #97's *two places holding one
+opinion* — there is a stripping step between them and both are load-bearing — but each is
+provable at exactly one seam: the server's by one subtest (`users.test.js:488`, and
+`students.test.js` strips its own without asserting), the client's by `18:nobom`, which turns
+out to kill **three** rows and not the one its sheet named. **Before trusting a new assertion,
+break the thing it is about — and when nothing fails, the claim has an owner you have not
+found yet.**
+
+**And breaking that thing is what exposed [#126](https://github.com/khthana/Deep-QA/issues/126),
+which is the most dangerous tool defect the store has had.** `mutation/harness.py`'s `apply`
+restores every file in the script's `FILES` first, so mutants cannot stack — from
+`mutation/.backup/`, **one shared store keyed by path**, with no check that the backup is a
+copy of the tree. Running `python mutation/18-program-subjects.py nobom` without `save` first
+reverted `backend/lib/importer.js` to before #67 and `frontend/src/pages/ProgramSubjects.js`
+to **21 August**, restoring the hand-rolled banner #55 deleted — two files with nothing to do
+with the mutant, in silence, on a tree that had been clean. **`mutation/README.md` says to
+`save` first, twice, and records that #33 lost two rounds to it**, so the ticket is not that
+nobody knew; it is that the tool enforces none of it, which is #50's *explaining a gap in prose
+is not the same as marking it* one level up — prose beside a tool rather than beside a mark.
+What the README does get wrong is the reason it gives for the neighbouring rule: *every sheet
+has its own backup* — it does not, `_backup()` keys one shared directory by path, so two
+scripts naming one file share one entry. That matters because the reason is what a reader uses
+to decide whether their case is covered, and read as written it says the danger is confined to
+sweeping two sheets at once. **It needs no race and no second sweep: a stale entry of any age
+is enough, and the file it reverts need not be one the mutant touches.** Run `save` before
+every mutant, and read `git status` after `apply` as well as after `restore` — the harness's own
+docstring only ever asked for the second.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 8 September 2569 that is

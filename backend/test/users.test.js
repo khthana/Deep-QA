@@ -486,10 +486,44 @@ test('the import template', async (t) => {
 
     const lines = template.text.split('\r\n');
     assert.equal(lines[0], `\uFEFF${IMPORT_COLUMNS.join(',')}`);
-    // One example row, and the field it exists to demonstrate.
-    assert.equal(lines[1].split(',').length, IMPORT_COLUMNS.length);
-    assert.equal(lines[1].split(',')[IMPORT_COLUMNS.indexOf('role_id')], 'TEACHER');
-    assert.equal(lines.at(-1), '');
+    // #124: the header is the whole file. What the example row used to teach -
+    // the date format above all - is on the screen beside the button instead,
+    // where reading it costs nobody a row in the register.
+    assert.deepEqual(lines.slice(1), ['']);
+  });
+
+  await t.test('names nobody, and uploading it unchanged creates nobody', async () => {
+    // #124, and the half of #67 that is not #67's. The example row was a whole
+    // account - `66010001`, `somchai.ja@kmitl.ac.th`, active and verified,
+    // with a `TEACHER` grant on department `05` - so the first thing anybody
+    // does with a template answered `201 created=1` and wrote it.
+    //
+    // Unlike the students import this one refuses a key it already holds, so
+    // nothing was ever written over; what it left behind is a row that cannot
+    // be taken out again. This file has GET, POST, two PUTs and the import,
+    // and no delete route at all: the account can be deactivated and not
+    // removed, which is why an inert template is the fix rather than a cleanup.
+    const admin = await signInAs('U_ADMIN');
+
+    const template = await request(api.app).get('/api/users/import-template').set('Cookie', admin);
+    // Counting the lines is not the claim. A file may carry an address in a
+    // comment row, or in a second header, and still be one line long by that
+    // count, so the two things the sample was made of are asked for by shape.
+    assert.doesNotMatch(template.text, /@/);
+    assert.doesNotMatch(template.text, /\d{8}/);
+
+    const before = (await list(admin)).body.total;
+    const refused = await importCsv(admin, template.text);
+
+    assert.equal(refused.status, 400);
+    assert.equal(refused.body.message, REFUSALS.importEmpty);
+    assert.equal(refused.body.created, 0);
+    assert.equal((await list(admin)).body.total, before);
+    // And the account it used to make, asked for by name rather than inferred
+    // from the count: the register grows for many reasons, and what this row
+    // is about is one particular row not being in it.
+    const sample = await request(api.app).get('/api/users/66010001').set('Cookie', admin);
+    assert.equal(sample.status, 404);
   });
 });
 

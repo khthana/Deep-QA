@@ -5,6 +5,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const {
+  BOM,
   downloadTemplate,
   headerOf,
   csv,
@@ -16,7 +17,8 @@ const {
 const { openUsers, search, importUsers, userRow } = require('../support/users-screen');
 
 /**
- * docs/acceptance/11-user-accounts.md, rows 6-7 and the import half of row 8 -
+ * docs/acceptance/11-user-accounts.md, row 5, rows 6-7 and the import half of
+ * row 8 -
  * the original import, the one `lib/importer` and `ImportPanel` were written
  * for and that every other screen's import rows are copies of.
  *
@@ -238,4 +240,78 @@ test('row 8: the import is bounded by the same scope the list is', async ({ page
   await openUsers(page);
   await search(page, outside);
   await expect(userRow(page, outside)).toHaveCount(0);
+});
+
+/*
+ * The two rows below are #124's and were appended rather than filed beside the
+ * other row-5 row, because this file is `mode: 'serial'` and every citation in
+ * `docs/acceptance/11-user-accounts.md` names a row by its position. Inserting
+ * mid-file moves all of them, which is the drift `50-sign-in-screens.md` paid
+ * for three times in one day.
+ */
+
+test('row 5: the template names nobody, and uploading it unchanged creates nobody', async ({
+  page,
+}) => {
+  // #124. The example row was a whole account - `66010001`,
+  // `somchai.ja@kmitl.ac.th`, active, with a `TEACHER` grant on department 05 -
+  // so the first thing anybody does with a template answered `201 created=1`
+  // and wrote it into a register this application has no route to remove a row
+  // from.
+  //
+  // Driven from the screen and not from the endpoint on purpose: what the
+  // criterion says is *the file the button gives me, sent back through the box
+  // beside it*, and the client re-adds the byte-order mark the Fetch
+  // specification strips (#62), so the endpoint's answer and the file that
+  // reaches the disk are not the same bytes.
+  const template = await downloadTemplate(page);
+  expect(template.name).toBe('users-template.csv');
+
+  // `17b` and `18b` assert this byte for their own templates and this file did
+  // not - it had no row about the download at all until #124 - so the row that
+  // downloads the file the sheet describes as carrying a BOM is the row that
+  // should look at it. What it is at risk from is in the other seam: deleting
+  // the server's mark at `csv.js:140` leaves this green, because the client
+  // re-adds one (#62). `18:nobom` is what can fail this.
+  expect(template.text.startsWith(BOM)).toBe(true);
+
+  const lines = template.text.replace(BOM, '').split(/\r?\n/).filter(Boolean);
+  expect(lines).toEqual([headerOf(template)]);
+  // Counting the lines is not the claim. A file may carry an address in a
+  // comment row, or in a second header, and still be one line long by that
+  // count, so the two things the sample was made of are asked for by shape.
+  expect(template.text).not.toMatch(/@/);
+  expect(template.text).not.toMatch(/\d{8}/);
+
+  await importUsers(page, template.text);
+  await expect(page.getByText(REFUSALS.importEmpty)).toBeVisible();
+
+  // No count is read after a refused import. `ImportPanel` calls `onImported`
+  // on success alone, so the list is not fetched again and the number on
+  // screen is the number from before the upload - an assertion that cannot
+  // fail, which is what #64 deleted four of from this file and from `14b`.
+  // What is asked instead goes back to the server: the account the sample used
+  // to make, by name.
+  await search(page, 'somchai.ja@kmitl.ac.th');
+  await expect(userRow(page, 'somchai.ja@kmitl.ac.th')).toHaveCount(0);
+});
+
+test('row 5: the screen states the rules the header cannot', async ({ page }) => {
+  // The other half of #124, and the reason the sample could be taken out at
+  // all. The header still carries all fifteen column names; what went with the
+  // example row is how to fill them, and these three are the ones no header
+  // could have stated. Three of the seven notes are asserted here, chosen as the
+  // three a person is most likely to get wrong - which language a name may be in, an era that is not the
+  // one a Thai form usually asks for (#125), and a password that is required
+  // for two role codes and useless for the rest (nothing on this path refuses
+  // one; `accounts.js:275` turns it away at sign-in).
+  //
+  // Asserted before the template is downloaded, in the order a person meets
+  // them: guidance that arrives after the file has been filled in is guidance
+  // that arrived too late.
+  await expect(page.getByRole('heading', { name: 'รูปแบบข้อมูลในไฟล์' })).toBeVisible();
+
+  for (const rule of ['ภาษาไทยหรือภาษาอังกฤษก็ได้', 'ปี ค.ศ.', 'FULL_ADMIN และ EXT_ASSESSOR']) {
+    await expect(page.getByRole('listitem').filter({ hasText: rule })).toHaveCount(1);
+  }
 });

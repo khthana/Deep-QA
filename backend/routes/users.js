@@ -309,26 +309,21 @@ function userRoutes(pool) {
    * parameter would otherwise swallow the word.
    */
   router.get('/users/import-template', requireRole(...ADMIN_ROLES), (req, res) =>
-    // The example row matters most here for the date format - the field a
-    // person is most likely to get wrong and the one this system is strictest
-    // about.
-    sendTemplate(res, 'users-template.csv', IMPORT_COLUMNS, {
-      user_id: '66010001',
-      email: 'somchai.ja@kmitl.ac.th',
-      title_th: 'นาย',
-      first_name_th: 'สมชาย',
-      last_name_th: 'ใจดี',
-      title_en: 'Mr.',
-      first_name_en: 'Somchai',
-      last_name_en: 'Jaidee',
-      department_id: '05',
-      program_id: '',
-      role_id: 'TEACHER',
-      scope_id: '05',
-      valid_from: '',
-      valid_until: '',
-      password: '',
-    }));
+    // No example row - #124, and the second of the two registers #67's survey
+    // sorted the ten templates into. The sample was a whole account, so
+    // uploading the file as it arrived answered `201 created=1` and wrote
+    // `66010001` into the register; this import refuses a key it already
+    // holds, so nothing was overwritten, but this file has no delete route and
+    // the row could only be deactivated. `students.js` says the rest of the
+    // reasoning and reached the same answer from the other defect.
+    //
+    // What the example row was carrying was never the column names - the
+    // header still has all fifteen - but the four rules a header cannot state:
+    // the date format, the name that may be in either language, the columns
+    // that may be left blank, and the one field a file may not set at all.
+    // Those are drawn on the screen above this button instead (#11's import
+    // panel takes them as `notes`), where reading them costs nobody a row.
+    sendTemplate(res, 'users-template.csv', IMPORT_COLUMNS));
 
   router.get('/users/:userId', requireRole(...ADMIN_ROLES), async (req, res, next) => {
     try {

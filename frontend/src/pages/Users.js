@@ -42,6 +42,55 @@ import {
 
 const PAGE_SIZE = 10
 
+/**
+ * The rules the template's header cannot state - #124.
+ *
+ * The example row was taken out of `users-template.csv` because uploading the
+ * file unchanged created an account, and this register has no route that can
+ * remove one. The fifteen column *names* survive in the header; what went with
+ * the row is everything about how to fill them, so it is said here instead,
+ * where a person reads it before pressing download rather than after being
+ * refused fifteen columns later.
+ *
+ * Each line was read off the code rather than remembered, in the order a bad
+ * row meets the checks - but *the code* is wider than `readAccount`, and saying
+ * otherwise would send the next reader to one function for seven answers.
+ * `readAccount` holds the dates, the identifiers and the password; the role is
+ * required by the import wrapper; the scope is `placeAllowed` and `assignable`
+ * further down this file; and the status is enforced by the column simply not
+ * being in `IMPORT_COLUMNS`, which is a rule no function states at all.
+ *
+ * Two of the seven are relations *between* columns rather than properties of
+ * one, so a row of column names could not have carried them even in principle;
+ * that is the sense in which a header could never have done this job, and it is
+ * a narrower claim than the route comment's four (the kinds of thing the
+ * deleted example row was teaching) or `11b`'s three (the notes that row
+ * asserts). The name is an
+ * either/or across two columns - the specification owner cut that clause from
+ * the sentence on 9 September 2569, so what the screen says today is the
+ * weaker true half, that either language is accepted, and `readAccount`'s
+ * `invalidUser` for a row with neither is stated nowhere a person reads. And
+ * the password is required for two role codes and *useless* for the rest:
+ * nothing here refuses one, it is hashed and stored, and `accounts.js:275`
+ * turns it away at sign-in - which is why the sentence says who signs in with
+ * what rather than claiming a refusal this path does not make.
+ *
+ * `ค.ศ.` is stated in words because a Buddhist-era year is well-formed, is
+ * accepted, and files the window five centuries out - measured while closing
+ * this ticket and open as #125. Until that is decided, this sentence is the
+ * only thing standing between a Thai form-filling habit and an account nobody
+ * can sign in to or delete.
+ */
+const IMPORT_NOTES = [
+  'user_id และ email ต้องมีทุกแถว (user_id ยาวไม่เกิน 20 ตัวอักษร email ไม่เกิน 100)',
+  'ชื่อจริงกรอกเป็นภาษาไทยหรือภาษาอังกฤษก็ได้',
+  'valid_from และ valid_until ใช้รูปแบบ ปี-เดือน-วัน เป็นปี ค.ศ. เช่น 2026-09-30 เว้นว่างได้ถ้าไม่จำกัดช่วงเวลา และวันเริ่มต้องไม่อยู่หลังวันสิ้นสุด',
+  'role_id ต้องระบุทุกแถว และ scope_id คือรหัสภาควิชาหรือหลักสูตรที่บทบาทนั้นครอบคลุม',
+  'password กรอกเฉพาะบทบาท FULL_ADMIN และ EXT_ASSESSOR บทบาทอื่นเข้าระบบผ่านบัญชี Google',
+  'department_id และ program_id ต้องเป็นหน่วยงานที่ผู้นำเข้าเองมีสิทธิ์อยู่แล้ว',
+  'สถานะบัญชีตั้งจากไฟล์ไม่ได้ ทุกแถวที่นำเข้าจะเปิดใช้งาน หากต้องการระงับให้ใช้ปุ่มบนรายการ',
+]
+
 const STATUS = {
   active: { label: 'ใช้งานอยู่', className: 'bg-green-100 text-green-800' },
   inactive: { label: 'ถูกระงับ', className: 'bg-gray-200 text-gray-700' },
@@ -297,6 +346,7 @@ export default function Users() {
           <ImportPanel
             title="นำเข้าผู้ใช้งานจากไฟล์"
             subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
+            notes={IMPORT_NOTES}
             templateName="users-template.csv"
             fetchTemplate={importTemplate}
             send={importUsers}
