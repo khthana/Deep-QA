@@ -46,7 +46,7 @@ const bcrypt = require('bcrypt');
 
 const { PASSWORD_ROLES, onUser, recordActivity } = require('../auth/accounts');
 const { requireRole } = require('../auth/authorise');
-const { REFUSALS } = require('../auth/refusals');
+const { REFUSALS, sentenceOf } = require('../auth/refusals');
 const { blankToNull, trimmed } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
@@ -83,12 +83,32 @@ const IMPORT_COLUMNS = [
 ];
 
 /**
+ * The years a validity window may be filed in, and the offset between the eras.
+ *
+ * Not a guess at how long this system will run - the range is wide enough that
+ * no real window comes near either end. It exists so that a year in the
+ * Buddhist era, which is the year on every other Thai form the administrator
+ * filled in today, cannot be filed as a common-era one: #125.
+ */
+const EARLIEST_YEAR = 1900;
+const LATEST_YEAR = 2200;
+const BUDDHIST_OFFSET = 543;
+
+/**
  * A date as the form or the spreadsheet stated it, or a refusal.
  *
  * Only ISO `YYYY-MM-DD` is accepted. `new Date('01/03/2026')` is a different
  * day in Bangkok than it is in Boston and neither reading is an error, so a
  * lenient parser here would quietly file an assessor's window against the wrong
  * month rather than say it could not read the date.
+ *
+ * That is a guard about the *shape* of a date, and #125 is a mistake about its
+ * *meaning*: `2569-09-30` is a well-formed ISO date, `Date` accepts it, and the
+ * window was filed five centuries out - on an account that is created `active`,
+ * cannot sign in (`auth/accounts.js` refuses a window that has not opened) and,
+ * this file holding no delete route, cannot be removed either. So the year is
+ * read as well as the string, and a refusal here carries its own sentence
+ * rather than a key, because the sentence names the year that was typed.
  */
 function readDate(value) {
   const text = blankToNull(value);
@@ -98,6 +118,22 @@ function readDate(value) {
   if (Number.isNaN(parsed.getTime())) return { ok: false };
   // Rejects 2026-02-31, which Date rolls forward into March without complaint.
   if (parsed.toISOString().slice(0, 10) !== text) return { ok: false };
+
+  const year = parsed.getUTCFullYear();
+  if (year < EARLIEST_YEAR || year > LATEST_YEAR) {
+    const commonEra = year - BUDDHIST_OFFSET;
+    // Only the years whose Buddhist reading lands inside the range get the
+    // conversion offered; the rest are told the range. Doing the arithmetic
+    // for somebody who typed 1500 would answer them with 957.
+    const readable = commonEra >= EARLIEST_YEAR && commonEra <= LATEST_YEAR;
+    return {
+      ok: false,
+      message: readable
+        ? REFUSALS.validityEra(year, commonEra)
+        : REFUSALS.validityYearRange(year, EARLIEST_YEAR, LATEST_YEAR),
+    };
+  }
+
   return { ok: true, value: text };
 }
 
@@ -140,7 +176,13 @@ function readAccount(source, { editing = false } = {}) {
 
   const from = readDate(source.valid_from);
   const until = readDate(source.valid_until);
-  if (!from.ok || !until.ok) return { ok: false, reason: 'invalidValidity' };
+  if (!from.ok || !until.ok) {
+    // The `reason` stays what it always was, so anything reading the key still
+    // reads it; the `message` is carried alongside for the refusals that name
+    // the year. `sentenceOf` prefers the sentence and falls back to the key,
+    // which is what makes a date refused for its shape answer as before.
+    return { ok: false, reason: 'invalidValidity', message: (from.ok ? until : from).message };
+  }
   if (from.value && until.value && from.value > until.value) {
     return { ok: false, reason: 'invalidValidity' };
   }
@@ -352,7 +394,7 @@ function userRoutes(pool) {
     const client = await pool.connect();
     try {
       const draft = readAccount(req.body ?? {});
-      if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
+      if (!draft.ok) return res.status(400).json({ message: sentenceOf(draft) });
 
       const { values, role } = draft;
       // No grant, no sign-in. The criterion asks for an account that works, and
@@ -391,7 +433,7 @@ function userRoutes(pool) {
       if (!existing) return res.status(404).json({ message: REFUSALS.userNotFound });
 
       const draft = readAccount({ ...req.body, user_id: existing.user_id }, { editing: true });
-      if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
+      if (!draft.ok) return res.status(400).json({ message: sentenceOf(draft) });
 
       const { values } = draft;
       if (!(await placeAllowed(req, values.department_id, values.program_id))) {

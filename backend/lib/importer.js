@@ -41,18 +41,7 @@
  */
 
 const { formatCsv, parseTable } = require('./csv');
-const { REFUSALS } = require('../auth/refusals');
-
-/**
- * What a refusing hook said, whichever way it said it.
- *
- * A `reason` is looked up; a `message` is already the sentence. Nothing else
- * is accepted, so a hook that returns `{ reason: 'typo' }` reports `undefined`
- * rather than silently reporting nothing at all — which is what a bare
- * `REFUSALS[reason]` did, and is a mistake worth keeping visible.
- */
-const sentenceOf = (refusal) =>
-  typeof refusal === 'string' ? REFUSALS[refusal] : (refusal.message ?? REFUSALS[refusal.reason]);
+const { REFUSALS, sentenceOf } = require('../auth/refusals');
 
 /**
  * Read a spreadsheet and apply it, or refuse the whole of it.
@@ -62,8 +51,9 @@ const sentenceOf = (refusal) =>
  * itself. The second exists for #26 and for the reason `whole` already returned
  * a sentence rather than a key — a refusal that has to name the group somebody
  * is already in, or the group that is full, is one sentence with a hole in it
- * and cannot be a constant. `sentenceOf` below is where the two meet, so no
- * hook has to know which kind it is handing back.
+ * and cannot be a constant. `sentenceOf` is where the two meet, so no hook has
+ * to know which kind it is handing back; it sits in `auth/refusals` since #125,
+ * which gave the routes a refusal of the second kind as well.
  *
  * - `readRow(record)` judges one row on its own. Returns `{ ok: true, draft }`
  *   or `{ ok: false, reason }`, where `reason` is a key of REFUSALS. `draft` is

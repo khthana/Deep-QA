@@ -52,10 +52,14 @@ and a third is a defect found while writing it. `2569-09-30` is a well-formed
 ISO date, is accepted, and files the window in the year 2569 **of the common
 era** - five centuries out, on an account that is created `active`, cannot sign
 in (`backend/auth/accounts.js:152`) and cannot be deleted. That is
-[#125](https://github.com/khthana/Deep-QA/issues/125). Until it is decided, the
-word `ค.ศ.` on the screen is the only thing standing between a Thai
-form-filling habit and a dead account, which is why `eraisbuddhist` exists: the
-sentence has to be provably about the era rather than about there being a list.
+[#125](https://github.com/khthana/Deep-QA/issues/125), and it was closed the
+same day: `readDate` now refuses a year outside 1900-2200 and offers the
+arithmetic. For one day the word `ค.ศ.` on the screen was the only thing
+standing between a Thai form-filling habit and a dead account, and that is why
+`eraisbuddhist` was written; it stays because what it holds is that the sentence
+is provably about the era rather than about there being a list, which is a claim
+about the guidance and not about the guard. `125-validity-era.py` holds the
+guard's own five.
 
 ## The sweep
 

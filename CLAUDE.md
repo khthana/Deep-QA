@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102, #67, #101 and #124**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102, #67, #101, #124, #126 and #125**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -1003,8 +1003,8 @@ seven notes were each read out of `readAccount` rather than remembered, and the 
 not be written at all without deciding which era a year is in. `2569-09-30` is a well-formed
 ISO date, is accepted, and files the validity window in the year 2569 **of the common era** -
 five centuries out, on an account that is created `active`, cannot sign in
-(`backend/auth/accounts.js:152`) and, this file having no delete route, cannot be removed
-either. **A guard that is strict about a format cannot see a mistake about meaning**:
+(`withinValidity` in `backend/auth/accounts.js` refuses a window that has not opened) and, this
+file having no delete route, cannot be removed either. **A guard that is strict about a format cannot see a mistake about meaning**:
 `readDate` refuses `01/03/2026` on purpose, with a docstring explaining that Bangkok and
 Boston read it differently, and accepts a Buddhist year in silence - the difference being
 that only one of the two mistakes is about the shape of the string. Until #125 is decided the
@@ -1042,8 +1042,11 @@ has said why since #62: `response.text()` strips a BOM per the Fetch specificati
 client puts a fresh one on the blob, and **the byte the browser seam can see is always the
 client's and never the server's**. So the two BOMs are not #97's *two places holding one
 opinion* — there is a stripping step between them and both are load-bearing — but each is
-provable at exactly one seam: the server's by one subtest (`users.test.js:488`, and
-`students.test.js` strips its own without asserting), the client's by `18:nobom`, which turns
+provable at exactly one seam: the server's by one subtest (`users.test.js`'s *is a
+spreadsheet file, asserted without this system's own reader* — cited by line number until #125
+inserted eight subtests above it and moved it 173 lines, which is #123's lesson in a citation
+rather than in a mutant, and `students.test.js` strips its own without asserting), the client's
+by `18:nobom`, which turns
 out to kill **three** rows and not the one its sheet named. **Before trusting a new assertion,
 break the thing it is about — and when nothing fails, the claim has an owner you have not
 found yet.**
@@ -1103,6 +1106,66 @@ something. A list of exceptions is a list somebody has to remember to extend; a 
 for its ticket, so the rule is now `^\d+-`. **When a tool skips things by name, adding a file is
 enough to make it lie** — and the tell was cheap: run the count before and after, which is what
 the README already tells everybody else to do.
+
+**#125 is the sixth of the new frontier, and the ticket was right about everything except where
+the work was.** `readDate` accepts `2569-09-30`, which is a well-formed ISO date, and files an
+assessor's window in the year 2569 of the common era — on an account created `active` that
+cannot sign in and, `users.js` having no delete route, cannot be removed. The owner chose the
+second of three answers on 9 September 2569: **refuse, and do the arithmetic in the sentence.**
+The guard is four lines. What cost the afternoon is that **a refusal naming a value is a
+different kind of thing from a refusal naming a reason**, and the sites that read the two are
+not the same sites. `REFUSALS` has held function-valued entries since #26 — **twenty of them
+on the morning of 9 September 2569, twenty-two by the evening** — but they had only ever been
+read by the import, whose report calls `sentenceOf`. The two
+route sites did `REFUSALS[draft.reason]`, which hands `res.json` **a function**: `JSON.stringify`
+drops it, and the person is refused with **no message at all**. So `sentenceOf` moved from
+`lib/importer.js` into `auth/refusals.js`, where the rule about how to read a refusal belongs
+beside the refusals. **Before adding a parameterised refusal, find every site that turns that
+reason into a sentence** — the grep is `REFUSALS[`, and it is not the grep the ticket suggests.
+
+**And one of those sites had no test, which is why it got a row of its own.** Both route sites
+read a `readAccount` refusal; only the create route had ever been asked about a bad window,
+while the edit route is where an assessor's round is actually **extended** — the thing that
+happens to a validity window in real life. `editsentenceisakey` kills exactly one subtest, and
+that subtest was written the same hour, because without it the mutant kills nothing and the
+site is proved by the other one's tests looking similar. **When one change lands at two sites,
+write a mutant per site before believing one test covers both.**
+
+**A row asserting a status code was the round's own near-miss, and it is #50's retrying negative
+in a new costume.** The bounds row asserted `400` for 1899 and 2201 — and an external assessor
+created without a password is a `400` already, from a guard forty lines further down. It passed
+on the tree it was written to fail on, and only reading *which* rows went red on the red run
+showed it. **A status code is not an assertion about your guard on a route that has more than
+one way to answer it**; read the sentence.
+
+**Two sentences, because one sentence with a hole in it is worse than two.** `validityEra` does
+the arithmetic; `validityYearRange` names the range, and a year earns the first only when its
+Buddhist reading lands inside the range — offering `957` to somebody who typed `1500` is worse
+than offering nothing. The merge of the two is a real temptation (less code, friendlier tone),
+so `alwaysoffersconversion` exists to fail it.
+
+**The bounds mutant mutates the comparison and not the constant.** `1900` and `2200` are
+arbitrary; a mutant that moves one of them tests an arbitrary number, and two of them (one per
+end) kill the same row. `<`/`>` → `<=`/`>=` is the boundary off-by-one — a defect shape rather
+than a value — and it kills that row once. **When a constant is arbitrary, mutate the operator
+beside it.**
+
+**Its adjacent finding is #107's rule for the third time, and this time the two guards share a
+name.** `backend/routes/activities.js` holds a second `readDate` — same name, same shape of
+regexp — with a different contract (a full timestamp is accepted, no
+calendar check, so `2026-02-31` gets through) and the same era hole. Measured, not read:
+`201`, stored as `2569-09-30`. It is [#127](https://github.com/khthana/Deep-QA/issues/127) and
+not the second half of #125, because what the date decides is different — whether a person may
+sign in, against what a screen shows a Teacher — and because that route has a `PUT` and a
+`DELETE`, so the mistake is one somebody can see and correct. **The same hole in two guards is
+two tickets when the blast radius differs by an order of magnitude.**
+
+**And the collision census moved without its total moving, which no earlier round did.**
+`mutation/125-validity-era.py` holds `backend/routes/users.js` and nothing else, so that path
+went from a group of three sheets to a group of four while the number of contested paths stayed
+**31**. The README's parenthesis had to change from *17 · 9 · 3 · 2* to *17 · 8 · 4 · 2*.
+**A total that does not move is not a census that did not change** — the figure that decides
+whether two sheets may be swept together is the group, not the count.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 8 September 2569 that is

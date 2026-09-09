@@ -398,6 +398,179 @@ test('an external assessor with a validity period', async (t) => {
     assert.equal(response.body.message, REFUSALS.invalidValidity);
   });
 
+  // The window's year is read as written, and until #125 nothing asked which
+  // era it was written in. `2569-09-30` is a well-formed ISO date that `Date`
+  // accepts, so it was filed as 2569 of the common era - five centuries out, on
+  // an account created `active` that cannot sign in (`auth/accounts.js:152`)
+  // and, this file having no delete route, cannot be removed either. `readDate`
+  // is strict about the *shape* of a date and says so in its own docstring;
+  // a guard about format cannot see a mistake about meaning.
+
+  await t.test('refuses a Buddhist-era year, and says what to type instead', async () => {
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await create(admin, {
+      user_id: 'BE_YEAR_EXT',
+      email: 'buddhistyear@tabee-review.org',
+      first_name_en: 'Buddhist',
+      program_id: PROGRAM_THAI,
+      valid_from: '2569-09-30',
+      valid_until: '2570-09-30',
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, REFUSALS.validityEra(2569, 2026));
+    // The sentence has to survive `res.json`, which is a claim about the route
+    // and not about the table: `REFUSALS[reason]` on a parameterised entry
+    // hands `JSON.stringify` a function, and it drops it - so the person would
+    // be refused with no sentence at all. That is the failure this line is
+    // here for rather than a detail of it.
+    assert.equal(typeof response.body.message, 'string');
+  });
+
+  await t.test('refuses one in valid_until as well as in valid_from', async () => {
+    // Both ends go through the same call, and a guard on one of them is a
+    // guard with a way around it.
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await create(admin, {
+      user_id: 'BE_UNTIL_EXT',
+      email: 'buddhistuntil@tabee-review.org',
+      first_name_en: 'Until',
+      program_id: PROGRAM_THAI,
+      valid_from: day(0),
+      valid_until: '2570-09-30',
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, REFUSALS.validityEra(2570, 2027));
+  });
+
+  await t.test('offers no conversion for a year that is not a Buddhist one', async () => {
+    // Two sentences rather than one with a hole in it. A year that reads as
+    // พ.ศ. needs the arithmetic done for it; a year that is simply wrong needs
+    // to be told the range, and telling somebody who typed 1500 to enter 957
+    // is worse than telling them nothing.
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await create(admin, {
+      user_id: 'ODD_YEAR_EXT',
+      email: 'oddyear@tabee-review.org',
+      first_name_en: 'Odd',
+      program_id: PROGRAM_THAI,
+      valid_from: '1500-01-01',
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, REFUSALS.validityYearRange(1500, 1900, 2200));
+  });
+
+  await t.test('accepts the first and last years of the range it names', async () => {
+    // A range is two clauses, so it takes two values - #107's rule. A window
+    // inside one year proves the year rather than the ordering.
+    const admin = await signInAs('U_ADMIN');
+
+    for (const [suffix, year] of [['LOW', '1900'], ['HIGH', '2200']]) {
+      const response = await create(admin, {
+        user_id: `EDGE_${suffix}_EXT`,
+        email: `edge${suffix.toLowerCase()}@tabee-review.org`,
+        first_name_en: 'Edge',
+        program_id: PROGRAM_THAI,
+        password: 'deep-core-edge',
+        valid_from: `${year}-01-01`,
+        valid_until: `${year}-12-31`,
+        role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+      });
+
+      assert.equal(response.status, 201, `${suffix}: ${response.body.message}`);
+    }
+  });
+
+  await t.test('refuses the years either side of it', async () => {
+    const admin = await signInAs('U_ADMIN');
+
+    for (const [suffix, date, year] of [
+      ['UNDER', '1899-12-31', 1899],
+      ['OVER', '2201-01-01', 2201],
+    ]) {
+      const response = await create(admin, {
+        user_id: `PAST_${suffix}_EXT`,
+        email: `past${suffix.toLowerCase()}@tabee-review.org`,
+        first_name_en: 'Past',
+        program_id: PROGRAM_THAI,
+        valid_from: date,
+        role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+      });
+
+      // The sentence, not the status: an external assessor created without a
+      // password is a 400 already, so a row that read only the number would
+      // have passed on the tree this ticket was opened against.
+      assert.equal(response.status, 400, suffix);
+      assert.equal(response.body.message, REFUSALS.validityYearRange(year, 1900, 2200), suffix);
+    }
+  });
+
+  await t.test('refuses one when a window is extended, not only when it is made', async () => {
+    // Extending a round is what actually happens to an assessor's window, and
+    // the edit route reads the same function - so a guard proved only on the
+    // way in is a guard with a door beside it. It is also the second of the
+    // two sites that turn this refusal into a sentence, and the one no other
+    // row here goes through.
+    const admin = await signInAs('U_ADMIN');
+    const email = 'extendassessor@tabee-review.org';
+
+    const created = await create(admin, {
+      user_id: 'EXTEND_EXT',
+      email,
+      first_name_en: 'Extend',
+      program_id: PROGRAM_THAI,
+      password: 'deep-core-extend',
+      valid_from: day(0),
+      valid_until: day(30),
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+    assert.equal(created.status, 201, created.body.message);
+
+    const response = await request(api.app)
+      .put('/api/users/EXTEND_EXT')
+      .set('Cookie', admin)
+      .send({
+        email,
+        first_name_en: 'Extend',
+        program_id: PROGRAM_THAI,
+        valid_from: day(0),
+        valid_until: '2570-09-30',
+      });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, REFUSALS.validityEra(2570, 2027));
+
+    // And the window it already had is the window it still has.
+    const after = await request(api.app).get('/api/users/EXTEND_EXT').set('Cookie', admin);
+    assert.equal(after.body.user.valid_until, day(30));
+  });
+
+  await t.test('still refuses a date it cannot read for the reason it always did', async () => {
+    // The era guard sits behind the shape guard, so nothing that was answered
+    // `invalidValidity` before this ticket changed answer.
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await create(admin, {
+      user_id: 'SHAPE_EXT',
+      email: 'wrongshape@tabee-review.org',
+      first_name_en: 'Shape',
+      program_id: PROGRAM_THAI,
+      valid_from: '30/09/2026',
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, REFUSALS.invalidValidity);
+  });
+
   await t.test('may not be created without a password, having no other way in', async () => {
     // An external assessor is not a KMITL address, so Google refuses them and
     // the password form is the only door they have. Created without one they
@@ -674,6 +847,43 @@ test('importing a spreadsheet with bad rows', async (t) => {
     // on: the good row on line 2 was writable and must be gone.
     const { rows } = await api.pool.query(
       `SELECT user_id FROM users WHERE user_id LIKE 'BAD_%'`,
+    );
+    assert.deepEqual(rows, []);
+  });
+
+  await t.test('reports a Buddhist-era year by line, with the same sentence', async () => {
+    // `readAccount` is shared on purpose, and the import is the moment nobody
+    // is checking rows one by one - so the row that proves the form is not the
+    // row that proves the file. The report carries the sentence itself rather
+    // than a key, which is the path #125's parameterised refusal has to
+    // survive: `sentenceOf` reads a `message` before it reads a `reason`.
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await importCsv(
+      admin,
+      csvOf([
+        {
+          user_id: 'BE_IMPORT',
+          email: 'buddhistimport@kmitl.ac.th',
+          first_name_th: 'พุทธศักราช',
+          department_id: DEPT_COMPUTER,
+          role_id: 'TEACHER',
+          scope_id: DEPT_COMPUTER,
+          valid_from: '2569-09-30',
+        },
+      ]),
+    );
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.created, 0);
+    assert.deepEqual(
+      response.body.errors.map((error) => error.line),
+      [2],
+    );
+    assert.equal(response.body.errors[0].message, REFUSALS.validityEra(2569, 2026));
+
+    const { rows } = await api.pool.query(
+      `SELECT user_id FROM users WHERE user_id = 'BE_IMPORT'`,
     );
     assert.deepEqual(rows, []);
   });

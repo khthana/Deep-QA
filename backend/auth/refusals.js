@@ -70,6 +70,16 @@ const REFUSALS = {
   duplicateUserId: 'รหัสผู้ใช้นี้ถูกใช้งานแล้ว',
   invalidUser: 'ข้อมูลบัญชีไม่ครบถ้วนหรือไม่ถูกต้อง',
   invalidValidity: 'ช่วงเวลาใช้งานไม่ถูกต้อง วันสิ้นสุดต้องไม่มาก่อนวันเริ่มต้น',
+  // #125. Two sentences for one guard, because a year outside the range is
+  // two different mistakes. `2569` is the year on every other Thai form the
+  // administrator filled in today and the useful thing to say is the
+  // arithmetic; `1500` is a typing mistake and the useful thing to say is the
+  // range. One sentence covering both would have to offer 957 to somebody who
+  // typed 1500, which is worse than saying nothing.
+  validityEra: (year, commonEra) =>
+    `ปี ${year} อยู่นอกช่วงที่รับได้ หากกรอกเป็น พ.ศ. ให้ใช้ ค.ศ. ${commonEra} แทน`,
+  validityYearRange: (year, earliest, latest) =>
+    `ปี ${year} อยู่นอกช่วงที่รับได้ ต้องเป็น ค.ศ. ระหว่าง ${earliest} ถึง ${latest}`,
   // The roles the sign-in rule sends to the password form rather than to
   // Google. An account of one of those created without a password can sign in
   // by neither path, which is the state #11's second criterion rules out.
@@ -673,4 +683,23 @@ const REFUSALS = {
   unexpected: 'เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง',
 };
 
-module.exports = { REFUSALS };
+/**
+ * What a refusing hook or helper said, whichever way it said it.
+ *
+ * A `reason` is looked up here; a `message` is already the sentence. Nothing
+ * else is accepted, so a caller that returns `{ reason: 'typo' }` reports
+ * `undefined` rather than silently reporting nothing at all — which is what a
+ * bare `REFUSALS[reason]` did, and is a mistake worth keeping visible.
+ *
+ * It lived in `lib/importer.js` until #125, for the entries above that take an
+ * argument: a sentence naming the group somebody is already in cannot be a
+ * constant. That is no longer only the import's problem — #125's refusal names
+ * the year that was typed — and `REFUSALS[reason]` on a parameterised entry is
+ * a function handed to `JSON.stringify`, which drops it and answers a refusal
+ * with no sentence in it at all. So the rule about how to read a refusal now
+ * lives beside the refusals.
+ */
+const sentenceOf = (refusal) =>
+  typeof refusal === 'string' ? REFUSALS[refusal] : (refusal.message ?? REFUSALS[refusal.reason]);
+
+module.exports = { REFUSALS, sentenceOf };
