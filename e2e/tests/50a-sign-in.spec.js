@@ -36,6 +36,9 @@ const {
  * from the screen's map, so the only person who can ever meet it — an external
  * assessor whose review round has closed — was told *เข้าสู่ระบบด้วย Google
  * ไม่สำเร็จ* instead of that their window had ended.
+ * (#89 has since made that key two, `validityNotStarted` and
+ * `validityEnded`. The row below reads the list rather than any name in
+ * it, so it did not change — which is the point of reading the list.)
  *
  * What stays hand-walked: whether the banner is legible, whether three seconds
  * is long enough to read it (that is #85), and what the chooser looks like.

@@ -145,13 +145,32 @@ const calendarDay = (value) => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 };
 
-function withinValidity(user, today = BANGKOK.format(new Date())) {
+/**
+ * Which end of the window turned this account away, or `null` for an account
+ * inside it - or with no window at all, which is every account but R005's.
+ *
+ * It answers a refusal rather than a boolean because #89 asked for the two
+ * ends to be told apart, and the caller cannot work out which end from a
+ * `false` without reading the dates a second time. The name says what it
+ * returns: a refusal, or nothing.
+ *
+ * Both callers hand it straight back, so the two reasons are written once. It
+ * returns the whole refusal rather than the key for a second reason as well:
+ * `auth.test.js` reads the reasons the Google path can produce out of this
+ * file's own text, matching `refuse(<status>, '<reason>')`, and a reason
+ * assembled from a variable is a reason that scan cannot see.
+ */
+function validityRefusal(user, today = BANGKOK.format(new Date())) {
   // `YYYY-MM-DD` compares as a string in the order it compares as a date,
   // which is the whole reason ISO is written biggest-part-first.
   const now = calendarDay(today);
-  if (user.valid_from && now < calendarDay(user.valid_from)) return false;
-  if (user.valid_until && now > calendarDay(user.valid_until)) return false;
-  return true;
+  if (user.valid_from && now < calendarDay(user.valid_from)) {
+    return refuse(403, 'validityNotStarted');
+  }
+  if (user.valid_until && now > calendarDay(user.valid_until)) {
+    return refuse(403, 'validityEnded');
+  }
+  return null;
 }
 
 /**
@@ -170,7 +189,8 @@ function withinValidity(user, today = BANGKOK.format(new Date())) {
 async function admit(pool, user) {
   if (user.status !== 'active') return refuse(403, 'inactive');
   if (!user.is_verified) return refuse(403, 'unverified');
-  if (!withinValidity(user)) return refuse(403, 'outsideValidity');
+  const outsideWindow = validityRefusal(user);
+  if (outsideWindow) return outsideWindow;
 
   const roles = await allRoles(pool, user.user_id);
   if (roles.length === 0) return refuse(403, 'noRole');
@@ -203,7 +223,8 @@ async function sessionAdmission(pool, userId) {
   if (!user) return refuse(403, 'unknown');
   if (user.status !== 'active') return refuse(403, 'inactive');
   if (!user.is_verified) return refuse(403, 'unverified');
-  if (!withinValidity(user)) return refuse(403, 'outsideValidity');
+  const outsideWindow = validityRefusal(user);
+  if (outsideWindow) return outsideWindow;
   return null;
 }
 
@@ -215,19 +236,26 @@ async function sessionAdmission(pool, userId) {
  * another package. A redirect carries no body, so the sign-in page keeps its
  * own map from these keys to sentences, and a key that arrives without one
  * shows the person a fallback instead of the reason they were turned away.
- * Six of them come from the rules below; `googleUnavailable` comes from the
- * route, and is the one a server without OAuth credentials answers with.
+ * Seven of them come from the rules below; `googleUnavailable` comes from the
+ * route, and is the one a server without OAuth credentials answers with. It
+ * was six until #89 split the validity window into the end that is waited for
+ * and the end that is asked about.
  *
- * `backend/test/auth.test.js` drives each of the six to prove the list is not
- * longer than the code, and `e2e/tests/50a-sign-in.spec.js` reads the other
- * end — that each key reaches a person as this table's own words.
+ * `backend/test/auth.test.js` reads the `refuse` calls these rules make and
+ * asserts this list is exactly those, so it cannot fall behind the code or
+ * run ahead of it; `e2e/tests/50a-sign-in.spec.js` reads the other end — that
+ * each key reaches a person as this table's own words. That sentence used to
+ * count the keys (*drives each of the six*) and was stale two lines under a
+ * number #89 had just corrected: **a count in prose beside a list is a second
+ * copy of the list**, so it says what the test does instead.
  */
 const GOOGLE_REFUSAL_REASONS = [
   'domain',
   'unknown',
   'inactive',
   'unverified',
-  'outsideValidity',
+  'validityNotStarted',
+  'validityEnded',
   'noRole',
   'googleUnavailable',
 ];
@@ -300,7 +328,7 @@ module.exports = {
   GOOGLE_REFUSAL_REASONS,
   findByEmail,
   allRoles,
-  withinValidity,
+  validityRefusal,
   sessionAdmission,
   recordActivity,
   onUser,

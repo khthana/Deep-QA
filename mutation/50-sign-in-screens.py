@@ -13,7 +13,11 @@ about; `chooserisnotbehindthesession` became `shellisnotbehindthesession`,
 which is the same claim carried by a route that still exists.
 
 Two of them are the defects this ticket actually found, put back:
-`googlerefusalmissesone` is the missing `outsideValidity`, and
+`googlerefusalmissesone` is the missing validity-window sentence - it was
+the missing `outsideValidity` until #89 split that reason into the end that
+is waited for and the end that is asked about, and it now deletes
+`validityEnded`, which is the key this ticket was written about under the
+name it carries today - and
 `googleunavailableisjson` is the 503 with a body that left a browser parked on
 the API's own origin reading `{"message":...}`.
 
@@ -61,13 +65,22 @@ FILES = {
 }
 
 MUTANTS = {
-    # The defect this ticket found, put back. Six keys where the rules produce
-    # seven, and the one missing is the one only an external assessor whose
-    # window has closed can meet - so the person least able to guess why is the
-    # one told *เข้าสู่ระบบด้วย Google ไม่สำเร็จ*. Kills row 1.
+    # The defect this ticket found, put back. Seven keys where the rules
+    # produce eight, and the one missing is the one only an external assessor
+    # whose window has closed can meet - so the person least able to guess why
+    # is the one told *เข้าสู่ระบบด้วย Google ไม่สำเร็จ*. Kills row 1.
+    #
+    # It was six of seven, anchored to `outsideValidity`, until #89 split that
+    # reason in two and `mutation/anchors.py` answered `0 matches` the same
+    # hour. `validityEnded` is that key under the name it carries now, so the
+    # claim is unchanged: a re-aim, not a re-purpose (#121). The other half of
+    # the split is `89:screenmissesthenewend`, which deletes
+    # `validityNotStarted` - two keys, two sheets, and neither mutant can
+    # stand in for the other.
     "googlerefusalmissesone": (
         "screen",
-        "  outsideValidity: 'บัญชีนี้อยู่นอกช่วงเวลาที่กำหนดให้ใช้งาน',\n",
+        "  validityEnded:\n"
+        "    'บัญชีนี้พ้นช่วงเวลาที่กำหนดให้ใช้งานแล้ว กรุณาติดต่อเจ้าหน้าที่เพื่อขอต่ออายุ',\n",
         "",
     ),
     # Every reason gets the fallback. The screen still says *something*, which

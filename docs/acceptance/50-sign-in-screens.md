@@ -38,7 +38,7 @@ cd frontend && npm start         # http://localhost:5000
 
 | # | เกณฑ์ | ทำอะไร | ต้องเห็นอะไร | ✓ |
 |---|---|---|---|---|
-| 1 | **ทุกกุญแจในรายการ** ไปถึงคนอ่านเป็นคำของ server เอง | เปิด `http://localhost:5000/login?error=outsideValidity` แล้วไล่ทีละกุญแจใน `GOOGLE_REFUSAL_REASONS` | แถบแดงอ่านว่า *บัญชีนี้อยู่นอกช่วงเวลาที่กำหนดให้ใช้งาน* ไม่ใช่ *เข้าสู่ระบบด้วย Google ไม่สำเร็จ* — ครอบคลุมโดย `e2e/tests/50a-sign-in.spec.js` (row 1) ซึ่งอ่านรายการจาก backend แล้ววนทุกตัว เทียบกับ `REFUSALS[reason]` ทีละตัว (`googlerefusalmissesone`, `refusalalwaysfallback`) | ⚙ |
+| 1 | **ทุกกุญแจในรายการ** ไปถึงคนอ่านเป็นคำของ server เอง | เปิด `http://localhost:5000/login?error=validityEnded` แล้วไล่ทีละกุญแจใน `GOOGLE_REFUSAL_REASONS` | แถบแดงอ่านว่า *บัญชีนี้พ้นช่วงเวลาที่กำหนดให้ใช้งานแล้ว กรุณาติดต่อเจ้าหน้าที่เพื่อขอต่ออายุ* ไม่ใช่ *เข้าสู่ระบบด้วย Google ไม่สำเร็จ* · **กุญแจกับถ้อยคำเปลี่ยนเมื่อ 9 ก.ย. 2569 โดย [#89](https://github.com/khthana/Deep-QA/issues/89)** เดิมเป็น `outsideValidity` กุญแจเดียวสำหรับปลายทั้งสองข้างของช่วงเวลา ตอนนี้เป็น `validityNotStarted` กับ `validityEnded` สิ่งที่แถวนี้วัดคือ *ทุกกุญแจในรายการ* ซึ่งไม่เปลี่ยน — ครอบคลุมโดย `e2e/tests/50a-sign-in.spec.js` (row 1) ซึ่งอ่านรายการจาก backend แล้ววนทุกตัว เทียบกับ `REFUSALS[reason]` ทีละตัว (`googlerefusalmissesone`, `refusalalwaysfallback`) | ⚙ |
 | 1 | (ครึ่งที่สอง) **รายการนั้นคือเหตุผลทั้งหมดที่กฎสร้างได้จริง** | — | `GOOGLE_REFUSAL_REASONS` ตรงกับ `refuse()` ที่ `admit` และ `resolveGoogleAccount` เรียกใช้ ครบทุกตัวไม่ขาดไม่เกิน — พิสูจน์ที่ seam HTTP (`auth.test.js` *the list of reasons is the list the rules can actually produce*) ซึ่ง**อ่านซอร์สของสองฟังก์ชันนั้นออกมาเทียบ** ไม่ได้ใช้รายการที่คนพิมพ์ไว้ · **แถวนี้แยกออกมาโดยตั้งใจ** แถวบนวนตามรายการ ดังนั้นการลบกุญแจออกจากรายการทำให้ลูปสั้นลงเฉย ๆ ไม่มีอะไรล้ม ⚙ ที่กินความถึงคำว่า *ทุกเหตุผล* จึงเป็น ⚙ ที่ไม่ได้มาจริง | ☑ |
 | 2 | เหตุผลที่ยังไม่มีใครเขียนคำไว้ ยังพูดอะไรบางอย่าง ไม่ใช่เงียบ | เปิด `/login?error=aReasonFromAFutureTicket` | แถบแดงอ่านว่า *เข้าสู่ระบบด้วย Google ไม่สำเร็จ* และฟอร์มยังกรอกได้ — ครอบคลุมโดย `50a` (row 2) (`refusalneverdrawn`) | ⚙ |
 | 3 | มาถึงหน้าลงชื่อเข้าใช้ตามปกติ ไม่มีคำปฏิเสธค้างอยู่ | เปิด `http://localhost:5000/` | ไม่มีแถบแดงเลย — ครอบคลุมโดย `50a` (row 3) (`refusalalwayssomething`) | ⚙ |
@@ -175,6 +175,7 @@ highest-priority role"* ครึ่งแรกเป็นของ server แ
 
 | แถว | มัตแตนต์ | อยู่ในไฟล์ |
 |---|---|---|
+| ข้อ 1 ครึ่งที่เป็นถ้อยคำ | `screenmissesthenewend` | `mutation/89-two-ends-of-a-window.py` — #89 แยก `outsideValidity` เป็นสองกุญแจ ตัวที่ค้ำกุญแจใหม่จึงอยู่กับตั๋วที่เขียนมัน ส่วน `googlerefusalmissesone` ของใบนี้ถูกเล็งใหม่ไปที่ `validityEnded` |
 | ข้อ 6 ครึ่งที่สอง กับครึ่งที่สาม | `credentialsisanexpiry` | `mutation/97-refusal-is-not-expiry.py` |
 | ข้อ 6 ครึ่งที่ห้า (403) | `lump403` | `mutation/10-application-shell.py` — ⚙ ที่ยืมมา และแถวนั้นบอกชื่อ spec ของใบอื่นไว้ตรง ๆ |
 | ข้อ 6 ครึ่งที่หก | `refusaltimesout` | `mutation/85-refusal-that-waits.py` |
@@ -241,7 +242,7 @@ highest-priority role"* ครึ่งแรกเป็นของ server แ
 
 | การกลายพันธุ์ | ไฟล์ | ทำให้อะไรพัง | ฆ่าแถว |
 |---|---|---|---:|
-| `googlerefusalmissesone` | `Login.js` | ลบ `outsideValidity` ออกจากตารางคำ — ข้อบกพร่องที่ตั๋วนี้เจอ ใส่กลับ | 1 |
+| `googlerefusalmissesone` | `Login.js` | ลบ `validityEnded` ออกจากตารางคำ — ข้อบกพร่องที่ตั๋วนี้เจอ ใส่กลับ (เดิมยึดกับ `outsideValidity` เล็งใหม่เมื่อ #89 แยกกุญแจ) | 1 |
 | `refusalalwaysfallback` | `Login.js` | ทุกเหตุผลได้ประโยคสำรอง หน้าจอยัง*พูดอะไรบางอย่าง* | 1, 4 |
 | `refusalneverdrawn` | `Login.js` | ไม่อ่านเหตุผลในที่อยู่เลย คนถูกส่งกลับมาที่หน้าที่ดูเหมือนไม่มีอะไรเกิดขึ้น | 1, 2, 4 |
 | `refusalalwayssomething` | `Login.js` | วาดคำปฏิเสธขึ้นทุกครั้งที่มาถึง รวมทั้งครั้งที่ไม่มีใครถูกปฏิเสธ | 3 |

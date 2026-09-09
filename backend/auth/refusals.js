@@ -22,11 +22,25 @@ const REFUSALS = {
   noRole: 'บัญชีนี้ยังไม่ได้รับสิทธิ์การใช้งาน กรุณาติดต่อเจ้าหน้าที่เพื่อกำหนดบทบาท',
   inactive: 'บัญชีนี้ถูกระงับการใช้งาน',
   unverified: 'บัญชีนี้ยังไม่ได้ผ่านการยืนยันตัวตน',
-  // R005's time-boxed account, refused outside its window. Named rather than
-  // folded into `inactive`, because the two need different things done about
-  // them: an account that was suspended is a decision somebody made, and one
-  // whose review round has ended needs its dates extended.
-  outsideValidity: 'บัญชีนี้อยู่นอกช่วงเวลาที่กำหนดให้ใช้งาน',
+  // R005's time-boxed account, refused outside its window - and the two ends
+  // of that window are two reasons, not one. #89 was opened as a decision
+  // rather than a defect, because the system was doing exactly what
+  // `docs/acceptance/11-user-accounts.md` told it to: *ถูกปฏิเสธด้วยข้อความ
+  // เดียวกัน*. The answer on 9 September 2569 was to split them, and the axis
+  // is **what the person has to do next** - one is waited out and the other
+  // never changes by waiting, so a sentence that covers both tells an external
+  // assessor neither. Named apart from `inactive` for the same reason again:
+  // a suspension is a decision somebody made.
+  //
+  // Neither names the date. It cannot: both of these keys are in
+  // `GOOGLE_REFUSAL_REASONS`, which travels as `/login?error=<reason>` with no
+  // body, and `frontend/src/pages/Login.js` keeps its own copy of these words
+  // keyed by the reason alone. A sentence naming a value has nowhere to travel
+  // on that path, and one door telling a person more than another about the
+  // same account is worse than neither door telling them. #125's lesson, one
+  // ticket later, in a place where the value genuinely cannot cross.
+  validityNotStarted: 'บัญชีนี้ยังไม่ถึงวันเริ่มใช้งาน กรุณาเข้าใช้งานอีกครั้งเมื่อถึงวันที่กำหนด',
+  validityEnded: 'บัญชีนี้พ้นช่วงเวลาที่กำหนดให้ใช้งานแล้ว กรุณาติดต่อเจ้าหน้าที่เพื่อขอต่ออายุ',
   credentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
   passwordNotAllowed: 'บัญชีนี้ต้องเข้าสู่ระบบด้วยบัญชี Google ของ KMITL',
   googleUnavailable: 'ยังไม่ได้ตั้งค่าการเข้าสู่ระบบด้วย Google บนเซิร์ฟเวอร์นี้',

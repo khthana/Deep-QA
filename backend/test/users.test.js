@@ -354,10 +354,13 @@ test('an external assessor with a validity period', async (t) => {
 
     const outside = await signInWith(email, 'deep-core-round');
     assert.equal(outside.status, 403);
-    assert.equal(outside.body.message, REFUSALS.outsideValidity);
+    assert.equal(outside.body.message, REFUSALS.validityEnded);
     // And is told apart from a suspended account, because the two need
     // different things done about them - one needs its dates extended.
     assert.notEqual(outside.body.message, REFUSALS.inactive);
+    // The sentence says which thing to do. A window that has ended does not
+    // reopen by waiting, so it names the person to ask - #89.
+    assert.match(outside.body.message, /\u0e15\u0e48\u0e2d\u0e2d\u0e32\u0e22\u0e38/);
   });
 
   await t.test('is refused before the window opens, not only after it closes', async () => {
@@ -378,7 +381,94 @@ test('an external assessor with a validity period', async (t) => {
     const response = await signInWith(email, 'deep-core-future');
 
     assert.equal(response.status, 403);
-    assert.equal(response.body.message, REFUSALS.outsideValidity);
+    assert.equal(response.body.message, REFUSALS.validityNotStarted);
+    // Waiting is what this one wants, and it is the whole difference from the
+    // row above - #89.
+    assert.match(response.body.message, /\u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07/);
+  });
+
+  /**
+   * #89's criterion, and it is the reason the two rows above cannot state it
+   * between them: each of them is true of one end, and neither can fail when
+   * the two ends answer the same thing. The account is moved across its own
+   * window rather than two accounts compared, so nothing but the dates differs
+   * between the two answers.
+   *
+   * What the person has to do is the axis: a window that has not opened is
+   * waited for, and a window that has closed is asked about. One sentence for
+   * both tells an external assessor - who is outside the institution and does
+   * not know whom to ask - neither.
+   */
+  await t.test('tells an expired window from one that has not opened yet', async () => {
+    const admin = await signInAs('U_ADMIN');
+    const email = 'bothends@tabee-review.org';
+
+    await create(admin, {
+      user_id: 'BOTH_ENDS_EXT',
+      email,
+      first_name_en: 'Both',
+      last_name_en: 'Ends',
+      program_id: PROGRAM_THAI,
+      password: 'deep-core-ends',
+      valid_from: day(10),
+      valid_until: day(20),
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+
+    const before = await signInWith(email, 'deep-core-ends');
+
+    await api.pool.query(
+      `UPDATE users SET valid_from = $2::date, valid_until = $3::date WHERE user_id = $1`,
+      ['BOTH_ENDS_EXT', day(-20), day(-10)],
+    );
+
+    const after = await signInWith(email, 'deep-core-ends');
+
+    assert.equal(before.status, 403);
+    assert.equal(after.status, 403);
+    // The same status, the same account, the same password: only the sentence
+    // can carry the difference, which is why the status codes are asserted
+    // first and are not the claim - #125's near-miss, one ticket later.
+    assert.notEqual(before.body.message, after.body.message);
+    assert.equal(before.body.message, REFUSALS.validityNotStarted);
+    assert.equal(after.body.message, REFUSALS.validityEnded);
+  });
+
+  /**
+   * A cookie issued inside the window stops working when the window ends, and
+   * the sentence it stops working with is the same one the sign-in gives.
+   * `sessionAdmission` is a second copy of these three checks (#11 wrote it so
+   * a suspension bites before the cookie runs out) and a second copy is a
+   * second place to forget - the split had to land in both.
+   */
+  await t.test('says the same thing to a session held over the end of a window', async () => {
+    const admin = await signInAs('U_ADMIN');
+    const email = 'liveround@tabee-review.org';
+
+    await create(admin, {
+      user_id: 'LIVE_ROUND_EXT',
+      email,
+      first_name_en: 'Live',
+      last_name_en: 'Round',
+      program_id: PROGRAM_THAI,
+      password: 'deep-core-live',
+      valid_from: day(-1),
+      valid_until: day(7),
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+
+    const session = await signInWith(email, 'deep-core-live');
+    assert.equal(session.status, 200, session.body.message);
+    const cookie = session.headers['set-cookie'];
+
+    await api.pool.query(
+      `UPDATE users SET valid_from = $2::date, valid_until = $3::date WHERE user_id = $1`,
+      ['LIVE_ROUND_EXT', day(-20), day(-10)],
+    );
+
+    const held = await request(api.app).get('/api/me').set('Cookie', cookie);
+    assert.equal(held.status, 403);
+    assert.equal(held.body.message, REFUSALS.validityEnded);
   });
 
   await t.test('refuses a window that ends before it starts', async () => {

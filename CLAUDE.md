@@ -20,7 +20,7 @@ wired with native blocking dependencies. Take work from the frontier — tickets
 all closed. #2–#45 are the original 44 from `docs/07`; numbers above that are gaps and defects
 found during the rebuild and opened since.
 
-Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102, #67, #101, #124, #126 and #125**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
+Closed: **#2–#45 unbroken, plus #50, #66, #97, #85, #111, #121, #119, #123, #122, #96, #107, #102, #67, #101, #124, #126, #125 and #89**. #41, #44 and #45 all closed on 5 September 2569, and #45 was
 the last of the original 44 — **every ticket in `docs/07` is now done**. What is left open are the
 numbers above 45: the gaps and defects the rebuild found and opened as it went.
 
@@ -1003,7 +1003,8 @@ seven notes were each read out of `readAccount` rather than remembered, and the 
 not be written at all without deciding which era a year is in. `2569-09-30` is a well-formed
 ISO date, is accepted, and files the validity window in the year 2569 **of the common era** -
 five centuries out, on an account that is created `active`, cannot sign in
-(`withinValidity` in `backend/auth/accounts.js` refuses a window that has not opened) and, this
+(`validityRefusal` in `backend/auth/accounts.js` refuses a window that has not opened -
+it was `withinValidity` until #89 split the reason in two) and, this
 file having no delete route, cannot be removed either. **A guard that is strict about a format cannot see a mistake about meaning**:
 `readDate` refuses `01/03/2026` on purpose, with a docstring explaining that Bangkok and
 Boston read it differently, and accepts a Buddhist year in silence - the difference being
@@ -1166,6 +1167,72 @@ went from a group of three sheets to a group of four while the number of contest
 **31**. The README's parenthesis had to change from *17 · 9 · 3 · 2* to *17 · 8 · 4 · 2*.
 **A total that does not move is not a census that did not change** — the figure that decides
 whether two sheets may be swept together is the group, not the count.
+
+**#89 is the seventh of the new frontier, and it is the first ticket here whose defect was in the
+acceptance sheet rather than in the code.** Two accounts an external assessor can hold — one whose
+review round has not opened, one whose round has closed — were refused with the same sentence to the
+letter. The ticket was filed as a decision rather than a defect, and the reason it gives is
+checkable: `docs/acceptance/11-user-accounts.md`'s *ยังไม่ถึงวันเริ่ม ก็เข้าไม่ได้* row says in its
+own handwriting *ข้อความเดียวกับแถวบน*. The system was doing exactly what it had been told, so the
+sheet was fixed first and the code followed. Every earlier wrong diagnosis here was a claim about
+the code that had aged, or was never true, or generalised; this one was a claim about the code that
+**the sheet had authored**. **Before fixing a behaviour a sheet describes, check whether the sheet
+asked for it** — and when it did, the walk record is not the thing to rewrite: it is a dated
+observation, and a successful fix is what expires one.
+
+**What the axis is turned out to matter more than that there are two sentences.** They are told
+apart by **what the person has to do next** — one end is waited out, the other never changes by
+waiting and has to be asked about — which is why the pair is *รอ แล้วเข้าใหม่* against *ติดต่อ
+เจ้าหน้าที่เพื่อขอต่ออายุ* rather than two ways of saying *outside the window*. An external assessor
+is outside the institution, cannot guess, and does not know whom to ask, so one sentence covering
+both states tells them neither. The objection — that saying more before a successful sign-in leaks
+something — does not survive reading the sentence it replaces: that one already confirms the account
+exists **and that the password was right**.
+
+**And the ticket's own suggestion was answered *no* with a measurement rather than an argument.** It
+asks that the *not yet started* sentence consider naming the start date, *because that is the day
+the person is waiting for*, which sounds right. Both keys sit in
+`GOOGLE_REFUSAL_REASONS` (as `outsideValidity` did before them), which travels as
+`/login?error=<reason>` **with no body**, and
+`frontend/src/pages/Login.js` holds its own copy of these words keyed by the reason alone — and
+`refuse()` itself is `message: REFUSALS[reason]`, the same `REFUSALS[` lookup #125 had fixed at two
+route sites hours earlier. So a sentence naming a value cannot cross that door at all, and the only
+remaining option is to let the door with a body say more than the door without one: **one state of
+one account answering differently depending on which way in was used**, which is #66's *a row that
+names two ways in is two rows* in the shape of a refusal. Naming the date is [#128](https://github.com/khthana/Deep-QA/issues/128), because
+the redirect would have to carry it as a second parameter — account data in a URL, which is
+a question for the owner rather than work. **A deferral written into prose and not into the
+tracker is a decision nobody can find**; `/code-review` caught this one having no number. **When a ticket
+asks you to *consider* something, the answer is a measurement, and *no, and here is what it would
+cost* is a finished answer.**
+
+**The test that caught the extraction is worth knowing about before writing one like it.**
+`auth.test.js`'s *the list of reasons is the list the rules can actually produce* reads the **source
+text** of the functions the Google path is made of, matching `refuse(<status>, '<reason>')`, so the
+list cannot fall behind the rules by being hand-kept. Moving the window's decision into a helper
+immediately above `admit` took two reasons out of the text it reads and it went red on the spot —
+the system working, not a test in the way. **A scan that reads a function's own text stops at that
+function's boundary**, and a helper is exactly what it cannot see. Two ways out, and only one is
+right: naming the reasons at each call site puts four literals in two functions and makes the
+decision two places (#97's paragraph), while returning the **whole refusal** keeps the decision in
+one function and every reason a literal in the form the scan already matches. Widening the regexp
+would have been the hand-kept list this test exists to abolish, wearing a different hat.
+
+**The sweep found a defect in the tests, and it is #97's rule at the scale of one fixture.**
+`endsareswapped` killed six subtests and one of them was not a kill: two subtests share `U_EXT`, and
+each put back the column it had moved on the line **after** its last assertion. The moment the first
+one failed, the second met an account whose window was still in the past and failed about something
+it does not assert. Nothing had ever shown it, because nothing had ever made the first one fail.
+`finally` is the whole fix, and the number written into the sheet was measured after it. **A subtest
+that restores its fixture only when it passes is a subtest that inflates the next mutant's kill
+count** — and a mutant is the only thing that will ever tell you.
+
+**One mutant here confirms a paragraph another sheet wrote about itself, as a number.**
+`listmissesthenewend` deletes the new key from `GOOGLE_REFUSAL_REASONS` and kills **exactly one**
+subtest and nothing at all in `50a` — which is what `mutation/50-sign-in-screens.py` has said in
+prose since #50: row 1 *iterates* the list, so deleting a key shortens the loop and fails nothing.
+**A gap explained in prose is worth re-measuring the day a ticket widens the thing it is about**;
+the paragraph was right, and now it has a figure behind it.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 9 September 2569 that is

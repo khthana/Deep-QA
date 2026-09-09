@@ -497,20 +497,50 @@ test('Google sign-in', async (t) => {
 
   // #48 is the ticket that gives an administrator a way to set the window and
   // an assessor a reason to be outside one. The column is already on `users`
-  // and `withinValidity` already reads it, so the refusal exists today and can
+  // and `validityRefusal` already reads it, so the refusal exists today and can
   // be produced today - which is what the list below has to be able to claim.
+  // Both of these move a column on the shared `U_EXT` and put it back in a
+  // `finally`. It was a plain line after the assertions until #89 swept
+  // `endsareswapped`, which failed the first one and left an expired window
+  // behind for the second - so the second failed about a window it had not set
+  // and does not assert, and the mutant's kill count read one too high. #97's
+  // rule at the scale of one fixture: a row has to be able to fail on its own.
   await t.test('refuses an account whose validity window has closed', async () => {
     await api.pool.query(`UPDATE users SET valid_until = current_date - 1 WHERE user_id = $1`, [
       byAlias('U_EXT'),
     ]);
 
-    const admission = await resolveGoogleAccount(api.pool, EMAILS.assessor);
+    try {
+      const admission = await resolveGoogleAccount(api.pool, EMAILS.assessor);
 
-    assert.equal(admission.ok, false);
-    assert.equal(admission.reason, 'outsideValidity');
-    await api.pool.query(`UPDATE users SET valid_until = NULL WHERE user_id = $1`, [
+      assert.equal(admission.ok, false);
+      assert.equal(admission.reason, 'validityEnded');
+    } finally {
+      await api.pool.query(`UPDATE users SET valid_until = NULL WHERE user_id = $1`, [
+        byAlias('U_EXT'),
+      ]);
+    }
+  });
+
+  // The other end of the same window, and it is here rather than only in
+  // `users.test.js` because the list below is built from the `refuse` calls
+  // these two functions make: a reason no subtest produces is a reason the
+  // list cannot be checked against - #89.
+  await t.test('refuses an account whose validity window has not opened', async () => {
+    await api.pool.query(`UPDATE users SET valid_from = current_date + 1 WHERE user_id = $1`, [
       byAlias('U_EXT'),
     ]);
+
+    try {
+      const admission = await resolveGoogleAccount(api.pool, EMAILS.assessor);
+
+      assert.equal(admission.ok, false);
+      assert.equal(admission.reason, 'validityNotStarted');
+    } finally {
+      await api.pool.query(`UPDATE users SET valid_from = NULL WHERE user_id = $1`, [
+        byAlias('U_EXT'),
+      ]);
+    }
   });
 
   /**
@@ -537,9 +567,18 @@ test('Google sign-in', async (t) => {
     }
 
     const source = readFileSync(path.join(__dirname, '..', 'auth', 'accounts.js'), 'utf8');
-    // Only the two functions the Google path is made of. `admit` ends where
+    // Only the functions the Google path is made of. `admit` ends where
     // `sessionAdmission` begins, and `resolveGoogleAccount` ends where the
     // password form's own rules begin.
+    //
+    // The first slice starts at `validityRefusal` rather than at `admit`
+    // because #89 moved a rule of `admit`'s into a helper immediately above
+    // it, and this test went red on the spot: **a scan that reads a
+    // function's own text stops at that function's boundary**, so a rule
+    // extracted into a helper leaves the list looking too long. Widening the
+    // regexp instead would have been the hand-kept list this test abolishes,
+    // wearing a different hat. If a rule is ever extracted further away than
+    // the line above `admit`, this slice is what has to move.
     //
     // Slicing precisely is the point. A first draft took everything from
     // `admit` onwards and then deleted `credentials` and `passwordNotAllowed`
@@ -553,7 +592,7 @@ test('Google sign-in', async (t) => {
       return source.slice(start, end);
     };
     const rules =
-      between('async function admit(', 'async function sessionAdmission(') +
+      between('function validityRefusal(', 'async function sessionAdmission(') +
       between('async function resolveGoogleAccount(', 'async function resolvePasswordAccount(');
     const produced = new Set(
       [...rules.matchAll(/refuse\(\d+, '([a-zA-Z]+)'\)/g)].map(match => match[1]),
