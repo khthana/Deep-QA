@@ -8,6 +8,7 @@ import Pager from '../components/Pager'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
 import { roleName } from '../components/MapRole'
+import { useAuth } from '../context/AuthContext'
 import {
   createUser,
   importTemplate,
@@ -99,6 +100,21 @@ const STATUS = {
 const control =
   'rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
 
+/**
+ * Why the suspend button on your own row is dead, said on the button - #84.
+ *
+ * A copy of `REFUSALS.selfStatus`, and it has to be one: create-react-app
+ * refuses imports from outside `src/`, so no screen in this tree can read
+ * `backend/auth/refusals`. The copy is not left to drift - `84a` row 1 asserts
+ * this exact attribute equals that constant, so the two part company in a
+ * failing test rather than in front of a person.
+ *
+ * The same words as the server's refusal on purpose. Somebody who reaches the
+ * route another way - and ADR-0002 says they still can - reads one sentence,
+ * not two accounts of one rule.
+ */
+const CANNOT_SUSPEND_SELF = 'ระงับบัญชีของตัวเองไม่ได้'
+
 /** The window as a person reads it, or a dash for an account that has none. */
 const windowOf = user => {
   if (!user.valid_from && !user.valid_until) return '—'
@@ -106,6 +122,7 @@ const windowOf = user => {
 }
 
 export default function Users() {
+  const { profile } = useAuth()
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState({ q: '', role: '', status: '' })
   const [data, setData] = useState({ users: [], total: 0 })
@@ -152,6 +169,19 @@ export default function Users() {
       setBusy(false)
     }
   }
+
+  /**
+   * The one row this administrator may not switch off: their own.
+   *
+   * Read from the shell's profile rather than from anything on this screen,
+   * because the list is what the server sent and carries no mark saying which
+   * row is the reader. `profile` is null for the moment before `/api/me`
+   * answers, and a null id matches no account, so the column draws as it
+   * always did until the answer arrives - which is the right way round: a
+   * button wrongly enabled for an instant is refused by the server, where a
+   * button wrongly disabled would be a control nobody can get back.
+   */
+  const isSelf = user => Boolean(profile) && user.user_id === profile.user_id
 
   const toggle = async user => {
     const next = user.status === 'active' ? 'inactive' : 'active'
@@ -324,7 +354,9 @@ export default function Users() {
                         <button
                           type="button"
                           onClick={() => toggle(user)}
-                          className="rounded-lg px-3 py-1.5 text-gray-600 hover:bg-gray-100"
+                          disabled={isSelf(user)}
+                          title={isSelf(user) ? CANNOT_SUSPEND_SELF : undefined}
+                          className="rounded-lg px-3 py-1.5 text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-transparent"
                         >
                           {user.status === 'active' ? 'ระงับ' : 'เปิดใช้งาน'}
                         </button>
