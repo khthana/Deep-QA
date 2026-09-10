@@ -315,6 +315,28 @@ test('deactivating an account', async (t) => {
     ]);
     assert.equal(rows[0].status, 'active');
   });
+
+  // #83. The row above asserted the status code and the unchanged row and
+  // never read the sentence, and this route answers 403 two ways - the role
+  // guard in front of it, and the rule that nobody does this to themselves.
+  // #125's lesson in the other file: a status code is not an assertion about
+  // your guard on a route with more than one way to answer it. What the
+  // Central Admin was told was `forbidden`, the sentence for *your role does
+  // not reach this endpoint*, which is a true statement about somebody else
+  // and sends this reader to check their own grants for a defect that is not
+  // there.
+  await t.test('and told which of the two 403s it is', async () => {
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await setStatus(admin, byAlias('U_ADMIN'), 'inactive');
+
+    assert.equal(response.status, 403);
+    assert.equal(response.body.message, REFUSALS.selfStatus);
+    // Not a restatement of the line above: it fails if the new key is ever
+    // given the same words as the old one, which is #89's defect exactly -
+    // two states of one account refused with one sentence to the letter.
+    assert.notEqual(response.body.message, REFUSALS.forbidden);
+  });
 });
 
 // --- the fourth criterion ----------------------------------------------------

@@ -492,7 +492,7 @@ function userRoutes(pool) {
         return res.status(400).json({ message: REFUSALS.invalidUser });
       }
       if (req.params.userId === req.auth.userId) {
-        return res.status(403).json({ message: REFUSALS.forbidden });
+        return res.status(403).json({ message: REFUSALS.selfStatus });
       }
 
       const existing = await reachable(req, req.params.userId);

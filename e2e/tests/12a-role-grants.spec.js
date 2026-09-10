@@ -182,9 +182,14 @@ test('row 6: an administrator cannot revoke their own grant through the screen',
 
   // The button is drawn on this row like any other, so the rule cannot be
   // "there is no button": it is pressed here, and refused by the server.
+  //
+  // The sentence was `forbidden` until #83 - the same one asserted forty lines
+  // above, where a grantee whose grant was just revoked in another browser is
+  // refused for genuinely not holding it any more. One sentence, two reasons,
+  // and this row could not tell them apart either.
   const refused = await revoke(page, ROLE_NAMES.DEPT_ADMIN, '05');
   expect(refused.status()).toBe(403);
-  await expect(page.getByText(REFUSALS.forbidden)).toBeVisible();
+  await expect(page.getByText(REFUSALS.selfRevoke)).toBeVisible();
 
   // And the grant is still held. A refusal that had already switched the row
   // off and then complained would lock this account out on its next request.

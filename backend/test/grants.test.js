@@ -273,9 +273,20 @@ test('an escalation attempt is refused by the server', async (t) => {
     // The same rule #11 applies to deactivating yourself, for the same reason:
     // an administrator who revoked their last grant would be locked out by the
     // next request, with nobody in scope able to put it back.
+    //
+    // #83. This read `REFUSALS.forbidden` until then - the same constant the
+    // two subtests directly above assert, and those are a teacher refused for
+    // genuinely not holding the role. Three subtests in a row, one sentence,
+    // two reasons, and nothing in the suite able to tell them apart. Twenty
+    // lines below this guard the same handler answers `roleNotHeld` for a
+    // grant that is not there, so naming what went wrong is already what this
+    // route does - the self case was the one that did not.
     const response = await revoke(cookie, 'U_DEPT', 'DEPT_ADMIN', DEPT_COMPUTER);
     assert.equal(response.status, 403);
-    assert.equal(response.body.message, REFUSALS.forbidden);
+    assert.equal(response.body.message, REFUSALS.selfRevoke);
+    // As in `users.test.js`: this fails if the two constants are ever given
+    // the same words, not if the route picks the wrong one - #89's defect.
+    assert.notEqual(response.body.message, REFUSALS.forbidden);
   });
 });
 

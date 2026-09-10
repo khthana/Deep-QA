@@ -83,7 +83,10 @@ test('#121: the grants panel brings its refusal into view', async ({ page }) => 
   const refused = await revoke(page, ROLE_NAMES.DEPT_ADMIN, '05');
   expect(refused.status()).toBe(403);
 
-  const banner = page.getByText(REFUSALS.forbidden);
+  // #83 gave this refusal a sentence of its own. What this row is about is
+  // unchanged - that the panel scrolls its banner back into view - and the
+  // sentence is only how the banner is found.
+  const banner = page.getByText(REFUSALS.selfRevoke);
   await expect(banner).toBeVisible();
   await expect(banner).toBeInViewport();
 

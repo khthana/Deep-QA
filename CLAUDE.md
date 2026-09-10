@@ -1295,6 +1295,74 @@ written into a mutation file whose own docstring says its figures are measured b
 written. It is seven, six of them through the form. **A number inside a paragraph explaining that
 numbers must be measured still has to be measured.**
 
+**#87 is the ninth of the new frontier, and it is the first ticket here whose defect was in the
+*subject* of a set of tests rather than in what they assert.** The seed's external assessor was
+`external.assessor@kmitl.ac.th`, and ผู้ประเมินภายนอก is by definition not of the institution — the
+whole reason it is the one role forced to set a password is that Google refuses anything outside
+`@kmitl.ac.th`. Two subtests drove `resolveGoogleAccount` with that account and asserted
+`validityEnded` and `validityNotStarted`. Move the address out of the institution and they answer
+`domain`, because the domain gate fires three lines before the window is read: **an external
+assessor can never reach their own validity window through Google.** The rules were right and
+every assertion was right; the *person* was one who cannot exist, and that is what let two rows
+claim to prove a refusal they could only reach by way of the contradiction.
+**Ask what a fixture is, not only whether the code admits it** — a fixture that contradicts the
+role it stands for turns every row that uses it into a row about something else.
+
+**Its second finding is a shape of question, and it is cheap to run anywhere.** The new assertion
+was written of the **grant** — *no account holding `EXT_ASSESSOR` is at an address the institution
+owns* — rather than of the row, *`ext01` is at this address*, which would have been a copy of
+`db/seed.js` in a second place and would pass the day the next assessor moves back in. Asking it
+of the grant immediately showed the seed has **three** `EXT_ASSESSOR` accounts where every
+write-up says two, and that `U_NONKMITL` carries no validity window at all — which #48's criterion
+7, written as *the accounts with a window are exactly these two*, cannot see. That is left to #48.
+**A question asked of a row cannot find a row nobody told you about; ask it of the rule.**
+
+**And its census lesson is about the tool rather than the code.** `FILES` in a mutation sheet is
+the list of files that sheet **overwrites**, not the list its ticket edited: #48 was a fixture
+ticket that changed `db/seed.js` and anchored both its mutants in `accounts.js`, so the seed was
+not a contested path until #87 made it one. **Ask the census script, not your memory of who
+touched what.**
+
+**#83 is the tenth, and it is the plainest demonstration yet that a passing test can be the reason
+a defect survives.** Pressing *ระงับ* on your own row is refused correctly and answers *บัญชีนี้ไม่มี
+สิทธิ์ใช้งานส่วนนี้* — `forbidden`, the sentence for *your role does not reach this endpoint* — to a
+Central Admin whose role reaches it perfectly and who is standing on the screen it opens. The row
+that should have caught it has existed since #11 and reads `403` and an unchanged database row and
+**never looks at the sentence**; the route answers `403` two ways. That is #125's rule from the day
+before, in another file and another guard: **a status code is not an assertion about your guard on
+a route with more than one way to answer it.** The mutant that *is* the defect leaves that row
+green and kills only the row added with the fix — **a row that passes both before and after a fix
+was never about it.**
+
+**The ticket named one site and there are two, and the second one's own comment says why.**
+`backend/routes/grants.js` refuses revoking your own grant with the same constant, under a comment
+reading *it is the rule #11 applies to deactivating yourself and it is here for the same reason* —
+so the rule was borrowed whole, **and a rule borrowed whole borrows its defect too.** Twenty lines
+below that guard the same handler answers `roleNotHeld` for a grant that is not held, so naming
+what went wrong is already what the route does; the self case was the one that would not. What
+decided the fix was in `refusals.js` all along: it documents a group that *may* name what went
+wrong, because those refusals are about *a choice the caller made … their own acting role, their
+own password, or a grant they just asked to undo and could already see*. **Read the file's own
+comments for the rule before inventing one.**
+
+**Its own grep was wrong in the store's favourite way three times running, one paragraph after
+quoting the rule.** `grep 'ตัวเอง' e2e/tests/*.js` returned nothing and the mutation sheet was
+written saying no browser row drives the self case. **The specs are in English; the sheets are what
+is written in Thai.** The second pass found two — `12a` row 6 presses the button on its own grant
+and asserts the sentence, `111a` row 3 asserts that same sentence is announced — and `/code-review`
+found the third, `121a`, whose own comment calls it *"12a row 6's driver"*. **The grep that answers
+this question is `REFUSALS.forbidden` across `e2e/tests/`: the constant, not the concept.** The
+first two searched for what the author *meant*; the third searched for what the code *says*. **A
+grep is evidence for the pattern you typed** — the language a file is written in is part of that
+pattern, and so is whether you searched for the idea or for the identifier.
+
+**And no mutant sweep could have found that third row, which is a way of reading a sweep this store
+had not written down.** Under `revokeisjustforbidden` the sentence is `forbidden` again, so `121a`
+— a row the **fix** breaks — comes back **green** in exactly the run that puts the defect back. A
+sweep answers *what was holding this claim up*; it cannot answer *what did my change break*. Those
+are two runs, and the second one is the clean suite, which is the one people run last. The measured
+kill count is three rows, taken after the fix, under the mutant and then clean.
+
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 9 September 2569 that is
 `2026-09-09-nothing-protected-the-backup-from-the-tree.md`. Read it before taking work. Each handoff names the one it supersedes for state,

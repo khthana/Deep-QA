@@ -124,8 +124,11 @@ test.describe('#111: a refusal is announced, not only drawn', () => {
     const refused = await revoke(page, ROLE_NAMES.DEPT_ADMIN, '05');
     expect(refused.status()).toBe(403);
 
-    await expect(page.getByText(REFUSALS.forbidden)).toBeVisible();
-    await expect(announced(page, 'alert', REFUSALS.forbidden)).toHaveCount(1);
+    // #83 gave this refusal a sentence of its own. What the row is about is
+    // unchanged - that the panel announces through the shared component - and
+    // the sentence is the subject it announces, not the claim.
+    await expect(page.getByText(REFUSALS.selfRevoke)).toBeVisible();
+    await expect(announced(page, 'alert', REFUSALS.selfRevoke)).toHaveCount(1);
 
     // The grant is still held: 12a asserts this too, and it is repeated here
     // because a panel that switched the row off and then complained would

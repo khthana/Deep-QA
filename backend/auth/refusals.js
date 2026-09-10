@@ -64,6 +64,36 @@ const REFUSALS = {
   // both things the caller learns nothing from being told.
   forbidden: 'บัญชีนี้ไม่มีสิทธิ์ใช้งานส่วนนี้',
 
+  // Not authorisation, and #83 is the ticket for having answered as though it
+  // were. Two routes refuse an administrator acting on their own row - the
+  // status route in `users.js` and the revoke in `grants.js` - and both
+  // answered `forbidden`, which says *your role does not reach this endpoint*
+  // to somebody whose role reaches it perfectly and who is standing on the
+  // screen it opens. The reader's next move is to go and audit their own
+  // grants for a defect that is not there.
+  //
+  // These two may name what is wrong for the reason the group below already
+  // gives: the target is the caller's own account, so there is nobody else's
+  // existence to leak. `grants.js` had that half right twenty lines further
+  // down, where a grant that is not held answers `roleNotHeld`.
+  //
+  // Two sentences rather than one covering both, because each names the
+  // action the person just pressed - *ระงับ* on one screen, *ยกเลิกบทบาท* on
+  // the other - and a merged sentence would name neither. Unlike #89's pair
+  // they do not differ in what to do next: there is nothing to wait for and
+  // nothing to ask for, which is why both are a bare fact and neither offers
+  // advice, like the three below them.
+  //
+  // `selfStatus` names the button although the guard it answers for covers
+  // the whole status route, and the reason it has no hole is that the other
+  // direction cannot be reached on your own row: an account that is not
+  // active is refused at every request with `inactive`, which is what `11c`
+  // row 3 is about, so it never holds the session that would press
+  // *เปิดใช้งาน* on itself. The first draft named the route instead, and
+  // `/code-review` caught it disagreeing with the paragraph above.
+  selfStatus: 'ระงับบัญชีของตัวเองไม่ได้',
+  selfRevoke: 'ยกเลิกบทบาทของตัวเองไม่ได้',
+
   // The shell - #10, and #12's revoke. These three do name what went wrong,
   // and may: they are about a choice the caller made - their own acting role,
   // their own password, or a grant they just asked to undo and could already

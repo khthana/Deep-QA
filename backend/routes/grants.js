@@ -162,7 +162,7 @@ function grantRoutes(pool) {
       try {
         const { userId, roleId, scopeId } = req.params;
         if (userId === req.auth.userId) {
-          return res.status(403).json({ message: REFUSALS.forbidden });
+          return res.status(403).json({ message: REFUSALS.selfRevoke });
         }
 
         const target = await reachable(req, userId);
