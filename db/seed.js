@@ -290,7 +290,16 @@ const ACCOUNTS = [
     // account takes.
     // The role the window exists for was the one account not carrying one.
     validity: [-30, 30],
-    email: 'external.assessor@kmitl.ac.th',
+    // #87: `@kmitl.ac.th` until 10 ก.ย. 2569, which is an address this role
+    // cannot have. Google refuses anything outside the institution's domain,
+    // and that refusal is the entire reason an external assessor is made to
+    // have a password - so an assessor at an in-house address is an example of
+    // somebody who cannot exist, and the seven suites signing in as this one
+    // were not exercising the condition the role is defined by. The rest of
+    // the store had already settled on `tabee-review.org` - `U_NONKMITL`,
+    // `U_EXT_CLOSED` and every assessor `users.test.js` creates - and the seed
+    // held the one exception.
+    email: 'external.assessor@tabee-review.org',
     th: ['ศ.', 'ไพโรจน์', 'ประเมินผล'],
     en: ['Prof.', 'Pairoj', 'Pramernphol'],
     department: null,
@@ -335,8 +344,17 @@ const ACCOUNTS = [
     program: '0501',
     grants: [['EXT_ASSESSOR', '0501']],
   },
-  // R010: an address outside @kmitl.ac.th. An outside assessor is the role
-  // that legitimately has one.
+  // R010: an address outside @kmitl.ac.th. This was the only row that had
+  // one until #87 moved `U_EXT` out of the institution too, so read it as the
+  // row that carried the domain rule's fixture first, not as the row that
+  // carries it alone - every EXT_ASSESSOR account is outside now, which is
+  // what the role means.
+  //
+  // What is left of this row's own is that it has no validity window, and that
+  // is not a decision anybody wrote down: #48's criterion 7 says *the accounts
+  // with a window are exactly these two*, which is a question asked of a row
+  // and cannot see a third assessor. It is #48's to answer, not this row's to
+  // document.
   {
     alias: 'U_NONKMITL',
     id: 'outsider1',

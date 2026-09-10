@@ -70,7 +70,7 @@ const EMAILS = {
   dept: 'dept.admin.05@kmitl.ac.th',
   committee: 'prog.manager@kmitl.ac.th',
   teacher: 'teacher.one@kmitl.ac.th',
-  assessor: 'external.assessor@kmitl.ac.th',
+  assessor: 'external.assessor@tabee-review.org',
   outsider: 'assessor@tabee-review.org',
   multi: 'multi.role@kmitl.ac.th',
 };
@@ -499,26 +499,41 @@ test('Google sign-in', async (t) => {
   // an assessor a reason to be outside one. The column is already on `users`
   // and `validityRefusal` already reads it, so the refusal exists today and can
   // be produced today - which is what the list below has to be able to claim.
-  // Both of these move a column on the shared `U_EXT` and put it back in a
-  // `finally` - through `resetValidity`, because since #48 the seed gives that
-  // account an open window and putting back `NULL` would be undoing more than
-  // was done. It was a plain line after the assertions until #89 swept
-  // `endsareswapped`, which failed the first one and left an expired window
-  // behind for the second - so the second failed about a window it had not set
-  // and does not assert, and the mutant's kill count read one too high. #97's
-  // rule at the scale of one fixture: a row has to be able to fail on its own.
+  // Both of these move a column and put it back in a `finally`, through
+  // `resetValidity`, so that one failing cannot make the next fail about a
+  // window it did not set. It was a plain line after the assertions until #89
+  // swept `endsareswapped`, which failed the first and left an expired window
+  // behind for the second, and the mutant's kill count read one too high.
+  // #97's rule at the scale of one fixture: a row has to be able to fail on
+  // its own.
+  //
+  // **They moved that column on `U_EXT` until #87, and the account was the
+  // wrong one - which only became visible when the seed stopped contradicting
+  // the role.** `resolveGoogleAccount` tests the domain first and the window
+  // three lines later, so an external assessor is refused as `domain` and
+  // never reaches their own window: with the seeded assessor moved to
+  // `tabee-review.org` these two answered `domain` where they expect
+  // `validityEnded`. The rules were right; the subject was a person who cannot
+  // exist. An assessor's window is decided at the password door, which is the
+  // only door the role has, and `users.test.js` proves it there.
+  //
+  // What is at the Google door is an **in-house** account somebody time-boxed:
+  // `backend/routes/users.js` puts no role gate on `valid_from`/`valid_until`,
+  // so any account can carry a window, and a Teacher whose window has closed
+  // is exactly who meets this rule. `U_TEACH` carries none in the seed, so
+  // `resetValidity` puts back the `NULL` it started with.
   await t.test('refuses an account whose validity window has closed', async () => {
     await api.pool.query(`UPDATE users SET valid_until = current_date - 1 WHERE user_id = $1`, [
-      byAlias('U_EXT'),
+      byAlias('U_TEACH'),
     ]);
 
     try {
-      const admission = await resolveGoogleAccount(api.pool, EMAILS.assessor);
+      const admission = await resolveGoogleAccount(api.pool, EMAILS.teacher);
 
       assert.equal(admission.ok, false);
       assert.equal(admission.reason, 'validityEnded');
     } finally {
-      await resetValidity(api.pool, 'U_EXT');
+      await resetValidity(api.pool, 'U_TEACH');
     }
   });
 
@@ -528,16 +543,31 @@ test('Google sign-in', async (t) => {
   // list cannot be checked against - #89.
   await t.test('refuses an account whose validity window has not opened', async () => {
     await api.pool.query(`UPDATE users SET valid_from = current_date + 1 WHERE user_id = $1`, [
-      byAlias('U_EXT'),
+      byAlias('U_TEACH'),
     ]);
 
     try {
-      const admission = await resolveGoogleAccount(api.pool, EMAILS.assessor);
+      const admission = await resolveGoogleAccount(api.pool, EMAILS.teacher);
 
       assert.equal(admission.ok, false);
       assert.equal(admission.reason, 'validityNotStarted');
     } finally {
-      await resetValidity(api.pool, 'U_EXT');
+      await resetValidity(api.pool, 'U_TEACH');
+    }
+  });
+
+  // The half the two above used to imply and never asserted: the role that
+  // owns the validity window cannot arrive through this door at all. It is one
+  // line of consequence from #87, and it is the reason this is the only role
+  // required to set a password - so it earns a subtest rather than a sentence,
+  // because a seed drifting back to an in-house address would make it silently
+  // untrue again and nothing else would notice.
+  await t.test('an external assessor cannot come in through Google at all', async () => {
+    for (const email of [EMAILS.assessor, EMAILS.outsider]) {
+      const admission = await resolveGoogleAccount(api.pool, email);
+
+      assert.equal(admission.ok, false, `${email} was admitted through Google`);
+      assert.equal(admission.reason, 'domain');
     }
   });
 

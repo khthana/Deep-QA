@@ -204,19 +204,36 @@ test('the role guard', async (t) => {
     assert.equal(asTeacher.status, 200);
   });
 
-  // The two roles the seed carries for the outside of the organisation. The
+  // The two roles the seed carries for the outside of the organisation. An
   // external assessor is a role like any other here - a grant read from the
-  // database - whether the person holds a KMITL address or not, and
-  // U_NONKMITL is the account that proves the domain rule belongs to sign-in
-  // and not to what a signed-in caller may reach.
+  // database - and this row says a caller holding one reaches what the grant
+  // opens, the same as the faculty administrator beside them.
+  //
+  // The two assessors were named `inside` and `outside` until #87, for the
+  // domain of their addresses, and that distinction is gone: every account
+  // holding EXT_ASSESSOR is now outside the institution, because that is what
+  // the role means. The row stayed green throughout - both are admitted, which
+  // is all it asserts - so nothing here failed; what changed is that its names
+  // described a difference the dataset no longer has. That the domain rule
+  // belongs to sign-in and not to what a signed-in caller may reach is proved
+  // in `auth.test.js`, by these two arriving with a password and by neither
+  // getting past Google's door at all.
+  //
+  // The first rename here was to `windowed`/`unwindowed`, which is the same
+  // mistake with a different column: it is true today, it is incidental to
+  // what the row asserts, and #48's criterion 7 is open on exactly whether
+  // `U_NONKMITL` should have a window - so closing that ticket would make the
+  // names lie again. **A fixture named for a property the row does not assert
+  // goes stale when somebody edits the seed for a reason that has nothing to
+  // do with the row.** These two are named for the only thing asked of them.
   await t.test('admits the faculty administrator and both external assessors', async () => {
     const faculty = await signInAs('U_FAC');
-    const inside = await signInAs('U_EXT');
-    const outside = await signInAs('U_NONKMITL');
+    const assessor = await signInAs('U_EXT');
+    const secondAssessor = await signInAs('U_NONKMITL');
 
     assert.equal((await asUser(faculty, roleGuarded('FACULTY_ADMIN'))).status, 200);
-    assert.equal((await asUser(inside, roleGuarded('EXT_ASSESSOR'))).status, 200);
-    assert.equal((await asUser(outside, roleGuarded('EXT_ASSESSOR'))).status, 200);
+    assert.equal((await asUser(assessor, roleGuarded('EXT_ASSESSOR'))).status, 200);
+    assert.equal((await asUser(secondAssessor, roleGuarded('EXT_ASSESSOR'))).status, 200);
   });
 
   await t.test('refuses a caller holding none of them with a 403', async () => {

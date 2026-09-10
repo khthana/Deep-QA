@@ -192,19 +192,32 @@ database and the accounts it opens have nothing behind them; nothing here is a c
 | `U_COM2` | `prog.manager.0503@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0503` — **cross-scope** |
 | `U_TEACH` | `teacher.one@kmitl.ac.th` | อาจารย์ผู้สอน | ตอนเรียน 1 of `01076105` |
 | `U_TEACH2` | `teacher.two@kmitl.ac.th` | อาจารย์ผู้สอน | **teaches nothing** |
-| `U_EXT` | `external.assessor@kmitl.ac.th` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
+| `U_EXT` | `external.assessor@tabee-review.org` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
 | `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and ตอนเรียน 2 |
-| `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | outside `@kmitl.ac.th` (R010) |
+| `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | R010 — and **no window at all** (#48) |
 | `U_EXT_CLOSED` | `past.assessor@tabee-review.org` | ผู้ประเมินภายนอก | **window closed** — cannot sign in at all (#48) |
 
 Six of these rows are the point of the list. A permission rule is only tested by an account that should be refused,
 so the dataset ships a committee member and a department admin scoped elsewhere, a teacher with no sections, an
-account holding two roles at once, an address outside the university domain, and an assessor whose review round is
-over.
+account holding two roles at once, an address the Google door refuses, and an assessor whose review round is over.
 
-The two ผู้ประเมินภายนอก rows carry a validity window and every other account leaves both ends null: `U_EXT`'s is open
-around today, `U_EXT_CLOSED`'s closed a month ago. Nothing signs in as the second one — that is what it is for. Both
-are written as offsets in days from `current_date`, so a seed checked in today still means the same thing in March.
+The fifth of those is `U_NONKMITL`, and until #87 it was the only row that had it — the others were all
+`@kmitl.ac.th`, so *an address outside the university domain* read as a property of one account. It is a property of
+the **role** now: every ผู้ประเมินภายนอก row is outside the institution, because that is what the role means, and
+Google refuses anything that is not `@kmitl.ac.th` — which is the whole reason this is the one role required to set
+a password. `U_EXT` was at `@kmitl.ac.th` until then and so was an example of somebody who cannot exist. The
+refusal fixture is still a refusal fixture; what it stopped being is unique to a row.
+
+What `U_NONKMITL` alone still carries is **no validity window**, and that is not a designed refusal — an account
+with no window is admitted, which is the ordinary path. It is the blind spot in
+[#48](https://github.com/khthana/Deep-QA/issues/48)'s criterion 7, written as *the accounts with a window are
+exactly these two* — a question asked of a row, which cannot see a third assessor — and it is left to that ticket.
+**The last column of that table says what a row happens to carry, not what somebody decided it should.**
+
+Two of the three ผู้ประเมินภายนอก rows carry a validity window and every other account leaves both ends null:
+`U_EXT`'s is open around today, `U_EXT_CLOSED`'s closed a month ago. Nothing signs in as the second one — that is
+what it is for. Both are written as offsets in days from `current_date`, so a seed checked in today still means the
+same thing in March.
 
 `U_COM` and `U_COM2` were `committee.0501@` and `committee.0503@` until the seed was aligned with
 `docs/acceptance/18-program-subjects.md`, which names them by the role they hold. Acceptance rows walked

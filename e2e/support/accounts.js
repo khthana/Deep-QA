@@ -19,7 +19,7 @@ const ACCOUNTS = {
   teacherOne: 'teacher.one@kmitl.ac.th',
   teacherTwo: 'teacher.two@kmitl.ac.th',
   multiRole: 'multi.role@kmitl.ac.th',
-  externalAssessor: 'external.assessor@kmitl.ac.th',
+  externalAssessor: 'external.assessor@tabee-review.org',
 };
 
 /**

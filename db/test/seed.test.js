@@ -454,6 +454,39 @@ test('the named accounts', async (t) => {
     }
   });
 
+  // #87. The role is *ผู้ประเมินภายนอก* - somebody who is not of this
+  // institution - and the whole reason it is the one role forced to have a
+  // password is that Google refuses an address outside `@kmitl.ac.th`, so an
+  // assessor cannot come in the other way. A seeded assessor on an in-house
+  // address is therefore an example of a person who cannot exist, and the
+  // suites that sign in as one are not exercising the condition the role is
+  // defined by.
+  //
+  // Asked of the grant rather than of a row. Written as *ext01 is at this
+  // address* it would be a copy of `db/seed.js` and would pass on a dataset
+  // where the next assessor added is in-house again; asked of everyone holding
+  // EXT_ASSESSOR it is a claim the seed cannot drift away from. The rest of
+  // the store had already settled the convention - every assessor
+  // `backend/test/users.test.js` creates is at `tabee-review.org`, and so are
+  // `U_NONKMITL` and `U_EXT_CLOSED`. The seed held the one exception.
+  await t.test('no external assessor is at an address the institution owns', async () => {
+    const { rows } = await pool.query(
+      `SELECT DISTINCT u.user_id, u.email
+         FROM users u
+         JOIN user_roles r ON r.user_id = u.user_id
+        WHERE r.role_id = 'EXT_ASSESSOR'
+        ORDER BY u.user_id`,
+    );
+
+    assert.ok(rows.length >= 2, 'the seed should carry more than one assessor');
+    for (const row of rows) {
+      assert.ok(
+        !row.email.toLowerCase().endsWith('@kmitl.ac.th'),
+        `${row.user_id} is an external assessor at ${row.email}, which Google would let in`,
+      );
+    }
+  });
+
   // #48's seventh criterion, and the reason it is here rather than only in
   // `backend/`: this is a claim about the dataset, not about a route.
   //
@@ -555,7 +588,19 @@ test('the named accounts', async (t) => {
     assert.equal(grants, 2);
   });
 
-  await t.test('one account sits outside the kmitl.ac.th domain', async () => {
+  // This was called 'one account sits outside the kmitl.ac.th domain' until
+  // #87, and it was one until #87: `U_NONKMITL` carried the only address the
+  // domain rule could reject. Three do now, because being outside the
+  // institution is what EXT_ASSESSOR means and the seed had one row saying
+  // otherwise. The assertion never counted - it has always been `> 0` - so
+  // nothing here failed; the name was the part that had gone stale, sixteen
+  // lines above a subtest added in the same diff for the same reason.
+  //
+  // It stays `> 0` rather than becoming three. What R010 needs is an address
+  // the rule can reject, and pinning how many would be a number to re-edit
+  // every time an account is added. The claim about *which* accounts may be
+  // in-house is the subtest below it, asked of the grant.
+  await t.test('the seed carries addresses the domain rule can reject', async () => {
     const outside = await count(
       `SELECT count(*) FROM users WHERE email NOT LIKE '%@kmitl.ac.th'`,
     );

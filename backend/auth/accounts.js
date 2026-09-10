@@ -12,11 +12,15 @@
  * database and an email address and so can be tested directly against the
  * seeded accounts. What is left in the strategy is the part Google owns.
  *
- * The domain rule belongs to the Google path alone. `U_NONKMITL` is an
- * external assessor at `assessor@tabee-review.org` - R010, and the reason the
- * seed carries the account at all - and external assessors sign in with a
- * password. Applying the domain rule to both paths would make the role
- * unusable by construction. The inherited system draws the line in the same
+ * The domain rule belongs to the Google path alone, and it decides the whole
+ * role: an external assessor is by definition not of the institution, so
+ * Google refuses every one of them and the password form is the only door they
+ * have. Applying the domain rule to both paths would make the role unusable by
+ * construction. `U_NONKMITL` was the account that said so in the seed until
+ * #87 - it is at `assessor@tabee-review.org`, R010 - and since #87 every
+ * EXT_ASSESSOR row says it, `U_EXT` having been at `@kmitl.ac.th` and so an
+ * example of somebody who cannot exist. `auth.test.js` asserts the door is
+ * shut to the role rather than to one address. The inherited system draws the line in the same
  * place: the check is in config/passport, not in authController.loginUser.
  */
 
@@ -183,8 +187,13 @@ function validityRefusal(user, today = BANGKOK.format(new Date())) {
  * The validity window sits with them because it is the same kind of fact: a
  * true statement about the account that has nothing to do with whether the
  * password was right. Putting it in the password path alone would have left
- * the Google path open, and an external assessor with a KMITL address is not
- * forbidden by anything.
+ * the Google path open to a time-boxed account, and `routes/users.js` puts no
+ * role gate on `valid_from`/`valid_until`, so any account can carry a window -
+ * an in-house Teacher whose window has closed is who meets this rule at
+ * Google's door. This paragraph read *an external assessor with a KMITL
+ * address is not forbidden by anything* until #87, which is the person the
+ * whole role is defined as not being; the conclusion was right and the example
+ * could not exist.
  */
 async function admit(pool, user) {
   if (user.status !== 'active') return refuse(403, 'inactive');
