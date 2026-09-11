@@ -42,6 +42,27 @@ const GLOBAL_SCOPE = 'FULL_ADMIN';
 const forbid = (res) => res.status(403).json({ message: REFUSALS.forbidden });
 
 /**
+ * A 403 after which there is nothing left for this person to be on - #52.
+ *
+ * `attachRoles` refuses before any route has been reached, and everything it
+ * refuses is a fact about the account rather than about the request: the same
+ * answer is coming back from every endpoint in the system. `forbid` is the
+ * opposite case - still signed in, still fine, just not this - and #10's sixth
+ * criterion is that the browser leaves that one where it is. Both are 403, and
+ * correctly: the caller proved who they are and the session has not expired.
+ *
+ * So the difference travels as `accessEnded`, set here and nowhere else. It is
+ * a field and not a list the browser keeps of which reasons count, because a
+ * list kept in another package is how the sign-in page came to ship one reason
+ * short (#50), and because the same reasons are ordinary at the door: sign-in
+ * refuses a suspended account with `inactive` too, and nobody there had a
+ * session to end. `reason` rides beside it as it does on every refusal the
+ * shell reads.
+ */
+const endAccess = (res, reason) =>
+  res.status(403).json({ message: REFUSALS[reason], reason, accessEnded: true });
+
+/**
  * The grant in effect: the selected one if it is still held, and otherwise the
  * most senior. `allRoles` orders by priority ascending, so `roles[0]` is the
  * most senior and is what a caller who has never chosen acts as.
@@ -90,7 +111,7 @@ function attachRoles(pool) {
       // close, one level up. An external assessor's window ending is the same
       // event on a timer (#11's fourth criterion).
       const refused = await sessionAdmission(pool, userId);
-      if (refused) return res.status(refused.status).json({ message: refused.message });
+      if (refused) return endAccess(res, refused.reason);
 
       const roles = await allRoles(pool, userId);
       // Told as `noRole` rather than as the flat refusal below, because it is
@@ -98,7 +119,7 @@ function attachRoles(pool) {
       // narrower permission about, the account holds nothing at all, and the
       // message says who to go to. It is the same thing sign-in says to the
       // same state.
-      if (roles.length === 0) return res.status(403).json({ message: REFUSALS.noRole });
+      if (roles.length === 0) return endAccess(res, 'noRole');
 
       req.auth = { userId, roles, acting: actingFrom(roles, req.session.acting) };
       return next();

@@ -80,6 +80,25 @@ export const onSessionExpired = listener => {
   sessionExpiredListener = listener
 }
 
+/**
+ * The shell's listener for an account that stopped being usable mid-session -
+ * #52.
+ *
+ * A third answer beside the two above, and it is a 403 rather than a 401 for
+ * the reason those two are kept apart: the caller proved who they are and the
+ * session has not expired. What makes it different from every other 403 is
+ * that it is a fact about the account, so every screen in the system would
+ * answer it identically and there is nothing left to stay on. The server says
+ * so in `accessEnded` (`backend/auth/authorise.js`), and that field is the
+ * whole test here - not the status, which is every refusal of a role, and not
+ * the words, which are Thai and belong to `refusals.js`.
+ */
+let accessEndedListener = null
+
+export const onAccessEnded = listener => {
+  accessEndedListener = listener
+}
+
 async function api(
   path,
   { method = 'GET', body, signal, contentType, accept } = {}
@@ -109,6 +128,7 @@ async function api(
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}))
     if (response.status === 401) sessionExpiredListener?.(payload.reason)
+    if (payload.accessEnded === true) accessEndedListener?.(payload.message)
     // The fallback speaks only about what is known here, which is the status
     // and nothing else. It used to say the connection had failed, and that is
     // never what this branch means: the response reached this line, so the

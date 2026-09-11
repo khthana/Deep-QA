@@ -1363,6 +1363,49 @@ sweep answers *what was holding this claim up*; it cannot answer *what did my ch
 are two runs, and the second one is the clean suite, which is the one people run last. The measured
 kill count is three rows, taken after the fix, under the mutant and then clean.
 
+**#52 is the eleventh, and it met #83's lesson one day later in the form of a prediction.** An account
+suspended mid-session was refused correctly and then left on a screen it could no longer use, or - on
+a typed address - sent to `/` with nothing said at all. `11-user-accounts.md` had written, of the
+`11c` row that suspends somebody mid-session, *this spec is not bound to that behaviour, so nothing
+needs changing when #52 closes*. After the fix it was **the one row of 376 that went red** - on its
+cleanup line, which asked `/api/me` on a cookie #52 now erases. **A sheet's prediction about what a
+future fix will not break is a claim like any other**, and only the clean suite checks it.
+
+**The signal is a field the server sets at the line that decides, not a list the client keeps.** A
+`403` here means two opposite things - *your role does not reach this*, stay where you are (#10's sixth
+criterion), and *this account cannot go on*, there is nowhere left to stay. The ticket forbade
+matching the Thai; a client-side list of `reason`s is the same mistake in another shape, because the
+next reason `sessionAdmission` learns would not be on it and no test would fail. So `endAccess` in
+`authorise.js` is the only way `attachRoles` refuses a caller holding a good cookie, and it sets
+`accessEnded: true` itself. **When a client must tell two refusals apart, have the server say which
+one at the point of deciding** - and then check what else decides the same way: `noRole`, not in the
+ticket, is the same state for the person at the screen and got the flag too.
+
+**And the first sweep of the tempting wrong fix read 171, which was a fixture and not a mutant.**
+`everyrefusalends` - *every 403 ends the session*, one line, no server change - passes every row of
+`52a`. What fails it is rows written before this ticket that expect an ordinary `403` to stay in
+place. But `12a` grants `teacher.one@` a committee seat and hands it back only on the path where the
+row passes, so a mutant that failed it mid-row left every later teacher row refused as a committee
+member. #97's *kills too much* is a mutant that stops the application; this is #89's fixture that
+restores itself only when it passes, at the scale of a whole browser suite. **Before reading a kill
+count that looks like the suite as a mutant that stops everything, read the names for a leak** -
+every dead row after `12a` was a teacher's. `12a` now has an `afterAll`, and the figure measured after
+it is **13 rows in nine files**, every one of them an ordinary refusal that used to stay in place.
+Both reviews then found *ten files* in two places over a list that names nine - #96's retyped
+figure, one ticket later.
+
+**#52's review found the fix signing a person out three times, and the obvious repair was the next
+defect.** A screen that asks for three things at once gets three refusals; each posted a sign-out,
+and each on a still-live cookie wrote a `LOGOUT` into the account's history. A once-only ref fixes
+that, and never reset it is once per *tab*: ended, signed back in through the form on screen and
+ended again, the browser draws the sign-in page over a cookie it kept. `52a` rows 5 and 6 are the
+two halves, and `signsoutpereach` and `onceonly` each kill one of them and nothing else. **A guard
+that says *only once* has to say once per what, and the reset is where it says it.** The same pass
+caught a wait written into row 4 so that a `goto` could not cancel that sign-out in flight: it had
+become the row's assertion in silence - `cookiekept` died on the wait, not on the last line - until
+it was given a timeout it tolerates. **Anything written for timing must not be able to decide
+anything.**
+
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 9 September 2569 that is
 `2026-09-09-nothing-protected-the-backup-from-the-tree.md`. Read it before taking work. Each handoff names the one it supersedes for state,

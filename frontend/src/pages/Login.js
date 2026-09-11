@@ -62,7 +62,7 @@ const GOOGLE_REFUSALS = {
 const REFUSAL_ID = 'sign-in-refusal'
 
 export default function Login() {
-  const { reload, setLoading } = useAuth()
+  const { reload, setLoading, endedBecause } = useAuth()
   const [searchParams] = useSearchParams()
   const [LoadLogin, setLoadLogin] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -91,6 +91,14 @@ export default function Login() {
       GOOGLE_REFUSALS[reason] ?? 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ'
     )
   }, [searchParams])
+
+  // An account whose access ended while it was signed in arrives here with
+  // the server's reason - #52. Shown in the same banner as every other refusal
+  // on this page, so it stays until the person starts typing (#85), which is
+  // what makes it readable at all.
+  useEffect(() => {
+    if (endedBecause) setErrorMessage(endedBecause)
+  }, [endedBecause])
 
   /**
    * Typing is what clears a refusal - #85.

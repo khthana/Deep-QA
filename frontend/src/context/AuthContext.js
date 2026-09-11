@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react'
 
-import { get, onSessionExpired, post, put } from '../api/client'
+import { get, onAccessEnded, onSessionExpired, post, put } from '../api/client'
 
 /**
  * Who is signed in, which of their grants they are working as, and how to
@@ -30,6 +30,11 @@ export const AuthProvider = ({ children }) => {
   const [state, setState] = useState(null)
   const [loading, setLoading] = useState(true)
   const [expired, setExpired] = useState(false)
+  // The server's sentence for why this account's access ended, for the sign-in
+  // page to show - #52. Null for everybody who simply arrived there.
+  const [endedBecause, setEndedBecause] = useState(null)
+  // Whether this ending has already erased the cookie - see the listener.
+  const ended = useRef(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -38,7 +43,14 @@ export const AuthProvider = ({ children }) => {
       // stop `client.js` counting its 401 as an expiry, back when it counted
       // every 401 it was not told to ignore. It now reads the server's reason,
       // and the reason this call gets on a first visit is `anonymous`.
-      setState(await get('/api/me'))
+      const next = await get('/api/me')
+      // Somebody is signed in again, so the ending below is over - #52. The
+      // sentence was about the stretch with nobody signed in, and a sign-in
+      // page reached later in the same tab (this very `load` failing, say)
+      // would otherwise show it to a person whose account is fine.
+      setEndedBecause(null)
+      ended.current = false
+      setState(next)
     } catch {
       // Nobody signed in, and that is all this knows - #97. A tab left open
       // past the half hour and then reloaded arrives here too, and it is the
@@ -107,6 +119,39 @@ export const AuthProvider = ({ children }) => {
     return () => onSessionExpired(null)
   }, [])
 
+  /**
+   * An account that stopped being usable while it was signed in - #52.
+   *
+   * Suspended, unverified, deleted, outside its window, or left holding no
+   * grant: the server refuses every request from here on with the same
+   * sentence, so the screen the person is on is already dead, and so is every
+   * other. Until #52 they were left on it beside a red banner, or - if the
+   * request that found it was the bootstrap read after an address was typed -
+   * sent to sign-in by the route guard with nothing said at all.
+   *
+   * Nobody is signed in any more, so the state goes and the route guards take
+   * the person to sign-in, where the sentence is shown in the server's own
+   * words: it arrived in the refusal, so there is no copy of it to keep. The
+   * cookie is erased as well. Taken back to sign-in means signed out, and a
+   * cookie left behind would walk straight back in the moment the account was
+   * reactivated, as whoever had been holding it.
+   *
+   * Erased once. A screen that asks for three things at once gets three
+   * refusals, and each sign-out on a live cookie writes a `LOGOUT` into the
+   * account's history - so without the ref one ending would read there as
+   * three sign-outs the person never made.
+   */
+  useEffect(() => {
+    onAccessEnded(message => {
+      setEndedBecause(message)
+      setState(null)
+      if (ended.current) return
+      ended.current = true
+      post('/api/auth/logout').catch(() => {})
+    })
+    return () => onAccessEnded(null)
+  }, [])
+
   // After the listener above. The order is not what makes this safe - `load`
   // is async, so its rejection lands a task later, after every effect in this
   // commit has run, and the listener would be registered either way. It reads
@@ -166,6 +211,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         setLoading,
         expired,
+        endedBecause,
         reload: load,
         switchRole,
         changePassword,

@@ -21,7 +21,15 @@ const assert = require('node:assert/strict');
 
 const request = require('supertest');
 
-const { PASSWORD, ACCOUNTS, byAlias, FACULTY, DEPARTMENTS, PROGRAMS } = require('../../db/seed');
+const {
+  PASSWORD,
+  ACCOUNTS,
+  byAlias,
+  resetValidity,
+  FACULTY,
+  DEPARTMENTS,
+  PROGRAMS,
+} = require('../../db/seed');
 const { GLOBAL_SCOPE, attachRoles, requireRole, requireScope } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { requireSession } = require('../auth/session');
@@ -494,5 +502,110 @@ test('a grant revoked mid-session', async (t) => {
 
     assert.equal(response.status, 403);
     assert.equal(response.body.message, REFUSALS.noRole);
+  });
+});
+
+/**
+ * #52: a refusal that ends the session says so, in a field rather than in the
+ * words.
+ *
+ * `attachRoles` answers two kinds of 403 and they ask different things of the
+ * browser. One is the account itself - suspended, unverified, outside its
+ * window, deleted, or left holding no grant at all - and after it there is no
+ * screen left for this person anywhere in the system. The other is `requireRole`
+ * and `requireScope`: signed in, still fine, just not this. #10's sixth
+ * criterion is that the second stays in place, so the browser has to be able
+ * to tell them apart, and the only thing it may tell them apart by is something
+ * the server sent deliberately. Matching on the Thai would make every sentence
+ * in `refusals.js` a contract with the shell.
+ *
+ * Asserted on the status code *and* the sentence before the flag, because every
+ * response below is a 403 and the flag is the whole claim - #125's rule.
+ */
+test('a refusal that ends the session', async (t) => {
+  const setStatus = (alias, status) => () =>
+    api.pool.query(`UPDATE users SET status = $2 WHERE user_id = $1`, [byAlias(alias), status]);
+
+  await t.test('says so when the account was suspended while signed in', async (sub) => {
+    const cookie = await signInAs('U_TEACH2');
+    await setStatus('U_TEACH2', 'inactive')();
+    sub.after(setStatus('U_TEACH2', 'active'));
+
+    const response = await asUser(cookie, attached());
+
+    assert.equal(response.status, 403);
+    assert.equal(response.body.message, REFUSALS.inactive);
+    assert.equal(response.body.reason, 'inactive');
+    assert.equal(response.body.accessEnded, true);
+  });
+
+  // The account R005 exists for, and the one whose session ends on a timer
+  // rather than on anybody's decision. The window is moved rather than a
+  // second account created, so the cookie is one issued inside it.
+  await t.test('and when an assessor’s window closed while they were signed in', async (sub) => {
+    const cookie = await signInAs('U_EXT');
+    await api.pool.query(
+      `UPDATE users SET valid_from = CURRENT_DATE - 20, valid_until = CURRENT_DATE - 10
+        WHERE user_id = $1`,
+      [byAlias('U_EXT')],
+    );
+    sub.after(() => resetValidity(api.pool, 'U_EXT'));
+
+    const response = await asUser(cookie, attached());
+
+    assert.equal(response.status, 403);
+    assert.equal(response.body.message, REFUSALS.validityEnded);
+    assert.equal(response.body.reason, 'validityEnded');
+    assert.equal(response.body.accessEnded, true);
+  });
+
+  // Not in the ticket's list, which names the refusals `sessionAdmission`
+  // gives. This one is `attachRoles`' own, one line below, and it is the same
+  // state for the person at the screen: every request refused, nothing left to
+  // be on. Sign-in refuses it in the same words, so the page they are taken to
+  // says what the door would.
+  await t.test('and when the account was left holding no grant', async (sub) => {
+    const cookie = await signInAs('U_TEACH');
+    const setGrants = (active) => () =>
+      api.pool.query(`UPDATE user_roles SET is_active = $2 WHERE user_id = $1`, [
+        byAlias('U_TEACH'),
+        active,
+      ]);
+    await setGrants(false)();
+    sub.after(setGrants(true));
+
+    const response = await asUser(cookie, attached());
+
+    assert.equal(response.status, 403);
+    assert.equal(response.body.message, REFUSALS.noRole);
+    assert.equal(response.body.reason, 'noRole');
+    assert.equal(response.body.accessEnded, true);
+  });
+
+  // #10's sixth criterion: a screen the caller simply lacks a role for is
+  // refused in place, and nothing about it may read as the session ending.
+  await t.test('but not when the endpoint is merely not for this role', async () => {
+    const cookie = await signInAs('U_TEACH');
+
+    const response = await asUser(cookie, roleGuarded('FULL_ADMIN'));
+
+    assert.equal(response.status, 403);
+    assert.equal(response.body.message, REFUSALS.forbidden);
+    assert.equal('accessEnded' in response.body, false);
+  });
+
+  // The same account state at the door is not a session ending, because there
+  // was no session: the sign-in page shows the sentence where it already is.
+  await t.test('nor when a suspended account is refused at sign-in', async (sub) => {
+    await setStatus('U_TEACH2', 'inactive')();
+    sub.after(setStatus('U_TEACH2', 'active'));
+
+    const response = await request(api.app)
+      .post('/api/auth/login')
+      .send({ email: emailOf('U_TEACH2'), password: PASSWORD });
+
+    assert.equal(response.status, 403);
+    assert.equal(response.body.message, REFUSALS.inactive);
+    assert.equal('accessEnded' in response.body, false);
   });
 });

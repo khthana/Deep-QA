@@ -135,7 +135,18 @@ test('row 3: a suspension refuses the session the account was already holding', 
   expect(
     (await setStatus(page, ACCOUNTS.teacherTwo, IDS.teacherTwo, 'เปิดใช้งาน')).status(),
   ).toBe(200);
-  expect((await onHeldSession(held, '/api/me')).status()).toBe(200);
+
+  // And it reaches the account: the person can come back in. Signed in afresh
+  // rather than asked on the cookie they were holding, because since #52 there
+  // is no such cookie - the password change above was refused as the end of
+  // this account's access, and the browser signed itself out on hearing it.
+  // This line used to read `/api/me` on that cookie and expect 200; whether
+  // the old cookie still works is `52a` row 4's question now, and its answer
+  // is the opposite.
+  const back = await held.request.post(`${BACKEND_URL}/api/auth/login`, {
+    data: { email: ACCOUNTS.teacherTwo, password: PASSWORD },
+  });
+  expect(back.status()).toBe(200);
 
   await theirs.close();
 });

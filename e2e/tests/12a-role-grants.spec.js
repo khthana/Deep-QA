@@ -2,8 +2,10 @@
 
 const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
-const { ACCOUNTS, PASSWORD } = require('../support/accounts');
+const { createPool } = require('../../db/pool');
+const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { E2E_SCHEMA } = require('../support/env');
 const { openUsers, userRow } = require('../support/users-screen');
 const {
   ROLE_NAMES,
@@ -42,6 +44,34 @@ test.describe.configure({ mode: 'serial' });
 const COMMITTEE = ROLE_NAMES.PROG_MANAGER;
 const PROGRAM = '0501';
 const PROGRAM_SUBJECTS = '/api/program-subjects';
+
+/**
+ * Whatever the run did, `teacher.one@` is not on the committee when it ends.
+ *
+ * Every row that grants it revokes it again through the panel, and that revoke
+ * is part of what those rows assert - so it only happens on the path where
+ * they pass. Rows 2 and 3 grant before their first browser-side assertion and
+ * revoke after their last, and #52's sweep is what showed the cost: a mutant
+ * that failed them in between left the account a committee member for the
+ * rest of the run, `actingFrom` put the new grant first, and **every teacher
+ * row in every later file** was refused as a committee member - 171 failures
+ * for a mutant that fails 13 with this net in place. The same shape #89 found
+ * in a backend fixture: a row that restores what it moved only when it passes
+ * inflates the next mutant's count. Written the way revoking writes it, so the
+ * account ends the file exactly as a passing run would leave it.
+ */
+test.afterAll(async () => {
+  const db = createPool({ schema: E2E_SCHEMA });
+  try {
+    await db.query(
+      `UPDATE user_roles SET is_active = false
+        WHERE user_id = $1 AND role_id = 'PROG_MANAGER' AND scope_id = $2 AND is_active`,
+      [IDS.teacherOne, PROGRAM],
+    );
+  } finally {
+    await db.end();
+  }
+});
 
 /** The date the panel would print for something granted just now. */
 const todayAsDrawn = page =>
