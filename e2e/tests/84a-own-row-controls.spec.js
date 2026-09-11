@@ -29,7 +29,7 @@ const { openUsers, search, userRow } = require('../support/users-screen');
  * browser rows press that button precisely in order to obtain its refusal,
  * and `121a`'s own comment calls it "the one refusal this panel can be given
  * without writing anything". Disabling it means finding #121 another refusal,
- * which is a decision rather than a tick. The suspend button has the opposite
+ * which is a decision rather than a tick - #130. The suspend button has the opposite
  * property, measured during #83: no row in `e2e/` presses it on its own row,
  * which is why `statusisjustforbidden` killed no browser row at all - on 10
  * September, before this file existed. Re-measured on the 11th it kills one:
