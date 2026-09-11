@@ -31,7 +31,11 @@ const { openUsers, search, userRow } = require('../support/users-screen');
  * without writing anything". Disabling it means finding #121 another refusal,
  * which is a decision rather than a tick. The suspend button has the opposite
  * property, measured during #83: no row in `e2e/` presses it on its own row,
- * which is why `statusisjustforbidden` killed no browser row at all.
+ * which is why `statusisjustforbidden` killed no browser row at all - on 10
+ * September, before this file existed. Re-measured on the 11th it kills one:
+ * the third row below, which reaches the route *past* the button rather than
+ * by pressing it. So no row presses it still, but the kill count has stopped
+ * being the evidence for that.
  *
  * **The title is a copy, and it cannot not be.** `create-react-app` refuses
  * imports from outside `frontend/src`, so the screen cannot read
