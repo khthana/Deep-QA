@@ -63,7 +63,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   and the leak that makes a defect reachable is not the defect. (#129)
 - **A grep is evidence for the pattern you typed, not for the claim you wanted.** Re-run a
   ticket's commands, then ask what they could not have found; search for the identifier, not the
-  concept — specs are written in English and sheets in Thai. (#111, #124, #83)
+  concept — specs are written in English and sheets in Thai. **A ticket's file list is a grep
+  somebody else ran**, and matching every file on it answers half of *confirm before you change*.
+  (#111, #124, #83, #68)
 - A ticket that says *unless X* has told you what to go and look for; one that asks you to
   *consider* something is answered by a measurement, and *no, and here is what it would cost* is
   a finished answer. (#101, #89)
@@ -80,6 +82,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   (#119, #89, #125)
 - Read a file's own comments for the rule before inventing one; a rule borrowed whole borrows its
   defect too. (#83)
+- **A guard written for one caller is a claim about every caller** — find the others before
+  writing the comment that says they are safe, because that comment is the claim. (#68)
 
 ### Marks on the sheets
 
@@ -132,8 +136,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   finishing a ticket, anchor to the code a mutant breaks and never to the comment beside it, and
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
 - An anchor check tells you a mutant no longer applies; only a sweep tells you it no longer proves
-  anything. (#107)
+  anything — including when re-aiming it is the right fix. (#107, #68)
 - When a mutant lives in shared code, its sheet is one of the places it kills, not the list. (#123)
+- **A ticket that offers to de-duplicate is answered with what the merge costs the proof**, not only
+  with what it saves the code — one hook behind fifteen screens turns fifteen claims into one no
+  mutant can measure apart. And when a rule holds on many screens, the screen that proves it is chosen by
+  the census, not by the subject. (#68)
 - **What corrupts a sweep is a repeated path — compare `FILES`, not subject matter**, and ask the
   census script rather than your memory; the figure that decides is the group, not the total.
   (#85, #87, #125)

@@ -81,6 +81,15 @@ async function filterProgram(page, programId) {
 const registerRow = (page, code) =>
   page.locator('tbody tr').filter({ hasText: code });
 
+/**
+ * The screen's own list, told apart from the rejection report's table.
+ *
+ * `first()` because the list is drawn above the import panel, and a refused
+ * import puts the report's table on the screen underneath it. The same shape
+ * as every other screen's, so `support/pager.js` can be handed it.
+ */
+const listTable = page => page.locator('table').first();
+
 module.exports = {
   STUDENT_DATA,
   BOM,
@@ -95,4 +104,5 @@ module.exports = {
   addStudent,
   filterProgram,
   registerRow,
+  listTable,
 };

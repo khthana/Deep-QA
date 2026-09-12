@@ -93,27 +93,37 @@ export default function Offerings() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
-  const load = useCallback(async () => {
+  /**
+   * #68 - the answer that is drawn is the answer to the request the screen is
+   * still on; without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. The rule, the three rows that prove it, and
+   * why fifteen panels repeat it rather than share one hook, are written on
+   * `frontend/src/pages/Students.js`.
+   */
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setData(
-        await listOfferings({
-          page,
-          per_page: PAGE_SIZE,
-          program_id: program,
-          academic_year: year,
-          semester,
-        })
-      )
+      const answer = await listOfferings({
+        page,
+        per_page: PAGE_SIZE,
+        program_id: program,
+        academic_year: year,
+        semester,
+      })
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      report(error)
+      if (isCurrent()) report(error)
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [page, program, year, semester, report])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   // The programmes in reach, fetched once: what this account covers is a
@@ -236,8 +246,11 @@ export default function Offerings() {
             ? 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง'
             : `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,
       })
-      setPage(1)
-      await load()
+      // The same rule as the import below: page one is a change the effect
+      // fetches, and asking `load` as well would race it from the page being
+      // left - #68.
+      if (page === 1) await load()
+      else setPage(1)
     } catch (error) {
       report(error)
     } finally {

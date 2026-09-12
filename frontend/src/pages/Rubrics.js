@@ -65,19 +65,31 @@ export default function Rubrics() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
-  const load = useCallback(async () => {
+  /**
+   * #68 - the answer that is drawn is the answer to the request the screen is
+   * still on; without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. The rule, the three rows that prove it, and
+   * why fifteen panels repeat it rather than share one hook, are written on
+   * `frontend/src/pages/Students.js`.
+   */
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setData(await listRubrics({ page, per_page: PAGE_SIZE, program_id: program }))
+      const answer = await listRubrics({ page, per_page: PAGE_SIZE, program_id: program })
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      report(error)
+      if (isCurrent()) report(error)
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [page, program, report])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   // The curricula in reach, fetched once: what this account covers is a

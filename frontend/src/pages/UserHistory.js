@@ -56,19 +56,31 @@ export default function UserHistory() {
     if (!error.expired) setNotice(error.message)
   }, [])
 
-  const load = useCallback(async () => {
+  /**
+   * #68 - the answer that is drawn is the answer to the request the screen is
+   * still on; without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. The rule, the three rows that prove it, and
+   * why fifteen panels repeat it rather than share one hook, are written on
+   * `frontend/src/pages/Students.js`.
+   */
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setFound(await listUsers({ q, page: 1, per_page: PICKER_SIZE }))
+      const answer = await listUsers({ q, page: 1, per_page: PICKER_SIZE })
+      if (isCurrent()) setFound(answer)
     } catch (error) {
-      report(error)
+      if (isCurrent()) report(error)
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [q, report])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   // The chosen account has to survive the search box being retyped, so it is

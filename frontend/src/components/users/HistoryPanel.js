@@ -105,19 +105,31 @@ export default function HistoryPanel({ user, onError }) {
   const [history, setHistory] = useState({ entries: [], total: 0 })
   const [loading, setLoading] = useState(true)
 
-  const load = useCallback(async () => {
+  /**
+   * #68 - the answer that is drawn is the answer to the request the screen is
+   * still on; without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. The rule, the three rows that prove it, and
+   * why fifteen panels repeat it rather than share one hook, are written on
+   * `frontend/src/pages/Students.js`.
+   */
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setHistory(await listHistory(user.user_id, { page, per_page: PAGE_SIZE }))
+      const answer = await listHistory(user.user_id, { page, per_page: PAGE_SIZE })
+      if (isCurrent()) setHistory(answer)
     } catch (error) {
-      if (!error.expired) onError(error)
+      if (isCurrent() && !error.expired) onError(error)
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [user.user_id, page, onError])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   return (

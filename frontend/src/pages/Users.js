@@ -131,21 +131,33 @@ export default function Users() {
   const [editing, setEditing] = useState(null)
   const [busy, setBusy] = useState(false)
 
-  const load = useCallback(async () => {
+  /**
+   * #68 - the answer that is drawn is the answer to the request the screen is
+   * still on; without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. The rule, the three rows that prove it, and
+   * why fifteen panels repeat it rather than share one hook, are written on
+   * `frontend/src/pages/Students.js`.
+   */
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setData(await listUsers({ ...filters, page, per_page: PAGE_SIZE }))
+      const answer = await listUsers({ ...filters, page, per_page: PAGE_SIZE })
+      if (isCurrent()) setData(answer)
     } catch (error) {
       // A 401 already raises the shell's dialog; saying it again here would
       // put a banner behind that dialog.
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (isCurrent() && !error.expired) setNotice({ error: true, message: error.message })
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [filters, page])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   // Memoised because the grants panel re-reads its list whenever its error
@@ -383,8 +395,12 @@ export default function Users() {
             fetchTemplate={importTemplate}
             send={importUsers}
             onImported={() => {
-              setPage(1)
-              load()
+              // Going to page one is a change the effect fetches; asking `load`
+              // as well would ask from the page being left, and the two answers
+              // would race - #68. Only the branch already on page one, where
+              // nothing refetches, reloads by hand.
+              if (page === 1) load()
+              else setPage(1)
             }}
             onStart={() => setNotice(null)}
             onError={report}

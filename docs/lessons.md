@@ -1505,3 +1505,139 @@ requests apart by the end that moved. **A row that builds its own situation is s
 it did not build; assert the shape the row needs, not the values the seed would have given.** The
 mutant sweep is where a new row meets the register the whole suite leaves, and that is the second
 reason to run one.
+
+## #68 — fifteen panels, one claim, and the screen the census chose
+
+**#68 is the thirteenth, and it is #129's rule written out where #129 found it by accident.**
+Every server-paged panel read its answer the same way — `setData(await listSomething({ page,
+per_page }))`, with nothing tying an answer to the request that caused it — so two lists in flight
+meant **the answer that arrived last won rather than the one asked for last**. The ticket listed
+seven files and said the list came from a grep: confirm each one before changing it, do not change
+by list. All seven matched, which is the outcome the instruction exists to make checkable rather
+than the outcome it expects — **and matching all seven is the answer to only half of what that
+instruction is for.** The other half is what the grep could not have found, and nobody asked it
+until `/code-review` did: five more panels carry the identical unguarded shape — `Rubrics`,
+`Offerings`, `SubjectStudents`, `groups/GroupHistory`, and `UserHistory`, which has no page
+number at all and is superseded by the next keystroke instead, the case #68's own second
+sentence describes. And three more came from the ticket itself: a comment its owner had written
+the same morning, closing #129, that says in as many words *รายการของตั๋วนี้ยังไม่ครบ* and gives
+the three `CohortPickers` reports with their line numbers. Fifteen. The first pass wrote *seven*
+into six files of prose as though the list were the population; the second wrote *twelve*, having
+read the body and not the thread. **A grep is evidence for the pattern you typed, not for the
+claim you wanted** — a ticket's file list is a grep somebody else ran on an older tree, and a
+ticket does not end at its body.
+
+**What the grep could not show either was who else calls `load`.** On nine of the fifteen the
+handlers call it too — after a save, after a delete, from a retry button — and a flag declared
+beside the fetch inside the effect, which is the house shape and is what `CohortPickers` and
+`Plos` use, has no answer to give those callers. So the flag is a parameter
+with a default, `async (isCurrent = () => true) => …`, and the effect is the only caller that
+passes one. **The pattern a grep finds decides that there is a fix; the second caller decides what
+shape it has.**
+
+**The ticket offered to lift them into one `usePagedList`, and the answer is no for a reason that
+is about proof rather than about code.** Three copies is the threshold the ticket named and
+fifteen is far past it, so by the ordinary argument the hook wins. But a mutant in code all
+fifteen screens share kills every one of their rows at once, and `intakefrozen` is already on
+record in #42 for what that is worth: a mutant that kills everything proves nothing about any one
+thing. One hook would turn fifteen claims into one that cannot be measured apart, and it would do
+it to the only claim these screens have. The fifteen are also less alike than a grep makes them
+look:
+`SubjectStudents` throws its `data` away on a refusal, `GroupHistory` is handed its fetcher by the
+screen above and holds its dependency list open with an `eslint-disable`, and `UserHistory` has no
+page to turn. **A ticket that offers to de-duplicate is answered with what the merge
+costs the proof, not only with what it saves the code** — and the day every one of the fifteen
+has a row of its own is the day that merge is free.
+
+**The census picked the screen this is proved on, and nothing else did.** The claim belongs to all
+fifteen equally, so subject matter had nothing to say about where to write the rows and the
+mutants. What decided was which of the fifteen files no mutation sheet holds: the rest are held by
+`13`, `16`, `18`, `45`, `57`, `84`, `91` and `124`, and `frontend/src/pages/Students.js` is held by
+nobody — so `68` is the first sheet in thirteen rounds to move neither the contested-path total
+nor its shape, and
+it does that by design rather than by luck. The seed's 173 students then hand the rows a second
+page without the spec writing one. **When a rule is true on many screens, the screen that proves it
+is chosen by the sweep, not by the story.**
+
+**Fourteen screens are changed and only one is proved, and the sheets say so in those words.**
+`docs/acceptance/57-pager.md` carries the paragraph, because that is the sheet someone reads when
+they ask how well paging is held, and `17-students.md` carries the three ⚙ rows. Writing *proved
+by pattern* on the other fourteen is the price paid with the eyes open; #50's rule is that explaining a gap
+in prose is not the same as marking it, and the answer here is to do both rather than to let the
+fifteen look equally covered. `42`, `43` and `45` carry the same paragraph for the three reports.
+
+**All three rows are rows a person cannot walk.** Each one holds the first answer back with
+`page.route`, presses on top of it, and reads the screen once at the moment that held answer lands.
+A hand-walk cannot arrange for two answers to arrive in the opposite order to the one they were
+asked in, which is what makes these ⚙ rows rather than ☑ ones and what made #68's own acceptance
+criterion name `page.route` by name.
+
+**There are three rows because the guard has three clauses, and the third one was nearly left to
+be assumed.** The first pass wrote `if (isCurrent())` in front of all three — the rows drawn, the
+loading flag cleared, the refusal reported — and then wrote mutants for two. The third clause is
+the one that reads as obviously harmless: an answer nobody is waiting for **failing** sounds like
+nothing happening. It is not. `report` is `if (!error.expired) setNotice(…)`, so the superseded
+refusal puts a red banner over a list that arrived perfectly well, and nothing on that screen takes
+the banner away again. The row makes the refusal itself with `route.fulfill` and a 500, because a
+refusal is the only way into that clause with a request that has already been replaced. **Every
+clause of a guard has to be one of three — proved, structurally unreachable, or untested** — and a
+clause with no row and no mutant is the third whether or not anybody wrote it down.
+
+**The three mutants came out one row each, which is the shape the three rows were written for.**
+`staleanswerwins` — the defect itself — kills only the first row, at its own assertion: the table
+holds page two's ten codes where page one's were read off the screen a moment earlier.
+`staleclearsloading` kills only the second, counting the *กำลังโหลด…* placeholder as none where
+there should be one. `staleerrorwins` kills only the third, counting one `role="alert"` where
+there should be none. Each sweep was the full browser suite and each came back **382 passed, 1
+failed** of 383; no row of any other spec moved under any of them, which had to be measured
+rather than assumed, because four other spec files read this register. **All four runs were
+then thrown away and measured again** — the review's second round guarded three more screens,
+changed seven handlers and merged the rows' paired assertions, and a sweep taken before those
+is a sweep of a different program. The second set is the one on the sheets: clean **383 of
+383**, and 382/1 three times over. The second mutant is the louder half on
+this screen: the register draws the placeholder and nothing else while it waits, so clearing the
+flag early leaves *ยังไม่มีนักศึกษาในหลักสูตรนี้* on screen — a sentence about an empty curriculum
+that holds 173 students — while their list is still on its way.
+
+**And running `anchors.py` before the clean run caught a `MISS` this change had just made.** Adding
+the guard to `Subjects.js` had wrapped `listSubjects({ page, per_page: PAGE_SIZE, department_id:
+department })` across four lines for width, and `57:subjpage` is anchored to that call written on
+one — so a mutant belonging to another sheet quietly stopped applying, in a file this ticket only
+passed through. Putting the call back on one line was the fix, not re-aiming the mutant: the
+formatting was mine and the anchor was not. **A mutant outlives its ticket but not its anchor, and
+the edit that moves one is usually an edit that was not about it** — caught inside the change, so a
+near-miss and not a finding about the store.
+
+**The guard closed the race the effect can lose, and left open the one a handler starts.** Seven
+screens answered a finished import with `onImported={() => { setPage(1); load() }}` — which, read
+from page three, asks the server for page one *through the effect* and for page three *by hand*, in
+that order, and then draws whichever answers second. It is the defect of this very ticket, one call
+site away from the guard that was being written to close it, and the guard cannot see it: a handler
+has no way to know it has been superseded, and `isCurrent`'s default answers *still current* for
+exactly the callers that never are superseded. Worse, my own comment beside that default said so in
+as many words — **the comment was the claim, and it was wrong about seven of its own callers.**
+`Students.js` already held the right shape one function above, on `save`: going to page one is a
+change the effect fetches, so only the branch already on page one reloads by hand. The seven now
+read `if (page === 1) load()` and `else setPage(1)`. **A guard written for one caller is a claim
+about all of them** — and this one was found by `/code-review`, not by the person who wrote both
+halves.
+
+**Then `anchors.py` said `problems 2`, and this time re-aiming was the fix rather than the
+mistake.** `16:M9` was anchored on the old `onImported` block and `45:reportignoresthechoice` on
+the `getStudentResults` call the guard had just rewritten — both anchored to code #68 genuinely
+changed, unlike `57:subjpage`, which was anchored to formatting #68 had no business moving. The
+two are opposite cases wearing the same `MISS`, and the tool cannot tell them apart: **an anchor
+check says a mutant no longer applies, never whether it still proves anything.** So each was
+re-aimed at the new text and then swept — `16a` row 89, `45a` rows at 146, 180, 214 and 264 — to
+see it still kill the rows it was written for. Re-aiming without that sweep would have produced two
+mutants that apply cleanly and measure nothing.
+
+**What is left is written in the tracker and not only in a paragraph.** The owner's own grep,
+`set[A-Za-z]*(await `, still returns sixteen call sites in fifteen files, and they are not one
+family: `PloMapping` and the two `setDrill` handlers inside the reports just guarded take their
+parameter from a control on their own screen and race exactly as the fifteen did, while the other
+thirteen read `useParams` and can only be superseded by walking from one CLO or activity to the
+next on the same route — *แคบกว่าแต่ไม่ใช่ไม่มี*, in the words of the comment that measured them.
+They are adjacent work and they get a ticket, because the price this ticket's own owner set is
+**a row per site, not a line per site**, and #119's rule is that a deferral written into prose and
+not into the tracker is a decision nobody can find.

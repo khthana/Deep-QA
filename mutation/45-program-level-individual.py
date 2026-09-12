@@ -101,8 +101,8 @@ MUTANTS = {
     # nothing about *whose*. Kills rows 2 and 3.
     "reportignoresthechoice": (
         "screen",
-        "      setData(await getStudentResults(program, chosen))",
-        "      setData(await getStudentResults(program, roll[roll.length - 1].student_id))",
+        "      const answer = await getStudentResults(program, chosen)",
+        "      const answer = await getStudentResults(program, roll[roll.length - 1].student_id)",
     ),
     # Only the outcomes this student was measured on. A perfectly reasonable
     # report, and it is the one thing an appeal cannot be read from: a student

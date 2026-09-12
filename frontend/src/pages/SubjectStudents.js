@@ -74,21 +74,34 @@ export default function SubjectStudents() {
    * just been told which three lines were wrong would watch the answer vanish.
    * So `data` decides whether there is a screen and survives a reload, and
    * `loading` decides only what the table's body is showing.
+   *
+   * #68 - the answer that is drawn is the answer to the request the screen is
+   * still on; without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. The rule, the three rows that prove it, and
+   * why fifteen panels repeat it rather than share one hook, are written on
+   * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async () => {
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setData(await listEnrolled(sectionId, { page }))
+      const answer = await listEnrolled(sectionId, { page })
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      setData(null)
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (isCurrent()) {
+        setData(null)
+        if (!error.expired) setNotice({ error: true, message: error.message })
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [sectionId, page])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   /**

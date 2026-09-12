@@ -73,14 +73,22 @@ export default function GroupHistory({ fetchPage, onError }) {
   const [history, setHistory] = useState({ entries: [], total: 0 })
   const [loading, setLoading] = useState(true)
 
-  const load = useCallback(async () => {
+  /**
+   * #68 - the answer that is drawn is the answer to the request the screen is
+   * still on; without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. The rule, the three rows that prove it, and
+   * why fifteen panels repeat it rather than share one hook, are written on
+   * `frontend/src/pages/Students.js`.
+   */
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setHistory(await fetchPage(page))
+      const answer = await fetchPage(page)
+      if (isCurrent()) setHistory(answer)
     } catch (error) {
-      onError?.(error)
+      if (isCurrent()) onError?.(error)
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
     // `fetchPage` is a fresh closure on every render of the screen above, so it
     // cannot be a dependency without reloading forever. The page number is what
@@ -89,7 +97,11 @@ export default function GroupHistory({ fetchPage, onError }) {
   }, [page])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   return (

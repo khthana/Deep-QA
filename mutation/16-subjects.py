@@ -57,9 +57,13 @@ MUTANTS = {
    "  const usable = departments.filter(department => department.is_active !== false)",
    "  const usable = departments")],
  # the table left as it was after an import that succeeded
+ # Anchored on the two statements rather than on the whole handler: #68 put a
+ # comment inside it, and an anchor that reads a comment breaks the next time
+ # somebody edits the comment. Taking the statements away leaves the handler
+ # there and empty, which is the same mutant it always was.
  'M9': [('page',
-   "            onImported={() => {\n              setPage(1)\n              load()\n            }}",
-   "            onImported={() => {}}")],
+   "              if (page === 1) load()\n              else setPage(1)\n",
+   "")],
  # the filter line naming the department without saying which one
  'M10': [('page',
    "                      {departments[0].department_id} {departments[0].department_name_th}",

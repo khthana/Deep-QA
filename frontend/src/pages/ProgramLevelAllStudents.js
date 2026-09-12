@@ -88,7 +88,15 @@ export default function ProgramLevelAllStudents() {
   const { programs, program, setProgram, intakes, intake, setIntake, asked } =
     useCohortPickers(report)
 
-  const load = useCallback(async () => {
+  /**
+   * #68 - the report that is drawn is the report the pickers are still on.
+   * Pressing a picker again while its answer is out leaves two requests in
+   * flight, and without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. `ProgramLevelCompare.js` carries the same rule
+   * with the story (#129); the register carries the rows and the mutants
+   * (`frontend/src/pages/Students.js`).
+   */
+  const load = useCallback(async isCurrent => {
     if (!program || !intake) {
       setData(null)
       // Nothing to ask for is an answer, not a wait. Without this an
@@ -100,17 +108,24 @@ export default function ProgramLevelAllStudents() {
     }
     setLoading(true)
     try {
-      setData(await getStudentHeatmap(program, intake))
+      const answer = await getStudentHeatmap(program, intake)
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      setData(null)
-      report(error)
+      if (isCurrent()) {
+        setData(null)
+        report(error)
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [program, intake])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   // A copy, because Array.prototype.sort works in place and the answer the

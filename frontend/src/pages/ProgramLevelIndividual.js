@@ -104,7 +104,15 @@ export default function ProgramLevelIndividual() {
   const { programs, program, setProgram, intakes, intake, setIntake, asked } =
     useCohortPickers(report)
 
-  const loadRoll = useCallback(async () => {
+  /**
+   * #68 - the report that is drawn is the report the pickers are still on.
+   * Pressing a picker again while its answer is out leaves two requests in
+   * flight, and without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. `ProgramLevelCompare.js` carries the same rule
+   * with the story (#129); the register carries the rows and the mutants
+   * (`frontend/src/pages/Students.js`).
+   */
+  const loadRoll = useCallback(async isCurrent => {
     if (!program || !intake) {
       setRoll([])
       setChosen('')
@@ -112,6 +120,7 @@ export default function ProgramLevelIndividual() {
     }
     try {
       const { students } = await listRoll(program, intake)
+      if (!isCurrent()) return
       setRoll(students)
       // Kept if the roll still has them, chosen for them if it does not.
       // Functional because the roll can land twice — a re-fetch, or React's
@@ -122,9 +131,11 @@ export default function ProgramLevelIndividual() {
         students.some(student => student.student_id === current) ? current : '',
       )
     } catch (error) {
-      setRoll([])
-      setChosen('')
-      report(error)
+      if (isCurrent()) {
+        setRoll([])
+        setChosen('')
+        report(error)
+      }
     }
     // `report` is rebuilt every render; depending on it would re-ask on every
     // keystroke in the search box.
@@ -132,10 +143,22 @@ export default function ProgramLevelIndividual() {
   }, [program, intake])
 
   useEffect(() => {
-    loadRoll()
+    let current = true
+    loadRoll(() => current)
+    return () => {
+      current = false
+    }
   }, [loadRoll])
 
-  const load = useCallback(async () => {
+  /**
+   * #68 - the report that is drawn is the report the pickers are still on.
+   * Pressing a picker again while its answer is out leaves two requests in
+   * flight, and without the flag the answer that **arrives** last wins rather
+   * than the one asked for last. `ProgramLevelCompare.js` carries the same rule
+   * with the story (#129); the register carries the rows and the mutants
+   * (`frontend/src/pages/Students.js`).
+   */
+  const load = useCallback(async isCurrent => {
     setOpen(null)
     setDrill(null)
     if (!program || !chosen) {
@@ -147,18 +170,25 @@ export default function ProgramLevelIndividual() {
     }
     setLoading(true)
     try {
-      setData(await getStudentResults(program, chosen))
+      const answer = await getStudentResults(program, chosen)
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      setData(null)
-      report(error)
+      if (isCurrent()) {
+        setData(null)
+        report(error)
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [program, chosen])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   const offered = useMemo(() => roll.filter(student => matches(student, term)), [roll, term])

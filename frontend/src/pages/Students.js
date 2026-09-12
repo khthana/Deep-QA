@@ -67,19 +67,63 @@ export default function Students() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
-  const load = useCallback(async () => {
+  /**
+   * The list for the page the pager is on now - #68.
+   *
+   * Every paged panel in this codebase read its answer the same way: `setData`
+   * on whatever the await returned, with nothing tying that answer to the
+   * request that caused it. Two presses of *ถัดไป* while the first list is still
+   * in flight, or a filter moved on a slow connection, and **the answer that
+   * arrives last wins rather than the one asked for last** - the table draws a
+   * page the pager is no longer on, and the older answer's `setLoading(false)`
+   * reports the newer request as finished. On this screen that second half is
+   * the louder one: the register says *ยังไม่มีข้อมูลนักศึกษาในระบบ* while the
+   * list it is waiting for is still on its way.
+   *
+   * `isCurrent` is asked after the answer arrives and is the whole of the rule.
+   * It is a parameter with a default rather than a `let` beside the fetch - the
+   * shape the effect below this one uses for its two lists - because `load` is
+   * also called from the handlers, where nothing supersedes it and the honest
+   * answer to *are you still current* is yes.
+   *
+   * Fourteen other panels carry the same guard. Eleven read a list: `Users`,
+   * `Departments`, `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`,
+   * `Offerings`, `SubjectStudents`, `users/HistoryPanel`, `groups/GroupHistory`
+   * and `UserHistory` - the last of those a search picker rather than a pager,
+   * where what supersedes a request is the next keystroke. Three are reports
+   * driven by `CohortPickers`: `ProgramLevelByIntake`, `ProgramLevelIndividual`
+   * and `ProgramLevelAllStudents`, which #68's own comment measured and left
+   * unmeasured, and which take `ProgramLevelCompare`'s spelling of this guard
+   * from #129 because only their effects call them.
+   *
+   * The ticket listed seven files; the other eight came from asking what its
+   * grep could not have found and from reading its comments as well as its
+   * body. **A ticket's file list is a grep somebody else ran.**
+   *
+   * This one is where the browser rows and the mutants are - and the reason the
+   * fifteen are not a shared `usePagedList` is that a mutant in code they all
+   * share kills every screen's rows at once, and a mutant that kills everything
+   * proves nothing about any one of them. That is what `intakefrozen` taught
+   * #42.
+   */
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setData(await listStudents({ page, per_page: PAGE_SIZE, program_id: program }))
+      const answer = await listStudents({ page, per_page: PAGE_SIZE, program_id: program })
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      report(error)
+      if (isCurrent()) report(error)
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [page, program, report])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   // What this account covers is a property of the grant and does not change
@@ -252,8 +296,12 @@ export default function Students() {
             fetchTemplate={importTemplate}
             send={importStudents}
             onImported={() => {
-              setPage(1)
-              load()
+              // Going to page one is a change the effect fetches; asking `load`
+              // as well would ask from the page being left, and the two answers
+              // would race - #68. Only the branch already on page one, where
+              // nothing refetches, reloads by hand.
+              if (page === 1) load()
+              else setPage(1)
             }}
             onStart={() => setNotice(null)}
             onError={report}
