@@ -159,6 +159,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 
 - **A retrying negative against an element that removes itself is an assertion that cannot
   fail.** Read the count once, at a named settle point. (#50)
+- **A helper that waits for the response has not waited for the drawing** — the first read after it
+  can see the empty state, and no amount of retrying saves a wrong *expected* value. Wait for what
+  the answer carried to be what the screen shows. (#132)
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
 - **Anything written for timing must not be able to decide anything.** (#52)
@@ -171,7 +174,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A defect that survived green suites usually survived because no fixture could express it**,
   and the fix is a fixture. A fixture built inside one test file is one no other file has; a
   seeded role needs the role's distinguishing property; ask a question of the rule, not of the
-  row. (#96, #102, #48, #87)
+  row. A fake written from the code cannot express what the driver does. (#96, #102, #48, #87,
+  #132)
+- **In a suite that shares one database and runs in order, the world a spec is handed is what the
+  files before it left** — so a spec that writes takes it out again, and what nobody cleans is
+  measured rather than assumed. Count the tables that moved **down** as well as up, and count the
+  **files**, not the tables, when that is what was asked: a key names the row, not its author, so
+  attribute a table by running that file on its own. (#132)
 - Two `includes` cannot fail on a list that is too wide. (#102)
 - A test that passes because of a defect tends to explain itself in its own comment. A row that
   needs a defect to be reachable must be rewritten the day it is fixed — write that on the row.
@@ -212,7 +221,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - Before removing something, ask what it was teaching. (#124)
 - A tool that cannot say what it did not look at is the same species as the hand-kept numbers it
   checks; when a tool skips things by name, adding a file makes it lie; a guard that reads the
-  world before it writes has to survive every state the world is in. (#123, #126)
+  world before it writes has to survive every state the world is in. Ask the catalogue, not a
+  list — and write down what the instrument cannot measure. (#123, #126, #132)
 
 ### Walks
 

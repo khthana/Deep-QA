@@ -9,6 +9,7 @@ const {
   addStudent,
   filterProgram,
   registerRow,
+  holdRegister,
 } = require('../support/students-screen');
 
 /**
@@ -34,6 +35,22 @@ test.beforeEach(async ({ page }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);
   await openRegister(page);
 });
+
+/**
+ * The register these rows add to, put back afterwards - #132.
+ *
+ * The comment above says the file order is not a thing to depend on, and
+ * these rows keep that promise for themselves. They did not keep it for
+ * anybody else: both students stayed in the register for the rest of the
+ * run, so every file after this one was handed a register two rows wider
+ * than the seed made it - and #129's first draft asserted the intake picker
+ * opened on 2563, which is true of the seed and false once `61010001` is in.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await holdRegister();
+});
+test.afterAll(() => release());
 
 test('row 10: the หลักสูตร filter filters, and the total follows it', async ({ page }) => {
   const before = await total(page);

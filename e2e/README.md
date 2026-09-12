@@ -39,6 +39,7 @@ It needs the database container running (`npm run db:up` from `db/`), the root `
 | `npm run test:headed` | The same, with the browser visible. |
 | `npx playwright test tests/17b-students-import.spec.js` | One file. |
 | `npm run report` | The HTML report of the last run. |
+| `npm run test:support` | The support modules that measure rather than drive — `leftovers.js` today. No browser, no database. |
 
 ## What it runs against
 
@@ -56,6 +57,50 @@ a suite whose ports drifted per machine would make every *it works here* less in
 
 The schema is dropped, migrated and seeded in `support/global-setup.js` at the **start** of a run rather than the end,
 so a failed run leaves its data behind to be looked at.
+
+### What the file before yours left behind
+
+One schema, one worker, files in order: the rows a spec writes are part of the world the next spec is handed. Nothing
+measured that drift until #132, and it was real — a full run left **19 of 34 tables** changed against the seed, in both
+directions. Insertions, from the specs that add data through the screen; deletions too, from the specs that remove a
+seeded row and do not put it back. #129's two new rows met it head on: the first draft asserted the intake picker
+opened on 2563, which is true of the seed and false once `17c` had added `61010001`, and the mutation sweep was the
+first thing to notice.
+
+#132 then ran all fifty-six spec files one at a time, each with its own reseed, to find out how many files that is:
+**40 leave nothing but `user_log`, and 16 leave rows in other tables.** #132 closed the two it was written about —
+`17b` and `17c` are in the 40 — and the remaining 16 are **#134**, listed there with what each one moves.
+
+Every run now ends with a report of what moved, from `support/leftovers.js`:
+
+```
+leftovers (#132): 34 tables checked, 3 moved
+  departments: +8 -0 (net +8)
+      added   07, X1, X2, X3, Y1, Z0, Z1, Z2
+  learning_outcomes: +0 -2 (net -2)
+      removed 48, 49
+  user_log: +490 -0 (net +490)
+      added   1, 2, 3, 4, 5, 6, 7, 8 … and 482 more
+```
+
+Three things about it are deliberate and are argued in the file itself. It **reports and does not fail the run**,
+because a guard that refused would need a list of what is allowed to move, and a hand-kept list in a suite that grows
+every ticket is already wrong. It says **what moved, not which file moved it** — Playwright's reporter hooks are not
+awaited, so a snapshot cannot be taken at a file boundary without every spec importing a shared fixture. The keys it
+prints are where a grep starts, not where it ends: `07` above is `14b`'s and `Z0` is `57a`'s. To attribute a table,
+run the spec **on its own** — `globalSetup` reseeds on every invocation, so a single-file run reports that file's
+leftovers and nobody else's. And it asks the **catalogue** for its tables and their primary keys, so a
+table a migration adds is measured the day it exists rather than the day somebody remembers that file.
+
+If your spec writes data through the screen, take it out again in `afterAll`. There is no route that deletes a
+student, so the way back out is raw SQL against this schema. Two shapes, and they answer different questions:
+`support/students-screen.js`'s `holdRegister` remembers the table in `beforeAll` and removes **whatever appeared**
+while the file ran, which is what a spec wants when some of its own rows expect to be refused; `44a`'s `unenrol`
+names the two students it put there, which is what a spec wants when it built the situation itself and wants it
+gone mid-file. Removing a student means removing what points at it first, and `holdRegister` asks the
+catalogue which tables those are — four reference `student` today, every one of them `ON DELETE RESTRICT`, and a list
+written here would be right until the fifth. `user_log` is the exception nobody can clean: it is the product recording the
+spec's own actions, and every spec that does anything moves it.
 
 Sign-in is the real sign-in screen and the real endpoint, with the seeded accounts and the password from `db/seed.js`.
 Nothing about the session is stubbed, for the reason `docs/06` gives for the backend suite: the inherited system's
@@ -91,7 +136,8 @@ e2e/
 ├── playwright.config.js   the two servers, the ports, the one worker
 ├── support/
 │   ├── env.js             ports and schema, in one place
-│   ├── global-setup.js    drop, migrate, seed
+│   ├── global-setup.js    drop, migrate, seed - and the snapshot the run is measured against
+│   ├── leftovers.js       what the run left behind, reported at the end of it - #132
 │   ├── accounts.js        the seeded accounts, by what they are
 │   ├── auth.js            signing in the way a person does
 │   ├── shell.js           the role picker, the user menu, the two dialogs over the top

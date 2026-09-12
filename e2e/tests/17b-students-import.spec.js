@@ -13,6 +13,7 @@ const {
   total,
   reportedLines,
   reportTable,
+  holdRegister,
 } = require('../support/students-screen');
 const { BACKEND_URL } = require('../support/env');
 const { REFUSALS } = require('../../backend/auth/refusals');
@@ -36,6 +37,25 @@ test.beforeEach(async ({ page }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);
   await openRegister(page);
 });
+
+/**
+ * The register these rows import into, put back afterwards - #132.
+ *
+ * Every spec here owns a code range so that no spec depends on another
+ * having run. That promise was only half kept: the range was private, and
+ * the rows written into it were never taken out, so every file that ran
+ * after this one met a register five students wider than the seed made it.
+ *
+ * What is removed is whatever appeared while this file ran, rather than a
+ * list of the five codes below - because several rows here offer codes they
+ * expect to be **refused**, and the day one of those is accepted is the day
+ * a hand-written list would quietly stop covering it.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await holdRegister();
+});
+test.afterAll(() => release());
 
 test('row 12: the template is four columns and no sample row, and keeps its byte-order mark', async ({
   page,

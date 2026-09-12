@@ -1642,3 +1642,104 @@ They are adjacent work and they got a ticket — **#133**, carrying the same tab
 numbers — because the price this ticket's own owner set is **a row per site, not a line per
 site**, and #119's rule is that a deferral written into prose and not into the tracker is a
 decision nobody can find.
+
+## #132 — two files, nineteen tables, and an instrument instead of a list
+
+**#132 asked for a cleanup and the measurement turned it into a survey.** The ticket was split out of
+#129 and it was precise: `17b` and `17c` add students through the screen, nothing takes them out, and
+the table it gave counted seven rows in one table. What it proposed was a cleanup in `afterAll`, with
+a second option — *a guard that measures which file leaves rows* — and a third line that turned out to
+be the whole ticket: **นับให้ครบก่อน ไม่ใช่เชื่อว่าสองไฟล์นี้คือทั้งหมด.** So the first thing written
+was not a fix but a comparison: build a reference schema beside the one the suite had just run on,
+migrate and seed it, and diff every table by primary key.
+
+**Nineteen of thirty-four tables had moved.** `subjects` +22, `program_subjects` +14, `departments`
++8, `programs` +7, `users` +5, `student` +7 — and, which nobody had asked about at all, five tables
+that had moved **down**: `rubric_details` −3, `student_course` −3, `learning_outcomes` −2,
+`activities` −1, `rubrics` −1. A spec that deletes a seeded row changes the world the next file is
+handed exactly as much as one that adds, and a ticket written from one symptom had named only the
+adding half. **A ticket's list is a claim about the day it was written; the population is a
+measurement**, which is the rule #68 had just finished paying for one ticket earlier.
+
+**That is why what got built is an instrument and not a cleanup.** Cleaning nineteen tables' worth of
+specs is a project, and a project that ends with a list of what is allowed to move is a hand-kept list
+in a suite that grows every ticket — already wrong, by #123. So `e2e/support/leftovers.js` takes a
+snapshot of every row's primary key straight after the seed, another when the run ends, and prints
+what moved in both directions. It asks the **catalogue** for its tables and their keys rather than
+holding a list, so a table a migration adds is measured the day it exists; and it prints how many
+tables it looked at, because a tool that cannot say what it did not look at is the same species as the
+hand-kept numbers it checks.
+
+**Two things it cannot do are written in it rather than left to be found.** It reports and does not
+fail the run — the instrument it is modelled on is `mutation/anchors.py`, which also only counts and
+is read by a person. And it says *what* moved, not *which file* moved it: Playwright's reporter hooks
+are not awaited, so a snapshot cannot be taken at a file boundary unless all fifty-six specs import a
+shared fixture, and that is a change to every file in the suite for an attribution that can be had
+for the price of running a spec alone. **Saying what an instrument cannot measure is part of the
+measurement** — and the thing it cannot measure turned out to be exactly the thing the ticket's third
+line asked for.
+
+**The two files the ticket named were then fixed, because they are the case that was measured.**
+`holdRegister` sits on `students-screen.js` rather than inside either spec — a fixture built inside one
+test file is one no other file has (#96). Its first version took a list of the seven codes, which the
+review was right to call a hand-kept list in the one diff arguing against them: `17b` deliberately
+offers codes it expects to be **refused**, so the list is correct exactly until somebody changes the
+importer — which is the day it matters. It now remembers the register in `beforeAll` and removes
+whatever appeared, which is the same move the report at the end of the run makes, one file down. Both
+specs now leave nothing behind but `user_log`, which is the one table nobody can clean: it is the
+product recording the spec's own actions, and every spec that does anything moves it.
+
+**The instrument's own test caught nothing, and then the first real query caught the instrument.**
+Eight `node --test` rows against a fake database, and five deliberate breaks — deletions ignored,
+no-key tables skipped, a composite key read on its first column only, the table count dropped from the
+report, elided keys not counted — all five failed a row, so the rows had teeth. Then the first run
+against Postgres threw `key.map is not a function`: `array_agg(attname)` is an array of `name`, and
+node-postgres has no parser for that type, so it hands back the string `{student_id,section_id}`. The
+fake had been handing over real arrays because that is what the code wanted. **A fake written from the
+code cannot express what the driver does**, and the fixture that would have caught it is the one thing
+this file does not have: a real connection. It is a cast now, and a comment saying why.
+
+**The third line asked which *specs*, and the first answer counted *tables*.** The review caught it:
+นับให้ครบก่อน is a question about the population of files, and nineteen tables is an answer about the
+population of tables. They are not the same number and neither implies the other — one file can move
+five tables and five files can move one. The instrument says what moved and not who moved it, so the
+first instinct was to grep the printed keys back to a spec, and that grep was wrong within four
+minutes: `departments` came back as `14b`, which writes `07, X1, X2, X3, Y1` — and the full run's
+report says `07, X1, X2, X3, Y1, Z0, Z1, Z2`. `Z0` is `57a`, a pager spec that makes rows in bulk to
+have something to page. **A key identifies the row, not the author**, and the author is the thing the
+question was about.
+
+**So the census was measured instead: fifty-six runs, one spec file each.** Every Playwright
+invocation runs `globalSetup`, which drops, migrates and seeds, so a single-file run's report is that
+file's own leftovers and nobody else's — twenty-five minutes of wall clock for an answer no grep could
+have given. **Forty of the fifty-six leave nothing but `user_log`; sixteen leave rows in other
+tables.** `subjects` is moved by seven different specs, not by the one whose name it matches;
+`program_subjects` by five. And the per-file totals add up to more than the full run's: thirty-one
+subjects across seven files, twenty-two in one run, because a spec that writes a code an earlier spec
+already left counts it as new when it runs alone and as nothing when it runs after. Four of the
+sixteen move rows **down**, across five tables: `19a` removes two learning outcomes, `21a` a rubric and
+its three details, `25a` three enrolments, `32a` an activity.
+
+**And the run that was supposed to close the ticket found something else.** Two full runs in a row
+failed — three rows between them, in two files, every one of them the same shape: `const before =
+await total(page)` read **0**, and a later `expect.poll(() => total(page)).toBe(before)` then could
+not pass, because what was wrong was the expected value and not the read. The helpers say they wait
+for the list — *waits for the list it is about to assert on* — and what they wait for is the HTTP
+response. React sets state after that resolves, and between the two the screen still draws *ทั้งหมด 0
+รายการ*. **A helper that waits for the answer has not waited for the drawing**, and the rows that read
+it first are the ones that see the difference. Each of those rows passes when its file runs alone,
+which made it look like the leftovers this very ticket was about — it was not.
+
+`openRegister` and `openProgramSubjects` now wait for the number the response carried to be the number
+on the screen, which is the only wait that survives a screen whose empty state is a real number.
+Proved by making it wait for `carried + 1`: the row fails. Reading the body is done on the line after
+the response and nowhere later, because `enrolment-screen.js` spent three sweeps learning that
+Chromium keeps a body only until the page navigates away from it. Eleven routes answer with a paged
+`total`; two are fixed and the nine that have never been seen to fail are **#135**, not a sweep of
+edits made on a guess.
+
+**What is left is measured and deferred, not silent.** The other sixteen specs and their seventeen
+tables are #134, with the census in it, because the price is the same one #68 set — a row per site —
+and #119's rule is that a deferral written into prose and not into the tracker is a decision nobody
+can find. The two the ticket named are now measured clean rather than asserted clean: both appear in
+the forty.

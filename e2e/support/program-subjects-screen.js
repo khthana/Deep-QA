@@ -40,13 +40,22 @@ function waitForCatalogue(page) {
   );
 }
 
-/** Opens the screen and asserts the list a passing row is about to read. */
+/**
+ * Opens the screen and asserts the list a passing row is about to read.
+ *
+ * Waits for the count the response carried to be the count on the screen, for
+ * the reason `students-screen.js`'s `openRegister` gives at length: the
+ * response resolving is not the list being drawn, and row 4 of `18a` read the
+ * pager as 0 in a full run because of it. (#132)
+ */
 async function openProgramSubjects(page) {
   const [response] = await Promise.all([
     waitForList(page),
     page.goto(PROGRAM_SUBJECTS),
   ]);
   expect(response.status()).toBe(200);
+  const { total: carried } = await response.json();
+  await expect(page.getByText(`ทั้งหมด ${carried} รายการ`)).toBeVisible();
   return response;
 }
 

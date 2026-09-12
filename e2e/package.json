@@ -5,6 +5,7 @@
   "description": "The browser seam: a real browser driving the real frontend against the real backend.",
   "scripts": {
     "test": "playwright test",
+    "test:support": "node --test support/*.test.js",
     "test:headed": "playwright test --headed",
     "report": "playwright show-report"
   },
