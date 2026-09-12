@@ -10,7 +10,10 @@ const { signIn } = require('../support/auth');
 const { menuLink } = require('../support/shell');
 const {
   PATH,
+  REPORT_API,
   openTrend,
+  fromPicker,
+  toPicker,
   showRange,
   trendTable,
   yearHeader,
@@ -60,9 +63,20 @@ const [CURRENT, PRIOR] = COHORTS;
 const EARLY_INTAKE = String(Number(PRIOR.admission) - 2);
 const GAP_INTAKE = String(Number(PRIOR.admission) - 1);
 const EARLY_STUDENT = 'E44G001';
+/** A register that reaches past the seed on the other side as well — #129's row. */
+const LATE_INTAKE = String(Number(CURRENT.admission) + 2);
+const LATE_STUDENT = 'E44L001';
 
-/** Puts one unmarked student on the roll of an intake two years before the seed's. */
-async function enrolEarly() {
+/**
+ * The two columns that name the outcome, beside one column per year of the
+ * range. Counted from the range rather than written down, so a row here keeps
+ * meaning *one column per year* if the seed gains an intake.
+ */
+const NAMING_COLUMNS = 2;
+const columnsFor = (from, to) => NAMING_COLUMNS + (Number(to) - Number(from) + 1);
+
+/** Puts one unmarked student on the roll of an intake the seed does not have. */
+async function enrol(studentId, year) {
   const section = await db.query(
     `SELECT cs.section_id FROM course_sections cs ORDER BY cs.section_id ASC LIMIT 1`,
   );
@@ -70,18 +84,37 @@ async function enrolEarly() {
     `INSERT INTO student (student_id, first_name_th, last_name_th, department_id, program_id, admission_year, status)
      VALUES ($1, 'รุ่น', 'ก่อนหน้า',
              (SELECT department_id FROM programs WHERE program_id = $2), $2, $3, 'active')`,
-    [EARLY_STUDENT, PROGRAM, EARLY_INTAKE],
+    [studentId, PROGRAM, year],
   );
   await db.query(`INSERT INTO student_course (student_id, section_id) VALUES ($1, $2)`, [
-    EARLY_STUDENT,
+    studentId,
     section.rows[0].section_id,
   ]);
 }
 
-async function removeEarly() {
-  await db.query(`DELETE FROM student_course WHERE student_id = $1`, [EARLY_STUDENT]);
-  await db.query(`DELETE FROM student WHERE student_id = $1`, [EARLY_STUDENT]);
+async function unenrol(studentId) {
+  await db.query(`DELETE FROM student_course WHERE student_id = $1`, [studentId]);
+  await db.query(`DELETE FROM student WHERE student_id = $1`, [studentId]);
 }
+
+/**
+ * A register wider than the seed's at both ends — #129's two rows.
+ *
+ * Both ends have to be outside the range those rows ask for, or the screen
+ * opens on the range they want and fires no request at all.
+ */
+async function enrolBothEnds() {
+  await enrol(EARLY_STUDENT, EARLY_INTAKE);
+  await enrol(LATE_STUDENT, LATE_INTAKE);
+}
+
+async function removeBothEnds() {
+  await unenrol(EARLY_STUDENT);
+  await unenrol(LATE_STUDENT);
+}
+
+/** Every request for this screen's report, whatever range it carries. */
+const anyReport = (url) => url.pathname === REPORT_API;
 
 test.afterAll(() => db.end());
 
@@ -92,7 +125,8 @@ test('the committee reaches the comparison from the menu and reads one column pe
   // and they are consecutive, so the grid is two columns of years beside the
   // two that name the outcome — a count taken from the range rather than
   // written down, so the row keeps meaning *one column per year* if the seed
-  // gains an intake.
+  // gains an intake. It said that in this comment and asserted a literal `4`
+  // until #129, which is the promise a comment makes on an assertion's behalf.
   await signIn(page, ACCOUNTS.committee0501);
 
   await menuLink(page, 'การประเมินผลการเรียนรู้').click();
@@ -103,7 +137,9 @@ test('the committee reaches the comparison from the menu and reads one column pe
 
   await expect(yearHeader(page, PRIOR.admission)).toBeVisible();
   await expect(yearHeader(page, CURRENT.admission)).toBeVisible();
-  await expect(page.getByRole('columnheader')).toHaveCount(4);
+  await expect(page.getByRole('columnheader')).toHaveCount(
+    columnsFor(PRIOR.admission, CURRENT.admission),
+  );
   await expect(yearHeader(page, CURRENT.admission)).toContainText(`${CURRENT.students} คน`);
   await expect(yearHeader(page, PRIOR.admission)).toContainText(`${PRIOR.students} คน`);
 });
@@ -149,7 +185,7 @@ test('a year nobody was admitted in is a column of its own, and says which kind 
   // not yet marked*, which are two different facts about the curriculum and
   // would otherwise be one row of blanks.
   await signIn(page, ACCOUNTS.committee0501);
-  await enrolEarly();
+  await enrol(EARLY_STUDENT, EARLY_INTAKE);
 
   try {
     await openTrend(page);
@@ -160,7 +196,7 @@ test('a year nobody was admitted in is a column of its own, and says which kind 
     await expect(yearHeader(page, EARLY_INTAKE)).toContainText('ยังไม่มีคะแนน');
     await expect(yearHeader(page, PRIOR.admission)).toContainText(`${PRIOR.students} คน`);
   } finally {
-    await removeEarly();
+    await unenrol(EARLY_STUDENT);
   }
 });
 
@@ -177,7 +213,7 @@ test('a range nobody in it has been marked in reads as a sentence, not a grid of
   // is right — a range is asked for between two intakes, not between two
   // absences.
   await signIn(page, ACCOUNTS.committee0501);
-  await enrolEarly();
+  await enrol(EARLY_STUDENT, EARLY_INTAKE);
 
   try {
     await openTrend(page);
@@ -186,7 +222,7 @@ test('a range nobody in it has been marked in reads as a sentence, not a grid of
     await expect(page.getByText('ยังไม่มีคะแนนของรุ่นใดในช่วงปีที่เลือก')).toBeVisible();
     await expect(trendTable(page)).toHaveCount(0);
   } finally {
-    await removeEarly();
+    await unenrol(EARLY_STUDENT);
   }
 });
 
@@ -259,4 +295,145 @@ test('a ผู้สอน who types the address is refused, and is not left wai
   await expect(page.getByText('บัญชีนี้ไม่มีสิทธิ์ใช้งานส่วนนี้')).toBeVisible();
   await expect(page.getByText('กำลังโหลดข้อมูล…')).toHaveCount(0);
   await expect(trendTable(page)).toHaveCount(0);
+});
+
+test('the report of a range the pickers have already left does not land on top of the one they are on', async ({
+  page,
+}) => {
+  // #129. Moving both ends fires a request per end, and the first of them asks
+  // for a range that is half old: the `to` has moved and the `from` has not.
+  // Nothing tied an answer to the request that caused it, so whichever arrived
+  // **last** was drawn — and a person changing both ends quickly on a slow
+  // connection read a report of a range the pickers were no longer showing,
+  // which the screen's own docstring calls *showing a report about one range
+  // while saying another*.
+  //
+  // The situation is built rather than waited for. On the seeded register the
+  // opening range is already the one these rows ask for, so `showRange` fires
+  // no request at all and there is nothing to race; it took a full-suite run,
+  // where `17b` and `17c` leave students of two other intakes behind, for the
+  // screen to open wide enough for the middle request to exist. Two students
+  // put that register here on purpose, and the middle answer is held back so
+  // the outcome is a fact about the code rather than about the network.
+  await signIn(page, ACCOUNTS.committee0501);
+  await enrolBothEnds();
+
+  const HELD_MS = 1_500;
+  // The middle request is the one still carrying the `from` the screen opened
+  // on, with the `to` already moved. **Which year that `from` is depends on the
+  // register**, and in a full-suite run the register holds intakes other specs
+  // left behind — an earlier draft named `EARLY_INTAKE` here and asserted the
+  // pickers opened on it, which is true of the seeded register and false of the
+  // one the suite actually leaves. All this row needs of that year is that it is
+  // not the one being asked for, so it is read off the screen instead.
+  const stale = (url) =>
+    anyReport(url) &&
+    url.searchParams.get('to_year') === CURRENT.admission &&
+    url.searchParams.get('from_year') !== PRIOR.admission;
+
+  try {
+    await page.route(
+      anyReport,
+      async (route, request) => {
+        if (stale(new URL(request.url()))) {
+          await new Promise((resolve) => setTimeout(resolve, HELD_MS));
+        }
+        await route.continue();
+      },
+    );
+
+    await openTrend(page);
+    // A middle request exists only if both ends move: the opening range has to
+    // begin before the range asked for and end after it. The two students are
+    // what guarantee that on the seeded register; a leak can only widen it.
+    await expect
+      .poll(async () => Number(await fromPicker(page).inputValue()))
+      .toBeLessThan(Number(PRIOR.admission));
+    await expect
+      .poll(async () => Number(await toPicker(page).inputValue()))
+      .toBeGreaterThan(Number(CURRENT.admission));
+
+    const staleArrived = page.waitForResponse((answer) => stale(new URL(answer.url())));
+    await showRange(page, PRIOR.admission, CURRENT.admission);
+    // The settle point is the held answer arriving, not a guess at how long it
+    // takes: the row reads the screen once, after the thing it is about has
+    // happened. The margin afterwards is for the render that answer would
+    // cause, and decides nothing — with the guard gone this row fails by six
+    // columns to four, and `staleanswerwins` is what says the margin is
+    // enough.
+    await staleArrived;
+    await page.waitForTimeout(250);
+
+    expect(await page.getByRole('columnheader').count()).toBe(
+      columnsFor(PRIOR.admission, CURRENT.admission),
+    );
+    expect(await fromPicker(page).inputValue()).toBe(PRIOR.admission);
+    expect(await toPicker(page).inputValue()).toBe(CURRENT.admission);
+  } finally {
+    await page.unroute(anyReport);
+    await removeBothEnds();
+  }
+});
+
+test('an answer the screen has stopped waiting for does not say it has finished loading', async ({
+  page,
+}) => {
+  // #129, the other half of the same guard and one state along. The spinner is
+  // drawn while there is nothing to draw instead, so the request that matters
+  // here is the **first** one: superseded before it ever answered, on a screen
+  // that has no report on it yet. An answer nobody is waiting for that clears
+  // the spinner leaves *nothing at all* on screen — no report, no sentence, no
+  // spinner — while the report that was asked for is still out, which is #43's
+  // defect reached from the other end.
+  //
+  // The range is changed without waiting for the answer, which is why this row
+  // drives the picker rather than `showRange`: the whole situation is the one
+  // where the first answer has not arrived.
+  await signIn(page, ACCOUNTS.committee0501);
+  await enrolBothEnds();
+
+  // Only the `to` end moves here, so the two requests are told apart by it, and
+  // for the same reason as the row above: the year the screen opens on belongs
+  // to the register, not to this file.
+  const asked = (url) => anyReport(url) && url.searchParams.get('to_year') === CURRENT.admission;
+  const opening = (url) => anyReport(url) && !asked(url);
+  // Both holds are waited for by name rather than counted on: the row reads the
+  // screen after `openingArrived` and again after `askedArrived`, so what the
+  // two numbers decide is only which arrives first. They are far apart because
+  // a margin costs nothing here and a near-miss would make the row about the
+  // machine; `staleclearsloading` is what says the reading itself is real.
+  const HELD_OPENING_MS = 2_000;
+  const HELD_ASKED_MS = 4_000;
+
+  try {
+    await page.route(anyReport, async (route, request) => {
+      const url = new URL(request.url());
+      await new Promise((resolve) =>
+        setTimeout(resolve, asked(url) ? HELD_ASKED_MS : HELD_OPENING_MS),
+      );
+      await route.continue();
+    });
+
+    const openingArrived = page.waitForResponse((answer) => opening(new URL(answer.url())));
+    const askedArrived = page.waitForResponse((answer) => asked(new URL(answer.url())));
+
+    await page.goto(PATH);
+    // The pickers are filled from the list of intakes, which is not held.
+    await expect
+      .poll(async () => Number(await toPicker(page).inputValue()))
+      .toBeGreaterThan(Number(CURRENT.admission));
+    await toPicker(page).selectOption(CURRENT.admission);
+
+    await openingArrived;
+    // Read once, at the settle point the row is about: the superseded answer
+    // has landed and the one the screen is waiting for has not.
+    expect(await page.getByText('กำลังโหลดข้อมูล…').count()).toBe(1);
+
+    await askedArrived;
+    await expect(yearHeader(page, CURRENT.admission)).toBeVisible();
+    await expect(page.getByText('กำลังโหลดข้อมูล…')).toHaveCount(0);
+  } finally {
+    await page.unroute(anyReport);
+    await removeBothEnds();
+  }
 });

@@ -1438,3 +1438,70 @@ caught a wait written into row 4 so that a `goto` could not cancel that sign-out
 become the row's assertion in silence - `cookiekept` died on the wait, not on the last line - until
 it was given a timeout it tolerates. **Anything written for timing must not be able to decide
 anything.**
+
+
+## #129 — the report of a range the pickers had left
+
+**#129 is the twelfth, and it spent two rounds being diagnosed as something it was not.** One row of
+`44a` asked for a two-year range and read eight column headers, but only in a full-suite run: run on
+its own, and with `--repeat-each=3`, it passed every time. The first reading was *a flaky spec*. The
+second was *data another spec left behind* — and querying the register after a full run proved the
+leak real, with `17b` leaving an intake of 2568 and `17c` one student of 2561. Both readings were
+true and neither was the defect. **Eight was not a wider range; it was a report of a range nobody
+had asked for.** The row asks for two years, and two years count four columns however many intakes
+the register grows; eight is six years plus the two naming columns — the range `showRange` passes
+through on its way, because it moves the `to` end before the `from` end. **A spec that fails only in
+the full suite is not a flaky spec until the mechanism has been measured**, and the leak that makes
+a defect reachable is not the defect.
+
+`load` wrote `setData(await getResultsAcrossIntakes(...))` with nothing tying an answer to the
+request that caused it, so **the answer that arrived last won, not the answer asked for last** — and
+the screen's own docstring already had the words for what that looks like to a person: *showing a
+report about one range while saying another*. The guard it needed existed twice in the same
+codebase, in `CohortPickers` and in `Plos`, and #68 had proposed it in general terms months earlier
+without either of them naming the other. The ticket offered three things to decide and only one of
+them fixes anything: making the leaking specs clean up **hides** the race, and deriving the count
+from `PRIOR`/`CURRENT` instead of the literal `4` is right for the reason the ticket gives — the
+comment above it claimed a robustness the assertion did not have — but leaves the failure exactly
+where it was, because the asked-for range still counts four while the screen draws eight. The
+declined one is #132 now, with the register it left behind measured into it: a deferral written into
+prose and not into the tracker is a decision nobody can find, and this one is the third clause of
+the sentence being closed rather than adjacent work.
+
+**And the row that had been catching the defect was not the row that holds the claim.** Row 1 could
+only see it when a previous spec had happened to leave the register wide; on the seeded register the
+opening range already *is* what the row asks for, `showRange` fires no request, and there is nothing
+to race. So the two new rows build the situation instead of waiting for it: a student at each end of
+the range, and the middle answer held back with `page.route`, which makes the outcome a fact about
+the code rather than about the network — #121's move of narrowing the window rather than writing
+into a shared schema, in another form. **A row that catches a defect on some runs is not a row that
+holds it; the row that holds it is the one that builds the situation itself.** Both new rows read
+the screen once, at a settle point that is an arrival rather than a guess, which is what #50 asked
+of a retrying negative and what #52 asked of anything written for timing.
+
+**The guard has two sides and they are one state apart, so each got its own row and its own
+mutant.** `staleanswerwins` is the defect itself — a stale answer painting over the current one.
+`staleclearsloading` is the side no row would have reached: an answer nobody is waiting for clearing
+the spinner of a request still in flight, which is visible only while there is no report on screen
+yet, and leaves *nothing at all* there — no report, no sentence, no spinner — which is #43's defect
+arrived at from the other end. Reaching it means superseding the **first** request before it
+answers, which is why that row drives the picker rather than `showRange`. The third side, the
+effect's own cleanup, is not a third mutant: removing it does what removing both of these does at
+once, and says nothing new. **When one fix lands on three lines, the mutants are per claim, not per
+line.** Measured, `staleanswerwins` kills both new rows — a stale answer that paints also takes the
+spinner with it — and `staleclearsloading` kills only the spinner row; the other 378 rows stand
+under each. **Row 1 passes under the defect itself**, which is the whole of the argument above in
+one number.
+
+**And the first sweep failed both new rows at their preconditions, which is a finding about the
+rows.** Each opened by asserting the pickers held the years the two enrolled students imply —
+`2563` and `2568` — and in a full-suite run the `from` picker holds `2561`, because `17c`'s leak is
+still there and is older than anything this file enrols. Row 8 died on that line and row 9 timed out
+waiting for a response it identified by a range string that was never requested; neither reached the
+assertion it exists for, so the sweep proved nothing and the rows would have failed the clean
+full-suite run just as surely. Both now read the opening range off the screen and assert only the
+shape they need — that it starts before the range asked for and ends after it — and tell the two
+requests apart by the end that moved. **A row that builds its own situation is still handed a world
+it did not build; assert the shape the row needs, not the values the seed would have given.** The
+mutant sweep is where a new row meets the register the whole suite leaves, and that is the second
+reason to run one.

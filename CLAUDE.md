@@ -59,6 +59,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   for the defect (#89).
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
+- **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
+  and the leak that makes a defect reachable is not the defect. (#129)
 - **A grep is evidence for the pattern you typed, not for the claim you wanted.** Re-run a
   ticket's commands, then ask what they could not have found; search for the identifier, not the
   concept — specs are written in English and sheets in Thai. (#111, #124, #83)
@@ -171,6 +173,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - Before trusting a new assertion, break the thing it is about; when nothing fails, the claim has
   an owner you have not found yet. (#124)
 - **A defect nobody can see needs a mutant or it is not proved.** (#111)
+- **A row that catches a defect on some runs is not the row that holds it** — the row that holds it
+  builds the situation itself, rather than waiting for another spec to leave one behind. But a row
+  that builds its own situation is still handed a world it did not build: assert the shape it needs,
+  not the values the seed would have given. (#129)
 - A branch correct data never reaches is still reached by incorrect data. (#96)
 - When two tests sit either side of a line, check whether anything runs the line; a reason why
   one half of a thing cannot be tested is not a statement about the other half; draw a stub's

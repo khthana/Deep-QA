@@ -163,7 +163,29 @@ export default function ProgramLevelCompare() {
     if (Number(year) < Number(from)) setFrom(year)
   }
 
-  const load = useCallback(async () => {
+  /**
+   * The report for the range the pickers are on now — #129.
+   *
+   * `isCurrent` is asked after the answer arrives, and it is the whole of the
+   * rule that the report on screen is the one that was asked for. Moving both
+   * ends fires a request per end, and the first of them carries a range that is
+   * half old: the `to` has moved and the `from` has not. Whichever answer
+   * arrives last used to be the one drawn, so a slow middle answer landed on
+   * top of the right one and the screen showed a report about one range while
+   * saying another — which is exactly what the opening docstring says a picker
+   * must never do. It is the rule [#68](https://github.com/khthana/Deep-QA/issues/68)
+   * describes for the paging panels, met here on a screen its list does not
+   * name. `CohortPickers` and `Plos` keep the same rule in the other spelling —
+   * a `cancelled` flag read inside the effect that owns the request — which is
+   * not available here, because the request is made by a callback the effect
+   * calls rather than by the effect itself; the flag is therefore passed in, and
+   * asked in the positive so the answer is *is this still the current request*.
+   *
+   * `setLoading` is inside the same guard. A stale answer clearing the spinner
+   * would leave the screen saying it had finished while the request it is
+   * waiting for is still out, which is the same defect one state along.
+   */
+  const load = useCallback(async isCurrent => {
     if (!program || !from || !to) {
       setData(null)
       // Nothing to ask for is an answer, not a wait. #43's hand-walk found the
@@ -175,18 +197,25 @@ export default function ProgramLevelCompare() {
     setLoading(true)
     setNotice(null)
     try {
-      setData(await getResultsAcrossIntakes(program, from, to))
+      const answer = await getResultsAcrossIntakes(program, from, to)
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      setData(null)
-      report(error)
+      if (isCurrent()) {
+        setData(null)
+        report(error)
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [program, from, to])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   return (
