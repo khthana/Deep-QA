@@ -1638,6 +1638,7 @@ family: `PloMapping` and the two `setDrill` handlers inside the reports just gua
 parameter from a control on their own screen and race exactly as the fifteen did, while the other
 thirteen read `useParams` and can only be superseded by walking from one CLO or activity to the
 next on the same route — *แคบกว่าแต่ไม่ใช่ไม่มี*, in the words of the comment that measured them.
-They are adjacent work and they get a ticket, because the price this ticket's own owner set is
-**a row per site, not a line per site**, and #119's rule is that a deferral written into prose and
-not into the tracker is a decision nobody can find.
+They are adjacent work and they got a ticket — **#133**, carrying the same table with the line
+numbers — because the price this ticket's own owner set is **a row per site, not a line per
+site**, and #119's rule is that a deferral written into prose and not into the tracker is a
+decision nobody can find.
