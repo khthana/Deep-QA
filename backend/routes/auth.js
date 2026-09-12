@@ -18,6 +18,7 @@ const passport = require('passport');
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
 
 const {
+  accountStillExists,
   recordActivity,
   resolveGoogleAccount,
   resolvePasswordAccount,
@@ -188,11 +189,25 @@ function authRoutes(pool) {
   // Dropping the guard is not a hole to force from another site: the cookie is
   // `sameSite: 'lax'`, so a cross-site POST never carries it, and a request
   // that carries nothing clears nothing and logs nobody.
+  //
+  // Both halves of that are in the order below, and until #131 the order said
+  // the opposite. Clearing came second, so a record that could not be written
+  // took the erasure down with it - 500, and the cookie still on the browser,
+  // from the one route that removes it. A deleted account is where it happened:
+  // `user_log` cascades, so there is no row for a name the users table no
+  // longer holds. It is worth more since #52, which has the browser post here
+  // by itself on `accessEnded`, one of whose reasons is that exact state.
   router.post('/auth/logout', async (req, res, next) => {
     try {
       const userId = accountInDeadCookie(req);
-      if (userId) await recordActivity(pool, userId, 'LOGOUT');
+      // Erasing first. Should the write below throw anyway - the account
+      // deleted between the two lines - the response already carries the
+      // erasure, and 500 on a cookie that is gone is a worse log line rather
+      // than a browser that cannot sign out.
       clearSession(res);
+      if (userId && (await accountStillExists(pool, userId))) {
+        await recordActivity(pool, userId, 'LOGOUT');
+      }
       return res.status(200).json({ message: 'ออกจากระบบแล้ว' });
     } catch (error) {
       return next(error);

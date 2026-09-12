@@ -82,8 +82,15 @@ MUTANTS = {
  # the anchor reader took `MUTANTS` in one `literal_eval`, and every mutant in
  # this file is a *list* of edits, so the guard that asked for a tuple skipped
  # all nine without saying so.
+ #
+ # Re-aimed again 2026-09-12 (#131). The line is now inside a block guarded by
+ # whether the account still exists, so it is one indent over and the `if` is
+ # no longer on it. The claim is the one it has always made - sign-out leaves a
+ # line in the history, and removing the call takes it away - and deleting this
+ # line leaves an empty block, which is valid and is the point: the mutant has
+ # to remove the writing and nothing else.
  'N7': [('auth',
-   "      if (userId) await recordActivity(pool, userId, 'LOGOUT');\n",
+   "        await recordActivity(pool, userId, 'LOGOUT');\n",
    "")],
  # the accounts list not narrowed to what the acting grant reaches
  'N8': [('users',

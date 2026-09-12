@@ -107,6 +107,26 @@ async function recordActivity(db, userId, activity, target = null) {
 }
 
 /**
+ * Is there still an account of this name for a line to be filed under - #131.
+ *
+ * `user_log.user_id` references `users` with `ON DELETE CASCADE`, so an
+ * account that has been deleted took its whole history with it and has no room
+ * for another line. The schema has already decided that a deleted account's
+ * history does not exist; this reads that decision back at the one call site
+ * whose subject may be gone.
+ *
+ * Sign-out is that site and the only one. Every other `recordActivity` call is
+ * made on a request that has already read the account out of the database -
+ * `requireSession` for the routes behind it, and `admitted` on the two ways in,
+ * which is handed the row it just resolved. Asking again there would hide a
+ * defect rather than prevent one.
+ */
+async function accountStillExists(db, userId) {
+  const { rows } = await db.query(`SELECT 1 FROM users WHERE user_id = $1`, [userId]);
+  return rows.length > 0;
+}
+
+/**
  * The record an entry was written about, when that record is an account.
  *
  * The one kind there is today. It exists so the string `'USER'` is written
@@ -339,6 +359,7 @@ module.exports = {
   allRoles,
   validityRefusal,
   sessionAdmission,
+  accountStillExists,
   recordActivity,
   onUser,
   resolveGoogleAccount,

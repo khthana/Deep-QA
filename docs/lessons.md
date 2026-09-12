@@ -1643,6 +1643,43 @@ numbers — because the price this ticket's own owner set is **a row per site, n
 site**, and #119's rule is that a deferral written into prose and not into the tracker is a
 decision nobody can find.
 
+## #131 — the comment said which of the two was unconditional, and the code did the other one first
+
+**A route's own comment had already decided this ticket, three paragraphs above the bug.**
+`POST /auth/logout` carries a long note from #92 explaining why it sits outside `requireSession`,
+and it says the thing plainly: *"clearing is unconditional and idempotent — signing out of a session
+that is already gone is still signing out … Recording needs a name."* The code then wrote the record
+first and cleared second. For every account that exists the two orders are the same program; for an
+account that has been deleted the write hits `user_log`'s foreign key, the handler answers 500, and
+`clearSession` never runs — on the one route in the application that erases the cookie. **A comment
+that states a rule is a claim about the code beside it, and it is the cheapest claim there is to
+check.** #83's rule is to read a file's own comments before inventing a rule; this is the same rule
+read the other way.
+
+**What made it worth doing now was a different ticket.** Nothing in the product deletes an account —
+`routes/users.js` has no delete route, which #67 recorded for its own reasons — so the state needs a
+`DELETE` in the database and the ticket was filed as theory. #52 changed the price: the browser now
+posts to `/auth/logout` **by itself** when it is told `accessEnded`, and one of the reasons that flag
+carries is `unknown`, which is exactly *the account was deleted while its cookie was still good*.
+`AuthContext` posts it as `.catch(() => {})`, so the 500 is swallowed and every page load runs the
+same loop — 403, sign-out, 500 — with the cookie never going anywhere. **A defect that is
+unreachable is a defect with a date on it**, and the thing that moves the date is usually another
+ticket's fix.
+
+**The fix is two halves and only one of them can be proved here.** The question before the write —
+is there still an account for this line to be filed under — is proved: `131:logstoanybody` removes
+it and kills exactly one row of 739. The order is not: with the question in place nothing throws, so
+no row can tell the two orders apart, and what the order guards is the gap between the check and the
+insert, which is a race the seam has no handle on — the same shape #51 records for token renewal.
+It is in the code because it costs nothing, and the mutation file says *untested* rather than
+letting the sweep's silence read as proof (#107).
+
+**`13:N7` moved for the second time in five days.** It anchors to the `recordActivity` call on this
+route, which #92 rewrote and #131 has now indented by one and wrapped in a guard. The anchor check
+said it applied; only the sweep said it still kills, and it does — three rows, the same claim it has
+always made. **An anchor check and a sweep answer different questions**, and a mutant that has been
+re-aimed twice is one to sweep rather than to trust.
+
 ## #132 — two files, nineteen tables, and an instrument instead of a list
 
 **#132 asked for a cleanup and the measurement turned it into a survey.** The ticket was split out of

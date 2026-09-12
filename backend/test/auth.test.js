@@ -405,6 +405,35 @@ test('the session cookie', async (t) => {
     // assertion has to be that *no* line was written anywhere.
     assert.equal(await lines(), before);
   });
+
+  // #131, and the third state this route can be in. The name in the cookie is
+  // one this server signed, so the two rows above do not cover it, and the
+  // account it names is gone - `user_log.user_id` is a foreign key with
+  // `ON DELETE CASCADE`, so the history went with the account and there is no
+  // room for a new line. Writing it first is what used to take the erasure
+  // down with it: 500, and the cookie still there, on the one route whose job
+  // is to remove it.
+  //
+  // It matters more since #52: the browser posts here by itself when it is
+  // told `accessEnded`, and one of the reasons that flag carries is `unknown`,
+  // which is this state exactly. Nothing in the application deletes an account
+  // today (`routes/users.js` has no delete route, #67) - the day one exists,
+  // this is a path a person walks rather than a state a test can only sign.
+  await t.test('is cleared on sign-out by an account that no longer exists', async () => {
+    const lines = () =>
+      api.pool.query('SELECT count(*)::int AS n FROM user_log').then(({ rows }) => rows[0].n);
+    const before = await lines();
+
+    const response = await request(api.app)
+      .post('/api/auth/logout')
+      .set('Cookie', sessionOf('NOBODY0001', 60));
+
+    assert.equal(response.status, 200);
+    assert.match(sessionCookie(response), /token=;/);
+    // Nowhere to file it: the line would name an account the users table does
+    // not hold, which is the write that was failing.
+    assert.equal(await lines(), before);
+  });
 });
 
 test('the activity log', async (t) => {

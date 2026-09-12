@@ -190,6 +190,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - Before trusting a new assertion, break the thing it is about; when nothing fails, the claim has
   an owner you have not found yet. (#124)
 - **A defect nobody can see needs a mutant or it is not proved.** (#111)
+- **An effect that must always happen does not go behind one that can fail** — and a defect that is
+  unreachable today has a date on it, usually moved by another ticket's fix. (#131)
 - **A row that catches a defect on some runs is not the row that holds it** — the row that holds it
   builds the situation itself, rather than waiting for another spec to leave one behind. But a row
   that builds its own situation is still handed a world it did not build: assert the shape it needs,
