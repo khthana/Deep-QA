@@ -4,6 +4,7 @@ const { expect } = require('@playwright/test');
 
 const { BACKEND_URL } = require('./env');
 const { DASHBOARD } = require('./teaching-screen');
+const { untilDrawn } = require('./pager');
 
 /**
  * รายชื่อนักศึกษาของรายวิชา — #25, as a browser reaches it.
@@ -35,10 +36,18 @@ const waitForList = page =>
     answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
   );
 
-/** Goes to the class list of one ตอนเรียน and hands back the read a row asserts on. */
+/**
+ * Goes to the class list of one ตอนเรียน and hands back the read a row asserts on,
+ * once the list is drawn.
+ *
+ * Asserts the answer was 200, which it did not before #135: every caller opens
+ * a ตอนเรียน its own account teaches, and a count the pager can be waited for
+ * only exists on an answer that succeeded.
+ */
 async function openEnrolment(page, sectionId) {
   const [response] = await Promise.all([waitForList(page), page.goto(path(sectionId))]);
-  return response;
+  expect(response.status()).toBe(200);
+  return untilDrawn(page, response);
 }
 
 /**

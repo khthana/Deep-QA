@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 const { importCsv } = require('./import-panel');
+const { untilDrawn } = require('./pager');
 
 const SUBJECTS = '/main/subjects';
 const API = '/api/subjects';
@@ -15,7 +16,8 @@ function waitForList(page) {
 }
 
 /**
- * Opens the screen and waits for the list a passing row is about to assert on.
+ * Opens the screen and waits for the list a passing row is about to assert on to
+ * be drawn.
  *
  * The answer is returned rather than swallowed, because two of the rows here
  * read what the server sent as well as what the table drew. The refusal row
@@ -25,7 +27,7 @@ function waitForList(page) {
 async function openSubjects(page) {
   const [response] = await Promise.all([waitForList(page), page.goto(SUBJECTS)]);
   expect(response.status()).toBe(200);
-  return response;
+  return untilDrawn(page, response);
 }
 
 /** This screen's import, bound to the endpoint it posts to. */

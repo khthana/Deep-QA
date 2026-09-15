@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 const { importCsv } = require('./import-panel');
+const { untilDrawn } = require('./pager');
 
 /**
  * รายวิชาในหลักสูตร — #18, as a browser reaches it.
@@ -41,12 +42,11 @@ function waitForCatalogue(page) {
 }
 
 /**
- * Opens the screen and asserts the list a passing row is about to read.
+ * Opens the screen and asserts the list a passing row is about to read, once it
+ * is drawn.
  *
- * Waits for the count the response carried to be the count on the screen, for
- * the reason `students-screen.js`'s `openRegister` gives at length: the
- * response resolving is not the list being drawn, and row 4 of `18a` read the
- * pager as 0 in a full run because of it. (#132)
+ * Row 4 of `18a` read the pager as 0 in a full run before #132 made this wait;
+ * `pager.js`'s `untilDrawn` holds the reason, and since #135 the wait itself.
  */
 async function openProgramSubjects(page) {
   const [response] = await Promise.all([
@@ -54,9 +54,7 @@ async function openProgramSubjects(page) {
     page.goto(PROGRAM_SUBJECTS),
   ]);
   expect(response.status()).toBe(200);
-  const { total: carried } = await response.json();
-  await expect(page.getByText(`ทั้งหมด ${carried} รายการ`)).toBeVisible();
-  return response;
+  return untilDrawn(page, response);
 }
 
 /** This screen's import, bound to the endpoint it posts to. */
@@ -183,12 +181,19 @@ async function filterTo(page, programId) {
   ]);
 }
 
-/** Steps to the next page and waits for the rows it fetches. */
+/**
+ * Steps to the next page and waits for the rows it fetches to be drawn.
+ *
+ * `18b` reads the codes on the line after this, once and without retrying -
+ * before #135 that read could land between the answer and the drawing.
+ */
 async function nextPage(page) {
-  await Promise.all([
+  const [response] = await Promise.all([
     waitForList(page),
     page.getByRole('button', { name: 'ถัดไป' }).click(),
   ]);
+  expect(response.status()).toBe(200);
+  return untilDrawn(page, response);
 }
 
 module.exports = {

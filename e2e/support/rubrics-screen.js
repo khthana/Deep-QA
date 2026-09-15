@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { untilDrawn } = require('./pager');
 
 /**
  * ข้อมูล Rubric กลาง — #21, as a browser reaches it.
@@ -38,11 +39,11 @@ function waitForList(page) {
   );
 }
 
-/** Opens the screen and asserts the list a passing row is about to read. */
+/** Opens the screen and asserts the list a passing row is about to read, once it is drawn. */
 async function openRubrics(page) {
   const [response] = await Promise.all([waitForList(page), page.goto(RUBRICS)]);
   expect(response.status()).toBe(200);
-  return response;
+  return untilDrawn(page, response);
 }
 
 /**

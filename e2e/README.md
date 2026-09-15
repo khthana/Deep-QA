@@ -143,7 +143,7 @@ e2e/
 │   ├── shell.js           the role picker, the user menu, the two dialogs over the top
 │   ├── import-panel.js    the template button, the file control, the total — shared by every import row
 │   ├── expired-session.js the dialog a dead session raises, shared by the rows that provoke one
-│   ├── pager.js           the one paging control every list draws — #57
+│   ├── pager.js           the one paging control every list draws — #57; `untilDrawn`, what every opener waits for — #135
 │   ├── grants-panel.js    ┐
 │   ├── history-panel.js   ├ one module per screen or panel: its controls,
 │   ├── users-screen.js    │ read as the checklist reads them
@@ -174,14 +174,23 @@ rename that moves it is a rename that breaks a file it never mentions.
 
 ## Reading a number off the screen
 
-A count read straight after a navigation is read too early. `openRegister` and the other `open…` helpers wait for
-the list's own `GET` to come back, which is the last thing this suite can wait for and is not the thing being
-asserted: the response arriving and React having painted the new total are two different moments, and between them
-the table is empty. `17b-students-import.spec.js:121` read `0` where it expected `176` on a loaded machine and
-passed on every unloaded one - a test that fails only when the CI box is busy, which is when nobody is looking.
+A count read straight after a navigation is read too early. Waiting for the list's own `GET` to come back is not
+waiting for the thing being asserted: the response arriving and React having painted the new total are two different
+moments, and between them the pager reads *ทั้งหมด 0 รายการ*. `17b-students-import.spec.js:121` read `0` where it
+expected `176` on a loaded machine and passed on every unloaded one - a test that fails only when the CI box is busy,
+which is when nobody is looking.
 
-So a number read after a fetch is polled - `await expect.poll(() => total(page)).toBe(before)` - rather than read
-once. This is not a timeout in disguise: poll re-reads until the value matches or the deadline passes, so a total
+So a helper that waits for a paged list ends with `untilDrawn` in `support/pager.js`, which waits for the total and
+the page the answer carried to be what the pager says. That is every `open…` helper on a screen with a pager - since
+#132 `openRegister` and `openProgramSubjects`, since #135 the rest, with `pick` on the activity history and
+`openHistory` on the work groups counted as openers - and the two after-click helpers whose rows read on the very next
+line, `filterProgram` and `nextPage`. A row can read `total(page)` straight after one of those and get the real
+number. Its docstring says what it cannot see and why nothing narrower would do.
+
+Two are left out on purpose, and say so. `history-panel.js`'s `openHistory` waits for `GET /api/users`, which carries a
+total that screen never reads out - its list only fills a `<select>`. And the after-click helpers that remain on a
+paged screen (an import, a search, `step`, the other filters) are followed in every spec by a read that retries or goes
+through `settled` - #135 read each call for that - so a number read after one of those is polled - `await expect.poll(() => total(page)).toBe(before)` - rather than read once. This is not a timeout in disguise: poll re-reads until the value matches or the deadline passes, so a total
 that is genuinely wrong still fails, and fails at the same place. A number read off a screen that has already been
 asserted against needs no poll: three of the plain reads sit under `await expect(...)` calls on rows of the same
 table, and the row appearing and the total changing are one React commit, so the wait above them is the wait.

@@ -7,9 +7,9 @@ const { expect } = require('@playwright/test');
  * ticket #57.
  *
  * One module rather than a copy in each screen's module, for the reason #57
- * exists at all: six screens render the same component, and a helper written
- * six times is six chances to assert something slightly different about the
- * same markup.
+ * exists at all: every paged screen renders the same component, and a helper
+ * written once per screen is one chance per screen to assert something slightly
+ * different about the same markup.
  *
  * What a screen must still supply is its own *table*, because that is the part
  * that differs — and because the table is what says whether the screen has
@@ -33,7 +33,8 @@ const next = page => page.getByRole('button', { name: 'ถัดไป' });
  * exactly that: the placeholder is one "key", disjoint from every real page,
  * so "หน้าถัดไปคือคนละชุด" was true without anything having paged.
  *
- * Nothing here reads the pager or the table without going through this first.
+ * Nothing here reads the table without going through this first, and nothing
+ * reads the pager without it except `untilDrawn`, which says why.
  *
  * The "ไม่พบ…" line an empty list draws is deliberately let through: it is
  * what a settled empty table looks like, and the rows that read an empty list
@@ -79,6 +80,49 @@ async function keysOn(table) {
 }
 
 /**
+ * Waits until the pager reads out the total and the page a list's answer
+ * carried - #132, #135.
+ *
+ * The response arriving is not the list being drawn. `waitForResponse` resolves
+ * when the answer lands, and React sets state after that; a row whose next line
+ * reads the screen reads whatever was there before. Two full runs during #132
+ * found three rows reading the pager as *0* that way, in two files, and every
+ * one of them passed when its file ran alone - which is what makes it look like
+ * leftovers from the file before, and it is not.
+ *
+ * So the wait is for what the answer carried to be what the screen says.
+ * Anything narrower keeps the same promise without keeping it: the pager line
+ * *existing* is no good, because a screen draws it as *0* while the read is in
+ * flight, and `settled` is no good for a helper that opens a screen, because
+ * before the first read begins an empty table is "ไม่พบ…", which `settled` is
+ * written to let through. `expect.poll` in the row does not save it either: what
+ * is wrong is the expected value, not the read.
+ *
+ * The page as well as the total, because every paged screen hands `Pager` the
+ * page the server confirmed as `shown`, and a step to the next page keeps the
+ * total: matched on the count alone, `nextPage` would be told it had arrived
+ * before it left. Located through `pagerLine`, so the pager's sentence is spelt
+ * in one place - and because the group history's heading also carries
+ * *ทั้งหมด N รายการ*, which a match on the count alone would find twice.
+ *
+ * What it cannot see: a screen already saying what the answer says - a filter
+ * that lands on a list of the same length, or an answer of *0* on page 1, which
+ * is what the screen draws while the first read is in flight. A count read after
+ * it is still the right count; rows read after it may still be the old ones.
+ *
+ * The body is read first and at once. Chromium keeps a response body only until
+ * the page navigates away from it (`enrolment-screen.js` tells it in full), so
+ * this must be the next thing after the response resolves - which is also why
+ * it hands the answer back: a row that reads `answer.json()` later reads the
+ * copy this buffered, and no longer races anything.
+ */
+async function untilDrawn(page, response) {
+  const { total, page: shown } = await response.json();
+  await expect(pagerLine(page)).toContainText(`ทั้งหมด ${total} รายการ · หน้า ${shown} จาก`);
+  return response;
+}
+
+/**
  * Presses *ถัดไป* (or *ก่อนหน้า*) and waits for the list that press asks for.
  *
  * The wait is on the screen's own list request, handed in, because the four
@@ -104,6 +148,7 @@ module.exports = {
   previous,
   next,
   settled,
+  untilDrawn,
   reading,
   keysOn,
   step,

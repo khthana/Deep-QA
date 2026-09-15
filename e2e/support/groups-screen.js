@@ -3,6 +3,7 @@
 const { expect } = require('@playwright/test');
 
 const { DASHBOARD } = require('./teaching-screen');
+const { untilDrawn } = require('./pager');
 
 /**
  * กลุ่มงานนักศึกษา — #26, as a browser reaches it.
@@ -162,7 +163,13 @@ async function disband(page, sectionId, groupName, { confirm = true } = {}) {
   return response;
 }
 
-/** Opens the history panel and waits for its first page. */
+/**
+ * Opens the history panel and waits for its first page to be drawn.
+ *
+ * The rows that call this read `historyLines` on the very next line, and that
+ * read does not retry: before #135 it could come back as the loading row, whose
+ * single cell has no second column, so `const [newest] = ...` was `undefined`.
+ */
 async function openHistory(page, sectionId) {
   const [response] = await Promise.all([
     page.waitForResponse(
@@ -173,7 +180,7 @@ async function openHistory(page, sectionId) {
     page.getByRole('button', { name: 'ประวัติการเปลี่ยนแปลง' }).click(),
   ]);
   expect(response.status()).toBe(200);
-  return response;
+  return untilDrawn(page, response);
 }
 
 /** The sentences the history panel is showing, newest first. */

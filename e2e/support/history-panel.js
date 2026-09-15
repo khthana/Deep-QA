@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 const { waitForList, search } = require('./users-screen');
+const { untilDrawn } = require('./pager');
 
 /**
  * The activity history - #13.
@@ -46,7 +47,14 @@ const waitForHistory = (page, userId, pageNumber) =>
         new URL(answer.url()).searchParams.get('page') === String(pageNumber)),
   );
 
-/** Opens the screen and waits for the list the picker is filled from. */
+/**
+ * Opens the screen and waits for the list the picker is filled from.
+ *
+ * Not waited for the drawing, unlike `openUsers`, which opens on the same
+ * `GET /api/users` (#135): the answer carries a total, but on this screen nothing
+ * reads it out - the picker is a `<select>`, and `pick` waits for its option.
+ * The history's own pager appears after a person is chosen, which is `pick`.
+ */
 async function openHistory(page) {
   const [response] = await Promise.all([waitForList(page), page.goto(HISTORY)]);
   expect(response.status()).toBe(200);
@@ -54,7 +62,7 @@ async function openHistory(page) {
 }
 
 /**
- * Narrows the picker, chooses a person, and waits for their history.
+ * Narrows the picker, chooses a person, and waits for their history to be drawn.
  *
  * The search is optional because the picker holds a hundred accounts and the
  * seed has ten - but the checklist's filter row is about typing into the box,
@@ -67,7 +75,7 @@ async function pick(page, { userId, q }) {
     page.getByRole('combobox').selectOption(userId),
   ]);
   expect(response.status()).toBe(200);
-  return response;
+  return untilDrawn(page, response);
 }
 
 /**

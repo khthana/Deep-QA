@@ -13,31 +13,16 @@ const {
 } = require('./import-panel');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('./env');
+const { untilDrawn } = require('./pager');
 
 const STUDENT_DATA = '/main/student-data';
 
 /**
- * Opens the register and waits for the list it is about to assert on - #132.
+ * Opens the register and waits for the list it is about to assert on to be drawn.
  *
- * The response arriving is not the list being drawn. React sets state after it
- * resolves, and a row whose next line reads the pager reads the screen's empty
- * state instead: `const before = await total(page)` returns 0, and a later
- * `expect.poll(...).toBe(before)` can never pass, because what is wrong is the
- * expected value and not the read. Two full runs found three rows that way, in
- * two files, all of them reading 0 - and each of those rows passes when its
- * file runs alone, which is what makes it look like leftovers and is not.
- *
- * So this waits for the number the response carried to be the number on the
- * screen. Anything narrower - a row being visible, a timeout - is the same
- * promise made again without keeping it. Waiting for the pager line to exist
- * would not do: the screen draws it as *0* while the read is in flight, which
- * is the value that was being believed.
- *
- * The body is read here and not a line later, and `enrolment-screen.js` says
- * why in full: Chromium keeps a response body only until the page navigates
- * away from it, so a helper that opens a screen and reads that screen's JSON
- * after doing anything else is racing the navigation. Between the response and
- * this read there is nothing.
+ * #132 found this one reading the pager as *0* in a full run and fixed it here
+ * by hand; #135 moved the wait into `pager.js`'s `untilDrawn`, which carries the
+ * reasoning, so every helper that waits for a paged list keeps one rule.
  */
 async function openRegister(page) {
   const [response] = await Promise.all([
@@ -49,9 +34,7 @@ async function openRegister(page) {
     page.goto(STUDENT_DATA),
   ]);
   expect(response.status()).toBe(200);
-  const { total: carried } = await response.json();
-  await expect(page.getByText(`ทั้งหมด ${carried} รายการ`)).toBeVisible();
-  return response;
+  return untilDrawn(page, response);
 }
 
 /** The register's own import, bound to the endpoint this screen posts to. */
@@ -86,9 +69,14 @@ async function addStudent(page, { code, first, last, program }) {
 }
 
 /**
- * Moves the หลักสูตร filter and waits for the list it asks for, so what
- * follows reads the rows the filter chose rather than the ones still on screen
- * from before it moved.
+ * Moves the หลักสูตร filter and waits for the list it asks for to be drawn, so
+ * what follows reads the count the filter chose rather than the one still on
+ * screen from before it moved.
+ *
+ * It waited for the answer alone until #135, and `17c` row 10 reads `total` on
+ * the very next line. The rows are a different matter: `untilDrawn` cannot tell
+ * a list of the same length from the one before it, so a row that reads rows
+ * here asserts them, retrying.
  */
 async function filterProgram(page, programId) {
   const [response] = await Promise.all([
@@ -100,7 +88,7 @@ async function filterProgram(page, programId) {
     page.getByLabel('หลักสูตร').selectOption(programId),
   ]);
   expect(response.status()).toBe(200);
-  return response;
+  return untilDrawn(page, response);
 }
 
 /** The register's own row for one code, header row excluded. */

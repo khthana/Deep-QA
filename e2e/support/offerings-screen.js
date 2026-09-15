@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { untilDrawn } = require('./pager');
 
 /**
  * การเปิดรายวิชาในภาคการศึกษา — #23, as a browser reaches it.
@@ -44,11 +45,11 @@ function waitForDetail(page) {
   );
 }
 
-/** Opens the screen and asserts the list a passing row is about to read. */
+/** Opens the screen and asserts the list a passing row is about to read, once it is drawn. */
 async function openOfferings(page) {
   const [response] = await Promise.all([waitForList(page), page.goto(OFFERINGS)]);
   expect(response.status()).toBe(200);
-  return response;
+  return untilDrawn(page, response);
 }
 
 const yearFilter = page => page.getByPlaceholder('ทุกปี');

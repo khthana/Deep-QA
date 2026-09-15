@@ -1780,3 +1780,75 @@ tables are #134, with the census in it, because the price is the same one #68 se
 and #119's rule is that a deferral written into prose and not into the tracker is a decision nobody
 can find. The two the ticket named are now measured clean rather than asserted clean: both appear in
 the forty.
+
+## #135 — nine helpers of the same shape, two of which were not, and a failure #132 had already seen
+
+**#135 was the other nine of #132's eleven, and its own list was the first claim to measure.** The
+ticket said every `open…` helper on a route that answers with a paged `total` has the shape
+`openRegister` had — wait for the response, hand it back, let the row read the pager — and named nine
+routes. Seven of them are exactly that. Two are not. On the activity history, `openHistory` waits for
+`GET /api/users`, which carries a total, but nothing on that screen reads it out: the list only fills
+a `<select>`, and the paged read the rows care about is the **next** helper, `pick`. And the work
+groups' history is not an opener at all but a click on a button, on a panel whose heading also carries
+*ทั้งหมด N รายการ*, so a wait matched on the count alone is two elements and a strict-mode failure. The
+routes were right; **the helpers they led to were a grep for the route**, and #68's rule is that a
+file list is a grep somebody else ran.
+
+**The failure the ticket predicted had already happened, and nobody wrote it down.** While #132 ran
+its fifty-six single-file runs, `26a` failed once at row 8: `historyLines` on the line after the group
+`openHistory` came back `undefined`. The panel was still drawing its loading row, whose one cell has
+no second column, so `const [newest] = …` had nothing to destructure. It passed on the next run and was
+called intermittent in the conversation and nowhere else — not on #132, not in the census, and #132's
+own story above went on to call the nine helpers the ones *never seen to fail*. It was this defect, in
+a helper the ticket did not know had the shape. **#129 already has the rule** — a spec that fails only
+sometimes is not flaky until the mechanism is measured — and this is it met again, one ticket after
+it was written.
+
+**One wait, not eleven, because here merging costs the proof nothing.** #132 had written the wait
+inline twice. Eleven copies would have been eleven places for the match to drift — one of them
+without *· หน้า* is the strict-mode failure above, waiting for a screen to acquire a second sentence.
+So `untilDrawn` sits in `support/pager.js` beside `settled`, and every opener ends by returning it.
+#68's rule is that a merge is answered with what it costs the proof, and the cost there was fifteen
+claims no mutant could tell apart. Here there is one claim — *this helper waits for its list* — and
+the proof is per helper, not per copy: break the one line to wait for one more than the answer carried, run one spec file
+per helper, and read where each fails. Eleven files, twenty-six failed rows, **every one of them at
+`untilDrawn`** — including `57a`, whose single failure came through `openUsers` in its `beforeEach`,
+so `openPrograms` was proved separately by row 4 on its own. A merge that hid a helper from the break
+would have shown up as a file that passed.
+
+**The review found the half of the sentence the ticket had not written.** Acceptance 1 is not about
+openers; it is about *a helper that promises to wait for the list*, and the first draft had kept that
+promise only for the helpers the ticket named, and said in this story that the after-click helpers
+were safe because *the rows after them poll*. The Spec axis read one: `filterProgram` says *what
+follows reads the rows the filter chose*, waits for the answer alone, and `17c` row 10 reads `total`
+on the very next line — the #132 shape exactly, on a route #132 had already fixed the opener of. The
+sentence in this story was a claim about every caller, written from the ones in view (#68 again). So
+every call of an after-click helper in the specs was read for what follows it: two are followed by a
+read that neither retries nor goes through `settled` — `filterProgram` in `17c`, and `nextPage` in `18b`,
+whose docstring promises *the rows it fetches* and whose next line counts them once. Both now end with
+`untilDrawn`. The rest are followed by a poll, a retrying `expect`, or `settled`, and the README says so.
+
+**`nextPage` needed the wait to learn a second number.** A step to page 2 keeps the total, so a wait
+on the count alone would say it had arrived before it left. Every paged screen hands `Pager` the page
+the server confirmed as `shown` (`Pager.js` says why), so `untilDrawn` now waits for the total *and* the
+page. The same edit took the review's other point: it locates through `pagerLine` rather than
+spelling the pager's sentence a second time in the same file, which is #97's two places holding one
+opinion. The after-click helpers could not be proved by the first break, because every spec that uses
+them opens its screen first and fails there, so the second break read the caller off the stack and
+moved the expected total only for helpers not named `open…` or `pick`: `17c` failed at line 60,
+`filterProgram`, and `18b` at line 193, `nextPage`, with every opener before them passing.
+
+**What it cannot see is written on it.** A screen already saying what the answer says looks drawn: a
+filter that lands on a list of the same length, or an answer of *0* on page 1, which is what a screen
+draws before its first read. A count read after it is still right — it is the same number — but rows
+read after it may be the old ones, and `filterProgram`'s docstring says so because it is the one
+helper that swaps a list for another.
+
+**One read of the same shape is outside this ticket.** `19a`'s *every row on screen is of the
+curriculum the filter names* calls the PLO screen's `filterTo` and reads the curriculum column with `allInnerTexts` on the next line. That
+screen has no pager and its route no `total`, so `untilDrawn` has nothing to wait for, and the fix is
+a different wait on a different screen. It is raised with the owner rather than fixed here.
+
+**And one helper started asserting what it had assumed.** `openEnrolment` returned whatever status
+came back; a wait for the drawn total only means something on an answer that succeeded, so it now
+asserts `200` first, as every other helper that calls `untilDrawn` does.

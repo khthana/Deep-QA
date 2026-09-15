@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 const { importCsv } = require('./import-panel');
+const { untilDrawn } = require('./pager');
 
 /**
  * The curriculum screen — #15.
@@ -23,11 +24,11 @@ function waitForList(page) {
   );
 }
 
-/** Opens the screen and waits for the list a passing row is about to assert on. */
+/** Opens the screen and waits for the list a passing row is about to assert on to be drawn. */
 async function openPrograms(page) {
   const [response] = await Promise.all([waitForList(page), page.goto(PROGRAMS)]);
   expect(response.status()).toBe(200);
-  return response;
+  return untilDrawn(page, response);
 }
 
 /** This screen's import, bound to the endpoint it posts to. */
