@@ -195,6 +195,19 @@ that is genuinely wrong still fails, and fails at the same place. A number read 
 asserted against needs no poll: three of the plain reads sit under `await expect(...)` calls on rows of the same
 table, and the row appearing and the total changing are one React commit, so the wait above them is the wait.
 
+A screen with no pager has no number to wait for, and the same gap is still there. On the PLO screen it is the loading
+row: `load` sets `loading` before it asks, so an answer lands on a single *กำลังโหลด…* cell or on the new rows, and
+never on the rows of the list before. `openPlos`, `filterTo` and `save` in `support/plos-screen.js` therefore end with
+`untilListed`, which is `settled` on that screen's table (#136). A screen that draws the old rows until the new ones
+arrive would need something else, and the helper's docstring says which premise it rests on.
+
+**A race between an answer and its drawing is measured by slowing the renderer, not by running the row again.**
+Rerunning a row that reads too early passes nearly every time, which is how #132's `26a` failure came to be called
+intermittent. A scratch spec that sends `Emulation.setCPUThrottlingRate` at a rate of 20 through
+`page.context().newCDPSession(page)` made a read of #136's shape fail on every run, and pass on every run once the
+helper waited - a red and a green, which a rerun cannot give. Read the DOM with `page.evaluate` at the moment the response
+resolves to see what the gap actually holds; a locator waits, and that hides it.
+
 Four others were removed rather than fixed, and #64 is the record of why. They were counts read after a *refused*
 import in `11b` and `14b`. `ImportPanel` calls `onImported` only on success, so a refused import never re-fetches the
 list: the total standing on the screen is the one from before the upload, whatever the server did with the file, and

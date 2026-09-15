@@ -36,6 +36,11 @@ const next = page => page.getByRole('button', { name: 'ถัดไป' });
  * Nothing here reads the table without going through this first, and nothing
  * reads the pager without it except `untilDrawn`, which says why.
  *
+ * Not only for paged screens: `plos-screen.js` waits on it too (#136), because
+ * that screen also draws a loading row between asking and answering, and has
+ * no pager to compare. A screen that keeps its old rows up instead would need
+ * something else.
+ *
  * The "ไม่พบ…" line an empty list draws is deliberately let through: it is
  * what a settled empty table looks like, and the rows that read an empty list
  * assert the pager's own line rather than counting keys.

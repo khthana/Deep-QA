@@ -1852,3 +1852,53 @@ a different wait on a different screen. It is **#136** rather than fixed here.
 **And one helper started asserting what it had assumed.** `openEnrolment` returned whatever status
 came back; a wait for the drawn total only means something on an answer that succeeded, so it now
 asserts `200` first, as every other helper that calls `untilDrawn` does.
+
+## #136 — the ticket named one helper, and the screen had three
+
+**#136 was written by #135 from the one call it had read, and the file had two more.** The review of
+#135 read every *after-click* helper in the specs for what followed it, found `19a` reading the PLO
+screen's curriculum column on the line after `filterTo`, and opened this ticket for that call. What
+the review had not read was the rest of `plos-screen.js`, because its scan was of helpers that click.
+`openPlos` says it *asserts the list a passing row is about to read* and asserts only a status;
+`save` says it *waits for the list the save reloads* and waits for the answer. `19a` reads
+`listedCodes` straight after `openPlos` three times and straight after `save` or `addOutcome` twice.
+**A ticket's file list is a grep somebody else ran** (#68) — and here the somebody was this session,
+one ticket earlier, and the grep was for a verb rather than for the file.
+
+**The ticket said its mechanism was read from the code and not yet measured, so it was measured
+first.** A rerun would have passed: the row had never been seen to fail. So a scratch spec slowed the
+renderer twentyfold through `Emulation.setCPUThrottlingRate` and recorded what each read saw. Moving the
+filter from `0503` to `0501` read the curriculum column as **empty, four runs in four** — and reading the
+DOM with `page.evaluate` at the instant the answer resolved found the single *กำลังโหลด…* cell every
+time, never the four rows of the curriculum before. That settled both of the ticket's claims: the row
+fails loudly rather than passing wrongly, and the only thing standing between an answer and its rows
+is the loading row, which is what makes `settled` a sufficient wait on a screen that has no pager to
+compare against.
+
+**The scratch spec measured the filter in the opposite order from the row, and the review noticed.**
+`19a`'s row loops `0501` then `0503`, and `departmentAdmin05` lands on `0501`, so its first `filterTo`
+returns without asking and its `0501` read is guarded by `openPlos`'s wait, not `filterTo`'s; the move
+it does make is to the four-row curriculum, which drew before its answer resolved on every run. The
+defect was measured in the helper, on the list slow enough to show it — and the row the ticket named is
+protected by the helper the ticket did not name. The other two `filterTo` calls, `19a:255` and `:259`,
+were read as the ticket asked: each is followed by a retrying `expect` on `ploRow`, so neither could have
+read too early, and both now sit behind the wait as well.
+
+**A race between an answer and its drawing is measured by slowing the renderer, not by rerunning the
+row** — a rerun passes, and a throttle gives a red before the fix and a green after it.
+
+**Two of the three gaps were not failures, and they were fixed anyway, for a stated reason.** `openPlos`
+read correctly on every run, at twentyfold and at sixtyfold, but the table was still the loading row
+at the moment its answer resolved in two runs of three — the gap is there and the read has so far been
+slower than it. `save`'s answer landed on a drawn table four in four. Both helpers promise the list
+in their own words, and #101's rule is that a helper which promises a thing waits for it or says what
+it does instead; the wait costs a visible table and a settled cell. The screen's *ยกเลิก* was measured
+as well, because `19a` reads straight after it: it asks nothing, the table returns with the rows it
+already held, and it read correctly every time, so it was left alone.
+
+**Each wait was proved on its own.** One shared `untilListed` behind three helpers is #135's merge
+again, and the proof has to separate them: the break read the caller off the stack and waited for a
+text never drawn only when `BREAK136` named that caller. `openPlos` failed `19a:107`, `filterTo`
+`19a:353`, and `save` `19a:124` — and the first `save` run failed somewhere else entirely, `19a:158`,
+because its row edits a tree the serial row before it builds and `--grep` had skipped that row. **A
+failure is only proof if it is at the wait**; the stack in the report is what said it was not.

@@ -162,6 +162,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A helper that waits for the response has not waited for the drawing** — the first read after it
   can see the empty state, and no amount of retrying saves a wrong *expected* value. Wait for what
   the answer carried to be what the screen shows. (#132)
+- **A race between an answer and its drawing is measured by slowing the renderer, not by rerunning
+  the row** — a rerun passes, a CPU throttle gives a red and a green. (#136)
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
 - **Anything written for timing must not be able to decide anything.** (#52)

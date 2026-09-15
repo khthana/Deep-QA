@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { settled } = require('./pager');
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตร — #19, as a browser reaches it.
@@ -63,10 +64,39 @@ function waitForReach(page) {
   );
 }
 
-/** Opens the screen and asserts the list a passing row is about to read. */
+/**
+ * Waits for the list the answer just brought to be the list on screen - #136.
+ *
+ * The answer landing is not the table being drawn, and on this screen the gap
+ * is the loading row: `load` sets `loading` before it asks, so by the time an
+ * answer lands the table is either that single *กำลังโหลด…* cell or the new
+ * rows already, and a read taken on the loading cell finds no column at all.
+ * Measured with the renderer slowed twentyfold, moving the filter from `0503`
+ * to `0501` - the longer list, so the slower to draw: the หลักสูตร column read
+ * as empty on every run, and the table at the moment the answer landed was the
+ * loading row every time - never the rows of the curriculum before.
+ *
+ * That last part is what makes `settled` the whole wait here rather than half
+ * of it. There is no pager on this screen and no `total` in the answer, so
+ * there is nothing like `untilDrawn` to compare; but the only thing that can
+ * stand between an answer and its rows is the loading row. An empty
+ * curriculum's sentence is let through, because it is a drawn list.
+ *
+ * The table is asked to be visible first so that a wait which runs out while
+ * the form is still up - the form replaces the table - says that, rather than
+ * failing on a cell of a table that is not there.
+ */
+async function untilListed(page) {
+  const table = page.locator('table');
+  await expect(table).toBeVisible();
+  await settled(table);
+}
+
+/** Opens the screen and waits for the list a passing row is about to read. */
 async function openPlos(page) {
   const [response] = await Promise.all([waitForList(page), page.goto(PLOS)]);
   expect(response.status()).toBe(200);
+  await untilListed(page);
   return response;
 }
 
@@ -195,12 +225,13 @@ async function addOutcome(page, { program, code, title, type, order, parent }) {
   return save(page);
 }
 
-/** Presses *บันทึก* and waits for the list the save reloads. */
+/** Presses *บันทึก* and waits for the list the save reloads to be drawn. */
 async function save(page) {
   const [reloaded] = await Promise.all([
     waitForList(page),
     page.getByRole('button', { name: 'บันทึก' }).click(),
   ]);
+  await untilListed(page);
   return reloaded;
 }
 
@@ -244,6 +275,7 @@ const listedCodes = page =>
 async function filterTo(page, programId) {
   if ((await programFilter(page).inputValue()) === programId) return;
   await Promise.all([waitForList(page), programFilter(page).selectOption(programId)]);
+  await untilListed(page);
 }
 
 module.exports = {
