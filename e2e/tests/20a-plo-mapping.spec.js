@@ -5,6 +5,7 @@ const fs = require('node:fs/promises');
 const { test, expect } = require('@playwright/test');
 const { ACCOUNTS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { BACKEND_URL } = require('../support/env');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const {
@@ -93,17 +94,18 @@ const SEEDED_SUBJECT = '01076105';
  *
  * Idempotent, and the `PUT` at the end is why. `beforeAll` here is not
  * once-per-run: Playwright restarts the worker after a failing test, and a
- * restart runs `afterAll` and then `beforeAll` again. `unplace` leaves the
- * pairing *switched off* rather than gone — once a row above has written a cell
- * against it, `DELETE /program-subjects` can only deactivate — so a second
- * `place` meets two 409s and, without this, would leave the grid with no row
+ * restart runs `afterAll` and then `beforeAll` again. What `afterAll` used to
+ * run left the pairing *switched off* rather than gone — once a row has written
+ * a cell against it, `DELETE /program-subjects` can only deactivate — so a
+ * second `place` met two 409s and, without the `PUT`, left the grid with no row
  * for the rest of the run. That cost an hour under the `noupsert` mutant: every
  * row after the first failure reported `element(s) not found`, which reads like
- * a broken screen and was a broken fixture.
+ * a broken screen and was a broken fixture. Since #134 the pair is taken out
+ * whole, so a second `place` normally meets a catalogue without it.
  *
- * The two 409s are therefore expected and not asserted; the `PUT` is asserted,
- * because it is the statement that the pairing is live whichever of the two
- * paths got here.
+ * A 409 — on the path a release that failed would leave — is expected and not
+ * asserted; the `PUT` is asserted, because it is the statement that the
+ * pairing is live whichever path got here.
  */
 async function place(request) {
   await request.post(`${BACKEND_URL}/api/auth/login`, {
@@ -128,41 +130,26 @@ async function place(request) {
 }
 
 /**
- * Takes the pair away again, as far as the two screens allow.
+ * The pair, and every cell the rows write against it, taken out again when the
+ * file ends — #134.
  *
- * Best-effort, and deliberately so. `DELETE /program-subjects` switches a
- * pairing *off* rather than removing it once anything references it, and by the
- * time this runs the rows above have written cells against it — so the pairing
- * is deactivated, which takes it out of every grid, and the catalogue entry
- * stays behind it. Neither answer is asserted, because neither is this file's
- * subject.
- *
- * Nothing downstream depends on it running at all: the schema is reseeded every
- * run. It is here so that a run stopped halfway leaves the database roughly as
- * it found it, and so a person opening the walk stack afterwards does not meet
- * a รายวิชา no seed ever made sitting in somebody's curriculum.
+ * Through the two screens' own endpoints this could only be done halfway:
+ * `DELETE /program-subjects` switches a pairing off rather than removing it once
+ * a cell references it, so the catalogue entry, the pairing and the cells all
+ * stayed for every later file. `support/hold.js` remembers every table before
+ * `place` runs — which is why it is declared first — and in `afterAll` takes out
+ * what appeared, whether the rows passed or not.
  */
-async function unplace(request) {
-  await request.post(`${BACKEND_URL}/api/auth/login`, {
-    data: { email: ACCOUNTS.departmentAdmin05, password: PASSWORD },
-  });
-  await request.delete(`${BACKEND_URL}/api/program-subjects/${PROGRAM}/${MINE}`);
-  await request.delete(`${BACKEND_URL}/api/subjects/${MINE}`);
-}
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 test.beforeAll(async ({ playwright }) => {
   const request = await playwright.request.newContext();
   try {
     await place(request);
-  } finally {
-    await request.dispose();
-  }
-});
-
-test.afterAll(async ({ playwright }) => {
-  const request = await playwright.request.newContext();
-  try {
-    await unplace(request);
   } finally {
     await request.dispose();
   }

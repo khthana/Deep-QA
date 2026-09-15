@@ -11,8 +11,6 @@ const {
   reportTable,
   reportedLines,
 } = require('./import-panel');
-const { createPool } = require('../../db/pool');
-const { E2E_SCHEMA } = require('./env');
 const { untilDrawn } = require('./pager');
 
 const STUDENT_DATA = '/main/student-data';
@@ -104,109 +102,6 @@ const registerRow = (page, code) =>
  */
 const listTable = page => page.locator('table').first();
 
-/**
- * Every table that points at `student`, and the column that does it.
- *
- * Asked of the catalogue rather than written here, for the reason the rule in
- * CLAUDE.md gives: a list kept in a file is right until a migration adds the
- * fifth table, and then it is wrong silently. Four tables reference `student`
- * today and every one of them is `ON DELETE RESTRICT`, so a student with a row
- * in any of them cannot be removed until that row is - which is exactly the
- * case a hand-written `student_course` alone would miss.
- *
- * One level deep, and it says so: if a table that points at `student` is
- * itself pointed at under RESTRICT, the delete below fails with the database's
- * own message rather than quietly leaving the student behind.
- */
-async function studentReferrers(db) {
-  const { rows } = await db.query(
-    `SELECT c.conname,
-            c.conrelid::regclass::text AS table_name,
-            array_agg(a.attname::text) AS columns
-       FROM pg_constraint c
-       JOIN LATERAL unnest(c.conkey) AS k(att) ON true
-       JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = k.att
-      WHERE c.contype = 'f'
-        AND c.confrelid = format('%I.%I', $1::text, 'student')::regclass
-      GROUP BY c.conname, c.conrelid`,
-    [E2E_SCHEMA],
-  );
-  return rows.map(row => {
-    if (!Array.isArray(row.columns) || row.columns.length !== 1) {
-      throw new Error(
-        `${row.table_name} points at student through ${JSON.stringify(row.columns)}, ` +
-          `which is more than one column and more than this can undo`,
-      );
-    }
-    return { table: row.table_name, column: row.columns[0] };
-  });
-}
-
-/** Every student code the register holds, right now. */
-async function registerCodes() {
-  const db = createPool({ schema: E2E_SCHEMA });
-  try {
-    const { rows } = await db.query(`SELECT student_id FROM student`);
-    return rows.map(row => row.student_id);
-  } finally {
-    await db.end();
-  }
-}
-
-/**
- * Remembers the register, and hands back what puts it back - #132.
- *
- * A spec that adds students and does not undo it leaves them for every file
- * that runs after it, and more than one of those files reads the register's
- * totals. There is no route that deletes a student, for the reason #67
- * records, so the way back out is raw SQL against the schema this suite runs
- * on, the way `44a` already does it.
- *
- * **What it takes out is what appeared while the file ran, not a list of codes
- * written here.** A list would be right only for the rows that exist today: an
- * import spec deliberately offers codes it expects to be refused, and the day
- * one of those is accepted - which is the day somebody changes the importer,
- * and exactly when this matters - the list would still name the old five and
- * the new student would stay. Asking the register is the same move the report
- * at the end of the run makes, one file down.
- *
- * Called around the file rather than around a row: the rows of an import spec
- * build on each other, and a row that cleaned up after itself would take away
- * the register the next row is asserting about.
- *
- * ```js
- * let release;
- * test.beforeAll(async () => { release = await holdRegister(); });
- * test.afterAll(() => release());
- * ```
- *
- * It cannot put back a student a spec removed, and nothing needs it to: no
- * screen and no route deletes one. `workers: 1` is what makes "appeared while
- * the file ran" mean "this file did it".
- */
-async function holdRegister() {
-  const before = new Set(await registerCodes());
-
-  return async function release() {
-    const added = (await registerCodes()).filter(code => !before.has(code));
-    if (added.length === 0) return added;
-
-    const db = createPool({ schema: E2E_SCHEMA });
-    try {
-      // What points at the student goes first, and what points at it is asked,
-      // not remembered. A student added through this screen has no rows in any
-      // of them, which is why the first version got away with naming one.
-      for (const { table, column } of await studentReferrers(db)) {
-        await db.query(`DELETE FROM ${table} WHERE "${column}" = ANY($1)`, [added]);
-      }
-      await db.query(`DELETE FROM student WHERE student_id = ANY($1)`, [added]);
-    } finally {
-      await db.end();
-    }
-    return added;
-  };
-}
-
 module.exports = {
   STUDENT_DATA,
   BOM,
@@ -219,7 +114,6 @@ module.exports = {
   reportTable,
   reportedLines,
   addStudent,
-  holdRegister,
   filterProgram,
   registerRow,
   listTable,

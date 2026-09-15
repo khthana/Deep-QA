@@ -6,6 +6,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
+const { CURRENT_YEAR, SEMESTER } = require('../../db/seed');
 const { signIn } = require('../support/auth');
 const { switchTo } = require('../support/shell');
 const {
@@ -81,6 +82,11 @@ const SUBJECT = '01076105';
  * `65010001` is seeded into last year's ตอนเรียน, which is what makes it a code the
  * register holds and this class does not, and a blanket delete would quietly
  * take that fact away from every run after the first.
+ *
+ * And scoped to this term, which the account alone is not: teacher.one also
+ * teaches that last-year ตอนเรียน, so the first version removed exactly the
+ * seeded enrolments the sentence above protects - three rows, after the
+ * first test of the file, found by #134's census rather than by any row here.
  */
 const cleanUp = createPool({ schema: E2E_SCHEMA });
 
@@ -91,8 +97,11 @@ test.afterEach(async () => {
         AND section_id IN (SELECT cst.section_id
                              FROM course_sections_teacher cst
                              JOIN users u ON u.user_id = cst.user_id
-                            WHERE lower(u.email) = lower($2))`,
-    [SPARE_CODES, ACCOUNTS.teacherOne],
+                             JOIN course_sections cs ON cs.section_id = cst.section_id
+                             JOIN semester_courses sc ON sc.id = cs.semester_course_id
+                            WHERE lower(u.email) = lower($2)
+                              AND sc.academic_year = $3 AND sc.semester = $4)`,
+    [SPARE_CODES, ACCOUNTS.teacherOne, CURRENT_YEAR, SEMESTER],
   );
 });
 

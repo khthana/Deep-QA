@@ -11,6 +11,7 @@ const {
 } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { menuLink, switchTo } = require('../support/shell');
 const { DASHBOARD } = require('../support/teaching-screen');
 const {
@@ -51,6 +52,18 @@ const {
  * carries a cohort's marks, and deleting one is what the guard exists to
  * refuse.
  */
+
+/**
+ * A row here deletes an Activity the seed made - put back when the file
+ * ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** teacher.one@ teaching ตอนเรียน 1 of the current term. */
 async function asTeacherOne(page) {

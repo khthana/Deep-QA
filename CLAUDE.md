@@ -183,6 +183,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   measured rather than assumed. Count the tables that moved **down** as well as up, and count the
   **files**, not the tables, when that is what was asked: a key names the row, not its author, so
   attribute a table by running that file on its own. (#132)
+- **A teardown is a write like any other** — scope it to what the file wrote, not to who wrote it.
+  (#134)
 - Two `includes` cannot fail on a list that is too wide. (#102)
 - A test that passes because of a defect tends to explain itself in its own comment. A row that
   needs a defect to be reachable must be rewritten the day it is fixed — write that on the row.

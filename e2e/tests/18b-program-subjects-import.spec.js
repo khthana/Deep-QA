@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const {
   BOM,
   downloadTemplate,
@@ -47,6 +48,18 @@ const {
  * into, and because the paging row needs the rows the import rows put there.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * This file imports subjects and places them in the curriculum - taken out
+ * again when the file ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** This file's own catalogue range, so no row here depends on another spec. */
 const CODES = Array.from({ length: 10 }, (unused, index) => `010798${21 + index}`);

@@ -5,6 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { switchTo } = require('../support/shell');
 const {
   LABELS,
@@ -58,6 +59,18 @@ const {
  * because an absence is only this row's claim if nothing earlier is still
  * lying around.
  */
+
+/**
+ * Rows here write improvement plans - taken out again when the file ends
+ * (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** teacher.one@ teaching ตอนเรียน 1 of the current term. */
 async function asTeacherOne(page) {

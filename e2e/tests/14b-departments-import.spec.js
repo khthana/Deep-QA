@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const {
   downloadTemplate,
   headerOf,
@@ -36,6 +37,17 @@ const {
  * are only meaningful if nothing else is writing to it.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * This file imports departments - taken out again when the file ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 test.beforeEach(async ({ page }) => {
   await signIn(page, ACCOUNTS.facultyAdmin);

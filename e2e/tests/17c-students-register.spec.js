@@ -3,13 +3,13 @@
 const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const {
   openRegister,
   total,
   addStudent,
   filterProgram,
   registerRow,
-  holdRegister,
 } = require('../support/students-screen');
 
 /**
@@ -45,10 +45,12 @@ test.beforeEach(async ({ page }) => {
  * run, so every file after this one was handed a register two rows wider
  * than the seed made it - and #129's first draft asserted the intake picker
  * opened on 2563, which is true of the seed and false once `61010001` is in.
+ * Put back by `support/hold.js` since #134, which remembers every table
+ * rather than the register alone.
  */
 let release;
 test.beforeAll(async () => {
-  release = await holdRegister();
+  release = await hold();
 });
 test.afterAll(() => release());
 

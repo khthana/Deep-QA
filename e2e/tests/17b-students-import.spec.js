@@ -3,6 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const {
   BOM,
   openRegister,
@@ -13,7 +14,6 @@ const {
   total,
   reportedLines,
   reportTable,
-  holdRegister,
 } = require('../support/students-screen');
 const { BACKEND_URL } = require('../support/env');
 const { REFUSALS } = require('../../backend/auth/refusals');
@@ -49,11 +49,13 @@ test.beforeEach(async ({ page }) => {
  * What is removed is whatever appeared while this file ran, rather than a
  * list of the five codes below - because several rows here offer codes they
  * expect to be **refused**, and the day one of those is accepted is the day
- * a hand-written list would quietly stop covering it.
+ * a hand-written list would quietly stop covering it. #134 took the same
+ * reasoning one level up, to every table rather than the register, and this
+ * file now uses that (`support/hold.js`) rather than a helper of its own.
  */
 let release;
 test.beforeAll(async () => {
-  release = await holdRegister();
+  release = await hold();
 });
 test.afterAll(() => release());
 

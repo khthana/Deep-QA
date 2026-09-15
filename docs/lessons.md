@@ -1902,3 +1902,86 @@ text never drawn only when `BREAK136` named that caller. `openPlos` failed `19a:
 `19a:353`, and `save` `19a:124` — and the first `save` run failed somewhere else entirely, `19a:158`,
 because its row edits a tree the serial row before it builds and `--grep` had skipped that row. **A
 failure is only proof if it is at the wait**; the stack in the report is what said it was not.
+
+## #134 — sixteen files, one shape, and a cleanup that was removing what it protected
+
+**#134 was #132's census turned into work, and the census was measured again before any of it.**
+Acceptance 4 said the table was re-measurable and was to be corrected rather than believed, and #135 and
+#136 had both landed on the same files since it was taken. Fifty-six single-file runs later it came back
+identical — the same sixteen files, the same seventeen tables, the same counts — and the only line that
+changed was `26a`, which had failed a row in #132's census and passed all twelve now: #135's
+`historyLines` failure, gone with its fix.
+
+**The ticket offered two shapes, and the sixteen files wanted a third.** `holdRegister` removed what
+appeared in one table and `44a`'s `unenrol` named what it put there; neither could put back a row a spec
+had **removed**, and four of the sixteen remove seeded rows. Sixteen helpers, one per screen, would each
+have been a list of tables — the list #132 had just argued out of the report, one file down. So
+`support/hold.js` is the report's own comparison turned around: it asks the catalogue for every table
+and its primary key, remembers every row in `beforeAll`, and in `afterAll` takes out what appeared and
+puts back what went. #68's rule is that a merge is answered with what it costs the proof, and here the
+claim is not per screen — *this file ends where it began* is the same claim in every file, and the
+single-file report measures it per file whatever the helper looks like.
+
+**Everything hard about it is something the database decides, so its test is against the database.**
+Nine `node --test` rows in a scratch schema shaped after the difficult cases rather than after
+`deep_core_e2e`: a RESTRICT child, a self-referencing tree, an identity column that refuses a value, a
+generated column that refuses any, a table told to be left alone. The order rows can go in is not
+planned from the foreign keys; each row is tried in its own savepoint, and a row a foreign key refused
+waits for the next pass. Eleven deliberate breaks now fail at least one row each, and the first run of
+them did not: reading values back without the `::text` cast passed every row, because nothing in the
+fixture lost anything on the way through JavaScript; a timestamp with microseconds does, and now the fixture has one. And
+removing `BEGIN` was too blunt a break to prove atomicity, since the savepoints fail without it; a
+`COMMIT` in the failure path is the break that leaves a half-done release, and exactly one row catches
+it. **Before trusting a row, break the thing it is about** (#124) — and a break that fails everything
+has not found the row that owns the claim.
+
+**What it does not do is written on it.** A row that stayed but changed is not put back: the report
+cannot see one either, and a restore nothing measures is a restore that breaks silently. `user_log` is
+left alone because #134 had already set it apart as the product recording the spec, not a leftover —
+though a row taken out still cascades into it, which is why a single-file run of `11b` now reports
+`user_log` ids with a gap in them: `hold` never deletes from that table, and an account's log rows go
+with the account. A table with no primary key is refused when the snapshot is taken, because skipping
+it would be the silent half of a promise to put the schema back.
+
+**One of the sixteen was not a missing cleanup; it was a cleanup removing what its own comment
+protected.** `25a`'s `afterEach` deletes the spare codes' enrolments from *teacher.one's own ตอนเรียน*,
+and says why it is scoped rather than deleting the codes outright: `65010001` is seeded into last
+year's ตอนเรียน, and a blanket delete would take that fact away. The census said `25a` removed
+`65010001/3`, `65010002/3`, `65010003/3`. Section 3 is last year's — and teacher.one teaches it. The
+scope was the account, not the term, so the first test's teardown removed exactly the seeded rows the
+comment names. Narrowed to this term, `25a` alone left nothing but `user_log` before `hold` was ever
+added to it, so it was not: a second mechanism beside a correct one is #97's two places holding one
+opinion. **A teardown is a write like any other** — it is scoped to what the file wrote, not to who
+wrote it, and the single-file report is what checks it. No row in `25a` could have: the rows it
+removed were never the rows it asserted about.
+
+**Three existing cleanups were replaced rather than joined.** `12a`'s `afterAll` switched the grant
+off — which left the switched-off row behind, the `user_roles` +1 in the census — and its story about
+171 failures is kept on the `hold` that replaced it, because the reason it sits in `afterAll` has not
+changed. `20a`'s `unplace` went through the two screens' endpoints and could only switch a referenced
+pairing off, leaving the subject, the pairing and four cells; `hold` is declared before `place`, so a
+worker restart runs the release before `place` runs again, and `place` keeps its `PUT` for the day a
+release does not. `17b` and `17c` lost `holdRegister`, whose own reasoning — remember the table, not a list of codes — is the reasoning
+`hold` takes one level up.
+
+**Proved at the spec seam as well as its own.** Each changed file was run alone: eighteen runs, all
+passing, every report `user_log` only. Then `release` was broken three ways against real specs:
+skipping the restores left `19a` reporting `learning_outcomes -2`, skipping the removals left `14b`
+reporting `departments +5`, and a row forced to fail in `20a` restarted the worker through `afterAll`
+and `beforeAll` and still left nothing but `user_log`. The full run then ended the way acceptance 1
+asked: 383 of 383 passing, and `34 tables checked, 1 moved` — `user_log`.
+
+**The review found a row that could not fail and a cascade the release did not follow.** One of the
+nine rows said *an identity column keeps counting past what was put back*, and nothing `hold` could do
+would have failed it: `OVERRIDING SYSTEM VALUE` does not move a sequence and neither does a `DELETE`,
+so the next id was past the restored ones whatever the release did. Eleven breaks had each failed
+*some* row, which is not the same as each row having been failed by a break — #124's rule read per row
+rather than per file. That row became the one the Spec axis described: a seeded leaf moved under a
+branch the file added is taken out with the branch by `ON DELETE CASCADE`, and the release had read
+what went **before** the removals, so the leaf was never put back. It failed against the old
+release, and now what went is read after the removals. The same review caught the first row's title
+claiming *a child before its parent* on a pair the alphabet already ordered — `child` sorts before
+`parent`, so no retry was ever needed there — and a comment copied into fourteen specs saying
+`user_log` was *left as the run made it*, which the cascade makes false. The fourteen now point at
+`hold.js`, which is the one place that says it. The full run after the fix was 383 of 383 again, and
+`user_log` alone.

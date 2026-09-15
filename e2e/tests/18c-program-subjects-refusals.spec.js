@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv, total } = require('../support/import-panel');
 const { openSubjects, importSubjects } = require('../support/subjects-screen');
 const {
@@ -41,6 +42,18 @@ const {
  * counts, and puts it back.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * This file files a subject and places it in the curriculum - taken out
+ * again when the file ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** The catalogue entry this file places, and the curriculum it places it in. */
 const OTHERS = '01079841';

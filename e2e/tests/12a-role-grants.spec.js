@@ -2,10 +2,9 @@
 
 const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
-const { createPool } = require('../../db/pool');
-const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
+const { ACCOUNTS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { E2E_SCHEMA } = require('../support/env');
+const { hold } = require('../support/hold');
 const { openUsers, userRow } = require('../support/users-screen');
 const {
   ROLE_NAMES,
@@ -57,21 +56,19 @@ const PROGRAM_SUBJECTS = '/api/program-subjects';
  * row in every later file** was refused as a committee member - 171 failures
  * for a mutant that fails 13 with this net in place. The same shape #89 found
  * in a backend fixture: a row that restores what it moved only when it passes
- * inflates the next mutant's count. Written the way revoking writes it, so the
- * account ends the file exactly as a passing run would leave it.
+ * inflates the next mutant's count.
+ *
+ * The net was an `UPDATE` that switched the grant off, which left the switched
+ * off row behind for every later file. Since #134 it is `support/hold.js`: the
+ * grant is a row that appeared while this file ran, so it is taken out, and the
+ * account ends the file holding what the seed gave it and nothing else. Still
+ * in `afterAll`, and for the same reason.
  */
-test.afterAll(async () => {
-  const db = createPool({ schema: E2E_SCHEMA });
-  try {
-    await db.query(
-      `UPDATE user_roles SET is_active = false
-        WHERE user_id = $1 AND role_id = 'PROG_MANAGER' AND scope_id = $2 AND is_active`,
-      [IDS.teacherOne, PROGRAM],
-    );
-  } finally {
-    await db.end();
-  }
+let release;
+test.beforeAll(async () => {
+  release = await hold();
 });
+test.afterAll(() => release());
 
 /** The date the panel would print for something granted just now. */
 const todayAsDrawn = page =>

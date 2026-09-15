@@ -5,6 +5,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { PLOS: SEEDED, PLOS_INTL, PROGRAMS } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const {
   PLOS,
   CELL,
@@ -53,6 +54,18 @@ const {
  * for the reason it is testing - that being switched off is not a one-way door.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * Rows here take away PLOs the seed made - put back when the file ends
+ * (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /**
  * A curriculum's name as the seed spells it, and as the picker draws it.

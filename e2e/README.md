@@ -69,9 +69,10 @@ first thing to notice.
 
 #132 then ran all fifty-six spec files one at a time, each with its own reseed, to find out how many files that is:
 **40 leave nothing but `user_log`, and 16 leave rows in other tables.** #132 closed the two it was written about —
-`17b` and `17c` are in the 40 — and the remaining 16 are **#134**, listed there with what each one moves.
+`17b` and `17c` are in the 40 — and #134 closed the other 16, after measuring the census again and finding it
+unchanged.
 
-Every run now ends with a report of what moved, from `support/leftovers.js`:
+Every run ends with a report of what moved, from `support/leftovers.js`. Before #134, a full run's read:
 
 ```
 leftovers (#132): 34 tables checked, 3 moved
@@ -83,6 +84,8 @@ leftovers (#132): 34 tables checked, 3 moved
       added   1, 2, 3, 4, 5, 6, 7, 8 … and 482 more
 ```
 
+The full run that closed #134, on 15 September 2569, reported one table: `user_log`.
+
 Three things about it are deliberate and are argued in the file itself. It **reports and does not fail the run**,
 because a guard that refused would need a list of what is allowed to move, and a hand-kept list in a suite that grows
 every ticket is already wrong. It says **what moved, not which file moved it** — Playwright's reporter hooks are not
@@ -92,15 +95,34 @@ run the spec **on its own** — `globalSetup` reseeds on every invocation, so a 
 leftovers and nobody else's. And it asks the **catalogue** for its tables and their primary keys, so a
 table a migration adds is measured the day it exists rather than the day somebody remembers that file.
 
-If your spec writes data through the screen, take it out again in `afterAll`. There is no route that deletes a
-student, so the way back out is raw SQL against this schema. Two shapes, and they answer different questions:
-`support/students-screen.js`'s `holdRegister` remembers the table in `beforeAll` and removes **whatever appeared**
-while the file ran, which is what a spec wants when some of its own rows expect to be refused; `44a`'s `unenrol`
-names the two students it put there, which is what a spec wants when it built the situation itself and wants it
-gone mid-file. Removing a student means removing what points at it first, and `holdRegister` asks the
-catalogue which tables those are — four reference `student` today, every one of them `ON DELETE RESTRICT`, and a list
-written here would be right until the fifth. `user_log` is the exception nobody can clean: it is the product recording the
-spec's own actions, and every spec that does anything moves it.
+If your spec writes data, or removes a row the seed made, put the schema back — with `support/hold.js`:
+
+```js
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
+```
+
+In `beforeAll` it remembers every row of every table, so declare it before any other `beforeAll` that writes. In
+`afterAll` it takes out every row that appeared and puts back every row that went, by primary key, with the values
+and identity ids they had, in the order the foreign keys allow, and in one transaction — whether the rows passed or
+not. It asks the **catalogue** for the tables, for the reason the report does: a list of the tables a spec touches
+is right until the route behind its screen writes to one more. Two things it deliberately leaves alone, and says so
+in the file:
+
+- **A row that stayed but changed is not put back.** The report cannot see one either, and a restore nothing
+  measures is a restore that breaks silently. A spec that edits a seeded row in place puts it back itself.
+- **`user_log` is not deleted from.** It is the product recording the spec's own actions; every spec that does
+  anything moves it, and removing its rows would be a decision about the product rather than a cleanup. A row `hold`
+  takes out still cascades into it — an imported account's log rows go with the account — because that is the schema's
+  rule.
+
+`hold` is a whole-file shape. A spec that wants its situation gone **before the next row** still names what it put
+there: `44a`'s `unenrol` takes out the two students it enrolled, and `25a`'s `afterEach` takes out the enrolments each
+row made. Scope that kind of cleanup to what the file wrote, and check it with a single-file run — `25a`'s was scoped
+to the account rather than the term, and removed three enrolments the seed made until #134's census found it.
 
 Sign-in is the real sign-in screen and the real endpoint, with the seeded accounts and the password from `db/seed.js`.
 Nothing about the session is stubbed, for the reason `docs/06` gives for the backend suite: the inherited system's

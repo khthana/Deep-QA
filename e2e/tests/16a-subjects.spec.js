@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv, total } = require('../support/import-panel');
 const { openDepartments, departmentRow } = require('../support/departments-screen');
 const {
@@ -35,6 +36,18 @@ const {
  * still makes the state it asserts on rather than inheriting an assertion.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * This file files subjects into the catalogue - taken out again when the
+ * file ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** The subject row 1 adds, and rows 82 and 89 count around. */
 const ADDED = {

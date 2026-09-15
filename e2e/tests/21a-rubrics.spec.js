@@ -5,6 +5,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { RUBRICS: SEEDED, RUBRICS_INTL } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { reading, keysOn, step, settled } = require('../support/pager');
 const {
   RUBRICS,
@@ -47,6 +48,18 @@ const {
  * not page at all.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * Rows here take away a rubric the seed made, and its criteria with it -
+ * put back when the file ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** The rubric this file adds to 0501 and takes away again. */
 const MINE = 'RUB-Z1';

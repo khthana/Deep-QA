@@ -5,6 +5,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { CURRENT_YEAR, SEMESTER } = require('../../db/seed');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv } = require('../support/import-panel');
 const { openSubjects, importSubjects } = require('../support/subjects-screen');
 const {
@@ -62,6 +63,18 @@ const {
  * now, so a written-down year is free only until the calendar reaches it.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * This file files and places a subject and opens Offerings for it, with
+ * their ตอนเรียน and teachers - taken out again when the file ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /**
  * The catalogue entry this file opens, and the หลักสูตร it is placed in.

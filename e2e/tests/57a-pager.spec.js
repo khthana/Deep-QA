@@ -3,6 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv } = require('../support/import-panel');
 const {
   pagerLine,
@@ -49,6 +50,18 @@ const subjects = require('../support/subjects-screen');
  * them.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * This file imports enough departments, programmes and subjects to have
+ * pages to turn - taken out again when the file ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** The codes each block below writes, in an order that sorts the way it reads. */
 const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';

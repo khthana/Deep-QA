@@ -8,6 +8,7 @@ const { ACCOUNTS } = require('../support/accounts');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { COHORTS } = require('../../db/seed');
 const {
   openReport,
@@ -51,6 +52,19 @@ const {
  * Every row cleans up after itself through the screen's own delete, so the
  * shelf a later row opens is the one it expects.
  */
+
+/**
+ * Rows here attach evidence, and the screen's own delete marks a file
+ * removed rather than deleting its row - so the shelf is clear for the next
+ * row, and the rows are taken out when the file ends (#134).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 const db = createPool({ schema: E2E_SCHEMA });
 
