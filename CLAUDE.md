@@ -23,7 +23,7 @@ found during the rebuild and opened since.
 **Every ticket in `docs/07` is done** — #2–#45 are closed unbroken, #45 the last of them on
 5 September 2569. What is left open are the numbers above 45: the gaps and defects the rebuild
 found and opened as it went. Take which of those are open from the tracker
-(`gh issue list --state open`), not from a list kept here — the list that used to stand here was
+(`gh issue list --state open --limit 100` — without `--limit` it stops at 30), not from a list kept here — the list that used to stand here was
 hand-kept, and a hand-kept list in a file that grows every ticket is already wrong.
 
 **The frontier is now those, not a screen list.** Take work from the open issues above #45 and from
@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 12 September 2569 that is
-`2026-09-12-three-fixes-and-each-one-opened-a-ticket-by-measuring.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 15 September 2569 that is
+`2026-09-15-a-teardown-is-a-write.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
