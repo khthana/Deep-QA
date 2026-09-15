@@ -1847,7 +1847,7 @@ helper that swaps a list for another.
 **One read of the same shape is outside this ticket.** `19a`'s *every row on screen is of the
 curriculum the filter names* calls the PLO screen's `filterTo` and reads the curriculum column with `allInnerTexts` on the next line. That
 screen has no pager and its route no `total`, so `untilDrawn` has nothing to wait for, and the fix is
-a different wait on a different screen. It is raised with the owner rather than fixed here.
+a different wait on a different screen. It is **#136** rather than fixed here.
 
 **And one helper started asserting what it had assumed.** `openEnrolment` returned whatever status
 came back; a wait for the drawn total only means something on an answer that succeeded, so it now
