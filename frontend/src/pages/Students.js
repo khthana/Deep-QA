@@ -94,9 +94,9 @@ export default function Students() {
    * this flag. `Plos` and `ActivityScores` were measured to have exactly that
    * hole and now carry the ref; on this screen `save` closes the form before it
    * reloads and `onImported` fires with the pager and the filter on screen, so
-   * the same question is open here and on the panels listed below. It is a
-   * ticket of its own rather than a line in this one - *a guard written for one
-   * caller is a claim about every caller* (#68), and that is what this
+   * the same question is open here and on the panels below. It is a ticket of
+   * its own - **#140** - rather than a line in this one - *a guard written for
+   * one caller is a claim about every caller* (#68), and that is what this
    * paragraph is, so it says what was measured and what was not.
    *
    * Fourteen other panels carry the same guard. Eleven read a list: `Users`,

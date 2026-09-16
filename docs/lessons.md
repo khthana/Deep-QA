@@ -2269,20 +2269,24 @@ and `RubricCriteria.js:104`, plus `Offerings.js:156`, where `getOffering` answer
 temptation to fold them in was real because the count had already moved once. *Defer adjacent work;
 do not defer the second half of the sentence you are closing* (#119) — the twenty-two are the
 sentence, and the eight are adjacent. They are written here with their line numbers so that the
-ticket can be opened from this paragraph, which is the half of #119 that a deferral fails when
-nobody can find what was deferred.
+ticket could be opened from this paragraph, which is the half of #119 that a deferral fails when
+nobody can find what was deferred — and it was: **#139**. The other two halves of #133's own
+sentence went the same way rather than staying prose: **#140** for the second callers of the #68
+family, where a handler reloads with a pager or a filter beside it, and **#141** for the sixteen
+that carry the flag with no row proving it. Three numbers, because the fixes are three and the
+blast radii differ (#125).
 
 **The second review round found the same family twice more, and the two answers are different.**
 `Plos.openEditor` is one of the eight: its success path is unguarded, and the filter is live while
 the read is out, so it reaches the *แก้ไข opens a form about an outcome the screen is not showing*
-harm by a second route rather than through the stale list. It is deferred with the other seven, and
-the comment beside it now says so — a deferral a reader of that function cannot see is the same
-deferral nobody can find. `PloMapping.choose` is not one of them: it folds a saved cell into the
-grid unguarded, which is *a save's answer is a read* exactly, but nothing can draw the stale cell.
-A cell carries the `outcome_id` it was saved under; a PLO belongs to exactly one curriculum; every
-square is drawn from the outcomes of the curriculum on screen. So no square can look it up —
-**structurally unreachable, not untested and not proved** (#102) — and, like every unreachability,
-it has a date on it (#131): a screen that reads `grid.mappings` for a count rather than by key
-makes it visible the day it lands. Both are written down rather than guarded, because a guard no
-row can reach is a claim nobody can show to hold, and `TeacherDashboard` is the precedent this
-ticket already set for excluding a site in writing.
+harm by a second route rather than through the stale list. It is deferred with the other seven
+under **#139**, and the comment beside it now says so with the number — a deferral a reader of
+that function cannot see is the same deferral nobody can find. `PloMapping.choose` is not one of
+them: it folds a saved cell into the grid unguarded, which is *a save's answer is a read* exactly,
+but nothing can draw the stale cell. A cell carries the `outcome_id` it was saved under; a PLO
+belongs to exactly one curriculum; every square is drawn from the outcomes of the curriculum on
+screen. So no square can look it up — **structurally unreachable, not untested and not proved**
+(#102) — and, like every unreachability, it has a date on it (#131): a screen that reads
+`grid.mappings` for a count rather than by key makes it visible the day it lands. Both are written
+down rather than guarded, because a guard no row can reach is a claim nobody can show to hold, and
+`TeacherDashboard` is the precedent this ticket already set for excluding a site in writing.

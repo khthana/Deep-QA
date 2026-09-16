@@ -209,8 +209,8 @@ export default function Plos() {
    * detail into a form the same way, and one fix serves all eight. *Defer
    * adjacent work; do not defer the second half of the sentence you are
    * closing* (#119): the twenty-two sites and their second callers are #133's
-   * sentence, and the eight are adjacent. `docs/lessons.md` lists them with
-   * their line numbers so the ticket can be opened from the paragraph.
+   * sentence, and the eight are adjacent. The ticket is **#139**, which carries
+   * all eight with their line numbers, and `docs/lessons.md` tells the story.
    *
    * The error path reloads the list, so it asks `onScreen` like the others.
    */
