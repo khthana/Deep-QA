@@ -2055,3 +2055,66 @@ Then the seam the specs are on: with the rewrite pass skipped, `16a` reports
 `subjects ~1 (is_active, updated_at)` and `34a` reports `~201`, both back to `user_log` alone with it.
 Then the fourteen files again, one run each: **every one of them `34 tables checked, 1 moved`**. Then
 the full suite.
+
+## #138 — out of the tree is not the same as cleaned up
+
+The comment beside `EVIDENCE_DIR` said the store was in the OS temp directory *so a run leaves nothing
+behind*, and #134's review noticed that the sentence was true of the repository and of nothing else.
+Measured before anything was changed, on the machine this suite has run on since #35: **323 files,
+14,268 bytes, the oldest from 3 September 2569.** The ticket's own figure — 317 files, 14 KB, on
+15 September — was right, and the six new ones were #137's runs.
+
+Every one of them was unreachable. `global-setup` drops and reseeds the schema on every invocation, so
+the `activity_evidence` rows naming those files went with it; the soft delete on the screen
+(`is_deleted = true`) never touched a disk either, and neither did #134's `hold`, which removes the
+rows `35a` inserts. **Three ways of putting the database back, and none of them a way of putting the
+machine back** — because the file is not in the database and nothing in the suite had ever said so.
+
+**The whole risk is the path, so that is what has rows.** What this ticket adds is a delete, and one
+path component from the suite's store is `_local/evidence`, the product's own default, which on this
+machine is real student work. A delete is not a write that can be put back, so the directory is
+checked where it is used rather than trusted from where it was read: `suiteOwns` resolves the path and
+asks two questions of it — is it inside the OS temp directory, and does its name start with the
+suite's? `_local/evidence`, anything in the tree and anything reached by climbing out with `..` fail
+the first; the temp directory itself and everybody else's files in it fail the second.
+
+Eight deliberate breaks, each taking at least one row down, and **the third found a row with no
+teeth**: the assertion about a path that climbs out was written with `path.join`, which collapses the
+`..` itself, so the guard was never handed the kind of path `path.resolve` is there for — trusting the
+string as spelled broke nothing. Rewritten to spell the path by hand, it goes red on exactly that
+break. *Before trusting a new assertion, break the thing it is about* (#124) is a rule about the
+assertion as written, not about the thing it is named after.
+
+**Two of the eight came from the review, and both were holes rather than wordings.** The first: every
+row proved the guard and none proved that anything calls it — deleting `await clearUploads()` from
+`global-setup.js` left the file green. The run is a text file, so a row reads it and asserts both that
+the clearing is asked for and that it is asked for **before** the schema drop, which is the order the
+whole argument rests on; the docstring says what such a row cannot see (that Playwright calls the
+setup at all, that the call is awaited, that the server stores where this clears) because a scan that
+reads a file's text stops at that file's boundary (#89). The second: `path.resolve` answers what a
+path spells, not where it goes, so a junction in the temp directory wearing the suite's own name and
+pointing at `_local/evidence` satisfied both clauses. `fs.rm` unlinks a junction rather than following
+it, so the files were never actually in danger — but **a guard that is right by a property of the call
+it makes is a guard nobody can read**, and one the next edit can lose without noticing. `clearUploads`
+now asks `fs.realpath` where the directory really is before it asks whether it is ours, and the row
+that proves it makes a real junction (the kind Windows grants without elevation, skipped rather than
+faked on a machine that refuses even that).
+
+**The prefix in the guard is what lets the test own a directory.** A whole-name check would leave
+`uploads.test.js` two choices: prove the clearing on the suite's real store — the one directory a test
+must not be pointed at while a run uses it — or not prove it at all. Accepting a name that *starts*
+with the suite's lets the test make `deep-core-e2e-evidence-test-<pid>`, named for the process as the schemas
+`hold.test.js` and `leftovers.test.js` are, and the row that proves the wiring is the one that asks
+`suiteOwns(EVIDENCE_DIR)` with the path read from `env.js` and never spelled again.
+
+**At the start of the run, beside the schema drop.** The files and the rows that name them are one
+world; cleaning them at different moments is what made this possible. At the start rather than at the
+end for the reason `global-setup` already gives for the schema: a run that failed leaves its evidence
+on disk to be looked at, and the next run is what cleans up. The directory goes whole rather than
+being emptied, because `storeFile` makes its own `section_…/activity_…` folders on every upload.
+
+Measured after: `35a` run twice in a row, **323 files → 3 → 3**, all three from the second run's
+timestamps, and the full suite of 383 leaves the same 3. The README's layout gained `uploads.js` — and
+`hold.js`, which #134 never added to it, while its command table had to be corrected twice in two
+tickets, which is what a hand-kept list in a file that grows every ticket costs even when the ticket
+is the one that grew it.

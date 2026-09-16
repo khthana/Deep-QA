@@ -39,7 +39,7 @@ It needs the database container running (`npm run db:up` from `db/`), the root `
 | `npm run test:headed` | The same, with the browser visible. |
 | `npx playwright test tests/17b-students-import.spec.js` | One file. |
 | `npm run report` | The HTML report of the last run. |
-| `npm run test:support` | The support modules that measure and put back — `leftovers.js` and `hold.js`. No browser; both reach a real schema of their own. |
+| `npm run test:support` | The support modules that measure, put back and clear — `leftovers.js`, `hold.js`, `uploads.js`. No browser; each makes a schema or a directory of its own. |
 
 ## What it runs against
 
@@ -96,6 +96,13 @@ closed, and `10a` leaves a password hash bcrypt re-salted on the way back. Nothi
 column moves only because a route wrote it, and five screens read it back into a *แก้ไขล่าสุด* column.
 
 The full runs that closed #134 and #137, on 15 and 16 September 2569, reported one table: `user_log`.
+
+**A run writes files as well as rows, and they are cleared at the same moment.** `35a` attaches PDFs, the backend
+stores them under `EVIDENCE_DIR` — the OS temp directory, never `_local/evidence`, which is real work on a machine
+that runs the walk stack — and until #138 nothing removed them: 323 files had collected since 3 September, each one
+outliving the row that named it by a reseed. `global-setup` now clears that directory beside the schema drop, at the
+start so a failed run leaves its evidence to be looked at. `support/uploads.js` is where the deleting lives, and it
+refuses any directory that does not resolve to inside the temp directory under the suite's own name.
 
 Three things about it are deliberate and are argued in the file itself. It **reports and does not fail the run**,
 because a guard that refused would need a list of what is allowed to move, and a hand-kept list in a suite that grows
@@ -174,6 +181,8 @@ e2e/
 │   ├── env.js             ports and schema, in one place
 │   ├── global-setup.js    drop, migrate, seed - and the snapshot the run is measured against
 │   ├── leftovers.js       what the run left behind, reported at the end of it - #132
+│   ├── hold.js            the schema as a file found it, put back when the file ends - #134, #137
+│   ├── uploads.js         the store #35's attachments land in, cleared at the start of a run - #138
 │   ├── accounts.js        the seeded accounts, by what they are
 │   ├── auth.js            signing in the way a person does
 │   ├── shell.js           the role picker, the user menu, the two dialogs over the top

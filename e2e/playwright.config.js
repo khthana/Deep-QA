@@ -78,7 +78,9 @@ module.exports = defineConfig({
         // #35's uploads land here rather than in `_local/evidence`, for the
         // reason `reuseExistingServer: false` exists a few lines up: this suite
         // stays out of the data somebody is working in. Under the OS temp
-        // directory, so a run leaves nothing in the tree.
+        // directory, so a run leaves nothing in the tree — and cleared by
+        // `global-setup` at the start of every run, beside the schema drop, so
+        // the files do not outlive the rows that name them (#138).
         EVIDENCE_DIR: EVIDENCE_DIR,
       },
     },

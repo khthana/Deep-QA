@@ -188,6 +188,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A comparison by key cannot see a rewrite** — a report that reads tidy has only said nothing was
   added or removed; measure the values too, then put them back. What nothing measures, nothing
   cleans. (#137)
+- **A cleanup that names the tree has said nothing about the machine** — what a run writes outside
+  the repository outlives the rows that name it unless both are cleared in the same breath, and
+  code that deletes proves the directory is its own before it removes it. (#138)
 - Two `includes` cannot fail on a list that is too wide. (#102)
 - A test that passes because of a defect tends to explain itself in its own comment. A row that
   needs a defect to be reachable must be rewritten the day it is fixed — write that on the row.

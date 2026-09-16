@@ -39,6 +39,11 @@ const E2E_SCHEMA = 'deep_core_e2e';
  * writes real rows and now real files, and both belong somewhere nobody is
  * working in. Under the OS temp directory rather than in the tree, so a run
  * leaves nothing behind to gitignore or to mistake for source.
+ *
+ * Out of the tree is not the same as cleaned up, which this comment said for
+ * thirteen days and 323 files: `global-setup.js` clears the directory at the
+ * start of every run, beside the schema drop, and `uploads.js` says how it
+ * decides that a directory is this one (#138).
  */
 const EVIDENCE_DIR = path.join(os.tmpdir(), 'deep-core-e2e-evidence');
 const BACKEND_PORT = port('E2E_BACKEND_PORT', 3100);
