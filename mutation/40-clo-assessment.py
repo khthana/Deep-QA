@@ -189,11 +189,7 @@ MUTANTS = {
     # Kills row 8.
     "refusalkeepsloading": (
         "screen",
-        "    } finally {\n"
-        "      // #43's walk found two screens that showed a refusal with\n"
-        "      // *กำลังโหลดข้อมูล…* under it for ever. The `finally` is the fix, and it\n"
-        "      // is one line per page rather than something shared.\n"
-        "      setLoading(false)\n"
+        "      if (isCurrent()) setLoading(false)\n"
         "    }",
         "    }",
     ),

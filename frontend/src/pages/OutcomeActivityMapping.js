@@ -54,20 +54,32 @@ export default function OutcomeActivityMapping() {
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
 
-  const load = useCallback(async () => {
+  // #133 - what is drawn is the answer to the request the screen still wants.
+  // Every parameter comes from `useParams` and every link goes up a level,
+  // so nothing here can supersede a request today: this is #68's rule
+  // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
+  // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
-      setData(await getOutcomeActivityMap(sectionId))
+      const answer = await getOutcomeActivityMap(sectionId)
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      setData(null)
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (isCurrent()) {
+        setData(null)
+        if (!error.expired) setNotice({ error: true, message: error.message })
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [sectionId])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   const unassessed = data ? data.clos.filter(clo => clo.link_count === 0) : []

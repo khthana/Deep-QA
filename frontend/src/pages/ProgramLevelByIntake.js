@@ -153,19 +153,45 @@ export default function ProgramLevelByIntake() {
     }
   }, [load])
 
-  async function toggle(plo) {
-    if (open === plo.outcome_id) {
-      setOpen(null)
-      setDrill(null)
-      return
-    }
-    setOpen(plo.outcome_id)
-    setDrill(null)
+  /**
+   * What is behind the outcome that is open now - #133.
+   *
+   * #68 guarded the report above this and left the panel under it alone, which
+   * is the half a committee spends its time in. Pressing a second outcome while
+   * the first panel is still out left two requests in flight, and without the
+   * flag the answer that **arrives** last won rather than the one **asked for**
+   * last - the panel then names an outcome nobody asked about, in a heading
+   * built out of the answer itself.
+   *
+   * Fetched from an effect rather than from the handler, so that what supersedes
+   * a request is the same thing that cleans it up: `open` changes, the effect is
+   * torn down, the flag it handed out goes false. `toggle` is then a state
+   * change and nothing else. `frontend/src/pages/Students.js` carries the rule;
+   * `e2e/tests/133a-superseded-answer-on-one-screen.spec.js` carries the row.
+   */
+  const loadDrill = useCallback(async isCurrent => {
+    if (open === null) return
     try {
-      setDrill(await getOutcomeContributions(program, intake, plo.outcome_id))
+      const answer = await getOutcomeContributions(program, intake, open)
+      if (isCurrent()) setDrill(answer)
     } catch (error) {
-      report(error)
+      if (isCurrent()) report(error)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [program, intake, open])
+
+  useEffect(() => {
+    let current = true
+    loadDrill(() => current)
+    return () => {
+      current = false
+    }
+  }, [loadDrill])
+
+  /** Opens one outcome's panel, or closes the one that is open. */
+  function toggle(plo) {
+    setDrill(null)
+    setOpen(current => (current === plo.outcome_id ? null : plo.outcome_id))
   }
 
   return (

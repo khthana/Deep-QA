@@ -83,8 +83,21 @@ export default function Students() {
    * `isCurrent` is asked after the answer arrives and is the whole of the rule.
    * It is a parameter with a default rather than a `let` beside the fetch - the
    * shape the effect below this one uses for its two lists - because `load` is
-   * also called from the handlers, where nothing supersedes it and the honest
-   * answer to *are you still current* is yes.
+   * also called from the handlers, which pass nothing.
+   *
+   * **That default is about the shape, and it is not a statement that the
+   * handlers are safe** - #133. This comment used to say that for a handler
+   * nothing supersedes the request and the honest answer is yes, and that is
+   * false wherever a control sits beside the handler: nothing tears a handler
+   * down, so what it can ask is not *is my render still mounted* but *is the
+   * control still where it was when I was sent*, which is a `useRef` and not
+   * this flag. `Plos` and `ActivityScores` were measured to have exactly that
+   * hole and now carry the ref; on this screen `save` closes the form before it
+   * reloads and `onImported` fires with the pager and the filter on screen, so
+   * the same question is open here and on the panels listed below. It is a
+   * ticket of its own rather than a line in this one - *a guard written for one
+   * caller is a claim about every caller* (#68), and that is what this
+   * paragraph is, so it says what was measured and what was not.
    *
    * Fourteen other panels carry the same guard. Eleven read a list: `Users`,
    * `Departments`, `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`,

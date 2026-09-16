@@ -125,8 +125,8 @@ MUTANTS = {
     # banner that never appears; row 8 dies with it, being the same swallow
     # with a different sentence inside.
     "swallowrefusal": ("screen",
-                       "      setData(null)\n      if (!error.expired) setNotice({ error: true, message: error.message })",
-                       "      setData(null)"),
+                       "        setData(null)\n        if (!error.expired) setNotice({ error: true, message: error.message })",
+                       "        setData(null)"),
     # The unknown-CLO refusal answers with the wrong sentence - the Section's
     # instead of the CLO's. Kills row 8 at `getByText(cloNotFound)` and leaves
     # row 7 standing, which is what separates the two rows' claims.

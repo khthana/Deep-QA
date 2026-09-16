@@ -116,11 +116,11 @@ MUTANTS = {
     # The screen swallows the refusal a failed load carries. Kills row 10 at
     # the banner that never appears.
     "swallowrefusal": ("screen",
-                       "      setData(null)\n"
-                       "      setDraft([])\n"
-                       "      if (!error.expired) setNotice({ error: true, message: error.message })",
-                       "      setData(null)\n"
-                       "      setDraft([])"),
+                       "        setData(null)\n"
+                       "        setDraft([])\n"
+                       "        if (!error.expired) setNotice({ error: true, message: error.message })",
+                       "        setData(null)\n"
+                       "        setDraft([])"),
     # The screen swallows the refusal a failed save carries. Kills row 4 at
     # the banner with the total in it; row 7 dies with it, being the same
     # swallow around a different sentence.

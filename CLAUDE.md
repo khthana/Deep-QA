@@ -53,10 +53,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 ### A ticket's diagnosis
 
 - **A ticket's *What is wrong* is a claim from the day it was written; measure it before you fix
-  it.** It has been wrong six ways: aged (#66, #111, #55), never true (#102), generalised from
+  it.** It has been wrong seven ways: aged (#66, #111, #55), never true (#102), generalised from
   the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
-  decided the other way in the file it proposes to change (#48) — and the sheet itself asking
-  for the defect (#89).
+  decided the other way in the file it proposes to change (#48), filed under the wrong half of
+  its own table (#133) — and the sheet itself asking for the defect (#89).
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -65,7 +65,7 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   ticket's commands, then ask what they could not have found; search for the identifier, not the
   concept — specs are written in English and sheets in Thai. **A ticket's file list is a grep
   somebody else ran**, and matching every file on it answers half of *confirm before you change*.
-  (#111, #124, #83, #68)
+  (#111, #124, #83, #68, #133)
 - A ticket that says *unless X* has told you what to go and look for; one that asks you to
   *consider* something is answered by a measurement, and *no, and here is what it would cost* is
   a finished answer. (#101, #89)
@@ -83,7 +83,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - Read a file's own comments for the rule before inventing one; a rule borrowed whole borrows its
   defect too. (#83)
 - **A guard written for one caller is a claim about every caller** — find the others before
-  writing the comment that says they are safe, because that comment is the claim. (#68)
+  writing the comment that says they are safe, because that comment is the claim, and a caller
+  passed by reference is invisible to a grep for the call. (#68, #133)
 
 ### Marks on the sheets
 
@@ -218,6 +219,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   automatically a repeated defect. (#107, #67, #96)
 - A helper named for a type is a promise about that type; a form-field helper has been told about
   values and not about shapes. (#107, #101)
+- **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
+  fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
+  was sent* with a ref rather than with an effect’s flag. (#133)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
 - Before adding a parameterised refusal, find every site that turns that reason into a sentence —
   the grep is `REFUSALS[`. When one change lands at two sites, write a mutant per site. (#125)

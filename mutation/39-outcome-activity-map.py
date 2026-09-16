@@ -190,7 +190,7 @@ MUTANTS = {
     # row and its own mutant. #36 and #37 carry one of these too. Kills row 9.
     "refusalkeepsloading": (
         "screen",
-        "    } finally {\n      setLoading(false)\n    }",
+        "    } finally {\n      if (isCurrent()) setLoading(false)\n    }",
         "    }",
     ),
 }

@@ -135,8 +135,8 @@ MUTANTS = {
     # stopped working. Kills row 4.
     "drilldownwillnotclose": (
         "screen",
-        "    if (open === plo.outcome_id) {\n      setOpen(null)\n      setDrill(null)\n      return\n    }",
-        "    if (false) {\n      setOpen(null)\n      setDrill(null)\n      return\n    }",
+        "    setOpen(current => (current === plo.outcome_id ? null : plo.outcome_id))\n",
+        "    setOpen(plo.outcome_id)\n",
     ),
     # The panel no longer names the person it is about. It is the same drawing
     # as #42's, which is the whole reason it has to say which of the two it is:

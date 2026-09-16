@@ -47,8 +47,11 @@ async function openScores(page, sectionId) {
  * the seed's business rather than a row's — a row that named it would be
  * asserting against the fixture's order instead of against the screen.
  */
+/** The กิจกรรม picker, which is the control that decides which grid is drawn. */
+const activityPicker = (page) => page.getByLabel('กิจกรรม', { exact: true });
+
 async function chooseActivity(page, sectionId, activityId) {
-  const picker = page.getByLabel('กิจกรรม', { exact: true });
+  const picker = activityPicker(page);
   if ((await picker.inputValue()) === String(activityId)) return null;
   const [response] = await Promise.all([
     waitForScores(page, sectionId),
@@ -76,6 +79,10 @@ const wholeCell = (page, label) => page.getByLabel(`คะแนนของ ${l
 const cloCell = (page, label, cloNumber) =>
   page.getByLabel(`${label} ${cloNumber}`, { exact: true });
 
+/** The button that writes the grid. Separate from `saveScores` for #133's row,
+ * which presses it while holding the answer back and so cannot wait for it. */
+const saveButton = page => page.getByRole('button', { name: 'บันทึกคะแนน', exact: true });
+
 /** Presses บันทึกคะแนน and hands back the write. */
 async function saveScores(page, sectionId) {
   const [response] = await Promise.all([
@@ -84,10 +91,17 @@ async function saveScores(page, sectionId) {
         new URL(answer.url()).pathname.startsWith(API(sectionId)) &&
         answer.request().method() === 'PUT',
     ),
-    page.getByRole('button', { name: 'บันทึกคะแนน', exact: true }).click(),
+    saveButton(page).click(),
   ]);
   return response;
 }
+
+/**
+ * The heading over the grid, which is the answer's own name for what is being
+ * marked — `data.activity.activity_name` rather than the picker's option. The
+ * two can disagree, and #133 is the ticket about the moment they do.
+ */
+const gridHeading = page => page.locator('form h2');
 
 /**
  * The heading over the grid's first column, which is the group toggle's own
@@ -107,12 +121,15 @@ module.exports = {
   path,
   waitForScores,
   openScores,
+  activityPicker,
   chooseActivity,
   setMode,
   setEntry,
   wholeCell,
   cloCell,
+  saveButton,
   saveScores,
+  gridHeading,
   columns,
   whoColumn,
 };

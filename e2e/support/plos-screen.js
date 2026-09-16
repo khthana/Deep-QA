@@ -225,12 +225,15 @@ async function addOutcome(page, { program, code, title, type, order, parent }) {
   return save(page);
 }
 
+/**
+ * The button that saves the form. Separate from `save` for #133's row, which
+ * holds the list the save reloads and so cannot wait for it.
+ */
+const saveButton = page => page.getByRole('button', { name: 'บันทึก' });
+
 /** Presses *บันทึก* and waits for the list the save reloads to be drawn. */
 async function save(page) {
-  const [reloaded] = await Promise.all([
-    waitForList(page),
-    page.getByRole('button', { name: 'บันทึก' }).click(),
-  ]);
+  const [reloaded] = await Promise.all([waitForList(page), saveButton(page).click()]);
   await untilListed(page);
   return reloaded;
 }
@@ -296,6 +299,7 @@ module.exports = {
   openEditor,
   selectParent,
   addOutcome,
+  saveButton,
   save,
   startRemoval,
   confirmRemoval,

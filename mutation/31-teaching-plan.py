@@ -135,9 +135,9 @@ MUTANTS = {
     # The screen swallows the refusal a failed load carries. Kills row 7 at
     # the banner that never appears.
     "swallowrefusal": ("screen",
-                       "      setData(null)\n"
-                       "      if (!error.expired) setNotice({ error: true, message: error.message })",
-                       "      setData(null)"),
+                       "        setData(null)\n"
+                       "        if (!error.expired) setNotice({ error: true, message: error.message })",
+                       "        setData(null)"),
     # The screen swallows the refusal a failed save carries. Kills row 8 at
     # the banner with the server's own sentence in it.
     "saveswallows": ("screen",

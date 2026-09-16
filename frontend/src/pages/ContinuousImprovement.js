@@ -104,29 +104,43 @@ export default function ContinuousImprovement() {
   const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
 
-  const load = useCallback(async () => {
+  // #133 - what is drawn is the answer to the request the screen still wants.
+  // `sectionId` is the only parameter and it comes from `useParams` - the route
+  // reaches this screen through one ตอนเรียน at a time and offers no way to
+  // another, so nothing here can supersede a request today: this is #68's rule
+  // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
+  // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
       const answered = await getImprovementPlan(sectionId)
-      setData(answered)
-      // The chosen CLO survives a reload, so saving does not send the person
-      // back to CLO-1 after every sentence. It falls back to the first only
-      // when what was chosen is no longer on the list.
-      setCloId(current =>
-        answered.clos.some(clo => String(clo.clo_id) === String(current))
-          ? current
-          : String(answered.clos[0]?.clo_id ?? '')
-      )
+      if (isCurrent()) {
+        setData(answered)
+        // The chosen CLO survives a reload, so saving does not send the person
+        // back to CLO-1 after every sentence. It falls back to the first only
+        // when what was chosen is no longer on the list.
+        setCloId(current =>
+          answered.clos.some(clo => String(clo.clo_id) === String(current))
+            ? current
+            : String(answered.clos[0]?.clo_id ?? '')
+        )
+      }
     } catch (error) {
-      setData(null)
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (isCurrent()) {
+        setData(null)
+        if (!error.expired) setNotice({ error: true, message: error.message })
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [sectionId])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   const clo = useMemo(

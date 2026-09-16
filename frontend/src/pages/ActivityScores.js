@@ -121,39 +121,80 @@ export default function ActivityScores() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }
 
-  const loadList = useCallback(async () => {
+  // #133 - the picker's own options, and the screen's second read. `load`
+  // below is the one the กิจกรรม picker can supersede; this one is asked with
+  // `sectionId` alone, which comes from `useParams` (ADR-0004), so nothing on
+  // the screen can replace its request today. It takes the flag for the rule
+  // rather than for a defect anybody has seen, and #34's sheet says
+  // ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  const loadList = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await getActivities(sectionId)
-      setList(answer)
-      // The first Activity, so the screen opens on a grid rather than on a
-      // picker with nothing chosen — #32's list is already ordered by the
-      // scheme, so "the first" is the first หมวด's first piece of work.
-      setActivityId(current => current || String(answer.activities[0]?.id ?? ''))
+      if (isCurrent()) {
+        setList(answer)
+        // The first Activity, so the screen opens on a grid rather than on a
+        // picker with nothing chosen — #32's list is already ordered by the
+        // scheme, so "the first" is the first หมวด's first piece of work.
+        setActivityId(current => current || String(answer.activities[0]?.id ?? ''))
+      }
     } catch (error) {
-      setList(null)
-      failed(error)
+      if (isCurrent()) {
+        setList(null)
+        failed(error)
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [sectionId])
 
   useEffect(() => {
-    loadList()
+    let current = true
+    loadList(() => current)
+    return () => {
+      current = false
+    }
   }, [loadList])
 
-  const load = useCallback(async () => {
+  /**
+   * The marks of the กิจกรรม the picker is on now - #133.
+   *
+   * #68's shape. The ticket files this screen under *`useParams`*; only
+   * `sectionId` comes from the route (ADR-0004) and `activityId` is state, set
+   * by the `<select>` on the screen - so a second choice while the first grid is
+   * out leaves two reads in flight, and without the flag the answer that
+   * **arrives** last wins rather than the one **asked for** last. A teacher then
+   * types a class of marks into a grid headed with another piece of work's name.
+   *
+   * The flag is required rather than defaulted, and the reason is the second
+   * caller. `onImported` fires this after a file upload, with `ImportPanel`
+   * passing no arguments, and letting it default to *yes, still current* would
+   * be the same mistake the save makes without its ref: the picker is on screen
+   * the whole time a file is uploading. It asks `onScreen` the same question
+   * instead. `frontend/src/pages/Students.js` carries the rule;
+   * `133a-superseded-answer-on-one-screen.spec.js` carries the row for the
+   * picker, and #34's sheet says ยังไม่ได้ทดสอบ for the import path, which no
+   * row can build without writing a class's marks.
+   */
+  const load = useCallback(async isCurrent => {
     if (!activityId) return
     try {
-      setData(await getScores(sectionId, activityId))
+      const answer = await getScores(sectionId, activityId)
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      setData(null)
-      failed(error)
+      if (isCurrent()) {
+        setData(null)
+        failed(error)
+      }
     }
   }, [sectionId, activityId])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   /**
@@ -228,6 +269,23 @@ export default function ActivityScores() {
     setEntry(activity.activity_type === 'group' ? 'group' : 'student')
   }, [activity])
 
+  /**
+   * Which กิจกรรม the picker is on, readable after an await - #133.
+   *
+   * `save` below answers with the whole screen, so its answer is drawn exactly
+   * like a read and can be superseded exactly like one. The flag `load` takes
+   * cannot serve here: nothing tears a submit handler down, so what it asks is
+   * *is the picker still where it was when I was sent* - a question about now,
+   * which is what a ref is for and state in a closure cannot answer.
+   *
+   * The import panel's `onImported` asks the same question for the same reason,
+   * which is why this sits above both of them rather than beside `save`.
+   */
+  const onScreen = useRef(activityId)
+  useEffect(() => {
+    onScreen.current = activityId
+  }, [activityId])
+
   const type = (key, value, clo) =>
     setDraft(current => ({
       ...current,
@@ -264,7 +322,12 @@ export default function ActivityScores() {
             ? { ...who, scores: draft[row.key] ?? {} }
             : { ...who, score: draft[row.key] ?? '' }
         })
-      setData(await saveScores(sectionId, activityId, { mode, entry, marks }))
+      const asked = activityId
+      const answer = await saveScores(sectionId, asked, { mode, entry, marks })
+      // The grid only if the picker is still on what was saved (#133). The
+      // notice is said either way and names the กิจกรรม it saved, because it
+      // is about what the teacher did rather than about what is on screen.
+      if (onScreen.current === asked) setData(answer)
       setNotice({ error: false, message: `บันทึกคะแนน ${activity.activity_name} แล้ว` })
     } catch (error) {
       failed(error)
@@ -449,7 +512,7 @@ export default function ActivityScores() {
               fetchTemplate={() => scoresTemplate(sectionId, activityId, { mode })}
               send={csv => importScores(sectionId, activityId, csv)}
               onStart={() => setNotice(null)}
-              onImported={load}
+              onImported={() => load(() => onScreen.current === activityId)}
               onError={failed}
             />
           )}

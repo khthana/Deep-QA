@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import { OUTCOME_TYPES } from '../lib/outcomes'
@@ -80,7 +80,22 @@ export default function Plos() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
-  const load = useCallback(async () => {
+  /**
+   * The outcomes of the หลักสูตร the picker is on now - #133.
+   *
+   * #68's shape, reached by asking what that ticket's grep could not have
+   * found: it matched `set...(await ...)` and this line destructures the answer
+   * first, so no file list it published could carry this screen. The picker
+   * above can be moved while a list is out, and without the flag the answer
+   * that **arrives** last wins rather than the one **asked for** last - one
+   * curriculum's PLOs under another's name, and each row's แก้ไข opening a form
+   * about an outcome the screen is not showing. The flag is required rather
+   * than defaulted: the three handlers that reload have a question of their own
+   * to answer, and `onScreen` below is how they answer it.
+   * `frontend/src/pages/Students.js` carries the rule and the reasons, and
+   * `133a-superseded-answer-on-one-screen.spec.js` the rows.
+   */
+  const load = useCallback(async isCurrent => {
     // Nothing is asked for until a curriculum is chosen. The effect below
     // chooses one as soon as the reach is known; an account that reaches none
     // never gets here, and is told so rather than left loading.
@@ -88,17 +103,36 @@ export default function Plos() {
     setLoading(true)
     try {
       const { plos: rows } = await listPlos({ program_id: program })
-      setPlos(rows)
+      if (isCurrent()) setPlos(rows)
     } catch (error) {
-      report(error)
+      if (isCurrent()) report(error)
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [program, report])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
+
+  /**
+   * Which หลักสูตร the filter is on, readable after an await - #133.
+   *
+   * บันทึก, ลบ and a refused แก้ไข each reload the list, and nothing tears a
+   * handler down, so the effect's flag cannot serve them: what they have to ask
+   * is *is the filter still where it was when I was sent*, which is a question
+   * about now. The form replaces the filter while it is open, but `save` clears
+   * it before it reloads, and the dialog behind ลบ never covers the filter at
+   * all - so this is reachable from the screen rather than only in principle.
+   */
+  const onScreen = useRef(program)
+  useEffect(() => {
+    onScreen.current = program
+  }, [program])
 
   // The curricula in reach, fetched once: what this account covers is a
   // property of the grant and does not change with what is being looked at.
@@ -163,7 +197,23 @@ export default function Plos() {
   const nameOf = programId =>
     programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId
 
-  // Read afresh rather than editing the row the list happens to be holding.
+  /**
+   * Read afresh rather than editing the row the list happens to be holding.
+   *
+   * **The success path below is not guarded, and that is a ticket rather than
+   * an oversight** - #133. The filter is live while this read is out, so moving
+   * it opens the form on an outcome of the curriculum the screen has just left:
+   * the same harm the flag on `load` closes, reached by a second route. It is
+   * not this file's alone - `Departments`, `Programs`, `ProgramSubjects`,
+   * `Rubrics`, `Subjects`, `RubricCriteria` and `Offerings` all read a row's
+   * detail into a form the same way, and one fix serves all eight. *Defer
+   * adjacent work; do not defer the second half of the sentence you are
+   * closing* (#119): the twenty-two sites and their second callers are #133's
+   * sentence, and the eight are adjacent. `docs/lessons.md` lists them with
+   * their line numbers so the ticket can be opened from the paragraph.
+   *
+   * The error path reloads the list, so it asks `onScreen` like the others.
+   */
   const openEditor = async plo => {
     setNotice(null)
     setBusy(true)
@@ -172,7 +222,7 @@ export default function Plos() {
       setEditing(current)
     } catch (error) {
       report(error)
-      await load()
+      await load(() => onScreen.current === program)
     } finally {
       setBusy(false)
     }
@@ -186,7 +236,7 @@ export default function Plos() {
       setEditing(null)
       setFormProgram('')
       setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      await load()
+      await load(() => onScreen.current === program)
     } catch (error) {
       report(error)
     } finally {
@@ -206,7 +256,7 @@ export default function Plos() {
           ? 'ผลการเรียนรู้ข้อนี้มีรายวิชาหรือ CLO อ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
           : 'ลบผลการเรียนรู้เรียบร้อยแล้ว',
       })
-      await load()
+      await load(() => onScreen.current === program)
     } catch (error) {
       // A ข้อหลัก that still has ข้อย่อย is refused outright, and the sentence
       // the server sends says what to do about it. The dialog closes either

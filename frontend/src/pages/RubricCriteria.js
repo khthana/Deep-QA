@@ -62,25 +62,37 @@ export default function RubricCriteria() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
-  const load = useCallback(async () => {
+  // #133 - what is drawn is the answer to the request the screen still wants.
+  // `rubricId` comes from the route and the way to another rubric is the list
+  // above, which unmounts this screen, so nothing here can supersede a request
+  // today: this is #68's rule (`frontend/src/pages/Students.js`), not a defect
+  // anybody has seen, and the sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setData(await listCriteria(rubricId))
-      setRefusal(null)
+      const answer = await listCriteria(rubricId)
+      if (isCurrent()) {
+        setData(answer)
+        setRefusal(null)
+      }
     } catch (error) {
       // The whole screen is about one rubric, so a refusal about that rubric is
       // the state of the screen rather than a banner over a table that would
       // otherwise be there.
-      if (error.expired) return
+      if (error.expired || !isCurrent()) return
       setRefusal(error.message)
       setData({ rubric: null, criteria: [], total: 0 })
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [rubricId])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   // Read afresh rather than editing the row the table happens to be holding.

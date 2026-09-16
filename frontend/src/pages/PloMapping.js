@@ -97,21 +97,39 @@ export default function PloMapping() {
     }
   }, [report])
 
-  const load = useCallback(async () => {
+  /**
+   * The grid of the หลักสูตร the picker is on now - #133.
+   *
+   * #68's shape, arriving on this screen a ticket late: the picker above can be
+   * moved while a grid is out, and without the flag the answer that **arrives**
+   * last wins rather than the one **asked for** last - fifty-two columns of one
+   * curriculum under the name of another, with every square editable. Only the
+   * effect below calls this, so the flag is a plain parameter rather than one
+   * with a default; `frontend/src/pages/Students.js` carries the rule and the
+   * reasons, and `133a-superseded-answer-on-one-screen.spec.js` the row.
+   */
+  const load = useCallback(async isCurrent => {
     if (!program) return
     setLoading(true)
     try {
-      setGrid(await readGrid(program))
+      const answer = await readGrid(program)
+      if (isCurrent()) setGrid(answer)
     } catch (error) {
-      setGrid(EMPTY)
-      report(error)
+      if (isCurrent()) {
+        setGrid(EMPTY)
+        report(error)
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [program, report])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   const levels = new Map(
@@ -130,6 +148,19 @@ export default function PloMapping() {
    * sends back is the whole of what changed. A refusal leaves the state alone,
    * so the square snaps back to what the database still holds rather than
    * showing a level that was never written.
+   *
+   * **The fold is not guarded, and the reason is that nothing can draw it** -
+   * #133, measured 16 ก.ย. 2569. A save's answer is a read, so moving the
+   * picker while this one is out can fold a cell of the curriculum being left
+   * into the grid of the one arriving. What stops it being visible is the key:
+   * a cell carries the `outcome_id` it was saved under, a PLO belongs to
+   * exactly one curriculum (`UNIQUE (program_id, outcome_code)`), and every
+   * square is drawn from `grid.outcomes` of the curriculum on screen - so no
+   * square can look the stale cell up, and the next answer for this curriculum
+   * replaces the whole grid. Structurally unreachable rather than proved or
+   * untested (#102), and **it has a date on it** (#131): anything that reads
+   * `grid.mappings` for a count rather than by key makes it reachable the day
+   * it lands.
    */
   const choose = async (subjectId, outcomeId, level) => {
     setNotice(null)

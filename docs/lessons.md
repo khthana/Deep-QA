@@ -2118,3 +2118,171 @@ timestamps, and the full suite of 383 leaves the same 3. The README's layout gai
 `hold.js`, which #134 never added to it, while its command table had to be corrected twice in two
 tickets, which is what a hand-kept list in a file that grows every ticket costs even when the ticket
 is the one that grew it.
+
+## #133 — the grep's sixteen was twenty-two, and one of them was a save
+
+**#133 is #68's deferral, and the first thing it cost was its own number.** #68 closed with a
+paragraph and a ticket: its owner's grep, `set[A-Za-z]*(await `, still returned sixteen call sites
+in fifteen files — three that race against a control on their own screen and thirteen that read
+`useParams`. Re-running that grep on this tree returned the same sixteen, and every one of them was
+real. The number was still wrong. **A grep is evidence for the pattern you typed**, and this one
+looks for an answer that goes straight into a setter; six sites give the answer a name first
+— `const { plos: rows } = await listPlos({ program_id: program })` in `Plos`, and the same shape in
+`GradingWeights`, `ContinuousImprovement`, `TeacherSection`, `GrantsPanel`, and the activity list
+`ActivityScores` reads beside its grid. What found them was not a sharper pattern. It was listing
+**every `await` in `frontend/src/{pages,components,context}`** — seventy-three of them — and reading
+what each one does with its answer, then doing the same for every `.then()` chain and confirming
+`lib/` and `routes/` have no awaits at all. **Twenty-two sites, in twenty files.** Sharpening a
+pattern would have found some of them; only enumerating the population could say the count was
+finished.
+
+**One of those seventy-three is written down as *not* a site, which is cheaper than leaving it to be
+measured again.** `TeacherDashboard.js:55` calls `listMySections()` with no parameter, so there is
+no second request for a first to lose to — it is unguarded and correct, and it will keep looking
+exactly like the other twenty-two to anybody scanning for `await`. That sentence is on
+`24-teacher-dashboard.md` rather than in a scratch file, because *what the instrument cannot measure
+has to be written down* (#132).
+
+**The ticket had also filed one screen under the wrong half of its own table, and that screen turned
+out to hold three of the twenty-two.** #133 lists `ActivityScores` among the `useParams` thirteen,
+where superseding a request means walking from one activity to another on a route that unmounts the
+screen on the way. Only `sectionId` comes from the route (ADR-0004). `activityId` is state, set by a
+`<select>` sitting on the screen — so a teacher who picks a second piece of work while the first
+grid is still out has two reads in flight and no unmount between them. It is the narrow family's
+defect exactly, on a screen the ticket had put in the wide one. **A ticket's classification is a
+claim like its file list**, and this one was wrong in the direction that costs a proof rather than
+the direction that costs an edit.
+
+**And the third of that screen's three sites is a save.** `saveScores` answers with the whole
+grid, and that answer is drawn with `setData` exactly as a read is — so it can be superseded exactly
+as a read is: send the marks, move the picker while the request is out, and the previous activity's
+recalculated grid lands under the new activity's name. The flag every other site takes cannot serve
+here, and the reason is not stylistic. `isCurrent` closes over an effect's teardown, and **nothing
+tears a submit handler down**; the question a handler has to ask is not *was I cancelled* but *is
+the picker still where it was when I was sent*, which is a question about now, and state captured
+in a closure cannot answer it. So the save reads `onScreen.current === asked`, a ref kept in step by
+its own effect. The notice is said either way and names the activity it saved, because a notice is
+about what the teacher did rather than about what is on screen. **A save's answer is a read** —
+anything that redraws from a response needs the same guard, and a handler asks it with a ref.
+
+**The file #68 named as the example of the shape was half-guarded itself.** `Plos.js` is cited by
+name in #68's story as one of the two screens using the house spelling, and it does — in its
+*reach* effect (`Plos.js:141`). Above it in the same file, `load` (`:98`) fetches the PLOs for the
+chosen curriculum and had no flag at all, and it is a group ก site: the หลักสูตร filter is on the screen, so one curriculum's list
+can land on top of another's with no navigation involved. **A file that demonstrates a rule is not a
+file that follows it**, and the citation is the reason nobody looked: it had already been read once,
+for something else.
+
+**The twenty-two split six and sixteen, and the split is what a row costs.** Six are group ก —
+`PloMapping`, `Plos`, `ProgramLevelByIntake`, `ProgramLevelIndividual`, and `ActivityScores` twice
+over — where a control on the same screen supersedes the request, so the situation can be built in
+the browser and each one gets a spec row and a mutant. Sixteen are group ข: they ask with `useParams`
+alone, or with a prop the screen above can only replace by unmounting them. Those get the flag, and
+their sheets say **ยังไม่ได้ทดสอบ** with the reason and an expiry date on it — never *ไม่ต้องมี*. The two
+sentences read almost the same and mean opposite things: one is a queue, the other closes a
+question. A ticket that lets one of those screens change its parameter without coming down makes
+that screen's row reachable on the day it lands, and each sheet names the move that would do it.
+
+**The ticket's last clause is *and check the second caller of every file too*, and it is the clause
+that decides the shape of every flag.** The twenty files hold twenty-four guarded functions. Before
+the fix below, twelve took `async isCurrent =>`, because an effect was the only thing that called
+them, and twelve took `async (isCurrent = () => true) =>`, because a handler called them with
+nothing and for a handler that is running the honest answer to *are you still current* looked like
+yes. Measured again afterwards the split is **fourteen and ten**: `Plos.load` and
+`ActivityScores.load` moved, because their handlers now have a question of their own to ask. Reading the declarations and
+the call sites back out of the files mechanically, rather than by eye over forty lines, reports
+exactly one mismatch — and the mismatch is the instrument's. `ActivityScores.load` takes the default
+with no `load()` anywhere in its file, because its second caller is `onImported={load}`: a reference
+handed to `ImportPanel`, which fires it as `onImported?.()`. `GradingWeights` and `StudentGroups`
+pass the same reference. **A caller that is passed by reference is invisible to a grep for the
+call** — the same species of hole as the one that made this ticket's own sixteen wrong, one level
+further in. It is also the shape that punishes the wrong guess in the noisy direction: a bare flag
+on a function a handler calls with nothing is not a missing guard, it is `isCurrent is not a
+function` the first time somebody imports a file.
+
+**And reading them for the shape of the flag is not reading them for the defect.** That census
+answers *is the signature right*; the comment it produced — *for a handler that is running the
+honest answer to are you still current is yes* — answers *is the guard right*, and on two of the
+twenty files it is false. `Plos` reloads its list from three handlers (บันทึก, ลบ, and an แก้ไข the
+server refused) with the หลักสูตร filter on screen the whole time, and `ActivityScores` reloads from
+`onImported` with the กิจกรรม picker on screen the whole time. Nothing tears a handler down, which
+is exactly why the effect's flag cannot serve it — and exactly why the honest answer is not yes but
+*is the control still where it was when I was sent*, the ref the save on `ActivityScores` was
+already using two hundred lines below. *A guard written for one caller is a claim about every
+caller* (#68): the comment **is** the claim, and a claim written in a comment is still a claim that
+has to be true. The Spec axis of `/code-review` found it in the same round, which is the second time
+this ticket has had a hole handed back to it by an instrument other than the one that made it.
+
+The two fixes are not the same price. `Plos` gets a row — the seventh in `133a` — because its
+situation can be built from the screen: `save` clears `editing` **before** it reloads, so the filter
+is back under the user's hand while the request it caused is still out, and `hold()` puts the
+`updated_at` back afterwards. `ActivityScores.onImported` gets the same guard and
+**ยังไม่ได้ทดสอบ** on `34`, because the only way to build its race is to upload a file that writes a
+whole class's marks, which is what that sheet's own import rows are about; holding their answer back
+would make them measure this instead of themselves. Two sites, one fix, one row — *say which of
+three a clause is: proved, structurally unreachable, or untested* (#102).
+
+And the two mutants are not one claim in two places. `plosstalewins` takes the check out of `load`,
+one line both callers run through, so with the seventh row in place it kills **two** rows — 2 failed
+/ 388 passed, measured, where the figure recorded an hour earlier was 1 / 388 on a suite that did
+not hold that row. `ploshandlerstalewins` takes out only what the handlers pass, leaving the
+effect's guard standing, and kills **one** — 1 failed / 389 passed, the seventh row and nothing
+else. The row is therefore held up by the second mutant rather than the first, and the first
+mutant's count moving from one to two is not a regression but the measurement saying so. *Report
+the measured number, not the ticket's* (#102) covers a figure of your own from an hour ago too: a
+number is about the suite that produced it.
+
+**The census answered where the mutants live, and then said nothing about most of the change.**
+`133` takes the contested-path total from 34 to 38 and the shape from 17/7/6/3/1 to 20/8/6/3/1;
+`Plos.js` becomes a new pair with `19`, and the sheet may not be swept beside `19`, `20`, `34`,
+`35`, `42` or `45`. But #133 flags **twenty** files and names only five in `FILES`, because only
+five hold a mutant — so the census is silent about the other fifteen, which is precisely where a
+formatting change can move somebody else's anchor. `anchors.py` is what caught that: **nine mutants
+across `28`, `29`, `30`, `31`, `32`, `39`, `40`, `42` and `45` came loose**, every one of them a
+`swallowrefusal`, `refusalkeepsloading` or `drilldownwontclose` anchored to a `catch` or `finally`
+body that this change had just indented by two spaces to put it behind `if (isCurrent())`. Re-aiming
+nine anchors is the cheap half; the expensive half is that each one then has to be swept against its
+own spec, because *an anchor check says a mutant no longer applies, never whether it still proves
+anything* (#107) — a re-aim that applies cleanly and measures nothing looks exactly like a good one.
+**The census counts the files a sheet owns; the anchor check is what watches the files it merely
+touches** — and neither of them is a sweep. So the nine were swept, one at a time, each against its
+own spec file: all nine killed the row their own mutation file claims, and nothing else — rows 7 and
+8 on `28a` and `29a`, row 10 on `30a`, row 7 on `31a`, row 8 on `32a`, row 9 on `39a`, row 8 on
+`40a`, and the open-and-close row on `42a` and `45a`. A re-aim that had quietly stopped measuring
+would have looked identical up to that point.
+
+**A background sweep from before the context break was never actually dead.** It was still appending
+to `sweep-progress.txt`, still taking ports 3100 and 5300 out from under the runs being started on
+top of it, and it had left `savedrawsafterthemove` applied to `ActivityScores.js` — so the new
+sweep stopped at `save` with *refusing to save 1 file that still holds a mutant*, which is the one
+guard in the mutation script that turns this into a stopped run rather than a mutant measured
+against another mutant. The fix was to kill the port listeners, confirm with `Get-Process` that no
+node, python or stray bash survived, and `restore`. *A stopped test runner keeps its ports* was
+already written down; what this adds is that it can keep a mutant too.
+
+**The adjacent family is a ticket to file, not a paragraph to bury.** Seven row-detail fetches —
+`const { x: current } = await getX(id); setEditing(current)` on `Departments.js:129`,
+`Plos.js:217`, `Programs.js:113`, `ProgramSubjects.js:121`, `Rubrics.js:118`, `Subjects.js:124`
+and `RubricCriteria.js:104`, plus `Offerings.js:156`, where `getOffering` answers into
+`setViewing` — have the same defect with a different control in front of it: a second row's
+แก้ไข pressed while the first is out. They are eight more sites and a different fix, and the
+temptation to fold them in was real because the count had already moved once. *Defer adjacent work;
+do not defer the second half of the sentence you are closing* (#119) — the twenty-two are the
+sentence, and the eight are adjacent. They are written here with their line numbers so that the
+ticket can be opened from this paragraph, which is the half of #119 that a deferral fails when
+nobody can find what was deferred.
+
+**The second review round found the same family twice more, and the two answers are different.**
+`Plos.openEditor` is one of the eight: its success path is unguarded, and the filter is live while
+the read is out, so it reaches the *แก้ไข opens a form about an outcome the screen is not showing*
+harm by a second route rather than through the stale list. It is deferred with the other seven, and
+the comment beside it now says so — a deferral a reader of that function cannot see is the same
+deferral nobody can find. `PloMapping.choose` is not one of them: it folds a saved cell into the
+grid unguarded, which is *a save's answer is a read* exactly, but nothing can draw the stale cell.
+A cell carries the `outcome_id` it was saved under; a PLO belongs to exactly one curriculum; every
+square is drawn from the outcomes of the curriculum on screen. So no square can look it up —
+**structurally unreachable, not untested and not proved** (#102) — and, like every unreachability,
+it has a date on it (#131): a screen that reads `grid.mappings` for a count rather than by key
+makes it visible the day it lands. Both are written down rather than guarded, because a guard no
+row can reach is a claim nobody can show to hold, and `TeacherDashboard` is the precedent this
+ticket already set for excluding a site in writing.

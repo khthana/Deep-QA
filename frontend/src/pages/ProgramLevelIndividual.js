@@ -193,19 +193,44 @@ export default function ProgramLevelIndividual() {
 
   const offered = useMemo(() => roll.filter(student => matches(student, term)), [roll, term])
 
-  async function toggle(plo) {
-    if (open === plo.outcome_id) {
-      setOpen(null)
-      setDrill(null)
-      return
-    }
-    setOpen(plo.outcome_id)
-    setDrill(null)
+  /**
+   * What is behind the outcome that is open now, for the student on screen - #133.
+   *
+   * #42's panel with #45's heading, and the same defect as the cohort report's:
+   * a second request while the first was out drew whichever **arrived** last.
+   * Here the second press is usually another *person* rather than another
+   * outcome - this screen offers the button only where there is a score - so the
+   * panel could end up naming the student who was on screen a moment ago, which
+   * is the one mistake a personal report must not make.
+   *
+   * Fetched from an effect rather than from the handler, so that what supersedes
+   * a request is what cleans it up: `chosen` or `open` changes, the effect is
+   * torn down, the flag goes false. `frontend/src/pages/Students.js` carries the
+   * rule; `e2e/tests/133a-superseded-answer-on-one-screen.spec.js` the row.
+   */
+  const loadDrill = useCallback(async isCurrent => {
+    if (open === null) return
     try {
-      setDrill(await getStudentContributions(program, chosen, plo.outcome_id))
+      const answer = await getStudentContributions(program, chosen, open)
+      if (isCurrent()) setDrill(answer)
     } catch (error) {
-      report(error)
+      if (isCurrent()) report(error)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [program, chosen, open])
+
+  useEffect(() => {
+    let current = true
+    loadDrill(() => current)
+    return () => {
+      current = false
+    }
+  }, [loadDrill])
+
+  /** Opens one outcome's panel, or closes the one that is open. */
+  function toggle(plo) {
+    setDrill(null)
+    setOpen(current => (current === plo.outcome_id ? null : plo.outcome_id))
   }
 
   const openEvidence = async file => {

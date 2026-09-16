@@ -47,17 +47,29 @@ export default function GrantsPanel({ user, onError }) {
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState(null)
 
-  const load = useCallback(async () => {
+  // #133 - the person this panel is about arrives in a prop, and a prop can
+  // change without the component coming down. Today it cannot: the form
+  // replaces the table on #12's screen, so a second account can only be
+  // opened after this one is closed and this panel unmounted. The flag is
+  // here for the rule rather than for a defect anybody has seen - the day
+  // the screen offers a roll beside the form, it is what stops one person's
+  // roles being drawn under another's name. The sheet says ยังไม่ได้ทดสอบ
+  // rather than ไม่ต้องมี.
+  const load = useCallback(async isCurrent => {
     try {
       const { roles } = await listGrants(user.user_id)
-      setGrants(roles)
+      if (isCurrent()) setGrants(roles)
     } catch (error) {
-      onError(error)
+      if (isCurrent()) onError(error)
     }
   }, [user.user_id, onError])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   const add = async event => {

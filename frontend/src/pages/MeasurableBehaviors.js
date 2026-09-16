@@ -47,20 +47,33 @@ export default function MeasurableBehaviors() {
   const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
 
-  const load = useCallback(async () => {
+  // #133 - what is drawn is the answer to the request the screen still wants.
+  // Both parameters come from `useParams` - the route reaches this screen through
+  // one CLO at a time and offers no way to another,
+  // so nothing here can supersede a request today: this is #68's rule
+  // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
+  // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  const load = useCallback(async (isCurrent = () => true) => {
     setLoading(true)
     try {
-      setData(await getBehaviors(sectionId, cloId))
+      const answer = await getBehaviors(sectionId, cloId)
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      setData(null)
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (isCurrent()) {
+        setData(null)
+        if (!error.expired) setNotice({ error: true, message: error.message })
+      }
     } finally {
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [sectionId, cloId])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   const save = async draft => {

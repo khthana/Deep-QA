@@ -157,9 +157,9 @@ MUTANTS = {
     # The screen swallows the refusal a failed load carries. Kills row 8 at
     # the banner that never appears.
     "swallowrefusal": ("screen",
-                       "      setData(null)\n"
-                       "      if (!error.expired) setNotice({ error: true, message: error.message })",
-                       "      setData(null)"),
+                       "        setData(null)\n"
+                       "        if (!error.expired) setNotice({ error: true, message: error.message })",
+                       "        setData(null)"),
 }
 
 if __name__ == "__main__":

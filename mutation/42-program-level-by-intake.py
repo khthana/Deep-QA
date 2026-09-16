@@ -94,12 +94,8 @@ MUTANTS = {
     # anything else.
     "drilldownwontclose": (
         "screen",
-        "    if (open === plo.outcome_id) {\n"
-        "      setOpen(null)\n"
-        "      setDrill(null)\n"
-        "      return\n"
-        "    }\n",
-        "",
+        "    setOpen(current => (current === plo.outcome_id ? null : plo.outcome_id))\n",
+        "    setOpen(plo.outcome_id)\n",
     ),
     # An outcome nobody has been measured against is drawn as a pass. This is
     # #38's own defect, transplanted: `passed` is null there and null is not

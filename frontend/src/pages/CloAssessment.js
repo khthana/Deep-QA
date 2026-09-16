@@ -58,23 +58,35 @@ export default function CloAssessment() {
   const [notice, setNotice] = useState(null)
   const [showRubric, setShowRubric] = useState(false)
 
-  const load = useCallback(async () => {
+  // #133 - what is drawn is the answer to the request the screen still wants.
+  // `sectionId` comes from the route and every link goes up a level, so nothing
+  // here can supersede a request today: this is #68's rule
+  // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
+  // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
-      setData(await getCloAssessment(sectionId))
+      const answer = await getCloAssessment(sectionId)
+      if (isCurrent()) setData(answer)
     } catch (error) {
-      setData(null)
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (isCurrent()) {
+        setData(null)
+        if (!error.expired) setNotice({ error: true, message: error.message })
+      }
     } finally {
       // #43's walk found two screens that showed a refusal with
       // *กำลังโหลดข้อมูล…* under it for ever. The `finally` is the fix, and it
       // is one line per page rather than something shared.
-      setLoading(false)
+      if (isCurrent()) setLoading(false)
     }
   }, [sectionId])
 
   useEffect(() => {
-    load()
+    let current = true
+    load(() => current)
+    return () => {
+      current = false
+    }
   }, [load])
 
   const [ruleScore, ruleShare] = data ? criterionLines(data.rule) : ['', '']
