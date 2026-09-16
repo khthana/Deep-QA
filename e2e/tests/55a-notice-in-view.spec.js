@@ -3,6 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { openPrograms, programRow, waitForList } = require('../support/programs-screen');
 
 /**
@@ -33,10 +34,23 @@ const { openPrograms, programRow, waitForList } = require('../support/programs-s
  *
  * ทั้งสองเทสต์ไม่เขียนแถวใหม่ลงฐานข้อมูล กรณีแดงใช้รหัสที่ชนกับ seed
  * ซึ่งเซิร์ฟเวอร์ปฏิเสธ กรณีเขียวเปิดแถวเดิมขึ้นมาแล้วบันทึกทับด้วยค่าเดิม
+ * ค่าเท่าเดิมก็จริง แต่ `updated_at` ของแถวนั้นขยับ — การบันทึกทับ
+ * ด้วยค่าเดิมก็คือการเขียน ไฟล์นี้จึงยึดสคีมาไว้ตอนเริ่มและคืนตอนจบ (#137)
  */
 
 // เตี้ยพอให้ฟอร์มล้นพื้นที่เนื้อหา — เหตุผลอยู่ในหัวไฟล์
 test.use({ viewport: { width: 900, height: 400 } });
+
+/**
+ * This file saves a programme the seed wrote - put back when the file ends (#137).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** เลื่อนพื้นที่เนื้อหาลงไปจนสุด โดยเลื่อนไปหาปุ่มที่อยู่ก้นฟอร์ม */
 async function scrollToBottomOfForm(page) {

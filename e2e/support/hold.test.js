@@ -18,7 +18,8 @@ const { hold } = require('./hold');
  * code cannot express (#132).
  *
  * The schema is small and shaped after the cases in `deep_core_e2e` that make
- * the job hard, not after its tables: a parent and a RESTRICT child, a
+ * the job hard, not after its tables: a parent and a RESTRICT child, a second
+ * reference from that child that is set to null rather than followed, a
  * self-referencing tree that cascades, a composite key beside a generated
  * column, and a log that points at a parent and is told to be left alone.
  */
@@ -30,6 +31,7 @@ const DDL = `
   CREATE TABLE child (
     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     parent_code text NOT NULL REFERENCES parent (code) ON DELETE RESTRICT,
+    sponsor_code text REFERENCES parent (code) ON DELETE SET NULL,
     note text,
     at timestamptz,
     settings jsonb,
@@ -52,9 +54,9 @@ const DDL = `
   );
 
   INSERT INTO parent VALUES ('A', '2024-02-29', 1.50), ('B', NULL, NULL);
-  INSERT INTO child (parent_code, note, at, settings, ok) VALUES
-    ('A', 'first', '2024-01-01 23:30:00.123456+07', '{"a": [1, 2]}', true),
-    ('B', NULL, NULL, NULL, NULL);
+  INSERT INTO child (parent_code, sponsor_code, note, at, settings, ok) VALUES
+    ('A', 'B', 'first', '2024-01-01 23:30:00.123456+07', '{"a": [1, 2]}', true),
+    ('B', NULL, NULL, NULL, NULL, NULL);
   INSERT INTO tree (parent_id, label) VALUES (NULL, 'root');
   INSERT INTO tree (parent_id, label) VALUES (1, 'branch');
   INSERT INTO tree (parent_id, label) VALUES (2, 'leaf');
@@ -203,6 +205,51 @@ test('nothing changed, nothing changes', async t => {
   const before = await contents(db);
   const release = await holding();
 
+  await release();
+
+  assert.deepEqual(await contents(db), before);
+});
+
+test('a row that stayed under its key and changed underneath it is put back', async t => {
+  const db = await world(t);
+  const before = await contents(db);
+  const release = await holding();
+
+  // Every kind of value the schema holds, rewritten in place: a number, a date,
+  // a string, a timestamp, a document and a boolean. None of these rows moved
+  // key, so until #137 nothing measured them and nothing put them back.
+  await db.query(`UPDATE parent SET weight = 9.99, opened = '2025-12-31' WHERE code = 'A'`);
+  await db.query(`UPDATE child SET note = 'rewritten', at = now(),
+                     settings = '{"a": []}', ok = false WHERE note = 'first'`);
+  await db.query(`UPDATE tree SET label = 'renamed' WHERE label = 'branch'`);
+  await release();
+
+  assert.deepEqual(await contents(db), before);
+});
+
+test('a row a cascade rewrote rather than removed is put back', async t => {
+  const db = await world(t);
+  const before = await contents(db);
+  const release = await holding();
+
+  // The seeded child is sponsored by 'B'. The file points it at a parent of its
+  // own, and taking that parent out sets the column to null rather than taking
+  // the child with it - the half of a cascade #134 left, because nothing
+  // measured a row that stayed.
+  await db.query(`INSERT INTO parent VALUES ('C', NULL, NULL)`);
+  await db.query(`UPDATE child SET sponsor_code = 'C' WHERE sponsor_code = 'B'`);
+  await release();
+
+  assert.deepEqual(await contents(db), before);
+});
+
+test('a row the file changed and changed back is left alone', async t => {
+  const db = await world(t);
+  const before = await contents(db);
+  const release = await holding();
+
+  await db.query(`UPDATE parent SET weight = 9.99 WHERE code = 'A'`);
+  await db.query(`UPDATE parent SET weight = 1.50 WHERE code = 'A'`);
   await release();
 
   assert.deepEqual(await contents(db), before);

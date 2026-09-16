@@ -30,29 +30,38 @@ const { E2E_SCHEMA } = require('./env');
  * What it puts back, and what it does not:
  *
  * - **Rows that appeared are taken out, and rows that went are put back** —
- *   by primary key, the same comparison `leftovers.js` prints, so a file this
- *   holds reports nothing there. A row put back carries every value it had,
+ *   by primary key, the comparison `leftovers.js` prints, so a file this holds
+ *   reports nothing there. A row put back carries every value it had,
  *   read and written as text so nothing is reinterpreted on the way, and its
  *   own identity value (`OVERRIDING SYSTEM VALUE`); a generated column is left
  *   for the database to generate, because it refuses to be given one.
- * - **A row that stayed but changed is not put back.** The report cannot see
- *   one either, and a restore nothing measures is a restore that breaks
- *   silently (#134's second criterion).
+ * - **A row that stayed under its key and changed underneath it is put back
+ *   too**, column by column, and only the columns that differ are written.
+ *   #134 left this out because nothing measured it, and a restore nothing
+ *   measures is a restore that breaks silently; #137 taught the report to
+ *   compare values as well as keys, and the census it then ran found fourteen
+ *   files leaving rewritten rows behind. The two ask the same question and read
+ *   the answer differently — the report compares the row as `jsonb`, this
+ *   compares the text it will write back — so a value the two disagree about is
+ *   a value this puts back and the report still prints.
  * - **The order is the database's.** Foreign keys decide which row can go
  *   before which, including a table that points at itself, and rather than
  *   reading them into a plan this tries each row, and a row refused by a
  *   foreign key waits for the next pass. A pass that moves nothing ends it,
- *   with the database's own sentence for the row that could not go. All of it
+ *   with the database's own sentence for the row that could not go. Only a
+ *   foreign key is a reason to wait: two rows whose unique value a spec swapped
+ *   would refuse each other for ever, so they end the release instead, and
+ *   nothing in the suite has ever made a pair like that. All of it
  *   is one transaction, so a release that fails has changed nothing.
  * - **`except` is left alone; a table named there carries its reason.** The default is
  *   `user_log`: it is the product recording what the spec did, and #134 set it
  *   apart as a decision rather than a leftover. This never deletes from it,
  *   but a row taken out can still cascade into it — `user_log` follows a
  *   deleted account — and that is the schema's rule, not this file's.
- * - **A cascade is followed where it removes, not where it rewrites.** A
+ * - **A cascade is followed where it removes and where it rewrites.** A
  *   remembered row a removal takes with it is put back, because what went is
- *   read after the removals. A `SET NULL` rewrites a row instead, and a
- *   rewritten row is a changed row, above.
+ *   read after the removals; a row a `SET NULL` rewrote on the way is put back
+ *   for the same reason, because what stayed is read after both passes.
  *
  * A table with no primary key cannot be compared row by row, so it is refused
  * when the snapshot is taken rather than skipped: skipping it would be the
@@ -195,6 +204,32 @@ async function hold({ schema = E2E_SCHEMA, except = ['user_log'] } = {}) {
         }
       }
       await untilSettled(client, restores);
+
+      // Last, and read after both passes: a row that stayed under its key and
+      // changed underneath it, including one a `SET NULL` rewrote when a
+      // removal took the row it pointed at. Only the columns that differ are
+      // written, so a table nobody rewrote is one statement lighter.
+      const rewrites = [];
+      for (const table of tables) {
+        const is = await rowsOf(client, named, table);
+        for (const [key, row] of before.get(table.table_name)) {
+          const now = is.get(key);
+          if (!now) continue;
+          // Never the key's own columns: the key is how this row was found in
+          // both readings, so those two values are equal by definition, and an
+          // identity column would refuse to be given one anyway.
+          const moved = table.columns.filter(c => !table.key.includes(c) && now[c] !== row[c]);
+          if (!moved.length) continue;
+          rewrites.push({
+            text:
+              `UPDATE ${quote(named)}.${quote(table.table_name)} SET ` +
+              moved.map((c, i) => `${quote(c)} = $${i + 1}`).join(', ') +
+              ` WHERE ${table.key.map((c, i) => `${quote(c)}::text = $${moved.length + i + 1}`).join(' AND ')}`,
+            values: [...moved.map(c => row[c]), ...table.key.map(c => row[c])],
+          });
+        }
+      }
+      await untilSettled(client, rewrites);
       await client.query('COMMIT');
     } catch (error) {
       await client.query('ROLLBACK');

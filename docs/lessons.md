@@ -1985,3 +1985,73 @@ claiming *a child before its parent* on a pair the alphabet already ordered — 
 `user_log` was *left as the run made it*, which the cascade makes false. The fourteen now point at
 `hold.js`, which is the one place that says it. The full run after the fix was 383 of 383 again, and
 `user_log` alone.
+
+## #137 — the report compared keys, so the rows that stayed put were invisible
+
+**The ticket's first instruction was to measure, and measuring was most of the work.** #134 had left
+one half of *put the schema back* undone and said why on the file: a row that stays under its key and
+changes underneath it is not put back, because nothing could see one. `leftovers.js` compared the set
+of primary keys before and after a run; `hold.js` compared the same thing; between them, a spec could
+rewrite every value in the schema and both would call the run tidy. So this ticket is two changes in
+order — the instrument, then the cleanup — and the order is the point. A restore nobody measures is a
+restore that breaks silently, which is why #134 was right to defer it and right to open the ticket.
+
+**The snapshot now carries the row as well as the key**, and asks for both under names of its own
+choosing — `to_json(ARRAY[…])` and `to_jsonb(t)` — rather than selecting the key columns bare, so
+nothing it reads can be shadowed by a column that happens to be called the same thing. `differences`
+gained a third category beside `added` and `removed`, computed only over keys **both** snapshots hold:
+a row whose key moved is already one of the first two, and counting it twice would report one write as
+two. Five deliberate breaks each fail at least one row — but two of them, the ones about what the
+driver hands back, are caught **only** by the row that reads a real schema. This is the file that
+learned in #132 that a fake written from the code cannot express what the driver does, and it had kept
+being a file of fakes; it has one real schema row now, and that row is the one that earns its place.
+
+**Eight keys is not an answer when two hundred rows moved.** The first census run printed
+`activity_scores: +0 -0 ~201` and eight keys, each `(updated_at)`, which cannot say whether the other
+193 were the same. A rewritten table now also prints its columns counted over all of its rows —
+`columns updated_at (201)` — and that line is what the ticket's third criterion actually needs: whether
+what moved is a value somebody typed or a stamp that follows every write.
+
+**The census: fourteen of fifty-six files leave rewritten rows, and four of them already held.**
+They are `10a`, `11c`, `12a`, `13a`, `16a`, `18a`, `19a`, `27a`, `28a`, `29a`, `30a`, `31a`, `34a`
+and `55a`, of which `12a`, `16a`, `18a` and `19a` already held — written down here because a census
+that lives only in a run nobody kept is a measurement the next ticket has to pay for again.
+Twelve of the fourteen leave nothing but `updated_at`, sometimes with the `updated_by` beside it.
+`16a` leaves `subjects.is_active` false on a seeded subject — the row that proves a referenced subject
+is closed rather than deleted — and that file has held since #134, which is exactly the blind spot:
+`hold` put back everything except the thing that file changes. `10a` leaves a different
+`users.password` from the one the seed wrote, and it is the one row in the census where a changed value
+is not a changed meaning: the file changes a password and changes it back through the screen, and
+bcrypt salts the two hashes differently. **A value that moved is not always a meaning that moved** —
+and the report cannot tell the difference, which is a reason to read it rather than to trust it.
+
+**Nothing was excluded from the comparison, and that is the answer to the fourth criterion, not a way
+round it.** `updated_at` here is not a trigger's tick: no table in the schema carries one, so the
+column moves only because a route wrote `updated_at = now()`, and five screens read it back out —
+`clos`, `plos`, `ploMapping`, `rubrics` and `rubricCriteria` all select it into a *แก้ไขล่าสุด* column.
+A stamp that reaches the screen is a value the next file can be handed, so it is put back like any
+other.
+
+**Once it was measured the cleanup was one more pass of twenty lines**, and it closes the other half
+of a cascade at the same time. `release` gains a third pass, read after the removals and the restores: every remembered
+row still under its key whose values differ is written back, only in the columns that differ, never in
+the key's own. A `SET NULL` that rewrote a row while a removal took the row it pointed at is a changed
+row, so #134's *followed where it removes, not where it rewrites* is now *and where it rewrites*. The
+row that proves it is not a new one only: giving the test schema a `ON DELETE SET NULL` reference
+turned an existing row — *both directions at once* — red, because the seeded child lost its sponsor
+when the parent went. A fixture that cannot express a defect is a fixture that cannot catch one (#96).
+
+**The ten files that did not hold were given the block; one cleanup was replaced rather than joined.**
+`11c` suspended an account and handed it back through the screen's own endpoint in an `afterAll` with
+an assertion on it — a net whose reason is kept, on the `hold` that now is the net. `34a` keeps its
+`afterEach`: that one puts each row's marks back **before the next row runs**, which is a different
+opinion from *this file ends where it began* and not a second copy of it (#97's two places are two
+copies of one opinion, not two opinions). What `hold` adds there is the hour on two hundred rows that
+no row of the file was ever going to restore.
+
+**The evidence, in the order it was taken.** Five breaks against `leftovers.js` and four against
+`hold.js`, each failing at least one row. Then the census — fifty-six single-file runs, before any fix.
+Then the seam the specs are on: with the rewrite pass skipped, `16a` reports
+`subjects ~1 (is_active, updated_at)` and `34a` reports `~201`, both back to `user_log` alone with it.
+Then the fourteen files again, one run each: **every one of them `34 tables checked, 1 moved`**. Then
+the full suite.

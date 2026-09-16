@@ -5,6 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { switchTo } = require('../support/shell');
 const { DASHBOARD } = require('../support/teaching-screen');
 const {
@@ -41,6 +42,17 @@ const {
  * add their own before removing anything, so the seeded pair under every
  * other CLO stays exactly as seeded whichever order the rows run in.
  */
+
+/**
+ * This file edits behaviours the seed wrote - put back when the file ends (#137).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** teacher.one@ teaching ตอนเรียน 1 of the current term. */
 async function asTeacherOne(page) {

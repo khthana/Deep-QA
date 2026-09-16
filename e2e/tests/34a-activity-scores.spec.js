@@ -8,6 +8,7 @@ const { ACCOUNTS } = require('../support/accounts');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { mySectionIds } = require('../support/enrolment-screen');
 const { csv, importCsv, reportedLines } = require('../support/import-panel');
 const {
@@ -46,6 +47,18 @@ const {
  * teardown that goes through the screen shares a defect with the subject and
  * cannot be evidence about it.
  */
+
+/**
+ * Every row puts its own marks back as it goes, below; this is the rest of what a
+ * save writes - the hour on two hundred rows - put back when the file ends (#137).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** The seeded group Activity: 100 marks over two outcomes, and `activity_type` group. */
 const PROJECT = ACTIVITIES.find((activity) => activity.type === 'group').name;

@@ -5,6 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { switchTo } = require('../support/shell');
 const { DASHBOARD } = require('../support/teaching-screen');
 const {
@@ -44,6 +45,17 @@ const {
  * and asserting it a second time for a second label would be asserting the
  * label.
  */
+
+/**
+ * This file edits outcomes the seed wrote - put back when the file ends (#137).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 const SUBJECT = '01076105';
 

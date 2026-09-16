@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { BACKEND_URL } = require('../support/env');
 const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { openUsers, search, userRow } = require('../support/users-screen');
 const {
   ACTIONS,
@@ -33,6 +34,18 @@ const {
  * the state it asserts on rather than inheriting it from the row above.
  */
 test.describe.configure({ mode: 'serial' });
+
+/**
+ * This file signs accounts in and out to make history to read, which writes to the
+ * rows behind them - put back when the file ends (#137).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 const STATUS_CHANGE = ACTIONS.SET_USER_STATUS;
 const SIGNED_IN = ACTIONS.LOGIN;

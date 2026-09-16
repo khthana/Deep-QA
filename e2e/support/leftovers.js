@@ -16,10 +16,16 @@ const { createPool, schemaName } = require('../../db/pool');
  * here is about a database going stale between runs. It is about the drift
  * **inside** one run, which nothing measured until this existed.
  *
- * This module measures it. It takes a snapshot of every row's primary key
- * right after the seed, another when the run ends, and prints what moved in
- * both directions — insertions **and** deletions, because a spec that removes
- * a seeded row changes the next file's world exactly as much as one that adds.
+ * This module measures it. It takes a snapshot of every row right after the
+ * seed, another when the run ends, and prints what moved three ways —
+ * insertions, deletions **and** rewrites, because a spec that removes a seeded
+ * row, or edits one where it stands, changes the next file's world exactly as
+ * much as one that adds. The third of those arrived with #137: until then both
+ * this and `hold.js` compared keys alone, so a row that kept its key and
+ * changed its values was a leftover nothing could see. A rewritten row names
+ * the columns that moved, and a table of them is counted by column as well,
+ * because what decides the fix is whether it is a value somebody typed or an
+ * `updated_at` following a write.
  *
  * Three things it will not do, said here rather than left to be discovered:
  *
@@ -77,11 +83,16 @@ async function primaryKeys(db, schema) {
 }
 
 /**
- * Every row's primary key, per table.
+ * Every row, by primary key, per table.
  *
  * A key is the JSON of its column values, so a composite key is compared whole
  * and cannot collide with a different pair — there is no separator byte to
  * choose, and no claim to make about what a column can hold.
+ *
+ * The row beside it is the whole row as `jsonb`, which is what lets a row that
+ * stayed be compared with itself (#137). Both are asked for under names of this
+ * file's choosing rather than the table's columns, so neither can be shadowed
+ * by a column that happens to be called the same thing.
  *
  * A table with no primary key cannot be compared row by row and is carried as
  * `null` rather than skipped, so the report can say it was seen and not read.
@@ -95,19 +106,28 @@ async function snapshot(db, schema) {
       rows.set(table, null);
       continue;
     }
-    const columns = key.map(name => `"${name}"`).join(', ');
+    const keyColumns = key.map(name => `t."${name}"::text`).join(', ');
     const { rows: found } = await db.query(
-      `SELECT ${columns} FROM "${named}"."${table}"`,
+      `SELECT to_json(ARRAY[${keyColumns}]) AS key, to_jsonb(t) AS row
+         FROM "${named}"."${table}" t`,
     );
-    rows.set(
-      table,
-      new Set(found.map(row => JSON.stringify(key.map(name => String(row[name]))))),
-    );
+    rows.set(table, new Map(found.map(row => [JSON.stringify(row.key), row.row])));
   }
   return { schema: named, rows };
 }
 
-/** What is in `after` and not `before`, and the other way round, per table. */
+/** The columns two readings of one row disagree about, in the row's own order. */
+function rewrittenColumns(was, is) {
+  const columns = new Set([...Object.keys(was), ...Object.keys(is)]);
+  return [...columns].filter(
+    column => JSON.stringify(was[column]) !== JSON.stringify(is[column]),
+  );
+}
+
+/**
+ * What is in `after` and not `before`, the other way round, and what stayed
+ * under its key and changed underneath it, per table.
+ */
 function differences(before, after) {
   const names = new Set([...before.rows.keys(), ...after.rows.keys()]);
   const out = [];
@@ -122,9 +142,20 @@ function differences(before, after) {
       out.push({ table, unreadable: 'no primary key' });
       continue;
     }
-    const added = [...is].filter(key => !was.has(key));
-    const removed = [...was].filter(key => !is.has(key));
-    if (added.length || removed.length) out.push({ table, added, removed });
+    const added = [...is.keys()].filter(key => !was.has(key));
+    const removed = [...was.keys()].filter(key => !is.has(key));
+    // Only the keys both snapshots hold: a row whose key moved is already one
+    // of the two above, and counting it here as well would report one write
+    // twice.
+    const changed = [];
+    for (const [key, row] of was) {
+      if (!is.has(key)) continue;
+      const columns = rewrittenColumns(row, is.get(key));
+      if (columns.length) changed.push({ key, columns });
+    }
+    if (added.length || removed.length || changed.length) {
+      out.push({ table, added, removed, changed });
+    }
   }
   return out;
 }
@@ -135,10 +166,33 @@ const SHOWN = 8;
 /** `["0501","01019801"]` reads as `0501/01019801`. */
 const readable = key => JSON.parse(key).join('/');
 
-const keys = (marked, list) => {
-  const shown = list.slice(0, SHOWN).map(readable);
+const listed = (marked, list, say) => {
+  const shown = list.slice(0, SHOWN).map(say);
   const rest = list.length - shown.length;
   return `      ${marked} ${shown.join(', ')}${rest > 0 ? ` … and ${rest} more` : ''}`;
+};
+
+const keys = (marked, list) => listed(marked, list, readable);
+
+/** A changed row reads as its key and the columns that moved under it. */
+const rewritten = list =>
+  listed('changed', list, entry => `${readable(entry.key)} (${entry.columns.join(', ')})`);
+
+/**
+ * The columns of a table's changed rows, each with how many rows it moved in.
+ *
+ * Only eight keys are printed, so on a table where two hundred rows moved the
+ * keys cannot answer the question the census is for — whether what moved is a
+ * column somebody wrote or a stamp that follows every write. This counts over
+ * all of them, commonest first.
+ */
+const columnTally = list => {
+  const counted = new Map();
+  for (const entry of list) {
+    for (const column of entry.columns) counted.set(column, (counted.get(column) || 0) + 1);
+  }
+  const sorted = [...counted].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  return `      columns ${sorted.map(([column, rows]) => `${column} (${rows})`).join(', ')}`;
 };
 
 /** The report, as lines. Says what it looked at, not only what it found. */
@@ -174,10 +228,13 @@ function report(before, after, moved) {
     const delta = entry.added.length - entry.removed.length;
     lines.push(
       `  ${entry.table}: +${entry.added.length} -${entry.removed.length}` +
-        ` (net ${delta > 0 ? '+' : ''}${delta})`,
+        ` ~${entry.changed.length} (net ${delta > 0 ? '+' : ''}${delta})`,
     );
     if (entry.added.length) lines.push(keys('added  ', entry.added));
     if (entry.removed.length) lines.push(keys('removed', entry.removed));
+    if (entry.changed.length) {
+      lines.push(rewritten(entry.changed), columnTally(entry.changed));
+    }
   }
   if (moved.length) {
     lines.push(

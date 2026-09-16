@@ -39,7 +39,7 @@ It needs the database container running (`npm run db:up` from `db/`), the root `
 | `npm run test:headed` | The same, with the browser visible. |
 | `npx playwright test tests/17b-students-import.spec.js` | One file. |
 | `npm run report` | The HTML report of the last run. |
-| `npm run test:support` | The support modules that measure rather than drive — `leftovers.js` today. No browser, no database. |
+| `npm run test:support` | The support modules that measure and put back — `leftovers.js` and `hold.js`. No browser; both reach a real schema of their own. |
 
 ## What it runs against
 
@@ -72,19 +72,30 @@ first thing to notice.
 `17b` and `17c` are in the 40 — and #134 closed the other 16, after measuring the census again and finding it
 unchanged.
 
-Every run ends with a report of what moved, from `support/leftovers.js`. Before #134, a full run's read:
+Every run ends with a report of what moved, from `support/leftovers.js`. It counts three directions —
+rows added, rows removed, and rows that kept their key and changed underneath it. A single-file run of
+`16a`, with the third of those put back by hand to show it:
 
 ```
-leftovers (#132): 34 tables checked, 3 moved
-  departments: +8 -0 (net +8)
-      added   07, X1, X2, X3, Y1, Z0, Z1, Z2
-  learning_outcomes: +0 -2 (net -2)
-      removed 48, 49
-  user_log: +490 -0 (net +490)
-      added   1, 2, 3, 4, 5, 6, 7, 8 … and 482 more
+leftovers (#132): 34 tables checked, 2 moved
+  subjects: +0 -0 ~1 (net 0)
+      changed 01076105 (is_active, updated_at)
+      columns is_active (1), updated_at (1)
+  user_log: +9 -0 ~0 (net +9)
+      added   1, 2, 3, 4, 5, 6, 7, 8 … and 1 more
 ```
 
-The full run that closed #134, on 15 September 2569, reported one table: `user_log`.
+A rewritten row names the columns that moved, and the table names them again counted over **all** of
+its rows, because only eight keys are printed and a table where two hundred rows moved needs the
+question answered whole: is this a value somebody typed, or an `updated_at` following a write?
+
+The third direction arrived with #137, and its census — fifty-six single-file runs — found **fourteen
+files leaving rewritten rows**, four of which had held since #134: `hold` was putting back everything
+except what those files change. Twelve leave nothing but `updated_at`; `16a` leaves a seeded subject
+closed, and `10a` leaves a password hash bcrypt re-salted on the way back. Nothing is excluded from the comparison: no table here carries an `updated_at` trigger, so the
+column moves only because a route wrote it, and five screens read it back into a *แก้ไขล่าสุด* column.
+
+The full runs that closed #134 and #137, on 15 and 16 September 2569, reported one table: `user_log`.
 
 Three things about it are deliberate and are argued in the file itself. It **reports and does not fail the run**,
 because a guard that refused would need a list of what is allowed to move, and a hand-kept list in a suite that grows
@@ -109,20 +120,23 @@ In `beforeAll` it remembers every row of every table, so declare it before any o
 `afterAll` it takes out every row that appeared and puts back every row that went, by primary key, with the values
 and identity ids they had, in the order the foreign keys allow, and in one transaction — whether the rows passed or
 not. It asks the **catalogue** for the tables, for the reason the report does: a list of the tables a spec touches
-is right until the route behind its screen writes to one more. Two things it deliberately leaves alone, and says so
-in the file:
+is right until the route behind its screen writes to one more. What it puts back, and the one thing it
+deliberately leaves alone, are said on the file:
 
-- **A row that stayed but changed is not put back.** The report cannot see one either, and a restore nothing
-  measures is a restore that breaks silently. A spec that edits a seeded row in place puts it back itself.
+- **A row that stayed and changed is put back too, column by column** — since #137, which taught the
+  report to compare values before teaching `hold` to restore them. A row a `SET NULL` rewrote while a
+  removal took the row it pointed at comes back the same way.
 - **`user_log` is not deleted from.** It is the product recording the spec's own actions; every spec that does
   anything moves it, and removing its rows would be a decision about the product rather than a cleanup. A row `hold`
   takes out still cascades into it — an imported account's log rows go with the account — because that is the schema's
   rule.
 
 `hold` is a whole-file shape. A spec that wants its situation gone **before the next row** still names what it put
-there: `44a`'s `unenrol` takes out the two students it enrolled, and `25a`'s `afterEach` takes out the enrolments each
-row made. Scope that kind of cleanup to what the file wrote, and check it with a single-file run — `25a`'s was scoped
-to the account rather than the term, and removed three enrolments the seed made until #134's census found it.
+there: `44a`'s `unenrol` takes out the two students it enrolled, `25a`'s `afterEach` takes out the enrolments each
+row made, and `34a`'s puts each row's marks back before the next row reads them. That is a different opinion
+from *this file ends where it began*, not a second copy of it, so those files carry both. Scope that kind of
+cleanup to what the file wrote, and check it with a single-file run — `25a`'s was scoped to the account rather
+than the term, and removed three enrolments the seed made until #134's census found it.
 
 Sign-in is the real sign-in screen and the real endpoint, with the seeded accounts and the password from `db/seed.js`.
 Nothing about the session is stubbed, for the reason `docs/06` gives for the backend suite: the inherited system's

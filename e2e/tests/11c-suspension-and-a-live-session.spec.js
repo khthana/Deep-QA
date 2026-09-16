@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { BACKEND_URL } = require('../support/env');
 const { openChangePassword, submitPasswordChange } = require('../support/shell');
 const { openUsers, search, userRow } = require('../support/users-screen');
@@ -34,6 +35,24 @@ const { openUsers, search, userRow } = require('../support/users-screen');
  * unproven.
  */
 
+/**
+ * Whatever the run did, `teacher.two@` is active again when the file ends.
+ *
+ * Specs share one schema and run in file order, and 13a signs in as this
+ * account: a failure part-way through the row below would otherwise leave a
+ * suspended account behind and fail a later file for a reason that has nothing
+ * to do with it. Until #137 this was an `afterAll` of this file's own, putting
+ * the status back through the screen's own endpoint - a suspended row stays
+ * under its key, and a row that stayed was the half `hold` did not measure.
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
+
 const statusPath = userId => `/api/users/${userId}/status`;
 
 /**
@@ -59,28 +78,6 @@ async function setStatus(page, email, userId, label) {
 
 /** A request on the cookie this browser is already holding. */
 const onHeldSession = (page, path) => page.request.get(`${BACKEND_URL}${path}`);
-
-/**
- * Whatever the run did, `teacher.two@` is active again when it ends.
- *
- * Specs share one schema and run in file order, and 13a signs in as this
- * account. A failure part-way through the test below would otherwise leave a
- * suspended account behind and fail a later file for a reason that has nothing
- * to do with it.
- */
-test.afterAll(async ({ browser }) => {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  await signIn(page, ACCOUNTS.systemAdmin);
-  const handedBack = await page.request.put(
-    `${BACKEND_URL}${statusPath(IDS.teacherTwo)}`,
-    { data: { status: 'active' } },
-  );
-  // Asserted, because a net that fails quietly is not a net: `13a-` signs in
-  // as this account and would fail for a reason of its own making.
-  expect(handedBack).toBeOK();
-  await context.close();
-});
 
 test('row 3: a suspension refuses the session the account was already holding', async ({
   page,

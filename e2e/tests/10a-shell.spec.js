@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const {
   sessionCookie,
   payloadOf,
@@ -56,6 +57,18 @@ const {
  * on the first reload and its absence on the second are asserted in the same
  * test on purpose - either one alone can be had by breaking the other.
  */
+
+/**
+ * This file changes an account's password and changes it back through the screen -
+ * a new hash either way, so the row stays and its values do not (#137).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 const PROGRAM_MANAGER_0501 = 'กรรมการหลักสูตร 0501';
 const TEACHER = 'อาจารย์ผู้สอน';

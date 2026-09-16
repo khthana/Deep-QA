@@ -185,6 +185,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   attribute a table by running that file on its own. (#132)
 - **A teardown is a write like any other** — scope it to what the file wrote, not to who wrote it.
   (#134)
+- **A comparison by key cannot see a rewrite** — a report that reads tidy has only said nothing was
+  added or removed; measure the values too, then put them back. What nothing measures, nothing
+  cleans. (#137)
 - Two `includes` cannot fail on a list that is too wide. (#102)
 - A test that passes because of a defect tends to explain itself in its own comment. A row that
   needs a defect to be reachable must be rewritten the day it is fixed — write that on the row.

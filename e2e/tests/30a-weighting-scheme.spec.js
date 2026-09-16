@@ -5,6 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { menuLink, switchTo } = require('../support/shell');
 const { DASHBOARD } = require('../support/teaching-screen');
 const { importCsv, reportedLines, reportedReason } = require('../support/import-panel');
@@ -38,6 +39,17 @@ const {
  * โครงงาน 40 / สอบกลางภาค 30 / สอบปลายภาค 30 back before it ends — the next
  * row starts by reading it.
  */
+
+/**
+ * This file edits the weightings the seed wrote - put back when the file ends (#137).
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 const SEEDED = [
   { score_category: 'โครงงาน', weight: '40' },
