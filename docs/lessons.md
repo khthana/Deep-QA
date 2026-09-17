@@ -2433,7 +2433,8 @@ Every row presses the pager, because it is the control every screen has; six of 
 have a filter that moves `load` the same way, and a filter row would be killed by exactly the same
 mutant. *A row that names two ways in is two rows* (#66), so the filter is a ☐ row on those six sheets
 — marked, not explained in prose (#50) — rather than six rows that add a situation and no separable
-evidence.
+evidence. Those rows name #144, opened the same day, and measuring for it found a way in they had
+missed: the search box on `Users` writes to the same `filters` as role and status.
 
 **Every row waits for the reload to be sent before it moves the pager.** Without that wait, a
 handler that reloads nothing would let page two answer with nothing late behind it, and the row would
