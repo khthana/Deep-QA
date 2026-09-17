@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -110,7 +110,7 @@ export default function ContinuousImprovement() {
   // another, so nothing here can supersede a request today: this is #68's rule
   // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
   // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answered = await getImprovementPlan(sectionId)
@@ -141,6 +141,19 @@ export default function ContinuousImprovement() {
     return () => {
       current = false
     }
+  }, [load])
+
+  /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons. For the reason #133 gives above `load`, nothing here can change
+   * what `load` asks for while a reload is out, so no row proves this and the
+   * sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
   }, [load])
 
   const clo = useMemo(
@@ -183,7 +196,7 @@ export default function ContinuousImprovement() {
       })
       const written = labelOf(editing)
       setEditing(null)
-      await load()
+      await load(() => onScreen.current === load)
       setNotice({ error: false, message: `บันทึก${written}แล้ว` })
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
@@ -199,7 +212,7 @@ export default function ContinuousImprovement() {
     try {
       await deleteEntry(sectionId, removing.entry_id)
       setRemoving(null)
-      await load()
+      await load(() => onScreen.current === load)
       setNotice({ error: false, message: `ลบ${removed}แล้ว` })
     } catch (error) {
       // The dialog closes either way, for AchievementCriteria's reason: a

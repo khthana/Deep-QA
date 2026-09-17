@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
@@ -81,23 +81,22 @@ export default function Students() {
    * list it is waiting for is still on its way.
    *
    * `isCurrent` is asked after the answer arrives and is the whole of the rule.
-   * It is a parameter with a default rather than a `let` beside the fetch - the
-   * shape the effect below this one uses for its two lists - because `load` is
-   * also called from the handlers, which pass nothing.
+   * It is a parameter rather than a `let` beside the fetch - the shape the
+   * effect below this one uses for its two lists - because `load` has two kinds
+   * of caller, and they need two different answers to *is this still current*.
    *
-   * **That default is about the shape, and it is not a statement that the
-   * handlers are safe** - #133. This comment used to say that for a handler
-   * nothing supersedes the request and the honest answer is yes, and that is
-   * false wherever a control sits beside the handler: nothing tears a handler
-   * down, so what it can ask is not *is my render still mounted* but *is the
-   * control still where it was when I was sent*, which is a `useRef` and not
-   * this flag. `Plos` and `ActivityScores` were measured to have exactly that
-   * hole and now carry the ref; on this screen `save` closes the form before it
-   * reloads and `onImported` fires with the pager and the filter on screen, so
-   * the same question is open here and on the panels below. It is a ticket of
-   * its own - **#140** - rather than a line in this one - *a guard written for
-   * one caller is a claim about every caller* (#68), and that is what this
-   * paragraph is, so it says what was measured and what was not.
+   * **The effect asks whether its render is still mounted, and a handler cannot
+   * ask that** - nothing tears a handler down. Until #140 the handlers passed
+   * nothing and took a default that said yes, and this comment called that
+   * honest; #133 measured it false on `Plos` and `ActivityScores`, and #140
+   * measured it false on every screen that reloads from a handler with a
+   * control beside it. Here `save` closes the form before it reloads and
+   * `onImported` fires with the pager and the filter on screen, so ถัดไป pressed
+   * while the reload was out drew page one under a pager on page two. What a
+   * handler can ask is *is the list still where it was when I was sent*, which
+   * is `onScreen` below, and there is no default any more: a caller that
+   * forgets the flag throws rather than quietly drawing a list nobody is on -
+   * *a guard written for one caller is a claim about every caller* (#68).
    *
    * Fourteen other panels carry the same guard. Eleven read a list: `Users`,
    * `Departments`, `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`,
@@ -119,7 +118,7 @@ export default function Students() {
    * proves nothing about any one of them. That is what `intakefrozen` taught
    * #42.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listStudents({ page, per_page: PAGE_SIZE, program_id: program })
@@ -137,6 +136,42 @@ export default function Students() {
     return () => {
       current = false
     }
+  }, [load])
+
+  /**
+   * The list a handler reloads is drawn only if it is still the list the screen
+   * is on - #140.
+   *
+   * It asks about `load` itself rather than about `page` and `program`, which is
+   * the other spelling - `Plos` compares its one filter. `load` is rebuilt
+   * exactly when what the list asks for changes, because its dependencies are
+   * that request, so one comparison answers the question on a screen with two
+   * of them (this one) and on a screen with five (`Offerings`) without a second
+   * list of values beside the `useCallback` to be kept in step with the first.
+   * Compared this way a reload is dropped when anything the list asks for has
+   * moved - which is what a stale answer is - and when nothing has, it draws.
+   *
+   * The ref is written in an effect rather than during render, as `Plos`'s is:
+   * the answer that has to lose arrives after the effect that superseded it has
+   * run, which is what makes it stale in the first place.
+   *
+   * Eighteen other screens carry this ref below their fetch effect, the ten
+   * that cannot be proved with two sentences more saying so. Eight have a
+   * control beside a handler - `Users`, `Departments`, `Programs`, `Subjects`,
+   * `ProgramSubjects`, `Rubrics`, `Offerings` and `SubjectStudents` - and with
+   * this screen that is thirty-one sites, each with its own row in
+   * `e2e/tests/140a-superseded-handler-reload.spec.js` and its own mutant in
+   * `mutation/140-superseded-handler-reload.py`: the refusal of แก้ไข, บันทึก,
+   * ลบ, the import, ระงับ, คัดลอก, กลับไปหน้ารายการ, whichever each screen has.
+   * `SubjectStudents.reload` is one site with two callers - adding a student and
+   * the import, which passes it by name - so it has two rows. The other ten ask
+   * for what the route names and nothing on them can change it while a reload
+   * is out, so they carry the guard and their sheets say *ยังไม่ได้ทดสอบ*, with
+   * the reason and a date, rather than *ไม่ต้องมี*.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
   }, [load])
 
   // What this account covers is a property of the grant and does not change
@@ -171,7 +206,7 @@ export default function Students() {
       // student who has just been added. Setting the page is a change the
       // effect fetches; calling `load` as well would race it, so only the
       // branch that is already on page one reloads by hand.
-      if (page === 1) await load()
+      if (page === 1) await load(() => onScreen.current === load)
       else setPage(1)
     } catch (error) {
       report(error)
@@ -313,7 +348,7 @@ export default function Students() {
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
               // nothing refetches, reloads by hand.
-              if (page === 1) load()
+              if (page === 1) load(() => onScreen.current === load)
               else setPage(1)
             }}
             onStart={() => setNotice(null)}

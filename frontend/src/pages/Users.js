@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import HistoryPanel from '../components/users/HistoryPanel'
 import GrantsPanel from '../components/users/GrantsPanel'
@@ -138,7 +138,7 @@ export default function Users() {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listUsers({ ...filters, page, per_page: PAGE_SIZE })
@@ -160,6 +160,17 @@ export default function Users() {
     }
   }, [load])
 
+  /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
+  }, [load])
+
   // Memoised because the grants panel re-reads its list whenever its error
   // handler changes identity: a fresh closure every render would put that read
   // in a loop.
@@ -174,7 +185,7 @@ export default function Users() {
       else await createUser(draft)
       setEditing(null)
       setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      await load()
+      await load(() => onScreen.current === load)
     } catch (error) {
       report(error)
     } finally {
@@ -206,7 +217,7 @@ export default function Users() {
             ? 'ระงับการใช้งานบัญชีเรียบร้อยแล้ว'
             : 'เปิดใช้งานบัญชีเรียบร้อยแล้ว',
       })
-      await load()
+      await load(() => onScreen.current === load)
     } catch (error) {
       report(error)
     }
@@ -399,7 +410,7 @@ export default function Users() {
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
               // nothing refetches, reloads by hand.
-              if (page === 1) load()
+              if (page === 1) load(() => onScreen.current === load)
               else setPage(1)
             }}
             onStart={() => setNotice(null)}

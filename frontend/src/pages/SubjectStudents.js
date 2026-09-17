@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { HiOutlineTrash } from 'react-icons/hi2'
 
@@ -81,7 +81,7 @@ export default function SubjectStudents() {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listEnrolled(sectionId, { page })
@@ -105,6 +105,17 @@ export default function SubjectStudents() {
   }, [load])
 
   /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
+  }, [load])
+
+  /**
    * The read a write asks for, which is not always the read `load` would do.
    *
    * A student who has just been enrolled is somewhere in a list sorted by code,
@@ -116,7 +127,7 @@ export default function SubjectStudents() {
    * asked for directly.
    */
   const reload = useCallback(async () => {
-    if (page === 1) await load()
+    if (page === 1) await load(() => onScreen.current === load)
     else setPage(1)
   }, [page, load])
 
@@ -157,7 +168,7 @@ export default function SubjectStudents() {
       // which reads as a list that lost everything. #57's screens step back for
       // the same reason.
       if (data.students.length === 1 && page > 1) setPage(page - 1)
-      else await load()
+      else await load(() => onScreen.current === load)
       setNotice({
         error: false,
         message: `นำ ${student.student_id} ${student.full_name_th} ออกจากตอนเรียนแล้ว`,

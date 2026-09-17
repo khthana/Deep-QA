@@ -67,7 +67,7 @@ export default function RubricCriteria() {
   // above, which unmounts this screen, so nothing here can supersede a request
   // today: this is #68's rule (`frontend/src/pages/Students.js`), not a defect
   // anybody has seen, and the sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listCriteria(rubricId)
@@ -96,6 +96,19 @@ export default function RubricCriteria() {
   }, [load])
 
   /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons. For the reason #133 gives above `load`, nothing here can change
+   * what `load` asks for while a reload is out, so no row proves this and the
+   * sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
+  }, [load])
+
+  /**
    * Which press of แก้ไข the form was last asked for - #139. แก้ไข makes a new
    * ask, and เพิ่มเกณฑ์ and ลบ say none; a read overtaken by any of them
    * draws neither its form nor its refusal, though the list is still reloaded.
@@ -114,7 +127,7 @@ export default function RubricCriteria() {
       if (asked.current === ask) setEditing(current)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load()
+      await load(() => onScreen.current === load)
     } finally {
       setBusy(false)
     }
@@ -127,7 +140,7 @@ export default function RubricCriteria() {
       else await createCriterion(rubricId, draft)
       setEditing(null)
       setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      await load()
+      await load(() => onScreen.current === load)
     } catch (error) {
       report(error)
     } finally {
@@ -148,7 +161,7 @@ export default function RubricCriteria() {
           ? `ลบเกณฑ์ ${answer.criteria_name_th} เรียบร้อยแล้ว`
           : 'ลบเกณฑ์เรียบร้อยแล้ว',
       })
-      await load()
+      await load(() => onScreen.current === load)
     } catch (error) {
       setRemoving(null)
       report(error)

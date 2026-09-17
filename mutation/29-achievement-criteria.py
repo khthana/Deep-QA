@@ -73,7 +73,7 @@ MUTANTS = {
     # that never appears; row 3 dies with it, because an edit that is not
     # redrawn is the same failure wearing a different verb.
     "savenoreload": ("screen",
-                     "      setEditing(null)\n      await load()",
+                     "      setEditing(null)\n      await load(() => onScreen.current === load)",
                      "      setEditing(null)"),
     # The card's heading forgets its band - the wire value is correct, and
     # what a person reads is not. Kills row 1 at `bandsOnScreen` and row 4 at

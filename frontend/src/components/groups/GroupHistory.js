@@ -80,7 +80,7 @@ export default function GroupHistory({ fetchPage, onError }) {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await fetchPage(page)

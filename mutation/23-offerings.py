@@ -199,9 +199,9 @@ MUTANTS = {
     # row 1 dies at `openSubject`'s wait for that read, not at its assertion.
     # `139:offeringscreatedasksnothing` reads and does not draw, and dies at it.
     "nolanding": ("page",
-                  """      await load()
+                  """      await load(() => onScreen.current === load)
       await refresh(offering.id, ask)""",
-                  "      await load()"),
+                  "      await load(() => onScreen.current === load)"),
     # The confirmation dropped from the section removal: the button on the card
     # deletes. This is the mutant for the half of the eighth criterion that is
     # about being asked - a screen that removes on the first press passes every

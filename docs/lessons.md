@@ -2394,3 +2394,91 @@ above, found in a mutant this ticket did not write. `offeringscreatedasksnothing
 not draw, is what now dies at that row's assertion. The same review caught `SETTLE_MS`'s comment
 claiming timing could not decide anything; it can, and the comment now says the sweep is what stands
 behind the number (#52, #136).
+
+## #140 — the default said yes to every handler, and the pager was under all of them
+
+**#140's table listed eleven screens and thirty-two handler sites, and the fix touched nineteen and
+fifty-two.** The ticket was #133's deferral: the lists #68 guarded took their flag as a parameter
+with a default, `isCurrent = () => true`, because the handlers called `load()` with nothing, and the
+comment beside it had called *yes* the honest answer for a handler. #133 had measured that false on
+two screens. This ticket was the rest, and it was right about the mechanism on every screen it named —
+บันทึก, ลบ, an import, the refusal of แก้ไข all reload with the pager still under the person's hand,
+and ถัดไป pressed while that reload was out drew page one under a pager reading page two. What the
+count missed came from two directions. It listed **declared handlers**, so `Offerings`' กลับไปหน้ารายการ,
+which reloads from an inline `onBack` in the JSX, was not on it: thirty-one reachable sites, not
+thirty. And it listed **screens with a control**, which was the right filter for *where a row is
+possible* and the wrong one for *what the change touches*: the default was on twenty-two files, and
+removing it — so a forgotten flag throws rather than draws — reaches ten screens whose `load` asks
+only for what the route names. Two of those were in the table; eight were not. Criterion 2 already
+said what they get — *ยังไม่ได้ทดสอบ* with a reason and an expiry — so the ticket's own sentence
+brought back what its table had filtered out. *A ticket's file list is a grep somebody else ran*
+(#133), and here it was a census answering a narrower question than the fix.
+
+**One control in the table was not a way in.** The ticket counted a `<select>` on `StudentGroups`.
+It picks a student to add to a group; `load` depends on `[sectionId]` alone, so nothing it does can
+change what a reload asks for. **A control on the screen is a way in only if it feeds what the
+request asks for — read the dependency list, not the JSX.** The same reading answered criterion 5:
+`GradingWeights.onImported` is not *ไม่ต้องมี*. An import reloads with the screen mounted, which is
+every handler's situation; what the screen lacks today is a way to change `sectionId` meanwhile, so
+the flag is unproved rather than unneeded, and the comment above `<ImportPanel` says that rather than
+nothing.
+
+**The guard compares `load`, not the values, and that choice has a price in proof.** #133 wrote
+`Plos`' guard against its one filter. Here the lists ask for two to five things (`Offerings` asks for
+page, programme, year and semester), and `load` is a `useCallback` rebuilt exactly when any of them
+change — so `onScreen.current === load` answers the question once, uniformly, with no second list of
+values to keep in step with the dependency array. The cost is the one #68 wrote about a shared hook:
+a comparison that answers for every control at once is a comparison no mutant at the site can split.
+Every row presses the pager, because it is the control every screen has; six of the nine screens also
+have a filter that moves `load` the same way, and a filter row would be killed by exactly the same
+mutant. *A row that names two ways in is two rows* (#66), so the filter is a ☐ row on those six sheets
+— marked, not explained in prose (#50) — rather than six rows that add a situation and no separable
+evidence.
+
+**Every row waits for the reload to be sent before it moves the pager.** Without that wait, a
+handler that reloads nothing would let page two answer with nothing late behind it, and the row would
+pass for a reason unrelated to its claim — *a row that passes both before and after a fix was never
+about it* (#125). With `waitForRequest` on the held read, a handler that forgets to reload fails the
+row, and the row also asserts the held answer differs from page two's, so a page one that happens to
+match cannot pass it either. Three rows needed their situation built before they could be red for
+the right reason: a Rubric fixture with `display_order` −1 failed the form's own minimum, so บันทึก
+never sent anything; กลับไปหน้ารายการ hid the list it was about to read unless the panel opened inside
+`press`; and นำออก on the section's first student was refused — that student has marks — so the row
+enrols a student of its own and removes that one. All thirty-two were red on unfixed code for the
+defect's own reason before the fix.
+
+**The sweep ran per screen, as #139's did, and every mutant fell at its own `toEqual`.** Thirty-one
+mutants, each turning one site's flag into `load(() => true)` — `ploshandlerstalewins`' shape — ran
+against their screen's rows of `140a` plus that screen's own specs, behind a clean baseline per group,
+with a checksum of the nineteen uncommitted pages after every restore: 57 minutes, and each killed the
+one row its name gives. `enrolmentreloadstalewins` killed two, which is the number it had to kill —
+one site, two callers — not a leak (#52). Every kill was also read for *where* it died, because #139
+had just shown a mutant can take its row down at a wait rather than at the claim: all thirty-one died
+at `toEqual`. The group filter was built on the file name in each title, `(Users.js)`, not on the
+Thai screen name, because a Thai regex through bash is the kind of argument that silently matches
+nothing — and it was checked by listing what it kept before it was trusted.
+
+**The change moved eight other tickets' anchors, and one of them no longer kills what its sheet
+says.** `16:M9`, `21:staleafterasave`, `23:nolanding` and five `savenoreload`s all aimed at a bare
+`load()`; `anchors.py` said so, they were re-aimed, and each was swept against its own spec. Seven
+killed the rows their sheets name — `16a`, `21a` and `23a` are serial, so what follows the row
+that died did not run, and those three re-sweeps say nothing about it (#67). `30:savenoreload` killed rows 3 and 5, where sheet 30's
+table records rows 3 through 7 — 4, 6 and 7 by contamination, row 3 dying mid-write and leaving the
+scheme at 50/30/20. The claim the mutant holds (row 3) still dies, at the helper's wait for a reload
+that never comes, as the table says. Why the contamination is gone was not measured, so the cell now
+carries both dates rather than a corrected number — *a survey of the store has a date on it* (#50),
+and *an anchor check tells you a mutant no longer applies; only a sweep tells you it no longer proves
+anything* (#107).
+
+**Two more mutants had changed meaning with every anchor intact, and the review found them, not the
+anchor check.** `25:addstaysonpage` and `25:importstaysonpage` anchor on `reload` and write `load()`
+and `onImported={load}` in its place. Their anchors never moved, so `anchors.py` stayed green — but
+what they *insert* called a `load` that no longer has a default, so each would now throw instead of
+reloading the page the person is on, which is a different mutant from the one sheet 25 describes.
+Re-aimed to pass the flag, both still died at `shown === 1` with 2. **A change to a function's
+signature reaches every mutant that writes a call to it, not only those anchored on one** — grep the
+replacement strings as well as the anchors. The same review caught the spec's own `finally`:
+`page.unroute((url) => isHeld(url))` passed a new function, and Playwright finds a route by the
+matcher compared with `===`, so the cleanup removed nothing; the matcher is now one function given to
+both, and two of the thirty-one mutants were swept again against the changed spec and still killed
+their rows.

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
 
@@ -64,7 +64,7 @@ export default function CourseOutcomes() {
   // so nothing here can supersede a request today: this is #68's rule
   // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
   // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await getCourseOutcomes(sectionId)
@@ -88,6 +88,19 @@ export default function CourseOutcomes() {
   }, [load])
 
   /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons. For the reason #133 gives above `load`, nothing here can change
+   * what `load` asks for while a reload is out, so no row proves this and the
+   * sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
+  }, [load])
+
+  /**
    * Save, whether that is an add or an edit.
    *
    * `editing` is the CLO being changed or the string 'new'; nothing else opens
@@ -102,7 +115,7 @@ export default function CourseOutcomes() {
       if (editing === 'new') await createCourseOutcome(sectionId, draft)
       else await updateCourseOutcome(sectionId, editing.clo_id, draft)
       setEditing(null)
-      await load()
+      await load(() => onScreen.current === load)
       setNotice({ error: false, message: 'บันทึกผลการเรียนรู้รายวิชาแล้ว' })
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
@@ -117,7 +130,7 @@ export default function CourseOutcomes() {
     try {
       await deleteCourseOutcome(sectionId, removing.clo_id)
       setRemoving(null)
-      await load()
+      await load(() => onScreen.current === load)
       setNotice({ error: false, message: 'ลบผลการเรียนรู้รายวิชาแล้ว' })
     } catch (error) {
       // The dialog closes either way. Leaving it open over a refusal puts the

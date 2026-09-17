@@ -62,7 +62,7 @@ MUTANTS = {
  # somebody edits the comment. Taking the statements away leaves the handler
  # there and empty, which is the same mutant it always was.
  'M9': [('page',
-   "              if (page === 1) load()\n              else setPage(1)\n",
+   "              if (page === 1) load(() => onScreen.current === load)\n              else setPage(1)\n",
    "")],
  # the filter line naming the department without saying which one
  'M10': [('page',

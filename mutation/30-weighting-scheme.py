@@ -88,7 +88,7 @@ MUTANTS = {
     # never fires - kills rows 3 and 5 at the await that times out, which is
     # the row asserting the screen returns to canonical state.
     "savenoreload": ("screen",
-                     "      await load()\n"
+                     "      await load(() => onScreen.current === load)\n"
                      "      setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })",
                      "      setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })"),
     # The courtesy total reads 100 whatever the keys say. Kills row 4 at

@@ -100,7 +100,7 @@ export default function Offerings() {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listOfferings({
@@ -124,6 +124,17 @@ export default function Offerings() {
     return () => {
       current = false
     }
+  }, [load])
+
+  /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
   }, [load])
 
   // The programmes in reach, fetched once: what this account covers is a
@@ -188,7 +199,7 @@ export default function Offerings() {
       await refresh(offering.id, ask)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load()
+      await load(() => onScreen.current === load)
     } finally {
       setBusy(false)
     }
@@ -240,7 +251,7 @@ export default function Offerings() {
         error: false,
         message: `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
       })
-      await load()
+      await load(() => onScreen.current === load)
       await refresh(offering.id, ask)
     } catch (error) {
       report(error)
@@ -274,7 +285,7 @@ export default function Offerings() {
       // The same rule as the import below: page one is a change the effect
       // fetches, and asking `load` as well would race it from the page being
       // left - #68.
-      if (page === 1) await load()
+      if (page === 1) await load(() => onScreen.current === load)
       else setPage(1)
     } catch (error) {
       report(error)
@@ -302,7 +313,7 @@ export default function Offerings() {
         // change of page and the effect fetches it; calling `load` here as well
         // would race it with a second request for the page just left.
         if (page > 1 && data.offerings.length === 1) setPage(current => current - 1)
-        else await load()
+        else await load(() => onScreen.current === load)
       }
     } catch (error) {
       const wasSection = removing.kind === 'section'
@@ -325,7 +336,7 @@ export default function Offerings() {
             asked.current = null
             setNotice(null)
             setViewing(null)
-            load()
+            load(() => onScreen.current === load)
           }}
           onAddSection={number =>
             onSection(async () => {

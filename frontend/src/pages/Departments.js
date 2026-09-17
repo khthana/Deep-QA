@@ -59,7 +59,7 @@ export default function Departments() {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listDepartments({ page, per_page: PAGE_SIZE })
@@ -79,6 +79,17 @@ export default function Departments() {
     return () => {
       current = false
     }
+  }, [load])
+
+  /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
   }, [load])
 
   const report = useCallback(error => {
@@ -166,7 +177,7 @@ export default function Departments() {
       if (asked.current === ask) setEditing(current)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load()
+      await load(() => onScreen.current === load)
     } finally {
       setBusy(false)
     }
@@ -182,7 +193,7 @@ export default function Departments() {
       }
       setEditing(null)
       setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      await load()
+      await load(() => onScreen.current === load)
     } catch (error) {
       report(error)
     } finally {
@@ -203,7 +214,7 @@ export default function Departments() {
       // answered last would win.
       const stepBack = page > 1 && data.departments.length === 1
       if (stepBack) setPage(current => current - 1)
-      else await load()
+      else await load(() => onScreen.current === load)
     } catch (error) {
       // Including the refusal for a department something still points at,
       // which is a real answer and is shown in the server's own words.
@@ -337,7 +348,7 @@ export default function Departments() {
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
               // nothing refetches, reloads by hand.
-              if (page === 1) load()
+              if (page === 1) load(() => onScreen.current === load)
               else setPage(1)
             }}
             onStart={() => {

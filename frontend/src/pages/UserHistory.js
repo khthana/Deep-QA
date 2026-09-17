@@ -63,7 +63,7 @@ export default function UserHistory() {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listUsers({ q, page: 1, per_page: PICKER_SIZE })

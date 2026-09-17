@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   HiOutlineArrowRightCircle,
@@ -88,8 +88,8 @@ export default function StudentGroups() {
   // so nothing here can supersede a request today: this is #68's rule
   // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
   // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
-  // `onImported` calls this with nothing, which is what the default is for.
-  const load = useCallback(async (isCurrent = () => true) => {
+  // `onImported` passes #140's flag below, like every other caller.
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listGroups(sectionId)
@@ -113,6 +113,19 @@ export default function StudentGroups() {
   }, [load])
 
   /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons. For the reason #133 gives above `load`, nothing here can change
+   * what `load` asks for while a reload is out, so no row proves this and the
+   * sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
+  }, [load])
+
+  /**
    * Every write ends in a reload rather than in a patch of the state it just
    * changed.
    *
@@ -122,7 +135,7 @@ export default function StudentGroups() {
    * and the read costs one request against a list that is a few dozen rows.
    */
   const after = async message => {
-    await load()
+    await load(() => onScreen.current === load)
     setWrites(count => count + 1)
     setNotice({ error: false, message })
   }
@@ -289,7 +302,7 @@ export default function StudentGroups() {
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importGroups(sectionId, csv)}
             onStart={() => setNotice(null)}
-            onImported={load}
+            onImported={() => load(() => onScreen.current === load)}
             onError={failed}
           />
 

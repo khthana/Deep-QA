@@ -112,7 +112,7 @@ export default function HistoryPanel({ user, onError }) {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listHistory(user.user_id, { page, per_page: PAGE_SIZE })

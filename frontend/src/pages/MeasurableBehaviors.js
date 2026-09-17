@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { HiOutlineArrowLeft, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
 
@@ -53,7 +53,7 @@ export default function MeasurableBehaviors() {
   // so nothing here can supersede a request today: this is #68's rule
   // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
   // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await getBehaviors(sectionId, cloId)
@@ -76,6 +76,19 @@ export default function MeasurableBehaviors() {
     }
   }, [load])
 
+  /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons. For the reason #133 gives above `load`, nothing here can change
+   * what `load` asks for while a reload is out, so no row proves this and the
+   * sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
+  }, [load])
+
   const save = async draft => {
     setBusy(true)
     setNotice(null)
@@ -83,7 +96,7 @@ export default function MeasurableBehaviors() {
       if (editing === 'new') await createBehavior(sectionId, cloId, draft)
       else await updateBehavior(sectionId, cloId, editing.id, draft)
       setEditing(null)
-      await load()
+      await load(() => onScreen.current === load)
       setNotice({ error: false, message: 'บันทึกพฤติกรรมบ่งชี้แล้ว' })
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
@@ -98,7 +111,7 @@ export default function MeasurableBehaviors() {
     try {
       await deleteBehavior(sectionId, cloId, removing.id)
       setRemoving(null)
-      await load()
+      await load(() => onScreen.current === load)
       setNotice({ error: false, message: 'ลบพฤติกรรมบ่งชี้แล้ว' })
     } catch (error) {
       // The dialog closes either way, for CourseOutcomes' reason: a dialog

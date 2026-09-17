@@ -72,7 +72,7 @@ export default function Rubrics() {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listRubrics({ page, per_page: PAGE_SIZE, program_id: program })
@@ -90,6 +90,17 @@ export default function Rubrics() {
     return () => {
       current = false
     }
+  }, [load])
+
+  /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
   }, [load])
 
   // The curricula in reach, fetched once: what this account covers is a
@@ -128,7 +139,7 @@ export default function Rubrics() {
       if (asked.current === ask) setEditing(current)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load()
+      await load(() => onScreen.current === load)
     } finally {
       setBusy(false)
     }
@@ -141,7 +152,7 @@ export default function Rubrics() {
       else await createRubric(draft)
       setEditing(null)
       setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      await load()
+      await load(() => onScreen.current === load)
     } catch (error) {
       report(error)
     } finally {
@@ -167,7 +178,7 @@ export default function Rubrics() {
       // it with a second request for the page just left.
       const stepBack = page > 1 && data.rubrics.length === 1
       if (stepBack) setPage(current => current - 1)
-      else await load()
+      else await load(() => onScreen.current === load)
     } catch (error) {
       setRemoving(null)
       report(error)

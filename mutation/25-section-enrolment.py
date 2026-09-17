@@ -156,16 +156,20 @@ MUTANTS = {
     # student, the count still moves, and the table still draws ten people who
     # are not them. Nothing else, because every other row enrols from page 1,
     # where `reload` and `load` do the same thing.
+    #
+    # #140 took `load`'s default away, so `load()` with nothing now throws -
+    # a different mutant from the one this was. It passes the flag every other
+    # caller passes, which is the same reload of the same page it always was.
     "addstaysonpage": ("screen",
                        "      await reload()",
-                       "      await load()"),
+                       "      await load(() => onScreen.current === load)"),
     # The same hole on the import path, which reaches the same reload through a
     # different prop. Kills the second row 7 only. Two mutants and not one
     # because the two paths are two edits, and a single mutant covering both
     # would let either of them be repaired alone without a row noticing.
     "importstaysonpage": ("screen",
                           "            onImported={reload}",
-                          "            onImported={load}"),
+                          "            onImported={() => load(() => onScreen.current === load)}"),
     "cancelremoves": ("screen",
                       "        onCancel={() => setRemoving(null)}",
                       "        onCancel={remove}"),

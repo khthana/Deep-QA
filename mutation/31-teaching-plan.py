@@ -85,7 +85,7 @@ MUTANTS = {
     # it, being the same reload around other writes.
     "savenoreload": ("screen",
                      "      setEditing(null)\n"
-                     "      await load()\n"
+                     "      await load(() => onScreen.current === load)\n"
                      "      setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })",
                      "      setEditing(null)\n"
                      "      setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })"),

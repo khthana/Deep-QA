@@ -105,7 +105,7 @@ MUTANTS = {
     # read again, so the screen keeps showing the page it drew before the save.
     "staleafterasave": (
         "page",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load()",
+        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => onScreen.current === load)",
         "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })",
     ),
     # Row 6, second half — the edit is saved. Creation still writes the name, so

@@ -139,6 +139,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A mutant outlives its ticket but not its anchor.** Run `python mutation/anchors.py` while
   finishing a ticket, anchor to the code a mutant breaks and never to the comment beside it, and
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
+- **A change to a function's signature reaches every mutant that writes a call to it**, not only
+  those anchored on one — grep the replacement strings too; `anchors.py` reads anchors. (#140)
 - An anchor check tells you a mutant no longer applies; only a sweep tells you it no longer proves
   anything — including when re-aiming it is the right fix. (#107, #68)
 - When a mutant lives in shared code, its sheet is one of the places it kills, not the list. (#123)
@@ -226,6 +228,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   answer's place** — list those controls, not the one the ticket pressed, including those outside the
   row; the refusal of the same read and the same control pressed twice are ways in too, so ask by the
   press and not by the row. (#139)
+- **A control on the screen is a way in only if it feeds what the request asks for** — read the
+  dependency list, not the JSX; and a guard that compares what those dependencies rebuild answers for
+  every control at once, which is also why no mutant at the site can tell them apart. (#140)
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)

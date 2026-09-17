@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { HiOutlineTrash } from 'react-icons/hi2'
 
@@ -58,7 +58,7 @@ export default function GradingWeights() {
   // another, so nothing here can supersede a request today: this is #68's rule
   // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
   // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answered = await getWeights(sectionId)
@@ -91,6 +91,19 @@ export default function GradingWeights() {
     }
   }, [load])
 
+  /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons. For the reason #133 gives above `load`, nothing here can change
+   * what `load` asks for while a reload is out, so no row proves this and the
+   * sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
+  }, [load])
+
   const set = (index, field, value) =>
     setDraft(current =>
       current.map((row, at) =>
@@ -120,7 +133,7 @@ export default function GradingWeights() {
           weight: row.weight.trim() === '' ? null : Number(row.weight),
         }))
       )
-      await load()
+      await load(() => onScreen.current === load)
       setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
@@ -294,6 +307,15 @@ export default function GradingWeights() {
             </div>
           </div>
 
+          {/*
+            #140 asked whether the flag `onImported` passes is needed here at
+            all. It is: an import reloads the scheme with the screen still
+            mounted, which is every other handler's situation. What this screen
+            lacks today is a way to change `sectionId` while that reload is out,
+            so the flag is unproved rather than unneeded - sheet 30 says
+            ยังไม่ได้ทดสอบ, and the first link between ตอนเรียน on this route
+            makes it a row.
+          */}
           <ImportPanel
             title="นำเข้าสัดส่วนคะแนนจากไฟล์"
             subtitle="ไฟล์หนึ่งคือทั้งชุด — หมวดที่ไม่อยู่ในไฟล์จะถูกลบออก และน้ำหนักทั้งไฟล์ต้องรวมได้ 100"
@@ -301,7 +323,7 @@ export default function GradingWeights() {
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importWeights(sectionId, csv)}
             onStart={() => setNotice(null)}
-            onImported={load}
+            onImported={() => load(() => onScreen.current === load)}
             onError={error => {
               if (!error.expired)
                 setNotice({ error: true, message: error.message })

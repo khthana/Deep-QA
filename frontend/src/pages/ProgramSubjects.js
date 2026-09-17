@@ -70,7 +70,7 @@ export default function ProgramSubjects() {
    * why fifteen panels repeat it rather than share one hook, are written on
    * `frontend/src/pages/Students.js`.
    */
-  const load = useCallback(async (isCurrent = () => true) => {
+  const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
       const answer = await listProgramSubjects({ page, per_page: PAGE_SIZE, program_id: program })
@@ -88,6 +88,17 @@ export default function ProgramSubjects() {
     return () => {
       current = false
     }
+  }, [load])
+
+  /**
+   * #140 - the list a handler reloads is drawn only if it is still the list the
+   * screen is on: nothing tears a handler down, so it asks whether `load` is
+   * still the one it was sent with. `frontend/src/pages/Students.js` carries the
+   * reasons.
+   */
+  const onScreen = useRef(load)
+  useEffect(() => {
+    onScreen.current = load
   }, [load])
 
   // The programmes in reach, fetched once: what this account covers is a
@@ -131,7 +142,7 @@ export default function ProgramSubjects() {
       if (asked.current === ask) setEditing(current)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load()
+      await load(() => onScreen.current === load)
     } finally {
       setBusy(false)
     }
@@ -147,7 +158,7 @@ export default function ProgramSubjects() {
       }
       setEditing(null)
       setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      await load()
+      await load(() => onScreen.current === load)
     } catch (error) {
       report(error)
     } finally {
@@ -174,7 +185,7 @@ export default function ProgramSubjects() {
       // nothing from the list, so it never steps back.
       const stepBack = !deactivated && page > 1 && data.program_subjects.length === 1
       if (stepBack) setPage(current => current - 1)
-      else await load()
+      else await load(() => onScreen.current === load)
     } catch (error) {
       setRemoving(null)
       report(error)
@@ -360,7 +371,7 @@ export default function ProgramSubjects() {
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
               // nothing refetches, reloads by hand.
-              if (page === 1) load()
+              if (page === 1) load(() => onScreen.current === load)
               else setPage(1)
             }}
             onStart={() => {
