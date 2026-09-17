@@ -119,6 +119,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   at risk (delete the mutant, mark ☑); a mutant that **kills too much** has stopped the
   application; a **survivor on a row nobody suspected** is an overclaim; and a sweep **cannot see
   the row your own fix breaks** — only the clean suite can. (#45, #97, #96, #83)
+- **A read of something a mutant stops from existing is a wait, not an assertion** — it dies at the timeout,
+  which a mutant that stopped the application would print too; count what holds a field before reading
+  it. (#139)
 - **A mutant has to be able to fail one row and leave the rest standing.** Narrow a mutant on a
   shared expression to its branch; when *does it choose the right thing* stops the application,
   mutate to a different choice rather than to no choice; a mutant that removes a condition must
@@ -219,6 +222,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   automatically a repeated defect. (#107, #67, #96)
 - A helper named for a type is a promise about that type; a form-field helper has been told about
   values and not about shapes. (#107, #101)
+- **A guard that asks *is this still what was asked for* is written by every control that can take the
+  answer's place** — list those controls, not the one the ticket pressed, including those outside the
+  row; the refusal of the same read and the same control pressed twice are ways in too, so ask by the
+  press and not by the row. (#139)
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)

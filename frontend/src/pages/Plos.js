@@ -198,30 +198,39 @@ export default function Plos() {
     programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId
 
   /**
-   * Read afresh rather than editing the row the list happens to be holding.
+   * Which press of แก้ไข the form was last asked for - #139.
    *
-   * **The success path below is not guarded, and that is a ticket rather than
-   * an oversight** - #133. The filter is live while this read is out, so moving
-   * it opens the form on an outcome of the curriculum the screen has just left:
-   * the same harm the flag on `load` closes, reached by a second route. It is
-   * not this file's alone - `Departments`, `Programs`, `ProgramSubjects`,
-   * `Rubrics`, `Subjects`, `RubricCriteria` and `Offerings` all read a row's
-   * detail into a form the same way, and one fix serves all eight. *Defer
-   * adjacent work; do not defer the second half of the sentence you are
-   * closing* (#119): the twenty-two sites and their second callers are #133's
-   * sentence, and the eight are adjacent. The ticket is **#139**, which carries
-   * all eight with their line numbers, and `docs/lessons.md` tells the story.
+   * Read afresh rather than editing the row the list happens to be holding, and
+   * drawn only if nothing has taken the form's place since: แก้ไข again, on this
+   * row or another, เพิ่มผลการเรียนรู้ and ลบ each write this, and a read that
+   * lands after them draws neither its form nor its refusal, though the list is
+   * still reloaded. `Departments.js` carries the reasons.
+   *
+   * **The filter does not write it, and that is measured rather than assumed.**
+   * #133 wrote here that moving the filter while this read is out opens *an
+   * outcome of the curriculum the screen has just left*, the harm the flag on
+   * `load` closes. The form is truthful about itself: its หลักสูตร field is the
+   * outcome's own and locked, and `parentPool` asks for that curriculum's
+   * outcomes rather than handing it the table's. What remains is a form the
+   * person asked for opening after they looked elsewhere - which every filter
+   * and pager does, not this one alone - and whether that should cancel the ask
+   * was put to the person who owns the UI, who said no (17 September 2569).
+   * The last row of `139a-superseded-row-detail.spec.js` holds that answer.
    *
    * The error path reloads the list, so it asks `onScreen` like the others.
    */
+  const asked = useRef(null)
+
   const openEditor = async plo => {
+    const ask = {}
+    asked.current = ask
     setNotice(null)
     setBusy(true)
     try {
       const { plo: current } = await getPlo(plo.outcome_id)
-      setEditing(current)
+      if (asked.current === ask) setEditing(current)
     } catch (error) {
-      report(error)
+      if (asked.current === ask) report(error)
       await load(() => onScreen.current === program)
     } finally {
       setBusy(false)
@@ -332,6 +341,7 @@ export default function Plos() {
               <button
                 type="button"
                 onClick={() => {
+                  asked.current = null
                   setNotice(null)
                   setEditing({})
                 }}
@@ -438,6 +448,7 @@ export default function Plos() {
                         <button
                           type="button"
                           onClick={() => {
+                            asked.current = null
                             setNotice(null)
                             setRemoving(plo)
                           }}

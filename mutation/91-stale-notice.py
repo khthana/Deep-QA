@@ -29,11 +29,11 @@ MUTANTS = {
                       "          onCancel={() => setEditing(null)}"),
     # The success outlives its action again: opening a new form stops clearing.
     "keepsaved": ("departments",
-                  "              onClick={() => {\n"
+                  "                asked.current = null\n"
                   "                setNotice(null)\n"
-                  "                setEditing({})\n"
-                  "              }}",
-                  "              onClick={() => setEditing({})}"),
+                  "                setEditing({})\n",
+                  "                asked.current = null\n"
+                  "                setEditing({})\n"),
     # An upload stops clearing what was on the screen before it - the site the
     # first pass at #91 walked past, and the one the code review found.
     "keepbeforeupload": ("panel", "    onStart?.()", "    if (false) onStart?.()"),

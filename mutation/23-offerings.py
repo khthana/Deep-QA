@@ -195,9 +195,12 @@ MUTANTS = {
     # says so, so nothing at the HTTP surface notices; what is lost is the
     # first criterion's second half, that an Offering with no ตอนเรียน is not
     # yet anything a teacher can reach and the next step is always to add one.
+    # Measured on 17 September 2569 (#139): with no read of the Offering at all,
+    # row 1 dies at `openSubject`'s wait for that read, not at its assertion.
+    # `139:offeringscreatedasksnothing` reads and does not draw, and dies at it.
     "nolanding": ("page",
                   """      await load()
-      await refresh(offering.id)""",
+      await refresh(offering.id, ask)""",
                   "      await load()"),
     # The confirmation dropped from the section removal: the button on the card
     # deletes. This is the mutant for the half of the eighth criterion that is

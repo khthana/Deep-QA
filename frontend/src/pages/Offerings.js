@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import CopyTermPanel from '../components/offerings/CopyTermPanel'
@@ -144,6 +144,26 @@ export default function Offerings() {
     programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId
 
   /**
+   * Which press the panel was last asked for - #139.
+   *
+   * `refresh` below opens the panel and reads it back after every section write,
+   * and nothing beside it is disabled while its read is out: ตอนเรียนและผู้สอน
+   * again, on this row or another, เปิดรายวิชา, ยกเลิกการเปิด and
+   * กลับไปหน้ารายการ can each be pressed first. Drawn unasked, a late answer
+   * opened the panel of an Offering the person had moved away from - over the
+   * form, under the list's question, or back again after กลับ - or put an older
+   * reading of the same Offering over a newer one. Every control that decides
+   * what takes the panel's place writes this, each opening with an ask of its
+   * own, and `refresh` draws only for the ask it is handed; a section write
+   * hands on the ask of the panel it was made on. `Departments.js` carries the
+   * reasons for asking with a ref, and for asking by press rather than by row.
+   *
+   * A refused section write still reports the refusal of its read-back after
+   * กลับ: that sentence is about a write the person made, not a panel they left.
+   */
+  const asked = useRef(null)
+
+  /**
    * The Offering being worked on, read afresh.
    *
    * Every section write ends here rather than patching the copy in hand: the
@@ -151,21 +171,23 @@ export default function Offerings() {
    * panel that has been open a while shows what is there now.
    */
   const refresh = useCallback(
-    async id => {
+    async (id, ask) => {
       const { offering } = await getOffering(id)
-      setViewing(offering)
+      if (asked.current === ask) setViewing(offering)
       return offering
     },
     []
   )
 
   const openSections = async offering => {
+    const ask = {}
+    asked.current = ask
     setNotice(null)
     setBusy(true)
     try {
-      await refresh(offering.id)
+      await refresh(offering.id, ask)
     } catch (error) {
-      report(error)
+      if (asked.current === ask) report(error)
       await load()
     } finally {
       setBusy(false)
@@ -183,11 +205,12 @@ export default function Offerings() {
    * tick with it - and the person then has to remember who they had chosen.
    */
   const onSection = async work => {
+    const ask = asked.current
     setNotice(null)
     setBusy(true)
     try {
       const message = await work()
-      await refresh(viewing.id)
+      await refresh(viewing.id, ask)
       if (message) setNotice({ error: false, message })
       return true
     } catch (error) {
@@ -196,7 +219,7 @@ export default function Offerings() {
       // nothing about the state of the others, and leaving a stale panel on the
       // screen under an error banner is how #91 was reported.
       try {
-        await refresh(viewing.id)
+        await refresh(viewing.id, ask)
       } catch (again) {
         report(again)
       }
@@ -211,12 +234,14 @@ export default function Offerings() {
     try {
       const { offering } = await createOffering(draft)
       setOpening(false)
+      const ask = {}
+      asked.current = ask
       setNotice({
         error: false,
         message: `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
       })
       await load()
-      await refresh(offering.id)
+      await refresh(offering.id, ask)
     } catch (error) {
       report(error)
     } finally {
@@ -259,13 +284,14 @@ export default function Offerings() {
   }
 
   const confirmRemoval = async () => {
+    const ask = asked.current
     setBusy(true)
     try {
       if (removing.kind === 'section') {
         await deleteSection(viewing.id, removing.section.section_id)
         setRemoving(null)
         setNotice({ error: false, message: 'ลบตอนเรียนเรียบร้อยแล้ว' })
-        await refresh(viewing.id)
+        await refresh(viewing.id, ask)
       } else {
         await deleteOffering(removing.offering.id)
         setRemoving(null)
@@ -282,7 +308,7 @@ export default function Offerings() {
       const wasSection = removing.kind === 'section'
       setRemoving(null)
       report(error)
-      if (wasSection && viewing) await refresh(viewing.id).catch(report)
+      if (wasSection && viewing) await refresh(viewing.id, ask).catch(report)
     } finally {
       setBusy(false)
     }
@@ -296,6 +322,7 @@ export default function Offerings() {
           offering={viewing}
           busy={busy}
           onBack={() => {
+            asked.current = null
             setNotice(null)
             setViewing(null)
             load()
@@ -443,6 +470,7 @@ export default function Offerings() {
               <button
                 type="button"
                 onClick={() => {
+                  asked.current = null
                   setNotice(null)
                   setOpening(true)
                 }}
@@ -512,6 +540,7 @@ export default function Offerings() {
                         <button
                           type="button"
                           onClick={() => {
+                            asked.current = null
                             setNotice(null)
                             setRemoving({ kind: 'offering', offering })
                           }}

@@ -2281,7 +2281,9 @@ blast radii differ (#125).
 the read is out, so it reaches the *แก้ไข opens a form about an outcome the screen is not showing*
 harm by a second route rather than through the stale list. It is deferred with the other seven
 under **#139**, and the comment beside it now says so with the number — a deferral a reader of
-that function cannot see is the same deferral nobody can find. `PloMapping.choose` is not one of
+that function cannot see is the same deferral nobody can find. (#139 measured that route and
+found no such harm: the form is truthful about its own curriculum — see its story below.)
+`PloMapping.choose` is not one of
 them: it folds a saved cell into the grid unguarded, which is *a save's answer is a read* exactly,
 but nothing can draw the stale cell. A cell carries the `outcome_id` it was saved under; a PLO
 belongs to exactly one curriculum; every square is drawn from the outcomes of the curriculum on
@@ -2290,3 +2292,105 @@ screen. So no square can look it up — **structurally unreachable, not untested
 `grid.mappings` for a count rather than by key makes it visible the day it lands. Both are written
 down rather than guarded, because a guard no row can reach is a claim nobody can show to hold, and
 `TeacherDashboard` is the precedent this ticket already set for excluding a site in writing.
+
+## #139 — the ticket pressed one control, and four of them could take the form's place
+
+**#139 named one way in on every screen and a second on `Plos`, and neither count survived
+measurement.** The ticket, opened from #133's deferral paragraph, said a second row's แก้ไข pressed
+while the first row's detail read is out lets the first answer replace the second form, and that on
+`Plos` moving the curriculum filter while the read is out opens an outcome of the curriculum the
+screen has just left. The first half was true on all eight sites. But the fix is a question — *is
+this still what the form was asked to show* — and a question like that is written by **every
+control that decides what takes the form's place**, not by the one the ticket pressed. Nothing in
+the table is disabled while the read is out, so เพิ่ม and ลบ were each a way in of their own: the
+late answer turned an add form into an edit of the first row, throwing away what had been typed, or
+opened the first row's form underneath a question about another. And the success path was not the
+only one — the same read, refused, put a red bar about one row over the form for another, which the
+comment on `Departments.js` already names as the whole of #91. On the Offering panel the list was
+five: another ตอนเรียนและผู้สอน, its refusal, เปิดรายวิชา, ยกเลิกการเปิด, and กลับไปหน้ารายการ
+after a section write, because `refresh` is also how every section write reads the panel back.
+**Four ways per list screen, five on the panel, and the filter row: 34 rows** on the first count, which
+the review below made 46 — and *a row that
+names two ways in is two rows* (#66), so one mutant per way, each required to take down its own row
+and nothing else.
+
+**The ticket's `Plos` claim was a mechanism the form does not use.** It came from #133's second
+review round, written into a comment above `openEditor` and into the #133 story here. Read, the form
+is truthful about itself: its หลักสูตร field is the outcome's own and locked, and its parent picker
+asks for that curriculum's outcomes rather than taking the table's. What is left is a form the
+person asked for opening after they looked elsewhere — which every filter and pager on these screens
+does, not `Plos` alone. Whether that should cancel the ask is a question about the UI, so it went to
+the person who owns it (docs/06 §Out of Scope) with a recommendation, and the answer was no. The
+answer has a row — the form still opens after the filter moves, and still names its own curriculum
+and offers its own curriculum's outcomes — and a mutant, `plosfiltercancels`, that is the other
+answer. *The ticket's What is wrong is a claim from the day it was written* (#101's kind: a
+mechanism that does not exist), and this one was the store's own claim, one ticket old.
+
+**The first sweep of `plosfiltercancels` killed the right row in the wrong place.** With the mutant
+the form never opens; the row then read `inputValue()` from a field that was not there, and
+Playwright waits for a locator, so the row died at `Test timeout of 60000ms exceeded` rather than
+at its `toEqual`. A timeout is a failure, and the count read *1 failed* like any honest kill, but it
+says nothing about which claim broke — a mutant that stopped the application would have produced
+the same line. The list rows never had this problem because `drawn` counts the heading before it
+reads a field; the filter row was written separately and read the field unconditionally. **A read of
+something a mutant stops from existing is a wait, not an assertion.** Rewritten to read the fields
+only when the heading is there, the row failed at `toEqual` with `editing: 0`, which is its claim.
+
+**The refusal rows had never been red.** They were written with the fix, so the TDD step that makes
+the other rows trustworthy never happened for them: 25 rows red before the fix and 34 green after, so
+eight of the green ones were never seen failing. (The 26th row of that first run passed on unfixed
+code too, and should: the filter row holds a decision, not a defect, and `plosfiltercancels` is
+its only proof.) `…refusallands` is the only evidence they can fail, and
+it was swept before anything was ticked — all eight fell, each on its own screen alone. Two rows also
+needed a fixture before they could be red for the right reason: the seed has one subject and one
+placement, so *a second แก้ไข* had no second row on ข้อมูลรายวิชา and รายวิชาในหลักสูตร. The rows
+built it themselves in `beforeAll` under `hold()` rather than waiting for `16a` and `18a` to leave
+one (#129).
+
+**The sweep ran per screen, not per suite, and the tree check was a checksum.** Thirty-five mutants
+against the full 424 would have been eleven hours; each screen's rows of `139a` with that screen's
+own specs, behind a clean baseline per group, took 56 minutes and still answers *did this mutant touch
+another row of the screen it breaks*. Because the eight pages were uncommitted, `git status` after a
+`restore` shows ` M` whether or not the mutant came back out, so the runner compared a checksum of
+the eight files after every restore instead. And the change moved one other ticket's anchor —
+`91:keepsaved`, whose anchor was the `setNotice(null)` that `asked.current = null` now stands above —
+so it was re-aimed and swept against `14c`, where it still killed its one row. The anchor check was
+also briefly, and correctly, red during the sweep: a mutant that is applied has no anchor to find.
+
+**One comment was read from code and said so only after the measurement.** The ยกเลิกการเปิด row
+claimed a late panel would turn the list's question into the panel's own dialog with the Offering's
+cancellation behind its button. Re-sweeping `offeringscancelkeepsask` and reading the failure's
+screenshot showed half of it: *ยืนยันการลบตอนเรียน*, no sentence, a ลบตอนเรียน button. The other
+half — what that button would do — is `confirmRemoval` still reading `kind: 'offering'`, which was
+read and not pressed, and the comment now says which half is which.
+
+**The review found two more ways in, and one effect the fix had quietly removed.** The first fix
+remembered the *row* a form was asked for. So แก้ไข pressed twice on the same department made two
+asks the guard could not tell apart: after the second answer opened the form and the person pressed
+ยกเลิก, the first answer matched the row and opened it again — and on the Offering panel an older
+reading of the same Offering could be drawn over a newer one. An ask is a press, not a row, and the
+guard now holds a fresh object per press. The count of controls had also stopped at the table's
+edge: `ImportPanel`, above the table on four screens, takes the form off when an upload starts, and
+a late answer then took the panel off the screen mid-upload. That is the rule this ticket had just
+written into the index, met again one component further out — *list the controls that can take the
+answer's place* includes the ones that are not in the row. And the guard itself had been written as
+an early `return` in `catch`, which skipped the `await load()` after it: a refused, overtaken read no
+longer reloaded the list, which is #131's effect gone with nothing to say so, because no row of this ticket asked
+for it. **An effect that must always happen does not go behind one that can fail** — the guard now
+wraps the sentence alone. Two more findings were real and were not this ticket's to fix: a
+superseded read's `finally` still clears `busy` while another write is out, which the same guard
+cannot fix without leaving `busy` stuck after เพิ่ม, and a section write's sentence can land over
+another Offering's panel, which is a question about the UI. Both went to the tracker with their
+line numbers rather than into a paragraph here.
+
+**One mutant now kills two rows, and that is the measurement, not a leak.** `…secondwins` lets any
+later press overtake, so it kills both *a second แก้ไข* and *the same row pressed again* — they are
+the same claim about presses, told apart only by which row was pressed. Rather than call that one
+row, each same-row row has `…samerowmatches`, which turns the ask back into a row and kills that
+row alone. The re-sweep ran 47 mutants in the same per-screen groups, 79 minutes, and every one fell
+on the row its name gives. It also moved one more anchor, `23:nolanding`, whose re-sweep killed its
+row at `openSubject`'s wait for a read the mutant stops from happening — `plosfiltercancels`' lesson
+above, found in a mutant this ticket did not write. `offeringscreatedasksnothing`, which reads and does
+not draw, is what now dies at that row's assertion. The same review caught `SETTLE_MS`'s comment
+claiming timing could not decide anything; it can, and the comment now says the sweep is what stands
+behind the number (#52, #136).

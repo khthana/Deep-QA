@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
@@ -104,15 +104,25 @@ export default function Programs() {
     departments.find(department => department.department_id === departmentId)
       ?.department_name_th ?? departmentId
 
+  /**
+   * Which press of แก้ไข the form was last asked for - #139. แก้ไข makes a new
+   * ask, and เพิ่มหลักสูตร, ลบ and the import say none; a read overtaken by any of them
+   * draws neither its form nor its refusal, though the list is still reloaded.
+   * `Departments.js` carries the reasons.
+   */
+  const asked = useRef(null)
+
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async program => {
+    const ask = {}
+    asked.current = ask
     setNotice(null)
     setBusy(true)
     try {
       const { program: current } = await getProgram(program.program_id)
-      setEditing(current)
+      if (asked.current === ask) setEditing(current)
     } catch (error) {
-      report(error)
+      if (asked.current === ask) report(error)
       await load()
     } finally {
       setBusy(false)
@@ -187,6 +197,7 @@ export default function Programs() {
             <button
               type="button"
               onClick={() => {
+                asked.current = null
                 setNotice(null)
                 setEditing({})
               }}
@@ -261,6 +272,7 @@ export default function Programs() {
                         <button
                           type="button"
                           onClick={() => {
+                            asked.current = null
                             setNotice(null)
                             setRemoving(program)
                           }}
@@ -297,7 +309,10 @@ export default function Programs() {
               if (page === 1) load()
               else setPage(1)
             }}
-            onStart={() => setNotice(null)}
+            onStart={() => {
+              asked.current = null
+              setNotice(null)
+            }}
             onError={report}
           />
         </>

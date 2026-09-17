@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import DepartmentForm from '../components/departments/DepartmentForm'
@@ -120,15 +120,52 @@ export default function Departments() {
  * banner that outlives it.
  */
 
+  /**
+   * Which press of แก้ไข the form was last asked for - #139.
+   *
+   * แก้ไข reads the row afresh, and nothing in the table is disabled while that
+   * read is out: another แก้ไข, เพิ่มภาควิชา, ลบ and the import can each be
+   * started before it answers. Drawn unasked, the answer that **arrives** last
+   * won rather than the one **asked for** last - the first row's form replaced
+   * the second's, turned an add form into an edit and threw away what had been
+   * typed, opened underneath a question about a different department, or took
+   * the import panel off the screen halfway through an upload. Its refusal did
+   * the same in words: a red bar about one department over the form for
+   * another, which is the loss the paragraph above calls the whole of #91.
+   *
+   * A handler is torn down by nothing, so what it has to ask is *is this still
+   * what I was sent for* - a question about now, and a ref's to answer rather
+   * than an effect's flag (#133). Every control that decides what takes the
+   * form's place writes it: แก้ไข a new ask, and เพิ่มภาควิชา, ลบ and the
+   * import's `onStart` none. **An ask is a press, not a row**: pressed twice on
+   * one department, the earlier answer would match the later press and open
+   * the form again after ยกเลิก or บันทึก.
+   *
+   * An overtaken refusal is not reported, but the list is still reloaded: that
+   * reload is about the table, which the refusal says may be out of date, not
+   * about the form - an effect that must always happen does not go behind one
+   * that can fail (#131).
+   * The pager does not, and that was decided rather than forgotten: the form
+   * belongs to the row that was pressed and says so in its own fields, so a
+   * person who pages on while it loads still gets the form they asked for.
+   *
+   * `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`, `RubricCriteria` and
+   * `Plos` ask the same question the same way, and `Offerings` asks it of its
+   * panel. `139a-superseded-row-detail.spec.js` has a row for every way in.
+   */
+  const asked = useRef(null)
+
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async department => {
+    const ask = {}
+    asked.current = ask
     setNotice(null)
     setBusy(true)
     try {
       const { department: current } = await getDepartment(department.department_id)
-      setEditing(current)
+      if (asked.current === ask) setEditing(current)
     } catch (error) {
-      report(error)
+      if (asked.current === ask) report(error)
       await load()
     } finally {
       setBusy(false)
@@ -198,6 +235,7 @@ export default function Departments() {
             <button
               type="button"
               onClick={() => {
+                asked.current = null
                 setNotice(null)
                 setEditing({})
               }}
@@ -265,6 +303,7 @@ export default function Departments() {
                         <button
                           type="button"
                           onClick={() => {
+                            asked.current = null
                             setNotice(null)
                             setRemoving(department)
                           }}
@@ -301,7 +340,10 @@ export default function Departments() {
               if (page === 1) load()
               else setPage(1)
             }}
-            onStart={() => setNotice(null)}
+            onStart={() => {
+              asked.current = null
+              setNotice(null)
+            }}
             onError={report}
           />
         </>
