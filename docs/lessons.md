@@ -2380,7 +2380,7 @@ for it. **An effect that must always happen does not go behind one that can fail
 wraps the sentence alone. Two more findings were real and were not this ticket's to fix: a
 superseded read's `finally` still clears `busy` while another write is out, which the same guard
 cannot fix without leaving `busy` stuck after เพิ่ม, and a section write's sentence can land over
-another Offering's panel, which is a question about the UI. Both went to the tracker with their
+another Offering's panel, which is a question about the UI. Both went to the tracker (#142, #143) with their
 line numbers rather than into a paragraph here.
 
 **One mutant now kills two rows, and that is the measurement, not a leak.** `…secondwins` lets any
