@@ -2483,3 +2483,56 @@ replacement strings as well as the anchors. The same review caught the spec's ow
 matcher compared with `===`, so the cleanup removed nothing; the matcher is now one function given to
 both, and two of the thirty-one mutants were swept again against the changed spec and still killed
 their rows.
+
+## #144 — the mutant that could not split the controls was at the wrong end of the comparison
+
+**#140 wrote that no mutant could tell the pager from a filter, and it was right about where it had
+looked.** Its guard is `onScreen.current === load`, and every handler asks it; a mutant at the call
+site, `load(() => true)`, breaks the answer for every control at once, so a filter row would die with
+the pager row and add a situation but no separable evidence. That sentence had left the six filter
+screens with ☐ rows. #144 asked for ten rows, one per control, and one mutant per control that kills
+only its own — and the comparison has two ends. The other end is the effect that writes `onScreen`:
+`useEffect(() => { onScreen.current = load }, [load])`. Narrow its dependencies to leave one control
+out — `[page, report]` instead of `[load]` — and the ref stops following `load` when that control
+moves and nothing else. **A comparison no mutant at the call can split is split where its operand is
+written.** Before writing ten rows the idea was probed on one screen: the ref mutant killed the
+Students filter row and spared both pager rows, and 140's call-site mutant killed the pager row and
+the filter row together. Then the ten: each killed its own row at `toEqual`, and no pager row and no
+other filter row, on every screen. `Users` needed the most care — search, role and status all write
+one `filters` object — so its three mutants list the other two fields by name,
+`[page, filters.role, filters.status]`, instead of dropping the object.
+
+**Three of the ten also killed a row from the screen's older specs, and each one was a real kill.**
+`11c` row 3 searches for an account before it suspends it, `18c` row 8 filters to 0503 before it edits
+a pairing, and `17c` row 10 filters to 0503 and back to all before it adds two students. A ref that
+does not follow a control does more than lose the race: it throws away *every* reload after that
+control has moved, because the handler's `load` is never the one the ref holds again — and filtering
+back to the same value builds a new `load`, not the old one. So those rows waited for a redraw that
+never came, and the `loading` the discarded reload had set stayed set: `11c` at a `waitForResponse`
+for a button that was never drawn, `18c` at `toHaveText('วิชาเลือก')` with *element(s) not found*
+because the table was still *กำลังโหลด…*, `17c` at an `expect.poll` that read 173 where 175 was due.
+The first two of those died at a wait rather than at a claim (#139), and none of the three cites these mutants, so
+they are written on the sheets as consequences, not as proof. They also mean the old specs were
+already partial evidence that the ref follows the filters. They were evidence for the case with no
+race, and the ten new rows are evidence for the race.
+
+**Two filters were drawn for nobody the seed signs in as.** `Subjects` draws its ภาควิชา filter
+only for someone who reaches more than one department, but only a Department Admin reaches the screen,
+and a Department Admin granted at a department reaches one. `Offerings` draws its หลักสูตร filter only
+for someone who reaches more than one programme, but the screen belongs to the committee alone (a
+Department Admin gets 403), and a committee granted at a programme reaches one. In both cases the
+grant that draws the filter is a legal one. `assignable` lets a Central Admin grant any known scope,
+so a Department Admin at the faculty, or a committee at department 05, reaches two. The rows move one
+seeded account's grant to that scope for their own length. The helper, `widened`, asserts
+`rowCount === 1` before it runs the body, so it never silently widens nothing, and it moves the grant
+back in `finally`. *A seeded role needs the role's distinguishing property* (#87), and here the
+property was the width of the grant, not the role. The first run of the file found the second case
+at once: all three Offerings rows took a 403 at the screen's own `openOfferings`. That is the cheap
+way to learn who a screen is for.
+
+**The re-sweep of #140's call-site mutants measured the sentence #144 was opened on.** Against the
+new rows, `userssavestalewins` and `offeringsrefusalstalewins` killed four each, the pager row and all
+three filter rows that press the same handler. `subjectsrefusalstalewins`, `pairsrefusalstalewins`,
+`rubricsrefusalstalewins` and `studentssavestalewins` killed two each, and the fifteen whose call
+sites no filter row presses still killed one. A call-site mutant was never going to tell the controls
+apart, and the numbers now say so on each sheet rather than in a paragraph.

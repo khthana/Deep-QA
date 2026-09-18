@@ -141,6 +141,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
 - **A change to a function's signature reaches every mutant that writes a call to it**, not only
   those anchored on one — grep the replacement strings too; `anchors.py` reads anchors. (#140)
+- **A comparison no mutant at the call can split is split where its operand is written** — leave
+  one control out of the dependencies of the effect that writes the ref. (#144)
 - An anchor check tells you a mutant no longer applies; only a sweep tells you it no longer proves
   anything — including when re-aiming it is the right fix. (#107, #68)
 - When a mutant lives in shared code, its sheet is one of the places it kills, not the list. (#123)

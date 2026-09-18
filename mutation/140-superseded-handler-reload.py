@@ -52,6 +52,10 @@ spec เดิมของจอ มี baseline สะอาดคั่นห�
 ได้ 2 ตามใบ `25` หลัง code review เปลี่ยน `unroute` ของ `140a` ให้ได้ฟังก์ชันเดียวกับ `route` กวาด
 `offeringssavestalewins` กับ `departmentssavestalewins` ซ้ำ ยังล้มแถวของตัวเองแถวเดียว
 
+**กวาดซ้ำเมื่อ 18 ก.ย. 2569 (#144)** กับแถวตัวกรองของ `144a` ที่เพิ่มเข้ามา ตัวที่แถวตัวกรองกดจุดของมันด้วยล้มแถวเหล่านั้นด้วย -
+`userssavestalewins` และ `offeringsrefusalstalewins` 4 ตัวละ `subjectsrefusalstalewins` `pairsrefusalstalewins`
+`rubricsrefusalstalewins` และ `studentssavestalewins` 2 ตัวละ ตัวเลขของแต่ละตัวอยู่ใน `mutation/144-superseded-reload-by-filter.py`
+
 ## วิธีรัน
 
     python mutation/140-superseded-handler-reload.py save
