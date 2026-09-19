@@ -506,3 +506,62 @@ test('a role that is not TEACHER is refused before the Section is looked at', as
     assert.equal(refused.status, 403, 'for ' + alias);
   }
 });
+
+/** Each code's programme name, asked of `programs` rather than written down. */
+async function programNamesOf(codes) {
+  const { rows } = await api.pool.query(
+    `SELECT s.student_id, p.program_name_th FROM student s
+       JOIN programs p ON p.program_id = s.program_id
+      WHERE s.student_id = ANY($1)`,
+    [codes],
+  );
+  return Object.fromEntries(rows.map((row) => [row.student_id, row.program_name_th]));
+}
+
+/**
+ * A student of 0503, which no seeded student is in.
+ *
+ * Every seeded student is in 0501, whose name is also the name of department
+ * 05 - so without this one a route that named the wrong programme, or the
+ * department, would read the same on every row. The code sorts ahead of both
+ * cohorts, so it is on the first page. Written into the register here and
+ * taken out again below, enrolment first.
+ */
+const OTHER_PROGRAMME = { code: '60039999', program: '0503', department: '05' };
+
+test('a student comes with the name of their หลักสูตร, not only its code - #106', async () => {
+  // The หลักสูตร column of the screen read `0501` where ข้อมูลนักศึกษากลาง
+  // reads the name. That screen turns the id into a name with
+  // `/api/students/programs`, which refuses a Teacher, so the name has to come
+  // with the student. The list and the answer to one enrolment are one shape,
+  // so both are asked.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const { code, program, department } = OTHER_PROGRAMME;
+  await api.pool.query(
+    `INSERT INTO student (student_id, first_name_th, last_name_th, department_id, program_id)
+     VALUES ($1, 'ต่างหลักสูตร', 'ทดสอบ', $2, $3)`,
+    [code, department, program],
+  );
+  try {
+    const added = await enrol(cookie, section, { student_id: code });
+    assert.equal(added.status, 201, added.body.message);
+    const [own] = Object.values(await programNamesOf([code]));
+    assert.ok(own, 'no programme name for ' + code);
+    assert.equal(added.body.student.program_name_th, own);
+
+    const listed = await list(cookie, section);
+    assert.equal(listed.status, 200);
+    const named = await programNamesOf(listed.body.students.map((student) => student.student_id));
+    // Two programmes on the page, or the comparison below cannot tell them apart.
+    assert.ok(new Set(Object.values(named)).size > 1, 'the page holds one programme only');
+    for (const student of listed.body.students) {
+      // Two undefineds are equal, so the name has to exist before it is compared.
+      assert.ok(named[student.student_id], 'no programme name for ' + student.student_id);
+      assert.equal(student.program_name_th, named[student.student_id], 'for ' + student.student_id);
+    }
+  } finally {
+    await api.pool.query('DELETE FROM student_course WHERE student_id = $1', [code]);
+    await api.pool.query('DELETE FROM student WHERE student_id = $1', [code]);
+  }
+});

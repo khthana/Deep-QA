@@ -307,7 +307,7 @@ export default function SubjectStudents() {
                           {student.full_name_th}
                         </td>
                         <td className="px-4 py-3 text-slate-600">
-                          {student.program_id}
+                          {student.program_name_th ?? student.program_id}
                         </td>
                         <td className="px-4 py-3">
                           <button

@@ -200,6 +200,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the repository outlives the rows that name it unless both are cleared in the same breath, and
   code that deletes proves the directory is its own before it removes it. (#138)
 - Two `includes` cannot fail on a list that is too wide. (#102)
+- **A gap one seam hands to the other is closed only if the other seam's world can express it** — two
+  seams fed by one seed share its blindness. (#106)
 - A test that passes because of a defect tends to explain itself in its own comment. A row that
   needs a defect to be reachable must be rewritten the day it is fixed — write that on the row.
   (#67, #96)

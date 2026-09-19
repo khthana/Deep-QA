@@ -404,3 +404,51 @@ test('row 9: the subject the two ตอนเรียน share does not make th
   await mine.close();
   await theirs.close();
 });
+
+test('#106: the หลักสูตร column reads each student’s programme by name, not by code', async ({
+  page,
+}) => {
+  // ข้อมูลนักศึกษากลาง turns `program_id` into `program_name_th`; this column
+  // drew the id. Every row of the page is read against the name `programs`
+  // holds for that row's student.
+  //
+  // Every seeded student is in 0501, whose name is also department 05's, so
+  // one student of 0503 is written into the register and the ตอนเรียน here;
+  // without them a column that drew one programme's name for everyone would
+  // read right on every row. The code sorts ahead of both cohorts, so it is on
+  // the first page. Both rows are written straight into the store rather than
+  // through the screen's เพิ่มนักศึกษา - what the add answer carries is the
+  // backend suite's row - and both are taken out again, by that code only.
+  const code = '60039999';
+  const section = await asTeacherOne(page);
+  await cleanUp.query(
+    `INSERT INTO student (student_id, first_name_th, last_name_th, department_id, program_id)
+     VALUES ($1, 'ต่างหลักสูตร', 'ทดสอบ', '05', '0503')`,
+    [code],
+  );
+  try {
+    await cleanUp.query('INSERT INTO student_course (student_id, section_id) VALUES ($1, $2)', [
+      code,
+      section,
+    ]);
+    await openEnrolment(page, section);
+    const table = listTable(page);
+    const codes = await keysOn(table);
+    const shown = await table.locator('tbody tr td:nth-child(3)').allInnerTexts();
+
+    const { rows } = await cleanUp.query(
+      `SELECT s.student_id, p.program_name_th FROM student s
+         JOIN programs p ON p.program_id = s.program_id
+        WHERE s.student_id = ANY($1)`,
+      [codes],
+    );
+    const named = Object.fromEntries(rows.map(row => [row.student_id, row.program_name_th]));
+    expect(codes).toContain(code);
+    // Two programmes on the page, or the comparison below cannot tell them apart.
+    expect(new Set(Object.values(named)).size).toBeGreaterThan(1);
+    expect(shown).toEqual(codes.map(one => named[one]));
+  } finally {
+    await cleanUp.query('DELETE FROM student_course WHERE student_id = $1', [code]);
+    await cleanUp.query('DELETE FROM student WHERE student_id = $1', [code]);
+  }
+});

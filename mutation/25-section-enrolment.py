@@ -2,9 +2,9 @@
 """
 #25 รายชื่อนักศึกษาของรายวิชา - the class list of one ตอนเรียน.
 
-Fourteen mutants. Most of them break the server, because most of what #25 asks
-for is a rule rather than a picture - but four break the screen instead, and
-those are the ones worth reading first: they are how the rows prove they are
+Seventeen mutants, the last three #106's. Most of them break the server,
+because most of what #25 asks for is a rule rather than a picture - but five
+break the screen instead, and those are the ones worth reading first: they are how the rows prove they are
 about what a person sees rather than about what the API answered. `silentadd`
 in particular leaves every status code correct and only stops the sentence
 reaching the page, which is precisely the failure a row asserting on the
@@ -173,6 +173,27 @@ MUTANTS = {
     "cancelremoves": ("screen",
                       "        onCancel={() => setRemoving(null)}",
                       "        onCancel={remove}"),
+    # #106 - the หลักสูตร column draws the code again, the defect as it was
+    # found. Kills the #106 row at `toEqual`, and nothing else reads the column.
+    "programid": ("screen",
+                  "                          {student.program_name_th ?? student.program_id}",
+                  "                          {student.program_id}"),
+    # The same defect one layer down: the route hands the code back under the
+    # name's field, and the screen draws what it was given. A second mutant
+    # because the fix is two edits (#125) - either could be undone alone, and
+    # the screen's mutant cannot see this one. Kills the #106 row only.
+    "programidfromroute": ("route",
+                           "                  (SELECT p.program_name_th FROM programs p\n"
+                           "                    WHERE p.program_id = s.program_id) AS program_name_th,",
+                           "                  s.program_id AS program_name_th,"),
+    # A name, but always the same one: the subquery stops asking which
+    # programme the student is in. Every seeded student is in 0501, so this is
+    # the mutant only the 0503 fixture of both rows can see - `programid` and
+    # `programidfromroute` vary name-or-code, and neither can tell one
+    # programme from another (#96). Kills the #106 row only.
+    "oneprogramme": ("route",
+                     "                    WHERE p.program_id = s.program_id) AS program_name_th,",
+                     "                    WHERE p.program_id = '0501') AS program_name_th,"),
 }
 
 main(FILES, MUTANTS)

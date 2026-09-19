@@ -2618,3 +2618,39 @@ screens where the form's ยกเลิก is pressable during a save, a save t
 fresh แก้ไข runs `setEditing(null)` and closes the form that was opened since. *A save's answer is a
 read* (#133), and this one asks nothing. #142's rows cannot see it, because every held write is
 refused.
+
+## #106 — "match the other screen" named an answer, not a way to get it
+
+**The ticket was right, and its acceptance line pointed at a mechanism this screen cannot use.** The
+หลักสูตร column of รายชื่อนักศึกษาของรายวิชา drew `program_id` raw, and the ticket asked for the name
+*matching what ข้อมูลนักศึกษากลาง shows*. That screen turns the id into a name with
+`listReachablePrograms` — the programmes its account can reach, from `/api/students/programs`, which
+answers DEPT_ADMIN only. A Teacher, whose screen this is, is refused there. Copying the other screen's way
+would have put a refusal banner over a column still drawing the id through its `?? programId` fallback,
+while looking in the code like the fix. So the name comes with the student:
+`program_name_th` joins `RETURNED` in `enrolment.js` as a subquery, one place for the two `FROM`s that
+return a student (the page and the answer to one enrolment). The screen reads it. **A ticket that says
+*match the other screen* has named the outcome; whether the other screen's route to it is open to this
+screen's role is a separate question.**
+
+**Handing a gap to the other seam is a claim about the other seam's fixture.** The first browser row
+read the page against `programs` and said, in its own comment and on the sheet, that it could tell a name
+from a code but not one programme's name from another's — *which the backend suite asks per student*.
+The backend test did compare each student one by one, but against the same seed, and every seeded student
+is in 0501. Both rows would have passed a route that named 0501 for everyone. Worse, 0501's name is also
+department 05's, so they would have passed a route that named the department. The review found it by
+asking what the seed holds, not what the test does. Both rows now write one student of 0503 into the
+register and the section, and assert that the page holds more than one programme before comparing, then
+take that one code out again (#134). The fix is two edits, so it had two mutants (#125): `25:programid`
+puts the code back on the screen, and `25:programidfromroute` has the route return the code under the
+name's field. Those two vary *name or code*, and #96 says what that means: they cannot see a third
+property. `25:oneprogramme` pins the subquery to 0501 — a name, always the same one — and only the fixture
+can kill it. **A gap one seam hands to another is closed only if the other seam's world can express it; two
+seams fed by one seed share its blindness.**
+
+**The mutant census had not been counted since #131.** Updating #25's line in `mutation/README.md` meant
+reading the table, and five files were not on it: `133`, `139`, `140`, `144` and `142`. The last was left
+out by the commit before this one. The table summed to its own total of 529, which is why nothing looked
+wrong; the files summed to 650. *A hand-kept number in a file that grows every ticket is already wrong*
+(#119) — and a table can be wrong by missing rows while agreeing with its own total. The check that finds
+it compares the table's file names with `ls mutation/[0-9]*.py`, not the sum with the total.

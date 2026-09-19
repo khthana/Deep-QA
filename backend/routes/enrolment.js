@@ -60,9 +60,21 @@ const { pageOf } = require('../lib/paging');
 /** Enrolment is the Teacher's own class list, as in `teaching.js` and `clos.js`. */
 const TEACHING = ['TEACHER'];
 
-/** `full_name_th` is generated, so a list need not concatenate. */
+/**
+ * `full_name_th` is generated, so a list need not concatenate.
+ *
+ * `program_name_th` comes with the student because the screen's หลักสูตร
+ * column reads it (#106). ข้อมูลนักศึกษากลาง turns the id into a name with
+ * `/api/students/programs`, which answers DEPT_ADMIN and refuses a Teacher.
+ * A subquery rather than a join, so the list and the answer to one enrolment
+ * - two `FROM`s - read it from this one place; `student.program_id` is NOT
+ * NULL onto `programs`, so it always finds a row.
+ */
 const RETURNED = `s.student_id, s.first_name_th, s.last_name_th, s.full_name_th,
-                  s.program_id, s.admission_year, s.status`;
+                  s.program_id,
+                  (SELECT p.program_name_th FROM programs p
+                    WHERE p.program_id = s.program_id) AS program_name_th,
+                  s.admission_year, s.status`;
 
 /** One column, because one is all an enrolment is: the register holds the rest. */
 const IMPORT_COLUMNS = ['student_id'];
