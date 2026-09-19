@@ -2654,3 +2654,54 @@ out by the commit before this one. The table summed to its own total of 529, whi
 wrong; the files summed to 650. *A hand-kept number in a file that grows every ticket is already wrong*
 (#119) — and a table can be wrong by missing rows while agreeing with its own total. The check that finds
 it compares the table's file names with `ls mutation/[0-9]*.py`, not the sum with the total.
+
+## #127 — the key was named for the window; the sentence never was
+
+**The ticket's diagnosis held, and its forecast did not.** An Activity's `readDate` checked the shape
+and asked `Date.parse`, so `2569-09-30` was filed five centuries out and `2026-02-31` became 3 March —
+both measured again before anything changed. The ticket then predicted the fix's shape: the range could
+be shared, but #125's sentences *name a validity window, which an Activity's deadline is not — so a
+third sentence is likely*. The sentences read `ปี 2569 อยู่นอกช่วงที่รับได้ หากกรอกเป็น พ.ศ. ให้ใช้ ค.ศ.
+2026 แทน`, and nothing in them names a window. Only their keys did — `validityEra`,
+`validityYearRange`. So the fix reused the sentences and renamed the keys to `yearEra` and
+`yearOutOfRange`. **A key's name is a claim about its text; read the text before writing a second
+one.** It is the eighth way a ticket's diagnosis has been wrong, and the cheapest to catch. The ticket's
+file list was the familiar kind too. It named `activities.test.js`, which tests the read, and the writes
+are tested in `activity-editor.test.js` (*a ticket's file list is a grep somebody else ran*).
+
+**Sharing the rule cost three anchors, and a call-site mutant per caller kept what it would have cost
+the proof.** The range and the choice of sentence moved from `users.js` to `lib/year.js`. The reading
+stayed in each route, because the two contracts differ on purpose: one takes a day, the other a
+timestamp too. #68 warns that one helper behind many callers turns many claims into one that no mutant
+can split. What answers that here is keeping a mutant at each *call*. `125:eraisaccepted` was re-aimed
+at the call in `users.js`, and `127:activityeraisaccepted` sits at the call in `activities.js`. Each
+kills only its own route's rows. The mutants on the range itself (`alwaysoffersconversion`,
+`edgesarerefused`) moved with it. Re-swept, they kill the same 6, 2 and 1 subtests as on 9 September,
+and `alwaysoffersconversion` now kills an Activity row as well — so #125's docstring sentence *nothing
+outside `users.test.js` died* became untrue the day the code moved, and was corrected in the same
+commit (#123: a mutant in shared code kills where the code is shared).
+
+**The ticket asked whether accepting a timestamp was a defect, and the answer is no, with the reason
+written down.** The columns are `timestamptz`, `readDate`'s own docstring accepts a timestamp on
+purpose, and no caller sends one today. Refusing timestamps would change a contract for nothing. What was
+wrong is that a timestamp slipped past the calendar and the year. Both are now read off its day, and
+`127:dayistext` reads the calendar off the whole string instead. It does not refuse a timestamp: it
+throws on one and the route answers 500, killing the three rows that send one. That is a mutant that
+proves the day's slice is load-bearing, not one that shows what refusing timestamps would look like, and
+the first draft of this story said the second.
+
+**The review found two more mistakes of the same species, which the ticket had not listed.** The
+calendar was asked before the year, in both `readDate`s. A Buddhist leap year is one where the year
+minus 543 divides by four, so read as a common-era year it is never a leap year. `2567-02-29` exists,
+since it is 29 February 2024, yet it was refused as a day that does not, and the person never got the
+sentence that would have told them their mistake. The order came with #125, so `users.js` is fixed too,
+and a mutant per file puts the old order back. The other mistake: the tail after the day was `[T ].*`,
+and `Date.parse('2026-09-30 junk')` answers a number because V8 reads "jun" as a month. The string
+reached the column as 22007, under a docstring that said it could not. Both are *a guard strict about a
+format cannot see a mistake about meaning* (#124) again. Two guards each check their own thing, and the
+order they are asked in is a claim of its own.
+
+**Two kills in unrelated files were port exhaustion, measured.** The fifteen-mutant re-sweep lost five
+`weights.test.js` rows and three `subjects.test.js` rows. The first of each died at `connect
+EADDRINUSE` on supertest's ephemeral port, and against those files alone the same mutants pass. That
+is #52's *read the names for a leak*, with the leak outside the code.

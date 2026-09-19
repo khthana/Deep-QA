@@ -119,10 +119,13 @@ const REFUSALS = {
   // administrator filled in today and the useful thing to say is the
   // arithmetic; `1500` is a typing mistake and the useful thing to say is the
   // range. One sentence covering both would have to offer 957 to somebody who
-  // typed 1500, which is worse than saying nothing.
-  validityEra: (year, commonEra) =>
+  // typed 1500, which is worse than saying nothing. Named for the year and not
+  // for the validity window since #127, when an Activity's dates began to use
+  // them: the sentences never named the window, only their keys did.
+  // `lib/year.js` decides which one a year gets.
+  yearEra: (year, commonEra) =>
     `ปี ${year} อยู่นอกช่วงที่รับได้ หากกรอกเป็น พ.ศ. ให้ใช้ ค.ศ. ${commonEra} แทน`,
-  validityYearRange: (year, earliest, latest) =>
+  yearOutOfRange: (year, earliest, latest) =>
     `ปี ${year} อยู่นอกช่วงที่รับได้ ต้องเป็น ค.ศ. ระหว่าง ${earliest} ถึง ${latest}`,
   // The roles the sign-in rule sends to the password form rather than to
   // Google. An account of one of those created without a password can sign in

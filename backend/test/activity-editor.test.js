@@ -610,3 +610,142 @@ test('the wrong role and the anonymous are refused at the door', async () => {
   const anonymous = await request(api.app).post(url(section)).send({});
   assert.equal(anonymous.status, 401);
 });
+
+/** How many Activities the Section holds, so a refusal can be shown to write nothing. */
+const activitiesIn = (sectionId) =>
+  countOf('SELECT count(*) AS count FROM activities WHERE section_id = $1', [sectionId]);
+
+test('a Buddhist-era year in either date is refused with the year to use instead - #127', async () => {
+  // The screen's date box writes whatever year is typed into it, and 2569 is
+  // the year on every other Thai form. `readDate` read the shape, `Date`
+  // accepted it, and the deadline was filed five centuries out. The sentence
+  // is #125's: it names the year that was typed and does the arithmetic.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const screen = await screenOf(cookie, section);
+  const before = await activitiesIn(section);
+
+  const announced = await create(cookie, section, draft(screen, { announcement_date: '2569-09-30' }));
+  assert.equal(announced.status, 400);
+  assert.equal(announced.body.message, REFUSALS.yearEra(2569, 2026));
+
+  // Read by a second call, so asked for on its own: a later edit could read
+  // one date and not the other.
+  const due = await create(cookie, section, draft(screen, { deadline_date: '2570-09-30' }));
+  assert.equal(due.status, 400);
+  assert.equal(due.body.message, REFUSALS.yearEra(2570, 2027));
+
+  // A timestamp carries its year in the same place, and is read the same way.
+  const stamped = await create(
+    cookie,
+    section,
+    draft(screen, { deadline_date: '2569-09-30T09:00:00+07:00' }),
+  );
+  assert.equal(stamped.status, 400);
+  assert.equal(stamped.body.message, REFUSALS.yearEra(2569, 2026));
+
+  assert.equal(await activitiesIn(section), before, 'a refused save must write nothing');
+});
+
+test('a year that is no era of anybody is told the range, not offered arithmetic - #127', async () => {
+  // 1500 minus 543 is 957: offering it would be worse than saying nothing.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const screen = await screenOf(cookie, section);
+
+  const refused = await create(cookie, section, draft(screen, { deadline_date: '1500-09-30' }));
+  assert.equal(refused.status, 400);
+  assert.equal(refused.body.message, REFUSALS.yearOutOfRange(1500, 1900, 2200));
+});
+
+test('the edit route gives the same sentence, and leaves the activity as it was - #127', async () => {
+  // Two routes turn a refusal into a sentence, so each is asked (#125).
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const screen = await screenOf(cookie, section);
+
+  const body = draft(screen, { activity_name: 'งานปี พ.ศ. (ชุดทดสอบ)', deadline_date: '2026-09-30' });
+  await withActivity(cookie, section, body, async (made) => {
+    const refused = await update(cookie, section, made.id, { ...body, deadline_date: '2569-09-30' });
+    assert.equal(refused.status, 400);
+    assert.equal(refused.body.message, REFUSALS.yearEra(2569, 2026));
+
+    const kept = activityIn(await screenOf(cookie, section), 'งานปี พ.ศ. (ชุดทดสอบ)');
+    assert.match(kept.deadline_date, /^2026-09-30/);
+  });
+});
+
+test('a day the calendar does not have is refused rather than rolled into the next month - #127', async () => {
+  // `Date.parse('2026-02-31')` answers 3 March. The accounts' `readDate` has
+  // refused that since #11; this one never checked.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const screen = await screenOf(cookie, section);
+  const before = await activitiesIn(section);
+
+  for (const date of ['2026-02-31', '2026-04-31', '2026-02-29', '2026-02-31T09:00:00+07:00']) {
+    const refused = await create(cookie, section, draft(screen, { deadline_date: date }));
+    assert.equal(refused.status, 400, date);
+    assert.equal(refused.body.message, REFUSALS.invalidActivity, date);
+  }
+  assert.equal(await activitiesIn(section), before, 'a refused save must write nothing');
+});
+
+test('a real leap day and a full timestamp are still accepted - #127', async () => {
+  // The calendar check refuses what the calendar lacks and nothing else. The
+  // timestamp is the contract `readDate` has always stated - the columns are
+  // timestamptz - and the check reads its day, not its tail.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const screen = await screenOf(cookie, section);
+
+  const body = draft(screen, {
+    activity_name: 'งานวันอธิกสุรทิน (ชุดทดสอบ)',
+    announcement_date: '2028-02-29',
+    deadline_date: '2028-03-07T09:00:00+07:00',
+  });
+  await withActivity(cookie, section, body, async (made) => {
+    assert.match(made.announcement_date, /^2028-02-29/);
+    assert.equal(new Date(made.deadline_date).toISOString(), '2028-03-07T02:00:00.000Z');
+  });
+});
+
+test('a Buddhist leap day is told the year, not refused as a day that does not exist - #127', async () => {
+  // 29 February 2567 is 29 February 2024. As a common-era year 2567 is no
+  // leap year - no Buddhist leap year is - so the calendar, asked first,
+  // refused it as invalidActivity and the year sentence was never reached.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const screen = await screenOf(cookie, section);
+
+  const refused = await create(cookie, section, draft(screen, { deadline_date: '2567-02-29' }));
+  assert.equal(refused.status, 400);
+  assert.equal(refused.body.message, REFUSALS.yearEra(2567, 2024));
+});
+
+test('a day followed by anything but a time of day is refused, not handed to the column - #127', async () => {
+  // `Date.parse('2026-09-30 junk')` answers a number - V8 reads "jun" as a
+  // month - so the old pattern's `[T ].*` let it through to the column, which
+  // refused it as 22007: เกิดข้อผิดพลาดในระบบ for a date. The tail is now a
+  // time of day and an offset, and nothing else.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const screen = await screenOf(cookie, section);
+  const before = await activitiesIn(section);
+
+  for (const date of ['2026-09-30 junk', '2026-09-30T09:00:00+07:00 junk']) {
+    const refused = await create(cookie, section, draft(screen, { deadline_date: date }));
+    assert.equal(refused.status, 400, date);
+    assert.equal(refused.body.message, REFUSALS.invalidActivity, date);
+  }
+  assert.equal(await activitiesIn(section), before, 'a refused save must write nothing');
+
+  // A space in place of the T is a timestamp Postgres reads, and still one.
+  const body = draft(screen, {
+    activity_name: 'งานเวลาคั่นด้วยช่องว่าง (ชุดทดสอบ)',
+    deadline_date: '2026-09-30 09:00',
+  });
+  await withActivity(cookie, section, body, async (made) => {
+    assert.ok(made.deadline_date, 'the timestamp was written');
+  });
+});

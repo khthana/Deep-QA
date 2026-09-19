@@ -94,10 +94,11 @@
 const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
-const { REFUSALS } = require('../auth/refusals');
+const { REFUSALS, sentenceOf } = require('../auth/refusals');
 const { blankToNull, boundedInteger, integerId, round2 } = require('../lib/fields');
 const { sectionOf } = require('./enrolment');
 const { cloOrder } = require('../lib/cloOrder');
+const { yearRefusal } = require('../lib/year');
 
 /** The one role these routes open for, as in enrolment.js and teachingPlan.js. */
 const TEACHING = ['TEACHER'];
@@ -165,20 +166,43 @@ function readMark(value) {
   return round2(number);
 }
 
+/** `2026-08-03`, optionally followed by a time of day and an offset. */
+const DAY_AND_TIME = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}(?::?\d{2})?)?)?$/;
+
 /**
  * A date, or the nothing that means the Teacher has not set one.
  *
  * A calendar date is what the screen sends (`2026-08-03`); a full timestamp is
- * accepted because a caller that already holds one should not have to trim it.
- * Anything else is refused here rather than reaching the column as 22007.
+ * accepted because a caller that already holds one should not have to trim it,
+ * and the columns are timestamptz. Anything else is refused here rather than
+ * reaching the column as 22007.
+ *
+ * The shape is not the whole of it - #127. `2569-09-30` is a well-formed date
+ * five centuries out: the year on every other Thai form, typed into the
+ * screen's date box. Its refusal carries a sentence rather than a key, because
+ * the sentence names the year that was typed. `Date.parse` rolls `2026-02-31`
+ * into March without complaint, so the day is read back and compared, as the
+ * accounts' `readDate` has since #11 - after the year, because no Buddhist
+ * leap year is a common-era one and `2567-02-29` would be refused as a day
+ * that does not exist. Both are read off the day, so a timestamp is held to
+ * the same calendar as a date.
+ *
+ * The tail is a time of day and an offset and nothing else. It was `.*`, and
+ * `Date.parse('2026-09-30 junk')` answers a number - V8 reads "jun" as a
+ * month - so that string reached the column as 22007.
  */
 function readDate(value) {
   if (value === undefined || value === null || value === '') return { ok: true, value: null };
   if (typeof value !== 'string') return { ok: false };
   const text = value.trim();
-  if (!/^\d{4}-\d{2}-\d{2}([T ].*)?$/.test(text) || Number.isNaN(Date.parse(text))) {
-    return { ok: false };
-  }
+  if (!DAY_AND_TIME.test(text) || Number.isNaN(Date.parse(text))) return { ok: false };
+  const day = text.slice(0, 10);
+
+  const refusal = yearRefusal(Number(day.slice(0, 4)));
+  if (refusal) return { ok: false, message: refusal };
+
+  if (new Date(`${day}T00:00:00Z`).toISOString().slice(0, 10) !== day) return { ok: false };
+
   return { ok: true, value: text };
 }
 
@@ -242,6 +266,10 @@ function readActivity(body) {
   };
 
   if (!cloRows.ok) return { ok: false, reason: 'invalidActivityClo' };
+  // A year outside the range has a sentence of its own, naming the year, and
+  // is asked before the rest so that sentence is not lost to invalidActivity.
+  const misdated = [announcement, deadline].find((date) => date.message);
+  if (misdated) return { ok: false, message: misdated.message };
   if (
     !values.activity_name ||
     values.activity_name.length > 255 ||
@@ -586,7 +614,7 @@ function activityRoutes(pool) {
         if (!section) return notThisSection(res);
 
         const read = readActivity(req.body ?? {});
-        if (!read.ok) return res.status(400).json({ message: REFUSALS[read.reason] });
+        if (!read.ok) return res.status(400).json({ message: sentenceOf(read) });
 
         const refusal = await refuseSave(section.section_id, read.values);
         if (refusal) return res.status(400).json({ message: refusal });
@@ -608,7 +636,7 @@ function activityRoutes(pool) {
         if (!section) return notThisSection(res);
 
         const read = readActivity(req.body ?? {});
-        if (!read.ok) return res.status(400).json({ message: REFUSALS[read.reason] });
+        if (!read.ok) return res.status(400).json({ message: sentenceOf(read) });
 
         const activity = await activityOf(section.section_id, req.params.activityId);
         if (!activity) return notThisActivity(res);

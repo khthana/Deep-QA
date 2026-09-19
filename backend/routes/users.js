@@ -50,6 +50,7 @@ const { REFUSALS, sentenceOf } = require('../auth/refusals');
 const { blankToNull, trimmed } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { yearRefusal } = require('../lib/year');
 const {
   ADMIN_ROLES,
   COLUMNS,
@@ -83,18 +84,6 @@ const IMPORT_COLUMNS = [
 ];
 
 /**
- * The years a validity window may be filed in, and the offset between the eras.
- *
- * Not a guess at how long this system will run - the range is wide enough that
- * no real window comes near either end. It exists so that a year in the
- * Buddhist era, which is the year on every other Thai form the administrator
- * filled in today, cannot be filed as a common-era one: #125.
- */
-const EARLIEST_YEAR = 1900;
-const LATEST_YEAR = 2200;
-const BUDDHIST_OFFSET = 543;
-
-/**
  * A date as the form or the spreadsheet stated it, or a refusal.
  *
  * Only ISO `YYYY-MM-DD` is accepted. `new Date('01/03/2026')` is a different
@@ -116,23 +105,16 @@ function readDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return { ok: false };
   const parsed = new Date(`${text}T00:00:00Z`);
   if (Number.isNaN(parsed.getTime())) return { ok: false };
+
+  // The range and its two sentences are `lib/year.js`'s, shared with an
+  // Activity's dates since #127. Asked before the calendar, because no
+  // Buddhist leap year is a common-era one: `2567-02-29` exists, and asked
+  // second it was refused as a day that does not.
+  const refusal = yearRefusal(parsed.getUTCFullYear());
+  if (refusal) return { ok: false, message: refusal };
+
   // Rejects 2026-02-31, which Date rolls forward into March without complaint.
   if (parsed.toISOString().slice(0, 10) !== text) return { ok: false };
-
-  const year = parsed.getUTCFullYear();
-  if (year < EARLIEST_YEAR || year > LATEST_YEAR) {
-    const commonEra = year - BUDDHIST_OFFSET;
-    // Only the years whose Buddhist reading lands inside the range get the
-    // conversion offered; the rest are told the range. Doing the arithmetic
-    // for somebody who typed 1500 would answer them with 957.
-    const readable = commonEra >= EARLIEST_YEAR && commonEra <= LATEST_YEAR;
-    return {
-      ok: false,
-      message: readable
-        ? REFUSALS.validityEra(year, commonEra)
-        : REFUSALS.validityYearRange(year, EARLIEST_YEAR, LATEST_YEAR),
-    };
-  }
 
   return { ok: true, value: text };
 }

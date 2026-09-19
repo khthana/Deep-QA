@@ -33,7 +33,8 @@ and `editsentenceisakey` are that half, one mutant per site.
 
 ## Two sentences, not one with a hole in it
 
-`validityEra` does the arithmetic; `validityYearRange` names the range. A year
+`validityEra` does the arithmetic; `validityYearRange` names the range (since
+#127 `yearEra` and `yearOutOfRange`, chosen in `lib/year.js`). A year
 gets the first only when its Buddhist reading lands inside the range, because
 offering 957 to somebody who typed 1500 is worse than offering nothing.
 `alwaysoffersconversion` is the merge of the two, and it is the more tempting
@@ -79,6 +80,29 @@ Nothing outside `users.test.js` died to any of the five. The refusals table is
 shared with every route in the system and the two keys added are read from one
 place.
 
+### Re-swept after #127
+
+On 19 September 2569 #127 moved the range and the choice of sentence into
+`backend/lib/year.js`, so an Activity's dates could read the same copy.
+`eraisaccepted` was re-aimed at the call in `users.js`, which is what is still
+this route's own; `alwaysoffersconversion` and `edgesarerefused` at
+`lib/year.js`. The review of #127 then found that the calendar was asked before
+the year, so a Buddhist 29 February - which exists, and is never a common-era
+leap day - was refused as `invalidValidity`. The year is now asked first, and
+`yearaftercalendar` is the old order.
+
+All six were swept against the whole backend suite, 748 green. In
+`users.test.js`, `eraisaccepted`, `alwaysoffersconversion`, `edgesarerefused`,
+`formsentenceisakey` and `editsentenceisakey` kill the same **6**, **2**, **1**,
+**4** and **1** subtests as on 9 September. `eraisaccepted` and
+`formsentenceisakey` also kill the new leap-day row, and `yearaftercalendar`
+kills that row alone. `alwaysoffersconversion` also kills
+`activity-editor.test.js`'s row for 1500. So the sentence above, that nothing
+outside `users.test.js` died, is true of the call and no longer of the range:
+a mutant in shared code kills where the code is shared (#123). That run also
+lost three rows of `subjects.test.js` to `connect EADDRINUSE`. Against that
+file alone the mutant passes 19 of 19, so they are not counted.
+
 **Do not sweep this beside `11-12-accounts-and-grants.py`,
 `13-user-activity-history.py` or `124-users-template-sample.py`.** All three
 hold `backend/routes/users.js`, and a repeated path is what corrupts a sweep -
@@ -100,25 +124,41 @@ from harness import main
 
 FILES = {
     "users": "backend/routes/users.js",
+    # Since #127 the range and the choice of sentence are here, shared with an
+    # Activity's dates; `127-activity-dates.py` holds only activities.js, so
+    # the two files never hold the same path.
+    "year": "backend/lib/year.js",
 }
 
 MUTANTS = {
     # the defect itself: a year is whatever the form said it was. 6 subtests.
+    # Re-aimed by #127 at the call, which is what is still this route's own.
     "eraisaccepted": ("users",
-        "\n  const year = parsed.getUTCFullYear();\n"
-        "  if (year < EARLIEST_YEAR || year > LATEST_YEAR) {\n",
-        "\n  const year = parsed.getUTCFullYear();\n"
-        "  if (false) {\n"),
+        "  const refusal = yearRefusal(parsed.getUTCFullYear());\n"
+        "  if (refusal) return { ok: false, message: refusal };\n",
+        "  const refusal = yearRefusal(parsed.getUTCFullYear());\n"
+        "  if (false) return { ok: false, message: refusal };\n"),
     # one sentence for both mistakes, which offers 957 to somebody who typed
     # 1500. 2 subtests.
-    "alwaysoffersconversion": ("users",
-        "    const readable = commonEra >= EARLIEST_YEAR && commonEra <= LATEST_YEAR;\n",
-        "    const readable = true;\n"),
+    "alwaysoffersconversion": ("year",
+        "  const readable = commonEra >= EARLIEST_YEAR && commonEra <= LATEST_YEAR;\n",
+        "  const readable = true;\n"),
     # the boundary off-by-one: the years the range names are the years it
     # refuses. 1 subtest.
-    "edgesarerefused": ("users",
-        "  if (year < EARLIEST_YEAR || year > LATEST_YEAR) {\n",
-        "  if (year <= EARLIEST_YEAR || year >= LATEST_YEAR) {\n"),
+    "edgesarerefused": ("year",
+        "  if (year >= EARLIEST_YEAR && year <= LATEST_YEAR) return null;\n",
+        "  if (year > EARLIEST_YEAR && year < LATEST_YEAR) return null;\n"),
+    # Added by #127, whose review found it: the calendar asked before the
+    # year, so a Buddhist 29 February - which exists - is told invalidValidity
+    # instead of the year. Here because this file holds users.js.
+    "yearaftercalendar": ("users",
+        "  const refusal = yearRefusal(parsed.getUTCFullYear());\n"
+        "  if (refusal) return { ok: false, message: refusal };\n\n"
+        "  // Rejects 2026-02-31, which Date rolls forward into March without complaint.\n"
+        "  if (parsed.toISOString().slice(0, 10) !== text) return { ok: false };\n",
+        "  if (parsed.toISOString().slice(0, 10) !== text) return { ok: false };\n\n"
+        "  const refusal = yearRefusal(parsed.getUTCFullYear());\n"
+        "  if (refusal) return { ok: false, message: refusal };\n"),
     # the sentence looked up as a key on the form route: `JSON.stringify` drops
     # a function, so the person is refused with no message. 4 subtests.
     "formsentenceisakey": ("users",

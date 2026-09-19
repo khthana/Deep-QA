@@ -53,10 +53,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 ### A ticket's diagnosis
 
 - **A ticket's *What is wrong* is a claim from the day it was written; measure it before you fix
-  it.** It has been wrong seven ways: aged (#66, #111, #55), never true (#102), generalised from
+  it.** It has been wrong eight ways: aged (#66, #111, #55), never true (#102), generalised from
   the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
-  its own table (#133) — and the sheet itself asking for the defect (#89).
+  its own table (#133), a key's name read as its text (#127) — and the sheet itself asking for
+  the defect (#89).
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —

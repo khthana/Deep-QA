@@ -548,7 +548,7 @@ test('an external assessor with a validity period', async (t) => {
     });
 
     assert.equal(response.status, 400);
-    assert.equal(response.body.message, REFUSALS.validityEra(2569, 2026));
+    assert.equal(response.body.message, REFUSALS.yearEra(2569, 2026));
     // The sentence has to survive `res.json`, which is a claim about the route
     // and not about the table: `REFUSALS[reason]` on a parameterised entry
     // hands `JSON.stringify` a function, and it drops it - so the person would
@@ -573,7 +573,7 @@ test('an external assessor with a validity period', async (t) => {
     });
 
     assert.equal(response.status, 400);
-    assert.equal(response.body.message, REFUSALS.validityEra(2570, 2027));
+    assert.equal(response.body.message, REFUSALS.yearEra(2570, 2027));
   });
 
   await t.test('offers no conversion for a year that is not a Buddhist one', async () => {
@@ -593,7 +593,7 @@ test('an external assessor with a validity period', async (t) => {
     });
 
     assert.equal(response.status, 400);
-    assert.equal(response.body.message, REFUSALS.validityYearRange(1500, 1900, 2200));
+    assert.equal(response.body.message, REFUSALS.yearOutOfRange(1500, 1900, 2200));
   });
 
   await t.test('accepts the first and last years of the range it names', async () => {
@@ -637,7 +637,7 @@ test('an external assessor with a validity period', async (t) => {
       // password is a 400 already, so a row that read only the number would
       // have passed on the tree this ticket was opened against.
       assert.equal(response.status, 400, suffix);
-      assert.equal(response.body.message, REFUSALS.validityYearRange(year, 1900, 2200), suffix);
+      assert.equal(response.body.message, REFUSALS.yearOutOfRange(year, 1900, 2200), suffix);
     }
   });
 
@@ -674,7 +674,7 @@ test('an external assessor with a validity period', async (t) => {
       });
 
     assert.equal(response.status, 400);
-    assert.equal(response.body.message, REFUSALS.validityEra(2570, 2027));
+    assert.equal(response.body.message, REFUSALS.yearEra(2570, 2027));
 
     // And the window it already had is the window it still has.
     const after = await request(api.app).get('/api/users/EXTEND_EXT').set('Cookie', admin);
@@ -1008,7 +1008,7 @@ test('importing a spreadsheet with bad rows', async (t) => {
       response.body.errors.map((error) => error.line),
       [2],
     );
-    assert.equal(response.body.errors[0].message, REFUSALS.validityEra(2569, 2026));
+    assert.equal(response.body.errors[0].message, REFUSALS.yearEra(2569, 2026));
 
     const { rows } = await api.pool.query(
       `SELECT user_id FROM users WHERE user_id = 'BE_IMPORT'`,
@@ -1222,4 +1222,26 @@ test('an administrator below the Central Admin', async (t) => {
     assert.equal(response.status, 403);
     assert.deepEqual(Object.keys(response.body), ['message']);
   });
+});
+
+test('a Buddhist leap day is told the year, not refused as a day that does not exist - #127', async () => {
+  // 29 February 2567 is 29 February 2024, which exists. Read as a common-era
+  // year 2567 is no leap year - no Buddhist leap year is - so a calendar check
+  // asked before the year refused it as invalidValidity, and the person was
+  // never told the mistake they could fix. Found reviewing #127, whose route
+  // had the same order; the year is now asked first in both.
+  const admin = await signInAs('U_ADMIN');
+
+  const response = await create(admin, {
+    user_id: 'BE_LEAP_EXT',
+    email: 'buddhistleap@tabee-review.org',
+    first_name_en: 'Buddhist',
+    program_id: PROGRAM_THAI,
+    valid_from: '2567-02-29',
+    valid_until: '2570-09-30',
+    role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.message, REFUSALS.yearEra(2567, 2024));
 });
