@@ -85,7 +85,13 @@ export default function Offerings() {
   const [viewing, setViewing] = useState(null)
   const [removing, setRemoving] = useState(null)
   const [copied, setCopied] = useState(null)
-  const [busy, setBusy] = useState(false)
+  /**
+   * A write holds `writing` and a read holds `reading`, and a read puts down
+   * only its own - #142. `Departments.js` carries the reasons.
+   */
+  const [writing, setWriting] = useState(false)
+  const [reading, setReading] = useState(false)
+  const busy = writing || reading
 
   const report = useCallback(error => {
     // A 401 already raises the shell's dialog; saying it again here would put a
@@ -194,14 +200,14 @@ export default function Offerings() {
     const ask = {}
     asked.current = ask
     setNotice(null)
-    setBusy(true)
+    setReading(true)
     try {
       await refresh(offering.id, ask)
     } catch (error) {
       if (asked.current === ask) report(error)
       await load(() => onScreen.current === load)
     } finally {
-      setBusy(false)
+      setReading(false)
     }
   }
 
@@ -218,7 +224,7 @@ export default function Offerings() {
   const onSection = async work => {
     const ask = asked.current
     setNotice(null)
-    setBusy(true)
+    setWriting(true)
     try {
       const message = await work()
       await refresh(viewing.id, ask)
@@ -236,12 +242,12 @@ export default function Offerings() {
       }
       return false
     } finally {
-      setBusy(false)
+      setWriting(false)
     }
   }
 
   const save = async draft => {
-    setBusy(true)
+    setWriting(true)
     try {
       const { offering } = await createOffering(draft)
       setOpening(false)
@@ -256,13 +262,13 @@ export default function Offerings() {
     } catch (error) {
       report(error)
     } finally {
-      setBusy(false)
+      setWriting(false)
     }
   }
 
   const runCopy = async terms => {
     setNotice(null)
-    setBusy(true)
+    setWriting(true)
     try {
       const target = program || programs[0]?.program_id
       // Guarded rather than sent as `undefined`. คัดลอก only needs two years to
@@ -290,13 +296,13 @@ export default function Offerings() {
     } catch (error) {
       report(error)
     } finally {
-      setBusy(false)
+      setWriting(false)
     }
   }
 
   const confirmRemoval = async () => {
     const ask = asked.current
-    setBusy(true)
+    setWriting(true)
     try {
       if (removing.kind === 'section') {
         await deleteSection(viewing.id, removing.section.section_id)
@@ -321,7 +327,7 @@ export default function Offerings() {
       report(error)
       if (wasSection && viewing) await refresh(viewing.id, ask).catch(report)
     } finally {
-      setBusy(false)
+      setWriting(false)
     }
   }
 

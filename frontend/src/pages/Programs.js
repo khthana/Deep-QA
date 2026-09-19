@@ -49,7 +49,13 @@ export default function Programs() {
   const [notice, setNotice] = useState(null)
   const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
-  const [busy, setBusy] = useState(false)
+  /**
+   * A write holds `writing` and a read holds `reading`, and a read puts down
+   * only its own - #142. `Departments.js` carries the reasons.
+   */
+  const [writing, setWriting] = useState(false)
+  const [reading, setReading] = useState(false)
+  const busy = writing || reading
 
   const report = useCallback(error => {
     // A 401 already raises the shell's dialog; saying it again here would put a
@@ -128,7 +134,7 @@ export default function Programs() {
     const ask = {}
     asked.current = ask
     setNotice(null)
-    setBusy(true)
+    setReading(true)
     try {
       const { program: current } = await getProgram(program.program_id)
       if (asked.current === ask) setEditing(current)
@@ -136,12 +142,12 @@ export default function Programs() {
       if (asked.current === ask) report(error)
       await load(() => onScreen.current === load)
     } finally {
-      setBusy(false)
+      setReading(false)
     }
   }
 
   const save = async draft => {
-    setBusy(true)
+    setWriting(true)
     try {
       if (editing?.program_id) {
         await updateProgram(editing.program_id, draft)
@@ -154,12 +160,12 @@ export default function Programs() {
     } catch (error) {
       report(error)
     } finally {
-      setBusy(false)
+      setWriting(false)
     }
   }
 
   const confirmRemoval = async () => {
-    setBusy(true)
+    setWriting(true)
     try {
       const answer = await deleteProgram(removing.program_id)
       const deactivated = Boolean(answer?.deactivated)
@@ -182,7 +188,7 @@ export default function Programs() {
       setRemoving(null)
       report(error)
     } finally {
-      setBusy(false)
+      setWriting(false)
     }
   }
 

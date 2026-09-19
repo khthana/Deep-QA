@@ -2536,3 +2536,85 @@ three filter rows that press the same handler. `subjectsrefusalstalewins`, `pair
 `rubricsrefusalstalewins` and `studentssavestalewins` killed two each, and the fifteen whose call
 sites no filter row presses still killed one. A call-site mutant was never going to tell the controls
 apart, and the numbers now say so on each sheet rather than in a paragraph.
+
+## #142 — one flag, two kinds of work, and a release more careful than the code it replaced
+
+**#142 was read from the code and was right, and its list of ways in was one short.** Eight screens
+read a row afresh before opening its form or panel, and the read held the same `busy` flag as every
+write. That flag disables บันทึก, the confirmation and the panel's section controls. The read's
+`finally` put it down unconditionally, so a read that another แก้ไข had overtaken could land after a
+save had started and give บันทึก back with the save still out. Measured on ข้อมูลภาควิชา at
+`8bb9a92` before anything changed: red, as written. The ticket also asked for every place `busy` is
+released to be checked on all eight screens (*a guard written for one caller is a claim about every
+caller*, #68, #133). Listing the releases was not the useful answer. The useful question was **which
+of the holders can start while the flag is up**, and two more orders were measured to answer it. A
+read then ลบ: the confirmation opens disabled until the read lands. A save then ลบ: ยกเลิก is
+pressable during the save, so the table comes back, but the confirmation opens disabled. So two
+writes cannot overlap, because every control that starts one is disabled by the flag, and the only
+thing that can put down another's hold is a read. A read can do that in two orders. One is the
+ticket's, a superseded read. The other runs the opposite way: a write is out, what sent it is closed
+with ยกเลิก, and a read started from the table lands. That read *is* the current one, so #139's
+question (*is this still what was asked for*) answers yes, and the flag it puts down is the
+write's.
+
+**That reverse order has two ways in, and one of them exists on three screens only.** The
+confirmation's ยกเลิก is never disabled, so the removal order reaches every list screen. The form's
+ยกเลิก is a second way in, and on four of the seven forms (Rubrics, RubricCriteria, Plos,
+ProgramSubjects) it carries `disabled={busy}`. Nobody had counted which. The row written for it on
+all seven timed out at the ยกเลิก click on exactly those four when run against the old code. On the
+other three, pressing แก้ไข on the same row after ยกเลิก sent the same save a second time, the
+ticket's harm in its own words. So that is a fourth row on three screens rather than a second row
+on seven, and *a row that names two ways in is two rows* (#66): the removal row stays on all seven.
+One mutant, `…currentletsgo`, kills both rows where both exist, because both are the same line
+putting down the same flag.
+
+**The first fix was more careful than the code it replaced, and the review caught it.** The ticket
+proposed counting outstanding work. A count would keep the second row's form disabled until the
+first row's discarded read landed, which is a change to what the screen disables, and docs/06 makes
+that a question rather than a fix. So the fix split the flag in two: `writing` for writes and
+`reading` for reads. But the first version gave `reading` the press that picked it up and let a
+read put it down only if it was still that press. The standards and spec reviews, working apart,
+found the cost of that from two sides. The spec review found that a read overtaken by another now
+left the flag up until the later one landed, where the one flag had come down at once. That is the
+same kind of change the counter was rejected for, and it came from a clause that did nothing for
+the double send, because `reading` never gates `writing`. The standards review found the same
+clause from the other side: no mutant touched it, and replacing it with an unconditional release
+left every row green. **A release more careful than the code it replaced is a change to the screen
+too, and the clause no mutant can reach is where to look for one.** Now `reading` is a boolean the
+read puts down unconditionally, as it did the one flag. The only thing that changed is that it no
+longer puts down `writing`.
+
+**The row that holds the ticket's reason never went red.** The third row on each screen is a read
+that ลบ took the place of, and it must still free the confirmation when it lands. #139's guard,
+copied onto the release, would leave that confirmation disabled for good; the ticket said so. That
+row passed before the fix and after it. It exists to catch the wrong fix, not the defect, so the
+mutant `…letgowhileasked` (#139's guard on the release) is the only evidence it can fail. The other
+two mutants put `setWriting(false)` back into the read's `finally`, split by the one question that
+separates the two orders (`asked.current !== ask` and `=== ask`), which is why each kills a
+different row and all three share one anchor.
+
+**Only one row still reads on a timer, and it was measured slowed down.** The rows hold a request
+with `e2e/support/gate.js` until the row calls `open()`; a two-second delay, as in `139a`, would be
+racing a form, a press and a write. The second and fourth rows read the button once the form the
+read opened is drawn. The read's `finally` runs in the same task as the `setEditing` that draws the
+form, and React commits the two together, so the drawing is the settle point (#132). The first row
+has no such point. The overtaken read draws nothing, and nothing on the screen marks a flag that was
+rightly left alone, so it reads the button 250 ms after the answer is handed over. That number can
+decide the result (#52). The first version of the file cited #136 for it without doing what #136
+says, and the review caught that. The fix was to do it: each first row's mutant was run with the
+renderer slowed six times, the baseline passed, and all eight mutants still died at `isDisabled`.
+
+**The sweep ran one screen at a time, twice.** Each screen's three mutants ran against its rows in
+`142a`, `139a` and `140a` plus its own older specs, with a clean baseline before each group and a
+checksum of all eight pages after every `restore`. All 24 mutants killed only rows that carry their
+name, every kill at the row's own assertion and none at a timeout. The older specs, and the `139a`
+rows that share the functions these mutants touch, stayed green. `139a` asks which form is open and
+never reads a button the flag disables, so the two tickets anchor in the same functions without
+holding the same claim. The reverse sweep was not run: nobody has measured whether #139's or #140's
+mutants kill a `142a` row, and `mutation/142-busy-outlives-a-superseded-read.py` says so.
+
+**The review also found a defect #142 does not cause, next to the one it fixes.** On the three
+screens where the form's ยกเลิก is pressable during a save, a save that *succeeds* after ยกเลิก and a
+fresh แก้ไข runs `setEditing(null)` and closes the form that was opened since. *A save's answer is a
+read* (#133), and this one asks nothing. #142's rows cannot see it, because every held write is
+refused.

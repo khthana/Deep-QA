@@ -233,6 +233,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A control on the screen is a way in only if it feeds what the request asks for** — read the
   dependency list, not the JSX; and a guard that compares what those dependencies rebuild answers for
   every control at once, which is also why no mutant at the site can tell them apart. (#140)
+- **Before counting who puts a shared flag down, ask which holders can start while it is up** —
+  then give each kind of work its own flag. A counter that changes what the screen disables is a
+  question, not a fix, and so is a release more careful than the one it replaced; the clause no
+  mutant can reach is where to look for one. (#142)
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)

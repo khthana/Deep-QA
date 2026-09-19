@@ -50,7 +50,33 @@ export default function Departments() {
   const [notice, setNotice] = useState(null)
   const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
-  const [busy, setBusy] = useState(false)
+  /**
+   * What disables บันทึก and the confirmation - #142.
+   *
+   * A write holds `writing` from its press to its answer, and a read of one row
+   * holds `reading`. They were one flag, and a read that landed late put it
+   * down under a write that had started since - บันทึก came back with the save
+   * still out, and a second press sent it again. A read started from the table
+   * after ยกเลิก, the write still out, did the same from the other side. Now a
+   * read puts down `reading` and nothing else.
+   *
+   * It puts it down whether or not it is still the read the screen wants, as it
+   * did the one flag. Which read is wanted is `asked`'s question, and asking it
+   * here would change what the screen disables: a read another แก้ไข overtook
+   * would leave the flag up until the later one landed, and one that เพิ่ม or
+   * ลบ took the place of would never put it down. A count of the writes would
+   * be this boolean - every control that starts a write holding `writing` is
+   * disabled while one is out, so no two overlap. `ImportPanel` keeps its own
+   * flag and touches neither.
+   *
+   * `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`, `RubricCriteria`,
+   * `Plos` and `Offerings` hold the same two flags the same way.
+   * `142a-busy-outlives-a-superseded-read.spec.js` has the orders that reached
+   * the defect, three rows on each screen and a fourth on three of them.
+   */
+  const [writing, setWriting] = useState(false)
+  const [reading, setReading] = useState(false)
+  const busy = writing || reading
 
   /**
    * #68 - the answer that is drawn is the answer to the request the screen is
@@ -171,7 +197,7 @@ export default function Departments() {
     const ask = {}
     asked.current = ask
     setNotice(null)
-    setBusy(true)
+    setReading(true)
     try {
       const { department: current } = await getDepartment(department.department_id)
       if (asked.current === ask) setEditing(current)
@@ -179,12 +205,12 @@ export default function Departments() {
       if (asked.current === ask) report(error)
       await load(() => onScreen.current === load)
     } finally {
-      setBusy(false)
+      setReading(false)
     }
   }
 
   const save = async draft => {
-    setBusy(true)
+    setWriting(true)
     try {
       if (editing?.department_id) {
         await updateDepartment(editing.department_id, draft)
@@ -197,12 +223,12 @@ export default function Departments() {
     } catch (error) {
       report(error)
     } finally {
-      setBusy(false)
+      setWriting(false)
     }
   }
 
   const confirmRemoval = async () => {
-    setBusy(true)
+    setWriting(true)
     try {
       await deleteDepartment(removing.department_id)
       setRemoving(null)
@@ -221,7 +247,7 @@ export default function Departments() {
       setRemoving(null)
       report(error)
     } finally {
-      setBusy(false)
+      setWriting(false)
     }
   }
 
