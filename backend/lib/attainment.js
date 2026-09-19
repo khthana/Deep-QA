@@ -44,11 +44,18 @@ const OUTCOME_PASS_PERCENT = 60;
  * belong to the band above: 3.0 is the second band and not the first, 4.5 is
  * the fifth. Band one is the flagged one.
  *
- * `BAND_FLOORS[1]` and `PASS` are equal, and the screens rely on their being
- * equal — a red cell is meant to read as *this one did not pass*. They are
- * still two constants, which is [#110](https://github.com/khthana/Deep-QA/issues/110).
+ * The second floor is `PASS` and not a second 3.0, because the flagged band
+ * *is* the band below the pass line: a red cell has to read as *this one did
+ * not pass*, and the `!` beside it is `score < PASS`. Until #110 it was a
+ * literal that happened to equal `PASS`, and moving the floors on a walk left
+ * 2.99 flagged and amber.
+ *
+ * The pass line is the source rather than the band, because the pass line is
+ * the one that is applied: every pass rate, every Y and N, the attention list
+ * and the criterion #40 prints are `PASS`. Written the other way round, moving
+ * a colour's edge would silently move all of those.
  */
-const BAND_FLOORS = [0, 3.0, 3.5, 4.0, 4.5];
+const BAND_FLOORS = [0, PASS, 3.5, 4.0, 4.5];
 
 const round1 = (value) => Math.round(value * 10) / 10;
 

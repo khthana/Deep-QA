@@ -45,7 +45,9 @@
  * written down already point at it — sixty per cent of five is three exactly,
  * and three is where BR-20 stops flagging. The screen's colours and its
  * arithmetic therefore draw the same line, which is the only way a teacher can
- * read a red cell as *this one did not pass*.
+ * read a red cell as *this one did not pass* — and since #110 they draw it
+ * because BR-20's lowest floor is written as `PASS` in `lib/attainment.js`,
+ * not because two constants happen to be equal.
  *
  * ## The band is computed from the number the screen shows
  *

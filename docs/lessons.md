@@ -2705,3 +2705,34 @@ order they are asked in is a claim of its own.
 `weights.test.js` rows and three `subjects.test.js` rows. The first of each died at `connect
 EADDRINUSE` on supertest's ephemeral port, and against those files alone the same mutants pass. That
 is #52's *read the names for a leak*, with the leak outside the code.
+
+## #110 — the pass line is the source, because it is the one that is applied
+
+**The ticket's diagnosis held, and its address had aged.** It named `routes/learningDetails.js`, where
+#38 wrote `PASS` and `BAND_FLOORS`; both moved to `lib/attainment.js` when #42 needed them one level up,
+and the lib's own comment already cited #110. It also named one flag site. There are two: the heatmap's
+cell and `cellsFor` in `programResults.js`, which draws the programme-level screens. The fix being in the
+lib reaches both, which is the only reason one proving row is enough. The review found a third reader
+the ticket never named: #36's and #37's screens print `band_floors[1]` as *the line one student passes
+one outcome at*. Before #110 that sentence would have followed a colour's edge while the real line stood
+still. It is true by construction now, and it is the clearest case for the direction chosen below.
+
+**The ticket asked which of two rules is the source, and the answer is the one with consequences.** The
+pass line decides every pass rate, every Y and N, the attention list and the criterion #40 prints. The
+band's floor decides a colour. Written with the band as the source, moving a colour's edge would move
+every verdict on every report without the edit saying so. So `BAND_FLOORS` reads `[0, PASS, 3.5, 4.0,
+4.5]`, and the cost is stated in the sheet: the lowest band can now move only by moving the pass line.
+
+**A latent defect is proved by moving what it waits for — #131's *a defect unreachable today has a
+date on it*, with the date brought forward on purpose.** At the shipped line `PASS` and the
+literal it replaced are both three, and no row can tell them apart. The ticket said so, and it is true
+of mutants too: writing the literal back is a mutant that survives everything. So both mutants move the
+line to 3.2. `floorisliteral` also writes the literal back and kills the same-line row. `passmoves` moves
+only the line and is the control: the same-line row stands, and the two rows that pin the band at 3.0 by
+number die. That second fact is the one that shows the band followed the line, and not that nothing
+moved. Swept against the whole suite, as #123 asks of shared code, the band followed
+the line on four screens: `passmoves` killed 14 subtests in five files, five of them rows that pin the
+band at 3.0, and `floorisliteral` killed 10, of which only the same-line row is about the coupling. The
+same `passmoves` on the code before the fix killed the same-line row, which was the red before any code
+changed (*two mutants that vary the same property cannot see a third*, #96, and *a
+defect nobody can see needs a mutant*, #111, met again).

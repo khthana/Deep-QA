@@ -2,12 +2,12 @@
 """
 #38 รายละเอียดผลการเรียนรู้ - a heatmap, and the rules that colour it.
 
-Twelve mutants. This is the first screen in the rebuild that computes rather
+Fourteen mutants. This is the first screen in the rebuild that computes rather
 than records, so most of what could go wrong here is a *plausible wrong
 number* rather than a crash - which is what docs/06 warns about and why the
 arithmetic is pinned at the HTTP surface instead.
 
-These twelve are therefore the other half: what only exists once the numbers
+The first twelve are therefore the other half: what only exists once the numbers
 are drawn. A heatmap is a claim about colour, and a colour can be wrong in
 ways a JSON body cannot - every band the same shade, the ramp shifted by one
 so the edges land in the wrong colour, the flag that is only a hue, a grid
@@ -29,6 +29,33 @@ banding of every screen that bands - measured 7 September 2569, that is `38a`
 row 2 in the browser and nothing else there, plus four subtests at the HTTP
 seam. `42a` `43a` `44a` `45a` all pass with it applied, because no seeded
 cohort mean lands exactly on a band edge.
+
+The last two are #110's and are read at the HTTP seam, in
+`backend/test/learning-details.test.js`. The flagged band's floor is written
+as `PASS` since then, so the red cell and the `!` are one line by
+construction. At the shipped line the old literal and `PASS` are both three,
+so no row can tell them apart; both mutants move the line to 3.2 to make the
+difference visible.
+
+Swept 19 September 2569 against the whole backend suite (748 green). The
+module is shared, so this file is one of the places they kill, not the list:
+
+- `floorisliteral` puts the literal back as well. It kills 10 subtests in five
+  files, and exactly one of them is about the coupling: *the flagged mark and
+  the lowest band are the same line, at every edge* (row 12 of
+  `learning-details.test.js`). The other nine pin the pass line at three by
+  number - rows 6, 10 and 11 here, two in `clo-assessment.test.js`, two in
+  `program-results-students.test.js`, one in `program-results.test.js` and
+  one in `section-results.test.js` - and die under both mutants.
+- `passmoves` moves only the line. It is the control, and what it proves is a
+  row left standing: it kills 14 subtests in the same five files, and row 12
+  is not one of them. The five it adds are the rows that pin the band at 3.0
+  by number - rows 5 and 14 here, the legend in
+  `program-results-students.test.js`, *each outcome arrives already banded*
+  in `program-results.test.js` and the radar's floors in
+  `section-results.test.js` - so the band followed the line on four screens,
+  not one. On the code before #110 the same edit killed row 12, which was the
+  red this ticket began from.
 
     python mutation/38-learning-details.py save
     python mutation/38-learning-details.py <mutant>
@@ -158,6 +185,29 @@ MUTANTS = {
     "heatmapnoframe": ("screen",
                        '                <div className="overflow-x-auto">',
                        '                <div className="overflow-x-visible">'),
+    # #110. The pass line moves to 3.2, which is what the walk of 3 September
+    # did to the band floors from the other side. With the flagged band's
+    # floor written as `PASS` the band moves with it, so this is a control and
+    # not a kill: it kills the rows that pin the line at three by number, and
+    # *the flagged mark and the lowest band are the same line, at every edge*
+    # must stand, because 3.01 is now both red and flagged.
+    "passmoves": ("attainment",
+                  "const PASS = 3;",
+                  "const PASS = 3.2;"),
+    # #110's defect, and the pass line moved so it can be seen: the flagged
+    # band's floor written back as the literal it used to be. At the shipped
+    # line the literal and `PASS` are both three and no row can tell them
+    # apart - which is the ticket - so this moves the line as well. 3.01 is
+    # then amber and flagged. Kills *the flagged mark and the lowest band are
+    # the same line, at every edge*.
+    "floorisliteral": [
+        ("attainment",
+         "const PASS = 3;",
+         "const PASS = 3.2;"),
+        ("attainment",
+         "const BAND_FLOORS = [0, PASS, 3.5, 4.0, 4.5];",
+         "const BAND_FLOORS = [0, 3.0, 3.5, 4.0, 4.5];"),
+    ],
 }
 
 if __name__ == "__main__":

@@ -400,10 +400,12 @@ test('the figures agree with the marks in the database, not only with each other
 });
 
 test('the flagged mark and the lowest band are the same line, at every edge', async () => {
-  // The payload carries both, and two derivations of one fact can drift. They
-  // coincide because the user put the pass line on a band floor; if that ever
-  // moves, this is the test that says so rather than a screen that quietly
-  // draws a red cell next to a mark saying the student passed.
+  // The payload carries both, and two derivations of one fact can drift. Since
+  // #110 they cannot, because the flagged band's floor is written as `PASS`
+  // rather than as a second 3.0 - but at the shipped line the two spellings
+  // agree, so this row only sees the difference once the line moves too. That
+  // is what `38:floorisliteral` does, and `38:passmoves` is the control that
+  // moves the line and leaves this row standing.
   const enrolled = await roll();
   const edges = [2.9, 2.99, 3.0, 3.01, 3.4, 3.5, 4.4, 4.5, 5.0];
   for (const [index, wanted] of edges.entries()) {
