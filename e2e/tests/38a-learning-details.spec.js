@@ -351,3 +351,16 @@ test('row 8: the ตอนเรียน of another account is refused rather t
   expect(response.status()).toBe(404);
   await expect(page.getByText(REFUSALS.sectionNotFound, { exact: true })).toBeVisible();
 });
+
+test('the sentence over the attention list states the share it was handed', async ({ page }) => {
+  // The list itself is the server's - the same rule as the Y/N column - but
+  // the sentence that says what the list means kept its own copy of BR-17's
+  // share until #145. `145:detailspercentistyped` moves the rule and types the
+  // old number back, which is the only way the difference is visible at the
+  // shipped value.
+  const body = await (await openDetails(page, section)).json();
+
+  await expect(page.getByText(/ข้อที่มีสัดส่วนนักศึกษาผ่านเกณฑ์/)).toContainText(
+    `ไม่เกิน ${body.pass_percent}%`,
+  );
+});

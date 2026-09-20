@@ -224,7 +224,10 @@ def apply(files, mutants, name, force=False):
             # it was written rather than all of them at the end: an unrecorded
             # mutant here would meet the guard below, and the operator would be
             # told a stale-backup story about a mutant that had merely moved -
-            # with the file left mutated. 25 mutants are written as lists.
+            # with the file left mutated. A mutant written as a list of edits
+            # is the case this is for; the store holds plenty and counting
+            # them here would be one more hand-kept number that is already
+            # wrong (#119, and #145 which grew this one by three).
             restore(files, quiet=True)
             sys.exit(
                 "MISS %s in %s - the string it was written against appears %d times.\n"

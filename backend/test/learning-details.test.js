@@ -489,6 +489,14 @@ test('a Section that is not a Section is refused the same way', async () => {
   assert.equal(response.body.message, REFUSALS.sectionNotFound);
 });
 
+test('the share the attention list is drawn from travels with it, rather than being typed', async () => {
+  // The same reason as the bands above, one number over: the sentence under
+  // *ผลการเรียนรู้ที่ควรปรับปรุง* states BR-17's share, and until #145 it was
+  // typed into the page. What is sent is what `outcomePassed` applies.
+  const response = await details(section, teacherOne);
+  assert.equal(response.body.pass_percent, 60);
+});
+
 /** Blanks every mark of one outcome, so a row can build its own cohort. */
 async function clearOutcome(cloNumber, enrolled) {
   const rows = await attributionOf(cloNumber);

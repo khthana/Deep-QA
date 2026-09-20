@@ -239,3 +239,23 @@ test('a ผู้สอน who types another ตอนเรียน’s addres
   await expect(page.locator('svg[role="img"]')).toHaveCount(0);
   await expect(page.getByText('กำลังโหลดข้อมูล')).toHaveCount(0);
 });
+
+test('the note under the table states the rule it was handed, not one of its own', async ({
+  page,
+}) => {
+  // BR-17's share is a business rule, and the note is the only place on this
+  // screen it is written in words. Until #145 the sixty was typed here while
+  // the pass score beside it was read, so half the sentence could go stale
+  // without the other half moving - which nothing at the HTTP seam can see,
+  // because there the answer is right either way.
+  //
+  // At the shipped value a typed sixty and the answer's sixty read the same,
+  // so what this row asserts is that the two agree. `145:resultspercentistyped`
+  // moves the rule and puts the literal back, and then they do not.
+  const body = await (await openResults(page, section)).json();
+
+  const note = page.getByText(/ข้อหนึ่งถือว่าผ่านเมื่อ/);
+  await expect(note).toContainText(`มากกว่าร้อยละ ${body.pass_percent}`);
+  await expect(note).toContainText(`ร้อยละ ${body.pass_percent} พอดียังไม่ผ่าน`);
+  await expect(note).toContainText(`${body.band_floors[1].toFixed(1)} คะแนนขึ้นไป`);
+});

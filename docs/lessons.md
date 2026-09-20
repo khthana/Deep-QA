@@ -2933,3 +2933,54 @@ row the mutant is for. The rule about not editing while a sweep runs has a twin 
 to break, because reading feels free: **while a sweep is running the working tree is the
 harness's and not yours**, and an anchor check over it reports the applied mutant as a missing
 anchor. What is read from it is thrown away with whatever was measured beside it.
+
+## #145 — the copy had none of the identifier's letters in it
+
+`OUTCOME_PASS_PERCENT` is what `outcomePassed` applies, and the comment beside it says it is
+exported **to be printed** and never to be applied again. Two screens printed a sixty of their
+own instead: #36's note under the table and #38's sentence over the attention list. The ticket
+was right in every particular, which is worth saying because most are not — its address held, its
+two quotations were still on the screens at HEAD, and the routes still sent nothing for BR-17.
+
+**The grep that finds a copy is for the value, in every spelling a screen can write it.** Grepping
+the identifier across `frontend/` finds the fix, never the defect: the guilty screens contain none
+of its letters — that is what makes them guilty. `ร้อยละ 60` found #36's, `60%` found #38's, and
+neither pattern found the other. The ticket said so in as many words (*search for the identifier as
+well as the digits*), and that sentence was the load-bearing one. A copy of a rule is invisible to
+every search written in the vocabulary of the rule.
+
+**A row that pins today's value and a row that says the screen reads the rule are two claims, not
+one — and the control is what tells them apart.** Both new rows at the HTTP seam assert
+`pass_percent` is 60, in the house style of #40's `assert.deepEqual(body.rule, {…pass_percent: 60})`.
+Both die under `percentmoves`, the control that moves the rule to 55 and changes nothing else. The
+two browser rows read the number out of the answer and compare it with the sentence on the screen,
+and both **stand** under the same mutant. That is the whole of what this ticket bought: at the
+shipped value the typed sixty and the rule's sixty read identically, so only a mutant that moves
+the rule can see the difference — which is #110's shape one rule over, and the reason all three
+mutants here move it.
+
+The sweep: `145:resultspercentistyped` kills 1 of 36a's 6, `145:detailspercentistyped` kills 1 of
+38a's 10, each the row it was written for and nothing else; `percentmoves` leaves all 16 standing
+and kills 6 rows in the backend suite of 750 — one of #40's, three that test the sixty-per-cent
+boundary, and the two this ticket added. A sixth of the backend rows that mention sixty turned out
+to mean *the value is 60*, and none of the browser rows did.
+
+**A row that names three numbers is a claim about three numbers, and the review is where that
+was noticed.** The criterion written for #36's note says *all three numbers in the sentence match
+the answer* - two shares and the pass score. `resultspercentistyped` restores the two shares and
+nothing else, so the third clause had no mutant, and none could be borrowed: every mutant in the
+store that moves a rule moves the answer and the screen together, which is exactly the property
+this ticket bought. The clause was true, untested, and marked ⚙ - the mark CLAUDE.md says to
+distrust most. The fix was a fourth mutant of the same shape one number over,
+`resultspassscoreistyped`: type the score as a literal *and* move `PASS` to 3.2 so the literal is
+wrong. It kills one of 36a's six, and `38:passmoves` - the line moved alone - leaves all six
+standing, which is what says the screen reads `band_floors[1]` rather than printing a 3.0 of its
+own. Borrowing the control from another sheet rather than writing a second copy of it is the same
+reasoning as *two places holding one opinion is not a safety margin* (#97), read for controls.
+
+**A claim about collisions ages like a number does.** `38-learning-details.py`'s `FILES` carried a
+comment saying no other file held `backend/lib/attainment.js` — true when #123 put it there, false
+the moment `145-pass-percent-printed.py` was written, and it would have stayed there being read as
+permission to sweep the two together. The census one-liner in `mutation/README.md` answers it in a
+second; the comment took a ticket to notice. *A hand-kept number in a file that grows every ticket
+is already wrong* covers hand-kept **claims** too.

@@ -66,7 +66,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   ticket's commands, then ask what they could not have found; search for the identifier, not the
   concept — specs are written in English and sheets in Thai. **A ticket's file list is a grep
   somebody else ran**, and matching every file on it answers half of *confirm before you change*.
-  (#111, #124, #83, #68, #133)
+  But a **copy** of a rule holds none of the rule's letters, so hunt that one by the value, in
+  every spelling a screen can write it. (#111, #124, #83, #68, #133, #145)
 - A ticket that says *unless X* has told you what to go and look for; one that asks you to
   *consider* something is answered by a measurement, and *no, and here is what it would cost* is
   a finished answer. (#101, #89)
@@ -126,6 +127,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A read of something a mutant stops from existing is a wait, not an assertion** — it dies at the timeout,
   which a mutant that stopped the application would print too; count what holds a field before reading
   it. (#139)
+- **A row that pins today's value and a row that says the screen reads the rule are two claims** —
+  the control mutant is what tells them apart, killing the first and leaving the second standing.
+  (#145)
 - **A mutant has to be able to fail one row and leave the rest standing.** Narrow a mutant on a
   shared expression to its branch; when *does it choose the right thing* stops the application,
   mutate to a different choice rather than to no choice; a mutant that removes a condition must

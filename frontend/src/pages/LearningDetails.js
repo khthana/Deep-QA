@@ -35,6 +35,10 @@ import { getLearningDetails } from '../api/learningDetails'
  * asks for the list explicitly rather than left to be inferred from the
  * columns. It is the outcomes that did not clear BR-17 — the same rule the
  * Y/N column uses, so the list and the table cannot disagree.
+ *
+ * The share in the sentence over it is read too, from `pass_percent`, for the
+ * reason the bands are: until #145 it was a sixty typed here, which is the one
+ * copy of BR-17 no backend test could have seen go stale.
  */
 
 /**
@@ -243,7 +247,8 @@ export default function LearningDetails() {
               <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h2 className="mb-1 text-lg font-medium text-primary">ผลการเรียนรู้ที่ควรปรับปรุง</h2>
                 <p className="mb-4 text-sm text-slate-500">
-                  ข้อที่มีสัดส่วนนักศึกษาผ่านเกณฑ์ไม่เกิน 60% ตามเกณฑ์การประเมิน
+                  ข้อที่มีสัดส่วนนักศึกษาผ่านเกณฑ์ไม่เกิน {data.pass_percent}%
+                  ตามเกณฑ์การประเมิน
                 </p>
                 {data.attention.length === 0 ? (
                   // An outcome nobody has been marked on has not passed, so

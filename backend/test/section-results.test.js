@@ -482,3 +482,14 @@ test('the class list of this ตอนเรียน is served by an endpoint t
   assert.ok(response.body.students.length > 0, 'the class list came back empty');
   assert.equal(response.body.total, (await rollOf(section)).length);
 });
+
+test('the percentage the note prints travels with the answer, rather than being typed', async () => {
+  const { body } = await results(section, teacherOne);
+
+  // BR-17's share, sent for the same reason #38 sends BAND_FLOORS and #40
+  // sends `rule`: the sentence under the table says *more than sixty per
+  // cent*, and a page component that writes the sixty itself is the copy that
+  // goes on saying sixty after the rule moves. `lib/attainment.js` exports it
+  // to be printed and never to be applied.
+  assert.equal(body.pass_percent, 60);
+});

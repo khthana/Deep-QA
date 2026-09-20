@@ -60,7 +60,13 @@ const express = require('express');
 
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { BAND_FLOORS, outcomeScore, columnOf, summaryOf } = require('../lib/attainment');
+const {
+  BAND_FLOORS,
+  OUTCOME_PASS_PERCENT,
+  outcomeScore,
+  columnOf,
+  summaryOf,
+} = require('../lib/attainment');
 const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
 const { cloOrder } = require('../lib/cloOrder');
@@ -333,6 +339,11 @@ function sectionResultRoutes(pool) {
           section,
           offering,
           band_floors: BAND_FLOORS,
+          // BR-17's share, for the note under the table, which states the rule
+          // this screen's Y and N were decided by. The pass score in the same
+          // sentence already comes from `band_floors[1]`; #145 found this half
+          // of it typed into the page.
+          pass_percent: OUTCOME_PASS_PERCENT,
           clos: clos.map((clo) => ({ ...clo, ...columnOf(base.perClo.get(clo.clo_number)) })),
           summary: base.summary,
           empty: base.scored.length === 0,

@@ -40,6 +40,13 @@ import { getSectionResults } from '../api/sectionResults'
  * Not a filter over data already here. The comparison years are computed from
  * marks the browser has never seen — an entire cohort of a past year — and
  * fetching them only when asked keeps the first paint about this ตอนเรียน.
+ *
+ * ## The note under the table states the rule it was judged by
+ *
+ * Both of its numbers are read: the pass score from `band_floors[1]`, and since
+ * #145 the share from `pass_percent`. Neither is typed here. A sentence that
+ * keeps its own copy of a rule goes on stating the old one after the rule moves,
+ * and no backend test can see a page component say sixty.
  */
 
 /**
@@ -361,8 +368,9 @@ export default function SectionResults() {
           </div>
 
           <p className="mt-4 text-xs text-slate-400">
-            ข้อหนึ่งถือว่าผ่านเมื่อมีนักศึกษาผ่านเกณฑ์ข้อนั้นมากกว่าร้อยละ 60
-            (ร้อยละ 60 พอดียังไม่ผ่าน) และนักศึกษาหนึ่งคนถือว่าผ่านข้อหนึ่งที่{' '}
+            ข้อหนึ่งถือว่าผ่านเมื่อมีนักศึกษาผ่านเกณฑ์ข้อนั้นมากกว่าร้อยละ{' '}
+            {data.pass_percent} (ร้อยละ {data.pass_percent} พอดียังไม่ผ่าน)
+            และนักศึกษาหนึ่งคนถือว่าผ่านข้อหนึ่งที่{' '}
             {data.band_floors[1].toFixed(1)} คะแนนขึ้นไป
             ช่องที่ยังไม่มีใครถูกวัดจะเว้นว่างและกราฟจะขาดตอนตรงนั้น
             ไม่ใช่ลากลงศูนย์

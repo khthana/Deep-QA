@@ -62,6 +62,7 @@ const { requireRole } = require('../auth/authorise');
 const {
   PASS,
   BAND_FLOORS,
+  OUTCOME_PASS_PERCENT,
   bandOf,
   outcomeScore,
   columnOf,
@@ -192,6 +193,11 @@ function learningDetailRoutes(pool) {
           // in the browser — a copy that would go on saying 3.0 – 3.4 after
           // the floors moved.
           band_floors: BAND_FLOORS,
+          // BR-17's share, for the sentence over the attention list, which is
+          // that rule in words. Sent for the same reason as the floors above:
+          // #145 found it typed into the page, where it would go on saying
+          // sixty after the rule moved.
+          pass_percent: OUTCOME_PASS_PERCENT,
           clos: columns,
           students,
           // Every (student, outcome) that has a score, pooled. Both the fold

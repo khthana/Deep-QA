@@ -72,11 +72,13 @@ FILES = {
     "route": "backend/routes/learningDetails.js",
     "screen": "frontend/src/pages/LearningDetails.js",
     # `bandOf` left the route for the shared module when #42 needed the same
-    # five figures one level up. No other mutation file holds this path, so
-    # nothing collides with a sweep of this one - but that is also the point:
-    # until #123 the arithmetic every attainment screen shares carried no
-    # mutant anywhere, because the only one aimed at it was aimed at the
-    # address it used to have.
+    # five figures one level up. That is also the point: until #123 the
+    # arithmetic every attainment screen shares carried no mutant anywhere,
+    # because the only one aimed at it was aimed at the address it used to
+    # have. This line used to say no other file held the path - since #145 two
+    # of the three here are also in `145-pass-percent-printed.py`, which is a
+    # rule about what the screens *print* rather than what they compute, so do
+    # not sweep the two together.
     "attainment": "backend/lib/attainment.js",
 }
 
