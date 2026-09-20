@@ -2,8 +2,9 @@
 
 const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
-const { ACCOUNTS, PASSWORD } = require('../support/accounts');
+const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { BACKEND_URL } = require('../support/env');
 const { hold } = require('../support/hold');
 const { openUsers, userRow } = require('../support/users-screen');
 const {
@@ -197,7 +198,7 @@ test('rows 2 and 3: the grantee gains and loses the access on their next request
   await theirs.close();
 });
 
-test('row 6: an administrator cannot revoke their own grant through the screen', async ({
+test('row 6: the button on your own grant is dead, and says why', async ({
   page,
 }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);
@@ -207,20 +208,63 @@ test('row 6: an administrator cannot revoke their own grant through the screen',
   const own = grantRow(page, ROLE_NAMES.DEPT_ADMIN, '05');
   await expect(own).toHaveCount(1);
 
-  // The button is drawn on this row like any other, so the rule cannot be
-  // "there is no button": it is pressed here, and refused by the server.
+  // Until #130 this row pressed the button and read the refusal back, and its
+  // own comment said the rule could not be "there is no button". It is now:
+  // the button was one that always failed, which is #84's shape one screen
+  // over, and the three rows that pressed it for its banner were given a
+  // refusal of their own instead (`U_CROSS` in `db/seed.js`).
   //
-  // The sentence was `forbidden` until #83 - the same one asserted forty lines
-  // above, where a grantee whose grant was just revoked in another browser is
-  // refused for genuinely not holding it any more. One sentence, two reasons,
-  // and this row could not tell them apart either.
-  const refused = await revoke(page, ROLE_NAMES.DEPT_ADMIN, '05');
-  expect(refused.status()).toBe(403);
-  await expect(page.getByText(REFUSALS.selfRevoke)).toBeVisible();
+  // Drawn and not hidden, so the column keeps its shape and the reason is on
+  // the control itself. The title is a copy of the server's sentence that
+  // `create-react-app` will not let the screen import, so this assertion is
+  // where the two part company.
+  const button = own.getByRole('button', { name: 'ยกเลิกบทบาท' });
+  await expect(button).toBeVisible();
+  await expect(button).toBeDisabled();
+  await expect(button).toHaveAttribute('title', REFUSALS.selfRevoke);
+});
 
-  // And the grant is still held. A refusal that had already switched the row
-  // off and then complained would lock this account out on its next request.
-  await expect(own).toHaveCount(1);
+test('row 6: another account keeps the buttons it always had', async ({ page }) => {
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openUsers(page);
+  await openEditor(page, ACCOUNTS.crossScope);
+
+  // The control against a mutant that kills the column rather than the panel:
+  // this account is not the reader, so nothing about it changed. The grant
+  // itself is out of this administrator's scope and the server refuses it -
+  // which is `111a` and `121a`'s subject and not this row's: what is asserted
+  // here is that the control is offered.
+  const button = grantRow(page, ROLE_NAMES.TEACHER, '01').getByRole('button', {
+    name: 'ยกเลิกบทบาท',
+  });
+  await expect(button).toBeEnabled();
+  await expect(button).not.toHaveAttribute('title', REFUSALS.selfRevoke);
+});
+
+test('row 6: the server refuses it anyway, which is what makes the button a convenience', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openUsers(page);
+
+  // Past the dead button, on the cookie this browser is holding - the request
+  // the screen will no longer send. ADR-0002: hiding is not guarding, and #84
+  // wrote the same row for the same reason one screen over.
+  //
+  // No mutant of #130's own proves this one: all of them are about the button.
+  // What proves it is `83:revokeisjustforbidden`, which makes the route answer
+  // `REFUSALS.forbidden` and fails the sentence below.
+  const refused = await page.request.delete(
+    `${BACKEND_URL}/api/users/${IDS.departmentAdmin05}/roles/DEPT_ADMIN/05`,
+  );
+  expect(refused.status()).toBe(403);
+  expect((await refused.json()).message).toBe(REFUSALS.selfRevoke);
+
+  // And the grant is still held, which is the half a status code cannot say:
+  // a route that switched the row off and then complained would lock this
+  // account out on its next request.
+  await openEditor(page, ACCOUNTS.departmentAdmin05);
+  await expect(grantRow(page, ROLE_NAMES.DEPT_ADMIN, '05')).toHaveCount(1);
 });
 
 test('row 7: re-granting after a revoke records the new granter', async ({ page }) => {

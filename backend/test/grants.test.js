@@ -373,3 +373,54 @@ test('an administrator can edit personal details', async (t) => {
     assert.deepEqual(held(after.body), ['PROG_MANAGER@0501', 'TEACHER@05']);
   });
 });
+
+// --- the grant a reachable person holds somewhere else -----------------------
+
+/**
+ * #130. The route has answered `scopeNotYours` on a revoke since #12 and
+ * nothing here asked it to: every seeded account a department administrator
+ * could open held its grants inside that department, so the branch was
+ * unreachable from any fixture the suite had. `U_CROSS` is that fixture - a
+ * person inside 05 whose only grant is over 01 - and it exists because #130
+ * takes away the self-revoke button, which was the one refusal the grants
+ * panel could be given without writing anything.
+ *
+ * Reaching the person and reaching the grant are two questions, and this is
+ * the pair that tells them apart: the account answers 200 to a read and 403 to
+ * a revoke, with the sentence naming the scope rather than the account.
+ */
+test('a person inside the department can hold a grant outside it', async (t) => {
+  const cookie = await signInAs('U_DEPT');
+
+  await t.test('the administrator reaches the account', async () => {
+    const response = await grantsOf(cookie, 'U_CROSS');
+    assert.equal(response.status, 200);
+    assert.deepEqual(held(response.body), ['TEACHER@01']);
+  });
+
+  await t.test('and is refused its grant, for the scope and not for the person', async () => {
+    const response = await revoke(cookie, 'U_CROSS', 'TEACHER', DEPT_CIVIL);
+    assert.equal(response.status, 403);
+    assert.equal(response.body.message, REFUSALS.scopeNotYours);
+    // The account is reachable, so this must not be the sentence that means
+    // *no such person* - which is what a guard written on the account alone
+    // would answer, and what the panel would then show the wrong reason for.
+    assert.notEqual(response.body.message, REFUSALS.userNotFound);
+  });
+
+  await t.test('and the refusal left the grant where it was', async () => {
+    const response = await grantsOf(cookie, 'U_CROSS');
+    assert.deepEqual(held(response.body), ['TEACHER@01']);
+  });
+
+  await t.test('while the administrator of that scope does not reach the person', async () => {
+    // The other side of the same row: 01's administrator does not reach the
+    // person's own scope, so they are answered *no such account* - which is
+    // the asymmetry the fixture is for, and the reason 05's refusal has to
+    // name the scope rather than the account.
+    const other = await signInAs('U_DEPT2');
+    const response = await revoke(other, 'U_CROSS', 'TEACHER', DEPT_CIVIL);
+    assert.equal(response.status, 404);
+    assert.equal(response.body.message, REFUSALS.userNotFound);
+  });
+});

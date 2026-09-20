@@ -344,6 +344,32 @@ const ACCOUNTS = [
     program: '0501',
     grants: [['EXT_ASSESSOR', '0501']],
   },
+  // #130: an account inside department 05 whose only grant is over department
+  // 01, so that a 05 administrator can reach the *person* and not the *grant*.
+  //
+  // That pair is what `grants.js` answers `scopeNotYours` to on a revoke, and
+  // until this row existed the seed could not express it: every account a 05
+  // administrator could open held its grants inside 05, so the only refusal
+  // this panel could be given was self-revoke - the button #130 takes away.
+  // Three rows pressed that button to get a banner they were really about
+  // (`12a` row 6, `111a` row 3 and `121a`), and this row is what lets them
+  // keep asking their own question without writing anything to get it.
+  //
+  // Nothing signs in as this one, for `U_EXT_CLOSED`'s reason one row up: an
+  // account somebody else is using is an account that can be given a second
+  // job later, and a fixture that quietly acquires one stops being a fixture.
+  // A 01 administrator does not see it either - the account's own scope is 05
+  // - which is the asymmetry: the person is ours, the grant is theirs.
+  {
+    alias: 'U_CROSS',
+    id: 'cross01',
+    email: 'cross.scope@kmitl.ac.th',
+    th: ['ดร.', 'ศศิธร', 'ข้ามภาค'],
+    en: ['Dr.', 'Sasithorn', 'Khamphak'],
+    department: '05',
+    program: null,
+    grants: [['TEACHER', '01']],
+  },
   // R010: an address outside @kmitl.ac.th. This was the only row that had
   // one until #87 moved `U_EXT` out of the institution too, so read it as the
   // row that carried the domain rule's fixture first, not as the row that

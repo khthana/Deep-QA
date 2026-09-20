@@ -3,8 +3,9 @@
 const { PASSWORD } = require('../../db/seed');
 
 /**
- * The seeded accounts this suite signs in as, by what they are rather than by
- * their address, so a spec reads as the acceptance row does.
+ * The seeded accounts this suite signs in as - and, since #130, one it only
+ * opens - by what they are rather than by their address, so a spec reads as
+ * the acceptance row does.
  *
  * The password is imported rather than written out: it is decided in
  * db/seed.js, and a copy here would be a second place to change it.
@@ -20,6 +21,11 @@ const ACCOUNTS = {
   teacherTwo: 'teacher.two@kmitl.ac.th',
   multiRole: 'multi.role@kmitl.ac.th',
   externalAssessor: 'external.assessor@tabee-review.org',
+  // #130: opened, never signed in as. A person inside department 05 whose only
+  // grant is over 01, so a 05 administrator reaches the account and is refused
+  // its grant - the one refusal the grants panel can be given without writing
+  // anything, now that the self-revoke button is gone.
+  crossScope: 'cross.scope@kmitl.ac.th',
 };
 
 /**

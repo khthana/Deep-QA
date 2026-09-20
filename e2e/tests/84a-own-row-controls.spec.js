@@ -24,12 +24,16 @@ const { openUsers, search, userRow } = require('../support/users-screen');
  * fails here as well as in `users.test.js`, because this is the screen the
  * argument would be made about.
  *
- * **Why the grants panel is not in this file.** The same shape sits on
- * `GrantsPanel`'s *ยกเลิกบทบาท*, and it is deliberately left alone: three
- * browser rows press that button precisely in order to obtain its refusal,
- * and `121a`'s own comment calls it "the one refusal this panel can be given
- * without writing anything". Disabling it means finding #121 another refusal,
- * which is a decision rather than a tick - #130. The suspend button has the opposite
+ * **Why the grants panel is not in this file.** The same shape sat on
+ * `GrantsPanel`'s *ยกเลิกบทบาท* and was left alone here: three browser rows
+ * pressed that button precisely in order to obtain its refusal, and `121a`'s
+ * own comment called it "the one refusal this panel can be given without
+ * writing anything". Disabling it meant finding those rows another refusal,
+ * which was a decision rather than a tick - #130, closed on 20 September 2569
+ * by seeding `U_CROSS`, a person inside 05 whose only grant is over 01. Its
+ * rows live in `12a-role-grants.spec.js` beside the rest of the panel's, and
+ * its mutants in `mutation/130-own-grant-controls.py`, for the reason this
+ * file exists at all: a sheet owns the rows about its own screen. The suspend button has the opposite
  * property, measured during #83: no row in `e2e/` presses it on its own row,
  * which is why `statusisjustforbidden` killed no browser row at all - on 10
  * September, before this file existed. Re-measured on the 11th it kills one:

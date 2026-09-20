@@ -111,9 +111,15 @@ test.describe('#111: a refusal is announced, not only drawn', () => {
   }) => {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openUsers(page);
-    await openEditor(page, ACCOUNTS.departmentAdmin05);
+    await openEditor(page, ACCOUNTS.crossScope);
 
-    // Revoking your own grant, refused at the server - 12a row 6's driver.
+    // A grant held over another department, refused at the server for the
+    // scope - the refusal this panel can be given without writing anything.
+    //
+    // It was self-revoke until #130, which took that button away: the account
+    // opened here is somebody else's, and the button on their row is live. What
+    // the row is about is unchanged, and the seeded pair behind it is described
+    // on `U_CROSS` in `db/seed.js`.
     //
     // This panel drew its own copy of the banner when this row was written, and
     // had its own mutant for it. #121 replaced the copy with `Notice` the same
@@ -121,20 +127,21 @@ test.describe('#111: a refusal is announced, not only drawn', () => {
     // other screen - it is kept because *this panel announces* is still a claim
     // worth a row, and because it is the one that would catch the panel drifting
     // back out of the shared component.
-    const refused = await revoke(page, ROLE_NAMES.DEPT_ADMIN, '05');
+    const refused = await revoke(page, ROLE_NAMES.TEACHER, '01');
     expect(refused.status()).toBe(403);
 
-    // #83 gave this refusal a sentence of its own. What the row is about is
-    // unchanged - that the panel announces through the shared component - and
-    // the sentence is the subject it announces, not the claim.
-    await expect(page.getByText(REFUSALS.selfRevoke)).toBeVisible();
-    await expect(announced(page, 'alert', REFUSALS.selfRevoke)).toHaveCount(1);
+    // #83 gave the self case a sentence of its own, and this one has had its
+    // own since #12. What the row is about is unchanged - that the panel
+    // announces through the shared component - and the sentence is the subject
+    // it announces, not the claim.
+    await expect(page.getByText(REFUSALS.scopeNotYours)).toBeVisible();
+    await expect(announced(page, 'alert', REFUSALS.scopeNotYours)).toHaveCount(1);
 
-    // The grant is still held: 12a asserts this too, and it is repeated here
-    // because a panel that switched the row off and then complained would
-    // lock this account out on its next request - a far worse defect than the
-    // one this file is about, and cheap to notice from here.
-    await expect(grantRow(page, ROLE_NAMES.DEPT_ADMIN, '05')).toHaveCount(1);
+    // The grant is still held: a panel that switched the row off and then
+    // complained would be showing a grant that is still in the database as
+    // gone - a far worse defect than the one this file is about, and cheap to
+    // notice from here.
+    await expect(grantRow(page, ROLE_NAMES.TEACHER, '01')).toHaveCount(1);
   });
 
   test('the change-password dialog announces its refusal', async ({ page }) => {

@@ -61,10 +61,10 @@ test.use({ viewport: { width: 900, height: 300 } });
 test('#121: the grants panel brings its refusal into view', async ({ page }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);
   await openUsers(page);
-  await openEditor(page, ACCOUNTS.departmentAdmin05);
+  await openEditor(page, ACCOUNTS.crossScope);
 
-  const own = grantRow(page, ROLE_NAMES.DEPT_ADMIN, '05');
-  await expect(own).toHaveCount(1);
+  const theirs = grantRow(page, ROLE_NAMES.TEACHER, '01');
+  await expect(theirs).toHaveCount(1);
 
   // Work from the bottom of the panel, which is where the add picker is and
   // where somebody managing roles ends up.
@@ -78,19 +78,25 @@ test('#121: the grants panel brings its refusal into view', async ({ page }) => 
     page.getByRole('heading', { name: 'บทบาทที่ได้รับ' }),
   ).not.toBeInViewport();
 
-  // Revoking your own grant is refused at the server - 12a row 6's driver, and
-  // the one refusal this panel can be given without writing anything.
-  const refused = await revoke(page, ROLE_NAMES.DEPT_ADMIN, '05');
+  // A grant this administrator reaches the holder of but not the scope of,
+  // refused at the server - the one refusal this panel can be given without
+  // writing anything.
+  //
+  // It was the reader's own grant until #130 took that button away. The
+  // account opened here is somebody else's, so its buttons are live, and the
+  // seeded pair that makes the refusal free is described on `U_CROSS` in
+  // `db/seed.js`. The window and the geometry above are untouched by the
+  // swap: what this row needs is a banner, and any refusal produces one.
+  const refused = await revoke(page, ROLE_NAMES.TEACHER, '01');
   expect(refused.status()).toBe(403);
 
-  // #83 gave this refusal a sentence of its own. What this row is about is
-  // unchanged - that the panel scrolls its banner back into view - and the
-  // sentence is only how the banner is found.
-  const banner = page.getByText(REFUSALS.selfRevoke);
+  // What this row is about is unchanged - that the panel scrolls its banner
+  // back into view - and the sentence is only how the banner is found.
+  const banner = page.getByText(REFUSALS.scopeNotYours);
   await expect(banner).toBeVisible();
   await expect(banner).toBeInViewport();
 
   // And the grant is still held: a panel that switched the row off and then
-  // complained would lock this account out on its next request.
-  await expect(own).toHaveCount(1);
+  // complained would be drawing a grant the database still holds as gone.
+  await expect(theirs).toHaveCount(1);
 });

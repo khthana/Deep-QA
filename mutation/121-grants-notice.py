@@ -63,9 +63,13 @@ grants row, which is the separation this mutant exists to demonstrate. Recorded
 because a `save` in `.backup/` proves the harness ran and not that anything
 died.
 
-**This file collides with nothing, and that is worth stating precisely.** Its
-`FILES` holds `GrantsPanel.js` alone; `111` no longer holds it, because
-`grantsstaysilent` was deleted here along with the copy it was anchored to.
+**This file collided with nothing until #130, and the exception is worth
+stating precisely.** Its `FILES` holds `GrantsPanel.js` alone; `111` no longer
+holds it, because `grantsstaysilent` was deleted here along with the copy it
+was anchored to. `130-own-grant-controls.py` holds that same path - it mutates
+the revoke button in the table below the banner - so **the two must not be
+swept at the same time**, and `save` before every mutant is what makes the
+collision survivable.
 
 What it does have is a *dependency* on `Notice.js` rather than a claim on it:
 the mutant swaps a call to `Notice` for markup that does not call it, so a

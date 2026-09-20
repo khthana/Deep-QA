@@ -194,12 +194,20 @@ database and the accounts it opens have nothing behind them; nothing here is a c
 | `U_TEACH2` | `teacher.two@kmitl.ac.th` | อาจารย์ผู้สอน | **teaches nothing** |
 | `U_EXT` | `external.assessor@tabee-review.org` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
 | `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and ตอนเรียน 2 |
+| `U_CROSS` | `cross.scope@kmitl.ac.th` | อาจารย์ผู้สอน | in ภาควิชา `05`, granted over ภาควิชา `01` — **cross-scope grant** (#130) |
 | `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | R010 — and **no window at all** (#48) |
 | `U_EXT_CLOSED` | `past.assessor@tabee-review.org` | ผู้ประเมินภายนอก | **window closed** — cannot sign in at all (#48) |
 
-Six of these rows are the point of the list. A permission rule is only tested by an account that should be refused,
+Seven of these rows are the point of the list. A permission rule is only tested by an account that should be refused,
 so the dataset ships a committee member and a department admin scoped elsewhere, a teacher with no sections, an
-account holding two roles at once, an address the Google door refuses, and an assessor whose review round is over.
+account holding two roles at once, an address the Google door refuses, an assessor whose review round is over, and
+a person one administrator reaches while their only grant sits outside that administrator's scope.
+
+The last of those is `U_CROSS`, added by [#130](https://github.com/khthana/Deep-QA/issues/130), and it exists
+because *reaching a person* and *reaching their grants* are two questions the seed could not previously tell apart:
+every account `dept.admin.05@` could open held its grants inside `05`, so the revoke route's `scopeNotYours` branch
+was unreachable from any fixture in either seam. It is the one refusal the grants panel can be given without
+writing anything to the database, which is what three browser rows need it for.
 
 The fifth of those is `U_NONKMITL`, and until #87 it was the only row that had it — the others were all
 `@kmitl.ac.th`, so *an address outside the university domain* read as a property of one account. It is a property of

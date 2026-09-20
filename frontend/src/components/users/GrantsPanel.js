@@ -5,6 +5,7 @@ import GrantPicker from './GrantPicker'
 import Notice from '../Notice'
 import useGrantable from './useGrantable'
 import { roleName } from '../MapRole'
+import { useAuth } from '../../context/AuthContext'
 import { grantRole, listGrants, revokeGrant } from '../../api/users'
 
 /**
@@ -30,6 +31,28 @@ import { grantRole, listGrants, revokeGrant } from '../../api/users'
 
 const EMPTY = { role_id: '', scope_id: '' }
 
+/**
+ * Why every revoke button is dead while your own account is open - #130.
+ *
+ * A copy of `REFUSALS.selfRevoke`, for the reason `Users.js` gives above its
+ * copy of `selfStatus`: create-react-app refuses imports from outside `src/`,
+ * so no screen here can read `backend/auth/refusals`. `12a` row 6 asserts this
+ * exact attribute equals that constant, so the two part company in a failing
+ * test rather than in front of a person.
+ *
+ * Unlike the suspend button, this one is not decided per row. The server
+ * refuses on the account in the path and never looks at the grant - so if this
+ * panel is about the reader, every row of it is dead, and a per-row condition
+ * here would be a rule the route does not have.
+ *
+ * The dimming is this panel's own idiom (its submit button fades the same way)
+ * rather than `Users.js`'s greyed text, but `disabled:hover:bg-transparent` is
+ * taken from there and is not decoration: `:hover` matches a disabled button,
+ * so without it the dead control still lights up red under the pointer - which
+ * is the sentence this ticket is about, said in a colour instead of a cursor.
+ */
+const CANNOT_REVOKE_SELF = 'ยกเลิกบทบาทของตัวเองไม่ได้'
+
 /** When a grant was made, as a person reads it. */
 const madeOn = value =>
   value
@@ -42,6 +65,7 @@ const madeOn = value =>
 
 export default function GrantsPanel({ user, onError }) {
   const grantable = useGrantable()
+  const { profile } = useAuth()
   const [grants, setGrants] = useState([])
   const [draft, setDraft] = useState(EMPTY)
   const [busy, setBusy] = useState(false)
@@ -90,6 +114,18 @@ export default function GrantsPanel({ user, onError }) {
       setBusy(false)
     }
   }
+
+  /**
+   * Whether the account this panel is about is the reader's own - #130.
+   *
+   * Read from the shell's profile and not from the prop, which is the row the
+   * list handed over and carries no mark saying who is looking at it. `profile`
+   * is null until `/api/me` answers, and a null id matches no account, so the
+   * buttons are live for that moment - the same way round as `Users.js` chose
+   * for #84: a button wrongly live is refused by the server, where a button
+   * wrongly dead is a control nobody can get back.
+   */
+  const isSelf = Boolean(profile) && user.user_id === profile.user_id
 
   const remove = async grant => {
     setBusy(true)
@@ -178,8 +214,9 @@ export default function GrantsPanel({ user, onError }) {
                   <button
                     type="button"
                     onClick={() => remove(grant)}
-                    disabled={busy}
-                    className="rounded-lg px-3 py-1.5 text-red-700 hover:bg-red-50 disabled:opacity-40"
+                    disabled={busy || isSelf}
+                    title={isSelf ? CANNOT_REVOKE_SELF : undefined}
+                    className="rounded-lg px-3 py-1.5 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                   >
                     ยกเลิกบทบาท
                   </button>

@@ -114,6 +114,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   number is itself a claim to check. (#119, #96, #48)
 - **A survey of the store has a date on it, and a successful fix is what expires one.** Read the
   date before the figure. (#50, #85)
+- **A claim written in prose expires like a number** — and the copy you will miss is in the file
+  you did not think you were changing; grep the sentence as well as the figure, and grep
+  `File.js:` when a file grows lines. (#130)
 
 ### Mutants and sweeps
 

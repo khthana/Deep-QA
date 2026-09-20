@@ -2984,3 +2984,98 @@ the moment `145-pass-percent-printed.py` was written, and it would have stayed t
 permission to sweep the two together. The census one-liner in `mutation/README.md` answers it in a
 second; the comment took a ticket to notice. *A hand-kept number in a file that grows every ticket
 is already wrong* covers hand-kept **claims** too.
+
+## #130 — the dead control three other rows were standing on
+
+`GrantsPanel` drew *ยกเลิกบทบาท* on the reader's own grants exactly as it drew it on everybody
+else's, and pressing it could not succeed: `backend/routes/grants.js` refuses on
+`userId === req.auth.userId`. #84 closed that identical shape one screen over — `disabled`, a
+`title` copied from the refusal, three mutants — and deliberately did not close this one. The
+reason was a count: `statusisjustforbidden` killed no browser row, and `revokeisjustforbidden`
+killed three, because `12a` row 6, `111a` row 3 and `121a` all pressed this button **in order to
+obtain its refusal**. Removing it meant finding those three another refusal, which is a decision
+rather than a tick, so it was written into the tracker as a ticket and not into a paragraph.
+
+**So this is *a row that needs a defect to be reachable must be rewritten the day it is fixed*,
+arriving six weeks later with the bill.** The rule is already in the index (#67, #96) and this
+ticket is what it costs when the row belongs to somebody else's sheet: three rows, on three
+sheets, two of which had nothing to do with revoking anything — one is about a live region and one
+is about scrolling a banner into view. `121a`'s comment even explained itself, in the words the
+rule predicts: *"the one refusal this panel can be given without writing anything"*. A test that
+passes because of a defect tends to say so in its own comment, and this one had been saying so
+since the day it was written.
+
+**The ticket offered three ways out and two of them were gone before the question was asked.** It
+proposed driving the refusal from a scope the administrator does not reach, from a role they may
+not assign, or from a new fixture. The first two are not reachable from this panel: `reachable()`
+filters the account list by scope **and** by seniority, so every account a department
+administrator can open holds only grants inside that department, and the add-picker offers only
+combinations the server would accept. Re-granting a role that is already held is
+`ON CONFLICT DO UPDATE` — a write, on a schema every other spec shares, which is the thing
+`121a`'s sentence was protecting. What the measurement did was turn a three-way question into a
+one-way one, and the remaining question — *may the seed grow an account?* — is the user's, because
+the seed is the world every seam is handed.
+
+**The fixture went into the seed and not into a test file, and both seams are why.** `U_CROSS` is
+a person inside department `05` whose only grant is over `01`: `dept.admin.05@` reaches the
+account and is refused its grant. One row in `db/seed.js` is read by the new backend test, by
+`12a`'s control row, by `111a` and by `121a` — *a fixture built inside one test file is one no
+other file has* (#87), and four files wanted this one.
+
+**And the branch it reaches had been in the route since #12 with nothing able to touch it.** The
+revoke refuses `scopeNotYours` when the grant's scope is outside the caller's, and no seeded pair
+could produce that, because reaching a person and reaching their grants had never come apart in
+the seed. The new subtests pin the two questions apart on purpose: 200 to the read, 403 with
+`scopeNotYours` and explicitly **not** `userNotFound` to the revoke, the grant still held
+afterwards, and 404 `userNotFound` to `01`'s own administrator, who reaches the grant but not the
+person. Five rows for a guard that green suites had never once executed.
+
+**The control mutant is what makes *this row only* a claim.** `alwaysenabled` is the defect and
+kills the new row; `everyrowisdead` disables the whole column, and without a row that opens
+somebody else's account and asserts the button is live, killing every button in the table passes
+every claim this ticket makes. The condition is not computed per row — the route refuses on the
+account in the path and never reads the grant, so if the panel is about the reader then every row
+of it is dead, and a per-row version here would be a rule the route does not have.
+
+**`everyrowisdead` kills three rows, not one, and only a sweep of three files says so.** `111a`
+and `121a` press that button on `U_CROSS`'s row to get their banner, so a column of dead buttons
+takes them with it. A sweep of `12a` alone reports 1, which is a lower bound — *when a mutant
+lives in shared code, its sheet is one of the places it kills, not the list* (#123), read from the
+other end: the sheet was right about which row it was written for and wrong about the number.
+
+**And the fix expired a number on three sheets.** `83:revokeisjustforbidden` killed three browser
+rows on 10 September; re-measured on the 20th it kills one, the row that reaches the route *past*
+the disabled button — which is the shape `statusisjustforbidden` has had since #84, arriving here
+by the same route. *A survey of the store has a date on it, and a successful fix is what expires
+one* (#50, #85). The number was correct on `docs/acceptance/11-user-accounts.md`,
+`docs/acceptance/12-role-grants.md` and `mutation/83-refusal-that-names-the-rule.py`, and wrong on
+all three the moment the button went dead.
+
+**`isSelf` is read from the shell's profile, not from the prop.** The prop is the row the list
+handed over and carries no mark saying who is looking at it. `profile` is null until `/api/me`
+answers, and a null id matches no account, so the buttons are live for that moment — the same way
+round #84 chose: a button wrongly live is refused by the server, where a button wrongly dead is a
+control nobody can get back.
+
+**And the review found three more expiries the first sweep for numbers had missed — because two of
+them were not numbers.** `mutation/52-access-ended.py` claimed `everyrefusalends` kills thirteen
+browser rows and named `12a` row 6 among them; re-measured under the mutant on the 20th it kills
+twelve, because none of the three rows that replaced row 6 asks the screen for a refusal any more —
+two read a disabled button without sending anything, and the third fires `DELETE` through
+`page.request`, which never enters `client.js`. `111a` and `121a` still die, having only changed
+account. The other two were prose: `mutation/84-own-row-controls.py` still said in the present
+tense that the grants panel is *deliberately untouched*, although the twin copy of that very
+paragraph in `84a-own-row-controls.spec.js` had been rewritten in the same change; and
+`docs/acceptance/57-pager.md` cited `GrantsPanel.js:58`, which the new doc-comment pushed to line
+82. **A claim written in prose expires exactly like a number, and the copy you will miss is the one
+in the file you did not think you were changing** — grep for the sentence, not only for the figure,
+and grep for `File.js:` when a file grows lines. #141 still cites `:58`, which is a comment on a
+ticket and therefore the owner's word to give.
+
+**One thing the four mutants could not reach, so it became a row.** The fix carries
+`disabled:hover:bg-transparent`, taken from `Users.js`: `:hover` matches a disabled button, so
+without it the dead control still lights up red under the pointer — the sentence this ticket is
+about, said in a colour instead of a cursor. That is an appearance claim, which no seam here
+measures, and the code comment arguing for it is not a mark. *Explaining a gap in prose is not the
+same as marking it* (#50). It is now a ☐ row at the foot of `12-role-grants.md` — appended rather
+than inserted, so no row number anywhere moved — and the store is 1113 rows with ☐ at thirteen.
