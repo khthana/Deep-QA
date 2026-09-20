@@ -2736,3 +2736,200 @@ band at 3.0, and `floorisliteral` killed 10, of which only the same-line row is 
 same `passmoves` on the code before the fix killed the same-line row, which was the red before any code
 changed (*two mutants that vary the same property cannot see a third*, #96, and *a
 defect nobody can see needs a mutant*, #111, met again).
+
+## #146 — the save's answer closed whatever form it found
+
+**A save's answer is a read, and #133's rule reaches the end of the write as well as the start.**
+#139 gave every read that opens a form an `asked` ref, because a read is torn down by nothing and its
+answer can arrive on a screen that has moved on. A write is torn down by nothing either, and `save`
+ended with `setEditing(null)` and a banner, both unconditional. So the answer to a save sent from one
+form closed whatever form was open when it landed — the one the person had opened after pressing
+ยกเลิก, with whatever they had typed into it — and put *บันทึกข้อมูลเรียบร้อยแล้ว* where it reads as being
+about the record they were looking at rather than the one they had left.
+
+**The ticket named three screens; the code said twelve.** The ways in are not the same on all of them,
+which is why the count could not be taken from the three. On the four list screens the form replaces
+the table, so a second form needs ยกเลิก first and then แก้ไข or เพิ่ม… — two ways, two rows (*a row that
+names two ways in is two rows*, #66). On the seven screens that draw a form above a list they never
+blank, another card's pencil takes the form's place with no ยกเลิก at all, which is why
+หลักฐานการประเมิน is not safe for having disabled its ยกเลิก: the control that was disabled was not
+the way in. การเปิดรายวิชา has one form and no แก้ไข, so its way in is its own button pressed twice —
+the same way #139 had to name. And แผนพัฒนาต่อเนื่อง has a control none of the others have: the outcome
+picker, which closes the form while not being a form control, and would have put *บันทึกสรุปผล…แล้ว*
+under an outcome nobody had written a word about.
+
+**The guard the screens already had is the wrong shape for a banner drawn after a reload.** On the list
+screens the sentence is set before `load`, so one `if (showing.current === sent)` covers the close and
+the sentence together. On the other seven it is set after, so the answer has to be carried across the
+await in a local — `const mine` — because `showing.current` is `null` by then, written by the close
+itself.
+
+**The clause that guards a window nothing can reach is not a margin; it is a claim neither place can be
+shown to hold** (#97). The first draft of those seven asked again after the reload, on the reasoning
+that the reload is a second chance for the screen to move on. The row written to build that window timed
+out looking for a control: all seven draw `{!loading && data && …}`, so the list, the form and every
+button are off the screen for the length of the reload and there is nothing left to press. Measured, not
+argued — and the answer is *structurally unreachable*, which is one of the three things a clause can be
+(#102), and the clause came out.
+
+**What the rows could not say is where the neighbours were.** Two rows had to be re-aimed at what #146
+claims, and each re-aiming is a defect of its own, opened as #147 and #148. `EvidenceForm` initialises
+its state once, so pressing another file's pencil while a form is open leaves the first file's values in
+it — the row therefore reads whether the form is *there*, not what is in it. `EntrySection` re-seeds its
+draft whenever `entry` changes identity, so the reload every save ends with clears what was typed into
+another section's box — and **#146's own fix is what made that reachable**, because before it nothing
+could leave a form open across a reload. *A defect that is unreachable today has a date on it, usually
+moved by another ticket's fix* (#131), met from the other side: this time the fix is the thing that moved
+the date. Both were written down the hour they were found, because *a deferral written into prose and not
+into the tracker is a decision nobody can find* (#119) — and a re-aimed assertion is exactly that kind of
+deferral, since the row still passes and says nothing about what it stopped asking.
+
+**A change this wide reaches mutants that were never about it.** `anchors.py` found twenty-three broken
+anchors across nine sheets — #139's `secondwins` and `addkeepsask` on three screens, #140's
+`savestalewins` on five, and one each in #23, #27, #28, #29, #31, #33 and #91 — because #146 turned
+one-line handlers into blocks and put a guard around lines those mutants quote. Each was re-aimed to keep
+its own claim, and *the replacement string matters as much as the anchor*: #91's `keepcancelled` replaced
+ยกเลิก's whole handler, so its replacement had to carry every line #146 left in it or it would have been
+two mutants in one. At the time that included a `showing.current = null`, which the advisor's answer
+below took out of ยกเลิก again — the mutant was re-aimed twice, once per meaning of the ref. Seven of
+the nine share their words with screens #146 did not touch, so the repair was made one mutant at a
+time by name; replacing by the string alone would have broken the four screens that had not moved.
+
+**The sweep found the row the ticket had not written.** Twenty-five mutants, one run of the whole file
+each: every one killed the rows it names — two on each list screen, because both ways into a second form
+are the same clause, and one each everywhere else — and nothing else, save the intermittent row below.
+One survived. `improvementrefusalwins`
+came back twenty-eight of twenty-eight, and the reason was not the guard: แผนพัฒนาต่อเนื่อง was the only
+one of the twelve whose describe had no refusal row at all. The mutant had nothing to kill. That is the
+plainest form of *a survivor on a row nobody suspected is an overclaim* (#97) — the sheet would have
+claimed the refusal on that screen was proved, and only the sweep could say it was not. The row was
+written, the same mutant then killed it, and the baseline is twenty-nine rather than twenty-eight.
+
+**The thirteenth screen was the one the ticket's grep could not have found.** #146 named three
+screens and listed twelve more, and the list was a grep for `setEditing(null)` — *a ticket's file
+list is a grep somebody else ran* (#133). ข้อมูลนักศึกษากลาง has nothing to edit, so it holds one
+boolean called `adding` and appears on no list the ticket carried. It was found by asking the question
+the other way round: which screens have a `save` and no `showing`. That question returned seven,
+and six of them answered for themselves — `Plos`, `ProgramSubjects`, `Rubrics` and `RubricCriteria`
+draw the form *instead of* the list and disable ยกเลิก while a write is out, which #142 measured, so
+while a save is out there is no control on the screen that can take the form's place; `GradingWeights`
+has no form and its own comment already says nothing there can change what a reload asks for; and
+`ActivityScores` guards its grid and reads the name in its sentence out of the handler's own closure,
+so the sentence names what was saved however far the picker has moved. The seventh was the defect,
+and its way in is one control shorter than the four list screens' — no แก้ไข, so ยกเลิก and then
+เพิ่มนักศึกษา. Two rows, red before the ref and green after it, and two mutants.
+
+**The intermittent row had a mechanism, and a CPU throttle was what said so.** Three rows of
+แผนพัฒนาต่อเนื่อง failed three times across the first sweep's twenty-six runs, always at sixty seconds,
+never when the describe ran alone; five clean runs of the whole file could not reproduce them. Under a
+renderer slowed six times all three failed at once, and at one line: the read that chooses between
+เขียน… and แก้ไข…. `openPlan` waits for the answer and not for the drawing (#132) and `count()` does
+not retry, so on a slow draw the read lands before either button exists, takes the second branch, and
+waits out the timeout for a pencil that was never going to be drawn. *A race between an answer and its
+drawing is measured by slowing the renderer, not by rerunning the row* (#136) — the rerun said flaky
+five times and the throttle gave the answer on the first try. The fix is one line, `await
+expect(start.or(change)).toBeVisible()`, and it belongs in `support/improvement-screen.js` as well: the
+branch #146 copied was the shared helper's, which every row that writes a section runs.
+
+**A background run that is stopped is not a background run that has stopped.** `TaskStop` on the shell
+that was running suite-then-sweep left the sweep's python alive, applying mutants and running specs on
+the same two ports for another quarter of an hour. It was found by the harness rather than by the
+process list: `save` refused, saying a file still held a mutant, and the record it refused on named a
+different file a minute later. Nothing measured while it ran can be trusted — that run's numbers were
+thrown away and the sweep redone — and the tree was checked directly rather than by asking the record,
+by loading every sheet's `MUTANTS` and looking for each replacement string in the file it belongs to:
+six hundred and ninety-three edits, none of them in the tree.
+
+**The row the fix broke was the one no sweep could see.** The whole browser suite came back five
+red out of five hundred and thirty-three, and three of them were one row of #142 on three screens:
+*a read of the same row after ยกเลิก leaves บันทึก disabled while its save is out*. That row presses
+ยกเลิก, opens a second form, and then waits for the first save's refusal to appear — which is
+precisely what #146 had just made impossible, on purpose. Twenty-seven mutant runs could not have
+found it: every one of them ran one spec file, and the row lives in another. *A sweep cannot see the
+row your own fix breaks — only the clean suite can* (#83). What the row is about is the flag, which
+is put down either way, so the settle point moved from the sentence to `await write.answered`, and
+the three sheets say why on the row. The two mutants cited against that row were then re-run, because
+an anchor check says a mutant still applies and only a sweep says it still proves something (#107):
+`142:<screen>currentletsgo` still kills two rows on each of the three screens, the removal row and
+this one.
+
+**Three numbers on the sheets were wrong, and all three were found by reading the log instead of
+the memory of it.** The thirteen #146 sections each end with *what holds it is the sweep below*, and
+twelve of them had nothing below — only ข้อมูลนักศึกษากลาง, written last, carried the `### มัตแตนต์`
+the sentence points at. Going back to the sweep log to write the other twelve turned up two more:
+the baseline was twenty-eight and not twenty-nine, because the row that made it twenty-nine was
+written after that sweep; and `behaviorsclosewins` and `criteriaclosewins`, recorded as killing two
+rows each, killed one. The second name in each pair was a row of แผนพัฒนาต่อเนื่อง — the intermittent
+one — and the tell was in the same line as the count: 2.6 minutes against every other run's 1.6,
+which is a sixty-second timeout, not a kill. *Before reading a kill count, read the names* (#52),
+and that holds for a count that looks like a kill as much as for one that looks like the suite.
+
+**The third was a ⚙ nobody had earned.** `improvementrefusalwins` survived twenty-eight of
+twenty-eight because that screen had no refusal row; the row was written the same day, and the sheet
+then said *the same mutant then killed it*. Nothing had been run. Writing the row is what makes the
+claim testable, not what tests it — the mutant was applied again against the new row and killed it,
+one of thirty-one, and the sentence now says which run says so. An overclaim found by a sweep is
+answered by a measurement; the row is only the thing being measured.
+
+**The review's hardest finding was answered by writing its row and watching it fail at the click.**
+A standards reviewer read the three list screens and saw that `showing` is written where แก้ไข's
+read *lands*, not where it is *pressed* — against the rule in this file's own index, *ask by the
+press and not by the row* (#139). The window it described is real on paper: press บันทึก, press
+แก้ไข on another row, and until that row's read comes back the ref still names the first form, so
+the held save finds its own ask and puts its sentence up for the read to draw a form underneath.
+The fix was three one-line moves, and it cost three of #139's mutants their re-aim, because moving
+the write restores the one-line `if` they were anchored on before #146. Then the row that proves it
+failed on all three screens at `locator.click`, sixty seconds, with no assertion reached: these
+screens draw `{editing ? <Form/> : <table>}`, so while a form is open there is no other row's แก้ไข
+to press and no เพิ่ม either. The only control that can take the form's place while a save is out is
+ยกเลิก, which writes `null` at the press. The window cannot be entered — *structurally unreachable,
+not untested* (#102) — so the code went back, the three mutants were re-aimed again, the row came
+out, and what stayed is the paragraph in `Departments.js` saying why there is no row. A finding
+worth an hour: the answer is now written down where the next reader of that code will find it, and
+the way it was settled was to build the situation and let it fail, rather than to argue.
+**The question the ticket parked was the advisor's, and the answer changed what the ref means, not
+what the guard says.** #146 made an overtaken save say nothing at all — and left one case as a
+question: press บันทึก, press ยกเลิก, open nothing, and the person is told nothing about a write
+they made. The ticket called it *a UI question of the same kind as #143*, which is `docs/06`
+§Out of Scope saying whose it is. The answer came back: **show it as before when nothing has taken
+its place.** The obvious way to do that is a wider comparison — `=== sent || === null` — on thirteen
+screens, at two sites each, with a clause every mutant on the sheet would have to be re-aimed
+around. It is also the wrong way, because the comparison was never wrong: the *ref's meaning* was.
+`showing` stopped meaning *which form is open* and started meaning *the last thing that opened on
+this screen*, so ยกเลิก stopped writing it and so did the save that closes its own form, and `null`
+was left meaning only *nothing has opened here yet*. Every `showing.current === sent` in the
+thirteen files is the character it was; twenty-six mutants kept their anchors, and the twelve new
+ones simply put back the line ยกเลิก had lost. *When a guard has to widen, ask first whether what it
+reads is what is wrong.*
+
+**Two screens said the meaning was not uniform, and both said it in code that already existed.** The
+outcome picker on แผนพัฒนาต่อเนื่อง writes the ref when it moves — it closes the form without being a
+control of the form — and under the new meaning *closed and nothing open* is exactly what speaks, so
+leaving it at `null` would have put บันทึกบทสรุปแล้ว under the heading of an outcome nobody had
+written a word about. It writes an opening of its own instead: moving the screen is somebody taking
+it. And หลักฐานการประเมิน cannot reach the new case at all, because its ยกเลิก carries
+`disabled={busy}` — the twelve rows the answer added have no thirteenth, and that is *structurally
+unreachable rather than untested* (#102), not an omission.
+
+**The window the review asked for opened the moment ยกเลิก stopped writing.** The row that had timed
+out at the click — บันทึก held, แก้ไข on another row, the save answering inside that row's read — was
+unreachable only because ยกเลิก wrote `null` and the form was the only thing on the screen. With the
+ref left alone, cancelling puts the table back while it still names the first form, and the window
+is two presses away. So the write moved to the press after all, the three #139 mutants were re-aimed
+again, and the row that could not be built was built, is green, and has three mutants of its own.
+*A defect that is unreachable today has a date on it, and what moves it is usually another
+decision* (#131). The reviewer was right about the code and early about the calendar — and the
+measurement that said otherwise was true of the code as it stood that hour, which is the only thing
+a measurement is ever true of.
+
+**A grep run while a sweep is running greps somebody else's mutant.** Waiting for the whole
+sheet to be measured, I read `Offerings.js` and found its refusal asking
+`showing.current !== null` where the other twelve ask `=== sent` — which under the ref's new
+meaning is a real defect, since a second เปิดรายวิชา would let an overtaken refusal speak over the new
+form — and `anchors.py` agreed, reporting `offeringsrefusalwins` bound to nothing. Both were
+the sweep's own doing: that mutant *is* that replacement, and the harness had it applied in the
+tree at the second the grep ran. The log settled it a few minutes later by killing exactly the
+row the mutant is for. The rule about not editing while a sweep runs has a twin that is easier
+to break, because reading feels free: **while a sweep is running the working tree is the
+harness's and not yours**, and an anchor check over it reports the applied mutant as a missing
+anchor. What is read from it is thrown away with whatever was measured beside it.

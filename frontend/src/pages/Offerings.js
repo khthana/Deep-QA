@@ -246,21 +246,35 @@ export default function Offerings() {
     }
   }
 
+  /**
+   * The last thing that opened on this screen - #146. เปิดรายวิชา writes it;
+   * ยกเลิก does not, and neither does the save that closes its own form. A save
+   * whose answer finds the form opened again closes nothing, says nothing and
+   * does not take the panel over - the person is somewhere else, and `asked` is
+   * theirs to hold. One that finds nothing in its place says what it did, which
+   * is the half the advisor answered. `Departments.js` carries the reasons.
+   */
+  const showing = useRef(null)
+
   const save = async draft => {
+    const sent = showing.current
     setWriting(true)
     try {
       const { offering } = await createOffering(draft)
-      setOpening(false)
+      const mine = showing.current === sent
       const ask = {}
-      asked.current = ask
-      setNotice({
-        error: false,
-        message: `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
-      })
+      if (mine) {
+        setOpening(false)
+        asked.current = ask
+        setNotice({
+          error: false,
+          message: `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
+        })
+      }
       await load(() => onScreen.current === load)
-      await refresh(offering.id, ask)
+      if (mine) await refresh(offering.id, ask)
     } catch (error) {
-      report(error)
+      if (showing.current === sent) report(error)
     } finally {
       setWriting(false)
     }
@@ -407,6 +421,8 @@ export default function Offerings() {
           busy={busy}
           onSave={save}
           onCancel={() => {
+            // ยกเลิก does not write this: a form closing is nobody taking the
+            // screen, and a save still out is owed its sentence (#146).
             setNotice(null)
             setOpening(false)
           }}
@@ -488,6 +504,7 @@ export default function Offerings() {
                 type="button"
                 onClick={() => {
                   asked.current = null
+                  showing.current = {}
                   setNotice(null)
                   setOpening(true)
                 }}

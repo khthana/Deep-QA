@@ -75,7 +75,8 @@ MUTANTS = {
     # appear, and the person is left looking at a form that did nothing.
     # Kills row 5 at the sentence.
     "swallowrefusal": ("screen",
-                       "      if (!error.expired) setNotice({ error: true, message: error.message })\n"
+                       "      if (showing.current === sent && !error.expired)\n"
+                       "        setNotice({ error: true, message: error.message })\n"
                        "    } finally {\n"
                        "      setBusy(false)\n"
                        "    }\n"

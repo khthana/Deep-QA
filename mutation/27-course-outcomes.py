@@ -206,8 +206,8 @@ MUTANTS = {
     # row 6 left rows behind and row 8 died at its 201 rather than at the line
     # about the list - a kill by contamination, which proves nothing.
     "savenoreload": ("screen",
-                     "      setEditing(null)\n      await load(() => onScreen.current === load)",
-                     "      setEditing(null)"),
+                     "        setEditing(null)\n      }\n      await load(() => onScreen.current === load)",
+                     "        setEditing(null)\n      }"),
     # The removal removes nothing. `AND FALSE` keeps $1 bound, so the statement
     # is legal, the transaction commits, and the route answers 204 - the exact
     # shape of a delete that a row asserting only the status code would call
@@ -235,7 +235,8 @@ MUTANTS = {
     # closes on a save that never happened only if `setEditing(null)` had run,
     # which it had not, so the form stays open with no explanation at all.
     "swallowsave": ("screen",
-                    "      if (!error.expired) setNotice({ error: true, message: error.message })\n"
+                    "      if (showing.current === sent && !error.expired)\n"
+                    "        setNotice({ error: true, message: error.message })\n"
                     "    } finally {\n"
                     "      setBusy(false)\n"
                     "    }\n"

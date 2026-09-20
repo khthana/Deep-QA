@@ -146,8 +146,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # ภาควิชา: เพิ่ม leaves the last แก้ไข standing
     'departmentsaddkeepsask': ('departments',
-        '                asked.current = null\n                setNotice(null)\n                setEditing({})\n',
-        '                setNotice(null)\n                setEditing({})\n'),
+        '                asked.current = null\n                showing.current = {}\n                setNotice(null)\n                setEditing({})\n',
+        '                showing.current = {}\n                setNotice(null)\n                setEditing({})\n'),
     # ภาควิชา: ลบ leaves the last แก้ไข standing
     'departmentsremovekeepsask': ('departments',
         '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(department)\n',
@@ -170,8 +170,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # หลักสูตร: เพิ่ม leaves the last แก้ไข standing
     'programsaddkeepsask': ('programs',
-        '                asked.current = null\n                setNotice(null)\n                setEditing({})\n',
-        '                setNotice(null)\n                setEditing({})\n'),
+        '                asked.current = null\n                showing.current = {}\n                setNotice(null)\n                setEditing({})\n',
+        '                showing.current = {}\n                setNotice(null)\n                setEditing({})\n'),
     # หลักสูตร: ลบ leaves the last แก้ไข standing
     'programsremovekeepsask': ('programs',
         '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(program)\n',
@@ -194,8 +194,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # รายวิชา: เพิ่ม leaves the last แก้ไข standing
     'subjectsaddkeepsask': ('subjects',
-        '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  setNotice(null)\n                  setEditing({})\n'),
+        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
+        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # รายวิชา: ลบ leaves the last แก้ไข standing
     'subjectsremovekeepsask': ('subjects',
         '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(subject)\n',
@@ -306,8 +306,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # Offering: เปิดรายวิชา leaves the last panel standing
     'offeringsformkeepsask': ('offerings',
-        '                  asked.current = null\n                  setNotice(null)\n                  setOpening(true)\n',
-        '                  setNotice(null)\n                  setOpening(true)\n'),
+        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setOpening(true)\n',
+        '                  showing.current = {}\n                  setNotice(null)\n                  setOpening(true)\n'),
     # Offering: ยกเลิกการเปิด leaves the last panel standing
     'offeringscancelkeepsask': ('offerings',
         "                            asked.current = null\n                            setNotice(null)\n                            setRemoving({ kind: 'offering', offering })\n",
@@ -322,8 +322,8 @@ MUTANTS = {
         '    const ask = offering.id\n    asked.current = ask\n    setNotice(null)\n'),
     # Offering: a subject just opened is not the panel asked for, so it never opens
     'offeringscreatedasksnothing': ('offerings',
-        '      setOpening(false)\n      const ask = {}\n      asked.current = ask\n',
-        '      setOpening(false)\n      const ask = {}\n'),
+        '        setOpening(false)\n        asked.current = ask\n',
+        '        setOpening(false)\n'),
 }
 
 main(FILES, MUTANTS)

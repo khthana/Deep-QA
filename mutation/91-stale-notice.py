@@ -22,17 +22,19 @@ FILES = {
 MUTANTS = {
     # The refusal outlives the form again: cancelling stops clearing.
     "keepcancelled": ("departments",
-                      "          onCancel={() => {\n"
                       "            setNotice(null)\n"
                       "            setEditing(null)\n"
                       "          }}",
-                      "          onCancel={() => setEditing(null)}"),
+                      "            setEditing(null)\n"
+                      "          }}"),
     # The success outlives its action again: opening a new form stops clearing.
     "keepsaved": ("departments",
                   "                asked.current = null\n"
+                  "                showing.current = {}\n"
                   "                setNotice(null)\n"
                   "                setEditing({})\n",
                   "                asked.current = null\n"
+                  "                showing.current = {}\n"
                   "                setEditing({})\n"),
     # An upload stops clearing what was on the screen before it - the site the
     # first pass at #91 walked past, and the one the code review found.

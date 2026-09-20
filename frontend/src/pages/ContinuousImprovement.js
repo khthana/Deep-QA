@@ -185,7 +185,27 @@ export default function ContinuousImprovement() {
     )
   }, [data, clo])
 
+  /**
+   * The last thing that opened on this screen - #146. The list under the form
+   * is drawn whether or not one is open and disables nothing, so another
+   * section's เขียน and the outcome picker both replace the form while a save
+   * is still out - here without even the ยกเลิก the list screens need.
+   *
+   * The picker is the one control no other screen has: it closes the form
+   * without being a control of the form - and, because it moves the screen
+   * rather than closing a form, it is the one place that writes an opening of
+   * its own where ยกเลิก writes nothing. A save whose answer finds a different
+   * opening closes nothing and says nothing, neither its banner nor its
+   * refusal; one that finds nothing in its place says what it did.
+   *
+   * The reload that follows opens no second window: this screen draws its list
+   * and its form only when it is not loading, so for the length of it there is
+   * nothing on the screen to press. `Departments.js` carries the reasons.
+   */
+  const showing = useRef(null)
+
   const save = async text => {
+    const sent = showing.current
     setBusy(true)
     setNotice(null)
     try {
@@ -195,11 +215,16 @@ export default function ContinuousImprovement() {
         detail_text: text,
       })
       const written = labelOf(editing)
-      setEditing(null)
+      const mine = showing.current === sent
+      if (mine) {
+        setEditing(null)
+      }
       await load(() => onScreen.current === load)
-      setNotice({ error: false, message: `บันทึก${written}แล้ว` })
+      if (mine)
+        setNotice({ error: false, message: `บันทึก${written}แล้ว` })
     } catch (error) {
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (showing.current === sent && !error.expired)
+        setNotice({ error: true, message: error.message })
     } finally {
       setBusy(false)
     }
@@ -277,6 +302,10 @@ export default function ContinuousImprovement() {
                 <select
                   value={cloId}
                   onChange={event => {
+                    // A different outcome is a different opening of this screen, even
+                    // with no form open on it - what a save still out was sent from is
+                    // gone whichever way the person left it (#146).
+                    showing.current = {}
                     setCloId(event.target.value)
                     setEditing(null)
                   }}
@@ -312,8 +341,15 @@ export default function ContinuousImprovement() {
                       entry={entries[section.type]}
                       editing={editing === section.type}
                       busy={busy}
-                      onEdit={() => setEditing(section.type)}
-                      onCancel={() => setEditing(null)}
+                      onEdit={() => {
+                        showing.current = {}
+                        setEditing(section.type)
+                      }}
+                      onCancel={() => {
+                        // ยกเลิก does not write this: a form closing is nobody taking the
+                        // screen, and a save still out is owed its sentence (#146).
+                        setEditing(null)
+                      }}
                       onSubmit={save}
                       onRemove={() => setRemoving(entries[section.type])}
                     />

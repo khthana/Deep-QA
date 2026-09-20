@@ -192,10 +192,69 @@ export default function Departments() {
    */
   const asked = useRef(null)
 
+  /**
+   * The last thing that opened on this screen - #146.
+   *
+   * `asked` is about the read that *opens* a form; this is about the form
+   * itself, because a save ends by closing one and a write is torn down by
+   * nothing either. บันทึก is not the last thing that can happen before its
+   * answer arrives: ยกเลิก is not disabled while a write is out, the table it
+   * returns to disables nothing, and แก้ไข or เพิ่มภาควิชา then opens a second
+   * form. Closed unasked, the first save's answer took that second form off the
+   * screen with whatever had been typed into it, and put "บันทึกข้อมูลเรียบร้อยแล้ว"
+   * over the table - a sentence about a record the person had stopped looking
+   * at, in the place where it reads as being about the one they were.
+   *
+   * So the question is the same one #139 asks, at the other end: *is the screen
+   * still where it was when I was sent*. The ref holds the last thing that
+   * opened here - แก้ไข a new object of its own, เพิ่มภาควิชา one of its own -
+   * and `save` compares what it was sent from with what is there now. A save
+   * whose answer finds a different opening closes nothing and says nothing,
+   * neither its banner nor its refusal, which is what an overtaken read already
+   * does (#139).
+   *
+   * ยกเลิก writes nothing, and neither does the save that closes its own form.
+   * Closing a form is not somebody taking the screen: with nothing in its place
+   * there is no record for the sentence to read as being about except the one
+   * it is about, and the person who pressed บันทึก is owed the news of the write
+   * they made. So `null` here means only that nothing has opened yet. Whether
+   * that bar should be shown at all was the question #146 parked rather than
+   * answered - it is about what the person sees, so it was the advisor's to
+   * answer and not the rebuild's (`docs/06` §Out of Scope).
+   *
+   * แก้ไข writes the ref at the press and not where its read lands, and that is
+   * a consequence of the sentence above: ยกเลิก leaves the ref alone, so between
+   * pressing แก้ไข on a second row and that row's form arriving there is a
+   * window with no form on the screen at all. A save held across it would find
+   * its own opening and put its sentence over the form about to be drawn -
+   * *ask by the press, not by the row* (#139). A review asked for this row when
+   * ยกเลิก still wrote `null` and the window could not be entered (#102); the
+   * answer to the ticket's question is what opened it.
+   *
+   * What it does *not* change is what the screen disables: ยกเลิก stays
+   * pressable during a save, because disabling it is a change to the screen and
+   * that is a question rather than a fix (#142, `docs/06` §Out of Scope). The
+   * list is still reloaded whichever way the comparison goes - the table may be
+   * out of date, and an effect that must always happen does not go behind one
+   * that can fail (#131).
+   *
+   * `Programs`, `Subjects`, `Users`, `Offerings`, `Students` and the seven
+   * teacher screens that draw a form beside their list ask it the same way —
+   * thirteen with this one. `146a-save-closes-a-later-form.spec.js` has the rows,
+   * and `Students.js` says why the thirteenth was found last.
+   */
+  const showing = useRef(null)
+
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async department => {
     const ask = {}
     asked.current = ask
+    // Written at the press and not where the read lands: pressing แก้ไข is
+    // what takes the form on the screen away, and it happens a round trip
+    // before the form it opens arrives. ยกเลิก writes nothing now, so a
+    // save held across that window would otherwise still find its own
+    // opening and put its sentence over the form about to be drawn.
+    showing.current = ask
     setNotice(null)
     setReading(true)
     try {
@@ -210,6 +269,7 @@ export default function Departments() {
   }
 
   const save = async draft => {
+    const sent = showing.current
     setWriting(true)
     try {
       if (editing?.department_id) {
@@ -217,11 +277,13 @@ export default function Departments() {
       } else {
         await createDepartment(draft)
       }
-      setEditing(null)
-      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
+      if (showing.current === sent) {
+        setEditing(null)
+        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
+      }
       await load(() => onScreen.current === load)
     } catch (error) {
-      report(error)
+      if (showing.current === sent) report(error)
     } finally {
       setWriting(false)
     }
@@ -261,6 +323,8 @@ export default function Departments() {
           busy={busy}
           onSave={save}
           onCancel={() => {
+            // ยกเลิก does not write this: a form closing is nobody taking the
+            // screen, and a save still out is owed its sentence (#146).
             setNotice(null)
             setEditing(null)
           }}
@@ -273,6 +337,7 @@ export default function Departments() {
               type="button"
               onClick={() => {
                 asked.current = null
+                showing.current = {}
                 setNotice(null)
                 setEditing({})
               }}

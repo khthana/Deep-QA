@@ -87,8 +87,8 @@ MUTANTS = {
         '              if (page === 1) load(() => true)\n'),
     # ข้อมูลผู้ใช้งาน: บันทึก
     'userssavestalewins': ('users',
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => onScreen.current === load)\n",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => true)\n"),
+        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
+        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
     # ข้อมูลผู้ใช้งาน: ระงับ
     'userstogglestalewins': ('users',
         '      })\n      await load(() => onScreen.current === load)\n',
@@ -103,8 +103,8 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # ข้อมูลภาควิชา: บันทึก
     'departmentssavestalewins': ('departments',
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => onScreen.current === load)\n",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => true)\n"),
+        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
+        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
     # ข้อมูลภาควิชา: ลบ / นำออก
     'departmentsremovestalewins': ('departments',
         '      else await load(() => onScreen.current === load)\n',
@@ -119,8 +119,8 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # ข้อมูลหลักสูตร: บันทึก
     'programssavestalewins': ('programs',
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => onScreen.current === load)\n",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => true)\n"),
+        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
+        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
     # ข้อมูลหลักสูตร: ลบ / นำออก
     'programsremovestalewins': ('programs',
         '      else await load(() => onScreen.current === load)\n',
@@ -135,8 +135,8 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # ข้อมูลรายวิชา: บันทึก
     'subjectssavestalewins': ('subjects',
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => onScreen.current === load)\n",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => true)\n"),
+        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
+        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
     # ข้อมูลรายวิชา: ลบ / นำออก
     'subjectsremovestalewins': ('subjects',
         '      else await load(() => onScreen.current === load)\n',
@@ -179,8 +179,8 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: เปิดรายวิชา
     'offeringssavestalewins': ('offerings',
-        '      await load(() => onScreen.current === load)\n      await refresh(offering.id, ask)\n',
-        '      await load(() => true)\n      await refresh(offering.id, ask)\n'),
+        '      await load(() => onScreen.current === load)\n      if (mine) await refresh(offering.id, ask)\n',
+        '      await load(() => true)\n      if (mine) await refresh(offering.id, ask)\n'),
     # ข้อมูลการเปิดรายวิชา: คัดลอก
     'offeringscopystalewins': ('offerings',
         '      if (page === 1) await load(() => onScreen.current === load)\n',

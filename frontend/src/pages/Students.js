@@ -196,12 +196,44 @@ export default function Students() {
   const programNameOf = programId =>
     programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId
 
+  /**
+   * #146 — which opening of the form is on the screen, so the answer to a save
+   * closes the form that sent it rather than whichever one it finds.
+   *
+   * The ticket named three screens and listed twelve more by grepping for
+   * `setEditing(null)`. This screen was on no list the ticket carried: it
+   * holds one boolean, `adding`, because there is nothing to edit here — so
+   * the grep that found the others could not have found it, which is #133's
+   * rule about a file list being somebody else's grep.
+   *
+   * The way in is the shorter one. There is no แก้ไข, so it is ยกเลิก and then
+   * เพิ่มนักศึกษา: `StudentForm` disables บันทึก while a write is out and leaves
+   * ยกเลิก pressable, and the table it returns to disables nothing. The first
+   * save's answer then closed the second form with whatever had been typed into
+   * it and put "บันทึกข้อมูลนักศึกษาเรียบร้อยแล้ว" over the register.
+   *
+   * เพิ่มนักศึกษา writes an object of its own here and ยกเลิก writes nothing, so
+   * `save` compares what it was sent from with the last thing that opened; a
+   * save that finds a second form says nothing, neither its banner nor its
+   * refusal, and one that finds nothing in its place says what it did. What
+   * follows the comparison does not depend on it: the register is out of date
+   * either way, so the move back to page one happens whichever way it goes
+   * (#131).
+   *
+   * `Departments` carries the rule and the other twelve screens that ask it the
+   * same way; `146a-save-closes-a-later-form.spec.js` has the rows.
+   */
+  const showing = useRef(null)
+
   const save = async draft => {
+    const sent = showing.current
     setBusy(true)
     try {
       await createStudent(draft)
-      setAdding(false)
-      setNotice({ error: false, message: 'บันทึกข้อมูลนักศึกษาเรียบร้อยแล้ว' })
+      if (showing.current === sent) {
+        setAdding(false)
+        setNotice({ error: false, message: 'บันทึกข้อมูลนักศึกษาเรียบร้อยแล้ว' })
+      }
       // Back to the first page, where the list's newest-first order puts a
       // student who has just been added. Setting the page is a change the
       // effect fetches; calling `load` as well would race it, so only the
@@ -209,7 +241,7 @@ export default function Students() {
       if (page === 1) await load(() => onScreen.current === load)
       else setPage(1)
     } catch (error) {
-      report(error)
+      if (showing.current === sent) report(error)
     } finally {
       setBusy(false)
     }
@@ -226,6 +258,8 @@ export default function Students() {
           busy={busy}
           onSave={save}
           onCancel={() => {
+            // ยกเลิก does not write this: a form closing is nobody taking the
+            // screen, and a save still out is owed its sentence (#146).
             setNotice(null)
             setAdding(false)
           }}
@@ -267,6 +301,7 @@ export default function Students() {
               <button
                 type="button"
                 onClick={() => {
+                  showing.current = {}
                   setNotice(null)
                   setAdding(true)
                 }}

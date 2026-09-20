@@ -92,20 +92,52 @@ export default function LearningActivities() {
     onScreen.current = load
   }, [load])
 
+  /**
+   * The last thing that opened on this screen - #146.
+   *
+   * The list under the form is drawn whether or not one is open and disables
+   * nothing, so another row's pencil replaces the form while a save is still
+   * out - here without even the ยกเลิก the list screens need. Closed unasked,
+   * the save's answer took that second form away with whatever had been typed
+   * into it, and put its own sentence where it reads as being about the record
+   * now on the screen.
+   *
+   * So the save asks the question a read already asks on the screens that read
+   * a row before opening one (#139): *is the screen still where it was when I
+   * was sent*. The ref holds the last thing that opened here, written by every
+   * control that opens one, and a save whose answer finds a different opening
+   * closes nothing and says nothing, neither its banner nor its refusal. ยกเลิก
+   * writes nothing and neither does the save that closes its own form: a save
+   * that finds nothing in the form's place says what it did, which is the half
+   * of #146 the advisor answered. `Departments.js` carries the reasons;
+   * `146a-save-closes-a-later-form.spec.js` has the rows.
+   *
+   * The reload that follows opens no second window: these screens draw the list
+   * and the form only when they are not loading, so for the length of it there
+   * is nothing on the screen to press.
+   */
+  const showing = useRef(null)
+
   const save = async draft => {
+    const sent = showing.current
     setBusy(true)
     setNotice(null)
     try {
       if (editing === 'new') await createActivity(sectionId, draft)
       else await updateActivity(sectionId, editing.id, draft)
-      setEditing(null)
+      const mine = showing.current === sent
+      if (mine) {
+        setEditing(null)
+      }
       await load(() => onScreen.current === load)
-      setNotice({ error: false, message: 'บันทึกกิจกรรมแล้ว' })
+      if (mine)
+        setNotice({ error: false, message: 'บันทึกกิจกรรมแล้ว' })
     } catch (error) {
       // The form stays open on a refusal, unlike the delete dialog: the draft
       // in it is the person's work, and a refusal about a weight or a repeated
       // ผลการเรียนรู้ is something they fix in the form they are looking at.
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (showing.current === sent && !error.expired)
+        setNotice({ error: true, message: error.message })
     } finally {
       setBusy(false)
     }
@@ -163,12 +195,19 @@ export default function LearningActivities() {
               weeks={data.weeks}
               busy={busy}
               onSubmit={save}
-              onCancel={() => setEditing(null)}
+              onCancel={() => {
+                // ยกเลิก does not write this: a form closing is nobody taking the
+                // screen, and a save still out is owed its sentence (#146).
+                setEditing(null)
+              }}
             />
           ) : (
             <button
               type="button"
-              onClick={() => setEditing('new')}
+              onClick={() => {
+                showing.current = {}
+                setEditing('new')
+              }}
               className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
             >
               เพิ่มกิจกรรม
@@ -263,7 +302,10 @@ export default function LearningActivities() {
                             </Link>
                             <button
                               type="button"
-                              onClick={() => setEditing(activity)}
+                              onClick={() => {
+                                showing.current = {}
+                                setEditing(activity)
+                              }}
                               aria-label={`แก้ไขกิจกรรม ${activity.activity_name}`}
                               className="rounded-lg p-2 text-primary hover:bg-blue-50"
                             >

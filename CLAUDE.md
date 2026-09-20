@@ -120,6 +120,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   at risk (delete the mutant, mark ☑); a mutant that **kills too much** has stopped the
   application; a **survivor on a row nobody suspected** is an overclaim; and a sweep **cannot see
   the row your own fix breaks** — only the clean suite can. (#45, #97, #96, #83)
+- **A row written to answer a survivor is not proof until that mutant is run again.** The row is
+  what gets measured, not the measurement — and a kill count can hold a leak as easily as it can
+  look like the suite, so read the names and the run's duration beside them. (#146)
 - **A read of something a mutant stops from existing is a wait, not an assertion** — it dies at the timeout,
   which a mutant that stopped the application would print too; count what holds a field before reading
   it. (#139)
@@ -156,6 +159,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   (#85, #87, #125)
 - Run `save` before every mutant, and read `git status` after `apply` as well as after `restore`.
   (#124, #126)
+- **While a sweep is running the tree is the harness's** — a grep or an anchor check over it
+  reads the mutant that is applied, not the code. (#146)
+- **A run that was stopped may not have stopped.** The tell is the harness refusing to `save`
+  over a mutant nobody applied; ask the tree with every sheet's replacement strings, not the
+  record, and throw away whatever was measured beside it. (#146)
 - A `mode: 'serial'` spec reports the first dying row and skips the rest, so measure each row on
   its own; a top-level `node --test` test reads like a suite header in `not ok` lines, so read
   the names. (#67, #48)
@@ -243,6 +251,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)
+- **When a guard has to widen, ask first whether what it reads is what is wrong** — changing what
+  a ref *means*, and which controls write it, can leave every comparison and every mutant where
+  they stand. (#146)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
 - Before adding a parameterised refusal, find every site that turns that reason into a sentence —
   the grep is `REFUSALS[`. When one change lands at two sites, write a mutant per site. (#125)

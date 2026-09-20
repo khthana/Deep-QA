@@ -94,17 +94,43 @@ export default function ActivityEvidence() {
     onScreen.current = load
   }, [load])
 
+  /**
+   * The last thing that opened on this screen - #146. The list under the form
+   * is drawn whether or not one is open and disables nothing, so another
+   * file's pencil replaces the form while a save is still out - here without
+   * even the ยกเลิก the list screens need. A save whose answer finds a
+   * different opening closes nothing and says nothing, neither its banner nor
+   * its refusal.
+   *
+   * ยกเลิก writes nothing, as on the other twelve - but this is the one screen
+   * where that cannot be reached: its ยกเลิก carries `disabled={busy}`, so no
+   * save can be out while it is pressed, and the row the other twelve have for
+   * *nothing took the form's place* is structurally unreachable here rather
+   * than untested (#102).
+   *
+   * The reload that follows opens no second window: this screen draws its list
+   * and its form only when it is not loading, so for the length of it there is
+   * nothing on the screen to press. `Departments.js` carries the reasons.
+   */
+  const showing = useRef(null)
+
   const save = async draft => {
+    const sent = showing.current
     setBusy(true)
     setNotice(null)
     try {
       if (editing === 'new') await uploadEvidence(sectionId, activityId, draft)
       else await replaceEvidence(sectionId, editing.evidence_id, draft)
-      setEditing(null)
+      const mine = showing.current === sent
+      if (mine) {
+        setEditing(null)
+      }
       await load(() => onScreen.current === load)
-      setNotice({ error: false, message: 'บันทึกหลักฐานการประเมินแล้ว' })
+      if (mine)
+        setNotice({ error: false, message: 'บันทึกหลักฐานการประเมินแล้ว' })
     } catch (error) {
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (showing.current === sent && !error.expired)
+        setNotice({ error: true, message: error.message })
     } finally {
       setBusy(false)
     }
@@ -174,12 +200,19 @@ export default function ActivityEvidence() {
               maxBytes={data.max_bytes}
               busy={busy}
               onSubmit={save}
-              onCancel={() => setEditing(null)}
+              onCancel={() => {
+                // ยกเลิก does not write this: a form closing is nobody taking the
+                // screen, and a save still out is owed its sentence (#146).
+                setEditing(null)
+              }}
             />
           ) : (
             <button
               type="button"
-              onClick={() => setEditing('new')}
+              onClick={() => {
+                showing.current = {}
+                setEditing('new')
+              }}
               className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
             >
               แนบหลักฐาน
@@ -226,7 +259,10 @@ export default function ActivityEvidence() {
                   <div className="flex shrink-0 gap-2">
                     <button
                       type="button"
-                      onClick={() => setEditing(file)}
+                      onClick={() => {
+                        showing.current = {}
+                        setEditing(file)
+                      }}
                       aria-label={`แก้ไขหลักฐาน ${file.file_name}`}
                       className="rounded-lg p-2 text-primary hover:bg-blue-50"
                     >

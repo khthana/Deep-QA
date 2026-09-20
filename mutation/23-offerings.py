@@ -200,7 +200,7 @@ MUTANTS = {
     # `139:offeringscreatedasksnothing` reads and does not draw, and dies at it.
     "nolanding": ("page",
                   """      await load(() => onScreen.current === load)
-      await refresh(offering.id, ask)""",
+      if (mine) await refresh(offering.id, ask)""",
                   "      await load(() => onScreen.current === load)"),
     # The confirmation dropped from the section removal: the button on the card
     # deletes. This is the mutant for the half of the eighth criterion that is

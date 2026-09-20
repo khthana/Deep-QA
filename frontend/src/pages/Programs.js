@@ -129,10 +129,25 @@ export default function Programs() {
    */
   const asked = useRef(null)
 
+  /**
+   * The last thing that opened on this screen - #146. เพิ่มหลักสูตร writes it and
+   * so does แก้ไข, at the press; ยกเลิก does not, and neither does the save that
+   * closes its own form. A save whose answer finds a different opening closes
+   * nothing and says nothing, neither its banner nor its refusal; one that finds
+   * nothing in its place says what it did. `Departments.js` carries the reasons.
+   */
+  const showing = useRef(null)
+
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async program => {
     const ask = {}
     asked.current = ask
+    // Written at the press and not where the read lands: pressing แก้ไข is
+    // what takes the form on the screen away, and it happens a round trip
+    // before the form it opens arrives. ยกเลิก writes nothing now, so a
+    // save held across that window would otherwise still find its own
+    // opening and put its sentence over the form about to be drawn.
+    showing.current = ask
     setNotice(null)
     setReading(true)
     try {
@@ -147,6 +162,7 @@ export default function Programs() {
   }
 
   const save = async draft => {
+    const sent = showing.current
     setWriting(true)
     try {
       if (editing?.program_id) {
@@ -154,11 +170,13 @@ export default function Programs() {
       } else {
         await createProgram(draft)
       }
-      setEditing(null)
-      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
+      if (showing.current === sent) {
+        setEditing(null)
+        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
+      }
       await load(() => onScreen.current === load)
     } catch (error) {
-      report(error)
+      if (showing.current === sent) report(error)
     } finally {
       setWriting(false)
     }
@@ -203,6 +221,8 @@ export default function Programs() {
           busy={busy}
           onSave={save}
           onCancel={() => {
+            // ยกเลิก does not write this: a form closing is nobody taking the
+            // screen, and a save still out is owed its sentence (#146).
             setNotice(null)
             setEditing(null)
           }}
@@ -215,6 +235,7 @@ export default function Programs() {
               type="button"
               onClick={() => {
                 asked.current = null
+                showing.current = {}
                 setNotice(null)
                 setEditing({})
               }}

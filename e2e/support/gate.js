@@ -16,6 +16,14 @@
  * `refusal` — a 409 carrying that sentence, so a held write never reaches the
  * database and there is nothing for the row to put back.
  *
+ * `success` answers it with a 200 carrying that body instead, for a row about
+ * what the screen does *when a write succeeds* and not about what the write
+ * wrote — #146. The request is stopped at the route like a refusal is, so such
+ * a row writes nothing either; what it costs is that the answer is this file's
+ * and not the server's, which is why it is only for rows whose subject is on
+ * the screen. Given both, the refusal is what lands: no caller passes both, so
+ * a guard here would be a clause no row could reach (#97).
+ *
  * A row that never calls `open()` leaves the request at the route until the
  * test times out, so every row that gates a request opens it.
  *
@@ -26,7 +34,7 @@
  * await read.answered;
  * ```
  */
-async function gate(page, path, matches, { refusal = null } = {}) {
+async function gate(page, path, matches, { refusal = null, success = null } = {}) {
   const on = (url) => path.test(url.pathname);
   const opened = deferred();
   const sent = deferred();
@@ -45,6 +53,12 @@ async function gate(page, path, matches, { refusal = null } = {}) {
           status: 409,
           contentType: 'application/json',
           body: JSON.stringify({ message: refusal }),
+        });
+      } else if (success) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(success),
         });
       } else {
         await route.fulfill({ response: await route.fetch() });

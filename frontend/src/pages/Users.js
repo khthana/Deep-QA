@@ -178,16 +178,28 @@ export default function Users() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
+  /**
+   * The last thing that opened on this screen - #146. เพิ่มผู้ใช้งาน and แก้ไข write
+   * it; ยกเลิก does not, and neither does the save that closes its own form. A
+   * save whose answer finds a different opening closes nothing and says nothing,
+   * neither its banner nor its refusal; one that finds nothing in its place says
+   * what it did. `Departments.js` carries the reasons.
+   */
+  const showing = useRef(null)
+
   const save = async draft => {
+    const sent = showing.current
     setBusy(true)
     try {
       if (editing?.user_id) await updateUser(editing.user_id, draft)
       else await createUser(draft)
-      setEditing(null)
-      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
+      if (showing.current === sent) {
+        setEditing(null)
+        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
+      }
       await load(() => onScreen.current === load)
     } catch (error) {
-      report(error)
+      if (showing.current === sent) report(error)
     } finally {
       setBusy(false)
     }
@@ -242,6 +254,8 @@ export default function Users() {
             user={editing.user_id ? editing : null}
             onSubmit={save}
             onCancel={() => {
+              // ยกเลิก does not write this: a form closing is nobody taking the
+              // screen, and a save still out is owed its sentence (#146).
               setNotice(null)
               setEditing(null)
             }}
@@ -303,6 +317,7 @@ export default function Users() {
             <button
               type="button"
               onClick={() => {
+                showing.current = {}
                 setNotice(null)
                 setEditing({})
               }}
@@ -367,6 +382,7 @@ export default function Users() {
                         <button
                           type="button"
                           onClick={() => {
+                            showing.current = {}
                             setNotice(null)
                             setEditing(user)
                           }}

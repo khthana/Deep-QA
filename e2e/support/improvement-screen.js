@@ -1,5 +1,7 @@
 'use strict';
 
+const { expect } = require('@playwright/test');
+
 const { BACKEND_URL } = require('./env');
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
@@ -105,12 +107,21 @@ async function chooseClo(page, cloNumber) {
  * เขียน… when the section is empty and the pencil when it is not — and a row
  * that had to know which would be asserting about the state it is setting up.
  * Both are tried, in the order a person would find them.
+ *
+ * Which of the two is there is read once, so the read waits for one of them to
+ * be on the screen first. `openPlan` waits for the answer and not for the
+ * drawing (#132), and `count()` does not retry: under a renderer slowed six
+ * times, #146 measured this read landing before either button existed, taking
+ * the second branch and then waiting sixty seconds for a pencil that was never
+ * going to be drawn.
  */
 async function writeSection(page, type, text) {
   const region = formSection(page, type);
   const start = region.getByRole('button', { name: `เขียน${LABELS[type]}`, exact: true });
+  const change = region.getByRole('button', { name: `แก้ไข${LABELS[type]}`, exact: true });
+  await expect(start.or(change)).toBeVisible();
   if (await start.count()) await start.click();
-  else await region.getByRole('button', { name: `แก้ไข${LABELS[type]}`, exact: true }).click();
+  else await change.click();
 
   await region.getByLabel(LABELS[type], { exact: true }).fill(text);
 

@@ -84,11 +84,15 @@ MUTANTS = {
     # appears. Kills row 3 at the poll after the POST; rows 2 and 4 die with
     # it, being the same reload around other writes.
     "savenoreload": ("screen",
-                     "      setEditing(null)\n"
+                     "        setEditing(null)\n"
+                     "      }\n"
                      "      await load(() => onScreen.current === load)\n"
-                     "      setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })",
-                     "      setEditing(null)\n"
-                     "      setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })"),
+                     "      if (mine)\n"
+                     "        setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })",
+                     "        setEditing(null)\n"
+                     "      }\n"
+                     "      if (mine)\n"
+                     "        setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })"),
     # The delete takes every topic wearing the same week number, not the one
     # row the person named - the CLO screens' renumbering instinct sneaking
     # into a place where the number is not a key. Kills row 4 where the seeded
@@ -142,7 +146,8 @@ MUTANTS = {
     # the banner with the server's own sentence in it.
     "saveswallows": ("screen",
                      "    } catch (error) {\n"
-                     "      if (!error.expired) setNotice({ error: true, message: error.message })\n"
+                     "      if (showing.current === sent && !error.expired)\n"
+                     "        setNotice({ error: true, message: error.message })\n"
                      "    } finally {\n"
                      "      setBusy(false)",
                      "    } catch (error) {\n"

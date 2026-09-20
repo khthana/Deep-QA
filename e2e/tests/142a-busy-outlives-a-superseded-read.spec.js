@@ -331,7 +331,12 @@ for (const screen of LIST_SCREENS) {
         expect(await save.isDisabled(), 'บันทึก while the save is out').toBe(true);
 
         write.open();
-        await expect(page.getByText(REFUSED)).toBeVisible();
+        // The refusal itself is no longer the settle point, and that is #146:
+        // this row pressed ยกเลิก and opened a second form, so the save's answer
+        // now finds a form it was not sent from and says nothing at all. What
+        // this row is about is the flag, which is put down either way — so the
+        // answer reaching the page is what it waits for.
+        await write.answered;
         await expect(save).toBeEnabled();
       });
     }
