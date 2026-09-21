@@ -603,9 +603,9 @@ test.describe('หลักฐานการประเมิน (ActivityEvid
     // question #146 asks. (This used to say the reload took the form down and
     // built it again; since #149 it does not, and `149a` reads what is typed.)
     //
-    // It is also not readable. `EvidenceForm` initialises its state once, so the
-    // second file's pencil leaves the first file's values in the boxes — #147,
-    // found by this row and not fixed by it.
+    // This row found #147 - the second file's pencil left the first file's
+    // values in the boxes - and was re-aimed away from it; since #147 the page
+    // gives each file its own form, and `147a` reads the boxes.
     expect(await button(page, 'บันทึก').isVisible(), "the second file's form").toBe(true);
     expect(
       await page.getByText('บันทึกหลักฐานการประเมินแล้ว').count(),

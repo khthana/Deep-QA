@@ -22,6 +22,12 @@ import { useState } from 'react'
  * When a row is being corrected the file is optional: the type and the
  * description are saved on their own, and the name of the file already there is
  * shown so a person can see what they are keeping.
+ *
+ * ## One form per file
+ *
+ * The boxes are seeded once, when the form mounts. That is right only because
+ * the page gives each file its own form with a `key`; a form handed a second
+ * file without one kept the first file's values (#147).
  */
 export default function EvidenceForm({ evidence, types, maxBytes, busy, onSubmit, onCancel }) {
   const editing = Boolean(evidence)

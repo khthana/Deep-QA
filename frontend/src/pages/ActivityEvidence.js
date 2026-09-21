@@ -201,7 +201,14 @@ export default function ActivityEvidence() {
           </div>
 
           {editing ? (
+            // One form per file. The form seeds its boxes when it mounts, and
+            // without the key another file's pencil handed it a new file and
+            // left the first one's values standing - บันทึก then wrote them
+            // onto the second (#147). A key rather than an effect because the
+            // file box is a DOM input no state can empty: an effect would clear
+            // `file` and leave the chosen name drawn in the box.
             <EvidenceForm
+              key={editing === 'new' ? 'new' : editing.evidence_id}
               evidence={editing === 'new' ? null : editing}
               types={data.evidence_types}
               maxBytes={data.max_bytes}

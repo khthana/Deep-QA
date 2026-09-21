@@ -3153,3 +3153,45 @@ the close alone; `improvementclosewins` fell from two kills to one, and the bann
 rows had no mutant until one was written. *An anchor check tells you a mutant no longer applies;
 only a sweep tells you it no longer proves anything* (#107) — the anchors had all held. `31:savenoreload` quoted the `if (mine)` the fix replaced, so it was re-aimed and swept against
 `31a` the same day — the same three rows it killed before.
+
+## #147 — the choice the ticket framed was measured, and it was a different choice
+
+`EvidenceForm` seeded its boxes once, when it mounted, and the page drew it with no `key`, so a
+second file's pencil handed the open form another file and changed nothing in it; บันทึก then wrote
+the first file's type and description onto the second. The red row measured exactly that before the
+fix: `brief` and the first file's description, on the second file, in `activity_evidence`.
+
+**The ticket said the two fixes differ in what happens to a typed draft. For another file's pencil
+they do not** — both a `key` and an effect on the record drop what was typed. (The review found the
+case where the ticket is right: the *same* file's pencil after a reload hands the form a new object,
+which an effect would wipe and a key keeps. A refutation is a claim about the cases it measured.) What they differ in
+is the file box: it is a DOM input no state can empty, so an effect clears `file` and leaves the
+chosen name drawn while the save sends nothing. The design was chosen on that, and the proof of the
+choice is a mutant that *is* the other choice — `syncedbyeffect`, the siblings' pattern — which
+passes four rows and fails one, the file box. It is #145's control mutant in another place: one row
+that pins today's value and one row that says *why this and not that* are two claims, and only the
+mutant built from the alternative can tell them apart. *A ticket's diagnosis is a claim from the day
+it was written* (#66, #102) covers a ticket's framing of a decision as well as its framing of a
+defect.
+
+**The realistic wrong key left one row standing, and that row is a second way in.** `keyedbymode`
+— a key that says *adding or editing* but not *which file* — kills the four rows that go pencil to
+pencil and passes the one that goes from แนบหลักฐาน to a pencil (#66). The row exists because of
+that survivor; without it the sheet could not say which of the two keys the page carries.
+
+**Every mutant built from the design choice died at the description, and two rows claimed the
+type too.** The review read the order of the assertions: rows 1 and 4 read the description first,
+so no sweep ever reached their type. `typeunseeded` was written for that half — and the fixture had
+to change first, because the first file was `brief`, the first type the form offers, and a form
+that seeded no type would have read as right. *A row that names two ways in is two rows* (#66),
+and a row that names two fields is two claims for the same reason.
+
+**A row that dies at its settle point is not held there.** Under `unkeyed` the file-box row died
+waiting for the second file's description, before it reached the box — so that mutant is not cited
+for it, and the settle point now carries its own message so the next reader of a failure can see
+which of the two reads it was. Only `syncedbyeffect` reaches the file-box assertion itself.
+
+**The census the ticket asked for was one grep and three answers.** `useState` seeded from a prop
+exists in `EvidenceForm`'s two lines and `TeacherPicker`'s lazy one; every other form starts from
+`EMPTY`. `TeacherPicker` is mounted inside each section's own row, so another section is another
+instance and the shape is safe there by construction, not by a key.

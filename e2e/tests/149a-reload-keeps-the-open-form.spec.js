@@ -307,9 +307,9 @@ for (const screen of CARD_SCREENS) {
 
 /**
  * หลักฐานการประเมิน — the five's shape, with its files attached by the rows
- * (`activity_evidence` is deliberately not seeded) and a form that seeds once
- * and never again (#147), which is why the box a row types into here is the one
- * field that is typed rather than chosen.
+ * (`activity_evidence` is deliberately not seeded) and one form per file, which
+ * seeds when it mounts (#147 — `147a` holds that); the box a row types into here
+ * is the one field that is typed rather than chosen.
  */
 test.describe('หลักฐานการประเมิน (ActivityEvidence.js)', () => {
   const describedAs = (page) => page.getByLabel('คำอธิบาย', { exact: true });
