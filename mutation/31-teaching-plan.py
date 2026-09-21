@@ -87,11 +87,11 @@ MUTANTS = {
                      "        setEditing(null)\n"
                      "      }\n"
                      "      await load(() => onScreen.current === load)\n"
-                     "      if (mine)\n"
+                     "      if (showing.current === sent)\n"
                      "        setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })",
                      "        setEditing(null)\n"
                      "      }\n"
-                     "      if (mine)\n"
+                     "      if (showing.current === sent)\n"
                      "        setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })"),
     # The delete takes every topic wearing the same week number, not the one
     # row the person named - the CLO screens' renumbering instinct sneaking

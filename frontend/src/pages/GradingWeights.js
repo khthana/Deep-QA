@@ -155,8 +155,8 @@ export default function GradingWeights() {
         <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>
       )}
 
-      {/* The screen stays mounted through a reload — unlike its siblings,
-          which blank to the loading line. The import panel keeps its own
+      {/* The screen stays mounted through a reload — as the seven teacher
+          screens have too since #149. The import panel keeps its own
           report ("นำเข้าสำเร็จ 4 รายการ", or the per-row table), and a
           reload that unmounted the panel would wipe the report at the very
           moment it says what just happened. */}

@@ -3079,3 +3079,77 @@ about, said in a colour instead of a cursor. That is an appearance claim, which 
 measures, and the code comment arguing for it is not a mark. *Explaining a gap in prose is not the
 same as marking it* (#50). It is now a ☐ row at the foot of `12-role-grants.md` — appended rather
 than inserted, so no row number anywhere moved — and the store is 1113 rows with ☐ at thirteen.
+
+## #148 and #149 — two tickets, two mechanisms, and each was right about the other being wrong
+
+**Two tickets diagnosed one symptom with two mechanisms, and each half-disproved the other.** #146's
+fix left a form standing while the reload a save ends with ran, and what had been typed into it
+vanished. #148 blamed `EntrySection`'s effect, keyed on the `entry` object, which the reload hands
+over new. #149, written an hour later, found the seven teacher screens draw their list and the open
+form inside `{!loading && data && (`, so the reload unmounts the form outright — and concluded that
+#148's mechanism was *not the operative one*, since keying the effect on the id would leave a
+component that no longer exists exactly as lost. That was true, and it was also only true while the
+gate stood. A throwaway spec measured the four combinations, one temporary line each: the gate alone
+wiped both an unwritten and a written section; the id alone changed nothing a person could see; the
+gate lifted kept the unwritten section and still wiped the written one, **on the same node** — a
+result neither ticket had predicted; both together kept both. **Two mechanisms for one symptom are
+measured as a grid, not argued as a choice — the one masked by the other is still there when the
+other is fixed.** The unwritten section had only survived the lifted gate because `entry` is
+`undefined` before and after, which is also why the file carries one row, and only one, that tells
+the two layers apart: a section with an entry already in it. `improvemententrybyobject` kills that
+row and leaves the unwritten one standing, which is the grid's prediction checked by a mutant rather
+than restated.
+
+**The decision was the owner's, and the measurement was what made it askable.** Both tickets said
+*decision, not task* and listed four answers — `docs/06` §Out of Scope says a change to what the
+screen does is a question. The grid turned four answers into two layers, the owner took both on all
+seven screens, and the measurement went onto both tickets before a line was changed, so the answer
+and its reason sit where the next reader of either ticket will look.
+
+**The fix reopened a window #146 had closed by measurement.** #146's first draft asked
+*is this still mine* again after the reload, and the row written to build that window timed out
+looking for a control: with the gate up there was nothing on the screen to press. So the clause came
+out as *structurally unreachable, not untested* (#102). Lifting the gate is exactly what reaches it —
+a pencil is on the screen for the whole reload, and both `save` and `remove` decide their banner
+after it. *A defect that is unreachable today has a date on it, usually moved by another ticket's
+fix* (#131), and this time the date was moved by the ticket fixing the neighbour of the one that
+wrote it down. The rows were written before the guard and ran red twice for two different reasons:
+against the gate they timed out at the click (the five-second `UNDER_A_RELOAD` says *not there*
+quickly), and against the lifted gate they failed at the banner. The removal banner had never been
+asked at all; the realistic wrong answer for it, the one its mutant writes, is capturing `sent` when
+the answer lands rather than when the bin was pressed. The review read what that mutant does rather
+than what it was called: captured beside the comparison, `sent` is the ref compared with itself, so
+the realistic mistake is the guard deleted under another name — the sheet had said it was not. And
+it read the other half: every row asked the removal's banner to keep quiet, and nothing anywhere
+asked it to speak, so a guard that never said *ลบ…แล้ว* again would have passed every file.
+`removalsentatthelanding` and a mutant that silences the banner vary the same condition in opposite
+directions, and one crafted value proves one link (#96) — the second row and the second mutant
+went in after the review, per screen.
+
+**Removing an accident removed a cover.** `EvidenceForm` seeds its state once (#147), so a pencil
+pressed on another file while a form is open leaves the first file's values in the boxes. In
+#146's scenario — a save out, the second pencil, the reload landing — the old remount rebuilt the
+form from the file actually being edited and repaired #147 by accident. With the form surviving, it
+no longer does. Nothing here was made wrong that was right, but a defect got harder to miss, and the
+sheet and #147 both have to say so.
+
+**The instrument read the new sheet as zero mutants and said nothing.** The first draft of
+`149-reload-keeps-the-open-form.py` built `MUTANTS = {}` and filled it in a loop; `anchors.py` reads
+the dict from the AST, found an empty literal, and reported 713 mutants and 0 problems — the total
+simply did not move, which reads the same as a sheet that adds nothing. `anchors.py` now names a
+sheet whose `MUTANTS` is empty the way it names one it cannot find, and the sheet is written as a
+literal like every other. *A tool that cannot say what it did not look at* (#123) — met again, in
+the one tool written to be the answer to it.
+
+**The sweep's reading.** Twenty-nine mutants against `149a`, twenty-two rows: every `loadingline`,
+`savebannerunasked` and `removalsentatthelanding` killed one row at the assertion its name gives;
+every `gateback` killed the typing row at its value and two more at the click's timeout — fourteen
+timeouts in seven runs, seven times two, and 1.5 minutes against 1.3 is those waits. The timeouts
+are not cited: *a read of something a mutant stops from existing is a wait, not an assertion*
+(#139). After the review the sheet grew to forty-three: seven `removalbannerunsaid`, and seven
+`savebannerunguarded` that only a re-sweep of #146's mutants asked for. The fix had split the save's
+banner from `mine`, so `closewins`, which used to kill the close and the banner in one, now sees
+the close alone; `improvementclosewins` fell from two kills to one, and the banner half of 146a's
+rows had no mutant until one was written. *An anchor check tells you a mutant no longer applies;
+only a sweep tells you it no longer proves anything* (#107) — the anchors had all held. `31:savenoreload` quoted the `if (mine)` the fix replaced, so it was re-aimed and swept against
+`31a` the same day — the same three rows it killed before.

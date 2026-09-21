@@ -120,9 +120,13 @@ export default function CourseOutcomes() {
    * of #146 the advisor answered. `Departments.js` carries the reasons;
    * `146a-save-closes-a-later-form.spec.js` has the rows.
    *
-   * The reload that follows opens no second window: these screens draw the list
-   * and the form only when they are not loading, so for the length of it there
-   * is nothing on the screen to press.
+   * The reload that follows is a second window, and the question is asked
+   * again when it lands. Since #149 the list stays drawn while a reload is out
+   * - blanking it took down whatever form was open, and what had been typed
+   * went with it - so a pencil can be pressed before the answer is back. The
+   * banner is set after the reload, and only when nothing has opened since the
+   * save was sent; a removal asks the same of its own banner. The rows are in
+   * `149a-reload-keeps-the-open-form.spec.js`.
    */
   const showing = useRef(null)
 
@@ -146,7 +150,7 @@ export default function CourseOutcomes() {
         setEditing(null)
       }
       await load(() => onScreen.current === load)
-      if (mine)
+      if (showing.current === sent)
         setNotice({ error: false, message: 'บันทึกผลการเรียนรู้รายวิชาแล้ว' })
     } catch (error) {
       if (showing.current === sent && !error.expired)
@@ -157,13 +161,15 @@ export default function CourseOutcomes() {
   }
 
   const remove = async () => {
+    const sent = showing.current
     setBusy(true)
     setNotice(null)
     try {
       await deleteCourseOutcome(sectionId, removing.clo_id)
       setRemoving(null)
       await load(() => onScreen.current === load)
-      setNotice({ error: false, message: 'ลบผลการเรียนรู้รายวิชาแล้ว' })
+      if (showing.current === sent)
+        setNotice({ error: false, message: 'ลบผลการเรียนรู้รายวิชาแล้ว' })
     } catch (error) {
       // The dialog closes either way. Leaving it open over a refusal puts the
       // banner behind it and offers the same button again, and pressing it
@@ -179,9 +185,9 @@ export default function CourseOutcomes() {
     <ContentMotionDIV className="space-y-4 px-6 py-6">
       <Notice notice={notice} />
 
-      {loading && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
+      {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
 
-      {!loading && data && (
+      {data && (
         <>
           <div>
             <p className="text-xs font-medium text-slate-400">

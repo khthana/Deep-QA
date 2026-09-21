@@ -599,9 +599,9 @@ test.describe('หลักฐานการประเมิน (ActivityEvid
     await reloaded;
     await page.waitForTimeout(SETTLE_MS);
 
-    // What the form holds is not read here: this screen puts a loading state up
-    // while it reloads, which takes the form down and builds it again from the
-    // file it is about. Whether it is there at all is the question #146 asks.
+    // What the form holds is not read here: whether it is there at all is the
+    // question #146 asks. (This used to say the reload took the form down and
+    // built it again; since #149 it does not, and `149a` reads what is typed.)
     //
     // It is also not readable. `EvidenceForm` initialises its state once, so the
     // second file's pencil leaves the first file's values in the boxes — #147,
@@ -700,10 +700,9 @@ test.describe('แผนพัฒนาต่อเนื่อง (ContinuousIm
     await reloaded;
     await page.waitForTimeout(SETTLE_MS);
 
-    // That the editor is still there, and not what is in it: the reload every
-    // save ends with re-seeds a section whose `entry` changed identity, which
-    // clears what was typed into another section's box — #148, which #146's own
-    // fix is what made reachable.
+    // That the editor is still there, and not what is in it, because that is
+    // what #146 claims. What was typed into it is `149a`'s: the reload used to
+    // clear it — #148 and #149, which #146's own fix made reachable.
     expect(await editor(page, 'REFLECTION').isVisible(), 'the second section\'s editor').toBe(
       true,
     );

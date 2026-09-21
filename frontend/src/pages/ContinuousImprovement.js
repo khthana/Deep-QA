@@ -198,9 +198,14 @@ export default function ContinuousImprovement() {
    * opening closes nothing and says nothing, neither its banner nor its
    * refusal; one that finds nothing in its place says what it did.
    *
-   * The reload that follows opens no second window: this screen draws its list
-   * and its form only when it is not loading, so for the length of it there is
-   * nothing on the screen to press. `Departments.js` carries the reasons.
+   * The reload that follows is a second window, and the question is asked
+   * again when it lands. Since #149 the list stays drawn while a reload is out
+   * - blanking it took down whatever form was open, and what had been typed
+   * went with it - so a pencil can be pressed before the answer is back. The
+   * banner is set after the reload, and only when nothing has opened since the
+   * save was sent; a removal asks the same of its own banner. The rows are in
+   * `149a-reload-keeps-the-open-form.spec.js`.
+   * `Departments.js` carries the reasons.
    */
   const showing = useRef(null)
 
@@ -220,7 +225,7 @@ export default function ContinuousImprovement() {
         setEditing(null)
       }
       await load(() => onScreen.current === load)
-      if (mine)
+      if (showing.current === sent)
         setNotice({ error: false, message: `บันทึก${written}แล้ว` })
     } catch (error) {
       if (showing.current === sent && !error.expired)
@@ -231,6 +236,7 @@ export default function ContinuousImprovement() {
   }
 
   const remove = async () => {
+    const sent = showing.current
     setBusy(true)
     setNotice(null)
     const removed = labelOf(removing.detail_type)
@@ -238,7 +244,8 @@ export default function ContinuousImprovement() {
       await deleteEntry(sectionId, removing.entry_id)
       setRemoving(null)
       await load(() => onScreen.current === load)
-      setNotice({ error: false, message: `ลบ${removed}แล้ว` })
+      if (showing.current === sent)
+        setNotice({ error: false, message: `ลบ${removed}แล้ว` })
     } catch (error) {
       // The dialog closes either way, for AchievementCriteria's reason: a
       // dialog over a banner hides it, and the same button pressed again
@@ -254,9 +261,9 @@ export default function ContinuousImprovement() {
     <ContentMotionDIV className="space-y-4 px-6 py-6">
       <Notice notice={notice} />
 
-      {loading && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
+      {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
 
-      {!loading && data && (
+      {data && (
         <>
           <div>
             <p className="text-xs font-medium text-slate-400">

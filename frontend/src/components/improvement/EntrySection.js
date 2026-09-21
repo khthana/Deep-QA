@@ -35,10 +35,17 @@ export default function EntrySection({
   onRemove,
 }) {
   const [draft, setDraft] = useState('')
+  const entryId = entry?.entry_id
 
+  // Seeded when the editor opens, and when the section comes to hold a
+  // different entry — not whenever the page hands over a new object. A reload
+  // rebuilds every entry from the answer, and the page keeps this section
+  // mounted through it (#149), so an effect keyed on the object would write
+  // what is stored over what is being typed — #148.
   useEffect(() => {
     if (editing) setDraft(entry?.detail_text ?? '')
-  }, [editing, entry])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing, entryId])
 
   return (
     <section

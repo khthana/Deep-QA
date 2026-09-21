@@ -62,6 +62,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
   and the leak that makes a defect reachable is not the defect. (#129)
+- **Two mechanisms for one symptom are measured as a grid, not argued as a choice** — the one
+  masked by the other is still there when the other is fixed. (#148, #149)
 - **A grep is evidence for the pattern you typed, not for the claim you wanted.** Re-run a
   ticket's commands, then ask what they could not have found; search for the identifier, not the
   concept — specs are written in English and sheets in Thai. **A ticket's file list is a grep

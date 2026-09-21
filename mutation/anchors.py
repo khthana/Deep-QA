@@ -104,6 +104,25 @@ def _module(path):
             files = value
         if name == "SUPERSEDED":
             superseded = set(value)
+    # A literal that is added to afterwards is read short by exactly what was
+    # added, and says nothing - the empty literal's blind spot with a non-zero
+    # count in front of it (#149). Anything but reading MUTANTS makes the sheet
+    # unreadable rather than counted.
+    assigned = 0
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                if isinstance(target, ast.Name) and target.id == "MUTANTS":
+                    assigned += 1
+                if (isinstance(target, ast.Subscript) and isinstance(target.value, ast.Name)
+                        and target.value.id == "MUTANTS"):
+                    assigned += 2
+        if (isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name)
+                and node.value.id == "MUTANTS"):
+            assigned += 2
+    if assigned > 1:
+        mutants = None
     return files, mutants, superseded, env
 
 
@@ -136,7 +155,10 @@ def check():
             continue
         short = os.path.relpath(path, ROOT).replace("\\", "/")
         files, mutants, superseded, env = _module(path)
-        if mutants is None:
+        # An empty literal is the same finding as a missing one: a sheet that
+        # writes `MUTANTS = {}` and fills it in a loop read as zero mutants and
+        # zero problems, and the total simply did not move (#149).
+        if not isinstance(mutants, ast.Dict) or not mutants.keys:
             # Said out loud rather than skipped. A mutation file whose MUTANTS
             # this cannot find holds an unknown number of unchecked claims, and
             # passing over it quietly is the failure this file was written
