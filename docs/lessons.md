@@ -3216,7 +3216,7 @@ banner tells the person the reload failed. With another form opened during the s
 nothing opened, the save sets its success sentence *after* the reload and writes over the refusal —
 a probe read the refusal 0 times on all seven screens, and on ผลการเรียนรู้รายวิชา *บันทึก…แล้ว* once. Before #151 that was a success sentence over a
 blank screen; now it is a success sentence over a list that does not yet show what was saved. That
-is a question about what the screen says, so it is the owner's rather than the fix's, and the
+is a question about what the screen says, so it is the owner's rather than the fix's (#152), and the
 row that asserts the refusal is not cited for it: the refusal shows before the fix and after, and no
 mutant of this ticket can tell the two apart. *A ticket's diagnosis is a claim from the day it was
 written* (#66, #102) — this one was a claim about the half of the situation its author was looking at.
