@@ -125,9 +125,11 @@ MUTANTS = {
     # The screen swallows the refusal a failed load carries. Kills row 7 at the
     # banner that never appears; row 8 dies with it, being the same swallow
     # with a different sentence inside.
+    # Re-aimed 22 Sep 2569 (#151): the failed load no longer clears `data`,
+    # so the line this quoted is gone; the notice is what it swallows.
     "swallowrefusal": ("screen",
-                       "        setData(null)\n        if (!error.expired) setNotice({ error: true, message: error.message })",
-                       "        setData(null)"),
+                       "      if (isCurrent()) {\n        if (!error.expired) setNotice({ error: true, message: error.message })",
+                       "      if (isCurrent()) {\n"),
     # The unknown-CLO refusal answers with the wrong sentence - the Section's
     # instead of the CLO's. Kills row 8 at `getByText(cloNotFound)` and leaves
     # row 7 standing, which is what separates the two rows' claims.

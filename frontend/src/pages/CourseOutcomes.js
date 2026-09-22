@@ -70,8 +70,15 @@ export default function CourseOutcomes() {
       const answer = await getCourseOutcomes(sectionId)
       if (isCurrent()) setData(answer)
     } catch (error) {
+      // #151 - a reload that fails keeps what the screen last drew, and the
+      // form open on it: clearing `data` here took the list down with
+      // whatever had been typed, where #149 had already decided the screen
+      // keeps what it drew while a reload is out. A first load that fails
+      // has nothing to keep, and `loading && !data` draws what it did before.
+      // Every parameter comes from `useParams` and nothing here changes one
+      // under a mounted screen (#133), so what is kept is always this list.
+      // The rows are in `151a-failed-reload-keeps-the-list.spec.js`.
       if (isCurrent()) {
-        setData(null)
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
     } finally {

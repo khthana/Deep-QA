@@ -52,8 +52,9 @@ export default function TeachingPlan() {
       const answer = await getPlan(sectionId)
       if (isCurrent()) setData(answer)
     } catch (error) {
+      // #151 - a reload that fails keeps what the screen last drew, and the
+      // form open on it. `CourseOutcomes.js` carries the reasons.
       if (isCurrent()) {
-        setData(null)
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
     } finally {

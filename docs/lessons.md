@@ -3195,3 +3195,44 @@ which of the two reads it was. Only `syncedbyeffect` reaches the file-box assert
 exists in `EvidenceForm`'s two lines and `TeacherPicker`'s lazy one; every other form starts from
 `EMPTY`. `TeacherPicker` is mounted inside each section's own row, so another section is another
 instance and the shape is safe there by construction, not by a key.
+
+## #151 — the failed reload, and the banner that was not the one the ticket said
+
+The seven teacher screens kept their list and the open form through a reload since #149, and a
+reload that *failed* still took both down: each `load` cleared `data` in its `catch`. The answer is
+#149's carried one step on — a failed reload keeps what the screen last drew — and the fix is the
+deletion of one line on each of seven screens. The rows gate the save's write with a crafted 200
+and the reload with a crafted 409, so nothing reaches the database; seven mutants put the line back,
+one per screen, and each kills exactly its own screen's two rows, at the form and at the list.
+
+**A deleted line is an anchor for somebody else.** Four sheets' `swallowrefusal` quoted
+`setData(null)` beside the notice it swallows. `anchors.py` named all four the moment the line went;
+they were re-aimed at the `if (isCurrent())` above the notice and swept on their own sheets, and each
+killed the rows it killed before. *A change to a function's signature reaches every mutant that
+writes a call to it* (#140) — a deletion reaches every mutant that quotes the line.
+
+**The ticket's description of the banner was true in one of its two cases.** It said the refusal
+banner tells the person the reload failed. With another form opened during the save, it does. With
+nothing opened, the save sets its success sentence *after* the reload and writes over the refusal —
+a probe read the refusal 0 times on all seven screens, and on ผลการเรียนรู้รายวิชา *บันทึก…แล้ว* once. Before #151 that was a success sentence over a
+blank screen; now it is a success sentence over a list that does not yet show what was saved. That
+is a question about what the screen says, so it is the owner's rather than the fix's, and the
+row that asserts the refusal is not cited for it: the refusal shows before the fix and after, and no
+mutant of this ticket can tell the two apart. *A ticket's diagnosis is a claim from the day it was
+written* (#66, #102) — this one was a claim about the half of the situation its author was looking at.
+
+**The shared list moved to `e2e/support/card-screens.js`.** `149a` held the five card screens' table
+inside the file; `151a` needed the same five, and *a fixture built inside one test file is one no
+other file has* (#87). `149a` imports it now, and ran green in the full suite after the change.
+
+**A mutant that unmounts the form proves the form is there, not what is in it.** The first sweep
+had one mutant per screen and cited it for the whole form row: *the form is still open, and in the
+box is what was typed*. The review read the log: every `blanks` died at the visibility read, which
+comes first, so the value read after it never ran under any mutant — a form that comes back open and
+empty would have passed. A second mutant per screen, `blinks`, blanks `data` and hands it back on the
+next tick: the form is unmounted and drawn again, open, with the saved value in it. It kills the form
+row at *what was typed* and nothing else. *One crafted value proves one link of a guard* (#96, #102)
+— and a row with two reads in it has a second link that the mutant killing the first can never see.
+The review also found the sweep had run on a `151a` whose doc block was edited after it: the rows
+were the same, the line numbers were not, and the fourteen mutants were swept again on the final
+text rather than argued to be unchanged (#146).

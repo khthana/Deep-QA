@@ -138,10 +138,11 @@ MUTANTS = {
                    "      WHERE cs.section_id = $1 AND $2::text IS NOT NULL`,"),
     # The screen swallows the refusal a failed load carries. Kills row 7 at
     # the banner that never appears.
+    # Re-aimed 22 Sep 2569 (#151): the failed load no longer clears `data`,
+    # so the line this quoted is gone; the notice is what it swallows.
     "swallowrefusal": ("screen",
-                       "        setData(null)\n"
-                       "        if (!error.expired) setNotice({ error: true, message: error.message })",
-                       "        setData(null)"),
+                       "      if (isCurrent()) {\n        if (!error.expired) setNotice({ error: true, message: error.message })",
+                       "      if (isCurrent()) {\n"),
     # The screen swallows the refusal a failed save carries. Kills row 8 at
     # the banner with the server's own sentence in it.
     "saveswallows": ("screen",
