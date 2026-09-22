@@ -26,6 +26,19 @@ import { get, onAccessEnded, onSessionExpired, post, put } from '../api/client'
 
 const AuthContext = createContext()
 
+/**
+ * How often, at most, somebody at work tells the server so - #99.
+ *
+ * The server renews a token that has under ten minutes left, and only on a
+ * request (`RENEW_BELOW_SECONDS` in `backend/auth/session.js`). Typing is not a
+ * request, so without this a long form written after a request at minute
+ * nineteen was saved into a session that had ended at minute thirty. Five is
+ * the number that matters because it is under ten: a heartbeat at least every
+ * five minutes of work always lands inside the renewal window, so nobody who
+ * is still pressing keys meets the end of the token. ADR-0005 holds the rest.
+ */
+const HEARTBEAT_MS = 5 * 60 * 1000
+
 export const AuthProvider = ({ children }) => {
   const [state, setState] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -35,6 +48,8 @@ export const AuthProvider = ({ children }) => {
   const [endedBecause, setEndedBecause] = useState(null)
   // Whether this ending has already erased the cookie - see the listener.
   const ended = useRef(false)
+  // The heartbeat that is out, which every sign-out waits for - #99, below.
+  const beating = useRef(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -147,10 +162,55 @@ export const AuthProvider = ({ children }) => {
       setState(null)
       if (ended.current) return
       ended.current = true
-      post('/api/auth/logout').catch(() => {})
+      Promise.resolve(beating.current)
+        .then(() => post('/api/auth/logout'))
+        .catch(() => {})
     })
     return () => onAccessEnded(null)
   }, [])
+
+  /**
+   * The heartbeat - #99. A key or a click, while somebody is signed in and
+   * their session has not been announced as ended, sends `POST /api/me/activity`
+   * if the last one went more than `HEARTBEAT_MS` ago.
+   *
+   * On what was pressed, not on a timer. A timer would keep an empty chair
+   * signed in for ever, and the idle timeout (docs/06 story 15) is the other
+   * half of the ticket. Listened for in the capture phase so a control that
+   * stops its own event from bubbling still counts as somebody working.
+   *
+   * The clock starts when the session does, because the sign-in and the
+   * `GET /api/me` that brought the state here were requests already. A
+   * heartbeat's refusal needs no handling of its own: a 401 or an ended account
+   * reaches the shell's listeners in `client.js` like any other request's.
+   *
+   * The one that is out is kept in `beating`, because the click that sends it
+   * can be the click on sign-out or on another grant. Its answer may carry a
+   * renewed cookie, and landing after the sign-out it would sign the browser
+   * back in; landing after a switch it would put the old grant back on (#51).
+   * So `logout` and `switchRole` wait for it before they send anything, and so
+   * does the listener above when an account's access ends: `requireSession`
+   * renews before `attachRoles` refuses, so even a refused heartbeat can carry
+   * a cookie back after the sign-out that erased it.
+   */
+  const lastBeat = useRef(0)
+  const working = state !== null && !expired
+  useEffect(() => {
+    if (!working) return undefined
+    lastBeat.current = Date.now()
+    const onActivity = () => {
+      const now = Date.now()
+      if (now - lastBeat.current < HEARTBEAT_MS) return
+      lastBeat.current = now
+      beating.current = post('/api/me/activity').catch(() => {})
+    }
+    document.addEventListener('keydown', onActivity, true)
+    document.addEventListener('pointerdown', onActivity, true)
+    return () => {
+      document.removeEventListener('keydown', onActivity, true)
+      document.removeEventListener('pointerdown', onActivity, true)
+    }
+  }, [working])
 
   // After the listener above. The order is not what makes this safe - `load`
   // is async, so its rejection lands a task later, after every effect in this
@@ -166,6 +226,7 @@ export const AuthProvider = ({ children }) => {
    * server has agreed to honour and never what was asked for.
    */
   const switchRole = useCallback(async grant => {
+    await beating.current
     const next = await put('/api/me/acting-role', {
       role_id: grant.role_id,
       scope_id: grant.scope_id,
@@ -183,6 +244,7 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     setLoading(true)
     try {
+      await beating.current
       await post('/api/auth/logout')
     } catch (error) {
       // Signing out of a session the server has already forgotten is still

@@ -24,7 +24,11 @@ const request = require('supertest');
 const { PASSWORD, ACCOUNTS, byAlias, DEPARTMENTS, PROGRAMS } = require('../../db/seed');
 const { attachRoles, requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
-const { COOKIE_NAME, requireSession } = require('../auth/session');
+const {
+  COOKIE_NAME,
+  LIFETIME_SECONDS,
+  requireSession,
+} = require('../auth/session');
 const { startApi, guardedApp } = require('./helpers');
 
 const [DEPT_COMPUTER] = DEPARTMENTS.map((department) => department.id);
@@ -372,5 +376,68 @@ test('an idle session', async (t) => {
 
     assert.equal(response.status, 403);
     assert.notEqual(response.body.message, REFUSALS.expired);
+  });
+});
+
+/**
+ * #99 - a person typing is working, but the server hears nothing until they
+ * save.
+ *
+ * `requireSession` renews a token that has under ten minutes left, on a
+ * request. Typing is not a request, so the half hour was counted from the
+ * last token issued rather than from the last thing the person did: a
+ * request at minute nineteen left eleven minutes, and a long form written in
+ * that time was saved into an expired session. The shell now sends a
+ * heartbeat while somebody presses keys or clicks (`AuthContext.js`), and this
+ * is the route it reaches.
+ *
+ * The route itself does nothing. What it is for is the middleware in front of
+ * it, so the rows below read that middleware's answer through it.
+ */
+test('a heartbeat (#99)', async (t) => {
+  const tokenOf = (seconds) =>
+    `${COOKIE_NAME}=${jwt.sign({ user_id: byAlias('U_TEACH') }, process.env.SECRET_KEY, {
+      expiresIn: seconds,
+    })}`;
+  const beat = (cookie) => request(api.app).post('/api/me/activity').set('Cookie', [cookie]);
+
+  // Nine minutes, written out rather than read off `RENEW_BELOW_SECONDS`: the
+  // browser beats at most five minutes apart, so a heartbeat can arrive with
+  // anything down to five minutes left, and this row is the half of ADR-0005
+  // that says such a one renews. Lowered below nine minutes, the threshold would
+  // leave this token alone and the row would say so; read off the constant, it
+  // would follow it down.
+  await t.test('renews a session inside its last ten minutes', async () => {
+    const response = await beat(tokenOf(9 * 60));
+
+    assert.equal(response.status, 204);
+    const cookie = (response.headers['set-cookie'] ?? []).find((c) => c.startsWith(`${COOKIE_NAME}=`));
+    assert.ok(cookie, 'the heartbeat should have renewed the session');
+    const token = decodeURIComponent(cookie.split(';')[0].slice(`${COOKIE_NAME}=`.length));
+    const claims = jwt.verify(token, process.env.SECRET_KEY);
+    assert.equal(claims.exp - claims.iat, LIFETIME_SECONDS);
+    assert.equal(claims.user_id, byAlias('U_TEACH'));
+  });
+
+  // The threshold is the same one every request meets, and that is a choice:
+  // a heartbeat that renewed every time would put a fresh cookie on the wire
+  // every five minutes of typing, and each one is a chance for #51's stale
+  // acting grant to come back. So a heartbeat is a request like any other.
+  await t.test('leaves a session with more than that alone', async () => {
+    const response = await beat(tokenOf(LIFETIME_SECONDS));
+
+    assert.equal(response.status, 204);
+    assert.equal(response.headers['set-cookie'], undefined);
+  });
+
+  // A heartbeat that arrives after the half hour is the person coming back to
+  // a session that ended - told so, like any screen, and the cookie is left
+  // where it is because this is not the shell asking who is signed in.
+  await t.test('is told that an ended session has ended', async () => {
+    const response = await beat(tokenOf(-60));
+
+    assert.equal(response.status, 401);
+    assert.equal(response.body.reason, 'expired');
+    assert.equal(response.headers['set-cookie'], undefined);
   });
 });

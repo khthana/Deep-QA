@@ -3236,3 +3236,53 @@ row at *what was typed* and nothing else. *One crafted value proves one link of 
 The review also found the sweep had run on a `151a` whose doc block was edited after it: the rows
 were the same, the line numbers were not, and the fourteen mutants were swept again on the final
 text rather than argued to be unchanged (#146).
+
+## #99 — the renewal that was there, and the work that made no request
+
+The ticket said the session was never renewed and quoted the line it was signed on. The renewal had been in
+`session.js` since `d368652`, eight days before the ticket was opened, with a test beside it, and sheet 10's list of
+what was still open said that test did not exist either. Both claims were never true (#102). What the person at the
+screen met was real all the same, and reading the renewal for *when* rather than *whether* found it: under ten
+minutes left **and a request**. A request at minute nineteen renews nothing and leaves eleven minutes, and typing is not
+a request, so a criterion's four levels written in those eleven minutes were saved into a session that had ended. The
+comment above the threshold and the test beside it both said someone who walks away expires thirty minutes after their
+last request; it is ten to thirty. **A mechanism that fires on requests is blind to the work that makes none** — ask
+what the person is doing between requests, not only what the server does when one arrives.
+
+**The obvious fix had a price on another ticket.** Renewing on every request is one line and makes the idle timeout
+exact, and it turns #51 — a renewal that lands after a role switch carries the old acting grant back — from a race
+inside the last ten minutes into a race on every request in flight. It would also not have helped: the person was
+typing, not requesting. The answer the owner chose is a heartbeat on key and click, at most every five minutes, to a
+route that does nothing; the threshold stays where #51 left it, and ten less five is the pause the promise allows.
+
+**A promise two seams share is proved as two pinned numbers and the relation between them.** Neither seam can run
+thirty real minutes. The browser rows move the page's clock and pin *at least every five minutes of work*
+(`slowbeat` at six kills them); the HTTP rows sign tokens with the life they need and pin *a heartbeat in the last ten
+minutes renews*. The ticket's first criterion is neither row; it is the inequality, and the sheet has a row that says
+so rather than a paragraph that explains it (#50). ADR-0005 carries the same sentence for whoever changes one number
+without the other.
+
+**The negative row is the ticket's second half, and it needed its own mutant to mean anything.** *Ten minutes with
+nothing pressed sends none* passes against no heartbeat at all, so on its own it proves nothing about the heartbeat.
+`timerbeat` — a heartbeat on an interval, the design somebody would reach for — kills it and leaves the rows that press
+keys standing, because the timer also stamps the time of the last beat and so they still count one. (Once the sign-out
+rows below existed it killed them too, at their own assertions: the heartbeat held at the route was the timer's, which
+nothing waits for. A prediction written before a row exists is a claim that row expires.)
+
+**Keeping the threshold did not keep #51's window where it was; the reviewer found that, not the sweep.** The first
+draft of ADR-0005 said it did, because the heartbeat renews no more eagerly than a save. But a heartbeat has a way in
+that a save does not: it is sent by the click itself, so the click on sign-out, or on another grant, can be the one
+that sends it. A renewed cookie landing after the sign-out signs the browser back in; landing after a switch it puts
+the old grant back on. Eight mutants had been swept green and none could see it, because no row pressed a control that
+did anything but send a heartbeat. The shell now keeps the heartbeat that is out, and `logout` and `switchRole` wait for
+it; two rows hold it at the route with `gate` and ask that nothing else leaves first. They were red before the fix at
+their own assertions. The second review round found the third writer of the cookie, which the first had not listed:
+the shell's own sign-out when an account's access ends (#52). `requireSession` renews before `attachRoles` refuses, so
+a *refused* heartbeat can still carry a cookie back — the case the listener's own comment says it exists to prevent.
+A third row, red first, and the listener waits too. The list that should have been read first was the grep for
+`issueSession` and `clearSession`, then for every caller of the routes they sit in — not the controls in the menu. This is #139's rule met from the other side: a mechanism that fires on *every* press is written
+by every control that can be pressed, and the list to read is the controls whose own request re-issues the cookie.
+The same review took apart two sentences that read as proofs. *Five under ten* was not the promise; the promise is
+that a pause shorter than their difference never signs anyone out. And *the row that pins the number* did not pin it,
+because the HTTP row read its token's age off the constant it was meant to hold; it now says nine minutes in digits,
+and `fivethreshold` kills it.

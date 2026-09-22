@@ -119,7 +119,7 @@ frontend ของ e2e เป็น dev server ที่คอมไพล์ใ
 | `doorendstoo` | **1** — *nor when a suspended account is refused at sign-in* | **0** |
 | `flagignored` | — | **6** — `52a` แถว 1–6 |
 | `everyrefusalends` | — | **13** เมื่อ 11 ก.ย. · **12** ตั้งแต่ 20 ก.ย. 2569 — `10a` แถว 6 (สามข้อ) และแถว 7, `111a` แผงบทบาท, `121a`, `12a` *rows 2 and 3* (เทสต์เดียว) และแถว 6 *(หมดอายุ — ดูข้างล่าง)*, `16a` แถว 75, `18c` แถว 8, `19a` และ `21a` แถวที่บัญชีที่หน้าจอไม่ได้มีไว้ให้ถูกปฏิเสธ, `24a` แถว 7 |
-| `cookiekept` | — | **3** — `52a` แถว 4 ที่บรรทัด 158, แถว 5 (ออก 0 ครั้ง), แถว 6 |
+| `cookiekept` | — | **3** — `52a` แถว 4 ที่บรรทัด 158, แถว 5 (ออก 0 ครั้ง), แถว 6 · เล็งใหม่ที่ #99 (22 ก.ย. 2569) เพราะ listener รอ heartbeat ที่ค้างก่อนออก — กวาดซ้ำได้สามแถวเดิม แถว 4 ที่บรรทัด 158 เหมือนเดิม |
 | `leftonscreen` | — | **5** — `52a` แถว 1, 2, 4, 5, 6 |
 | `saysnothing` | — | **3** — `52a` แถว 1, 2, 3 |
 | `signsoutpereach` | — | **1** — `52a` แถว 5 · ไม่มีอะไรใน `11b` `11c` `12a` |
@@ -202,7 +202,10 @@ MUTANTS = {
         "    if (response.status === 403) accessEndedListener?.(payload.message)\n"),
     # พากลับหน้าลงชื่อเข้าใช้ แต่เก็บคุกกี้ไว้
     "cookiekept": ("context",
-        "      ended.current = true\n      post('/api/auth/logout').catch(() => {})\n",
+        "      ended.current = true\n"
+        "      Promise.resolve(beating.current)\n"
+        "        .then(() => post('/api/auth/logout'))\n"
+        "        .catch(() => {})\n",
         "      ended.current = true\n"),
     # ลบคุกกี้ แต่ปล่อยคนไว้บนหน้าจอเดิม
     "leftonscreen": ("context",

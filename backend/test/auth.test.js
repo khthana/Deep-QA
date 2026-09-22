@@ -313,10 +313,10 @@ test('the session cookie', async (t) => {
     assert.equal(claims.exp - claims.iat, LIFETIME_SECONDS);
   });
 
-  // The behaviour the delivered system's users already have: someone working
-  // continuously is not signed out mid-edit at the thirty-minute mark, while
-  // someone who walks away still expires thirty minutes after their last
-  // request.
+  // The behaviour the delivered system's users already have: a request in the
+  // token's last ten minutes renews it. That is all it promises - someone who
+  // stops expires ten to thirty minutes after their last request, not thirty,
+  // and typing makes no request at all (#99, ADR-0005).
   await t.test('is renewed by a request made in its last ten minutes', async () => {
     const teacher = byAlias('U_TEACH');
 

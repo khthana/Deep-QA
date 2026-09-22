@@ -34,10 +34,19 @@ const LIFETIME_SECONDS = 30 * 60;
 
 /**
  * Renewal threshold. Under ten minutes left and a request re-issues the
- * token, so someone working continuously is not signed out mid-edit at the
- * thirty-minute mark; someone who walks away still expires thirty minutes
- * after their last request. Carried from the inherited verifyToken, which is
- * the behaviour the users of the delivered system already have.
+ * token. Carried from the inherited verifyToken.
+ *
+ * What that buys is narrower than it sounds, and #99 is where it was
+ * measured. The half hour counts from the last token *issued*, not from the
+ * last request: a request at minute nineteen renews nothing and leaves eleven
+ * minutes, so someone who stops is signed out between ten and thirty minutes
+ * after their last request, depending on where it fell. And typing is not a
+ * request at all - a long form written in those eleven minutes was saved into
+ * an expired session. So the shell sends a heartbeat (`POST /api/me/activity`)
+ * while somebody types or clicks, at most every five minutes. Ten less five is
+ * the pause a person at work can take without the token dying under them: with
+ * no pause that long, heartbeats are under ten minutes apart and one always
+ * meets this threshold. Change either number and read ADR-0005 first.
  */
 const RENEW_BELOW_SECONDS = 10 * 60;
 

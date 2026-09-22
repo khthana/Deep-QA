@@ -264,6 +264,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   a ref *means*, and which controls write it, can leave every comparison and every mutant where
   they stand. (#146)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
+- **A mechanism that fires on requests is blind to the work that makes none** — ask what the person
+  is doing between requests, not only what the server does when one arrives. (#99)
 - Before adding a parameterised refusal, find every site that turns that reason into a sentence —
   the grep is `REFUSALS[`. When one change lands at two sites, write a mutant per site. (#125)
 - When a client must tell two refusals apart, have the server say which at the point of deciding.

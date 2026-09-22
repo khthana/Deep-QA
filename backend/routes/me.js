@@ -3,8 +3,9 @@
 /**
  * The caller's own account — ticket #10.
  *
- * Three things the shell needs and nobody else can answer: who am I and what
- * may I be, which of those am I being, and let me change my password. Every
+ * Four things the shell needs and nobody else can answer: who am I and what
+ * may I be, which of those am I being, let me change my password, and I am
+ * still here (#99). Every
  * route here is about the caller and only the caller: there is no user
  * identifier in any path or body, because the one that matters is in the
  * cookie. Managing *other* people's accounts is #11 and lives elsewhere.
@@ -150,6 +151,18 @@ function meRoutes(pool) {
       return next(error);
     }
   });
+
+  /**
+   * The shell's heartbeat - #99. Sent while somebody is typing or clicking,
+   * at most once every five minutes (`AuthContext.js`), because typing is
+   * work the server otherwise never hears about until the save.
+   *
+   * It does nothing, and that is the whole design: `requireSession` in front
+   * of it renews a token with under ten minutes left, exactly as it does for
+   * every other request, and a heartbeat is not given a stronger renewal than
+   * a save. See ADR-0005 for why not, and for why five and ten.
+   */
+  router.post('/me/activity', (req, res) => res.status(204).end());
 
   return router;
 }
