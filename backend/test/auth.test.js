@@ -97,10 +97,19 @@ const claimsOf = (cookie) => {
  * died. This is the real middleware over real HTTP; only the handler behind it
  * is a stand-in, and the same stand-in serves #9's guards in authorise.test.js.
  */
-const guarded = () => guardedApp(requireSession);
+const guarded = () => guardedApp(requireSession(api.pool));
 
-const sessionOf = (userId, seconds) =>
-  `${COOKIE_NAME}=${jwt.sign({ user_id: userId }, process.env.SECRET_KEY, { expiresIn: seconds })}`;
+/**
+ * A cookie of a chosen age. `acting_epoch` is in it because a renewal compares
+ * that number against the account's own and declines when they differ (#51),
+ * so a token forged without it is a token that cannot be renewed. Zero is what
+ * every account in this file's schema is at: nothing here switches grant, which
+ * is #10's endpoint and is measured in shell.test.js.
+ */
+const sessionOf = (userId, seconds, epoch = 0) =>
+  `${COOKIE_NAME}=${jwt.sign({ user_id: userId, acting_epoch: epoch }, process.env.SECRET_KEY, {
+    expiresIn: seconds,
+  })}`;
 
 /**
  * The two OAuth variables set to something, or to nothing, for the length of
@@ -305,18 +314,28 @@ test('the session cookie', async (t) => {
     );
   });
 
-  await t.test('carries no more than the user id', async () => {
+  // Two claims and no more. `acting_epoch` joined `user_id` in #51: it is how
+  // many times this account has switched grant, and it is in the token so that
+  // a renewal can tell a selection that is still current from one made before
+  // somebody switched. Like `acting` it decides nothing - `attachRoles` still
+  // reads every grant from the database - and a fresh sign-in has switched
+  // nothing, so it is zero here.
+  await t.test('carries no more than the user id and the switch counter', async () => {
     const claims = claimsOf(sessionCookie(await signIn(api.app, EMAILS.teacher)));
 
-    assert.deepEqual(Object.keys(claims).sort(), ['exp', 'iat', 'user_id']);
+    assert.deepEqual(Object.keys(claims).sort(), ['acting_epoch', 'exp', 'iat', 'user_id']);
     assert.equal(claims.user_id, byAlias('U_TEACH'));
+    assert.equal(claims.acting_epoch, 0);
     assert.equal(claims.exp - claims.iat, LIFETIME_SECONDS);
   });
 
   // The behaviour the delivered system's users already have: a request in the
   // token's last ten minutes renews it. That is all it promises - someone who
   // stops expires ten to thirty minutes after their last request, not thirty,
-  // and typing makes no request at all (#99, ADR-0005).
+  // and typing makes no request at all (#99, ADR-0005). Since #51 it promises
+  // one thing less: a request whose token was signed before the account last
+  // switched grant renews nothing, which needs a switch to show and so is
+  // measured in shell.test.js.
   await t.test('is renewed by a request made in its last ten minutes', async () => {
     const teacher = byAlias('U_TEACH');
 
@@ -328,6 +347,7 @@ test('the session cookie', async (t) => {
     assert.equal(response.body.userId, teacher);
     const renewed = claimsOf(sessionCookie(response));
     assert.equal(renewed.exp - renewed.iat, LIFETIME_SECONDS);
+    assert.equal(renewed.acting_epoch, 0);
   });
 
   await t.test('is left alone by a request made well before that', async () => {

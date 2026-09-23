@@ -126,6 +126,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   at risk (delete the mutant, mark ☑); a mutant that **kills too much** has stopped the
   application; a **survivor on a row nobody suspected** is an overclaim; and a sweep **cannot see
   the row your own fix breaks** — only the clean suite can. (#45, #97, #96, #83)
+- **A survivor the sheet predicted is the survivor to distrust.** The prediction answers the sweep's
+  question before anyone asks the row what it was for — and a seam said to be unable to build a
+  situation is a claim about a helper's mechanics, measurable in one assertion. (#51)
 - **A row written to answer a survivor is not proof until that mutant is run again.** The row is
   what gets measured, not the measurement — and a kill count can hold a leak as easily as it can
   look like the suite, so read the names and the run's duration beside them. (#146)
@@ -230,6 +233,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A defect nobody can see needs a mutant or it is not proved.** (#111)
 - **An effect that must always happen does not go behind one that can fail** — and a defect that is
   unreachable today has a date on it, usually moved by another ticket's fix. (#131)
+- **The mechanism under test can erase the precondition a row arranged for it** — the ageing a
+  renewal undoes, the state a reload clears. Assert the precondition where it is used, not where it
+  is set. (#51)
 - **A row that catches a defect on some runs is not the row that holds it** — the row that holds it
   builds the situation itself, rather than waiting for another spec to leave one behind. But a row
   that builds its own situation is still handed a world it did not build: assert the shape it needs,

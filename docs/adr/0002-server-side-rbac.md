@@ -34,7 +34,7 @@ is for every router in the house.
 
 Four things a later ticket can violate by accident:
 
-- **The public surface is positional, not per-route.** `app.use('/api', requireSession, attachRoles(pool))` sits below
+- **The public surface is positional, not per-route.** `app.use('/api', requireSession(pool), attachRoles(pool))` sits below
   the health and sign-in routers and above everything else, so every route added afterwards is guarded by
   construction. The two above it are the whole of the anonymous surface: sign-in cannot require having signed in, and
   `/api/health` is read by a load balancer that holds no cookie.
@@ -77,6 +77,12 @@ The selection then rides in the JWT, and this is the one place it is easy to rea
 above. It is a **pointer, not an authority**: `attachRoles` still reads the grants from the database on every request,
 and `actingFrom` falls back to the most senior grant when the selected one is no longer among them. A revoked role
 therefore stops working on the next request, exactly as before — the claim in the token cannot outlive the row.
+
+Since #51 the token carries one more number beside it, `acting_epoch`, and it is a pointer in the same sense: how many
+times the account has switched, so that a renewal can tell a selection that is still the newest from one made before
+somebody switched. It decides nothing about what the caller may do, and the account's counter is read from the database
+rather than trusted from the token. ADR-0006 is the decision; this paragraph exists so that nobody counting the claims
+in the token has to find it by surprise.
 
 What a later ticket can violate by accident:
 

@@ -60,8 +60,32 @@ const switchTo = (cookie, selection) =>
 /** The cookie a response set, if it set one, and the one sent otherwise. */
 const carried = (response, fallback) => response.headers['set-cookie'] ?? fallback;
 
+/** The token inside a cookie array, as a string. */
+const tokenIn = (cookie) => {
+  const entry = [cookie].flat().find((c) => c.startsWith(`${COOKIE_NAME}=`));
+  return decodeURIComponent(entry.split(';')[0].slice(`${COOKIE_NAME}=`.length));
+};
+
+/** What a cookie says, verified - these are cookies this server just signed. */
+const claimsOf = (cookie) => jwt.verify(tokenIn(cookie), process.env.SECRET_KEY);
+
+/**
+ * The same session, re-signed with `seconds` of life left.
+ *
+ * Every claim is carried over, not only the user id: a token without the
+ * selection is a different session, and one without the switch counter cannot
+ * be renewed at all since #51 - a row built on either would be measuring that
+ * rather than the threshold it is about.
+ */
+const aged = (cookie, seconds) => {
+  const { user_id, acting, acting_epoch } = claimsOf(cookie);
+  return `${COOKIE_NAME}=${jwt.sign({ user_id, acting, acting_epoch }, process.env.SECRET_KEY, {
+    expiresIn: seconds,
+  })}`;
+};
+
 const roleGuarded = (...roleIds) =>
-  guardedApp(requireSession, attachRoles(api.pool), requireRole(...roleIds));
+  guardedApp(requireSession(api.pool), attachRoles(api.pool), requireRole(...roleIds));
 
 const asUser = (cookie, app) => request(app).get('/guarded').set('Cookie', cookie);
 
@@ -395,10 +419,7 @@ test('an idle session', async (t) => {
  * it, so the rows below read that middleware's answer through it.
  */
 test('a heartbeat (#99)', async (t) => {
-  const tokenOf = (seconds) =>
-    `${COOKIE_NAME}=${jwt.sign({ user_id: byAlias('U_TEACH') }, process.env.SECRET_KEY, {
-      expiresIn: seconds,
-    })}`;
+  const live = await signInAs('U_TEACH');
   const beat = (cookie) => request(api.app).post('/api/me/activity').set('Cookie', [cookie]);
 
   // Nine minutes, written out rather than read off `RENEW_BELOW_SECONDS`: the
@@ -408,13 +429,12 @@ test('a heartbeat (#99)', async (t) => {
   // leave this token alone and the row would say so; read off the constant, it
   // would follow it down.
   await t.test('renews a session inside its last ten minutes', async () => {
-    const response = await beat(tokenOf(9 * 60));
+    const response = await beat(aged(live, 9 * 60));
 
     assert.equal(response.status, 204);
-    const cookie = (response.headers['set-cookie'] ?? []).find((c) => c.startsWith(`${COOKIE_NAME}=`));
+    const cookie = response.headers['set-cookie'];
     assert.ok(cookie, 'the heartbeat should have renewed the session');
-    const token = decodeURIComponent(cookie.split(';')[0].slice(`${COOKIE_NAME}=`.length));
-    const claims = jwt.verify(token, process.env.SECRET_KEY);
+    const claims = claimsOf(cookie);
     assert.equal(claims.exp - claims.iat, LIFETIME_SECONDS);
     assert.equal(claims.user_id, byAlias('U_TEACH'));
   });
@@ -424,7 +444,7 @@ test('a heartbeat (#99)', async (t) => {
   // every five minutes of typing, and each one is a chance for #51's stale
   // acting grant to come back. So a heartbeat is a request like any other.
   await t.test('leaves a session with more than that alone', async () => {
-    const response = await beat(tokenOf(LIFETIME_SECONDS));
+    const response = await beat(aged(live, LIFETIME_SECONDS));
 
     assert.equal(response.status, 204);
     assert.equal(response.headers['set-cookie'], undefined);
@@ -434,10 +454,118 @@ test('a heartbeat (#99)', async (t) => {
   // a session that ended - told so, like any screen, and the cookie is left
   // where it is because this is not the shell asking who is signed in.
   await t.test('is told that an ended session has ended', async () => {
-    const response = await beat(tokenOf(-60));
+    const response = await beat(aged(live, -60));
 
     assert.equal(response.status, 401);
     assert.equal(response.body.reason, 'expired');
     assert.equal(response.headers['set-cookie'], undefined);
+  });
+});
+
+/**
+ * #51 - a renewal that crosses a switch used to put the old hat back on.
+ *
+ * `requireSession` re-issues a token that has under ten minutes left and
+ * carries the selection in it forward. The selection it carries is the one that
+ * was in that request's token, which is the selection as it stood when the
+ * request left the browser - so a request that was already in flight when the
+ * person switched role wrote its cookie after the switch's cookie, last write
+ * won, and the browser was acting as a grant the picker no longer showed.
+ *
+ * Two requests interleaved is not something a test can arrange by timing, and
+ * it does not have to be: what makes the stale request stale is the token it is
+ * holding, not the moment it arrives. So these rows keep a token from before the
+ * switch and send it after, which is the same request the browser would have
+ * had in flight. Every token below is a real one this server signed, re-signed
+ * to an age `LIFETIME_SECONDS` offers no seam to reach - the same precondition
+ * the idle-session rows above arrange, and for the same reason.
+ *
+ * The counter is `users.acting_epoch`, migration 0008, and ADR-0006 is where
+ * what it can and cannot see is written down.
+ */
+test('a renewal that crosses a switch (#51)', async (t) => {
+  const PROG = { role_id: 'PROG_MANAGER', scope_id: PROGRAM_THAI };
+  const TEACH = { role_id: 'TEACHER', scope_id: DEPT_COMPUTER };
+
+  // Nine minutes: inside the renewal threshold, so this request renews if it is
+  // allowed to renew at all. Without the counter the assertion below is the
+  // defect - a cookie carrying PROG_MANAGER, written after the switch to
+  // TEACHER, and the browser back on the committee.
+  await t.test('leaves the cookie alone when the grant in it has been superseded', async () => {
+    const before = await signInAs('U_MULTI');
+    const inFlight = aged(before, 9 * 60);
+    assert.equal((await switchTo(before, TEACH)).status, 200);
+
+    const response = await me(inFlight);
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers['set-cookie'], undefined);
+  });
+
+  // And is answered, not refused. The counter decides what may be written back
+  // to the browser and nothing else: this request was sent under the committee
+  // hat and is served under it, which is what every request that was in flight
+  // across a switch has always got.
+  await t.test('answers that request as the grant it was sent under', async () => {
+    const before = await signInAs('U_MULTI');
+    const inFlight = aged(before, 9 * 60);
+    assert.equal((await switchTo(before, TEACH)).status, 200);
+
+    const response = await me(inFlight);
+
+    assert.deepEqual(response.body.acting, PROG);
+  });
+
+  // The other half, and the one that says the fix is a condition rather than an
+  // end to renewal: the cookie the switch itself issued is the newest the
+  // account has, so a request holding it renews as it always did - and renews
+  // carrying the hat that was chosen, which is the thing the renewal exists to
+  // carry.
+  await t.test('renews from the cookie the switch issued, carrying the new grant', async () => {
+    const before = await signInAs('U_MULTI');
+    const switched = await switchTo(before, TEACH);
+
+    const response = await me(aged(carried(switched, before), 9 * 60));
+
+    assert.equal(response.status, 200);
+    const claims = claimsOf(response.headers['set-cookie']);
+    assert.deepEqual(claims.acting, TEACH);
+    // The number the switch stamped, whatever it was: U_MULTI has switched
+    // several times by the time this file reaches here, and what the renewal
+    // promises is to carry the token's own counter rather than to reach any
+    // particular value.
+    assert.equal(claims.acting_epoch, claimsOf(carried(switched, before)).acting_epoch);
+    assert.equal(claims.exp - claims.iat, LIFETIME_SECONDS);
+  });
+
+  // A switch made inside the renewal window writes two cookies on one response:
+  // the middleware's renewal and then the route's. The browser keeps the last,
+  // so the order they are written in is what decides which hat it is wearing,
+  // and nothing else in the file would notice if they swapped.
+  await t.test('is the switch that wins when both happen on one response', async () => {
+    const before = await signInAs('U_MULTI');
+
+    const switched = await switchTo(aged(before, 9 * 60), TEACH);
+
+    assert.equal(switched.status, 200);
+    const written = switched.headers['set-cookie'];
+    assert.equal(written.length, 2, 'both the renewal and the switch should have written');
+    const last = claimsOf([written[written.length - 1]]);
+    assert.deepEqual(last.acting, TEACH);
+    assert.equal(last.acting_epoch, claimsOf(before).acting_epoch + 1);
+  });
+
+  // The counter belongs to the account that switched. One person putting on
+  // another hat must not stop anybody else's session renewing, which is the
+  // failure a counter kept anywhere but on the row would have.
+  await t.test('is not moved for anybody but the account that switched', async () => {
+    const teacher = aged(await signInAs('U_TEACH'), 9 * 60);
+    const multi = await signInAs('U_MULTI');
+    assert.equal((await switchTo(multi, TEACH)).status, 200);
+
+    const response = await me(teacher);
+
+    assert.equal(response.status, 200);
+    assert.ok(response.headers['set-cookie'], 'the other account should still renew');
   });
 });

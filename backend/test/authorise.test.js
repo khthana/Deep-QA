@@ -72,14 +72,14 @@ const claimsIn = (cookie) => {
   return JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
 };
 
-const attached = () => guardedApp(requireSession, attachRoles(api.pool));
+const attached = () => guardedApp(requireSession(api.pool), attachRoles(api.pool));
 
 const roleGuarded = (...roleIds) =>
-  guardedApp(requireSession, attachRoles(api.pool), requireRole(...roleIds));
+  guardedApp(requireSession(api.pool), attachRoles(api.pool), requireRole(...roleIds));
 
 const scopeGuarded = () =>
   guardedApp(
-    requireSession,
+    requireSession(api.pool),
     attachRoles(api.pool),
     // The record's identifier, taken from the path. Never a role and never a
     // scope out of the request: the fourth criterion is that no endpoint reads
@@ -115,7 +115,10 @@ test('the grants attached to a request', async (t) => {
   await t.test('are not carried in the session cookie', async () => {
     const cookie = await signInAs('U_MULTI');
 
-    assert.deepEqual(Object.keys(claimsIn(cookie)).sort(), ['exp', 'iat', 'user_id']);
+    assert.deepEqual(
+      Object.keys(claimsIn(cookie)).sort(),
+      ['acting_epoch', 'exp', 'iat', 'user_id'],
+    );
   });
 
   // #10 puts one more claim in the token: which of the caller's own grants
@@ -123,6 +126,13 @@ test('the grants attached to a request', async (t) => {
   // `attachRoles` matches it against the rows it just read and ignores it
   // when it matches none - and the shape assertion is kept so that a later
   // ticket cannot quietly grow it into the role list this ADR keeps out.
+  //
+  // #51 puts in the last one: how many times the account has switched. It is
+  // not an authority either, and it is about the selection rather than about
+  // the caller - a renewal compares it against the account's own number and
+  // declines to write a cookie when the selection it is holding has been
+  // superseded. What this row asks of it is that the switch moved it: the value
+  // itself belongs to the account and to whatever it has already done.
   await t.test('carry the caller’s choice among them, and nothing more', async () => {
     const cookie = await signInAs('U_MULTI');
     const switched = await request(api.app)
@@ -132,8 +142,12 @@ test('the grants attached to a request', async (t) => {
 
     const claims = claimsIn(switched.headers['set-cookie']);
 
-    assert.deepEqual(Object.keys(claims).sort(), ['acting', 'exp', 'iat', 'user_id']);
+    assert.deepEqual(
+      Object.keys(claims).sort(),
+      ['acting', 'acting_epoch', 'exp', 'iat', 'user_id'],
+    );
     assert.deepEqual(Object.keys(claims.acting).sort(), ['role_id', 'scope_id']);
+    assert.equal(claims.acting_epoch, claimsIn(cookie).acting_epoch + 1);
   });
 });
 

@@ -58,11 +58,48 @@ async function findByEmail(pool, email) {
     `SELECT user_id, email, password, status, is_verified,
             title_th, first_name_th, last_name_th,
             title_en, first_name_en, last_name_en,
-            department_id, program_id, valid_from, valid_until
+            department_id, program_id, valid_from, valid_until, acting_epoch
      FROM users WHERE lower(email) = lower($1)`,
     [email],
   );
   return rows[0] ?? null;
+}
+
+/**
+ * How many times this account has switched the grant it is acting as, or null
+ * if the account is not there to ask - #51.
+ *
+ * It is read on renewal and nowhere else, which is why it is its own query
+ * rather than a column on `sessionAdmission`: the renewal is the last ten
+ * minutes of a token's life, so the read happens on a small fraction of
+ * requests and the one that runs on every request stays the size it was.
+ *
+ * The number confers nothing and is not about permission. It answers one
+ * question - is the selection this token carries still the newest the account
+ * has made - and ADR-0006 is where what that question can and cannot see is
+ * written down.
+ */
+async function actingEpoch(db, userId) {
+  const { rows } = await db.query(`SELECT acting_epoch FROM users WHERE user_id = $1`, [userId]);
+  return rows[0]?.acting_epoch ?? null;
+}
+
+/**
+ * Records a switch and answers with the number that now stands.
+ *
+ * Read-then-write would be two requests racing to the same value; the increment
+ * is done by the database so that two switches arriving together produce two
+ * numbers, and the cookie each one issues carries its own. The newer of them is
+ * the one the account has, so the older stops renewing - which between two
+ * tabs of one browser is the same event this exists for, seen from the side.
+ */
+async function bumpActingEpoch(db, userId) {
+  const { rows } = await db.query(
+    `UPDATE users SET acting_epoch = acting_epoch + 1 WHERE user_id = $1
+     RETURNING acting_epoch`,
+    [userId],
+  );
+  return rows[0]?.acting_epoch ?? null;
 }
 
 /**
@@ -356,7 +393,9 @@ module.exports = {
   PASSWORD_ROLES,
   GOOGLE_REFUSAL_REASONS,
   findByEmail,
+  actingEpoch,
   allRoles,
+  bumpActingEpoch,
   validityRefusal,
   sessionAdmission,
   accountStillExists,

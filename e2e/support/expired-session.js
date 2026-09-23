@@ -7,7 +7,8 @@ const { COOKIE_NAME } = require('../../backend/auth/session');
 const { BACKEND_URL } = require('./env');
 
 /**
- * A session that has ended, without waiting half an hour for one.
+ * A session of a chosen age, without waiting half an hour for one: one that
+ * has ended, and one inside the last ten minutes of its life.
  *
  * #10's sixth criterion is about a tab someone left open, and no suite can sit
  * still for thirty minutes to produce one. What it can produce is the state
@@ -42,30 +43,45 @@ function payloadOf(token) {
 }
 
 /**
- * Replaces this browser's session with the same one, dead.
+ * Replaces this browser's session with the same one, aged.
  *
  * The claims are carried over from the live cookie so the token names the
- * account that is actually signed in, and the cookie is cleared first: two
- * cookies of the same name would leave which one the server reads up to the
- * parser.
+ * account that is actually signed in, wearing the hat it is actually wearing
+ * and carrying the switch counter it was issued with (#51) - a token missing
+ * any of the three is a different session, and the last of them is the
+ * difference between one that renews and one that cannot. The cookie is
+ * cleared first: two cookies of the same name would leave which one the server
+ * reads up to the parser.
  */
-async function expireSession(page) {
+async function reissue(page, seconds) {
   const cookie = await sessionCookie(page);
-  if (!cookie) throw new Error('no session cookie to expire; sign in first');
+  if (!cookie) throw new Error('no session cookie to re-sign; sign in first');
 
-  const { user_id, acting } = payloadOf(cookie.value);
-  const claims = { user_id, ...(acting ? { acting } : {}) };
-  const dead = jwt.sign(claims, process.env.SECRET_KEY, { expiresIn: -60 });
+  const { user_id, acting, acting_epoch } = payloadOf(cookie.value);
+  const claims = { user_id, acting_epoch, ...(acting ? { acting } : {}) };
+  const token = jwt.sign(claims, process.env.SECRET_KEY, { expiresIn: seconds });
 
   await page.context().clearCookies();
   await page.context().addCookies([
     {
       name: COOKIE_NAME,
-      value: dead,
+      value: token,
       url: BACKEND_URL,
       expires: Math.floor(Date.now() / 1000) + 3600,
     },
   ]);
 }
 
-module.exports = { sessionCookie, payloadOf, expireSession };
+/** The same session, dead. */
+const expireSession = (page) => reissue(page, -60);
+
+/**
+ * The same session, with `seconds` of life left.
+ *
+ * What it is for is the renewal threshold: `LIFETIME_SECONDS` offers no seam to
+ * shorten, and nothing else puts a browser inside the last ten minutes of a
+ * token without waiting twenty real ones.
+ */
+const shortenSession = (page, seconds) => reissue(page, seconds);
+
+module.exports = { sessionCookie, payloadOf, expireSession, shortenSession };

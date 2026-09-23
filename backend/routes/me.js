@@ -17,7 +17,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 
-const { ABSENT_PASSWORD, profileOf, recordActivity } = require('../auth/accounts');
+const {
+  ABSENT_PASSWORD,
+  bumpActingEpoch,
+  profileOf,
+  recordActivity,
+} = require('../auth/accounts');
 const { REFUSALS } = require('../auth/refusals');
 const { issueSession } = require('../auth/session');
 
@@ -102,7 +107,14 @@ function meRoutes(pool) {
       // would show one role while the server enforced another - the exact
       // divergence #10's fourth criterion exists to prevent.
       await recordActivity(pool, req.auth.userId, 'SWITCH_ROLE');
-      issueSession(res, req.auth.userId, held);
+      // And the counter is bumped before that cookie for the same reason read
+      // the other way round (#51): from the moment it moves, every token signed
+      // before this one stops being renewable, so a request that was in flight
+      // while this handler ran cannot put the old hat back a second later. The
+      // bump is what makes this cookie the newest one; issuing the cookie first
+      // would leave a gap in which an older token still counted as current.
+      const epoch = await bumpActingEpoch(pool, req.auth.userId);
+      issueSession(res, req.auth.userId, epoch, held);
       return res.status(200).json({
         ...shellState(await currentUser(req), { ...req.auth, acting: held }),
       });

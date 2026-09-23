@@ -7,6 +7,14 @@ killed the one assertion it was aimed at - see the mutation section of
 docs/acceptance/10-application-shell.md
 for which assertion, and for what each mutant is about.
 
+#51 (23 September 2569) made `requireSession` a factory that takes the pool, so `guardedlogout`,
+whose replacement mounts that middleware, was rewritten to mount
+`require('../auth/session').requireSession(pool)` and swept again on `10a`. It still kills *the box
+gets the person back in*, and kills it **at the assertion rather than at the timeout** - which is
+the thing to check, because a mutant that mounted the bare factory would hang and die at the
+timeout, and that reads like a kill to anyone counting. `anchors.py` cannot see this one: the text
+it anchors on is unchanged, only its meaning is.
+
     python mutation/10-application-shell.py save
     python mutation/10-application-shell.py <mutant>
     python mutation/10-application-shell.py restore
@@ -79,9 +87,12 @@ MUTANTS = {
     # row 6 button: signing out put back behind the session, which is #92
     # itself - the box still draws and its button still exists, and only the
     # press comes back with the cookie untouched
+    # Re-written at #51, which made `requireSession` a factory: mounted without
+    # its pool it would return a function nobody calls, and the row would die
+    # at a timeout rather than at its own assertion (#139, #140).
     "guardedlogout": ("authroutes",
                       "  router.post('/auth/logout', async (req, res, next) => {",
-                      "  router.post('/auth/logout', require('../auth/session').requireSession, async (req, res, next) => {"),
+                      "  router.post('/auth/logout', require('../auth/session').requireSession(pool), async (req, res, next) => {"),
     # row 6 second reload: the dead cookie is kept, which is the state before
     # #94 - the box still draws on the first reload and its button still works,
     # and only the person who pressed F5 instead stays trapped

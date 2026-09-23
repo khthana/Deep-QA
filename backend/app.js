@@ -105,7 +105,7 @@ function createApp({ pool }) {
   app.use('/api', healthRoutes(pool));
   app.use('/api', authRoutes(pool));
 
-  app.use('/api', requireSession, attachRoles(pool));
+  app.use('/api', requireSession(pool), attachRoles(pool));
 
   app.use('/api', meRoutes(pool));
   // Before the user routes: #12's `/users/grantable` would otherwise be read

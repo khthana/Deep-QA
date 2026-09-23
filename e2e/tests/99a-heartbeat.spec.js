@@ -56,9 +56,12 @@ const { actingButton, roleOption } = require('../support/shell');
  *
  * Only `user_log`, like every file that signs in: each sign-in writes a `LOGIN`,
  * and the switch of grant a `SWITCH_ROLE`. Nothing cleans that table, and the
- * leftovers report names it after every run (#132). Nothing else: the forms are
- * typed into and never saved, the refused save is refused at the route, and both
- * sign-outs are held and answered there, so no `LOGOUT` is written.
+ * leftovers report names it after every run (#132). Since #51 that switch also
+ * moves `users.acting_epoch`, the account's switch counter, which is not put
+ * back either - it only goes up, and no row anywhere reads an absolute value
+ * from it. Nothing else: the forms are typed into and never saved, the refused
+ * save is refused at the route, and both sign-outs are held and answered there,
+ * so no `LOGOUT` is written.
  */
 
 const FIVE_MINUTES = '05:00';

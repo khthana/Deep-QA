@@ -27,6 +27,7 @@
 
 const jwt = require('jsonwebtoken');
 
+const { actingEpoch } = require('./accounts');
 const { REFUSALS } = require('./refusals');
 
 const COOKIE_NAME = 'token';
@@ -102,9 +103,16 @@ const cookieOptions = () => ({
  * Signs a session for this user and sets it on the response. `acting` is the
  * caller's selected grant as `{ role_id, scope_id }`, or undefined when they
  * have not chosen one and the most senior applies.
+ *
+ * `epoch` is `users.acting_epoch` as it stands at this moment: how many times
+ * the account has switched grant. It is stamped into the token so that a later
+ * request can be asked whether the selection it carries is still the newest one
+ * - see `renew` below, and ADR-0006. It is no more an authority than `acting`
+ * is; it is a number saying which selection this is, and every caller that
+ * mints a token passes the value it has just read or just written.
  */
-function issueSession(res, userId, acting) {
-  const claims = { user_id: userId };
+function issueSession(res, userId, epoch, acting) {
+  const claims = { user_id: userId, acting_epoch: epoch };
   // Both halves or neither: a role without its scope is ambiguous the moment
   // one account holds one role at two scopes.
   if (acting?.role_id && acting?.scope_id) {
@@ -161,7 +169,7 @@ function accountInDeadCookie(req) {
  * request that crossed a renewal as a session that truly ended, which is why
  * `requireSession` does not clear on them and must not start.
  *
- * The mount is `app.use('/api', requireSession, ...)`, so Express has already
+ * The mount is `app.use('/api', requireSession(pool), ...)`, so Express has already
  * stripped the prefix by the time this runs and the path is `/me`.
  *
  * The trailing slash and the case are matched the way the router itself
@@ -187,51 +195,105 @@ const isBootstrapRead = (req) => req.method === 'GET' && /^\/me\/?$/i.test(req.p
  * which grants the account holds, and whether one of them covers the scope
  * being asked for - and that lookup reads the database rather than anything
  * here.
+ *
+ * It takes the pool for one reason and spends it on one line: #51's renewal
+ * asks the account how many times it has switched grant, and only in the last
+ * ten minutes of a token's life. Deciding who the caller is is still the token
+ * and nothing but the token.
  */
-function requireSession(req, res, next) {
-  const token = req.cookies?.[COOKIE_NAME];
-  if (!token) {
-    return res.status(401).json({ message: REFUSALS.noSession, reason: 'anonymous' });
-  }
+function requireSession(pool) {
+  return async function session(req, res, next) {
+    const token = req.cookies?.[COOKIE_NAME];
+    if (!token) {
+      return res.status(401).json({ message: REFUSALS.noSession, reason: 'anonymous' });
+    }
 
-  let claims;
-  try {
-    claims = jwt.verify(token, secret());
-  } catch (error) {
-    // The cookie is deliberately not cleared here. #9 mounts this on every
-    // protected route, and a middleware that clears on any verification
-    // failure turns one unlucky request - a clock skew, a request in flight
-    // across a renewal - into a signed-out browser. Clearing is what
-    // /auth/logout is for.
-    //
-    // With one exception, and #94 is why. An expired token answered to the
-    // shell's bootstrap read is not an unlucky request: it is the final answer
-    // to the question "who is signed in", and it has been delivered. Keeping
-    // the dead cookie past that point buys nothing and costs the half hour in
-    // which the cookie outlives it (#69), because every reload in that window
-    // asks the same question, gets the same answer, and draws the same
-    // full-screen dialog over the sign-in page it is telling the person to
-    // use. #92 fixed the button in that dialog; this is the path of everyone
-    // who pressed F5 instead. Nothing widens: the reason above still governs
-    // every other route, and an `invalid` token is still left where it is,
-    // since a cookie this server did not sign is not evidence about any
-    // session of ours.
-    const expired = error.name === 'TokenExpiredError';
-    if (expired && isBootstrapRead(req)) clearSession(res);
-    return res.status(401).json({
-      message: expired ? REFUSALS.expired : REFUSALS.invalidSession,
-      reason: expired ? 'expired' : 'invalid',
-    });
-  }
+    let claims;
+    try {
+      claims = jwt.verify(token, secret());
+    } catch (error) {
+      // The cookie is deliberately not cleared here. #9 mounts this on every
+      // protected route, and a middleware that clears on any verification
+      // failure turns one unlucky request - a clock skew, a request in flight
+      // across a renewal - into a signed-out browser. Clearing is what
+      // /auth/logout is for.
+      //
+      // With one exception, and #94 is why. An expired token answered to the
+      // shell's bootstrap read is not an unlucky request: it is the final answer
+      // to the question "who is signed in", and it has been delivered. Keeping
+      // the dead cookie past that point buys nothing and costs the half hour in
+      // which the cookie outlives it (#69), because every reload in that window
+      // asks the same question, gets the same answer, and draws the same
+      // full-screen dialog over the sign-in page it is telling the person to
+      // use. #92 fixed the button in that dialog; this is the path of everyone
+      // who pressed F5 instead. Nothing widens: the reason above still governs
+      // every other route, and an `invalid` token is still left where it is,
+      // since a cookie this server did not sign is not evidence about any
+      // session of ours.
+      const expired = error.name === 'TokenExpiredError';
+      if (expired && isBootstrapRead(req)) clearSession(res);
+      return res.status(401).json({
+        message: expired ? REFUSALS.expired : REFUSALS.invalidSession,
+        reason: expired ? 'expired' : 'invalid',
+      });
+    }
 
-  const remaining = claims.exp - Math.floor(Date.now() / 1000);
-  // The renewal carries the selection forward, or working continuously past
-  // the twenty-minute mark would silently put the caller back in their most
-  // senior role.
-  if (remaining < RENEW_BELOW_SECONDS) issueSession(res, claims.user_id, claims.acting);
+    req.session = {
+      userId: claims.user_id,
+      acting: claims.acting,
+      actingEpoch: claims.acting_epoch,
+    };
 
-  req.session = { userId: claims.user_id, acting: claims.acting };
-  return next();
+    const remaining = claims.exp - Math.floor(Date.now() / 1000);
+    if (remaining < RENEW_BELOW_SECONDS) {
+      try {
+        await renew(res, req.session, pool);
+      } catch (error) {
+        return next(error);
+      }
+    }
+
+    return next();
+  };
+}
+
+/**
+ * Re-issues the cookie, carrying the selection forward - unless the selection
+ * is not the newest one the account has made. #51.
+ *
+ * The renewal has to carry the selection, or working continuously past the
+ * twenty-minute mark would silently put the caller back in their most senior
+ * role. But the selection it carries is the one that was in *this request's*
+ * token, which is the selection as it stood when the request left the browser.
+ * A request still in flight when the person switched role is holding a token
+ * from before the switch: renewing from it writes a cookie after the switch's
+ * cookie, last write wins, and the browser is acting as a grant the picker no
+ * longer shows. That divergence is what #10's fourth criterion exists to
+ * prevent, and the ordering inside `PUT /me/acting-role` was already chosen to
+ * avoid it from the other direction.
+ *
+ * The counter is what tells the two tokens apart. The switch bumps it before
+ * issuing its own cookie, so a token carrying an older number is one that must
+ * not be put back on the browser - and the answer is to write no cookie rather
+ * than a different one: a renewal that dropped `acting` would land the caller
+ * in their most senior role, which is the same divergence again. The request is
+ * answered exactly as before. It asked under the grant it names and is served
+ * as that grant; it simply does not get to extend the session it arrived with.
+ * The browser is holding the switch's cookie, which is younger than this one
+ * and renews on the next request it sends.
+ *
+ * A token carrying no counter at all is one this server signed before the
+ * column existed, and it does not renew either - `undefined` is not a number
+ * the account can be at. Sessions open across that deployment live out the half
+ * hour they have and sign in again.
+ *
+ * What a counter on the account cannot see is which of the account's own
+ * browsers a token belongs to, and ADR-0006 writes down what that costs.
+ */
+async function renew(res, session, pool) {
+  const epoch = await actingEpoch(pool, session.userId);
+  if (epoch !== session.actingEpoch) return;
+  issueSession(res, session.userId, epoch, session.acting);
 }
 
 module.exports = {

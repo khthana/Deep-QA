@@ -1,0 +1,28 @@
+-- How many times an account has switched the grant it is acting as - the one
+-- fact a renewal needs from outside the cookie. #51.
+--
+-- `requireSession` re-issues a token that has under ten minutes left and
+-- carries the selection in it forward, or working continuously past the
+-- twenty-minute mark would silently drop the caller into their most senior
+-- role. The selection it carries is the one that was in *that request's*
+-- token, which is the selection as it stood when the request left the browser.
+-- So a request that was already in flight when the person switched role writes
+-- its cookie after the switch's cookie, last write wins, and the browser is
+-- back on the grant the picker no longer shows.
+--
+-- A counter is what lets the server tell those two tokens apart. The switch
+-- bumps it and stamps the new value into the cookie it issues; a renewal
+-- compares the number in the token it was handed against this one and, when
+-- they differ, declines to write a cookie at all. The stale request is still
+-- answered - it was sent under the old grant and is served as it - it simply
+-- does not get to put its token back on the browser.
+--
+-- Why a counter on the account rather than a session table: the token is the
+-- session, the whole of it, and a row per live cookie is a second store of
+-- authority that ADR-0002 spent #9 keeping out. What a counter cannot do is
+-- tell two of the account's own browsers apart - see ADR-0006, which writes
+-- down what that costs.
+--
+-- integer and not bigint: this counts a person pressing a menu item. A caller
+-- switching once a second for sixty-eight years is the overflow.
+ALTER TABLE users ADD COLUMN acting_epoch integer NOT NULL DEFAULT 0;

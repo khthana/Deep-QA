@@ -3286,3 +3286,52 @@ The same review took apart two sentences that read as proofs. *Five under ten* w
 that a pause shorter than their difference never signs anyone out. And *the row that pins the number* did not pin it,
 because the HTTP row read its token's age off the constant it was meant to hold; it now says nine minutes in digits,
 and `fivethreshold` kills it.
+
+## #51 — the seam that could build it, and the row that had already dissolved
+
+The ticket said a renewal that crosses a role switch carries the old grant back, and that it was **not fixable at the
+one seam `docs/06` allows**. The first half was true and eighteen days old; the second was a claim about the seams,
+and it was wrong. What makes a request stale is not when it arrives but **the token it holds**, and signing a token
+from before the switch is two lines at the HTTP seam. Five rows there hold the whole mechanism: the stale token is
+left alone, it is still answered as the grant it names, the switch's own cookie goes on renewing, the switch writes
+the last cookie on its own response, and one account's switch does not stop another account renewing.
+
+The owner chose a counter on the account — `users.acting_epoch`, bumped **before** the switch issues its cookie and
+stamped into every token — and a renewal that does not match writes **no cookie at all**. Not a cookie without
+`acting`: that would drop the caller into their most senior grant, which is the same divergence from the other side.
+ADR-0006 carries it, including the price nobody is paying today: a counter on the account cannot tell one account's
+two browsers apart, so a second device stops renewing after a switch made on the first. Telling them apart needs a
+per-session identity, which is the store of session state the JWT was chosen to replace. **Written down rather than
+fixed quietly** — the paragraph is the one to reopen if a second device ever matters.
+
+**The renewal had to stay where it was in the chain.** Reading the counter needs the pool, and the tidy move is to
+push the renewal into `attachRoles`, which has one. But `requireSession` renews **before** `attachRoles` refuses, and
+#99's third writer of the cookie — a refused heartbeat that still carries one back — is a story that depends on
+exactly that order. So `requireSession` became a factory that takes the pool and the renewal did not move.
+
+**And the ticket's sentence about the browser seam became my own.** I wrote in the spec, the ADR, the sheet and the
+mutation file that the browser cannot build a stale request, because `gate` holds a request *before it is sent*. Then
+`51:noguard` — the comparison deleted, which is the code as it stood before the ticket — left both browser rows
+standing, and the sheet recorded that as **predicted**. A prediction is the most comfortable place for a survivor to
+hide: the sweep asks whether the row dies, the prediction answers why it did not, and nobody asks the row what it is
+for. Asserting the answer the released read got is what broke it — a teacher may not read program subjects, so a row
+that had really been sent after the switch would have been refused, and it was answered **200**. `route.fetch()`
+replays the headers the request was captured with, the pre-switch token among them. **The seam could build it all
+along.**
+
+**Then the row still passed, because the situation it arranged had already been undone by the thing it was about.**
+The session has to be inside its last ten minutes for any of this to matter, and every request inside that window
+renews it. The landing screen's own reads were still out when the row aged the cookie; they landed, renewed, and the
+read the row held went out with a fresh token — not stale, not renewable, proving nothing while passing everything.
+**The mechanism under test can erase the precondition you arranged for it.** The row now waits for the first screen to
+finish drawing, ages, and makes the held read the next thing that leaves the browser — and asserts that precondition
+where it is used: the token the read carried had under ten minutes left and the counter from before the switch. Only
+then does `noguard` kill it, and it kills it at the right assertion: the jar comes back with no `acting` at all, the
+browser wearing its most senior grant while the picker says teacher. That is the ticket's third criterion, in the
+browser, where it was said it could not be shown.
+
+**A signature change reaches every mutant that writes a call, not only those anchored on one** (#140). Making
+`requireSession` a factory left `10:guardedlogout` mounting a factory as middleware — a hang, and death by timeout
+rather than by assertion, which reads like a kill to anybody counting — and `99:alwaysrenew` calling `issueSession`
+with the wrong arity. `anchors.py` found the second and **could not find the first**, because the anchor still
+matched: the text was there, its meaning was not. Both were re-aimed and re-swept on their own sheets.

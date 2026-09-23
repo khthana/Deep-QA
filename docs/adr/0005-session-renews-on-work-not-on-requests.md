@@ -81,3 +81,14 @@ The server's half is `backend/test/shell.test.js`
 *a heartbeat (#99)*: a heartbeat with nine minutes left renews, one with a full half hour does not, and one after the
 end is told the session ended. Neither seam can run thirty real minutes, so the promise is the two halves together.
 Each half pins its own number. `mutation/99-heartbeat.py` holds the mutants.
+
+## Amended by #51
+
+**The re-issue this page describes now has a condition on it.** A renewal must carry the account's switch counter
+unchanged, or it writes no cookie at all — [ADR-0006](0006-a-renewal-cannot-carry-a-superseded-grant.md). None of the
+numbers here move: the threshold, the heartbeat's five minutes and the relation between them are as written, and a
+person working on one machine meets the counter never. What changes is the third writer named above. A heartbeat sent
+by the click that switched grant is now answered with no cookie rather than with the old one, which is the same end
+the shell's `beating` reaches by waiting — and the reason the fix could not simply move the renewal into
+`attachRoles`, where the pool it needs already is: `requireSession` renews *before* `attachRoles` refuses, and that
+order is what the paragraph above is about. It took the pool instead.

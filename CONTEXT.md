@@ -159,6 +159,12 @@ so a teacher acting as a teacher is refused what their administrator grant would
 in the session cookie as a **pointer**, re-checked against the grants read from the database on every request, so a
 grant revoked mid-session stops being honoured at once rather than at the next sign-in. See ADR-0002.
 
+Beside the pointer the cookie carries the account's **switch counter** (`users.acting_epoch`), raised by one every
+time the person uses the picker — including when they choose the hat they are already wearing, since what it counts
+is the cookie being re-issued and not the selection changing. It decides nothing about what anybody may do; it is
+there so that a request still in flight when the hat changed cannot re-issue the cookie with the hat it left under.
+See ADR-0006.
+
 **Activity log entry** (ประวัติการใช้งาน):
 One line in `user_log`: an account, what it did, which record it did it to, and when. Written where the action happens
 — signing in and out, and every change to an account or a grant — and read back per account, newest first, by an

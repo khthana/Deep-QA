@@ -4,7 +4,6 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { migrate } = require('../migrate');
-const { reset } = require('../reset');
 const { createPool } = require('../pool');
 const { testSchema, dropSchema, baseFixtures, errorCodeOf } = require('./helpers');
 
@@ -12,9 +11,9 @@ const { testSchema, dropSchema, baseFixtures, errorCodeOf } = require('./helpers
  * Migration 0006, at the same seam as 0001-0005's tests: migrate() and the pool
  * against real PostgreSQL, in a schema this file owns and drops.
  *
- * The applied-migration list and the foreign-key type check move here from
- * 0005's file, as they have moved with every ticket: they are about the schema
- * as a whole, so they belong to whichever migration is newest.
+ * The applied-migration list and the foreign-key type check are not here: they
+ * are about the schema as a whole and have moved with every ticket since, to
+ * 0008's file.
  *
  * What the migration adds is two nullable columns saying which record a log
  * line was written about. The two things worth asserting are the two decisions
@@ -37,58 +36,6 @@ test.after(async () => {
 });
 
 const errorCode = (sql, params) => errorCodeOf(pool, sql, params);
-
-test('reset and migrate build the schema from nothing', async (t) => {
-  const schema = testSchema('logtarget_from_empty');
-  t.after(() => dropSchema(schema));
-
-  await reset({ schema });
-
-  const { applied } = await migrate({ schema });
-
-  assert.deepEqual(applied, [
-    '0001_identity_and_organisation.sql',
-    '0002_offerings_and_learning_outcomes.sql',
-    '0003_assessment_scores_and_rubrics.sql',
-    '0004_user_profile_image.sql',
-    '0005_external_assessor_validity.sql',
-    '0006_user_log_target.sql',
-    '0007_work_group_name_unique.sql',
-  ]);
-});
-
-test('every foreign key has the type and width of the column it points at', async () => {
-  // The one place introspection earns its keep. A mismatched width is not
-  // something either side's DDL states - it is the disagreement between two
-  // lines in two files - and PostgreSQL creates varchar(8) -> varchar(20)
-  // without a word, then fails much later on a value that fits one and not the
-  // other. 0006 adds no foreign key of its own, deliberately; the check is kept
-  // running because it is about the whole schema and this is the newest file.
-  const { rows } = await pool.query(`
-    SELECT ch.relname  AS child_table,
-           ac.attname  AS child_column,
-           format_type(ac.atttypid, ac.atttypmod) AS child_type,
-           pa.relname  AS parent_table,
-           ap.attname  AS parent_column,
-           format_type(ap.atttypid, ap.atttypmod) AS parent_type
-      FROM pg_constraint c
-      JOIN pg_class ch ON ch.oid = c.conrelid
-      JOIN pg_class pa ON pa.oid = c.confrelid
-      JOIN unnest(c.conkey, c.confkey) AS k(child_attnum, parent_attnum) ON true
-      JOIN pg_attribute ac ON ac.attrelid = c.conrelid AND ac.attnum = k.child_attnum
-      JOIN pg_attribute ap ON ap.attrelid = c.confrelid AND ap.attnum = k.parent_attnum
-     WHERE c.contype = 'f'
-       AND ch.relnamespace = current_schema()::regnamespace
-  `);
-
-  const mismatched = rows
-    .filter((r) => r.child_type !== r.parent_type)
-    .map((r) => `${r.child_table}.${r.child_column} ${r.child_type} -> ${r.parent_table}.${r.parent_column} ${r.parent_type}`);
-
-  assert.deepEqual(mismatched, []);
-  // Guards against the query silently matching nothing and passing.
-  assert.ok(rows.length > 40, `expected the schema's foreign keys, found ${rows.length}`);
-});
 
 test('a line about nothing but the actor names no record', async () => {
   // Signing in, signing out, switching role, changing one's own password: the

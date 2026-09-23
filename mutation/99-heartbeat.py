@@ -88,6 +88,13 @@ heartbeat ที่หลุดไปจึงไม่เปลี่ยนอ�
 
 `52:cookiekept` ยกบรรทัดเดียวกับ `endedunwaited` จึงถูกเล็งใหม่ในรอบเดียวกัน และกวาดซ้ำบน `52a`
 
+#51 (23 ก.ย. 2569) เพิ่มพารามิเตอร์ให้ `issueSession` คำแทนที่ของ `alwaysrenew` จึงถูกเขียนใหม่เป็น
+`issueSession(res, req.session.userId, req.session.actingEpoch, req.session.acting);` และกวาดซ้ำบน
+`shell.test.js` - ยัง `not ok` ที่ *leaves a session with more than that alone* แถวเดิม (fail 2 รวมแม่)
+`anchors.py` จับได้เพราะมันอ่านจุดยึด ส่วนสำมะโนไม่เห็นเพราะมันอ่าน `FILES` -
+*การเปลี่ยน signature ไปถึงมัตแตนต์ทุกตัวที่เขียนการเรียกมัน* (#140) กวาดซ้ำอีกครั้งในวันเดียวกัน
+หลังรวมตัวช่วยเซ็น token ที่ซ้ำกันสองตัวใน `shell.test.js` ให้เหลือ `aged` ตัวเดียว ผลเท่าเดิม
+
 ## วิธีรัน
 
     python mutation/99-heartbeat.py save
@@ -135,7 +142,7 @@ MUTANTS = {
     'unrouted': ('me', ROUTE, ''),
     'alwaysrenew': ('me', ROUTE,
                     "  router.post('/me/activity', (req, res) => {\n"
-                    "    issueSession(res, req.session.userId, req.session.acting);\n"
+                    "    issueSession(res, req.session.userId, req.session.actingEpoch, req.session.acting);\n"
                     "    return res.status(204).end();\n"
                     "  });\n"),
     'fivethreshold': ('session', THRESHOLD, "const RENEW_BELOW_SECONDS = 5 * 60;\n"),

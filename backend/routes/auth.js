@@ -42,9 +42,16 @@ const { frontendUrl } = require('../config');
 const googleConfigured = () =>
   Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
-/** Signed in, the cookie set and the log written. Both ways in end here. */
+/**
+ * Signed in, the cookie set and the log written. Both ways in end here.
+ *
+ * The switch counter goes into the token as it stands right now (#51). A fresh
+ * sign-in has chosen no grant yet, so the cookie carries no `acting` and the
+ * most senior applies - but it still has to carry the number, or the first
+ * renewal ten minutes later would have nothing to compare and would decline.
+ */
 async function admitted(res, pool, admission, activity) {
-  issueSession(res, admission.user.user_id);
+  issueSession(res, admission.user.user_id, admission.user.acting_epoch);
   await recordActivity(pool, admission.user.user_id, activity);
   return {
     user: profileOf(admission.user),
