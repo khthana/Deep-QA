@@ -3451,3 +3451,88 @@ them broken not by its own author but by a `1xx` ticket adding a spec years of n
 correctly can be made wrong by a file nobody touched it with. Deferred to a ticket rather than swept in here, but
 the lesson is that **a documented command is a claim with an expiry date**, and the thing that expires it is a new
 file elsewhere.
+
+## #150 — the row that ran before the change it was blamed on
+
+#148 stopped a reload writing the record over what somebody was typing by keying `EntrySection`'s seeding on the
+entry's id instead of on the object handed to it. #150 is the transition that decision did not look at: the id going
+from **nothing to something** while the editor is open. That is not an abstract case — it is exactly what a person's
+own save looks like from inside the box. Press เขียน on a section holding nothing, type, press บันทึก; the form
+closes but the reload it ends with is still out, so the section still holds no entry and still offers เขียน. Press it
+again, and the editor opens on `undefined`. Type. The reload lands, the id goes `undefined` → an id, the effect fires,
+and what was being typed is replaced by what was saved a second earlier.
+
+The ticket came with a question attached, and the question was the more important half. Keying the effect on `editing`
+alone would keep what is typed across every reload including one that brings a *different* entry; keying on the id —
+today — keeps it across a reload bringing the same one. Which the screen should do when the entry under an open editor
+is **replaced by somebody else** is a decision, and `docs/06` §Out of Scope says that is the owner's, not the
+implementer's. The ticket even says the reseed is arguably right there.
+
+So the fix was written to be the smallest thing that is not an answer to it. A ref remembers the id the open draft was
+seeded from; *arriving* (`undefined` → id) does not reseed, *being replaced* (id → another id) reseeds exactly as
+before. The sentinel is a `Symbol` rather than `null` because `undefined` is a real state the ref has to hold — a
+section nobody has written in has no id — and `null` would have collided with it. **The transition the question is
+about is left byte-for-byte where it stood**, which is what makes this a fix rather than a vote.
+
+### The correlation that was three-for-three and still wrong
+
+Running the new row alongside `41a` and `149a` produced a failure in a row belonging to neither: `149a`'s
+ผลการเรียนรู้รายวิชา row about typing surviving a save's reload. It failed three times out of three with the change
+present and passed with it stashed out — measured on a quiet machine after killing the walk servers, so not load. That
+is the shape of a regression, and an hour went into treating it as one.
+
+It was not one, and two readings settled it. The first was the error itself, which was never an assertion:
+*response.json: Protocol error … Response body is not available for a response that was navigated away from* —
+thrown at `e2e/support/clos-screen.js:40`, reading the **dashboard's** body in `mySectionIds`, the first statement of
+the row's setup, before any form exists on the screen. `teaching-screen.js` documents this exact race in a comment,
+because `27a` row 1 lost it twice: Chromium keeps a response body only until the page navigates away, so that helper
+pulls the body eagerly — and swallows the failure with `.catch(() => {})`, deliberately, leaving it for the caller to
+report. The caller is the `.json()` that throws.
+
+The second reading was cheaper and decisive: `npx playwright test 41a 149a 150a --list`. The failing row is **test 2 of
+39**. `150a` is 31 and `41a` is 32–39. Everything the change touches runs *after* it. The changed component had not
+been mounted, had not been compiled into any screen the row visits, and `CourseOutcomes.js` does not import it. A row
+that runs before your code runs cannot be failing because of your code, whatever the correlation says — and the
+correlation was real: three reproductions, one clean control, and entirely meaningless.
+
+**The instrument is `--list`, and it costs nothing.** The mechanism should have been read before the third
+reproduction, not after; *a spec that fails only in the full suite is not a flaky spec until the mechanism is measured*
+(#129) was already on the wall, and the addition here is that the order of the run is part of the mechanism and the
+first thing to check, because it can rule the diff out without understanding anything else. The race is real and
+pre-existing — 38 files under `e2e/support/` use the same `Promise.all([waitForResponse, page.goto()])` shape and
+exactly one of them pulls the body eagerly, which is the one that still lost — so it went to the tracker as **#160**
+rather than into this ticket's diff. The sentence you are reading said *it goes to the tracker* before the issue
+existed, and the standards review caught that: **a deferral is filed or it is not deferred, and prose in the future
+tense is neither.**
+
+### The mutant that was predicted to die somewhere else
+
+Three mutants. `arrivalreseeds` restores the pre-#150 behaviour and kills the new row alone — all thirty rows of
+`149a` stand, correctly, because not one of them changes an id. `closekeepstheid` removes the line that puts the ref
+back when the editor closes, and the sheet was written claiming it kills `41a` row 3, the reopen row. **It survived.**
+
+The reason is the shape #154 had just finished writing down. `41a` row 3 reopens an editor on the entry it has itself
+just saved, so the draft left stale in the box is the very text the correct code would seed into it. The two values
+coincide, and a mutant is invisible wherever the wrong value equals the right one. The stale ref can only be seen where
+they differ, and there is exactly one such place: a section that still holds nothing, where the correct value is empty
+and the stale one is whatever was typed and cancelled. That is the second row, and it kills the mutant alone while
+`41a`'s nine rows stand. **A line the ticket adds needs a mutant of its own, and a prediction about where it dies is a
+claim the sweep answers, not the reading of the code that produced it.**
+
+`41:editorstartsempty` sat on the line this ticket rewrote, so it was re-aimed at the same meaning behind the new
+condition and swept the same day — still 1 failed, 8 passed, still row 3. An anchor check says a mutant applies; only a
+run says it still proves anything.
+
+### The survivor that is the deliverable
+
+`neverreseeds` is the third, and it exists to survive. It is the *other answer* to the open question — never reseed
+once the editor is open — and it was swept across every sheet that draws the component: `133a`, `146a`, `149a`, `150a`,
+`151a`, `41a`, **109 rows, none killed**. That is not a gap in the rows. It is the measurement the question needs:
+nothing in the browser seam today can tell the owner's two options apart, so choosing between them costs no rows to
+rewrite except the ones that would have to be *written* — the replacement row that neither option currently has. A
+mutant written to be killed reports on the code; a mutant written to survive reports on the question.
+
+And the sheet's own collision note said `146` holds `EntrySection.js`. The census says `41`, `149`, `150`. `146` names
+the component in one line of prose and nowhere in its `FILES`. #105 made the same mistake from the other direction, by
+grepping a name and counting sheets that held a *different file* whose path merely started the same way. Both are the
+same failure: **the census answers which paths collide, and neither memory nor grep is the census.**

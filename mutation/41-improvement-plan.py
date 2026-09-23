@@ -91,10 +91,15 @@ MUTANTS = {
     # cancels and saving still saves, so nothing is lost by the machinery - it
     # is lost by the person, who now retypes from memory whatever they meant to
     # amend. #33 met this one screen over. Kills row 3 at the reopen.
+    # Re-aimed by #150, which rewrote the line this sat on. The seeding is now
+    # behind `opening || replaced`; the mutant's meaning is unchanged - the
+    # editor opens empty instead of holding what was saved - and it was swept
+    # again on the day it moved, because an anchor check says a mutant still
+    # applies and only a run says it still proves anything.
     "editorstartsempty": (
         "form",
-        "    if (editing) setDraft(entry?.detail_text ?? '')",
-        "    if (editing) setDraft('')",
+        "    if (opening || replaced) setDraft(entry?.detail_text ?? '')",
+        "    if (opening || replaced) setDraft('')",
     ),
     # ยกเลิก on the confirmation removes the entry. The dialog is drawn, the
     # question is asked, and both answers mean yes - the worst version of this

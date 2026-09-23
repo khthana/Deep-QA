@@ -1,5 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
+
+/**
+ * What `seededFrom` holds while no editor is open.
+ *
+ * A section nobody has written in yet has no entry and therefore no id, so
+ * `undefined` is a value the ref has to be able to hold and tell apart from
+ * *nothing is open* — which is the whole of #150. A sentinel says which is
+ * which where `null` would have collided with a real state.
+ */
+const CLOSED = Symbol('no editor open')
 
 /**
  * One of the four sections of the cycle, for one ผลการเรียนรู้ — #41.
@@ -37,13 +47,35 @@ export default function EntrySection({
   const [draft, setDraft] = useState('')
   const entryId = entry?.entry_id
 
-  // Seeded when the editor opens, and when the section comes to hold a
-  // different entry — not whenever the page hands over a new object. A reload
-  // rebuilds every entry from the answer, and the page keeps this section
-  // mounted through it (#149), so an effect keyed on the object would write
-  // what is stored over what is being typed — #148.
+  // The id the open draft was seeded from, or CLOSED while nothing is open.
+  const seededFrom = useRef(CLOSED)
+
+  // Seeded when the editor opens, and when a section that already held an
+  // entry comes to hold a different one — not whenever the page hands over a
+  // new object. A reload rebuilds every entry from the answer, and the page
+  // keeps this section mounted through it (#149), so an effect keyed on the
+  // object would write what is stored over what is being typed — #148.
+  //
+  // And not when an entry *arrives* under an editor that opened without one —
+  // #150. That transition is this person's own save landing: they pressed
+  // บันทึก, the form closed, they pressed เขียน again before the reload was
+  // back, and so the editor opened on a section that did not hold an entry
+  // yet. What is in the box is newer than what the reload is carrying, and
+  // seeding there replaced what was being typed with what had just been saved.
+  //
+  // Somebody else replacing or deleting the entry is the id changing from one
+  // value to another, which still seeds. Whether it should is the question
+  // left open on #150, and leaving that transition exactly where it was is
+  // what keeps this a fix and not an answer to it.
   useEffect(() => {
-    if (editing) setDraft(entry?.detail_text ?? '')
+    if (!editing) {
+      seededFrom.current = CLOSED
+      return
+    }
+    const opening = seededFrom.current === CLOSED
+    const replaced = !opening && seededFrom.current !== undefined
+    if (opening || replaced) setDraft(entry?.detail_text ?? '')
+    seededFrom.current = entryId
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editing, entryId])
 
