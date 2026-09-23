@@ -3335,3 +3335,66 @@ browser, where it was said it could not be shown.
 rather than by assertion, which reads like a kill to anybody counting — and `99:alwaysrenew` calling `issueSession`
 with the wrong arity. `anchors.py` found the second and **could not find the first**, because the anchor still
 matched: the text was there, its meaning was not. Both were re-aimed and re-swept on their own sheets.
+
+## #105 — a dot is 4px wide and an icon is not
+
+Every entry of every role's menu had declared an icon since the system was delivered, and the shell drew a 4px dot
+for each sub-item and used none of them. The ticket was decided by the owner on 28 August, carried a four-line
+acceptance, and looked like ten minutes of work. Three things in it were not.
+
+**The claim was still true, and checking cost one grep.** `h-1 w-1 rounded-full` was still at one site in
+`SidebarItem.js`, and every role's config still declared an icon per entry. The ticket's figure — thirteen sub-items
+in `Teacher.js` — was right, and its scope sentence was not: the dot is drawn at **one** site that every role's menu
+goes through, so the change lands on twenty-eight entries across five menus, not thirteen in one. A ticket that names
+a file has usually named the file the walk was standing on.
+
+**Replacing a dot with an icon is a layout change, and a rule about layout is checked with numbers** (#111, #122).
+A throwaway Playwright probe measured every sub-item before and after: the row stays 40px, because a 20px icon box
+still fits inside a 24px line; what moves is the label's width, 211px → 194px, and two labels of the committee's menu
+drop to two lines. Seven of twenty-eight labels now take two lines where five did. **The instrument was a probe spec,
+not a walk** — it is cheaper than a person, it can be re-run after the next change, and it was deleted the moment it
+had answered.
+
+**But a measurement answers *what it costs*, not *may I*.** Tightening the gap between mark and label from 12px to
+8px was measured too, and it is worth 194px → 198px and one label back — and it went in, and `/code-review` took it
+out again, quoting `docs/06` §Out of Scope: the UI is reproduced as-is, and a proposal to change it is raised as a
+question. Nothing in the diff had pinned the 8px: no acceptance row, no mutant, one line in a comment. The number the
+ticket publishes to its owner is now both numbers, and the choice is theirs. **A number that justifies a change is not
+permission to make it** — and the tell is that nothing else in the diff could be broken to make that line fail.
+
+Re-measuring the shipped state afterwards was worth its one run, and it found the second thing. The obvious way to
+get the *before* number back was to apply `dots`, which is the pre-#105 shell — except that it is not: `dots` mutates
+what goes **inside** the 20px box, so the geometry it produces is the new layout with a dot in it, and it reported the
+before and after widths as identical. **A mutant reproduces the behaviour it was written for, not the layout around
+it.** It did confirm the census exactly — 13 + 8 + 7 = 28 — because that is a question about behaviour.
+
+**The picture is appearance; that the shell reads each entry's config is not.** So `105a` asks the two questions a
+browser is allowed to ask — no entry draws nothing, and two entries of the same group do not draw the same thing —
+and the sheets for #30, #31 and #32 keep the question only a person can answer: *is that a pair of scales?* Those
+three rows go back from ☑ to ◐, which looks like a regression and is the opposite: until this ticket there was
+nothing on the screen to look at, so there was no half to walk. **A row can gain a walkable half the day a ticket
+lands.**
+
+The pair a row names has to sit under **one** group. The first draft of row 2 named two entries of different groups,
+and writing `groupicon` — every entry gets the icon of the group it sits under — is what showed that: two different
+groups draw two different things, so the row would have passed the mutant it was supposed to die to. That one was
+caught by reading the mutant against the row rather than by running it, which is the cheaper order when a mutant is
+still being written; the three that were run are in the sheet's own table.
+
+Two more came out of the same review, both of them rules this file already holds. `everyEntryDraws` took a
+non-retrying snapshot of the menu's links, and what got the rows there waited for an **answer** — `signIn` for the
+login response and a URL, `chooseSection` for the section's — which is #132 exactly: a helper that waits for the
+response has not waited for the drawing. One retrying `toBeVisible` on the first name settles it, and it is chosen to
+be a wait for a **name** rather than for a drawing, so that no mutant turns into a timeout (#139).
+
+And widening the ◐ gloss on three sheets left twenty-two carrying the narrower one — #130, the copy you will miss.
+Reading them before rewriting them was what mattered: the narrow gloss says ◐ means *the server half passed and the
+screen half is waiting*, and sheet 10 already carried a ◐ of the other kind, the attribute that reached the DOM and
+needs an ear. **The definition had drifted from the mark before this ticket touched it**, so this is not a copy #105
+invented; it is one #105 made visible on the sheet it was already editing. Fixed there, measured everywhere else — 81
+◐ across 37 sheets is not an audit that belongs inside a sidebar ticket — and raised as its own question.
+
+And the count that decides whether two sheets may be swept together is the census, not a grep: the first draft of
+`mutation/105-sidebar-icons.py` said nine sheets hold `SidebarItem.js`, having grepped the name. Seven of those hold
+`SidebarItem/Teacher.js`, which is the config and not the shell. The script reads `FILES` and answered **three**.
+**A name that starts the same is not a path** (#85, #87, #125).

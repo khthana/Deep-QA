@@ -108,6 +108,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - A ◐ is one of two kinds — a request no control can produce, which waits on nobody, or an
   attribute that reached the DOM and needs an ear, which is a real queue. Count them apart. (#85,
   #111, #122 — told under *The ◐ and ☐ rows*)
+- **A row can gain a walkable half the day a ticket lands** — a ☑ going back to ◐ is not always a
+  regression; it can mean there is something on the screen to look at for the first time. (#105)
 - A sheet that hands a claim to another sheet has written a pointer a later ticket can delete;
   after removing content, grep for the file it lived in. (#124)
 - A sheet's prediction about what a future fix will not break is a claim like any other. (#52)
@@ -162,6 +164,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - An anchor check tells you a mutant no longer applies; only a sweep tells you it no longer proves
   anything — including when re-aiming it is the right fix. (#107, #68)
 - When a mutant lives in shared code, its sheet is one of the places it kills, not the list. (#123)
+- **A mutant reproduces the behaviour it was written for, not the world around it** — so it is not
+  a *before* to measure layout against, even when it is the code that came before. (#105)
 - **A ticket that offers to de-duplicate is answered with what the merge costs the proof**, not only
   with what it saves the code — one hook behind fifteen screens turns fifteen claims into one no
   mutant can measure apart. And when a rule holds on many screens, the screen that proves it is chosen by
@@ -279,6 +283,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - A number copied from a sibling screen is a decision, not an inheritance. (#45)
 - An accessibility fix does not get to change layout on the way past, and a rule about layout is
   checked with numbers. (#111, #122)
+- **A number that justifies a change is not permission to make it.** A measurement answers what a
+  change costs; whether it may be made is `docs/06` §Out of Scope, and the tell is that nothing in
+  the diff can be broken to make the changed line fail. Publish both numbers and ask. (#105)
 - A ticket that generalises across screens has usually generalised the symptom — check whether the
   rule generalises; ask what is actually shared, the code that runs or the value handed to it.
   (#122, #67)

@@ -222,16 +222,48 @@ function SidebarItem({
             }
           `}
                               >
-                                {/* เส้นขีดด้านข้างเมื่อ Active เพื่อความมินิมอล */}
                                 {({ isActive }) => (
                                   <>
-                                    <div
-                                      className={`h-1 w-1 rounded-full transition-all ${
-                                        isActive
-                                          ? 'scale-125 bg-blue-600'
-                                          : 'bg-blue-100 group-hover:bg-primary'
-                                      }`}
-                                    />
+                                    {/*
+                                      The icon this entry declares - #105. Every
+                                      sub-item of every role's menu carries one
+                                      and the shell drew a dot for all of them
+                                      until this, so the icons the config named
+                                      were never on screen.
+
+                                      The box is sized to the label's own line
+                                      so that swapping a 4px dot for it leaves
+                                      the row the height it was; what it does
+                                      take is width, which the numbers on
+                                      docs/acceptance/30 record, along with the
+                                      two labels that now take two lines and the
+                                      question that was raised about them rather
+                                      than answered here.
+
+                                      Below it the dot is left exactly as it
+                                      was, active branch and all, for an entry
+                                      added without an icon. No entry in any
+                                      role's config is one today, so nothing
+                                      reaches it - it is kept because the
+                                      top-level row above keeps the same
+                                      fallback, and because a config is a thing
+                                      somebody edits.
+
+                                      The icon itself takes no such branch: it
+                                      draws in the link's own text colour, which
+                                      the active state already changes.
+                                    */}
+                                    <div className="flex h-5 w-5 shrink-0 items-center justify-center text-[18px]">
+                                      {sub.icon ?? (
+                                        <div
+                                          className={`h-1 w-1 rounded-full transition-all ${
+                                            isActive
+                                              ? 'scale-125 bg-blue-600'
+                                              : 'bg-blue-100 group-hover:bg-primary'
+                                          }`}
+                                        />
+                                      )}
+                                    </div>
                                     <span>{sub.label}</span>
                                   </>
                                 )}

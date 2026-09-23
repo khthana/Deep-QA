@@ -92,6 +92,37 @@ const breadcrumb = page => page.getByRole('navigation', { name: 'Breadcrumb' });
 const menuLink = (page, name) =>
   menu(page).getByRole('link', { name, exact: true });
 
+/**
+ * Every entry the side menu is showing, with the drawing each one carries.
+ *
+ * The drawing is the outline of the paths inside the entry's `svg`, joined.
+ * That is the only handle on *which* icon an entry is showing that does not
+ * reach into the icon pack's internals, and it is enough for the two questions
+ * a browser is allowed to ask here: whether an entry draws anything at all,
+ * and whether two entries draw the same thing. Whether the drawing is the
+ * right picture for the entry - a pair of scales beside สัดส่วนคะแนน - is a
+ * thing only a person can say, and stays a hand-walked row on
+ * docs/acceptance/30, 31 and 32.
+ *
+ * Asked of the menu's links rather than of a CSS descent into its sub-lists,
+ * so that this reads the same way as everything else here: a group header is a
+ * link, and so is each entry under it.
+ */
+async function menuEntries(page) {
+  const links = await menu(page).getByRole('link').all();
+  return Promise.all(
+    links.map(async link => ({
+      label: (await link.textContent()).trim(),
+      drawing: await link.evaluate(
+        entry =>
+          Array.from(entry.querySelectorAll('svg path'))
+            .map(path => path.getAttribute('d'))
+            .join(' ') || null,
+      ),
+    })),
+  );
+}
+
 /** The avatar menu: the one button in the navigation bar carrying no text. */
 const avatarButton = page =>
   navbar(page).getByRole('button').filter({ hasNotText: /\S/ });
@@ -146,6 +177,7 @@ async function signOut(page) {
 module.exports = {
   breadcrumb,
   menuLink,
+  menuEntries,
   PROGRAMS,
   PROGRAM_SUBJECTS,
   PROGRAM_SUBJECTS_API,
