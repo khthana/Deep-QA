@@ -77,5 +77,18 @@ What the row costs is care about when the session is aged: any request that leav
 read would then carry a fresh token and prove nothing. The row asserts that precondition — that the token it held was
 inside the window and carried the counter from before the switch — rather than trusting it.
 
+**A token with no counter** was decided here and measured later, by #154. No seam can obtain one: every token either
+seam mints is signed by this server, and this server stamps the counter, so the two rows sign one by hand — the same
+file's *answers a token signed before the counter existed* and *and does not renew it, with a minute of life left*.
+They are the two halves this decision promises the people holding a session when 0008 deploys: the request is answered
+as the account it names, and nothing is written back however little life the token has.
+
+The mutant is the alternative this decision rejected, written out — `session.actingEpoch ?? 0`. Where it can kill is
+the whole of it: `?? 0` differs from `undefined` only where the account's own counter is zero, so against an account
+that has switched the comparison fails either way and the mutant walks past a row aimed straight at it. The second row
+therefore stands on the account `shell.test.js` never switches, and asserts that its counter is zero before asking
+anything — not because the claim is about zero, but because zero is the only state in which the two implementations
+part. It kills that row and no other, and nothing at the browser seam.
+
 `mutation/51-renewal-across-a-switch.py` holds the mutants: the write, its order, the grant it carries, the comparison
-removed, and the comparison always false.
+removed, the comparison always false, and the missing claim read as zero.

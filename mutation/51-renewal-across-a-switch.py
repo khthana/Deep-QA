@@ -39,7 +39,12 @@ when the grant changes…*, ที่สอง *a session inside its last ten mi
 * `noguard` - ลบการเทียบทิ้ง คือโค้ดก่อน #51 ฆ่าแถวเบราว์เซอร์ที่หนึ่งที่ *the hat in the browser
   after the read landed*: คำขอที่ค้างเขียนคุกกี้ทีหลัง คุกกี้นั้นไม่มี `acting` เลย เบราว์เซอร์จึงกลับไป
   สวมหมวกอาวุโสสุดขณะที่ตัวเลือกบนจอบอก อาจารย์ผู้สอน - ความไม่ตรงกันของ #51 ทั้งดุ้น เห็นในเบราว์เซอร์
-  - กับแถว HTTP ที่หนึ่ง แถวเบราว์เซอร์ที่สองไม่ตาย ซึ่งถูก: มันเป็นแถวของการต่ออายุที่*ควร*เกิด
+  - กับแถว HTTP ที่หนึ่งและ**ที่เจ็ด** แถวเบราว์เซอร์ที่สองไม่ตาย ซึ่งถูก: มันเป็นแถวของการต่ออายุที่*ควร*เกิด
+* `missingiszero` - อ่าน claim ที่ไม่มีว่าเป็นศูนย์ (`session.actingEpoch ?? 0`) คือทางที่ ADR-0006
+  เขียนไว้ว่าไม่เลือก **ฆ่าแถว HTTP ที่เจ็ดแถวเดียว** (#154) ไม่แตะอะไรที่ seam เบราว์เซอร์เลย ซึ่งถูก:
+  token ที่ไม่มีตัวนับไม่มีทางเกิดในเบราว์เซอร์ได้ - server ตัวนี้ประทับตัวนับลงทุกใบที่มันเซ็น
+  แถวที่เจ็ดจึงต้องยืนบนบัญชีที่ตัวนับยัง **เป็นศูนย์** ถ้าไม่ใช่ `?? 0` กับ `undefined` ให้ผลเดียวกัน
+  และมัตแตนต์ตัวนี้ก็รอด - แถวนั้น assert ศูนย์ไว้เองด้วยเหตุผลนี้
 
 แถวเบราว์เซอร์ที่หนึ่งสร้าง token จากก่อนการสลับได้จริง เพราะคำขอที่ `gate` จับไว้ถือ header ที่มันถูก
 ส่งออกไป - token ใบเก่ารวมอยู่ในนั้น - และตอนปล่อยมันเล่นซ้ำ header ชุดนั้น สิ่งที่แถวต้องระวังคือ
@@ -56,13 +61,22 @@ when the grant changes…*, ที่สอง *a session inside its last ten mi
 กวาดครั้งแรกเมื่อ 23 ก.ย. 2569 ทีละตัว และกวาดฝั่งเบราว์เซอร์ใหม่ทั้งห้าตัวในวันเดียวกัน หลังเขียน
 แถวที่หนึ่งใหม่ให้ถือ token จากก่อนการสลับจริง ๆ - ของเดิมส่งคำขอด้วยคุกกี้ใบสด แล้วผ่านทั้ง `noguard`
 
+`missingiszero` เพิ่มเมื่อ 23 ก.ย. 2569 พร้อมแถว HTTP ที่หกกับที่เจ็ดของ #154 รันกับทั้งสอง seam
+และรัน `noguard` ซ้ำเพราะแถวใหม่เปลี่ยนรายการที่มันฆ่า
+
+**`node --test` นับ test ตัวนอกเป็นความล้มเหลวด้วย** ตัวเลข `# fail` ของไฟล์นี้จึงมากกว่าจำนวนแถวที่ตาย
+อยู่หนึ่งเสมอ อ่านชื่อในบรรทัด `not ok` ที่ย่อหน้าสี่ช่อง ไม่ใช่ตัวเลข
+
 ## วิธีรัน
 
     python mutation/51-renewal-across-a-switch.py save
     python mutation/51-renewal-across-a-switch.py nobump
-    cd e2e && E2E_FRONTEND_PORT=5300 npx playwright test 51a --reporter=line
+    cd e2e && E2E_FRONTEND_PORT=5300 npx playwright test 51a-renewal --reporter=line
     cd backend && node --test test/shell.test.js
     python mutation/51-renewal-across-a-switch.py restore
+
+ชื่อไฟล์เต็ม `51a-renewal` ไม่ใช่ `51a` เฉย ๆ - Playwright จับแบบ substring และ `51a` ลาก
+`151a-failed-reload-keeps-the-list.spec.js` มาด้วย
 """
 
 from harness import main
@@ -85,6 +99,7 @@ MUTANTS = {
                        '      issueSession(res, req.auth.userId, epoch, req.session.acting);\n'),
     'neverrenew': ('session', COMPARE, '  if (true) return;\n'),
     'noguard': ('session', COMPARE, ''),
+    'missingiszero': ('session', COMPARE, '  if (epoch !== (session.actingEpoch ?? 0)) return;\n'),
 }
 
 main(FILES, MUTANTS)

@@ -22,6 +22,7 @@ const jwt = require('jsonwebtoken');
 const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, byAlias, DEPARTMENTS, PROGRAMS } = require('../../db/seed');
+const { actingEpoch } = require('../auth/accounts');
 const { attachRoles, requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const {
@@ -83,6 +84,20 @@ const aged = (cookie, seconds) => {
     expiresIn: seconds,
   })}`;
 };
+
+/**
+ * A cookie from before migration 0008: the account, and no switch counter.
+ *
+ * The deliberate opposite of `aged` above, which carries every claim over
+ * precisely so that no row lands in this branch by accident. This is the one
+ * state no sign-in can produce any more - every token either seam can mint is
+ * signed by this server as it stands, and this server stamps the counter - so
+ * it is signed by hand rather than obtained. #154.
+ */
+const beforeTheCounter = (alias, seconds) =>
+  `${COOKIE_NAME}=${jwt.sign({ user_id: byAlias(alias) }, process.env.SECRET_KEY, {
+    expiresIn: seconds,
+  })}`;
 
 const roleGuarded = (...roleIds) =>
   guardedApp(requireSession(api.pool), attachRoles(api.pool), requireRole(...roleIds));
@@ -567,5 +582,44 @@ test('a renewal that crosses a switch (#51)', async (t) => {
 
     assert.equal(response.status, 200);
     assert.ok(response.headers['set-cookie'], 'the other account should still renew');
+  });
+
+  // #154. The branch of the guard a person reaches without doing anything
+  // unusual: everybody holding a session when 0008 deploys is carrying a token
+  // from before the column existed, and `undefined` is equal to no number the
+  // account can be at. ADR-0006 chose that over reading a missing claim as
+  // zero, which would be true only on the day it deploys. What it promises the
+  // people in that window is two things, and this pair is them.
+  await t.test('answers a token signed before the counter existed', async () => {
+    const response = await me(beforeTheCounter('U_TEACH', 9 * 60));
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.user.user_id, byAlias('U_TEACH'));
+  });
+
+  // And writes nothing back, with a minute left rather than nine, because the
+  // claim is about the missing counter and not about the threshold.
+  //
+  // U_TEACH is the account this file never switches, so its counter is still
+  // zero - which is what lets this row tell a missing claim apart from one read
+  // as zero, and the only reason a mutant can reach it. Asserted rather than
+  // assumed: a row added above that switched this account would leave this one
+  // passing for a reason nobody wrote down.
+  //
+  // It asks `actingEpoch()` rather than the column on purpose: what has to be
+  // zero is the left-hand side of the comparison under test, which is whatever
+  // that function returns. Reading the column would be independent of it, and
+  // would be asserting a slightly different thing.
+  await t.test('and does not renew it, with a minute of life left', async () => {
+    assert.equal(
+      await actingEpoch(api.pool, byAlias('U_TEACH')),
+      0,
+      'this row needs an account that has not switched; see the note above it',
+    );
+
+    const response = await me(beforeTheCounter('U_TEACH', 60));
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers['set-cookie'], undefined);
   });
 });

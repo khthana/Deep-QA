@@ -3398,3 +3398,56 @@ And the count that decides whether two sheets may be swept together is the censu
 `mutation/105-sidebar-icons.py` said nine sheets hold `SidebarItem.js`, having grepped the name. Seven of those hold
 `SidebarItem/Teacher.js`, which is the config and not the shell. The script reads `FILES` and answered **three**.
 **A name that starts the same is not a path** (#85, #87, #125).
+
+## #154 — the mutant that can only be killed where the default is the truth
+
+A tracker, not a defect. #51 made a token's switch counter the thing a renewal compares against, and a token signed
+before migration 0008 carries no counter at all: `undefined` is equal to no number, so it never renews. ADR-0006
+chose that over reading the missing claim as zero. Nothing measured it, because no seam can produce that token — every
+one either seam mints is signed by this server, and this server stamps the counter. So the fixture is a token signed
+by hand, which is what the file already does for the idle-session rows.
+
+**Writing the row was ten minutes. Working out what could kill it was the ticket.** The mutant the ticket named is
+`session.actingEpoch ?? 0` — the implementation the ADR rejected, written out. It looks like it must kill any row
+about a counter-less token. It does not. `?? 0` changes the comparison only when the account's own counter *is* zero;
+for an account that has switched even once, `epoch !== undefined` and `epoch !== 0` are both true, the renewal is
+skipped either way, and the mutant survives a row that looks like it is aimed straight at it. **A mutant that
+substitutes a default is invisible everywhere the real value differs from the default.** The row has to be built to
+stand at the one point where the two coincide.
+
+So the row stands on `U_TEACH` — the account this file never switches — and **asserts that its counter is zero**
+before asking anything. Not because the row is about zero, but because zero is the only state in which the row can
+tell the two implementations apart, and a row added above it that switched that account would leave it green and
+proving nothing. The assertion carries a message saying so. `missingiszero` then kills that row and only that row:
+33 pass, and the two failures are the row and the parent test that contains it — `node --test` counts the outer
+`test()` as failed too, which is the reading trap #48 and #67 already named.
+
+Two things fell out of it that are not about the branch at all.
+
+`npx playwright test 51a` **also runs `151a`**. Playwright matches the file argument as a substring, so the sheet's
+own documented command had been pulling in another ticket's spec. Harmless here — the mutant killed nothing in either
+— but a sweep that reads a kill count from a command like that is reading two sheets' rows as one.
+
+And the count line on `docs/acceptance/10-application-shell.md` said *15 ⚙ · 5 ☑ · 1 ◐ · 1 ☐ รวม 22* while the table
+held 23. #105 added a ⚙ the day before and did not update the total. **Two lines below that number stands a paragraph
+explaining that this exact number had gone stale once before, why hand-kept numbers in a growing file go wrong, and
+an instruction to count the table instead.** The warning was read, agreed with, and not obeyed — by the same session
+that wrote a rule about it into `CLAUDE.md` the same week. A rule in prose beside a number does not count the number.
+If that total is to stay right, something has to count it.
+
+**And then it happened again, inside this ticket, while the paragraph above was being written.** The review found
+three more stale figures on the same sheet, twenty lines further down in a `### มัตแตนต์` section this diff had
+never opened: *ห้าตัว* against six mutants, a baseline of *33 ผ่าน* against a file that now holds 35 — which would
+have made the baseline and a kill count read identically — and `noguard`'s *HTTP ล้ม 1*, contradicted by this
+ticket's own mutation sheet in the same diff, which says `noguard` now kills rows one **and seven**. Correcting one
+hand-kept number does not find the next one; it finds the one you were looking at. **What a diff touches is what a
+diff proofreads**, so after changing what a document counts, the thing to re-read is every figure in the document,
+not the figure you came for. Two documents in one diff disagreeing is the cheapest of these to catch and the easiest
+to ship: they were written an hour apart by the same hand, and only reading them side by side shows it.
+
+The substring trap has the matching shape. `51a` was fixed on its own sheet; a grep afterwards found the same live
+collision documented on **seven others** — `21a`→`121a`, `22a`, `33a`, `39a`, `40a`, `42a`, `44a` — every one of
+them broken not by its own author but by a `1xx` ticket adding a spec years of numbering later. A command written
+correctly can be made wrong by a file nobody touched it with. Deferred to a ticket rather than swept in here, but
+the lesson is that **a documented command is a claim with an expiry date**, and the thing that expires it is a new
+file elsewhere.

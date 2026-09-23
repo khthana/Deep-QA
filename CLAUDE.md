@@ -116,6 +116,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A hand-kept number in a file that grows every ticket is already wrong** — count the table,
   and after correcting a figure grep for the wrong value again. A rule written to correct a wrong
   number is itself a claim to check. (#119, #96, #48)
+- **What a diff touches is what a diff proofreads** — correcting one hand-kept figure finds the one you were looking
+  at, not the next one twenty lines down; and two documents changed in the same breath can be shipped contradicting
+  each other. After changing what a document counts, re-read every figure in it, and read the pair side by side.
+  (#154)
 - **A survey of the store has a date on it, and a successful fix is what expires one.** Read the
   date before the figure. (#50, #85)
 - **A claim written in prose expires like a number** — and the copy you will miss is in the file
@@ -166,6 +170,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - When a mutant lives in shared code, its sheet is one of the places it kills, not the list. (#123)
 - **A mutant reproduces the behaviour it was written for, not the world around it** — so it is not
   a *before* to measure layout against, even when it is the code that came before. (#105)
+- **A mutant that substitutes a default is invisible everywhere the real value differs from it** —
+  build the row at the one point where the two coincide, and assert that precondition in the row.
+  (#154)
+- **A test-file argument is matched as a substring** — `51a` also runs `151a`, so a kill count read
+  off a command like that is two sheets' rows counted as one. (#154)
 - **A ticket that offers to de-duplicate is answered with what the merge costs the proof**, not only
   with what it saves the code — one hook behind fifteen screens turns fifteen claims into one no
   mutant can measure apart. And when a rule holds on many screens, the screen that proves it is chosen by
