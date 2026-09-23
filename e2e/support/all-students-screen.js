@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { openAt } = require('./navigation');
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตรของนักศึกษาทุกคน — #43, as a browser reaches it.
@@ -24,14 +25,12 @@ const HEATMAP_API = '/api/program-results/by-intake/students';
 
 /** Opens the screen and waits for the grid the pickers default to. */
 async function openHeatmap(page) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, PATH, (fresh) =>
+    fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === HEATMAP_API && answer.request().method() === 'GET',
     ),
-    page.goto(PATH),
-  ]);
-  return response;
+  );
 }
 
 const intakePicker = (page) => page.getByLabel('ปีรับเข้า');

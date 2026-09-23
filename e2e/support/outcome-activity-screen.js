@@ -1,6 +1,7 @@
 'use strict';
 
 const { DASHBOARD } = require('./teaching-screen');
+const { openAt } = require('./navigation');
 
 /**
  * ความเชื่อมโยงผลการเรียนรู้และกิจกรรม — #39, as a browser reaches it.
@@ -27,14 +28,12 @@ const API = (sectionId) => `/api/teaching/sections/${sectionId}/outcome-activity
 
 /** Opens the screen and hands back the read, whatever it answered. */
 async function openMap(page, sectionId) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, path(sectionId), (fresh) =>
+    fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === API(sectionId) && answer.request().method() === 'GET',
     ),
-    page.goto(path(sectionId)),
-  ]);
-  return response;
+  );
 }
 
 /**

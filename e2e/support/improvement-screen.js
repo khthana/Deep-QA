@@ -6,6 +6,7 @@ const { BACKEND_URL } = require('./env');
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
 const { myClos } = require('./behaviors-screen');
+const { openAt } = require('./navigation');
 
 /**
  * แผนการปรับปรุงอย่างต่อเนื่อง — #41, as a browser reaches it.
@@ -43,8 +44,7 @@ const waitForPlan = page =>
 
 /** Goes to one ตอนเรียน's plan and hands back the read a row asserts on. */
 async function openPlan(page, sectionId) {
-  const [response] = await Promise.all([waitForPlan(page), page.goto(path(sectionId))]);
-  return response;
+  return openAt(page, path(sectionId), waitForPlan);
 }
 
 /**

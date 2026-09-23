@@ -4,6 +4,7 @@ const { expect } = require('@playwright/test');
 
 const { DASHBOARD } = require('./teaching-screen');
 const { untilDrawn } = require('./pager');
+const { openAt } = require('./navigation');
 
 /**
  * กลุ่มงานนักศึกษา — #26, as a browser reaches it.
@@ -33,11 +34,7 @@ const waitForList = (page, sectionId) =>
 
 /** Opens the groups screen of one ตอนเรียน and hands back the read a row asserts on. */
 async function openGroups(page, sectionId) {
-  const [response] = await Promise.all([
-    waitForList(page, sectionId),
-    page.goto(path(sectionId)),
-  ]);
-  return response;
+  return openAt(page, path(sectionId), (fresh) => waitForList(fresh, sectionId));
 }
 
 /** One group's card, found by the heading a person reads it by. */

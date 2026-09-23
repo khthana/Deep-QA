@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { openAt } = require('./navigation');
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า — #42, as a browser reaches it.
@@ -23,14 +24,12 @@ const REPORT_API = '/api/program-results/by-intake';
 
 /** Opens the screen and waits for the report the pickers default to. */
 async function openReport(page) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, PATH, (fresh) =>
+    fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === REPORT_API && answer.request().method() === 'GET',
     ),
-    page.goto(PATH),
-  ]);
-  return response;
+  );
 }
 
 /**

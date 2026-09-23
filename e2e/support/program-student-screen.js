@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { openAt } = require('./navigation');
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตรรายบุคคล — #45, as a browser reaches it.
@@ -23,13 +24,11 @@ const ROLL_API = '/api/program-results/by-intake/roll';
 
 /** Opens the screen and waits for the roll the intake picker defaults to. */
 async function openIndividual(page) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, PATH, (fresh) =>
+    fresh.waitForResponse(
       (answer) => new URL(answer.url()).pathname === ROLL_API && answer.status() === 200,
     ),
-    page.goto(PATH),
-  ]);
-  return response;
+  );
 }
 
 /** The intake dropdown. The curriculum beside it is a label for every seeded account. */

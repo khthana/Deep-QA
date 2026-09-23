@@ -2,6 +2,7 @@
 
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
+const { openAt } = require('./navigation');
 
 /**
  * กิจกรรมการเรียนรู้ — #32, as a browser reaches it.
@@ -29,11 +30,7 @@ const waitForActivities = page =>
 
 /** Goes to one Section's activities and hands back the read a row asserts on. */
 async function openActivities(page, sectionId) {
-  const [response] = await Promise.all([
-    waitForActivities(page),
-    page.goto(path(sectionId)),
-  ]);
-  return response;
+  return openAt(page, path(sectionId), waitForActivities);
 }
 
 /** One group, found by its category name. */

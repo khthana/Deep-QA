@@ -3,6 +3,7 @@
 const { expect } = require('@playwright/test');
 const { waitForList, search } = require('./users-screen');
 const { untilDrawn } = require('./pager');
+const { openAt } = require('./navigation');
 
 /**
  * The activity history - #13.
@@ -56,7 +57,7 @@ const waitForHistory = (page, userId, pageNumber) =>
  * The history's own pager appears after a person is chosen, which is `pick`.
  */
 async function openHistory(page) {
-  const [response] = await Promise.all([waitForList(page), page.goto(HISTORY)]);
+  const response = await openAt(page, HISTORY, waitForList);
   expect(response.status()).toBe(200);
   return response;
 }

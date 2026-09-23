@@ -5,6 +5,7 @@ const { expect } = require('@playwright/test');
 const { BACKEND_URL } = require('./env');
 const { DASHBOARD } = require('./teaching-screen');
 const { untilDrawn } = require('./pager');
+const { openAt } = require('./navigation');
 
 /**
  * รายชื่อนักศึกษาของรายวิชา — #25, as a browser reaches it.
@@ -45,7 +46,7 @@ const waitForList = page =>
  * only exists on an answer that succeeded.
  */
 async function openEnrolment(page, sectionId) {
-  const [response] = await Promise.all([waitForList(page), page.goto(path(sectionId))]);
+  const response = await openAt(page, path(sectionId), waitForList);
   expect(response.status()).toBe(200);
   return untilDrawn(page, response);
 }

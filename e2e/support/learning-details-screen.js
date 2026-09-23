@@ -1,6 +1,7 @@
 'use strict';
 
 const { DASHBOARD } = require('./teaching-screen');
+const { openAt } = require('./navigation');
 
 /**
  * รายละเอียดผลการเรียนรู้ — #38, as a browser reaches it.
@@ -28,14 +29,12 @@ const API = (sectionId) => `/api/teaching/sections/${sectionId}/learning-details
 
 /** Opens the screen and hands back the read, whatever it answered. */
 async function openDetails(page, sectionId) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, path(sectionId), (fresh) =>
+    fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === API(sectionId) && answer.request().method() === 'GET',
     ),
-    page.goto(path(sectionId)),
-  ]);
-  return response;
+  );
 }
 
 /** One student's cell for one outcome, addressed by the head of its label. */

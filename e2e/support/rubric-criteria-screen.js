@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { openAt } = require('./navigation');
 
 /**
  * เกณฑ์การให้คะแนนของ Rubric — #22, as a browser reaches it.
@@ -57,15 +58,13 @@ async function openCriteriaVia(page, rubricRow) {
 
 /** Opens the screen by address, for the rows about somebody who typed one. */
 async function openCriteriaAt(page, rubricId) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, `${RUBRICS}/${rubricId}/criteria`, fresh =>
+    fresh.waitForResponse(
       answer =>
         new URL(answer.url()).pathname === `/api/rubrics/${rubricId}/criteria` &&
         answer.request().method() === 'GET',
     ),
-    page.goto(`${RUBRICS}/${rubricId}/criteria`),
-  ]);
-  return response;
+  );
 }
 
 /**

@@ -1,6 +1,7 @@
 'use strict';
 
 const { DASHBOARD } = require('./teaching-screen');
+const { openAt } = require('./navigation');
 
 /**
  * การประเมินผลการเรียนรู้ — #40, as a browser reaches it.
@@ -23,14 +24,12 @@ const API = (sectionId) => `/api/teaching/sections/${sectionId}/clo-assessment`;
 
 /** Opens the screen and hands back the read, whatever it answered. */
 async function openReport(page, sectionId) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, path(sectionId), (fresh) =>
+    fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === API(sectionId) && answer.request().method() === 'GET',
     ),
-    page.goto(path(sectionId)),
-  ]);
-  return response;
+  );
 }
 
 /** One outcome's verdict chip — the word, not the colour. */

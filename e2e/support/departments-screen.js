@@ -3,6 +3,7 @@
 const { expect } = require('@playwright/test');
 const { importCsv } = require('./import-panel');
 const { untilDrawn } = require('./pager');
+const { openAt } = require('./navigation');
 
 const DEPARTMENTS = '/main/departments';
 const API = '/api/departments';
@@ -17,7 +18,7 @@ function waitForList(page) {
 
 /** Opens the screen and waits for the list a passing row is about to assert on to be drawn. */
 async function openDepartments(page) {
-  const [response] = await Promise.all([waitForList(page), page.goto(DEPARTMENTS)]);
+  const response = await openAt(page, DEPARTMENTS, waitForList);
   expect(response.status()).toBe(200);
   return untilDrawn(page, response);
 }

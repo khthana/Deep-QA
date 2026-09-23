@@ -1,6 +1,7 @@
 'use strict';
 
 const { DASHBOARD } = require('./teaching-screen');
+const { openAt } = require('./navigation');
 
 /**
  * ผลลัพธ์การเรียนรู้รายบุคคล — #37, as a browser reaches it.
@@ -30,14 +31,12 @@ const AVERAGE = 'ค่าเฉลี่ยของตอนเรียน';
 
 /** Opens the screen and hands back the read, whatever it answered. */
 async function openStudentResults(page, sectionId) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, path(sectionId), (fresh) =>
+    fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === API(sectionId) && answer.request().method() === 'GET',
     ),
-    page.goto(path(sectionId)),
-  ]);
-  return response;
+  );
 }
 
 /**

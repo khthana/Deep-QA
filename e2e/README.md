@@ -189,6 +189,8 @@ e2e/
 │   ├── import-panel.js    the template button, the file control, the total — shared by every import row
 │   ├── expired-session.js the dialog a dead session raises, shared by the rows that provoke one
 │   ├── pager.js           the one paging control every list draws — #57; `untilDrawn`, what every opener waits for — #135
+│   ├── navigation.js      `openAt`, what every `open…` helper goes through — the outgoing document's answers, ignored — #160
+│   ├── gate.js            one request held at the route until a row lets it go — #142; a navigation, by `gateNavigation` — #160
 │   ├── grants-panel.js    ┐
 │   ├── history-panel.js   ├ one module per screen or panel: its controls,
 │   ├── users-screen.js    │ read as the checklist reads them
@@ -216,6 +218,47 @@ The third is `11c-suspension-and-a-live-session.spec.js`, which suspends `teache
 `13a-` signs in as that account. It sits between `11b-` and `12a-` by its name alone, and it carries a `test.afterAll`
 that puts the account back whatever the run did — but the net only holds if the file stays ahead of `13a-`, so a
 rename that moves it is a rename that breaks a file it never mentions.
+
+## Opening a screen
+
+Every `open…` helper here hands its row the response the screen was drawn from, and every one of them used to ask
+for it the same way:
+
+```js
+const [response] = await Promise.all([waitForList(page), page.goto(PATH)]);
+```
+
+The predicate says a path and a method, which is what a waiter should say, and it also matches that same call made
+by the document the `goto` is *replacing*. `signIn` returns as soon as the address leaves the landing screen, while
+that screen's own list call is still out, so there usually is one — and Chromium keeps a response body only until
+the page navigates away from the document that asked for it. The row is then handed a response it cannot read and
+dies on `.json()` with a protocol error naming neither the helper nor the navigation. `149a` lost a row to it three
+times out of three, in a setup step with nothing to do with its subject.
+
+So every one of them now goes through `openAt` in `support/navigation.js`:
+
+```js
+const openPlos = page => openAt(page, PLOS, waitForList);
+```
+
+which keeps each screen's own waiter and answers a second question none of them was asking — **which document
+asked**. The new document committing is a fence: the requests the page makes after it are collected, and a
+response is accepted only if its request is one of them. The commit and not the navigation *request*, because a
+request is sent first and answered later and the outgoing document is still on screen in between — a fence there
+would be a window narrowed rather than closed, which is what was wrong in the first place. Nothing is compared
+against a clock, so nothing here can decide anything by being slow (#52). The waiter is handed a `page` whose
+`waitForResponse` cannot be answered by the outgoing document, which is why no predicate in this directory had
+to change.
+
+`openAt` also reads the body once, while it is certainly still there, so a row's own `.json()` is a cache lookup;
+and if even that is too late it says so in a sentence naming the screen, the call and the race, rather than in
+Chromium's words.
+
+One thing to know before holding a navigation at the route: `gate` hands its answer over with `route.fulfill`, and
+a **document** delivered that way arrives with no address space of its own. Chromium then refuses every call the
+new page makes to `localhost` as a local-network request, the screen sees no `/api/me` and goes back to the
+sign-in form — which looks exactly like whatever you were testing being broken. `gateNavigation` holds it and lets
+the browser fetch it.
 
 ## Reading a number off the screen
 

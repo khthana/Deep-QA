@@ -1,6 +1,7 @@
 'use strict';
 
 const { DASHBOARD } = require('./teaching-screen');
+const { openAt } = require('./navigation');
 
 /**
  * คะแนนกิจกรรมการเรียนรู้ — #34, as a browser reaches it.
@@ -34,8 +35,7 @@ const waitForScores = (page, sectionId) =>
 
 /** Opens the marks screen of one ตอนเรียน and hands back the marks read. */
 async function openScores(page, sectionId) {
-  const [response] = await Promise.all([waitForScores(page, sectionId), page.goto(path(sectionId))]);
-  return response;
+  return openAt(page, path(sectionId), fresh => waitForScores(fresh, sectionId));
 }
 
 /**

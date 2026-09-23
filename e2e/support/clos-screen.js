@@ -3,6 +3,7 @@
 const { expect } = require('@playwright/test');
 
 const { DASHBOARD, openDashboard } = require('./teaching-screen');
+const { openAt } = require('./navigation');
 
 /**
  * ผลการเรียนรู้รายวิชา — #27, as a browser reaches it.
@@ -29,8 +30,7 @@ const waitForClos = page =>
 
 /** Goes to the screen for one ตอนเรียน and hands back the read a row is about to assert on. */
 async function openClos(page, sectionId) {
-  const [response] = await Promise.all([waitForClos(page), page.goto(path(sectionId))]);
-  return response;
+  return openAt(page, path(sectionId), waitForClos);
 }
 
 /** The section ids this account teaches this term, straight off its own dashboard. */

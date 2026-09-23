@@ -3608,3 +3608,106 @@ advertise it, because the fix for a schema that is behind is to migrate it.
 The rule this is the second sighting of is #130's — a claim written in prose expires like a number. The new part is
 that the prose was not in the file being changed, and nothing in the diff pointed at it. What found it was reading the
 file whose invariant the change was about to consume, which is a habit and not a grep.
+
+## #160 — the fence held, and the page went back to the sign-in form
+
+A helper handed a row a `Response` whose body Chromium had already thrown away, and the row died on `.json()`
+with a protocol error naming neither the helper nor the navigation. It cost an hour on 23 September before
+`#150` was cleared of it: the victim was `149a`'s second row, in the first statement of its setup, and the
+three specs that lost passed 39/39 on the next run with nothing changed.
+
+The mechanism was already written down, in `teaching-screen.js`, because `27a` lost the same race twice. What
+was written down with it was a mitigation — read the body eagerly and throw it away, so a later `.json()` is a
+cache lookup — and the ticket's own sentence about it is the one worth keeping: **it was the one helper that
+had the mitigation and the one helper that still lost.** A window narrowed is a window.
+
+The owner chose the root fix and the second half together: pin the wait to the navigation, *and* stop
+swallowing the failure when it happens anyway.
+
+### The fence is identity, and it is nobody's predicate
+
+Every waiter in `e2e/support/` matches a path and a method. That is the right thing for a waiter to say —
+*this is the call my screen makes* — and it is not enough, because the document being replaced makes the same
+call, and `signIn` returns while the landing screen's own list call is still out. What is missing is not a
+better predicate but a second question: **which document asked.**
+
+So `openAt` collects `Request` objects and accepts a response only if its request is one of them. Nothing is
+compared against a clock, so nothing here can decide anything by being slow (#52).
+
+Where the fence goes was got wrong first, and both reviewers found it in the same words. It was the
+navigation's own document **request** — and a request is sent first and answered later. In between, the
+outgoing document is still on screen and still able to ask for things, and a fence at the request collects
+what it asks. That is a window *narrowed*, described in the file's own docstring as a window *closed* — the
+same sentence the ticket had just criticised the eager read for, written one layer up. **A fix that replaces a
+mitigation is a claim to check against the mitigation's own criticism.** The fence is now the **commit**
+(`framenavigated` on the main frame), which has nothing on the far side of it but the new document: the old
+one is gone, and the new one cannot have asked for anything before it existed.
+
+The interesting part is where the second question lives. Thirty-two helpers had the shape, and a fix that
+made each predicate say *and from this document* would have been thirty-two edits and thirty-two chances to
+say it differently. Instead the waiter is handed a `page` whose `waitForResponse` cannot be answered by the
+outgoing document — a `Proxy` that changes one method and forwards the rest. Every screen's predicate is the
+one it always had, and the call sites became one line each. **Sharing a mechanism is not the sharing #68
+warns about: what was merged is the question none of them was asking, not the claims each of them makes.**
+
+### A document fulfilled at the route has no address space
+
+The row is choreographed rather than waited for — a race reproduced by running the suite until it loses is
+not a row — so both halves are held at the route and released in the order the defect needs: the stale answer
+first, while its own document is still on screen, then the navigation.
+
+The navigation was held with `gate`, and the row then timed out inside `openAt`'s wait. The fence looked
+wrong. It was not: the debug listener showed the fence flipping on the document request and collecting the
+new document's `bundle.js` and its two `/api/me` calls exactly as designed. What the stack could not say, and
+the saved page snapshot said in one line, was that the screen was **the sign-in form**. The console said the
+rest:
+
+> Access to fetch at `http://localhost:3100/api/me` from origin `http://localhost:5300` has been blocked by
+> CORS policy: Permission was denied for this request to access the `loopback` address space.
+
+`gate` hands its answer over with `route.fulfill`, and a *document* delivered that way arrives without an
+address space of its own. Chromium then treats every call the new page makes to `localhost` as a local
+network request and denies it, so the screen sees no `/api/me`, decides nobody is signed in, and goes back to
+where it started — which is also why it never asked for the list the row was waiting for. The choreography
+was logging the application out, and the symptom was indistinguishable from the fix not working.
+
+A navigation is therefore held by `gateNavigation`, which does the one thing that differs: it lets the
+browser fetch the document itself. `gate.js` says so beside the method that cannot, because that is where
+somebody will reach for it.
+
+**When a wait times out, the stack says where you waited and the snapshot says what the screen decided.**
+Read the second one first. Three control variants — no gates, the document gate alone, the stale gate alone —
+found it in one run, and it was the half nobody suspected.
+
+### What proves it, with no mutant to do it
+
+Harness code is not what the mutation harness mutates, so the proof is the control, run by hand, once per row.
+Put the old shape back in `openDashboard` —
+
+```js
+const [response] = await Promise.all([waitForSections(page), page.goto(DASHBOARD)]);
+```
+
+— and the first row dies with the exact protocol error the ticket was opened for. Move the fence back to the
+navigation request and the **second** row dies, in `openAt`'s own sentence rather than Chromium's, which is
+option 2 measured in the same run. Each control kills one row and leaves the other standing, which is what
+says the two rows are about two things.
+
+The second row exists because of the first control's limit, and it is the part worth copying. `160a`'s first
+row issues its stale call before `openAt` is even entered, so that request could never have been collected
+whatever the fence was: the row proves the identity filter and says nothing about where the line is drawn.
+**A row that passes with the clause deleted has not reached the clause.** What reaches it is a question the
+outgoing document asks *after* the helper has started, and building one took a measurement of its own —
+`page.evaluate` cannot run once the main frame has a pending navigation (`net::ERR_ABORTED; maybe frame was
+detached?`), so the question is set going before the navigation and made to renew itself: as soon as one
+answer lands the next goes out. Nothing waits for a duration; what the loop buys is that there is always
+another request on the way, so the one the gate holds is certainly one made inside the window. **A situation
+that cannot be built at the moment it is needed can sometimes be built as a standing offer.**
+
+### The blast radius was a grep somebody else ran
+
+The ticket says *38 files under `e2e/support/` use the shape*. Thirty-four hold a `page.goto` at all, and two
+of those — `auth.js` and `sign-in-screen.js` — navigate without waiting for a response, so they hand nothing
+back and cannot lose the race. **Thirty-two**, and the number matters only because it is the list that had to
+be converted: a count taken from the ticket would have left six imaginary files unaccounted for and the real
+two argued about.

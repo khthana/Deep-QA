@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { openAt } = require('./navigation');
 
 /**
  * เปรียบเทียบผลการเรียนรู้ระดับหลักสูตรข้ามรุ่น — #44, as a browser reaches it.
@@ -26,14 +27,12 @@ const REPORT_API = '/api/program-results/across-intakes';
 
 /** Opens the screen and waits for the report the range defaults to. */
 async function openTrend(page) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  return openAt(page, PATH, (fresh) =>
+    fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === REPORT_API && answer.request().method() === 'GET',
     ),
-    page.goto(PATH),
-  ]);
-  return response;
+  );
 }
 
 /**

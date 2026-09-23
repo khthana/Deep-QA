@@ -212,6 +212,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
 - **Anything written for timing must not be able to decide anything.** (#52)
+- **A waiter that matches a path and a method also matches the document the `goto` is replacing** — the
+  answer it hands back is a body Chromium discards on commit. Ask which document asked, by identity and
+  never by a clock. (#160)
+- **A document handed to the page by `route.fulfill` arrives with no address space of its own** — every call
+  it then makes to `localhost` is refused as a local-network request and the screen goes back to sign-in,
+  which looks exactly like the fix under test not working. Hold a navigation by continuing it. (#160)
+- **When a wait times out, the stack says where you waited and the saved snapshot says what the screen
+  decided** — read the second first. (#160)
 - **Chase every place a number is cited**, not every row of the table you are in: after inserting
   a test mid-file, grep the store for the row numbers — or append tests at the end. (#97 and #85)
 - After adding a role or a label anywhere shared, grep the specs for unfiltered `getByRole` on it;
@@ -286,6 +294,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   a ref *means*, and which controls write it, can leave every comparison and every mutant where
   they stand. (#146)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
+- **A fix that replaces a mitigation is a claim to check against the mitigation's own criticism** — the
+  sentence you wrote about why the workaround only narrowed the window is the sentence to hold your
+  replacement to, one layer up. (#160)
 - **A mechanism that fires on requests is blind to the work that makes none** — ask what the person
   is doing between requests, not only what the server does when one arrives. (#99)
 - Before adding a parameterised refusal, find every site that turns that reason into a sentence —

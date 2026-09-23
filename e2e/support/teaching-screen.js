@@ -2,6 +2,8 @@
 
 const { expect } = require('@playwright/test');
 
+const { openAt } = require('./navigation');
+
 /**
  * รายวิชาที่สอน and the ตอนเรียน behind it — #24, as a browser reaches it.
  *
@@ -21,57 +23,37 @@ const { expect } = require('@playwright/test');
 const DASHBOARD = '/teacher/teacherDashboard';
 const API = '/api/teaching/sections';
 
-/** Waits for the dashboard's list call, whatever the answer turns out to be. */
-/**
- * The body is pulled in as soon as the response lands, and thrown away.
- *
- * Chromium keeps a response body only until the page navigates away from it,
- * and a caller that reads `.json()` a few statements later is racing whatever
- * the screen does next — `27a` row 1 lost that race twice, with *Response body
- * is not available for a response that was navigated away from*. Playwright
- * caches the body once it has been read, so reading it here and discarding it
- * makes every later `.json()` on the same response a lookup rather than a
- * round trip. The `catch` is there because a body that is already gone is the
- * caller's problem to report, not this helper's.
- */
-function waitForSections(page) {
-  return page
-    .waitForResponse(
-      answer => new URL(answer.url()).pathname === API && answer.request().method() === 'GET',
-    )
-    .then(async answer => {
-      await answer.body().catch(() => {});
-      return answer;
-    });
-}
+/** The dashboard's list call, whatever the answer turns out to be. */
+const isSections = answer =>
+  new URL(answer.url()).pathname === API && answer.request().method() === 'GET';
 
-/** Waits for one Section being read back — the context resolving itself. */
-function waitForSection(page) {
-  return page.waitForResponse(
-    answer =>
-      /^\/api\/teaching\/sections\/[^/]+$/.test(new URL(answer.url()).pathname) &&
-      answer.request().method() === 'GET',
-  );
-}
+/** One Section being read back - the context resolving itself. */
+const isSection = answer =>
+  /^\/api\/teaching\/sections\/[^/]+$/.test(new URL(answer.url()).pathname) &&
+  answer.request().method() === 'GET';
+
+/**
+ * The two reads, as waits.
+ *
+ * Each is used twice: handed to `openAt` below, which is where #160 wanted
+ * them, and held across a press by a row that causes a reload. A press replaces
+ * no document, so nothing there can lose #160's race; the eager body read that
+ * used to live here is gone with that ticket, because `navigation.js` closes the
+ * window rather than narrowing it and this was the only caller that had one.
+ */
+const waitForSections = page => page.waitForResponse(isSections);
+const waitForSection = page => page.waitForResponse(isSection);
 
 /** Opens the dashboard and hands back the list a passing row is about to read. */
-async function openDashboard(page) {
-  const [response] = await Promise.all([waitForSections(page), page.goto(DASHBOARD)]);
-  return response;
-}
+const openDashboard = page => openAt(page, DASHBOARD, waitForSections);
 
 /**
  * Goes straight to one Section's address, the way a reload or a pasted link
  * does — which is the only way the sixth criterion can be tried at all, since
  * a Section that is not the caller's is on nobody's dashboard to be clicked.
  */
-async function openSection(page, sectionId) {
-  const [response] = await Promise.all([
-    waitForSection(page),
-    page.goto(`${DASHBOARD}/${sectionId}`),
-  ]);
-  return response;
-}
+const openSection = (page, sectionId) =>
+  openAt(page, `${DASHBOARD}/${sectionId}`, waitForSection);
 
 /**
  * One card on the dashboard, found by the subject code it carries.

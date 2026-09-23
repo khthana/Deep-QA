@@ -33,6 +33,18 @@
  * read.open();
  * await read.answered;
  * ```
+ *
+ * ## A document is held by `gateNavigation`, not by this
+ *
+ * This hands the answer over with `route.fulfill`, and a *document* fulfilled
+ * that way arrives without an address space of its own: Chromium then treats
+ * every call the new page makes to `localhost` as a local-network request and
+ * denies it — `Permission was denied for this request to access the loopback
+ * address space` — so the screen sees no `/api/me`, decides nobody is signed in
+ * and goes back to the sign-in form. Measured while writing `160a`, where it
+ * looked for an afternoon like the thing under test. `gateNavigation` below
+ * holds a navigation and then lets the browser fetch it itself, which is the
+ * only difference that matters.
  */
 async function gate(page, path, matches, { refusal = null, success = null } = {}) {
   const on = (url) => path.test(url.pathname);
@@ -76,6 +88,34 @@ async function gate(page, path, matches, { refusal = null, success = null } = {}
   return held;
 }
 
+/**
+ * The same hold, for the navigation itself — #160.
+ *
+ * Holds the first navigation to `path` until `open()`, then `route.continue()`s
+ * it, so the document is fetched by the browser and keeps the address space its
+ * own later calls are checked against (see above). There is no `answered`: what
+ * `continue` hands back goes to the page, not to this file, so a row waits for
+ * what the new document does rather than for the document.
+ */
+async function gateNavigation(page, path) {
+  const opened = deferred();
+  const sent = deferred();
+  const held = { request: null, sent: sent.promise };
+  held.open = () => opened.resolve();
+
+  await page.route(
+    (url) => path.test(url.pathname),
+    async (route, request) => {
+      if (held.request !== null || !request.isNavigationRequest()) return route.fallback();
+      held.request = request;
+      sent.resolve(request);
+      await opened.promise;
+      await route.continue();
+    },
+  );
+  return held;
+}
+
 function deferred() {
   const settle = {};
   settle.promise = new Promise((resolve, reject) => {
@@ -88,4 +128,4 @@ function deferred() {
 const isGet = (request) => request.method() === 'GET';
 const isWrite = (request) => request.method() !== 'GET';
 
-module.exports = { gate, isGet, isWrite };
+module.exports = { gate, gateNavigation, isGet, isWrite };

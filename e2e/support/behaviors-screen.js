@@ -3,6 +3,7 @@
 const { BACKEND_URL } = require('./env');
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
+const { openAt } = require('./navigation');
 
 /**
  * พฤติกรรมที่วัดผลได้ตาม CLO — #28, as a browser reaches it.
@@ -32,8 +33,7 @@ const waitForBehaviors = page =>
 
 /** Goes to one CLO's behaviours and hands back the read a row asserts on. */
 async function openBehaviors(page, sectionId, cloId) {
-  const [response] = await Promise.all([waitForBehaviors(page), page.goto(path(sectionId, cloId))]);
-  return response;
+  return openAt(page, path(sectionId, cloId), waitForBehaviors);
 }
 
 /**

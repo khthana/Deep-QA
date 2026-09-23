@@ -3,6 +3,7 @@
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
 const { myClos, numbersOnScreen } = require('./behaviors-screen');
+const { openAt } = require('./navigation');
 
 /**
  * เกณฑ์การบรรลุผลตาม CLO — #29, as a browser reaches it.
@@ -31,8 +32,7 @@ const waitForCriteria = page =>
 
 /** Goes to one CLO's criteria and hands back the read a row asserts on. */
 async function openCriteria(page, sectionId, cloId) {
-  const [response] = await Promise.all([waitForCriteria(page), page.goto(path(sectionId, cloId))]);
-  return response;
+  return openAt(page, path(sectionId, cloId), waitForCriteria);
 }
 
 /**

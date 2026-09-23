@@ -3,6 +3,7 @@
 const { expect } = require('@playwright/test');
 const { importCsv } = require('./import-panel');
 const { untilDrawn } = require('./pager');
+const { openAt } = require('./navigation');
 
 const SUBJECTS = '/main/subjects';
 const API = '/api/subjects';
@@ -25,7 +26,7 @@ function waitForList(page) {
  * `waitForList` itself.
  */
 async function openSubjects(page) {
-  const [response] = await Promise.all([waitForList(page), page.goto(SUBJECTS)]);
+  const response = await openAt(page, SUBJECTS, waitForList);
   expect(response.status()).toBe(200);
   return untilDrawn(page, response);
 }

@@ -12,6 +12,7 @@ const {
   reportedLines,
 } = require('./import-panel');
 const { untilDrawn } = require('./pager');
+const { openAt } = require('./navigation');
 
 const STUDENT_DATA = '/main/student-data';
 
@@ -23,14 +24,13 @@ const STUDENT_DATA = '/main/student-data';
  * reasoning, so every helper that waits for a paged list keeps one rule.
  */
 async function openRegister(page) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
+  const response = await openAt(page, STUDENT_DATA, fresh =>
+    fresh.waitForResponse(
       answer =>
         new URL(answer.url()).pathname === '/api/students' &&
         answer.request().method() === 'GET',
     ),
-    page.goto(STUDENT_DATA),
-  ]);
+  );
   expect(response.status()).toBe(200);
   return untilDrawn(page, response);
 }

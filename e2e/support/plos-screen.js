@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 const { settled } = require('./pager');
+const { openAt } = require('./navigation');
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตร — #19, as a browser reaches it.
@@ -94,7 +95,7 @@ async function untilListed(page) {
 
 /** Opens the screen and waits for the list a passing row is about to read. */
 async function openPlos(page) {
-  const [response] = await Promise.all([waitForList(page), page.goto(PLOS)]);
+  const response = await openAt(page, PLOS, waitForList);
   expect(response.status()).toBe(200);
   await untilListed(page);
   return response;

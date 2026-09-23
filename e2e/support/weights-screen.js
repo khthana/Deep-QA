@@ -2,6 +2,7 @@
 
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
+const { openAt } = require('./navigation');
 
 /**
  * สัดส่วนคะแนน — #30, as a browser reaches it.
@@ -32,8 +33,7 @@ const waitForWeights = page =>
 
 /** Goes to the scheme and hands back the read a row asserts on. */
 async function openWeights(page, sectionId) {
-  const [response] = await Promise.all([waitForWeights(page), page.goto(path(sectionId))]);
-  return response;
+  return openAt(page, path(sectionId), waitForWeights);
 }
 
 const categoryInput = (page, no) =>

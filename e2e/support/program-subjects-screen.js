@@ -3,6 +3,7 @@
 const { expect } = require('@playwright/test');
 const { importCsv } = require('./import-panel');
 const { untilDrawn } = require('./pager');
+const { openAt } = require('./navigation');
 
 /**
  * รายวิชาในหลักสูตร — #18, as a browser reaches it.
@@ -49,10 +50,7 @@ function waitForCatalogue(page) {
  * `pager.js`'s `untilDrawn` holds the reason, and since #135 the wait itself.
  */
 async function openProgramSubjects(page) {
-  const [response] = await Promise.all([
-    waitForList(page),
-    page.goto(PROGRAM_SUBJECTS),
-  ]);
+  const response = await openAt(page, PROGRAM_SUBJECTS, waitForList);
   expect(response.status()).toBe(200);
   return untilDrawn(page, response);
 }

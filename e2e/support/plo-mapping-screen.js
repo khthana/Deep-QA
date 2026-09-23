@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 const { BACKEND_URL } = require('./env');
+const { openAt } = require('./navigation');
 
 /**
  * การเชื่อมโยงผลการเรียนรู้กับรายวิชา — #20, as a browser reaches it.
@@ -41,7 +42,7 @@ function waitForGrid(page) {
 
 /** Opens the screen and asserts the grid a passing row is about to read. */
 async function openMapping(page) {
-  const [response] = await Promise.all([waitForGrid(page), page.goto(MAPPING)]);
+  const response = await openAt(page, MAPPING, waitForGrid);
   expect(response.status()).toBe(200);
   return response;
 }

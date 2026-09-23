@@ -2,6 +2,7 @@
 
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
+const { openAt } = require('./navigation');
 
 /**
  * แผนการสอน — #31, as a browser reaches it.
@@ -33,8 +34,7 @@ const waitForPlan = page =>
 
 /** Goes to one Section's plan and hands back the read a row asserts on. */
 async function openPlan(page, sectionId) {
-  const [response] = await Promise.all([waitForPlan(page), page.goto(path(sectionId))]);
-  return response;
+  return openAt(page, path(sectionId), waitForPlan);
 }
 
 /** One week's card, found by the full label — number and title together. */
