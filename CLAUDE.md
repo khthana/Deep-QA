@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 23 September 2569 that is
-`2026-09-23-the-row-that-ran-before-the-change.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-09-23-the-fence-at-the-commit.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
