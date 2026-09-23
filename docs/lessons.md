@@ -3536,3 +3536,75 @@ And the sheet's own collision note said `146` holds `EntrySection.js`. The censu
 the component in one line of prose and nowhere in its `FILES`. #105 made the same mistake from the other direction, by
 grepping a name and counting sheets that held a *different file* whose path merely started the same way. Both are the
 same failure: **the census answers which paths collide, and neither memory nor grep is the census.**
+
+## #159 — the third answer, and the docstring that said there would never be a question
+
+A migration that is written, committed and never applied to somebody's database does not announce itself. The schema
+sits a version behind, every route that does not touch the new column works, and the one that does fails in a way that
+reads as a bug in that screen. #159 was filed after `0008_users_acting_epoch.sql` did exactly that to sign-in on the
+development database.
+
+Neither seam can see it, and the reason is structural rather than an oversight: `backend/test/helpers.js` migrates the
+schema it creates for each test file, and `e2e/support/global-setup.js` migrates its own before the run. Both are level
+with `db/migrations` **by construction**. The only process that can ever be behind is one pointed at a database
+somebody else looks after — which is every process a person actually uses, and no process any test runs.
+
+The ticket was a question, not a task, so the fix waited on the owner. The answer was *refuse to start*, with the
+pending filenames and `cd db && npm run migrate` printed verbatim — and, for the case where the ledger cannot be read
+at all, *start anyway, but say clearly that it could not ask*.
+
+### Three answers, not two
+
+That second half is the whole design. The obvious check reads `schema_migrations`, compares it with the directory and
+reports what is missing; it has two answers, level and behind. The world has three, and the third is what the obvious
+check silently turns into the second.
+
+Measured before anything was written: a schema nobody has migrated answers `42P01 relation "schema_migrations" does not
+exist`, and a database that is not listening answers `ECONNREFUSED`. Both arrive at the same `catch`. Treat the catch
+as an empty ledger and a developer whose container is stopped is told the database is behind by eight migrations and
+sent to run them — an instruction that is not their problem and would not work if it were. So the report says whether
+it was **able to ask** before it says what the answer was, the missing ledger is a genuine *all of them are pending*
+and everything else is *could not ask*, and the two get different messages: one names the command, the other
+deliberately does not.
+
+The row for the third state is `db/test/migrate.test.js`'s dead-port row, and it is the row that caught the next thing:
+`pg` reports a refused connection as an `AggregateError` whose **own message is the empty string** — the host, the port
+and the code are all in `errors`. The first implementation returned `reason: error.message` and passed every assertion
+about the shape while reporting a reason of `''`. It was asserting on the text of the reason, not merely on the flag,
+that turned that into a red.
+
+There turned out to be a fourth state, and the review found it rather than the measurement: the check reaching for
+something that is not there at all. `pendingMigrations` catches what the database says, but an unset `DB_SCHEMA` or a
+missing migrations directory throws before its own `try` — and an uncaught one would have killed a server over the
+check rather than over anything the check found. **A check must not be more fatal than the thing it is checking.** It
+is one more way of being unable to ask, so it is answered as one, by the same verdict; a server that genuinely cannot
+run for that reason still dies a line later, with the error that says so.
+
+### Read-only is a claim, so it is asserted
+
+`migrate` creates the schema and the ledger before it reads, which is right for a command somebody ran on purpose and
+wrong for a check that runs at every boot: creating an empty schema as a side effect of asking whether it is empty
+hides the drift the question was about. The check therefore shares nothing with `migrate` but the filename list, and
+the fresh-schema row asks `information_schema.schemata` afterwards — a question `migrate` would have answered
+differently.
+
+### The file that already knew the answer, in prose
+
+`global-setup.js` carried this, written when it was true:
+
+> This is safe to run while the backend is already listening — Playwright does not promise an order between this and
+> `webServer` … `server.js` issues no query at boot.
+
+Two sentences, and the change falsified both halves at once. Playwright does have an order, and it is the unhelpful
+one: `runner/index.js` puts the plugin setups — which is what a `webServer` is — ahead of the global setups. The
+backend of the browser seam therefore boots **before** the setup that drops, migrates and seeds the schema it will be
+tested against. A boot check there reads last run's schema, which is about to be thrown away, and refuses to start the
+entire suite on the first run after any migration is added — the exact day the suite is most wanted.
+
+So `playwright.config.js` sets `MIGRATION_CHECK=off` on that server and says why at the line that sets it. The switch
+exists for one caller and is documented at that caller; nothing else sets it, and the refusal's message does not
+advertise it, because the fix for a schema that is behind is to migrate it.
+
+The rule this is the second sighting of is #130's — a claim written in prose expires like a number. The new part is
+that the prose was not in the file being changed, and nothing in the diff pointed at it. What found it was reading the
+file whose invariant the change was about to consume, which is a habit and not a grep.

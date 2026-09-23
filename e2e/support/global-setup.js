@@ -13,10 +13,15 @@ const { E2E_SCHEMA } = require('./env');
  * At the start rather than at the end, so a failed run leaves its schema
  * behind to be looked at. The next run is what cleans it up.
  *
- * This is safe to run while the backend is already listening - Playwright does
- * not promise an order between this and `webServer`, and does not need to:
- * `server.js` issues no query at boot, and `/api/health` is a `SELECT 1` that
- * resolves no relation, so it answers whether or not the schema exists yet.
+ * This is safe to run while the backend is already listening, and the backend
+ * is: Playwright starts `webServer` before `globalSetup`, ordering its plugin
+ * setups ahead of the global ones. Nothing the server has done by then outlives
+ * the drop - `/api/health` is a `SELECT 1` that resolves no relation, so it
+ * answers whether or not the schema exists yet, and every route that names a
+ * table is first reached after this has finished. The one thing `server.js`
+ * does read at boot is #159's migration ledger, against the schema this is
+ * about to replace; `playwright.config.js` turns that check off for this server
+ * and says why there.
  *
  * The uploads go with it - #138. `35a` attaches PDFs that the backend writes
  * to a directory, and the rows naming them are dropped here with the schema, so

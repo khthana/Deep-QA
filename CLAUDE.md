@@ -307,6 +307,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   checks; when a tool skips things by name, adding a file makes it lie; a guard that reads the
   world before it writes has to survive every state the world is in. Ask the catalogue, not a
   list — and write down what the instrument cannot measure. (#123, #126, #132)
+- **A check that can fail to run has three answers, not two** — level, behind, and *could not ask*. Folding
+  the third into the second tells somebody whose database is stopped to go and run a migration; the state
+  that proves the difference is the one the naive check cannot see. (#159)
 
 ### Walks
 

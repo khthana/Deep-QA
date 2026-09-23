@@ -148,8 +148,8 @@ credentials with the deployed system.
 Migrations never name the schema: `DB_SCHEMA` is set on the connection's search path, so a query naming a bare table
 resolves in the right place and pointing the tests at their own schema is a configuration change rather than a code
 change. Tickets [#2](https://github.com/khthana/Deep-QA/issues/2)–[#5](https://github.com/khthana/Deep-QA/issues/5)
-and [#46](https://github.com/khthana/Deep-QA/issues/46) built the runner and the four migrations, so `migrate` leaves
-a schema with all 33 tables in it.
+and [#46](https://github.com/khthana/Deep-QA/issues/46) built the runner and the first four migrations; the eight
+there are now leave a schema with all 33 tables in it.
 
 ### The seeded dataset
 
@@ -246,6 +246,11 @@ copied — a second copy of the runner would be a copy that can drift from the s
 `npm start` binds a port; nothing else in the tree does. `app.js` builds the application and returns it, `server.js`
 is the only caller that starts it listening — which is what lets the whole suite run in-process.
 
+Since [#159](https://github.com/khthana/Deep-QA/issues/159) that caller does one thing before the port: it compares
+`schema_migrations` against `db/migrations` and **refuses to start** when the schema is behind, naming the files and
+`cd db && npm run migrate`. The failure it replaces was silent — an unapplied migration left sign-in refusing correct
+passwords. A database it cannot reach at all is a different answer, not the same one: it says so and starts.
+
 ### Signing in
 
 `SECRET_KEY` must be set before anything can sign in — it signs the session — and `cp .env.example .env` leaves it
@@ -306,7 +311,7 @@ files cannot collide.
 
 | Command | What it does |
 |---|---|
-| `npm start` | Starts the API on `PORT`. |
+| `npm start` | Starts the API on `PORT`, after checking the schema is level with `db/migrations` — and refusing to start if it is not. |
 | `npm test` | Runs every `test/*.test.js`, each against its own throwaway schema. |
 | `node --test test/smoke.test.js` | One file, when that is all you want. |
 

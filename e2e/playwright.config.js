@@ -65,6 +65,14 @@ module.exports = defineConfig({
         NODE_ENV: 'test',
         PORT: String(BACKEND_PORT),
         DB_SCHEMA: E2E_SCHEMA,
+        // #159 put a migration check in front of the port bind, and this suite
+        // is the one place it cannot answer a useful question. Playwright
+        // starts a `webServer` before `globalSetup`, and `globalSetup` is what
+        // drops, migrates and seeds this schema - so a check at boot reads the
+        // schema last run left, which is replaced seconds later by the one the
+        // tests use. It would refuse to start the whole suite on the day a
+        // migration is added, over a schema nothing was going to run against.
+        MIGRATION_CHECK: 'off',
         FRONTEND_URL,
         // Pinned empty rather than inherited — #50. One row asserts what the
         // Google button does on a server whose OAuth credentials are not set,

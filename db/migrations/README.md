@@ -11,6 +11,8 @@ Numbered SQL files, applied in filename order by `../migrate.js` and recorded in
 | `0004_user_profile_image.sql` | One profile photo per user — a table the thesis never documented, recovered from the SQL the inherited user service issues. |
 | `0005_external_assessor_validity.sql` | How long an account is good for — the two dates R005 asks for, on `users` and not on the grant. |
 | `0006_user_log_target.sql` | Which record a log line was written about. Not a foreign key: an audit line has to outlive the record it names. |
+| `0007_work_group_name_unique.sql` | A named work group is unique within its section — the partial index 0003 could not write. Unnamed groups are exempt, because the default is the empty string. |
+| `0008_users_acting_epoch.sql` | How many times an account has switched the grant it is acting as: the one fact a token renewal needs from outside the cookie. |
 
 - `NNNN_short_description.sql`, four digits, zero-padded, no gaps.
 - Never edit a file that has been applied anywhere but a local machine; add
@@ -25,3 +27,11 @@ Numbered SQL files, applied in filename order by `../migrate.js` and recorded in
 - Each file runs inside one transaction together with its ledger row, so a
   statement that refuses to run in a transaction block — `CREATE INDEX
   CONCURRENTLY` — needs the runner changed before it can be used.
+- A server checks this list against `schema_migrations` before it binds a port,
+  and refuses to start when the schema is behind — #159, `backend/startup.js`.
+  The failure it replaces was silent: one screen broken by a column that is not
+  there, on a database that looks fine from every other screen. A database that
+  cannot be reached at all is a third answer, not the same as being behind: the
+  server says so and starts. `MIGRATION_CHECK=off` skips the check, and the
+  browser seam is the only thing that sets it — `e2e/playwright.config.js` says
+  why it has to.
