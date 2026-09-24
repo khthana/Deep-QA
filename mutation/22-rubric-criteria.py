@@ -47,7 +47,7 @@ name of the test that died, never the count.**
 
     python mutation/22-rubric-criteria.py save
     python mutation/22-rubric-criteria.py nameorder
-    cd e2e && npx playwright test 22a        # expect exactly the named failure
+    cd e2e && npx playwright test 22a-rubric-criteria   # expect the named failure
     python mutation/22-rubric-criteria.py restore
 """
 

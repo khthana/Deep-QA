@@ -23,7 +23,7 @@ menu is this screen arrives at it.
 
 Killing them:
 
-    cd e2e && npx playwright test 42a
+    cd e2e && npx playwright test 42a-program-level-by-intake
 """
 
 from harness import main

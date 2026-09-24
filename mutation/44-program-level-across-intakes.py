@@ -26,7 +26,7 @@ and that an account the server refuses is not left waiting under the refusal.
 
 Killing them:
 
-    cd e2e && npx playwright test 44a
+    cd e2e && npx playwright test 44a-program-level-across-intakes
 
 **Never sweep this file and `42-program-level-by-intake.py` in the same run.**
 They share `backend/routes/programResults.js` and

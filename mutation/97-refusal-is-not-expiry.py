@@ -34,6 +34,15 @@ answers with on a first visit, so the dialog is drawn over the sign-in screen
 before any spec can sign in at all. Every other ticket's rows then fail inside
 `signIn`.
 
+That twenty-two, and the twenty in the comment on `loginhidesitsreason` below,
+were measured on 6 September 2569 at `be4e30e`, where `50a-sign-in` held 11 rows
+and `10a-shell` held 11. The command was written `50a 10a` then, and `50a` has
+also matched `150a-an-entry-arriving-under-an-open-editor` since 23 September -
+**two weeks after this was measured**, so neither figure includes it. The two
+files hold 14 and 11 today, which is why twenty-two does not reconcile against
+today's counts and does not need to: checked 24 September 2569 by counting rows
+at that commit, not swept again (#158).
+
 A mutant that stops the application working does not prove a row. It kills the
 row, and it kills forty other things first, so the run says nothing about which
 assertion was holding what. **A mutant has to be able to fail one row and leave
@@ -53,7 +62,7 @@ and the sheet marks that half ☑ at the HTTP seam rather than ⚙.
 
 Killing them:
 
-    cd e2e && npx playwright test 50a 10a          # the two browser ones
+    cd e2e && npx playwright test 50a-sign-in 10a-shell   # the two browser ones
     cd backend && node --test "test/auth.test.js"  # loginhidesitsreason
 
 **Never sweep this file and `10-application-shell.py` in the same run**, and

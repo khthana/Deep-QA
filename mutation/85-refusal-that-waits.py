@@ -83,7 +83,7 @@ props instead. **A passthrough is not a neutral act in a shared component.**
 
 Killing them:
 
-    cd e2e && npx playwright test 50a
+    cd e2e && npx playwright test 50a-sign-in
 
 **Never sweep this file with `50-sign-in-screens.py` or `66-*.py`.** All three
 hold `frontend/src/pages/Login.js`.

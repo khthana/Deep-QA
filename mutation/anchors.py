@@ -32,6 +32,31 @@ rather than a tuple, and the guard asked for a tuple. That is another 25.
 So: read the entries one at a time, resolve the module's own constants, and
 count what could not be read out loud. A checker that cannot say how much it
 did not look at is the same shape of claim as the numbers it exists to check.
+
+## The second question: does the documented command run the sheet's own spec?
+
+Playwright matches a positional argument as a **regular expression against the
+file's path**, so `21a` is `121a` as well. Not one of the sheets that had this
+was written wrong; each was made wrong afterwards, by a `1xx` ticket adding a
+spec whose number begins with an older sheet's, and none of those tickets
+touched the sheet it broke. A documented command is a claim with an expiry date
+and what expires it is a file somewhere else - which is why it needs counting
+rather than remembering (#154, #158).
+
+`commands()` reads every `playwright test` line in `mutation/*.py`,
+`mutation/README.md`, `docs/acceptance/*.md` and `e2e/README.md` - the one file
+outside those that writes a command down for somebody to run - and asks what
+each argument runs today. Exactly one file is the only clean answer: two means a sweep read
+off that command counts two sheets' rows as one, and none means the spec has
+been renamed out from under the sheet.
+
+**What it does not look at**, so that nobody reads a clean run as more than it
+is: a command wrapped onto a second line, of which it sees the first line only -
+so write one on one line; a spec named in prose (*row 3 of `21a`*) is a name rather than a command, and
+there are hundreds of those; `docs/lessons.md` and `docs/handoff/` are narrative,
+where a command written the wrong way is sometimes quoted on purpose - the #154
+story quotes `npx playwright test 51a` as the defect it is about. The count of
+tokens it skipped as flags and their values is printed beside the findings.
 """
 
 import ast
@@ -236,5 +261,125 @@ def check():
     return 1 if (problems or unreadable) else 0
 
 
+COMMAND = re.compile(r"playwright test\b(.*)")
+# Everything after the arguments on a documented line: a comment saying what to
+# expect, the next command, the end of a markdown span. The first census of this
+# had no such stop and read `expect`, `exactly` and `the` as spec filters.
+UNTIL = re.compile(r"#|&&|\|\||;|`|\)")
+
+
+def _tokens(line):
+    """Everything one documented `playwright test` line passes to Playwright."""
+    found = COMMAND.search(line)
+    if not found:
+        return []
+    return UNTIL.split(found.group(1), 1)[0].split()
+
+
+def arguments(line):
+    """The positional file filters of one documented `playwright test` line.
+
+    Flags, their attached values (`--reporter=line`), their quoted ones
+    (`--grep "Departments.js"`) and a placeholder standing for an argument
+    (`tests/<sheet>`) are not file filters and are not returned; `commands()`
+    counts them, because a checker that passes over things silently is the
+    failure this file was written about. `commands()` calls this rather than
+    holding a second copy of it - two places holding one opinion is a claim
+    neither of them can be shown to hold (#97).
+    """
+    return [token for token in _tokens(line) if _positional(token)]
+
+
+def _positional(token):
+    if token.startswith("-") or "=" in token or token[:1] in ("'", '"'):
+        return False
+    return "<" not in token and ">" not in token
+
+
+def runs(argument, specs):
+    """The spec paths one argument runs, or None if it is not a regex.
+
+    Playwright compiles the argument and searches it against the file's path,
+    so this does the same rather than comparing prefixes: `21a-` looks like it
+    names `21a-rubrics` and matches `121a-grants-notice-in-view` as well.
+    """
+    try:
+        pattern = re.compile(argument)
+    except re.error:
+        return None
+    return sorted(path for path in specs if pattern.search(path))
+
+
+def _store():
+    """(spec paths, documented files) of this repository, or (None, files).
+
+    Everything in `mutation/` and `docs/acceptance/`, plus `e2e/README.md`,
+    which is the one file outside them that writes a command down for somebody
+    to run. Two kinds are left out because they write one down in order to talk
+    about it: a `*_test.py`, where a colliding argument is the fixture (`21a`
+    is asserted on purpose two files away), and this one, which quotes the
+    defect in its own docstring and holds the pattern that finds it. Both are
+    counted out loud, because a tool that skips by name lies the day somebody
+    adds a file (#126).
+
+    The spec list is `None` when there is no `e2e/tests` to compare against -
+    which is neither clean nor dirty but *could not ask*, and folding that into
+    either of the other two is the mistake #159 is about.
+    """
+    tests = os.path.join(ROOT, "e2e", "tests")
+    specs = None
+    if os.path.isdir(tests):
+        specs = ["tests/" + name for name in sorted(os.listdir(tests))
+                 if name.endswith(".spec.js") or name.endswith(".test.js")]
+    found = sorted(glob.glob(os.path.join(HERE, "*.py")) + glob.glob(os.path.join(HERE, "*.md")))
+    found += sorted(glob.glob(os.path.join(ROOT, "docs", "acceptance", "*.md")))
+    found += [os.path.join(ROOT, "e2e", "README.md")]
+    return specs, [path for path in found
+                   if os.path.exists(path)
+                   and not path.endswith("_test.py") and not _is_this_file(path)]
+
+
+def _is_this_file(path):
+    return os.path.abspath(path) == os.path.abspath(__file__)
+
+
+def commands(specs=None, files=None):
+    """(problems, arguments checked, tokens skipped) over the documented commands."""
+    if specs is None or files is None:
+        specs, files = _store()
+        print("commands: reading %d files of mutation/, docs/acceptance/ and e2e/README.md, "
+              "excluding %d test file(s) and this one"
+              % (len(files), len(glob.glob(os.path.join(HERE, "*_test.py")))))
+        if specs is None:
+            print("CANNOT ASK: no e2e/tests directory, so no command was resolved")
+            return 1, 0, 0
+    problems = checked = skipped = 0
+    for path in files:
+        short = os.path.relpath(path, ROOT).replace("\\", "/")
+        with io.open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        for number, line in enumerate(text.split("\n"), 1):
+            wanted = arguments(line)
+            skipped += len(_tokens(line)) - len(wanted)
+            for token in wanted:
+                checked += 1
+                hit = runs(token, specs)
+                if hit is None:
+                    problems += 1
+                    print("NOT A REGEX %s:%d -> %r" % (short, number, token))
+                elif not hit:
+                    problems += 1
+                    print("RUNS NOTHING %s:%d -> %r" % (short, number, token))
+                elif len(hit) > 1:
+                    problems += 1
+                    print("RUNS %d FILES %s:%d -> %r -> %s"
+                          % (len(hit), short, number, token, " ".join(hit)))
+    print("commands: arguments %d | flags, values and placeholders skipped %d | problems %d"
+          % (checked, skipped, problems))
+    return problems, checked, skipped
+
+
 if __name__ == "__main__":
-    sys.exit(check())
+    misanchored = check()
+    undocumented = commands()[0]
+    sys.exit(1 if (misanchored or undocumented) else 0)

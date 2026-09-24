@@ -28,7 +28,7 @@ reason, and the acceptance document says so:
 
 Killing them:
 
-    cd e2e && npx playwright test 33a
+    cd e2e && npx playwright test 33a-activity-editor
 """
 
 from harness import main

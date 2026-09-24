@@ -12,7 +12,7 @@ and `23b-offerings-refusals.spec.js`.
     python mutation/23-offerings.py <mutant>
     cd backend && node --test test/offerings.test.js
     # or, for the eleven browser ones:
-    cd e2e && npx playwright test 23
+    cd e2e && npx playwright test 23a-offerings 23b-offerings-refusals
 
 `nolanding` and `noconfirm` mutate CRA source. Do not apply either while an e2e run
 is in flight or the dev frontend is up: the running server compiles what is on disk

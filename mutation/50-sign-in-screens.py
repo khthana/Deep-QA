@@ -37,7 +37,7 @@ worth saying plainly rather than pretending twelve mutants cover everything.
 
 Killing them:
 
-    cd e2e && npx playwright test 50a
+    cd e2e && npx playwright test 50a-sign-in
 
 Row numbers in the comments below are `50a`'s tests in the order they are
 written, not the numbering of the acceptance sheet - the sheet has three rows

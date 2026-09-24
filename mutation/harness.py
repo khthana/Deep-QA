@@ -14,7 +14,7 @@ Usage, from anywhere:
 
     python mutation/18-program-subjects.py save
     python mutation/18-program-subjects.py nolimit
-    cd e2e && npx playwright test 18b            # expect exactly one failure
+    cd e2e && npx playwright test 18b-program-subjects-import   # expect one failure
     python mutation/18-program-subjects.py restore
 
 `save` copies the untouched files into `mutation/.backup/` (gitignored). Every

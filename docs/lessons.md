@@ -3711,3 +3711,128 @@ of those — `auth.js` and `sign-in-screen.js` — navigate without waiting for 
 back and cannot lose the race. **Thirty-two**, and the number matters only because it is the list that had to
 be converted: a count taken from the ticket would have left six imaginary files unaccounted for and the real
 two argued about.
+
+## #158 — the command a sheet documented, and the file somewhere else that expired it
+
+`npx playwright test 21a` runs `121a` as well. Playwright matches a positional file argument as a regular
+expression against the path, so a sheet that named its spec by the short form was naming a set and not a
+file. #154 noticed it in passing — `51a` also runs `151a`, harmless there because the mutant killed nothing
+in either — and the ticket that came of it asked for three things: name the spec unambiguously wherever a
+command is written down, say what the collision does to the figures recorded beside those commands, and put
+something in place that counts, because otherwise this comes back the next time a `1xx` ticket lands on a
+`xx` number.
+
+**Every one of those commands was right on the day it was written.** None of them was ever edited into being
+wrong. A documented command is a claim with an expiry date, and what expires it is a file somewhere else —
+which is why nothing in the diff that broke them could have been reviewed into catching it.
+
+`21a-` is not enough either: `121a-grants-notice-in-view` carries the hyphen too. Only the full stem
+separates them.
+
+### The census was short, and why it was short is the ticket in miniature
+
+The ticket lists eight sites. There are sixteen — twelve in `mutation/` and four in `docs/acceptance/`.
+
+Four of the difference are the scope: the census read `mutation/*.py` and the acceptance sheets write the
+same commands. The rest is the date. `150a-an-entry-arriving-under-an-open-editor.spec.js` landed at 16:47
+on 23 September (`c3270d2`), two hours and forty-seven minutes after the census was run (`25302c2`, 14:00)
+and nine hours after the ticket was filed. It made `50a` ambiguous on three sheets that had been correct all
+morning — one of them `mutation/89`, whose sweep of 9 September is the oldest figure in the set. **A census
+run by hand expires faster than the ticket that carries it**; this one expired the same day, before anybody
+had read it.
+
+So the sixteen were not found by matching the ticket's list. They were found by running the check that the
+ticket's third item asks for, against the tree, and then reading what it printed.
+
+### The figures, cleared by arithmetic rather than by sweeping again
+
+Fixing a command does not fix a number that was read with the old one. Re-sweeping all of it is hours;
+`npx playwright test --list` does not start the webServer and answers in seconds, which is enough to settle
+it, because only two facts are needed: how many rows each spec holds, and when each spec landed.
+
+A group's recorded baseline should equal the sum of the rows of the specs it names. Where it does, the
+colliding file's rows are not in the total, and the colliding file did not run. It held for every group of
+#139, #140, #142 and #144, for the three acceptance figures, and for `mutation/85` and `mutation/97`.
+`mutation/89` was settled by date alone: the sweep predates the file that now collides with it by fourteen
+days.
+
+**#142 is the one that could have been read right for the wrong reason.** Every one of its eight groups sits
+exactly one row above the sum of the specs it names — including six groups with nothing to collide with at
+all. The +1 is `139a`'s filter row, which carries no `(File.js)` marker and so survives the `--grep-invert`
+that excludes the other screens' names. Read as `121a`'s row, the arithmetic would have come out right on
+the rubrics group and wrong on the criteria group two rows down, where `122a` holds two rows and the excess
+is still one.
+
+Each of those sites now carries a dated line saying which figure predates the colliding spec and that it was
+checked by dates and row counts rather than re-swept. **A figure nobody re-measured is not a figure that can
+be silently kept.**
+
+### One of them was ambiguous on purpose
+
+`npx playwright test 23` matched `23a-offerings` and `23b-offerings-refusals` and nothing else, and the sheet
+records twelve — 6 + 6, the two files, deliberately. It was still rewritten to name both. The alternative was
+an allowlist in the guard, and a guard with a list of exceptions is one more hand-kept list in a file that
+grows every ticket.
+
+### The guard, and the control that says it works
+
+`anchors.py` already reads every sheet to ask whether a mutant's anchor still exists, so it asks a second
+question in the same run: does the documented argument resolve to exactly one spec? Sixteen problems at
+`db5115a`, zero after, over the same arguments.
+
+`anchors_test.py` (22 tests, stdlib `unittest` like `harness_test.py`) is where the claims are measured. It
+hands `commands()` a store it made up, because a test against the real store can only show that today's
+store is clean — it cannot show that a colliding argument is *found*, which is the only thing the check is
+for.
+
+**Nine of those tests were measuring a function nothing called.** The review found that `commands()` had
+grown its own copy of the tokenising — `COMMAND.search`, the `UNTIL` split, the `_positional` filter, inline
+— so `arguments()` existed for the tests and the checker ran the copy. Breaking `_positional` left all nine
+green. `commands()` now calls it, and breaking `_positional` turns the store's zero problems into seven.
+**Two places holding one opinion is a claim neither of them can be shown to hold** (#97), and the way to
+notice is to break the thing the assertion is about (#124).
+
+What it does not look at is printed, not assumed: the count of files read, the tokens skipped, and that
+`*_test.py` and `anchors.py` itself are left out. Those two quote broken commands on purpose. `lessons.md`
+and `docs/handoff/` are out of scope for the same reason — the first sentence of this story quotes
+`npx playwright test 21a` as the defect, and a checker that reported it would be reporting the story.
+
+It also reads only lines that contain `playwright test`, and three things follow from that. The four sweep
+tables that name `21a` in a *column* are invisible to it. So are the sheets: **`docs/acceptance/21-rubrics.md`
+records the same baseline as `mutation/139`, in a sentence rather than a command**, and the first pass fixed
+the mutation file and walked past its mirror — nine more sites, found by the spec review and then by a scan
+written for the purpose, which asks which *names in prose* would be ambiguous as arguments and sit on a line
+carrying a figure. And `e2e/README.md`, which the standards review pointed at, documents a command meant to
+be run and was outside the store; it is in it now. A guard that names what it cannot see is still a guard;
+one that does not is a hand-kept list wearing a script.
+
+What the scan found and the ticket left alone is written here rather than passed over: `44a` in
+`44-program-level-across-intakes.md:143` and in `mutation/129-stale-report.py:13` are a spec's own row
+counts — seven of seven, when `144a` holds ten — and the `ห้ามกวาด` lines all through `mutation/README.md`
+name mutation sheets, not Playwright arguments. Neither kind is a figure read off an ambiguous command.
+
+Two smaller things the reviews left in the code. The spec list is now `*.spec.js` only, so a helper file
+beside the specs cannot turn a correct argument into a false `RUNS 2 FILES`; and a missing `e2e/tests` is
+`CANNOT ASK` rather than a clean run, which is #159's third answer arriving in a second file within a day of
+being written down.
+
+### It caught the fix being written
+
+Two of the sixteen were introduced by this ticket, in the section of `mutation/README.md` that documents the
+check. The sentence explaining the defect quoted the whole command, and the README is in the store — so the
+prose had to be rewritten to name the argument alone, with a parenthesis saying why. And the output block
+quoted in that same section said `skipped 6` while a paragraph two screens below it added the seventh, a
+`--list` in a sentence about how the figures were cleared. **The figure a document prints about itself goes
+stale in the diff that writes it** — #154's rule, one file over, inside the ticket #154 opened.
+
+And it went on happening through the review round. The output block was corrected to `skipped 7`; then the
+store grew `e2e/README.md` and 117 files became 118; then a command this ticket had wrapped onto a second
+line was joined up, and the argument count moved for a third time, 66 to 67 to 68. Every one of those was a
+line in the same fenced block, twenty lines from the change that moved it. The rule is not *check the figure
+you changed*; it is that **a document that prints a measurement of itself has to be re-read whole every time
+the thing it measures moves**.
+
+That wrapped command is its own small finding: the check reads one line at a time, so it saw
+`17b-students-import` and not the `42a-program-level-by-intake` under it. **A guard that reads lines is a
+rule about how the thing it guards may be written**, and that rule now stands in the docstring and the
+README.

@@ -36,7 +36,7 @@ to.
 
     python mutation/21-rubrics.py save
     python mutation/21-rubrics.py codeorder
-    cd e2e && npx playwright test 21a        # expect exactly the named failure
+    cd e2e && npx playwright test 21a-rubrics    # expect exactly the named failure
     python mutation/21-rubrics.py restore
 """
 

@@ -19,7 +19,7 @@ band is visibly fatter than another. Half the mutants below are therefore about
 
 Killing them:
 
-    cd e2e && npx playwright test 39a
+    cd e2e && npx playwright test 39a-outcome-activity-map
 """
 
 from harness import main

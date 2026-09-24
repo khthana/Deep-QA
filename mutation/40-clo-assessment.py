@@ -19,7 +19,7 @@ that is only implied, a font that is named but not carried.
 
 Killing them:
 
-    cd e2e && npx playwright test 40a
+    cd e2e && npx playwright test 40a-clo-assessment
 """
 
 from harness import main

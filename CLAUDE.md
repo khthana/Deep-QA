@@ -177,7 +177,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   build the row at the one point where the two coincide, and assert that precondition in the row.
   (#154)
 - **A test-file argument is matched as a substring** — `51a` also runs `151a`, so a kill count read
-  off a command like that is two sheets' rows counted as one. (#154)
+  off a command like that is two sheets' rows counted as one. Every such command was right the day it
+  was written and expired by a file somewhere else; `python mutation/anchors.py` counts them now.
+  (#154, #158)
 - **A ticket that offers to de-duplicate is answered with what the merge costs the proof**, not only
   with what it saves the code — one hook behind fifteen screens turns fifteen claims into one no
   mutant can measure apart. And when a rule holds on many screens, the screen that proves it is chosen by

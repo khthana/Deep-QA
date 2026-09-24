@@ -17,16 +17,21 @@ ref จึงหยุดตาม `load` เฉพาะเมื่อตั�
 
 | กลุ่ม | spec เดิมที่รันด้วย | baseline | มัตแตนต์ | ล้ม | ผ่าน |
 |---|---|---|---|---|---|
-| `users` | `11a` `11b` `11c` `84a` | 21 ผ่าน | `usersqnotfollowed` | 2 (แถวตัวเอง · `11c` แถว 3) | 19 |
+| `users` | `11a-users` `11b` `11c` `84a` | 21 ผ่าน | `usersqnotfollowed` | 2 (แถวตัวเอง · `11c` แถว 3) | 19 |
 | | | | `usersrolenotfollowed` | 1 | 20 |
 | | | | `usersstatusnotfollowed` | 1 | 20 |
 | `subjects` | `16a` | 13 ผ่าน | `subjectsdepartmentnotfollowed` | 1 | 12 |
 | `pairs` | `18a` `18b` `18c` | 23 ผ่าน | `pairsprogramnotfollowed` | 2 (แถวตัวเอง · `18c` แถว 8) ไม่ได้รัน 1 | 20 |
-| `rubrics` | `21a` | 15 ผ่าน | `rubricsprogramnotfollowed` | 1 | 14 |
+| `rubrics` | `21a-rubrics` | 15 ผ่าน | `rubricsprogramnotfollowed` | 1 | 14 |
 | `offerings` | `23a` `23b` | 20 ผ่าน | `offeringsprogramnotfollowed` | 1 | 19 |
 | | | | `offeringsyearnotfollowed` | 1 | 19 |
 | | | | `offeringssemesternotfollowed` | 1 | 19 |
 | `students` | `17a` `17b` `17c` | 17 ผ่าน | `studentsprogramnotfollowed` | 2 (แถวตัวเอง · `17c` แถว 10) ไม่ได้รัน 1 | 14 |
+
+**ชื่อ spec ในคอลัมน์ที่สองเขียนเต็มเมื่อ 24 ก.ย. 2569 (#158)** `11a` กับ `21a` เคยเขียนสั้น ซึ่ง
+Playwright จับ `111a` (5 แถว) กับ `121a` (1 แถว) ด้วย **baseline ไม่ได้รวมสองไฟล์นั้น**: users
+21 = 15 แถวของสี่ spec บวก 3 ของ `144a` บวก 3 ของ `140a` และ rubrics 15 = 11 + 1 + 3
+ถ้าไฟล์ที่ชนได้รันด้วยจะเป็น 26 กับ 16 ตรวจเมื่อ 24 ก.ย. 2569 ด้วยการบวกจำนวนแถว ไม่ได้กวาดใหม่
 
 **แถวเดิมสามแถวที่ตายด้วยตายจริง ไม่ได้รั่ว** แต่ละแถวย้ายตัวกรองก่อนกดจุดเรียก (`11c` ค้นหาบัญชี `18c` กรองไปที่ `0503`
 `17c` กรองแล้วกลับ ซึ่งสร้าง `load` ตัวใหม่ ไม่ใช่ตัวเดิม) ref ที่ไม่ตามตัวกรองจึงทิ้งทุกการโหลดใหม่หลังจากนั้น
