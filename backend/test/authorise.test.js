@@ -242,12 +242,17 @@ test('the role guard', async (t) => {
   // getting past Google's door at all.
   //
   // The first rename here was to `windowed`/`unwindowed`, which is the same
-  // mistake with a different column: it is true today, it is incidental to
-  // what the row asserts, and #48's criterion 7 is open on exactly whether
+  // mistake with a different column: it was true that day, it is incidental to
+  // what the row asserts, and #48's criterion 7 was open on exactly whether
   // `U_NONKMITL` should have a window - so closing that ticket would make the
   // names lie again. **A fixture named for a property the row does not assert
   // goes stale when somebody edits the seed for a reason that has nothing to
   // do with the row.** These two are named for the only thing asked of them.
+  //
+  // And that is what happened. #48 closed on 24 September 2569 by giving the
+  // account a window open at the far end, so `windowed`/`unwindowed` would now
+  // be two names for the same thing. The prediction is the point: the rename
+  // was refused before anybody knew which way the ticket would go.
   await t.test('admits the faculty administrator and both external assessors', async () => {
     const faculty = await signInAs('U_FAC');
     const assessor = await signInAs('U_EXT');

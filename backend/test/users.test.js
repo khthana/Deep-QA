@@ -26,7 +26,7 @@ const { IMPORT_COLUMNS } = require('../routes/users');
 const { startApi } = require('./helpers');
 
 const [DEPT_COMPUTER, DEPT_CIVIL] = DEPARTMENTS.map((department) => department.id);
-const [PROGRAM_THAI] = PROGRAMS.map((program) => program.id);
+const [PROGRAM_THAI, PROGRAM_INTER] = PROGRAMS.map((program) => program.id);
 
 let api;
 before(async () => {
@@ -756,6 +756,67 @@ test('an external assessor with a validity period', async (t) => {
     // on all of them.
     const response = await signInWith(emailOf('U_TEACH'), PASSWORD);
     assert.equal(response.status, 200);
+  });
+
+  await t.test('closes over every grant an account holds, not the assessor one alone', async () => {
+    // #48's sixth criterion asks that a lapsed assessor grant leave the
+    // account's other grants standing, and this system deliberately cannot do
+    // that. Migration 0005 put the window on `users` because R005 and ROLE-6
+    // both describe the *account* - "บัญชีชั่วคราว" - and because `user_roles`
+    // is #12's table, where a column would have two tickets writing one row for
+    // different reasons. So the criterion is answered the other way round, and
+    // this row is where that answer lives: a decision written only into prose
+    // is a decision nobody can find (#119).
+    //
+    // The person it is about is real, and is the only shape the multi-grant
+    // case can take here. Since #87 an assessor is by definition from outside
+    // the institution, so assessor-and-teacher is somebody who cannot exist;
+    // one assessor reviewing two programmes whose rounds end on different days
+    // can. Under this decision they get one window for both, and an
+    // administrator who needs two dates issues two accounts - which is what
+    // "temporary account" already meant.
+    const admin = await signInAs('U_ADMIN');
+    const email = 'tworounds@tabee-review.org';
+
+    const created = await create(admin, {
+      user_id: 'TWO_ROUNDS',
+      email,
+      first_name_en: 'Two',
+      last_name_en: 'Rounds',
+      program_id: PROGRAM_THAI,
+      password: 'deep-core-two-rounds',
+      valid_from: day(-30),
+      valid_until: day(-1),
+      role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+    });
+    assert.equal(created.status, 201, created.body.message);
+
+    const second = await request(api.app)
+      .post(`/api/users/${created.body.user.user_id}/roles`)
+      .set('Cookie', admin)
+      .send({ role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_INTER });
+    assert.equal(second.status, 201, second.body.message);
+    // Asserted where it is used rather than where it was arranged (#51): two
+    // grants is the whole precondition, and a row that assumed it would pass
+    // for the wrong reason the day the second grant stopped landing.
+    assert.equal(second.body.roles.length, 2);
+
+    const refused = await signInWith(email, 'deep-core-two-rounds');
+    assert.equal(refused.status, 403);
+    // The window, not `noRole` - both grants are still there and still active.
+    // That is what makes this an answer to the sixth criterion rather than a
+    // second copy of the fourth.
+    assert.equal(refused.body.message, REFUSALS.validityEnded);
+
+    const { rows } = await api.pool.query(
+      `SELECT role_id, scope_id FROM user_roles
+        WHERE user_id = $1 AND is_active ORDER BY scope_id`,
+      ['TWO_ROUNDS'],
+    );
+    assert.deepEqual(
+      rows.map((row) => `${row.role_id}@${row.scope_id}`),
+      [`EXT_ASSESSOR@${PROGRAM_THAI}`, `EXT_ASSESSOR@${PROGRAM_INTER}`],
+    );
   });
 });
 

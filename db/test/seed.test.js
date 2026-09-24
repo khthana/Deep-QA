@@ -500,16 +500,24 @@ test('the named accounts', async (t) => {
   // The offsets are not restated here. What is asserted is which side of today
   // each account falls on, which is the property every caller depends on and
   // the only one that has to keep being true as the days pass.
-  await t.test('the assessors are the accounts with a window, one open and one closed', async () => {
+  await t.test('a window is what every assessor carries and no other account does', async () => {
     const { rows: windowed } = await pool.query(
       `SELECT user_id FROM users
         WHERE valid_from IS NOT NULL OR valid_until IS NOT NULL
         ORDER BY user_id`,
     );
+    // Asked of the grant, for the reason the row above is: written as *these
+    // three user ids* it would be a copy of `db/seed.js` and would pass on the
+    // day a fourth assessor is added without one. The rule is that the window
+    // and the role arrive together, which is what R005 says.
+    const { rows: assessors } = await pool.query(
+      `SELECT DISTINCT user_id FROM user_roles
+        WHERE role_id = 'EXT_ASSESSOR' ORDER BY user_id`,
+    );
 
     assert.deepEqual(
       windowed.map((row) => row.user_id),
-      [byAlias('U_EXT'), byAlias('U_EXT_CLOSED')],
+      assessors.map((row) => row.user_id),
       'a window on any other account would mean an ordinary account had been time-boxed',
     );
 
@@ -523,6 +531,18 @@ test('the named accounts', async (t) => {
       `SELECT user_id FROM users WHERE valid_until < current_date`,
     );
     assert.deepEqual(closed.map((row) => row.user_id), [byAlias('U_EXT_CLOSED')]);
+
+    // The third shape, added with #48's seventh criterion: a window that has
+    // opened and does not close. Migration 0005 makes each end null on its own
+    // and says what that means - "until somebody says otherwise" - and this is
+    // the only seeded account that is it, so a screen or a query that treats a
+    // null end as *no window* has something to fail against.
+    const { rows: openEnded } = await pool.query(
+      `SELECT user_id FROM users
+        WHERE valid_from IS NOT NULL AND valid_until IS NULL
+        ORDER BY user_id`,
+    );
+    assert.deepEqual(openEnded.map((row) => row.user_id), [byAlias('U_NONKMITL')]);
   });
 
   // The half of #48's seventh criterion that a single run cannot see. Every

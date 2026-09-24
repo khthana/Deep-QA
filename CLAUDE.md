@@ -184,6 +184,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   with what it saves the code — one hook behind fifteen screens turns fifteen claims into one no
   mutant can measure apart. And when a rule holds on many screens, the screen that proves it is chosen by
   the census, not by the subject. (#68)
+- **When a ticket's proposal is declined, the mutant to write is that proposal made to run** — it
+  is the only thing that turns *we chose otherwise* from a sentence on a sheet into a claim the
+  suite holds. (#48)
+- **A kill count is a claim about the fixtures as much as about the code** — a seed that gains an
+  account carrying the property a mutant is about expires the count of a mutant nobody edited, so
+  re-sweep the ones you did not touch. (#48)
 - **What corrupts a sweep is a repeated path — compare `FILES`, not subject matter**, and ask the
   census script rather than your memory; the figure that decides is the group, not the total.
   (#85, #87, #125)
@@ -228,6 +234,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   `aria-live` announces without joining the set those lookups search. (#111, #122)
 - A locator built on one seeded value can answer *not there* about a thing that is; ask what a
   helper promises, not what it does. (#101)
+- **A criterion answered *no* needs a row as much as one answered *yes*** — and the row has to
+  assert what is still there, or it is measuring the other refusal that reaches the same status
+  code. Between two fixture shapes, take the one the code already draws and nothing has ever made
+  it draw. (#48)
 - **A defect that survived green suites usually survived because no fixture could express it**,
   and the fix is a fixture. A fixture built inside one test file is one no other file has; a
   seeded role needs the role's distinguishing property; ask a question of the rule, not of the

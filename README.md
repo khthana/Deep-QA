@@ -195,7 +195,7 @@ database and the accounts it opens have nothing behind them; nothing here is a c
 | `U_EXT` | `external.assessor@tabee-review.org` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
 | `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and ตอนเรียน 2 |
 | `U_CROSS` | `cross.scope@kmitl.ac.th` | อาจารย์ผู้สอน | in ภาควิชา `05`, granted over ภาควิชา `01` — **cross-scope grant** (#130) |
-| `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | R010 — and **no window at all** (#48) |
+| `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | R010 — and a window **open at the far end** (#48) |
 | `U_EXT_CLOSED` | `past.assessor@tabee-review.org` | ผู้ประเมินภายนอก | **window closed** — cannot sign in at all (#48) |
 
 Seven of these rows are the point of the list. A permission rule is only tested by an account that should be refused,
@@ -216,16 +216,17 @@ Google refuses anything that is not `@kmitl.ac.th` — which is the whole reason
 a password. `U_EXT` was at `@kmitl.ac.th` until then and so was an example of somebody who cannot exist. The
 refusal fixture is still a refusal fixture; what it stopped being is unique to a row.
 
-What `U_NONKMITL` alone still carries is **no validity window**, and that is not a designed refusal — an account
-with no window is admitted, which is the ordinary path. It is the blind spot in
-[#48](https://github.com/khthana/Deep-QA/issues/48)'s criterion 7, written as *the accounts with a window are
-exactly these two* — a question asked of a row, which cannot see a third assessor — and it is left to that ticket.
-**The last column of that table says what a row happens to carry, not what somebody decided it should.**
+What `U_NONKMITL` alone carries now is the third shape a window can take. Until 24 September 2569 it carried no
+window at all, which was the blind spot in [#48](https://github.com/khthana/Deep-QA/issues/48)'s criterion 7 — it
+was written as *the accounts with a window are exactly these two*, a question asked of a row, which cannot see a
+third assessor. That ticket answered it: **every ผู้ประเมินภายนอก carries a window**, because R005 creates the
+account พร้อมกำหนดช่วงเวลาการใช้งาน and an assessor with no window is the ordinary staff path wearing the role.
 
-Two of the three ผู้ประเมินภายนอก rows carry a validity window and every other account leaves both ends null:
-`U_EXT`'s is open around today, `U_EXT_CLOSED`'s closed a month ago. Nothing signs in as the second one — that is
-what it is for. Both are written as offsets in days from `current_date`, so a seed checked in today still means the
-same thing in March.
+All three ผู้ประเมินภายนอก rows carry a validity window and every other account leaves both ends null. `U_EXT`'s is
+open around today; `U_EXT_CLOSED`'s closed a month ago, and nothing signs in as it — that is what it is for;
+`U_NONKMITL`'s has opened and does not close, which is the shape migration 0005 describes ("until somebody says
+otherwise") and nothing in the seed was. All are written as offsets in days from `current_date`, so a seed checked
+in today still means the same thing in March; a null end stays null.
 
 `U_COM` and `U_COM2` were `committee.0501@` and `committee.0503@` until the seed was aligned with
 `docs/acceptance/18-program-subjects.md`, which names them by the role they hold. Acceptance rows walked

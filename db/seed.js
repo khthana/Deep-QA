@@ -376,14 +376,28 @@ const ACCOUNTS = [
   // carries it alone - every EXT_ASSESSOR account is outside now, which is
   // what the role means.
   //
-  // What is left of this row's own is that it has no validity window, and that
-  // is not a decision anybody wrote down: #48's criterion 7 says *the accounts
-  // with a window are exactly these two*, which is a question asked of a row
-  // and cannot see a third assessor. It is #48's to answer, not this row's to
-  // document.
+  // The third window, and the only one open at one end. #48's criterion 7 was
+  // written as *the accounts with a window are exactly these two*, a question
+  // asked of a row that cannot see a third assessor; the answer, settled on
+  // 24 September 2569, is that every ผู้ประเมินภายนอก carries one, because
+  // R005 says the account is created พร้อมกำหนดช่วงเวลาการใช้งาน and an
+  // assessor with no window is the ordinary staff path wearing the role.
+  //
+  // Open at the far end rather than closed, for two reasons. The account has
+  // to be able to sign in - two suites give it a job that needs it - and a
+  // `valid_until` of null is the shape migration 0005 says both columns
+  // support ("until somebody says otherwise") which nothing in the seed was.
+  // `Users.js` has rendered `<the date> ถึง …` for that shape since #11 and no
+  // row, walked or automated, has ever made it draw it. The date is 45 days
+  // before whenever the seed was run, so do not write today's answer down.
+  //
+  // -45 is chosen, not inherited (#45): it shares an edge with neither `U_EXT`
+  // (-30) nor `U_EXT_CLOSED` (-60/-30), so a test that moves one window cannot
+  // accidentally line up with another's boundary.
   {
     alias: 'U_NONKMITL',
     id: 'outsider1',
+    validity: [-45, null],
     email: 'assessor@tabee-review.org',
     th: ['ดร.', 'เมธา', 'ภายนอก'],
     en: ['Dr.', 'Metha', 'Phainok'],

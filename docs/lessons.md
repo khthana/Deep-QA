@@ -1299,6 +1299,8 @@ everything near it**, so the two mutants #48 owns had to be written rather than 
 and `sessionignoresthewindow` kills **1** both before and after. Writing the number that did not
 move down beside the one that did is what makes the second believable — and *21 killed, 15 hardened*
 is #102's two-numbers rule again, one figure hiding whichever the reader did not have in mind.
+(That 21 is 24 since 24 September 2569, without the mutant being edited — see *#48 (closed)*
+at the end of this file.)
 
 **That 21 was first written as 17, and the reason is a hole in this store's own counting rule.**
 `node --test` counts parent suites in `# fail`, so the rule here has been to read leaf kills from the
@@ -3836,3 +3838,117 @@ That wrapped command is its own small finding: the check reads one line at a tim
 `17b-students-import` and not the `42a-program-level-by-intake` under it. **A guard that reads lines is a
 rule about how the thing it guards may be written**, and that rule now stands in the docstring and the
 README.
+
+## #48 (closed) — the answer was no, and a no has to be written somewhere a grep can find it
+
+#48 asked for a validity window on `user_roles` and for a lapsed assessor grant to leave an
+account's other grants standing. Four of its eight criteria were delivered under #11, one under
+#89 and one under #87's follow-up; what was left on 9 September was **two criteria that were a
+question for the owner asked twice** — when a mandate lapses, does the person stop signing in or
+only the mandate stop granting — and criterion 7, which asked the seed for a fixture the tracker
+had since made impossible. The story of that day is *#48 — the role without a window* above. This
+is the day the owner answered.
+
+**The answer was measured before it was asked for.** Moving the window to `user_roles` was priced
+by grep, not by feel: twenty files, of which six are production code, seven are test files, two are
+browser specs and **five are mutation files whose anchors all sit in `accounts.js`** and would need
+re-aiming and then re-sweeping — and an anchor check only says a mutant no longer applies, never
+that it no longer proves anything. The twentieth is the one that decides: the users table shows one
+*ช่วงเวลาใช้งาน* column, and an account holding two grants with two different windows has to show
+*something*, which is a change to a screen, which `docs/06` §Out of Scope says is a question and not
+a task. **A cost that ends in another question is worth saying out loud, because it is the part the
+owner cannot see from the ticket.**
+
+### A criterion answered *no* needs a row as much as one answered *yes*
+
+The window stays on `users`, so criterion 6 is answered **no**: a lapse refuses the person. The
+temptation is to write that in the acceptance sheet and leave the box unticked, and it is the
+mistake #119 already named — *a deferral written into prose and not into the tracker is a decision
+nobody can find*. A box left unticked and a box that cannot be ticked look identical six months
+later.
+
+So the decision got a row. `closes over every grant an account holds, not the assessor one alone`
+builds the situation itself: an assessor account whose window closed yesterday, a second
+`EXT_ASSESSOR` grant over the second programme added through the grants route, and then a sign-in.
+**The assertion that makes it an answer to criterion 6 rather than a second copy of criterion 4 is
+the one about what is still there** — both grants still `is_active` in `user_roles`. Without it the
+row would pass just as happily against an account with no grants at all, which is a different
+refusal reaching the same status code, and the row would be measuring `noRole` while its name said
+*window*.
+
+Finding the case at all took reading #87 rather than the ticket. Criterion 6's natural example is
+an assessor who is also a teacher, and since #87 that person **cannot exist** — the role is defined
+by being outside the institution. The only multi-grant shape left is one assessor reviewing two
+programmes whose rounds end on different days, which is real, and which is exactly the cost the
+answer accepts: they get one window for both, and an administrator who needs two end dates issues
+two accounts. **Say what the decision costs in the same breath as the decision; the ticket will not
+say it for you.**
+
+### The mutant to write for a declined proposal is that proposal, made to run
+
+A row that states a decision proves nothing until something can break it, and nothing in the code
+looked like the thing to break — the alternative design is not in the tree. `windowyieldstoasecondgrant`
+is the ticket's own proposal in runnable form: the refusal is moved below the roles lookup and
+guarded with `roles.length < 2`, so the window still refuses exactly as before **until the account
+holds a second grant**, and then it yields. It kills one subtest — the new one — out of 774, which
+is #97's *fail one row and leave the rest standing* in its cleanest shape, because every other
+window row in the store uses a single-grant account.
+
+**When a ticket proposes a design and the answer is no, that proposal is the mutant.** It is the
+only way *we chose otherwise* stops being a sentence on a sheet and becomes a claim the suite holds.
+
+### The half of the guard nobody had ever broken
+
+The spec review asked a question neither half of the ticket had: `validityRefusal` has two branches,
+and only one of them had ever been mutated. `48:insidewindowisrefused` inverts the comparison at the
+**opening** end; #89's two mutants change which *sentence* each end returns, leaving both conditions
+intact, so every row that asserts a status and not a sentence survives them. The comparison at the
+**closing** end — the one TC-AUTH-006 is entirely about — had no mutant at all. It was *held* by
+rows that would have failed; it had simply never been shown to be.
+
+`endcomparisonisreversed` kills 21 across eight suites, and **the three rows it does not kill are
+worth more than the 21**. Two sign in as `U_NONKMITL`, whose `valid_until` is null, so the whole
+condition short-circuits and the mutant is invisible; the third is *is refused before the window
+opens*, whose account is turned away by the opening branch before the closing one is reached. So the
+two mutants are not copies of each other: they separate the ends, which is #96 and #107's *one
+crafted value per link of the guard*, and they can only be told apart because the seed now holds an
+account whose far end is open. **A fixture chosen to close one criterion turned out to be the thing
+that made another criterion's proof legible** — which is an argument for preferring the fixture shape
+the code supports and nothing exercises, over the one that merely differs from its neighbours.
+
+### A kill count is a claim about the fixtures, not only about the code
+
+Criterion 7 closed by giving `U_NONKMITL` a window open at the far end, and `48:insidewindowisrefused`
+went from **21 kills to 24 without being edited**. Three suites explain it: `authorise` 4→5 and
+`shell` 3→4 are the two that sign in as that account, which now has a `valid_from` for the mutant to
+invert, and `users` 6→7 is the new row. Nothing about the mutant changed; the world it runs in did.
+
+The 9 September table was not wrong when it was written, and that is the point — **a survey of the
+store expires when the seed grows, not only when the code changes**. The figure was left where it
+was with a dated line pointing at the new one, the same shape #158 used for a documented command
+that a file in another directory had expired. After adding a fixture that carries a property a
+mutant is about, re-sweep the mutants that were never touched.
+
+### Between two fixture shapes, take the one the code already draws and nothing draws
+
+Three ways to close criterion 7 were priced. An open window copied from `U_EXT` would have changed
+two assertions in `seed.test.js`; leaving the account bare would have changed none but left an
+assessor account contradicting R005, which creates the account *พร้อมกำหนดช่วงเวลาการใช้งาน*; a
+window with `valid_from` set and `valid_until` null changes one, because the queries for *open* and
+*closed* both compare `valid_until` against `current_date` and a null was never going to match
+either.
+
+The reason to prefer it was not the assertion count. Migration 0005 says each end is nullable on its
+own and says what a null end means — *until somebody says otherwise* — and `Users.js` has rendered
+`‹วันที่› ถึง …` for that shape since #11 with **nothing in the dataset ever making it draw**. A
+seed choice can leave a rendered branch with no example in it for months, and the walk sheet cannot
+ask for what the dataset cannot produce. Closing the criterion this way turned a branch nobody could
+look at into a ☐ row somebody can walk today — #105's *a row can gain a walkable half the day a
+ticket lands*, arriving from the seed rather than from the screen.
+
+One more claim moved with it. `seed.test.js`'s *the assessors are the accounts with a window, one
+open and one closed* was a list, and a list passes on the day a fourth assessor is added without a
+window; it is now *a window is what every assessor carries and no other account does*, asked of the
+grant, which is the same correction #87 made one subtest earlier in the same file. **A fixture added
+to satisfy a rule is the moment to check whether the assertion beside it states the rule or the
+roster.**
