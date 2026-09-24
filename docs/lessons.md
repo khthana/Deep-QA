@@ -3940,11 +3940,20 @@ either.
 
 The reason to prefer it was not the assertion count. Migration 0005 says each end is nullable on its
 own and says what a null end means — *until somebody says otherwise* — and `Users.js` has rendered
-`‹วันที่› ถึง …` for that shape since #11 with **nothing in the dataset ever making it draw**. A
+that shape since #11 with **nothing in the dataset ever making it draw**. A
 seed choice can leave a rendered branch with no example in it for months, and the walk sheet cannot
 ask for what the dataset cannot produce. Closing the criterion this way turned a branch nobody could
 look at into a ☐ row somebody can walk today — #105's *a row can gain a walkable half the day a
 ticket lands*, arriving from the seed rather than from the screen.
+
+And the row was walked that same afternoon, which is where the interesting part is. The branch drew
+`2026-08-10 ถึง …`, and the first person ever to see it drawn — the owner, at the walk — read it and
+asked whether *ตั้งแต่ 2026-08-10* would not be better. **A branch nobody can look at is also a
+branch nobody has ever criticised.** The mutation sweep had proved the data reached the column; no
+sweep can ask whether an ellipsis is a word. The change cost one line, no spec and no mutant, and it
+had to move **both** open ends at once — `windowOf` filled either missing end with `…`, so rewording
+only the shape the walk had seen would have put `ตั้งแต่ X` and `… ถึง Y` in one column. The end the
+walk could not see got a ☐ row of its own rather than a sentence promising to look later (#119).
 
 One more claim moved with it. `seed.test.js`'s *the assessors are the accounts with a window, one
 open and one closed* was a list, and a list passes on the day a fourth assessor is added without a

@@ -115,10 +115,21 @@ const control =
  */
 const CANNOT_SUSPEND_SELF = 'ระงับบัญชีของตัวเองไม่ได้'
 
-/** The window as a person reads it, or a dash for an account that has none. */
+/**
+ * The window as a person reads it, or a dash for an account that has none.
+ *
+ * A window open at one end is named rather than punctuated. The ellipsis this
+ * replaced - `2026-08-10 ถึง …` - asked the reader to know what a missing end
+ * meant, and `…` is also what a truncated cell looks like, so the one shape
+ * that says "started, no end in sight" read like the data had failed to load.
+ * Both open ends change together: leaving the other as `… ถึง Y` would put two
+ * spellings of one idea in one column.
+ */
 const windowOf = user => {
   if (!user.valid_from && !user.valid_until) return '—'
-  return `${user.valid_from ?? '…'} ถึง ${user.valid_until ?? '…'}`
+  if (!user.valid_until) return `ตั้งแต่ ${user.valid_from}`
+  if (!user.valid_from) return `ถึง ${user.valid_until}`
+  return `${user.valid_from} ถึง ${user.valid_until}`
 }
 
 export default function Users() {
