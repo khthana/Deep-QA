@@ -135,6 +135,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   at risk (delete the mutant, mark ☑); a mutant that **kills too much** has stopped the
   application; a **survivor on a row nobody suspected** is an overclaim; and a sweep **cannot see
   the row your own fix breaks** — only the clean suite can. (#45, #97, #96, #83)
+- **A mutant that survives where its own file predicted a kill has found a row that does not
+  exist yet** — the fix is the row, not the mutant, and believing the prediction would have left
+  the claim it exists to prove with nothing under it. (#118)
 - **A survivor the sheet predicted is the survivor to distrust.** The prediction answers the sweep's
   question before anyone asks the row what it was for — and a seam said to be unable to build a
   situation is a claim about a helper's mechanics, measurable in one assertion. (#51)
@@ -234,6 +237,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   `aria-live` announces without joining the set those lookups search. (#111, #122)
 - A locator built on one seeded value can answer *not there* about a thing that is; ask what a
   helper promises, not what it does. (#101)
+- **A locator built out of a source string is a claim about the DOM** — it holds only while the two
+  are the same text, and `getByText` matches a substring whether or not the row writes
+  `exact: false`, so that grep is evidence about the option. Ask by the value, then let the full
+  suite say which candidates were real. (#118)
 - **A criterion answered *no* needs a row as much as one answered *yes*** — and the row has to
   assert what is still there, or it is measuring the other refusal that reaches the same status
   code. Between two fixture shapes, take the one the code already draws and nothing has ever made

@@ -152,9 +152,17 @@ reproduce that blind spot at the one seam built to catch it.
 
 ## What it does not assert
 
-Class names, copy, layout, colour. `docs/06`'s exclusion of frontend component tests is an objection to pinning down
+Class names, copy, colour. `docs/06`'s exclusion of frontend component tests is an objection to pinning down
 markup nobody designed here, and it stands. A checklist row stated in terms of appearance — a wording, a colour, the
 contents of a dropdown, an empty state's phrasing, a menu entry being absent — stays a hand-walked row.
+
+**Layout used to be on that list, and #118 is where the line moved.** The distinction that holds is not the subject
+but the instrument. *Is this prominent enough*, *is this the right shade*, *does this read as a caption* are
+judgements, and a judgement is a person's row no matter how it is phrased. *Did this word come apart*, *does anything
+stick out of the box* are facts a number settles, and `CLAUDE.md` has said since #111 and #122 that a rule about
+layout is checked with numbers. `support/line-breaks.js` is what makes the second kind askable — it reads each
+character's own client rect, so the assertion is about what the browser drew and never about the class list that asked
+for it. A row that cannot be put to a number belongs on a sheet, still.
 
 ## Its relationship to `docs/acceptance/`
 
@@ -191,6 +199,8 @@ e2e/
 │   ├── pager.js           the one paging control every list draws — #57; `untilDrawn`, what every opener waits for — #135
 │   ├── navigation.js      `openAt`, what every `open…` helper goes through — the outgoing document's answers, ignored — #160
 │   ├── gate.js            one request held at the route until a row lets it go — #142; a navigation, by `gateNavigation` — #160
+│   ├── line-breaks.js      where a paragraph's lines actually ended, off each character's own rect — #118
+│   ├── confirm-dialog.js   the box every deletion asks through, read with the word joiners taken out — #118
 │   ├── grants-panel.js    ┐
 │   ├── history-panel.js   ├ one module per screen or panel: its controls,
 │   ├── users-screen.js    │ read as the checklist reads them

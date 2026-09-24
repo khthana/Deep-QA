@@ -3961,3 +3961,94 @@ window; it is now *a window is what every assessor carries and no other account 
 grant, which is the same correction #87 made one subtest earlier in the same file. **A fixture added
 to satisfy a rule is the moment to check whether the assertion beside it states the rule or the
 roster.**
+
+## #118 — the break Chromium chose, and the mutant that found a missing row
+
+`ConfirmDialog` broke `ปีการศึกษา` as `ปีการ` / `ศึกษา`, in the one box every deletion in the system
+asks through. The ticket named two suspects and asked for them to be checked together:
+`break-words` on the paragraph, and the 384px `max-w-sm` that makes the sentence wrap at all.
+
+**Neither is the cause, and two more nobody had named are not either.** Taking `break-words` off
+leaves the break exactly where it was. So does widening the box, so does `lang="th"`, so does
+`word-break: keep-all`. The tell was cheaper than any of them: `scrollWidth` equals `clientWidth`,
+always. The paragraph never overflows, and `overflow-wrap: break-word` only acts on a line that
+otherwise would. **A class that is present is not a class that fires.**
+
+What does it is that Chromium asks ICU where the Thai words are, and
+`Intl.Segmenter('th', {granularity: 'word'})` answers `ใน|ปี|การ|ศึกษา`. A break after `การ` is a
+*dictionary* break opportunity, not an emergency one — the browser is not overriding a rule, it is
+following one. That reframes the fix entirely: there is no CSS that narrows an opportunity set, so
+the text has to say where it may break. U+2060 WORD JOINER between every adjacent pair of Thai
+letters leaves exactly the spaces the author typed, which is a rule a person can state and needs
+no dictionary of compounds.
+
+`break-words` stays, and for the first time something holds it up: a Thai run longer than a line
+still has to come apart rather than leave the box, and `overflow-wrap` may break where a joiner
+forbids it. That it may was measured, not assumed.
+
+The ICU answer itself is a row — the fifth, added after the spec review pointed out that the *cause*,
+the thing criterion 2 asks for, was prose in three documents and measured by nothing. It asserts the
+premise rather than a criterion: no mutant in the file can kill it, because nothing in this repo
+decides where Thai words end. It stands under every mutant, and a reader of the sweep has to be told
+that so they do not read it as a survivor. **The day that row goes red the whole design stops being
+necessary**, which is worth more than a sentence saying the same thing.
+
+### The mutant that survived a kill its own file had predicted
+
+`mutation/118-thai-line-breaks.py` was written before the sweep and said what each mutant would do.
+Of `nowrapinstead` — the design that was measured and declined, per-token `white-space: nowrap`,
+written out so it runs (#48) — it said: *it will pass rows 1 and 2 comfortably and kill row 3,
+because a name with nowhere to break runs 213px past the edge. Row 3 is the row that tells the two
+designs apart.*
+
+It survived. All three rows green.
+
+The prediction was not wrong about the mechanism; it was wrong about which row could see it. Row 3's
+name is a Latin identifier, and `nowrapinstead` leaves any token with no Thai letter in it alone. The
+213px came out of the probe, and the probe had measured a **Thai** name. Two different situations had
+been written down as one.
+
+So the row that separates glue from nowrap did not exist. Row 4 — a 78-character Thai title with no
+space in it — was written **after** the sweep, and `nowrapinstead` kills it alone. The second sweep,
+run against the five-row file that shipped, returns the same three kill sets: 1 and 2, 3 and 4, and 4.
+
+**A mutant that survives where its own file predicted a kill has found a row that does not exist
+yet.** It is the mirror of #51, where a survivor the sheet *predicted* was the survivor to distrust:
+there the prediction answered the sweep's question before anyone asked the row what it was for, and
+here the prediction answered it wrongly, which is the luckier of the two. Had the file been believed
+instead of run, the claim *glue is better than nowrap* would have had nothing at all standing under
+it, and the mutant that exists to make that claim measurable would have been measuring nothing.
+
+### The locator that was asking about the source string
+
+The fix broke exactly one assertion out of the 622 that existed before it — the full suite ran 626
+green with the four new rows, and 627 once the premise row was added. It broke that one invisibly in
+the sense that mattered:
+`18a-program-subjects.spec.js` row 6 found the dialog with
+`page.getByText('ต้องการนำรายวิชา', { exact: false })`. That is a locator built out of a fragment of the
+sentence's **source**, and the source is not what is in the DOM any more — a joiner sits between every
+pair of those letters. The row was never stale; it had always been making a claim about the source
+string and getting away with it because the two had been the same thing.
+
+The repair is a read rather than a match: `e2e/support/confirm-dialog.js` takes the joiners back out,
+and says in its own comment that rows asking *what does the box say* belong there while rows asking
+*where did the lines fall* belong in `line-breaks.js` and must strip nothing.
+
+Finding it was the part worth writing down. `grep "exact: false"` returns nine rows, and it is the
+wrong question: **`getByText` matches a substring whether or not a row writes the option**, so the
+grep is evidence about the option. The census that answers the real question is by value — every
+string that can reach `message=`, against every text matcher in the suite — and it returns nineteen
+candidates, because it can only say *this fragment is inside some dialog sentence*, never *and that
+dialog was open at the time*. One of the nineteen was real. The other eighteen were settled by the
+full suite, which is the instrument that can actually tell.
+
+### Counting the thing the fix reaches
+
+`ConfirmDialog` is used by **18 screens and drawn as 19 dialogs** — `Offerings.js` has two. The four
+rows visit three of those screens; the sentences on the other fifteen changed with no row of their
+own, which is why the acceptance record says the sheet is one of the places the mutants kill and not
+the list (#123).
+
+The first draft of both the sheet and the mutation file said 19 screens, from a `grep -c message=`
+that had counted dialogs. Correcting it meant correcting it in both documents in the same breath —
+#154's rule met again, one ticket later.

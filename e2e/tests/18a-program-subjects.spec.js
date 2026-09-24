@@ -28,6 +28,7 @@ const {
   startRemoval,
   confirmRemoval,
 } = require('../support/program-subjects-screen');
+const { saidBy } = require('../support/confirm-dialog');
 
 /**
  * docs/acceptance/18-program-subjects.md — what a curriculum is made of, read
@@ -246,11 +247,18 @@ test('row 6: a removal asks first, and says what it is about to remove', async (
   // The question names the record in its own words - both halves of the key and
   // the subject's name - and says that a referenced pairing is closed rather
   // than deleted, which is the answer the next row gets.
-  const dialog = page.getByText('ต้องการนำรายวิชา', { exact: false });
-  await expect(dialog).toContainText(PLACED);
-  await expect(dialog).toContainText('วิศวกรรมหลักสูตรหนึ่ง');
-  await expect(dialog).toContainText('0501');
-  await expect(dialog).toContainText('ปิดการใช้งานให้แทนการลบ');
+  //
+  // Read, not matched. Until #118 this located the dialog by a fragment of its
+  // own sentence; the message now carries word joiners between its Thai
+  // letters, so no fragment of the source string is a substring of the DOM any
+  // more. `confirm-dialog.js` says why, and takes them back out - what this row
+  // is about is what the person is asked, which has not changed by a character.
+  const said = await saidBy(page);
+  expect(said).toContain('ต้องการนำรายวิชา');
+  expect(said).toContain(PLACED);
+  expect(said).toContain('วิศวกรรมหลักสูตรหนึ่ง');
+  expect(said).toContain('0501');
+  expect(said).toContain('ปิดการใช้งานให้แทนการลบ');
 
   await page.getByRole('button', { name: 'ยกเลิก' }).click();
   await expect.poll(() => total(page)).toBe(before);
