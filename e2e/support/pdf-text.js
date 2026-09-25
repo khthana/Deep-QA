@@ -64,6 +64,17 @@ const MARKS =
   'ัิีึืฺุู' +
   '็่้๊๋์ํ๎';
 
+/**
+ * The one Thai vowel sign that is none of the above - #165.
+ *
+ * `ำ` is written to the right of its consonant and carries a width, so it is
+ * outside `MARKS` by the letter of #117's criteria and stays outside it: that
+ * list is the ticket's, not ours to grow. What it shares with them is where it
+ * belongs - on the consonant before it - so a line that begins with it begins
+ * with half a syllable, and #165 is the ticket that says so.
+ */
+const SARA_AM = 'ำ';
+
 /** Latin-1, because a PDF is bytes and the operators in it are ASCII. */
 const textOf = bytes => Buffer.from(bytes).toString('latin1');
 
@@ -337,6 +348,29 @@ const orphanedMarks = lines =>
     .map(line => `${line.text.slice(0, 14)} begins with ${line.text.slice(0, 1)}`);
 
 /**
+ * The lines that begin with `ำ`, naming the consonant it was cut away from.
+ *
+ * Separate from `orphanedMarks` rather than folded into it, because the two are
+ * different claims with different evidence: the marks are held by the font
+ * giving them no width, and this one by the wrapping keeping a cluster whole.
+ * One helper answering both would report a defect in either as a defect in the
+ * pair.
+ */
+const orphanedSaraAm = lines =>
+  lines
+    // The consonant is only named when the line before it is on the same page,
+    // as `strandedVowels` does: the previous line of a different page is a
+    // different column of text, and naming it would be a finding about nothing.
+    .map((line, i) => ({ line, before: lines[i - 1] }))
+    .filter(({ line }) => line.text.startsWith(SARA_AM))
+    .map(({ line, before }) => ({ line, before: before?.page === line.page ? before : undefined }))
+    .map(
+      ({ line, before }) =>
+        `${before ? before.text.slice(-14) : ''} | ${line.text.slice(0, 14)}` +
+        ` (${SARA_AM} cut from ${before ? before.text.slice(-1) : 'nothing'})`
+    );
+
+/**
  * How far each line runs past the right edge of the cell drawn around it, in
  * points, for the lines that run past at all.
  *
@@ -358,15 +392,16 @@ const overflows = lines =>
 /** Every line whose text contains `word`, for a row that wants to ask about one. */
 const holding = (lines, word) => lines.filter(line => line.text.includes(word));
 
-// `LEADING_VOWELS` and `MARKS` stay in here. They are what `strandedVowels` and
-// `orphanedMarks` are about, and a row that imported them would be restating the
-// question rather than asking it.
+// `LEADING_VOWELS`, `MARKS` and `SARA_AM` stay in here. They are what
+// `strandedVowels`, `orphanedMarks` and `orphanedSaraAm` are about, and a row
+// that imported them would be restating the question rather than asking it.
 module.exports = {
   isReadable,
   linesOf,
   cellsOf,
   strandedVowels,
   orphanedMarks,
+  orphanedSaraAm,
   overflows,
   holding,
 };

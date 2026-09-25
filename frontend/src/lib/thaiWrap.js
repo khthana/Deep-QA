@@ -31,7 +31,9 @@
  *    clusters.** Something has to give, and a cluster boundary is the least bad
  *    place: a Thai tone mark or an above/below vowel belongs to the consonant
  *    before it, and ICU's grapheme clusters keep the two together, so no line
- *    can begin with a mark drawn over nothing.
+ *    can begin with a mark drawn over nothing. `ำ` is kept with its consonant
+ *    too, which ICU does of its own accord and the fallback had to be taught
+ *    (#165).
  * 3. **No line ends with a leading vowel.** Rule 1 does not imply this — a
  *    segment can itself end in one — and rule 2 cannot, because `เ` is a
  *    grapheme cluster of its own. The retreat is always backwards, never
@@ -61,8 +63,17 @@ const LEADING_VOWELS = 'เแโใไ'
  * there in the one the suite drives. It is here because the alternative to a
  * fallback is a `TypeError` inside an export button: untested rather than
  * unreachable, and the same call this module would make to it if it were.
+ *
+ * `ำ` is in the class and is not a mark — #165. It is written to the right of
+ * its consonant and it carries a width, where the other sixteen carry none, and
+ * that is why it was missed: the ranges here are the marks, by block. ICU does
+ * not miss it. U+0E33 is `Grapheme_Cluster_Break = SpacingMark`, so UAX #29
+ * forbids a break in front of it and `Intl.Segmenter` answers `นำ` as one
+ * cluster. What this line is for is agreeing with that answer when there is
+ * nobody to ask, and one character's disagreement was a line beginning with half
+ * a syllable.
  */
-const CLUSTER = /[\s\S][ัิ-ฺ็-๎]*/g
+const CLUSTER = /[\s\S][ัิ-ฺ็-๎ำ]*/g
 
 const segmenters = new Map()
 

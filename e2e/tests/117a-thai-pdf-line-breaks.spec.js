@@ -21,6 +21,7 @@ const {
   cellsOf,
   strandedVowels,
   orphanedMarks,
+  orphanedSaraAm,
   overflows,
   holding,
 } = require('../support/pdf-text');
@@ -128,6 +129,22 @@ const UNBREAKABLE = 'ก้'.repeat(60);
  * anything to do. 16 of 60 filler widths reach it; 5 is the narrowest.
  */
 const NO_DICTIONARY_DETAIL = 'กกกกกเฟซในการออกแบบโปรแกรมได้';
+
+/**
+ * A detail whose fallback line break lands between a consonant and its ำ - #165.
+ *
+ * Four ก in front of ordinary prose is what puts the width's end between the ส
+ * of สำหรับ and its ำ in #40's 48.80mm outcome column. The window is one
+ * character wide - ำ draws 1.56mm - so most filler widths step straight over it:
+ * measured 25 September 2569, 24 of 525 crafted shapes reach it at all, and this
+ * is the narrowest built from one repeated filler.
+ *
+ * Without the rule the document draws `...ซอฟต์แวร์ส` / `ำหรับงานคำนวณ`; with it
+ * `...ซอฟต์แวร์` / `สำหรับงานคำนวณ`, two lines either way. None of the 24
+ * costs the document a line, which is the other half of the claim: the retreat is
+ * backwards onto a line that already fitted.
+ */
+const NO_DICTIONARY_SARA_AM = 'กกกกออกแบบและพัฒนาซอฟต์แวร์สำหรับงานคำนวณ';
 
 let section;
 let invented;
@@ -442,6 +459,46 @@ test('row 9: with no dictionary, the fallback still ends no line with a leading 
   expect(cell, 'the crafted outcome reached the document whole').toBeTruthy();
   expect(cell.breaks.length).toBeGreaterThan(1);
 
+  expect(strandedVowels(lines)).toEqual([]);
+  expect(overflows(lines)).toEqual([]);
+});
+
+test('row 10: with no dictionary, the fallback starts no line with ำ', async ({ page }) => {
+  // The row #165 exists for, and the ticket's own diagnosis is half wrong.
+  //
+  // #117 measured that ำ is the one Thai vowel sign with a width - 1.56mm at
+  // 14pt, where all sixteen tone marks and above/below vowels are zero - and
+  // concluded that ICU therefore gives it a grapheme cluster of its own. It does
+  // not: asked on 25 September 2569, `Intl.Segmenter` answers `นำ` as **one**
+  // cluster and `น้ำ` as one, because U+0E33 is `Grapheme_Cluster_Break =
+  // SpacingMark` and UAX #29 forbids a break in front of it. The chop cannot
+  // strand it on the path a browser takes, and no ICU *word* segment begins with
+  // it either.
+  //
+  // What could strand it is the fallback's own cluster regex, which lists the
+  // marks by range and never held U+0E33. So the defect is one character's
+  // disagreement between the fallback and ICU, in the one place the fallback is
+  // reachable - which is where this row comes in, the same door as row 9.
+  await page.addInitScript(() => {
+    delete Intl.Segmenter;
+  });
+
+  await signInAsTeacher(page);
+  await outcomeReading('CLO-95', NO_DICTIONARY_SARA_AM);
+  const lines = await reportLines(page);
+
+  // The same three preconditions row 9 asks, for the same reason: a row measuring
+  // the fallback has to show it was on the fallback, that the crafted detail
+  // arrived whole, and that it was broken inside itself rather than fitting on one
+  // line. Without the third this row would pass on a document with no wrap in it.
+  expect(await page.evaluate(() => typeof Intl.Segmenter)).toBe('undefined');
+  const cell = cellsOf(lines).find(one => one.text === `CLO-95${NO_DICTIONARY_SARA_AM}`);
+  expect(cell, 'the crafted outcome reached the document whole').toBeTruthy();
+  expect(cell.breaks.length).toBeGreaterThan(1);
+
+  expect(orphanedSaraAm(lines)).toEqual([]);
+
+  // And the fix did not buy that by breaking somewhere worse instead.
   expect(strandedVowels(lines)).toEqual([]);
   expect(overflows(lines)).toEqual([]);
 });

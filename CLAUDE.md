@@ -53,11 +53,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 ### A ticket's diagnosis
 
 - **A ticket's *What is wrong* is a claim from the day it was written; measure it before you fix
-  it.** It has been wrong eight ways: aged (#66, #111, #55), never true (#102), generalised from
+  it.** It has been wrong nine ways: aged (#66, #111, #55), never true (#102), generalised from
   the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
-  its own table (#133), a key's name read as its text (#127) — and the sheet itself asking for
-  the defect (#89).
+  its own table (#133), a key's name read as its text (#127), an inference drawn from a
+  measurement that was itself correct (#165) — and the sheet itself asking for the defect (#89).
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -330,6 +330,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   a ref *means*, and which controls write it, can leave every comparison and every mutant where
   they stand. (#146)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
+- **A fallback that reimplements a library is a claim about that library's answer** — so check it
+  by asking the library, not by reasoning from the data's properties: `ำ` really is 1.56mm wide and
+  really is `Lo`, and ICU keeps it with its consonant anyway. The character that breaks such a
+  rule is the one outside the ranges it was written from. (#165)
 - **A fix that replaces a mitigation is a claim to check against the mitigation's own criticism** — the
   sentence you wrote about why the workaround only narrowed the window is the sentence to hold your
   replacement to, one layer up. (#160)

@@ -4094,11 +4094,11 @@ cluster chopping and code-point chopping alike. The mutant written to prove the 
 named as what holds it — not ⚙. A claim held by a dependency is still held; it is just not held by
 you.
 
-The measured exception, which is #165 now that it is written down somewhere a ticket can be
-found: **`ำ` (U+0E33) is 1.56mm wide, not
-zero**, and it is `Lo` rather than `Mn`, so ICU gives it a grapheme cluster of its own. It is
-outside criterion 2 as written and outside rule 2's promise, and a line could in theory begin with it
-inside an over-wide run.
+The measured exception became #165: **`ำ` (U+0E33) is 1.56mm wide, not zero**, where the other
+sixteen are nothing. What #117 inferred from that — that ICU therefore gives it a grapheme cluster
+of its own — is the half of the diagnosis #165 measured and found backwards. ICU keeps it with its
+consonant; the fallback's own cluster regex, which lists the marks by range, did not. The story is
+*#165 — the character the fallback did not know it was imitating* at the end of this file.
 
 ### A rule whose only caller is a fallback needs a row that comes in through the fallback
 
@@ -4257,3 +4257,77 @@ reopening seeds from the new entry, which is exactly the question #150 left open
 the answer ever comes back *do not reseed*, such a row would go red on a screen that is behaving. The
 class-level claim is held by the mutant and the comment beside the hook, and it is written down here
 so that it is something a grep can find.
+
+
+## #165 — the character the fallback did not know it was imitating
+
+#117 closed with a measurement it could not act on, and #165 is that measurement written where a
+ticket can find it: **`ำ` (U+0E33) has an advance of 1.56mm at 14pt in TH Sarabun**, where all
+sixteen tone marks and above/below vowels have none. The ticket drew a conclusion from it — U+0E33
+is `Lo` rather than `Mn`, *so ICU gives it a grapheme cluster of its own, so the cluster chop in
+`thaiWrap.js` may break in front of it* — and offered three answers, recommending the second: teach
+`chop` not to break in front of it.
+
+### The width was right, the inference was backwards
+
+Measured before anything was changed. `Intl.Segmenter('th', {granularity: 'grapheme'})` answers
+`นำ` as **one** cluster, and `น้ำ`, `ทำ` and `สำ` as one each. The general category is not what
+decides a grapheme boundary: U+0E33 is `Grapheme_Cluster_Break = SpacingMark`, and UAX #29 forbids a break in
+front of one. Nor does any ICU **word** segment begin with it, over prose written to be full of it.
+So on the path every supported browser takes, `chop` cannot strand `ำ`, and a rule added to `chop`
+would have been a rule nothing could reach — the shape #117 had already met once with rule 3.
+
+What can strand it is the module's own fallback, `CLUSTER = /[\s\S][ัิ-ฺ็-๎]*/g`, which lists the
+marks **by range** and so never held a character that is not in those ranges. The fallback exists to
+give the same answer ICU would when there is nobody to ask, and on one character it did not. That is
+the defect, and it is one character long: `ำ` added to the class.
+
+**A fallback written to imitate a library is a claim about that library's answer, and the way to
+check it is to ask the library.** The ticket reasoned from a property of the character — category,
+width — to what ICU must do with it. Both properties were right. The conclusion was not, because
+grapheme clustering is decided by a different property, and one call would have said so before the
+rule was designed for the wrong layer.
+
+### The row comes in through the fallback, like rule 3's
+
+`chop` is only reachable with no dictionary, so row 10 of `117a` deletes `Intl.Segmenter` with
+`addInitScript` exactly as row 9 does, and the fixture is crafted for the width the report actually
+draws: four ก in front of ordinary prose puts the end of the 48.80mm column between the ส of สำหรับ
+and its ำ. The window is one character wide — 1.56mm — which is why the first sweep found nothing:
+41 filler widths in steps of 1.91mm stepped straight over it. Widening the search to two filler
+characters of different widths, 525 crafted shapes, found **24** that reach it. The fix removes the
+stranding in all 24 and **costs none of them a line**, which is the other half of the claim: the
+retreat is backwards onto a line that had already fitted.
+
+Before the fix the row is red in Chromium with the finding
+`ัฒนาซอฟต์แวร์ส | ำหรับงานคำนวณ`, read back out of the PDF's own glyphs.
+
+### The instrument is a third helper, not a bigger `MARKS`
+
+`e2e/support/pdf-text.js` holds `MARKS` as #117's sixteen, and `ำ` does not go in it: that list is
+the ticket's criterion, not ours to grow, and the two claims are held by different things — the marks by
+the font giving them no width, this one by the wrapping keeping a cluster whole. A helper answering
+both would report a defect in either as a defect in the pair. So `orphanedSaraAm` sits beside
+`orphanedMarks` and names the consonant the vowel was cut from.
+
+### What the sweep says
+
+`117:noamcluster` puts the old class back — the file as it stood the day before — and kills
+**one row of ten, row 10, at its own assertion**, and nothing else moves. The other seven were
+re-swept over ten rows rather than nine, because a row added to a file expires every count taken of
+it: `notwrappedgrid` 1, `bycharacter` 2 and `nofallback` 0 are what they were, while
+`novowelretreat` and `nochop` go from 1 to 2 and `nochopnofallback` from 2 to 3 — and in every one
+of those the row that joined is the new one.
+
+**Five mutants kill row 10 and they kill three different lines of it**, which is the sort of thing a
+kill count cannot say, so it is written down. `noamcluster`, `nochop` and `notwrapped` kill it at
+`orphanedSaraAm`, its own claim — with no chop, or with no wrapping of ours at all, the over-wide
+run goes to jsPDF's splitter, which strands the vowel by the character. `novowelretreat` kills it at
+the `strandedVowels` guard the row asks *after* its claim. And `nochopnofallback` kills it at a
+**precondition**, `cell.breaks.length > 1`: with both splitters gone the cell is not broken at all,
+so the row cannot build the situation it is about — a red that says *not asked*, not *wrong*.
+
+The re-sweep also answers a question nobody asked: `notwrapped`, which hands the cells to jsPDF's own
+splitter, now kills 4 of 10 rather than 3 — the new row among them. A splitter that measures one
+character at a time has no notion of a cluster at all, so it strands `ำ` wherever the width runs out. The row
+holds the claim against both wrappers, not only against ours.
