@@ -164,6 +164,15 @@ layout is checked with numbers. `support/line-breaks.js` is what makes the secon
 character's own client rect, so the assertion is about what the browser drew and never about the class list that asked
 for it. A row that cannot be put to a number belongs on a sheet, still.
 
+**#117 moved the same line through a second door: the files the application hands out.** An exported PDF used to be
+asked only whether it existed and whether the font travelled with it, which is why a break in the middle of a Thai
+word survived three green suites — the bytes said `THSarabun` was embedded and said nothing about what was drawn with
+it. `support/pdf-text.js` reads a jsPDF file back into the lines it drew, each with its width and the cell rectangle
+around it, out of the file's own `/ToUnicode` table and `/W` array and with no new dependency. So *where did this line
+break*, *is this line inside its box* and *are these the characters we asked for* are numbers now. What stays a
+person's row is the part no table of offsets holds: whether the marks are drawn in the right place above and below the
+consonants, and whether the page looks like a document somebody would file.
+
 ## Its relationship to `docs/acceptance/`
 
 A row is either walked by a person or covered here, never both and never neither. A covered row keeps its place in its
@@ -201,6 +210,7 @@ e2e/
 │   ├── gate.js            one request held at the route until a row lets it go — #142; a navigation, by `gateNavigation` — #160
 │   ├── line-breaks.js      where a paragraph's lines actually ended, off each character's own rect — #118
 │   ├── confirm-dialog.js   the box every deletion asks through, read with the word joiners taken out — #118
+│   ├── pdf-text.js         what an exported PDF says it drew: its lines, their widths and the cell around each — #117
 │   ├── grants-panel.js    ┐
 │   ├── history-panel.js   ├ one module per screen or panel: its controls,
 │   ├── users-screen.js    │ read as the checklist reads them

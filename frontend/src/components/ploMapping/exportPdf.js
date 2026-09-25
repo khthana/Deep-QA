@@ -4,6 +4,7 @@ import { autoTable } from 'jspdf-autotable'
 import THSarabun from '../../assets/fonts/THSarabun-normal'
 import THSarabunBold from '../../assets/fonts/THSarabun-bold-normal'
 import { LEVELS, NOT_SERVED, keyOf, mark } from './levels'
+import { wrapped } from '../../lib/thaiWrap'
 
 /**
  * The coverage grid as a PDF — #20's fifth criterion.
@@ -54,6 +55,15 @@ import { LEVELS, NOT_SERVED, keyOf, mark } from './levels'
  * *The date is on it.* A coverage grid is submitted, argued over, and compared
  * against a later one, and two printouts of the same curriculum a year apart are
  * otherwise indistinguishable.
+ *
+ * *The รายวิชา column is wrapped before autoTable sees it* — #117, whose fix
+ * `assessmentPdf.js` carries the long version of. It is the only cell here that
+ * can wrap: a mark is one character, `PLO-13` is ten millimetres in a nine
+ * millimetre column that autoTable widens for it, and the outcome heading spans
+ * everything but the รายวิชา column — never less than 205mm against the 26.2mm
+ * its sentence draws, because `pageFor` will not make a page narrower than A4
+ * landscape. Measured 25 September 2569; the รายวิชา column is the one that
+ * carries a name somebody typed.
  */
 
 /**
@@ -74,6 +84,12 @@ const FAMILY = 'THSarabun'
 const SUBJECT_WIDTH = 72
 const OUTCOME_WIDTH = 9
 const MARGIN = 10
+
+/** Millimetres inside every cell, on each side — `styles.cellPadding` below. */
+const CELL_PADDING = 1.2
+
+/** Points. Everything in this document is set at one size. */
+const BODY = 10
 
 /**
  * A page wide enough for the columns, never narrower than A4 landscape.
@@ -146,8 +162,20 @@ export function exportGridToPdf({ program, subjects, outcomes, mappings }) {
     outcomes.map(outcome => ({ content: outcome.outcome_code })),
   ]
 
+  // The face and the size the column is drawn in have to be the ones selected
+  // while it is measured, so this happens after the headings above and before
+  // the table below.
+  doc.setFont(FAMILY, 'normal')
+  doc.setFontSize(BODY)
+  const subjectCell = subject =>
+    wrapped(
+      `${subject.subject_id} ${subject.subject_name_th}`,
+      SUBJECT_WIDTH - CELL_PADDING * 2,
+      one => doc.getTextWidth(one)
+    )
+
   const body = subjects.map(subject => [
-    `${subject.subject_id} ${subject.subject_name_th}`,
+    subjectCell(subject),
     ...outcomes.map(outcome => {
       const set = level.get(keyOf(subject.subject_id, outcome.outcome_id))
       return set ? mark(set) : ''
@@ -163,8 +191,8 @@ export function exportGridToPdf({ program, subjects, outcomes, mappings }) {
     styles: {
       font: FAMILY,
       fontStyle: 'normal',
-      fontSize: 10,
-      cellPadding: 1.2,
+      fontSize: BODY,
+      cellPadding: CELL_PADDING,
       halign: 'center',
       valign: 'middle',
       textColor: 20,

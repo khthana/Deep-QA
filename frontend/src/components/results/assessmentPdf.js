@@ -4,6 +4,7 @@ import { autoTable } from 'jspdf-autotable'
 import THSarabun from '../../assets/fonts/THSarabun-normal'
 import THSarabunBold from '../../assets/fonts/THSarabun-bold-normal'
 import { criterionLines, figure, score, verdictLabel } from '../../lib/bands'
+import { wrapped } from '../../lib/thaiWrap'
 
 /**
  * The assessment report as a PDF — #40's fourth and fifth criteria.
@@ -44,6 +45,16 @@ import { criterionLines, figure, score, verdictLabel } from '../../lib/bands'
  *
  * *The date is on it*, for #20's reason: two printouts of the same Section a
  * term apart are otherwise indistinguishable.
+ *
+ * *Every cell is wrapped before autoTable sees it* — #117. A cell styled
+ * `overflow: 'linebreak'` is broken up by jsPDF's splitter, which measures one
+ * character at a time and says in its own source that it works only on scripts
+ * that separate words with a space. Thai does not, so a whole sentence was one
+ * word to it and the break landed wherever the column ran out: `อินเทอร์เ` at
+ * the end of a line and `ฟซ` at the start of the next. `wrapped` asks ICU where
+ * the words are and hands the cell over already broken. autoTable's splitter is
+ * deliberately left in place behind it, as the thing that still cuts up a single
+ * word too wide for its column.
  */
 
 const FAMILY = 'THSarabun'
@@ -60,6 +71,22 @@ const BODY = 14
 
 /** Millimetres. */
 const MARGIN = 12
+
+/**
+ * The columns of the two tables, and the padding inside every cell — all in
+ * millimetres, and all named because #117 has to wrap text to them.
+ *
+ * Wrapping here means computing the width autoTable will lay out, which is the
+ * one piece of its arithmetic this file repeats: a cell's text area is its
+ * column less the padding on both sides.
+ *
+ * Being a shade narrow is safe and being wide is not: autoTable re-wraps
+ * anything that still does not fit, and its splitter is the one that cuts Thai
+ * mid-word. It allows itself a point of slack that this does not, so the lines
+ * handed over are always the tighter of the two.
+ */
+const CELL_PADDING = 1.6
+const COLUMNS = [52, 44, 24, 17, 22, 27]
 
 /** The Thai date a submission is stamped with, as `exportPdf.js` stamps its own. */
 const today = () =>
@@ -78,6 +105,35 @@ export function exportAssessmentToPdf({ section, subject, rule, clos }) {
   doc.addFont('THSarabun-bold.ttf', FAMILY, 'bold')
 
   const width = doc.internal.pageSize.getWidth()
+
+  /**
+   * The rubric's three columns. Its last one was `cellWidth: 'auto'`, which is
+   * autoTable spreading what is left of the page across the columns that gave no
+   * width — the same number, written down, because a width nobody can read is a
+   * width nothing can wrap to.
+   *
+   * It is computed here and not beside `COLUMNS` because the page is what it is
+   * measured against, and the page says its own width one line above. A second
+   * copy of that number would be a wrap that goes quietly wrong the day the
+   * format does.
+   */
+  const rubricColumns = [24, 28, width - MARGIN * 2 - 24 - 28]
+
+  /**
+   * One cell's text, broken into lines that fit the column it is going into.
+   *
+   * The font has to be selected before the measuring starts, because
+   * `getTextWidth` answers for whatever face and size the document is on — a
+   * head cell measured in the normal face would be wrapped too late and a body
+   * cell measured in bold too early. Every cell goes through here, including the
+   * ones holding a figure: a call that finds the text already fits returns it
+   * untouched, and the alternative is a list of exceptions with a date on it.
+   */
+  const fit = (text, column, style = 'normal') => {
+    doc.setFont(FAMILY, style)
+    doc.setFontSize(BODY)
+    return wrapped(text, column - CELL_PADDING * 2, one => doc.getTextWidth(one))
+  }
 
   doc.setFont(FAMILY, 'bold')
   doc.setFontSize(TITLE)
@@ -115,32 +171,34 @@ export function exportAssessmentToPdf({ section, subject, rule, clos }) {
     margin: { left: MARGIN, right: MARGIN },
     head: [
       [
-        { content: 'ผลการเรียนรู้', styles: { halign: 'left' } },
-        { content: 'เกณฑ์การบรรลุ', styles: { halign: 'left' } },
-        { content: 'ผ่าน / ผู้มีคะแนน' },
-        { content: 'ร้อยละ' },
-        { content: 'คะแนนเฉลี่ย' },
-        { content: 'ผลการประเมิน' },
+        { content: fit('ผลการเรียนรู้', COLUMNS[0], 'bold'), styles: { halign: 'left' } },
+        { content: fit('เกณฑ์การบรรลุ', COLUMNS[1], 'bold'), styles: { halign: 'left' } },
+        { content: fit('ผ่าน / ผู้มีคะแนน', COLUMNS[2], 'bold') },
+        { content: fit('ร้อยละ', COLUMNS[3], 'bold') },
+        { content: fit('คะแนนเฉลี่ย', COLUMNS[4], 'bold') },
+        { content: fit('ผลการประเมิน', COLUMNS[5], 'bold') },
       ],
     ],
-    body: clos.map(clo => [
-      `${clo.clo_number}\n${clo.clo_detail}`,
-      // The same sentence on every row, because it is the same rule on every
-      // row. Repeating it rather than writing it once at the top and leaving
-      // the column blank is what makes a single row legible when it is quoted
-      // out of the table, which is how a course file gets read.
-      `${line}\nและ${share}`,
-      `${clo.passed_count} / ${clo.student_count}`,
-      figure(clo.pass_rate, '%'),
-      score(clo.mean),
-      verdictLabel(clo.passed),
-    ]),
+    body: clos.map(clo =>
+      [
+        `${clo.clo_number}\n${clo.clo_detail}`,
+        // The same sentence on every row, because it is the same rule on every
+        // row. Repeating it rather than writing it once at the top and leaving
+        // the column blank is what makes a single row legible when it is quoted
+        // out of the table, which is how a course file gets read.
+        `${line}\nและ${share}`,
+        `${clo.passed_count} / ${clo.student_count}`,
+        figure(clo.pass_rate, '%'),
+        score(clo.mean),
+        verdictLabel(clo.passed),
+      ].map((text, column) => fit(text, COLUMNS[column]))
+    ),
     theme: 'grid',
     styles: {
       font: FAMILY,
       fontStyle: 'normal',
       fontSize: BODY,
-      cellPadding: 1.6,
+      cellPadding: CELL_PADDING,
       halign: 'center',
       valign: 'middle',
       textColor: 20,
@@ -157,12 +215,12 @@ export function exportAssessmentToPdf({ section, subject, rule, clos }) {
       halign: 'center',
     },
     columnStyles: {
-      0: { cellWidth: 52, halign: 'left' },
-      1: { cellWidth: 44, halign: 'left' },
-      2: { cellWidth: 24 },
-      3: { cellWidth: 17 },
-      4: { cellWidth: 22 },
-      5: { cellWidth: 27 },
+      0: { cellWidth: COLUMNS[0], halign: 'left' },
+      1: { cellWidth: COLUMNS[1], halign: 'left' },
+      2: { cellWidth: COLUMNS[2] },
+      3: { cellWidth: COLUMNS[3] },
+      4: { cellWidth: COLUMNS[4] },
+      5: { cellWidth: COLUMNS[5] },
     },
     // The shading is a second reading of the verdict, never the only one: the
     // word is in the cell either way, so a monochrome copy loses nothing.
@@ -200,14 +258,25 @@ export function exportAssessmentToPdf({ section, subject, rule, clos }) {
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 8,
       margin: { left: MARGIN, right: MARGIN },
-      head: [[{ content: 'เกณฑ์การบรรลุผลสี่ระดับของแต่ละข้อ (อ้างอิง)', colSpan: 3 }]],
-      body: rubric,
+      head: [
+        [
+          {
+            content: fit(
+              'เกณฑ์การบรรลุผลสี่ระดับของแต่ละข้อ (อ้างอิง)',
+              rubricColumns.reduce((total, column) => total + column, 0),
+              'bold'
+            ),
+            colSpan: 3,
+          },
+        ],
+      ],
+      body: rubric.map(row => row.map((text, column) => fit(text, rubricColumns[column]))),
       theme: 'grid',
       styles: {
         font: FAMILY,
         fontStyle: 'normal',
         fontSize: BODY,
-        cellPadding: 1.6,
+        cellPadding: CELL_PADDING,
         valign: 'middle',
         textColor: 20,
         lineColor: [180, 180, 180],
@@ -222,9 +291,9 @@ export function exportAssessmentToPdf({ section, subject, rule, clos }) {
         textColor: 255,
       },
       columnStyles: {
-        0: { cellWidth: 24 },
-        1: { cellWidth: 28 },
-        2: { cellWidth: 'auto' },
+        0: { cellWidth: rubricColumns[0] },
+        1: { cellWidth: rubricColumns[1] },
+        2: { cellWidth: rubricColumns[2] },
       },
     })
   }

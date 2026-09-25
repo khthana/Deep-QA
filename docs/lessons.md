@@ -4052,3 +4052,137 @@ the list (#123).
 The first draft of both the sheet and the mutation file said 19 screens, from a `grep -c message=`
 that had counted dialogs. Correcting it meant correcting it in both documents in the same breath —
 #154's rule met again, one ticket later.
+
+## #117 — the file nobody could read back, and the fixture that was not what it was called
+
+`assessment-01076105-sec1-2569.pdf` broke Thai in the middle of words in five of nine outcomes, and
+in one of them left the leading vowel `เ` at the end of a line with the consonant it is written in
+front of on the next. A person found it by opening the file during #40's hand walk. Three green
+suites could not have found it, and the ticket said why in its own fourth criterion: the only
+questions ever asked of an exported PDF were *does the file exist*, *is the font embedded* and *is
+the filename right*. **The bytes said `THSarabun` was in there and said nothing about what was drawn
+with it.**
+
+The ticket's table of five breaks reproduces exactly at the width the report draws — and the same
+measurement finds **seven**, not five: `CLO-8` and `CLO-9` break inside a word too, and the walk did
+not write them down. A ticket's list of symptoms is a claim of the same kind as its diagnosis, and it
+is a floor rather than a count.
+
+So the fix is two things, and the second is the one that matters longer: a wrapper, and an
+instrument. `e2e/support/pdf-text.js` reads a jsPDF file back into the lines it drew — the text, the
+width in points, and the cell rectangle around each — out of the file's own `/ToUnicode` table and
+`/W` array, with **no new dependency**: jsPDF writes its content streams uncompressed, and autoTable
+emits a cell's border immediately before its text, so the grouping is in the file too.
+
+### The site had moved; the mechanism had not
+
+The ticket named `splitTextToSize` in `assessmentPdf.js`. `grep -rn splitTextToSize frontend/src`
+finds nothing — the call is one level down, inside `jspdf-autotable`, for every cell styled
+`overflow: 'linebreak'`. Every word of the diagnosis was right and the line it pointed at was not
+ours to change, which is what gave the fix a shape the ticket does not propose: **wrap the cells
+before autoTable sees them and leave autoTable's splitter in place behind them.** Same structure as
+#118 — the ticket's two options read as alternatives and measured as layers.
+
+### Two of the four criteria were already met, and not by anything we wrote
+
+Criterion 2 is *no line begins with a tone mark or an above/below vowel*. All sixteen of those
+characters have an advance of **zero** in TH Sarabun, and a greedy wrapper admits a zero-width piece
+unconditionally, so a mark is always pulled onto the line its consonant is on. That is true of
+jsPDF's splitter and of ours, and six crafted mark-heavy runs produce **identical documents** under
+cluster chopping and code-point chopping alike. The mutant written to prove the cluster rule
+(`bycodepoint`) could not fail, so it was deleted rather than kept, and the row is ☑ with the font
+named as what holds it — not ⚙. A claim held by a dependency is still held; it is just not held by
+you.
+
+The measured exception, which belongs to nobody's ticket yet: **`ำ` (U+0E33) is 1.56mm wide, not
+zero**, and it is `Lo` rather than `Mn`, so ICU gives it a grapheme cluster of its own. It is
+outside criterion 2 as written and outside rule 2's promise, and a line could in theory begin with it
+inside an over-wide run.
+
+### A rule whose only caller is a fallback needs a row that comes in through the fallback
+
+Rule 3 forbids a line ending in a leading vowel. Removing it changes nothing a real browser draws,
+and that is not luck: over every Thai string in `db/seed.js` **not one ICU word segment ends with a
+leading vowel**, and 141 crafted over-wide runs reach the rule zero times, because the only pieces
+the cluster chop ever receives are ones ICU has already split in front of every vowel.
+
+The honest options were to delete the rule or to find where it bites. It bites on the path the module
+documents and no browser takes: with no `Intl.Segmenter` the whole paragraph is one word, the chop
+does all the breaking, and a cut lands wherever the width runs out. So row 9 deletes
+`Intl.Segmenter` from the page with `addInitScript` and asks the same question. One crafted detail,
+five ก in front of ordinary prose, puts the `ไ` of `ได้` at 48.20mm in a 48.80mm column: without the
+rule the line ends with it, with the rule the line is 46.99mm and the document has the same three
+lines. `novowelretreat` kills that row and nothing else.
+
+Without it the rule would have been code with nothing under it, and criterion 1 would fail silently
+on a path the module declares it supports (#48 — a criterion answered *no* needs a row as much as
+one answered *yes*).
+
+### The mutant that swapped one splitter for another, and could not be seen
+
+`notwrappedgrid` — #20's column handed to autoTable unwrapped, the code before the fix, made to run
+— **survived, nine rows green.**
+
+Not because the row was weak. In a 72mm column the injected name has **one** break, so there is one
+chance to be wrong, and for that name ours fell at offset 49 and jsPDF's at 53 — and 53 is an ICU
+word end too. Both documents were correct by the row's own question. 65 of 260 candidate names tell
+the two apart; the one that shipped breaks at 44 ours and 50 theirs, and 50 is inside `วิศวกรรม`.
+
+This is #154 read from the other side. There, a mutant substituting a default was invisible wherever
+the real value equalled the default. Here, **a mutant substituting one implementation for another is
+invisible wherever the two implementations agree** — and the fixture has to be built at the point
+where they disagree, which is not the same as building it large.
+
+### The fixture that was not what it was called
+
+`UNBREAKABLE = 'ก'.repeat(60)` was the run row 6 used for *a word genuinely wider than the column*.
+`nochop` — rule 2 removed — left row 6 green. So did `nofallback`, autoTable's splitter taken away.
+So did **both at once**, which should have been impossible: with nothing to break the word, something
+had to run out of the box.
+
+Asked of ICU rather than of the name: `ก`×60 segments into **thirty words of two characters**. A run
+of identical consonants is not one word to a dictionary that is willing to guess. Rule 1 was wrapping
+it, `chop` had never been on the path, and the row had been passing for a reason unrelated to what it
+said. `ก้`×60 comes back as **one segment of 120 characters** — the tone mark costs no width, so the
+run still draws sixty consonants wide — and with that fixture the grid finally says something:
+
+| | autoTable splitter present | removed |
+|---|---|---|
+| **our chop present** | control: nine green | `nofallback`: nine green |
+| **removed** | `nochop`: row 9 | `nochopnofallback`: **row 6** |
+
+Criterion 3 is held by **either** mechanism and needs both taken away to fail, which is what
+*complementary rather than alternative* means when it is measured instead of asserted (#148, #149 —
+two mechanisms for one symptom are a grid, not a choice; met again here rather than learned again).
+And rule 2's own stated reason — cutting between clusters — remains unmeasurable for the reason
+criterion 2 is: the marks are zero-width. What rule 2 demonstrably does is carry rule 3 to
+over-wide words, which is what `nochop` killing row 9 says.
+
+### What it cost to find each of those
+
+Three of the four came out of sweeps that contradicted the file's own predictions, and each cost one
+run to find and one to confirm. The fourth — rule 3's unreachability — came out of a measurement run
+before any mutant existed, which is the cheaper order.
+
+### And then the sheet cited the wrong one
+
+The two-axis review, run on the finished work, found seven things. The one worth a rule is that the
+criterion-3 row on `40-clo-assessment-report.md` was marked ⚙ and credited to **`nofallback`** — the
+mutant that had just been measured surviving all nine rows. Its killer is `nochopnofallback`, and the
+sweep table saying so was in `mutation/117-thai-pdf-line-breaks.py`, written the same afternoon, two
+files away.
+
+The mark was earned; the citation was not. *A ⚙ that was never earned* has been hunted ten tickets
+running by asking whether a ⚙ row names a mutant at all, and by reading the mutation file for a
+mutant no row cites. **Neither question catches a row that names the wrong mutant** — it is a ⚙ with
+a name beside it and a name in the file, and only reading the two side by side says they disagree.
+It was not even a stale claim: the grid that made `nofallback` a survivor and the sentence that
+called it the row's support were written within an hour of each other, and the sentence was the
+older habit.
+
+The other six were the ordinary kind and cost nothing to fix: two pointers to a section nobody had
+written yet, a count of *six* rows where there were seven, a `9 ⚙` on a sheet whose table had ten —
+the rule this same change was adding to `CLAUDE.md` — three exports nobody imported, one `typeof`
+guard at both doors of a two-function module, and the page width written as `210` a line below
+`doc.internal.pageSize.getWidth()`. Re-sweeping all seven mutants afterwards returned the same kill
+sets, which is the answer that matters: none of the tidying moved anything measured.

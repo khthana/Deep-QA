@@ -101,7 +101,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   whether it was proved at all. (*A ⚙ that was never earned*; #119)
 - Read both ways: down the ⚙ rows for one naming no mutant, and through the mutation file for a
   mutant no row cites — and read a *kills* column as a claim about the criteria table too.
-  (#44, #97, #101)
+  **A row naming the wrong mutant is the third way**, and the sweep table that contradicts it can
+  be in the file written the same day. (#44, #97, #101, #117)
 - **A row that names two ways in is two rows.** Read every *both … and* as two claims. (#66)
 - **Explaining a gap in prose is not the same as marking it.** (#50)
 - Check what an assertion actually says, not only that one exists; where a sheet says *ordered
@@ -179,6 +180,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A mutant that substitutes a default is invisible everywhere the real value differs from it** —
   build the row at the one point where the two coincide, and assert that precondition in the row.
   (#154)
+- **A mutant that swaps one implementation for another is invisible wherever the two agree** — so
+  the fixture is built where they *disagree*, which is not the same as building it big. And a
+  fixture named for a property is a claim about a library's answer: ask ICU whether that run is one
+  word before believing the constant that says `UNBREAKABLE`. (#117)
+- **A rule reachable only through a fallback needs a row that comes in through the fallback** —
+  measure whether the main path can reach it at all before writing the mutant, and if it cannot, say
+  so with the number. (#117)
 - **A test-file argument is matched as a substring** — `51a` also runs `151a`, so a kill count read
   off a command like that is two sheets' rows counted as one. Every such command was right the day it
   was written and expired by a file somewhere else; `python mutation/anchors.py` counts them now.
