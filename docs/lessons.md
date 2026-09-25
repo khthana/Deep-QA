@@ -4187,3 +4187,73 @@ the rule this same change was adding to `CLAUDE.md` — three exports nobody imp
 guard at both doors of a two-function module, and the page width written as `210` a line below
 `doc.internal.pageSize.getWidth()`. Re-sweeping all seven mutants afterwards returned the same kill
 sets, which is the answer that matters: none of the tidying moved anything measured.
+
+## #164 — the flake that was not one, and the instrument the ticket got backwards
+
+`150a` row 2 asks whether the box a second เขียน opens is empty. It went red twice in six runs
+observed during #117 — a ticket that touched nothing that screen loads — and the obvious reading was
+that the row reads too early: it takes `inputValue()` once, right after the click, while
+`EntrySection` clears the draft in an effect that runs after paint. **That reading is half right, and
+the half it gets wrong is which end is random.**
+
+The ticket proposed measuring it the way #136 says to: slow the renderer, because a rerun passes and
+a CPU throttle gives a red and a green. Measured across five rounds at each of four speeds, the
+throttle made the red **rarer** — 1 in 5 unthrottled, and 0 in 5 at x4, x10 and x20. Throttling
+serialises the read behind React's pending work, so the effect has always finished by the time the
+read is served. **#136's instrument is for a race between an answer and its drawing; this is a read
+racing an effect, and the same knob closes it instead of opening it.**
+
+So the measurement was re-aimed at what a person would be asked: *was the text ever on the screen?*
+Sampling every textarea's value once per animation frame across the reopening — a controlled input's
+value is a property, not an attribute, so nothing observes it and it has to be read — gave the same
+answer eight rounds out of eight: **exactly one frame holding the abandoned text**, with the box
+first appearing at frame 3 or 4 of about 29. The one-shot read came back stale in six of those eight.
+
+**The defect never varied. Only the read did.** A row that goes red on some runs is not evidence
+that the row is unreliable; it can be a weak sentinel for something that happens every single time,
+and the way to tell is to ask whether the screen is wrong on every run rather than to rerun the row
+until it is green.
+
+### The fix that is not a UI decision
+
+`useEffect` → `useLayoutEffect`, one hook, same dependencies, same branches, same values written.
+What moves is that React flushes it before the browser paints, so the frame that is drawn is the one
+the effect has already corrected.
+
+**The ticket's own third criterion says the owner is asked before answer (2) is taken, and that is a
+question, not a formality.** The argument for it is that **#150's criterion already says what the box
+must show** — *ช่องว่าง ไม่ใช่สิ่งที่พิมพ์ทิ้งไว้รอบก่อน* — so making that true in the first frame the
+box exists rather than the second fulfils a criterion rather than changing one, and the fix is neutral
+about the half of #150 still open: neither answer to *should a replaced entry reseed* asks for a frame
+of the previous draft. That argument is published here and on the sheet, and it was put to the owner
+with the measurements beside it — because **a number that justifies a change is not permission to make
+it**, and writing the argument down is not the same as being told yes.
+
+`150a` row 2 keeps its one-shot read. A retrying `toHaveValue('')` would have gone green on the
+defect — the shape this file warns about twice — and would have made the red go away without making
+the flash go away.
+
+### The precondition that failed after the fix, which was the point of having it
+
+The new row asserts three things before its claim: frames were sampled, some had the box on the
+screen, and some came before it was. The middle one was written as *frames whose value is not empty*,
+which worked on the broken screen and **failed the moment the screen was fixed** — because a box that
+opens empty and no box at all read identically when only values are sampled. The green run was a red
+at that line, not at the claim. **A sampler that reads what a control holds cannot tell an absent
+control from an empty one; it has to count the controls too** — and this was found by running it, not
+by foreseeing it.
+
+### What the row proves, and the survivor that says where it stops
+
+`164:paintedafter` reverts the hook and kills that one row out of 111 across every spec that draws
+`EntrySection`. In that same sweep `150a` row 2 **passed**, which is the whole ticket in one line.
+
+`164:clearondraftclose` is written to survive, and does: it keeps `useEffect` after paint and clears
+`draft` on close instead, so the empty case never flashes and the row is green. That makes the row's
+scope measurable rather than asserted — it holds *the empty case does not flash*, not *the seeding is
+flushed before paint*. The two fixes part company on the **replaced** case, where the entry changed
+under a closed editor, and a row for that case cannot be written today: it would have to assert that
+reopening seeds from the new entry, which is exactly the question #150 left open for the owner. If
+the answer ever comes back *do not reseed*, such a row would go red on a screen that is behaving. The
+class-level claim is held by the mutant and the comment beside the hook, and it is written down here
+so that it is something a grep can find.

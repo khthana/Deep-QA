@@ -61,7 +61,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
-  and the leak that makes a defect reachable is not the defect. (#129)
+  and the leak that makes a defect reachable is not the defect. When the mechanism is measured, what
+  is intermittent may be the **read** rather than the thing read: a screen can be wrong on every
+  single run behind a row that is red on some of them. (#129, #164)
 - **A row that runs before your change's code cannot be failing because of it.** The run order is part
   of the mechanism and the cheapest part: `--list` rules the diff out in seconds, before anything else
   is understood. Three reproductions against a clean control can still be coincidence. (#150)
@@ -227,7 +229,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   can see the empty state, and no amount of retrying saves a wrong *expected* value. Wait for what
   the answer carried to be what the screen shows. (#132)
 - **A race between an answer and its drawing is measured by slowing the renderer, not by rerunning
-  the row** — a rerun passes, a CPU throttle gives a red and a green. (#136)
+  the row** — a rerun passes, a CPU throttle gives a red and a green. But a read racing an *effect*
+  is hidden by that same throttle, which serialises the read behind the pending work: the knob is for
+  the drawing, not for the reading. (#136, #164)
+- ***Was it ever on the screen* is answered by a sample per frame, not by a longer wait** — and a
+  sample is taken of the thing the row is about, not of the page. (#164)
+- **A sampler that reads what a control holds cannot tell an absent control from an empty one** — so
+  a precondition written that way passes on the broken screen and fails on the fixed one. Count the
+  controls as well as reading them. (#164)
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
 - **Anything written for timing must not be able to decide anything.** (#52)

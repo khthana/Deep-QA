@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
 
 /**
@@ -67,7 +67,22 @@ export default function EntrySection({
   // value to another, which still seeds. Whether it should is the question
   // left open on #150, and leaving that transition exactly where it was is
   // what keeps this a fix and not an answer to it.
-  useEffect(() => {
+  //
+  // Before paint, and not after — #164. `draft` outlives the editor: closing
+  // clears `seededFrom` and leaves what was typed where it is, so the box a
+  // second เขียน opens is mounted holding the abandoned text and emptied by
+  // this effect one commit later. An effect that runs after paint means the
+  // browser is handed that first commit to draw, and it draws it: sampling
+  // every animation frame across a reopening found the thrown-away text on
+  // exactly one frame, eight rounds out of eight. `useLayoutEffect` makes the
+  // same decisions from the same values and writes the same state; all that
+  // moves is that React flushes it before the browser paints, so the frame
+  // that is drawn is the one this effect already corrected.
+  //
+  // It is the seeding that moves, not the clearing, because the flash is not
+  // only the empty case: reopening a section whose entry changed under it
+  // would paint the previous draft for a frame in the same way.
+  useLayoutEffect(() => {
     if (!editing) {
       seededFrom.current = CLOSED
       return
