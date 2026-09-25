@@ -4094,7 +4094,8 @@ cluster chopping and code-point chopping alike. The mutant written to prove the 
 named as what holds it — not ⚙. A claim held by a dependency is still held; it is just not held by
 you.
 
-The measured exception, which belongs to nobody's ticket yet: **`ำ` (U+0E33) is 1.56mm wide, not
+The measured exception, which is #165 now that it is written down somewhere a ticket can be
+found: **`ำ` (U+0E33) is 1.56mm wide, not
 zero**, and it is `Lo` rather than `Mn`, so ICU gives it a grapheme cluster of its own. It is
 outside criterion 2 as written and outside rule 2's promise, and a line could in theory begin with it
 inside an over-wide run.
