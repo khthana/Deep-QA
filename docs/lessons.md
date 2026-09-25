@@ -55,6 +55,9 @@ shared module. Instead it was measured, one sample per composited frame through 
 So it is [#120](https://github.com/khthana/Deep-QA/issues/120) with the numbers in it, not a
 refactor inside a ticket scoped to deleting a chooser — and the ticket says why the bound is an
 accident rather than a guarantee (nothing in the hop waits on the network *yet*).
+**#120 landed on 25 September 2569**, so the two components are one for the password journey; what
+the paragraph above describes is the state between the two tickets, and the story at the end of this
+file is what happened to it — including to three of the mutants named here.
 **When a criterion is met literally but arguably not in substance, the question is usually
 measurable; measuring it is cheaper than either arguing or refactoring.**
 
@@ -4331,3 +4334,65 @@ The re-sweep also answers a question nobody asked: `notwrapped`, which hands the
 splitter, now kills 4 of 10 rather than 3 — the new row among them. A splitter that measures one
 character at a time has no notion of a cluster at all, so it strands `ำ` wherever the width runs out. The row
 holds the claim against both wrappers, not only against ours.
+## #120 — one frame, and what was holding it to one
+
+`/main` is a route that exists only to be left. `GuestRoute` sent an authenticated caller there and
+`SidebarItem`'s effect moved them to the first entry of their own menu, which on a literal reading of
+#66's own second criterion — *no component navigates to a route another component has already
+redirected away from* — is the shape #66 had just removed the third of.
+
+**The ticket's own measurement said it cost one frame.** Sampling once per composited frame through
+the real sign-in journey: 45 frames, one of them on `/main`, and in that one the body's text had not
+laid out. Nobody has ever seen a drawn shell with an empty content area.
+
+That number is the interesting part, and not because it is small. The ticket did not stop at *one
+frame* — it said **what was holding it to one**: nothing in the hop waits on the network, because
+`MENUS` is a static table and `acting` is already in the context by the time `GuestRoute` decides
+anything. That is a property of today's data flow, not a guarantee. The day a role's menu has to be
+fetched — which is exactly what #49 has to decide for `EXT_ASSESSOR` — the empty index is on screen
+for as long as that fetch takes, and it reads as a screen that loaded nothing rather than a redirect
+that has not happened yet, which is #41's lesson arriving at the shell.
+
+### The row is about the journey, not the destination
+
+Both existing rows read where the browser *stopped*, and stopping was never the problem: the landing
+was right before this ticket and is right after it. What changed is what the address bar holds on the
+way, so the new rows record the journey — `framenavigated`, the same instrument #66 used to catch
+`/select-app` being drawn and yanked — and assert that `/main` is not in it. Each carries the
+precondition that the landing itself *is* in the recording, because an instrument that recorded
+nothing would otherwise pass on any code at all. That precondition earned its place within the hour:
+`landingisapathnotarule` kills both rows there rather than at the claim.
+
+### A fix that expires the mutants guarding it
+
+Three of `66`'s six mutants killed rows 1–2 by breaking the hop. With the hop gone they had nothing
+to break, and the sweep said so — all three passed. They did not end the same way, which is why each
+was measured rather than the set being re-aimed on principle:
+
+* `landingisapathnotarule` moved to `landingPath`, the rule both components now read, and kills rows
+  1–2 again. The anchor check could not have found this: the line it named is still there and still
+  runs, for anybody who types `/main`. Only a sweep says a mutant has stopped proving anything.
+* `landingstopsattheshell` stayed exactly where it was, because what it breaks is still a real thing
+  — and **it had found a row that did not exist**. With sign-in no longer coming through that
+  redirect, the redirect's whole remaining job is to rescue somebody who arrives at `/main` another
+  way, and nothing had ever asked whether it did. Row 8 was written for the mutant, not the mutant
+  for the row (#118 again, one ticket later).
+* `helperreturnstooearly` was deleted. `signIn` waits for a pathname that is neither `/` nor `/main`,
+  and the first pathname that is not `/` is now the landing itself, so dropping the `/main` half
+  changes nothing any row can see. The wait keeps both halves — it costs nothing and would catch a
+  revert of this ticket in every spec at once — but that makes it a net, not a claim, and a mutant
+  that cannot fail a row is not proof of anything.
+
+### The caller that was not in the diff
+
+The comment written for `SidebarItem`'s surviving redirect said it was *the guard for somebody who
+types `/main` by hand*. Proofreading the acceptance sheet caught it: two rows above the one being
+edited, the Google half of criterion 1 says the callback redirects to `${FRONTEND_URL}/main` **from
+the server** and `SidebarItem` finishes the job. It still does, and it has to — the menu table lives
+in the browser, so there is nothing at the server end to resolve an entry out of.
+
+So the redirect has two callers, the ticket could only give one of them a single authority, and four
+files had to stop saying otherwise. What caught it was not a grep for the guard's callers but reading
+the document the change was being recorded in: a sheet that states how a neighbouring path behaves is
+a list of callers written in Thai, which is not what a grep for `/main` in `frontend/` was ever going
+to find.

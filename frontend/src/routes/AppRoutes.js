@@ -39,6 +39,7 @@ import StudentGroups from '../pages/StudentGroups'
 import Users from '../pages/Users'
 import UserHistory from '../pages/UserHistory'
 import LoadingScreen from '../components/LoadingScreen'
+import { landingPath } from '../components/SidebarItem/menus'
 import { useAuth } from '../context/AuthContext'
 
 /**
@@ -67,10 +68,53 @@ export const ProtectedRoute = ({ children }) => {
   return children
 }
 
+/**
+ * Where a signed-in caller belongs, decided once - #120.
+ *
+ * This used to say `/main` and leave the rest to `SidebarItem`, whose effect
+ * moved anyone standing there to the first entry of their own menu. Two
+ * components with an opinion about the landing is the shape #66 removed the
+ * third of, and on a literal reading of that ticket's own second criterion -
+ * *no component navigates to a route another component has already redirected
+ * away from* - these two were still it.
+ *
+ * What it cost was measured before it was changed: one frame of 45 on the real
+ * sign-in journey, with the body's text not yet laid out, so nobody ever saw a
+ * drawn shell with an empty content area. The hop was bounded by a single
+ * effect tick because nothing in it waits on the network - `MENUS` is a static
+ * table and `acting` is already in the context by the time this runs. That
+ * bound is an accident of today's data flow rather than a guarantee: the day a
+ * role's menu has to be fetched, which is what #49 has to decide for
+ * `EXT_ASSESSOR`, the empty index is on screen for as long as that fetch takes
+ * and reads as a screen that loaded nothing (#41's lesson, at the shell).
+ *
+ * So the entry is resolved here, out of the same table the sidebar draws, and
+ * `/main` is never an address the password journey holds. `SidebarItem`'s
+ * redirect stays, and not only as a guard against a typed address: the Google
+ * callback redirects to `${FRONTEND_URL}/main` from the server, which has no
+ * menu table to resolve an entry out of, so that way in still hands over at
+ * the shell and still needs finishing. One authority per journey rather than
+ * one in total - and the journey that could be given one, was.
+ *
+ * `acting` and `profile` come from the same `/api/me` answer, so a caller this
+ * guard lets past has a role. A role with no menu falls back to `/main`, which
+ * is what happened to it before: the shell, with its empty index and no entry
+ * to be moved to.
+ *
+ * That fallback is **structurally unreachable today, and untested rather than
+ * proved**. `backend/routes/me.js` always answers with `acting.role_id`, and
+ * all six role ids `db/seed.js` declares are keys of `MENUS` with a non-empty
+ * menu - including `EXT_ASSESSOR`, whose one entry is
+ * `/main/programLevelByIntake`. So no account can reach the `??`, no mutant
+ * covers it, and it is here for a seventh role rather than for a case anybody
+ * has seen. #49, which decides the assessor's menu, is the ticket that could
+ * make it reachable.
+ */
 export const GuestRoute = ({ children }) => {
-  const { profile, loading } = useAuth()
+  const { profile, acting, loading } = useAuth()
   if (loading) return <LoadingScreen />
-  if (profile) return <Navigate to="/main" replace />
+  if (profile)
+    return <Navigate to={landingPath(acting?.role_id) ?? '/main'} replace />
   return children
 }
 
@@ -118,8 +162,10 @@ export default function AppRoutes() {
           navigated to it, `GuestRoute` redirected away from it, and
           `SidebarItem` finished the job — so it drew and was taken away again.
           Three components each holding an opinion about where a signed-in
-          caller belongs is the defect; `GuestRoute` is now the only one that
-          does, and `SidebarItem` the only one that finishes it. */}
+          caller belongs is the defect; #66 left two, and #120 left one for the
+          password path — `GuestRoute` resolves the entry itself. `SidebarItem`
+          still finishes the Google path, which the server can only hand over
+          at the shell. */}
       <Route path="/page-not-found" element={<NotFoundPage />} />
 
       <Route

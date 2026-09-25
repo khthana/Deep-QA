@@ -28,16 +28,24 @@ const { PASSWORD } = require('./accounts');
  *
  * Settling is the part that matters to every other spec in this suite, not
  * only to #66's own. Signing in hands over to `GuestRoute`, which sends an
- * authenticated caller to `/main`; `/main` is a real route whose index element
- * is an empty `<div />`, and `SidebarItem` then replaces it with the first
- * entry of that person's menu. A helper that returned as soon as the address
- * stopped being `/` would return on that empty intermediate, and the `replace`
- * still to come would land *after* whatever the calling spec did next — a
- * navigation quietly undone, in every spec, at a moment nothing controls.
+ * authenticated caller to the first entry of their own menu — one address,
+ * resolved before the address bar changes.
  *
- * So the wait ends off `/` and off `/main` both. Which screen that is depends
- * on the account's grants and is deliberately not named here; `66a` is where
- * the rule itself is asserted.
+ * **It took two addresses until #120.** `GuestRoute` said `/main`, a real
+ * route whose index element is an empty `<div />`, and `SidebarItem`'s effect
+ * then replaced it with the first menu entry. A helper that returned as soon
+ * as the address stopped being `/` returned on that empty intermediate, and
+ * the `replace` still to come landed *after* whatever the calling spec did
+ * next — a navigation quietly undone, in every spec, at a moment nothing
+ * controls.
+ *
+ * The wait still ends off `/` and off `/main` both, although nothing reaches
+ * `/main` on the way in any more. It costs nothing, and it is what would catch
+ * a revert of #120 in every spec at once rather than in `66a`'s two rows — but
+ * it is a net and not a claim, so the mutant that used to break it is gone
+ * rather than kept as a survivor with an excuse. Which screen the landing is
+ * depends on the account's grants and is deliberately not named here; `66a` is
+ * where the rule itself is asserted.
  */
 async function signIn(page, email, password = PASSWORD) {
   await page.goto('/');

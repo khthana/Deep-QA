@@ -148,7 +148,14 @@ function authRoutes(pool) {
       //
       // `/main` rather than a particular screen, because which screen a person
       // lands on is their menu's first entry and the shell is what knows that.
-      // Both ways in now hand over at the same place.
+      //
+      // The two ways in stopped handing over at the same place at #120: the
+      // password path resolves the first entry in `GuestRoute` before the
+      // address changes, so it never holds `/main` at all. This one still
+      // does, and not by oversight - the menu table lives in the browser, so
+      // there is nothing here to resolve an entry out of, and handing over at
+      // the shell is the only thing the server can honestly do. `SidebarItem`
+      // finishes it, which is why that redirect is still there.
       await admitted(res, pool, admission, 'GOOGLE_LOGIN');
       return res.redirect(`${frontendUrl()}/main`);
     })(req, res, next);

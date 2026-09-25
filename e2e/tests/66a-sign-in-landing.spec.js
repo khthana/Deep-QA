@@ -153,3 +153,85 @@ test('the user menu offers no door to another application', async ({ page }) => 
   // does nothing, which is the failure #40's walk found.
   await expect(page.getByText('ลงชื่อเข้าใช้โดย')).toBeVisible();
 });
+
+/**
+ * Every address the main frame held on the way in, in order.
+ *
+ * `framenavigated` fires for the history-API moves React Router makes as well
+ * as for real document loads, which is how #66 measured the sequence that
+ * turned out to contradict its own ticket. Rows 6 and 7 read the same
+ * recording for a different question: not *where did it stop* but *what did it
+ * hold on the way*.
+ */
+function recordVisits(page) {
+  const visited = [];
+  page.on('framenavigated', (frame) => {
+    if (frame === page.mainFrame()) visited.push(new URL(frame.url()).pathname);
+  });
+  return visited;
+}
+
+test('the shell\u2019s empty index is never an address the journey holds', async ({
+  page,
+}) => {
+  const visited = recordVisits(page);
+
+  await signIn(page, ACCOUNTS.committee0501);
+
+  // The precondition, because an instrument that recorded nothing would pass
+  // the assertion below on any code at all: the landing itself has to be in
+  // the recording before its absence means anything.
+  const landed = await firstMenuHref(page);
+  expect(visited, 'the journey was recorded at all').toContain(landed);
+
+  // `/main` is a route that exists only to be left. Before #120 it was held
+  // for one frame between `GuestRoute` choosing it and `SidebarItem` moving
+  // off it - bounded by an effect tick only because nothing in the hop waits
+  // on the network, which is an accident of today's data flow rather than a
+  // guarantee. One authority resolves the entry before the address changes, so
+  // the address is never `/main` at all.
+  expect(visited).not.toContain('/main');
+});
+
+test('a teacher\u2019s journey does not pass through the other tree\u2019s index either', async ({
+  page,
+}) => {
+  const visited = recordVisits(page);
+
+  await signIn(page, ACCOUNTS.teacherOne);
+
+  const landed = await firstMenuHref(page);
+  expect(visited, 'the journey was recorded at all').toContain(landed);
+
+  // The teacher is the case that says the one authority resolves a *rule*: the
+  // menu that answers for this account hangs off `/teacher/`, so a landing
+  // written as "somewhere under `/main`" would send them to a tree their menu
+  // does not contain, and the hop through `/main` is how it used to get there.
+  expect(visited).not.toContain('/main');
+});
+
+test('typing the shell\u2019s own address by hand still lands on the first entry', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.committee0501);
+
+  // Not part of the *password* sign-in journey any more - #120 moved that
+  // decision into `GuestRoute`, and rows 6 and 7 say the address is never held
+  // on the way. Two callers still reach `SidebarItem`'s redirect: this one,
+  // somebody typing a declared route whose index is an empty `<div />`, and
+  // the Google callback, which redirects to `${FRONTEND_URL}/main` from the
+  // server because the server has no menu table to resolve an entry out of.
+  // The second cannot be driven here - it needs a real Google project, which
+  // `docs/06` §Out of Scope puts outside this seam - so this row drives the
+  // first and the sheet says which is which.
+  //
+  // The row exists because the sweep said it had to. With the landing resolved
+  // before the address changes, breaking `SidebarItem`'s redirect stopped
+  // failing anything at all - a mutant surviving where its own file predicted
+  // a kill, which is a row that does not exist yet rather than a mutant to
+  // delete (#118).
+  await page.goto('/main');
+  await page.waitForURL((url) => url.pathname !== '/main');
+
+  expect(new URL(page.url()).pathname).toBe(await firstMenuHref(page));
+});

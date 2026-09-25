@@ -135,8 +135,9 @@ export default function Login() {
    * moment `reload()` sets the profile, `GuestRoute` redirects this route, and
    * the recorded sequence was `/` → `/select-app` → `/main` → the first menu
    * entry. The chooser drew and was taken away again. Where a signed-in caller
-   * goes is `GuestRoute`'s to say and `SidebarItem`'s to finish; this function
-   * signs in and stops.
+   * goes is `GuestRoute`'s to say - since #120 it says the first entry of that
+   * person's own menu rather than `/main`, so there is nothing left for
+   * `SidebarItem` to finish on this path. This function signs in and stops.
    */
   const handleSubmit = async e => {
     e.preventDefault()

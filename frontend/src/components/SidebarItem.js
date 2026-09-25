@@ -1,40 +1,16 @@
 import React, { useEffect, useState } from 'react'
 
-import { FULL_ADMIN } from './SidebarItem/FullAddmin'
-import { FACULTY_ADMIN } from './SidebarItem/FacultyAdmin'
-import { DEPT_ADMIN } from './SidebarItem/DeprtAdmin'
-import { PROG_MANAGER } from './SidebarItem/ProgManager'
-import { TEACHER, SECTION_TOKEN } from './SidebarItem/Teacher'
-import { EXT_ASSESSOR } from './SidebarItem/ExtAssessor'
+import { SECTION_TOKEN } from './SidebarItem/Teacher'
+// Declared here until #120. Nothing about them changed; what changed is who
+// may read them - `GuestRoute` resolves the landing out of the same table, so
+// `/main` is not an address the password journey holds while this component
+// catches up.
+import { MENUS, firstEntry } from './SidebarItem/menus'
 
 import { FaChevronDown, FaChevronLeft, FaSignOutAlt } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-
-/**
- * The menu each role sees — #10's second criterion.
- *
- * Keyed on the role *code* rather than on its Thai display name, which is what
- * the inherited chain compared against. A menu that turns on a translated
- * string breaks when the translation is edited, and it already had: the
- * external assessor had no name in the map at all, so it fell through to the
- * guest menu.
- *
- * Every set below is the one the delivered system shows, carried over
- * unchanged. That the Central Admin's is one entry long is deliberate and
- * matches both the thesis and CONTEXT.md: they manage accounts and nothing
- * else. Hiding an entry is not what stops another role reaching it - the route
- * refuses them as well - and #10's tests say so at the API.
- */
-const MENUS = {
-  FULL_ADMIN,
-  FACULTY_ADMIN,
-  DEPT_ADMIN,
-  PROG_MANAGER,
-  TEACHER,
-  EXT_ASSESSOR,
-}
 
 /**
  * The ตอนเรียน the teacher currently has open, read out of the address — or
@@ -53,9 +29,6 @@ const MENUS = {
  */
 const openSection = pathname =>
   pathname.match(/^\/teacher\/teacherDashboard\/(\d+)(?:\/|$)/)?.[1] ?? null
-
-/** The first thing the menu points at, which '/main' redirects to. */
-const firstEntry = menu => (menu[0]?.sub ? menu[0].sub[0] : menu[0])
 
 function SidebarItem({
   role,
@@ -92,6 +65,13 @@ function SidebarItem({
     const first = firstEntry(menuData)
     if (!first) return
     handleClick(first.key)
+    // Two callers reach this now, and neither of them is the password
+    // sign-in: that resolves the entry in `GuestRoute` and never comes through
+    // here (#120). What is left is somebody who types `/main` by hand, and
+    // **the Google callback**, which redirects to `${FRONTEND_URL}/main` from
+    // the server (`backend/routes/auth.js`) because the server has no menu
+    // table to resolve an entry out of. So this is still the finisher for one
+    // of the two ways in, and not only a guard against a typed address.
     if (location.pathname === '/main') navigate(first.path, { replace: true })
   }, [role, navigate, location.pathname, handleClick, setOpenMenu])
 

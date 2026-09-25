@@ -346,6 +346,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - A number copied from a sibling screen is a decision, not an inheritance. (#45)
 - An accessibility fix does not get to change layout on the way past, and a rule about layout is
   checked with numbers. (#111, #122)
+- **A measured cost of almost nothing is not a reason to close the ticket** — read what the
+  measurement says is *holding* it to almost nothing. One frame because nothing in the hop waits on
+  the network is a property of today's data flow, and the ticket that would change that is already
+  open. (#120)
 - **A number that justifies a change is not permission to make it.** A measurement answers what a
   change costs; whether it may be made is `docs/06` §Out of Scope, and the tell is that nothing in
   the diff can be broken to make the changed line fail. Publish both numbers and ask. (#105)
