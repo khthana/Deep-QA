@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ContentMotionDIV from './ContentMotionDIV'
 import { uploadProfilePhoto } from '../api/profile'
 
@@ -28,12 +28,27 @@ import { uploadProfilePhoto } from '../api/profile'
  * refusal answers *is this a photo*.
  */
 /*
- * No `open` prop, unlike `ConfirmDialog`. The navbar mounts this inside its own
- * `AnimatePresence` when the menu entry is pressed, exactly as it does the
- * change-password box, so an `open` here would be a parameter with one possible
- * value — and the reset it would guard is what the unmount already does. The
- * dialog opening empty is therefore a property of how it is mounted, which is
- * where the row that asks about it has to look.
+ * ## Closing is what clears this box, because closing it does not unmount it
+ *
+ * The navbar renders this inside an `AnimatePresence`, so the obvious reading is
+ * that cancelling unmounts the component and the next open starts from
+ * `useState`'s initial values. **The hand-walk measured otherwise**: after
+ * `onClose`, the overlay fades to `opacity: 0` and the node stays in the
+ * document — `document.querySelector('input[type=file]')` still answers three
+ * seconds later — so the same instance, with the same `file` and the same
+ * refusal on it, is what the next open shows. The change-password box in the
+ * same navbar behaves identically (its fields survive a cancel too), which is
+ * why `ConfirmDialog` and that box carry an `open` prop: not as decoration, but
+ * because something has to put their state back.
+ *
+ * An `open` prop would not help here, because `Navbar.js` passes a literal — it
+ * would never change, so an effect keyed on it would never run again. What does
+ * work is to reset on the way out, which is the one moment this component knows
+ * about: `close` below clears the choice, the refusal and the input's own value,
+ * then calls `onClose`. Every way out goes through it.
+ *
+ * The presence bug itself is not this ticket's: it is shared with the
+ * change-password dialog, where a typed current password is what survives.
  */
 export default function ProfilePhotoDialog({
   maxBytes,
@@ -60,6 +75,22 @@ export default function ProfilePhotoDialog({
     return () => URL.revokeObjectURL(url)
   }, [file])
 
+  /*
+   * The input's own value, which is not React state and is not reset by
+   * anything above. Without this a reopened box lists the refused file beside a
+   * chooser that has nothing selected in it as far as this component knows.
+   */
+  const inputRef = useRef(null)
+
+  /** Every way out of this box: the button, the backdrop, and an ended session. */
+  const close = () => {
+    setFile(null)
+    setError('')
+    setBusy(false)
+    if (inputRef.current) inputRef.current.value = ''
+    onClose()
+  }
+
   const megabytes = maxBytes ? Math.floor(maxBytes / (1024 * 1024)) : null
 
   const submit = async event => {
@@ -75,7 +106,7 @@ export default function ProfilePhotoDialog({
       // session having ended while the dialog was open, and the shell draws
       // that. This box closes so that dialog is the only thing on the screen.
       if (err.expired) {
-        onClose()
+        close()
         return
       }
       setError(err.message)
@@ -94,7 +125,7 @@ export default function ProfilePhotoDialog({
       className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center bg-slate-900/50 p-4"
       style={{ zIndex: 99999 }}
     >
-      <div onClick={onClose} className="absolute inset-0" />
+      <div onClick={close} className="absolute inset-0" />
 
       <ContentMotionDIV
         className="relative w-full max-w-[420px] rounded-xl bg-white p-8 shadow-2xl"
@@ -136,6 +167,7 @@ export default function ProfilePhotoDialog({
           <label className="block text-sm">
             <span className="text-slate-600">ไฟล์รูปภาพ</span>
             <input
+              ref={inputRef}
               type="file"
               accept="image/png,image/jpeg"
               aria-label="ไฟล์รูปภาพ"
@@ -154,7 +186,7 @@ export default function ProfilePhotoDialog({
           <div className="mt-8 flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={close}
               disabled={busy}
               className="rounded-lg bg-gray-200 px-4 py-2 text-gray-800 transition hover:bg-gray-300 disabled:opacity-60"
             >

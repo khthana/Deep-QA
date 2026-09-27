@@ -20,6 +20,31 @@ a dialog that did nothing.
 Killing them:
 
     cd e2e && npx playwright test tests/47a-profile-photo.spec.js
+
+
+A sixth was written and taken out again, and the measurement is worth keeping.
+`staleafterclose` put `close()` back to calling `onClose` and nothing else - the
+state the hand-walk found, where a box reopened after a refusal still listed the
+refused file, still carried the sentence about it, and offered a live save button.
+It **survives**: `47a`'s fourth row passes with it applied.
+
+The reason is measured, in both browsers. Under Playwright the closed dialog is
+removed from the document within a few hundred milliseconds, so the next open is
+a fresh component and `useState` does the reset by itself. In the hand-walk's
+Chrome it is not removed at all: three seconds after the cancel the input is
+still there, and a node marked before the close comes **back** on the reopen -
+the same instance, with the same state. The tab reported `visibilityState:
+"hidden"`, which is the condition: the exit animation is waiting for frames a
+hidden tab does not get, `AnimatePresence` keeps the child it cannot finish
+retiring, and returning the child hands the old instance back.
+
+So the claim is real and the suite cannot put it at risk - freezing
+`requestAnimationFrame` from the page does not reproduce it, because the frame
+loop bound its own reference at import. Row 4 stays as a net and the reset is
+proved by the hand-walk. The presence itself is not this ticket's; it is shared
+with the change-password box in the same navbar, and is #167 - which also carries a
+second mechanism measured after it was opened: that box's state lives in `Navbar.js` itself and
+nothing clears it on the way out, which is provable at this seam.
 """
 
 from harness import main

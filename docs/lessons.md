@@ -4513,3 +4513,53 @@ eighteen mutants anchored in the five backend and context files this ticket touc
 again, and the sheet says so with the reason — every change there is an addition with no branch in it,
 every anchor still applies, and both suites are green. That is an argument, not a measurement, and it
 is written down as one.
+
+### The box that closed without leaving, and the claim the harness could not put at risk
+
+The hand-walk of #47's five appearance rows passed four of them and found a defect on the fifth.
+Choose a file, be refused, close the box, open it again: the refused file was still listed, the
+sentence that refused it was still under it, and the save button was live. Pressing it would have
+posted the same file for the same refusal.
+
+The reading that explains it is not the obvious one. The dialog is rendered inside the navbar's
+`AnimatePresence`, so cancelling looks like an unmount and the next open looks like a fresh
+`useState`. What was measured is that `onClose` removes nothing: three seconds later the file input
+was still in the document, and a node marked before the close **came back** on the reopen — the same
+instance, carrying the same state. The fix is the one moment the component does know about: `close()`
+clears the file, the refusal, the busy flag and the input's own `value`, which is not React state and
+is what a reset by re-render would miss. Every way out — the button, the backdrop, an expired session
+— goes through it.
+
+Then the mutant that should have proved it survived. `staleafterclose` puts `close()` back to calling
+`onClose` and nothing else, which is exactly the state the walk found, and `47a`'s fourth row passed
+with it applied. The measurement, in both browsers: under Playwright the closed dialog **is** removed,
+within a few hundred milliseconds, so every open is a new component and `useState` does the reset for
+free. In the walk's Chrome it is never removed — and that tab reported `visibilityState: "hidden"`.
+That is the condition. The exit animation is waiting for frames a hidden tab does not get,
+`AnimatePresence` keeps a child it cannot finish retiring, and handing the child back hands the old
+instance back. Freezing `requestAnimationFrame` from the page does not reproduce it either, because
+the library's frame loop captured its own reference at import.
+
+So this is a sixth way to read a sweep, beside #45's *never at risk* and #97's *written in two
+places*: **a survivor can be a claim the harness cannot put at risk**. The claim is real — a person
+met it — and the seam that would measure it removes the situation before the assertion runs. The
+mutant comes out, because a register of mutants that never die is a register nobody reads; what stays
+is the measurement, written in the mutation file's own header, and a row that is a net rather than a
+proof, saying so in its comment. The row is ☑ walked, not ⚙.
+
+The presence bug is shared, not this ticket's: the change-password box in the same `AnimatePresence`
+keeps a typed password after a cancel — and that one has a second mechanism under it, measured
+after the ticket was opened: the form is not a component at all, it is written inside `Navbar.js` and
+its `pwdData` lives in the navbar, which never unmounts. Cancelling clears `error` and nothing else,
+so the typed password survives in any browser, with no animation involved. **Two mechanisms for one
+symptom are measured as a grid** (#148, #149): the presence bug is unprovable at the seam, the
+navbar's own state is provable there, and writing them down as one thing would have hidden the half
+a row can hold. Both are [#167](https://github.com/khthana/Deep-QA/issues/167).
+
+And the node that would not leave found a second victim on the way out, which is #111's lesson read
+backwards. `avatarButton` asked for *the button in the navigation bar with no text*, by role. A file
+input answers to the button role and carries no text, and the closed dialog's input is inside the
+navbar — so after any row opened and closed that box, the shared locator resolved to two elements and
+every lookup built on it failed in strict mode. It asks by element now, for the same reason
+`avatarImage` does. **What is added to the DOM is added to the set `getByRole` searches**, whether or
+not anyone meant to put it there.

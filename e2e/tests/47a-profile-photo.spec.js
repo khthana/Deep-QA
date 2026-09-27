@@ -11,6 +11,7 @@ const {
   avatarButton,
   avatarImage,
   openProfilePhoto,
+  photoInput,
   savePhoto,
 } = require('../support/shell');
 
@@ -22,7 +23,7 @@ const {
  * cannot be handed another's photo. Repeating any of them here would be the same
  * claim asserted twice, in the place that goes stale.
  *
- * Three things exist only in front of the screen and are here:
+ * Four things exist only in front of the screen and are here:
  *
  * - the **round trip through a real file input**, `35a`'s reason: every backend
  *   row builds its own multipart body, so nothing in that suite says the form on
@@ -36,7 +37,10 @@ const {
  *   what says the navbar is drawing what the account has and not the `File` the
  *   chooser happened to be holding a moment ago;
  * - the **refusal arriving as words on the screen**, for the file that is named
- *   `.png`, declared `image/png`, and is a PDF.
+ *   `.png`, declared `image/png`, and is a PDF;
+ * - the **box being empty when it is opened again**, which the hand-walk found it
+ *   was not. Closing the dialog does not unmount it, so the refused file, the
+ *   sentence about it and a live save button were what the next open showed.
  *
  * Nothing here asserts the avatar's *appearance* — that it is round, that it
  * sits where the placeholder sat. Those are hand-walked rows on the sheet.
@@ -159,4 +163,44 @@ test('a replacement is fetched again, without the shell reloading around it', as
   expect(second.redraw, 'the navbar never asked for the replacement').not.toBe(null);
   expect(second.redraw.headers()['content-type']).toBe('image/jpeg');
   await expect.poll(() => avatarImage(page).getAttribute('src')).not.toBe(before);
+});
+
+test('a dialog reopened after a refusal remembers nothing', async ({ page }) => {
+  // The hand-walk's find, and it is here rather than on the sheet because it is
+  // behaviour: the box that comes back has to be empty. What it found was the
+  // refused file still listed, the sentence still under it and a live save
+  // button, because closing the dialog does not always remove it — an exit
+  // animation that never gets a frame leaves `AnimatePresence` holding the child,
+  // and reopening hands the same instance back.
+  //
+  // **This row cannot fail in this browser**, and that is written down rather
+  // than papered over: `mutation/47-profile-photo.py` says how it was measured.
+  // Here the closed dialog is removed within a few hundred milliseconds, so the
+  // reopen is a fresh component and `useState` empties it whatever `close` does.
+  // The row is a net over a claim the hand-walk proved, not the proof of it.
+  await signIn(page, ACCOUNTS.facultyAdmin);
+  await expect(avatarButton(page)).toBeVisible();
+
+  await openProfilePhoto(page);
+  const { upload } = await savePhoto(page, { bytes: PDF_BYTES, name: 'photo.png' });
+  expect(upload.status()).toBe(400);
+  // The precondition, asserted where it is used: there is something to forget.
+  await expect(page.getByRole('alert')).toHaveText(REFUSALS.photoNotImage);
+  await expect(photoInput(page)).not.toHaveValue('');
+
+  await page.getByRole('button', { name: 'ยกเลิก' }).click();
+  await openProfilePhoto(page);
+
+  // Three things the box held, read one at a time: the chooser's own value,
+  // which is not React state and is what a reset by re-render would miss; the
+  // refusal; and the button, which is the one of the three that would post the
+  // stale file if it were still live.
+  await expect(photoInput(page)).toHaveValue('');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'บันทึกรูปโปรไฟล์' }),
+  ).toBeDisabled();
+  // And the preview, which is drawn from the choice rather than from the server:
+  // this account has no photo, so an empty box says so in words.
+  await expect(page.getByText('ยังไม่มีรูปโปรไฟล์')).toBeVisible();
 });

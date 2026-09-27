@@ -143,9 +143,19 @@ async function menuEntries(page) {
  */
 const avatarImage = page => avatarButton(page).locator('img');
 
-/** The avatar menu: the one button in the navigation bar carrying no text. */
+/**
+ * The avatar menu: the one `<button>` in the navigation bar carrying no text.
+ *
+ * By the element rather than by the role, for `avatarImage`'s reason one layer
+ * out. A file input answers to the button role and carries no text either, and
+ * the navbar has one in it: the profile-photo dialog is mounted there, and a
+ * closed dialog is still in the document — the `AnimatePresence` around it fades
+ * it to `opacity: 0` and removes nothing. So after any row has opened and closed
+ * that box, `getByRole('button')` here resolves to two elements and every lookup
+ * built on this helper fails in strict mode.
+ */
 const avatarButton = page =>
-  navbar(page).getByRole('button').filter({ hasNotText: /\S/ });
+  navbar(page).locator('button').filter({ hasNotText: /\S/ });
 
 async function openUserMenu(page) {
   await avatarButton(page).click();

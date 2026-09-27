@@ -182,6 +182,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A mutant that substitutes a default is invisible everywhere the real value differs from it** —
   build the row at the one point where the two coincide, and assert that precondition in the row.
   (#154)
+- **A survivor can be a claim the harness cannot put at risk** — the sixth reading, beside *never at
+  risk* and *written in two places*. A state a person met can be unreachable at the seam because the
+  seam removes the situation first: a closed dialog that a hidden tab keeps is unmounted by a focused
+  one, so the same code is stale for the person and clean for the suite. Measure it in both browsers,
+  take the mutant out, and leave the row as a net that says it is one. (#47)
 - **A mutant that swaps one implementation for another is invisible wherever the two agree** — so
   the fixture is built where they *disagree*, which is not the same as building it big. And a
   fixture named for a property is a claim about a library's answer: ask ICU whether that run is one
