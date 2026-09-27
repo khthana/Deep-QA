@@ -8,10 +8,13 @@ const { expect } = require('@playwright/test');
  *
  * Everything here is located by what a person reads on it rather than by a
  * class name, with one exception that is worth saying out loud: the avatar
- * button carries no text at all, only an icon, so it is found as the one
- * button in the navigation bar with no text. That is a discriminator rather
+ * button carries no text at all, only an icon or a photo, so it is found as the
+ * one button in the navigation bar with no text. That is a discriminator rather
  * than a description, and if a second textless button ever joins the bar this
- * is the line that will need a real one.
+ * is the line that will need a real one. A photo is an `<img>` with an `alt`
+ * (#47), which is an accessible name and not text content, so it does not
+ * disturb the filter — and `avatarImage` below is how a row asks which of the
+ * two the button is showing.
  *
  * The role picker's trigger and its list items are both buttons showing a role
  * name, so they cannot be told apart by the name alone. The list renders each
@@ -123,6 +126,23 @@ async function menuEntries(page) {
   );
 }
 
+/**
+ * The photo in the avatar button, when there is one — #47.
+ *
+ * Located inside the button rather than as *an image on the page*, because the
+ * dialog draws one too and the question a row asks is about the navbar. The
+ * count is the assertion when the question is whether a photo is being shown at
+ * all: the placeholder is an `<svg>` and the photo an `<img>`, so nothing to
+ * read means nothing was drawn.
+ *
+ * By the element and not by the `img` role, which is the distinction this
+ * measured the hard way: Playwright answers `getByRole('img')` with the
+ * placeholder icon as well, because an `<svg>` carries that role. A row that
+ * asked for the role would be told *there is a picture* in both states, which is
+ * exactly the question it is trying to ask.
+ */
+const avatarImage = page => avatarButton(page).locator('img');
+
 /** The avatar menu: the one button in the navigation bar carrying no text. */
 const avatarButton = page =>
   navbar(page).getByRole('button').filter({ hasNotText: /\S/ });
@@ -141,6 +161,61 @@ async function openChangePassword(page) {
   await openUserMenu(page);
   await page.getByRole('button', { name: 'เปลี่ยนรหัสผ่าน' }).click();
   await expect(page.getByRole('heading', { name: 'เปลี่ยนรหัสผ่าน' })).toBeVisible();
+}
+
+/**
+ * Opens the profile-photo dialog from the user menu — #47.
+ *
+ * The menu item and the dialog's heading do not read the same words, so unlike
+ * `openChangePassword` there is nothing here to keep apart; the heading is still
+ * what is waited for, because the press has to have opened something before a
+ * row attaches a file to it.
+ */
+async function openProfilePhoto(page) {
+  await openUserMenu(page);
+  await page.getByRole('button', { name: 'เปลี่ยนรูปโปรไฟล์' }).click();
+  await expect(page.getByRole('heading', { name: 'รูปโปรไฟล์' })).toBeVisible();
+}
+
+/** The dialog's file input, by the name it carries for a reader. */
+const photoInput = page => page.getByLabel('ไฟล์รูปภาพ');
+
+/**
+ * Chooses a file in the open dialog and saves it, handing back both answers.
+ *
+ * Both, because the upload and the redraw are two requests and the row is about
+ * the pair: the POST says the bytes arrived, and the GET is the navbar fetching
+ * the photo back with the session rather than drawing the `File` it already
+ * holds. A helper that waited for the POST alone would pass on a screen that
+ * showed the chosen file and nothing the server kept.
+ *
+ * The name and the bytes are given separately, for `evidence-screen.js`' reason:
+ * the row that matters most sends bytes that disagree with the name.
+ */
+async function savePhoto(page, { bytes, name, mimeType = 'image/png' }) {
+  await photoInput(page).setInputFiles({ name, mimeType, buffer: bytes });
+
+  const posted = page.waitForResponse(
+    response =>
+      new URL(response.url()).pathname === '/api/me/photo' &&
+      response.request().method() === 'POST',
+  );
+  // Caught rather than left to reject: a refused upload draws nothing, so this
+  // waiter is still out when the row ends and an unhandled timeout would fail
+  // the row that was proving the refusal.
+  const fetched = page
+    .waitForResponse(
+      response =>
+        new URL(response.url()).pathname === '/api/me/photo' &&
+        response.request().method() === 'GET',
+    )
+    .catch(() => null);
+  await page.getByRole('button', { name: 'บันทึกรูปโปรไฟล์' }).click();
+
+  const upload = await posted;
+  // A refused upload draws no photo, so there is no second request to wait for
+  // and waiting would spend the timeout saying so.
+  return { upload, redraw: upload.ok() ? await fetched : null };
 }
 
 const passwordFields = page =>
@@ -187,8 +262,12 @@ module.exports = {
   switchTo,
   expiryDialog,
   avatarButton,
+  avatarImage,
   openUserMenu,
   openChangePassword,
+  openProfilePhoto,
+  photoInput,
+  savePhoto,
   submitPasswordChange,
   signOut,
 };

@@ -647,6 +647,31 @@ const REFUSALS = {
   // reported.
   evidenceFileMissing: 'ไฟล์นี้หายไปจากที่จัดเก็บ กรุณาแจ้งผู้ดูแลระบบ',
 
+  // Profile photo - #47. The same three defects as the block above, one table
+  // over, so the sentences are shaped the same way and sit beside them.
+  //
+  // `photoNotImage` names the two formats because unlike BR-15 there is no rule
+  // anywhere else that says which they are: the list lives in
+  // `lib/userPhoto.js` and this sentence is the only place a person is told it,
+  // so the two move together. Like `evidenceNotPdf` it is about the file and
+  // not its name - the check is on the first bytes, and the sentence has to be
+  // true of a PDF called `photo.png`.
+  //
+  // `photoNotFound` is for an account that has not uploaded one. It is not a
+  // refusal in the sense the rest of this file is - nobody did anything wrong -
+  // but the navbar asks for the bytes and has to be told there are none, and a
+  // 200 with an empty body would be an image the browser draws as broken.
+  photoNotFound: 'ยังไม่มีรูปโปรไฟล์',
+  photoNoFile: 'กรุณาเลือกรูปภาพ',
+  photoUploadUnreadable: 'อ่านไฟล์ที่แนบมาไม่ได้ กรุณาเลือกรูปใหม่อีกครั้ง',
+  photoNotImage: 'รูปโปรไฟล์รองรับเฉพาะไฟล์ PNG และ JPEG เท่านั้น ไฟล์ที่เลือกไม่ใช่รูปภาพทั้งสองแบบ',
+  photoTooLarge: (megabytes) =>
+    `รูปภาพมีขนาดเกินที่ระบบรับได้ ขนาดสูงสุดคือ ${megabytes} MB`,
+  // The row survived and its bytes did not, `evidenceFileMissing`'s case and
+  // kept apart from ไม่พบ for its reason: this one is uploaded again, and
+  // saying ยังไม่มีรูปโปรไฟล์ would describe an account that has one.
+  photoFileMissing: 'รูปโปรไฟล์หายไปจากที่จัดเก็บ กรุณาอัปโหลดใหม่อีกครั้ง',
+
   // Activity editor - #33. Writing the work, and attributing it to the
   // outcomes it assesses. Four refusals here are one refusal in four places -
   // an id in the body belonging to a grain the caller is not on - and three of

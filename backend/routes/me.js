@@ -3,9 +3,9 @@
 /**
  * The caller's own account — ticket #10.
  *
- * Four things the shell needs and nobody else can answer: who am I and what
- * may I be, which of those am I being, let me change my password, and I am
- * still here (#99). Every
+ * Five things the shell needs and nobody else can answer: who am I and what
+ * may I be, which of those am I being, let me change my password, this is my
+ * face (#47), and I am still here (#99). Every
  * route here is about the caller and only the caller: there is no user
  * identifier in any path or body, because the one that matters is in the
  * cookie. Managing *other* people's accounts is #11 and lives elsewhere.
@@ -16,6 +16,7 @@
 
 const express = require('express');
 const bcrypt = require('bcrypt');
+const multer = require('multer');
 
 const {
   ABSENT_PASSWORD,
@@ -25,6 +26,14 @@ const {
 } = require('../auth/accounts');
 const { REFUSALS } = require('../auth/refusals');
 const { issueSession } = require('../auth/session');
+const {
+  MAX_PHOTO_BYTES,
+  MAX_PHOTO_MEGABYTES,
+  imageKind,
+  readPhoto,
+  removePhoto,
+  storePhoto,
+} = require('../lib/userPhoto');
 
 /** What #8 hashes sign-in passwords with; the same cost, so the two agree. */
 const HASH_ROUNDS = 10;
@@ -36,11 +45,54 @@ const HASH_ROUNDS = 10;
  */
 const MINIMUM_PASSWORD = 8;
 
+/**
+ * The photo, held in memory and never on disk until it has been judged — #47.
+ *
+ * `memoryStorage` and multer's own limit, both for `evidence.js`' reasons: a
+ * file written to disk before the type check is a file the check has to clean up
+ * after, and the size limit is the one check that must happen while the bytes
+ * are still arriving rather than after they have all been held.
+ *
+ * The field is `image`, which is what the delivered route called it
+ * (`uploads.single('image')`). Evidence calls its field `file`; keeping each
+ * endpoint's own name costs nothing and means a client written against either
+ * one still works.
+ */
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_PHOTO_BYTES },
+});
+
+/**
+ * multer's refusals turned into this application's, as `evidence.js` does it.
+ *
+ * Without this the size limit arrives at the error handler as an unhandled throw
+ * and is answered เกิดข้อผิดพลาดในระบบ — a system fault, for something the
+ * person fixes by choosing a smaller photo. The ticket asks for a clear message
+ * and this is where it becomes one.
+ */
+const acceptPhoto = (req, res, next) =>
+  upload.single('image')(req, res, (error) => {
+    if (!error) return next();
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ message: REFUSALS.photoTooLarge(MAX_PHOTO_MEGABYTES) });
+    }
+    if (error instanceof multer.MulterError) {
+      return res.status(400).json({ message: REFUSALS.photoUploadUnreadable });
+    }
+    return next(error);
+  });
+
 /** The whole of what the shell is told about the caller. */
 const shellState = (user, auth) => ({
   user: profileOf(user),
   roles: auth.roles,
   acting: { role_id: auth.acting.role_id, scope_id: auth.acting.scope_id },
+  // The limit travels with the shell so the dialog can say it before somebody
+  // chooses a file — `EvidenceForm.js`' rule about a picker and a validator that
+  // must not be able to disagree, applied to a number instead of to a list. The
+  // browser gets to be helpful; the refusal that counts is still multer's.
+  photo: { max_bytes: MAX_PHOTO_BYTES },
 });
 
 function meRoutes(pool) {
@@ -48,14 +100,27 @@ function meRoutes(pool) {
 
   const currentUser = async (req) => {
     const { rows } = await pool.query(
+      // `EXISTS` rather than a LEFT JOIN on `image_path` — #47. The inherited
+      // profile read joined for the path and put it in the answer; what the
+      // shell is told here is only that there is one, because the bytes come
+      // from a route that asks who is calling and not from a URL.
       `SELECT user_id, email, password, status, is_verified,
               title_th, first_name_th, last_name_th,
               title_en, first_name_en, last_name_en,
-              department_id, program_id
+              department_id, program_id,
+              EXISTS (SELECT 1 FROM user_image WHERE user_id = users.user_id) AS has_photo
        FROM users WHERE user_id = $1`,
       [req.auth.userId],
     );
     return rows[0];
+  };
+
+  /** The row that says where this caller's photo is, or nothing. */
+  const photoRow = async (userId) => {
+    const { rows } = await pool.query(`SELECT image_path FROM user_image WHERE user_id = $1`, [
+      userId,
+    ]);
+    return rows[0] ?? null;
   };
 
   // What the shell loads on every page load: the profile for the navbar, the
@@ -159,6 +224,108 @@ function meRoutes(pool) {
       ]);
       await recordActivity(pool, user.user_id, 'CHANGE_PASSWORD');
       return res.status(200).json({ message: 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว' });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  /**
+   * The photo itself, to a caller who has been asked who they are — #47.
+   *
+   * There is no identifier in the path, and that is the fix rather than a
+   * convenience: the delivered system served
+   * `/static/user_image/<user_id>_<timestamp>.png` through
+   * `express.static('/data/evidence')` with no guard at all, so every
+   * photograph in the system was retrievable by anyone who could guess a name
+   * built out of two things they knew. This route is mounted below the session
+   * guard, reads the row for the account in the cookie, and can therefore only
+   * ever answer with that account's own photo. A caller with no session is
+   * refused by the guard, which is criterion 7 and is structural — there is no
+   * branch here that could get it wrong.
+   *
+   * Three answers rather than two, `evidence.js`' distinction: no row is
+   * ยังไม่มีรูปโปรไฟล์, a row whose bytes are gone is its own sentence and a
+   * 410, because one of them is uploaded and the other is reported.
+   */
+  router.get('/me/photo', async (req, res, next) => {
+    try {
+      const row = await photoRow(req.auth.userId);
+      if (!row) return res.status(404).json({ message: REFUSALS.photoNotFound });
+
+      const bytes = await readPhoto(row.image_path);
+      if (!bytes) return res.status(410).json({ message: REFUSALS.photoFileMissing });
+
+      // The kind is read off the bytes again rather than stored beside the path:
+      // `user_image` has two columns and 0004 argues against adding a third for
+      // something derivable, and the alternative — believing an extension — is
+      // the habit this ticket exists to break. A row whose file has been
+      // replaced on disk by something else is served as what it now is.
+      const kind = imageKind(bytes);
+      if (!kind) return res.status(410).json({ message: REFUSALS.photoFileMissing });
+
+      res.setHeader('Content-Type', kind.mime);
+      res.setHeader('Content-Length', bytes.length);
+      // `nosniff` for `evidence.js`' reason: a file that is a valid PNG *and*
+      // something else is served as what the header says and not as what the
+      // browser guesses.
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      // `no-store` because the URL never changes. Migration 0004 deliberately
+      // has no `updated_at` to hang a version on, so a cached photo would be the
+      // old face at the same address after a replacement, for as long as the
+      // browser felt like it.
+      res.setHeader('Cache-Control', 'no-store');
+      res.send(bytes);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  /**
+   * Set or replace the caller's own photo — #47.
+   *
+   * The whole of the delivered handler was: no type check, a name built from
+   * the user id and the clock, and an unlink of the previous file that was the
+   * one thing it got right. That unlink is kept and put under test rather than
+   * rebuilt; everything else here is the two defects.
+   *
+   * The order is the order it has to be in. The bytes are judged before
+   * anything is written, the new file is written before the row is pointed at
+   * it, and the old file is deleted last — after the row no longer names it. The
+   * other orders each lose something a person cannot get back: a row pointing at
+   * a file that was never written draws a broken image for ever, and a file
+   * deleted before the row is updated is a face that vanishes if the UPDATE
+   * fails.
+   */
+  router.post('/me/photo', acceptPhoto, async (req, res, next) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: REFUSALS.photoNoFile });
+
+      const kind = imageKind(req.file.buffer);
+      if (!kind) return res.status(400).json({ message: REFUSALS.photoNotImage });
+
+      const previous = await photoRow(req.auth.userId);
+      const stored = await storePhoto(req.file.buffer, kind);
+      try {
+        await pool.query(
+          `INSERT INTO user_image (user_id, image_path) VALUES ($1, $2)
+           ON CONFLICT (user_id) DO UPDATE SET image_path = EXCLUDED.image_path`,
+          [req.auth.userId, stored],
+        );
+      } catch (error) {
+        // The one order that does lose something: bytes on disk that no row
+        // will ever name, invisible to every route here and to the delete this
+        // ticket cannot write. The file goes back before the fault is reported,
+        // and the previous photo is left exactly where the unchanged row says
+        // it is.
+        await removePhoto(stored);
+        throw error;
+      }
+      // The conflict clause is migration 0004's own: the table is keyed on
+      // `user_id` precisely so that a second upload replaces the photo rather
+      // than adding one, and this is the statement it was keyed for.
+      if (previous && previous.image_path !== stored) await removePhoto(previous.image_path);
+
+      return res.status(200).json({ message: 'บันทึกรูปโปรไฟล์เรียบร้อยแล้ว' });
     } catch (error) {
       return next(error);
     }

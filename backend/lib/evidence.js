@@ -116,6 +116,13 @@ async function readFile(relative) {
 module.exports = {
   EVIDENCE_TYPES,
   MAX_BYTES,
+  // Exported for `lib/userPhoto.js` and for nothing else. #47 stores profile
+  // photos under the same root - migration 0004 says `image_path` is "a path
+  // under the evidence root" - and two modules reading `EVIDENCE_DIR` for
+  // themselves would be two defaults to keep in step, which is one more than
+  // there should be. What a photo is, where under the root it goes and what may
+  // be deleted stay over there; where the root is lives here.
+  evidenceDir,
   isEvidenceType,
   looksLikePdf,
   readFile,

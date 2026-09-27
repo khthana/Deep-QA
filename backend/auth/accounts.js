@@ -58,7 +58,8 @@ async function findByEmail(pool, email) {
     `SELECT user_id, email, password, status, is_verified,
             title_th, first_name_th, last_name_th,
             title_en, first_name_en, last_name_en,
-            department_id, program_id, valid_from, valid_until, acting_epoch
+            department_id, program_id, valid_from, valid_until, acting_epoch,
+            EXISTS (SELECT 1 FROM user_image WHERE user_id = users.user_id) AS has_photo
      FROM users WHERE lower(email) = lower($1)`,
     [email],
   );
@@ -385,6 +386,28 @@ const profileOf = (user) => ({
   last_name_en: user.last_name_en,
   department_id: user.department_id,
   program_id: user.program_id,
+  /**
+   * Whether there is a photo to ask for — #47.
+   *
+   * Not the path to it. A path on the wire is a path somebody will try, which
+   * is `evidence.js`' rule and the whole of what the delivered system got
+   * wrong here: the profile answer carried `${BASE_URL}/static${image_path}`
+   * and that URL answered to anybody. The photo is fetched from
+   * `GET /api/me/photo`, which has no identifier in it at all, so this is the
+   * one bit the navbar needs — draw the face, or draw the placeholder.
+   *
+   * Both callers select it — `me.js` for the shell and `findByEmail` for the
+   * sign-in answer, which is a row this file reads itself. The sign-in answer's
+   * `user` is discarded by this application's own client (`Login.js` calls
+   * `reload()` immediately), but an answer nobody happens to read is still an
+   * answer, and one that said `false` about an account with a photo would be
+   * wrong on the wire rather than merely unused.
+   *
+   * `=== true` rather than a cast, so a caller that ever forgets the column
+   * says `false` rather than `undefined`, and the field is a boolean everywhere
+   * it appears.
+   */
+  has_photo: user.has_photo === true,
 });
 
 module.exports = {

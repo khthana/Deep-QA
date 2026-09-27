@@ -1,14 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import RoleDropdown from './RoleDropdown'
-import { FaSignOutAlt, FaUser } from 'react-icons/fa'
+import { FaCamera, FaSignOutAlt, FaUser } from 'react-icons/fa'
 import { RiLockPasswordFill } from 'react-icons/ri'
+import ProfilePhotoDialog from './ProfilePhotoDialog'
+import { getProfilePhoto } from '../api/profile'
 import ContentMotionDIV from './ContentMotionDIV'
 import { AnimatePresence } from 'framer-motion'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 
 function Navber({ setAlert }) {
-  const { profile, logout, changePassword } = useAuth()
+  const { profile, photo, logout, changePassword, reload } = useAuth()
   const [username, setUsername] = useState('')
   const [isOpen, setIsOpen] = useState(false) // State สำหรับเปิด/ปิดเมนู
   const dropdownRef = useRef(null) // สำหรับใช้เช็คการคลิกข้างนอกเพื่อปิดเมนู
@@ -22,6 +24,97 @@ function Navber({ setAlert }) {
     new_password: '',
     confirm_password: '',
   })
+  const [showPhotoDialog, setShowPhotoDialog] = useState(false)
+  const [photoUrl, setPhotoUrl] = useState(null)
+  // Bumped when a photo is replaced, which is the one change `has_photo` cannot
+  // see: it was true before the upload and it is true after it.
+  const [photoVersion, setPhotoVersion] = useState(0)
+  const photoUrlRef = useRef(null)
+
+  /**
+   * The object URL currently being drawn, and the previous one released.
+   *
+   * Revoking is not optional housekeeping: every photo fetched stays in memory
+   * for the life of the tab otherwise, and a person who tries four pictures has
+   * four of them held. It is done here rather than in the effect's cleanup so
+   * that a replacement never leaves the `<img>` pointed at a URL that has
+   * already been revoked — which draws a broken image until the new bytes
+   * arrive.
+   */
+  const showPhoto = useCallback(url => {
+    if (photoUrlRef.current) URL.revokeObjectURL(photoUrlRef.current)
+    photoUrlRef.current = url
+    setPhotoUrl(url)
+  }, [])
+
+  useEffect(
+    () => () => {
+      if (photoUrlRef.current) URL.revokeObjectURL(photoUrlRef.current)
+    },
+    []
+  )
+
+  /**
+   * The avatar's bytes — #47.
+   *
+   * Fetched rather than linked to, for the reason `api/profile.js` gives at
+   * length: `/api/me/photo` answers the account in the cookie, and an `<img
+   * src>` at the API origin is a request this application's client does not
+   * make. `has_photo` is asked first so that an account without one costs no
+   * request at all rather than a 404 on every page load.
+   *
+   * A fetch that fails leaves the placeholder. A 410 — the row whose file is
+   * gone — is the one case where something *is* wrong, and the navbar is still
+   * the wrong place to say so: it is on every screen, it would say it on every
+   * screen, and the person fixes it by uploading another photo.
+   */
+  useEffect(() => {
+    if (!profile?.has_photo) {
+      showPhoto(null)
+      return undefined
+    }
+    let live = true
+    getProfilePhoto()
+      .then(blob => {
+        if (live) showPhoto(URL.createObjectURL(blob))
+      })
+      .catch(() => {
+        if (live) showPhoto(null)
+      })
+    return () => {
+      live = false
+    }
+  }, [profile?.has_photo, photoVersion, showPhoto])
+
+  /**
+   * A photo that has just been saved, on the screen.
+   *
+   * Two things can make the photo appear and only one of them applies at a time.
+   * A **first** upload changes what the shell knows — `has_photo` goes from
+   * false to true — so `reload` is the honest move, and the fetch follows from
+   * the new answer. A **replacement** changes nothing the shell holds, so there
+   * is nothing to reload and the counter is what says *ask again*.
+   *
+   * They are exclusive rather than both, and that is the correction: `reload`
+   * puts `loading` up, `AppRoutes` answers a loading shell with `LoadingScreen`,
+   * and the whole tree under it — this navbar included — unmounts and comes
+   * back. Calling it on a replacement as well would take the counter down with
+   * the component that holds it, leaving a piece of state that cannot be
+   * observed to do anything, and would throw away the fetched photo of a person
+   * who only changed their picture.
+   *
+   * No snackbar either, and that is a measurement rather than a preference. The
+   * same unmount takes `Mainpage`, which holds the snackbar's state, so a
+   * success message raised across the first upload is erased by it — `47a`
+   * measured that before this comment was written. What says the save worked is
+   * the photo itself arriving in the navbar, which is what the person was
+   * looking at when they pressed the button.
+   */
+  const photoSaved = async () => {
+    setShowPhotoDialog(false)
+    if (profile?.has_photo) setPhotoVersion(version => version + 1)
+    else await reload()
+  }
 
   useEffect(() => {
     if (profile) {
@@ -132,12 +225,22 @@ function Navber({ setAlert }) {
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center justify-center rounded-full transition-all hover:ring-2 hover:ring-white/50 active:scale-95"
             >
-              {/* The photo itself arrives with #47, which is where profile
-                  images are stored and served; until then everyone gets the
-                  placeholder the inherited navbar already fell back to. */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/20 bg-slate-700">
-                <FaUser className="text-lg text-white" />
-              </div>
+              {/* The photo when there is one, and otherwise the placeholder
+                  the inherited navbar already fell back to — #47. The
+                  delivered navbar drew Google's `profile_picture` here, which
+                  is an address at another company and blank for everybody who
+                  signs in with a password. */}
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt="รูปโปรไฟล์"
+                  className="h-10 w-10 rounded-full border-2 border-white/20 object-cover"
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/20 bg-slate-700">
+                  <FaUser className="text-lg text-white" />
+                </div>
+              )}
             </button>
 
             <AnimatePresence>
@@ -170,6 +273,17 @@ function Navber({ setAlert }) {
                     </button>
 
                     <button
+                      onClick={() => {
+                        setIsOpen(false)
+                        setShowPhotoDialog(true)
+                      }}
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50  hover:text-secondary"
+                    >
+                      <FaCamera size={18} />
+                      <span className="font-medium">เปลี่ยนรูปโปรไฟล์</span>
+                    </button>
+
+                    <button
                       onClick={logout} // เรียกใช้ฟังก์ชัน logout จาก AuthContext
                       className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
                     >
@@ -178,6 +292,16 @@ function Navber({ setAlert }) {
                     </button>
                   </div>
                 </ContentMotionDIV>
+              )}
+            </AnimatePresence>
+            <AnimatePresence>
+              {showPhotoDialog && (
+                <ProfilePhotoDialog
+                  maxBytes={photo?.max_bytes ?? null}
+                  currentUrl={photoUrl}
+                  onClose={() => setShowPhotoDialog(false)}
+                  onSaved={photoSaved}
+                />
               )}
             </AnimatePresence>
             <AnimatePresence>

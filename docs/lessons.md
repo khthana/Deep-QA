@@ -4396,3 +4396,120 @@ files had to stop saying otherwise. What caught it was not a grep for the guard'
 the document the change was being recorded in: a sheet that states how a neighbouring path behaves is
 a list of callers written in Thai, which is not what a grep for `/main` in `frontend/` was ever going
 to find.
+
+## #47 — the feature nobody called, and the notice that could not survive its own save
+
+#46 built `user_image` and said in as many words that it was taking the schema only: the path to it
+carried three inherited defects and no ticket owned them. #47 is that ticket, and two of its eight
+criteria turned out to be about things that do not exist.
+
+**There was no screen to reproduce.** `docs/06` §Out of Scope says the UI is reproduced as-is, so the
+first move was to find the inherited one. It is not there. The delivered navbar draws Google's
+`profile_picture` — an address at another company, blank for everybody who signs in with a password
+— and nothing in `DEEP-QA-FRONTEND` calls `upload-profile-image` at all. The route existed, the
+middleware existed, the table existed, and no screen ever posted to it. *Reproduce as-is* has no
+answer when the *as-is* is dead code, so the dialog's shape is a decision, taken from the
+change-password box in the same menu and written down as a decision rather than as an inheritance
+(#45).
+
+**Criterion 5 has no caller either.** *Deleting a user account removes the photo file from disk* —
+and the rebuild does not delete accounts. `backend/routes/users.js` reads, creates, edits, changes a
+status and imports; `docs/acceptance/11-user-accounts.md` says so in a sentence. `removePhoto` is
+written, is used by the replacement path, and its docblock names the route that must call it on the
+day that route exists. What it is not is a thing this ticket could close, and saying so with the
+grep that shows it is the finished answer (#89).
+
+### The limit that is published rather than copied
+
+The inherited 50MB came from the middleware evidence shares, where the files are students' PDFs. A
+profile photo is not that, so the number is 5MB and is a decision. It then has to be said on the
+screen — `EvidenceForm.js`' rule is that a picker and a validator must not be able to disagree — so
+it rides on `/api/me` beside the profile and the dialog draws the sentence from it. The row that
+holds it uploads exactly the published number of bytes and then one more, because a number published
+for a browser to print is only worth publishing if it is the number that decides.
+
+### A notice cannot outlive the tree it is drawn in
+
+The first upload has to tell the shell there is a photo now, which means `reload()`, which puts
+`loading` up, which makes `AppRoutes` answer with `LoadingScreen` — and the whole tree underneath,
+`Mainpage` and the snackbar's state with it, is unmounted and built again. A success message raised
+on either side of that call is therefore erased by it, every time, and `47a` found it by asking for
+the sentence and being told there was nothing on the screen.
+
+The fix is not to move the `setAlert` earlier; there is no earlier that survives an unmount. What
+says the save worked is the photo arriving in the navbar, which is what the person was looking at
+when they pressed the button. The general shape is worth keeping: **a notice is drawn by a component,
+so a call that re-mounts that component is a call the notice cannot cross.** The change-password box
+raises exactly such a message and survives only because it does not reload; the day it has to, its
+sentence goes the same way, silently.
+
+### Two instruments that answered the question they were being asked
+
+Both found while writing the rows, both the same species as #164's sampler:
+
+* **`getByRole('img')` cannot tell a photo from the placeholder.** Playwright gives an `<svg>` the
+  `img` role, and the placeholder is an icon — so a row asking *is there a picture in the avatar*
+  is answered *yes* in both states. The locator asks for the element now, not the role.
+* **A count of nought passes on a navbar that has not been drawn.** The precondition of the upload
+  row is that the account starts without a photo; `toHaveCount(0)` says that instantly about a shell
+  that is still mounting. The row waits for the avatar button first and then counts what is inside
+  it.
+
+A third was in the backend suite. Two rows recognise *their own* file on disk by reading the bytes
+back — the stored name is random, so recognition is the only handle — and both were matching bytes
+that other rows in the same file also upload. One of them deleted another account's photo and drew a
+conclusion from it, passing or failing on the order the directory happened to list. Each row now
+sends bytes nothing else sends, which is #129's lesson at the level of a fixture: a row that builds
+its own situation is still handed a world it did not build.
+
+### The state that could not be observed doing anything
+
+`photoSaved` first did both things: `reload()` so the shell learns `has_photo` is true, and a counter
+bump so the navbar refetches. It passed, and the counter was dead. `reload()` puts `loading` up,
+`AppRoutes` answers with `LoadingScreen`, and the navbar — the component that holds the counter — is
+unmounted with everything else; the refetch that follows is the new mount's, not the counter's. So
+there was a piece of state no mutant could measure, because breaking it broke nothing.
+
+The two cases are exclusive, and that is what makes both provable. A **first** upload changes what
+the shell holds, so `reload()` is the honest move and the fetch follows from the new answer. A
+**replacement** changes nothing the shell holds — `has_photo` was true before and is true after — so
+there is nothing to reload, and the counter is the only thing that can say *ask again*. One `else`,
+one job each, and a third browser row that uploads a PNG and then a JPEG over it and reads the
+content type of the second fetch. `replacementnotredrawn` — the counter incremented to itself — kills
+that row and leaves the other two standing, which is the whole point: **a piece of state whose
+removal breaks nothing is not covered, it is unreachable**, and the fix is the branch, not the row.
+
+The mutant is aimed at the increment rather than the condition deliberately. Mutating the condition
+sends a replacement through `reload()` as well, whose unmount refetches the photo by accident — the
+row would pass, and the sweep would report a survivor where the defect is real (#144's shape: a
+comparison no mutant at the call can split is split where its operand is written).
+
+### What the mutants are for here
+
+Five, and none of them is about a rule. The signature check, the size limit, the three answers a
+retrieval can give and the fact that one account cannot be handed another's photo are all pinned in
+`backend/test/profile-photo.test.js`, where the answer is a status and a sentence. What is left is
+what only exists in front of a screen: that a real file input's bytes reach the route that reads them
+(`uploadsendsnofile`, which kills both rows and says so — every row goes in through that one form),
+that the navbar draws a photo it asked the server for rather than the `File` it was just handed
+(`avatarneverfetches`), that the check is still a check (`typecheckgone`, which kills the refusal row
+twice over: no sentence, and an avatar where the row says there should still be a placeholder), that
+a refusal is said out loud rather than swallowed (`refusalnotsaid`), and that a replacement is asked
+for (`replacementnotredrawn`).
+
+The second sweep, run once the third row existed, is a small demonstration that **a kill count is a
+claim about the rows as much as about the code**. Nobody edited `typecheckgone` or `avatarneverfetches`
+and both now kill one row more than the table said: the type check gone means every file is served as
+the one kind the mutant answers for everything, so the JPEG that replaces a PNG comes back
+`image/png`; the avatar that never fetches cannot notice a replacement either. `uploadsendsnofile`
+kills all three, because every row goes in through that one form. The table records what was measured
+on 27 September 2569, not what the mutants were written to do.
+
+And because this ticket edits `Navbar.js`, which three other mutation files also hold, the three
+mutants anchored there were swept again one at a time: `10/ejectonrefusal`, `111/dialogstayssilent`
+and `66/portfoliodoorreturns` each still kill exactly their own row, and the new *เปลี่ยนรูปโปรไฟล์*
+entry does not confuse the row that says the user menu has no door out of the application. The
+eighteen mutants anchored in the five backend and context files this ticket touched were **not** swept
+again, and the sheet says so with the reason — every change there is an addition with no branch in it,
+every anchor still applies, and both suites are green. That is an argument, not a measurement, and it
+is written down as one.

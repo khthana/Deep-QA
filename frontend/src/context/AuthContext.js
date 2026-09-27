@@ -21,7 +21,7 @@ import { get, onAccessEnded, onSessionExpired, post, put } from '../api/client'
  * disagree the moment a grant was revoked. There is one source of truth for
  * the acting grant and it is the server's answer.
  *
- * `state` is `{ user, roles, acting }` or null when nobody is signed in.
+ * `state` is `{ user, roles, acting, photo }` or null when nobody is signed in.
  */
 
 const AuthContext = createContext()
@@ -270,6 +270,10 @@ export const AuthProvider = ({ children }) => {
         profile: state?.user ?? null,
         roles: state?.roles ?? [],
         acting: state?.acting ?? null,
+        // What the server will accept as a profile photo — #47. It rides on the
+        // shell answer rather than being a constant in the dialog, so the
+        // sentence the dialog draws and the limit multer enforces cannot drift.
+        photo: state?.photo ?? null,
         loading,
         setLoading,
         expired,

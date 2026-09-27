@@ -346,6 +346,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - A number copied from a sibling screen is a decision, not an inheritance. (#45)
 - An accessibility fix does not get to change layout on the way past, and a rule about layout is
   checked with numbers. (#111, #122)
+- **A notice is drawn by a component, so a call that re-mounts that component is a call the notice
+  cannot cross** — a save that reloads the shell erases its own *saved* message, and what proves the
+  save is then the thing the person was looking at. (#47)
+- **Two effects on one save can hide one of them: if one re-mounts the component that holds the
+  other, the second is unreachable rather than covered** — nothing breaks when it is deleted. Make
+  the cases exclusive so each is observable, then aim the mutant at the work and not at the
+  condition, whose other branch does the work by accident. (#47)
 - **A measured cost of almost nothing is not a reason to close the ticket** — read what the
   measurement says is *holding* it to almost nothing. One frame because nothing in the hop waits on
   the network is a property of today's data flow, and the ticket that would change that is already
