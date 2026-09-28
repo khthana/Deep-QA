@@ -133,6 +133,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A claim written in prose expires like a number** — and the copy you will miss is in the file
   you did not think you were changing; grep the sentence as well as the figure, and grep
   `File.js:` when a file grows lines. (#130)
+- **A mark that is written is not a mark that is read** — a stray `|` puts it in a column the
+  table does not have, and the sheet renders the empty cell beside it; seven rows were doing this.
+  Count the cells, not only the marks — then read the numbers before raising the alarm: all seven
+  hid a ☑, so the walk queue was never wrong. (#79)
 
 ### Mutants and sweeps
 

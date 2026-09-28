@@ -4837,3 +4837,52 @@ other nineteen rows of `170a`, `32a`, `33a` and `122a` standing. The message it 
 with is the full suite's red character for character - `Expected - 5`, `Received + 1`, `Array []` -
 which is the strongest thing a control can say: not that the row can fail, but that it fails as the
 defect did.
+
+## #79 — the ticket that was already done, and the mark that was never rendered
+
+#79 was opened out of the hand-walk of 21 August 2569: the advisor decided `FACULTY_ADMIN` does
+not reach *inside* a curriculum. The faculty keeps the **lists** — departments (A01) and
+programmes (A02) — while what is inside a curriculum (the central Rubric A04, the subjects in a
+curriculum A06, the PLOs A09 and the outcome mapping A10) belongs to the department and the
+programme committee.
+
+**By the time it was taken, every item on its own list had been done — and none of it by #79.**
+Three of the four screens were `NotBuiltYet` the day it was written, so the ticket was really a
+**constraint on tickets nobody had taken yet**, and #18, #19, #20, #21 and #22 each honoured it as
+they landed. The tell is in the code: `rubrics.js`, `plos.js` and `ploMapping.js` each carry a
+docblock saying `FACULTY_ADMIN` is absent *against that ticket's own criterion*, because #79 is the
+later decision. `FACULTY_ADMIN` now appears in exactly two `MAINTAINERS` in the whole backend, and
+they are the two lists the faculty keeps.
+
+**A constraint ticket is discharged by other tickets, so its own diff is empty** — which is a
+thing to measure rather than to assume. The check that mattered was not the grep that found the
+role absent; a grep is evidence for the pattern you typed. It was the control that put the role
+back: `18:maintainerall` applied, and `program-subjects.test.js` row 8 *the screen is refused to a
+role that does not maintain curricula* died naming the claim. All five screens carry such a mutant,
+so the rule is not merely written in the tree, it is held by the suite — #48's rule, met from the
+far side: the mutant to write when a proposal is declined is that proposal made to run, and here
+five of them had already been written by the tickets that did the work.
+
+**What was left was one stray pipe.** Row 8 of `docs/acceptance/18-program-subjects.md` — the row
+#79 itself rewrote, the one `faculty.admin@` was moved into — ended
+`ยังต้องมีคนดู || ☑ |`. Six cells in a five-column table. Markdown renders the first five, so the
+mark column showed the **empty** cell and the ☑ fell off the end. The mark was written and was
+not rendered.
+
+**A mark that is written is not a mark that is read.** The sheets are the instrument the rebuild
+counts its remaining work with, and that count is taken from the mark column; a row whose mark
+lands in a column the table does not have is invisible to it, however carefully the mark was
+chosen. This is the hand-kept-number species one layer down — not a figure that went stale, but a
+figure that was right and could not be seen. A census of every acceptance sheet found **seven**
+such rows: three in `13-user-activity-history.md`, three in `16-subjects.md`, and this one.
+
+**Then read the numbers rather than concluding** (#121). All seven hid a ☑, not a ◐ or a ☐. So
+the walk *queue* was never wrong; what was understated was the count of rows already walked. The
+defect is real and the alarm it first suggested was not, and saying which is the difference between
+a finding and a scare.
+
+The row also carried a sentence that had expired —
+*ครึ่งที่เหลือ … ยังต้องมีคนดู* — while lines 90–92 of the same sheet record that exact half
+walked on 21 August 2569 with all three accounts, and the table counts 18 ⚙ and 1 ☑ to match.
+**A claim written in prose expires like a number** (#130); here the prose and the mark in the same
+row disagreed, and the mark was the one telling the truth.
