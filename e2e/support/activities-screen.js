@@ -1,5 +1,7 @@
 'use strict';
 
+const { expect } = require('@playwright/test');
+
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
 const { openAt } = require('./navigation');
@@ -28,9 +30,63 @@ const waitForActivities = page =>
     answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
   );
 
-/** Goes to one Section's activities and hands back the read a row asserts on. */
+/**
+ * Waits until what the answer carried is what the screen is showing - #170.
+ *
+ * `waitForActivities` resolves when the answer's headers land, and the screen
+ * draws from a body that arrives after them and a state React sets after that.
+ * Nothing at all is drawn in between: `data` starts `null`, so there is no
+ * placeholder to wait past and no old list to tell from the new one - the
+ * screen is the loading sentence and nothing else. A read taken there comes
+ * back empty, which is `pager.js`'s `untilDrawn` reason on a screen with no
+ * pager to read it off.
+ *
+ * Measured rather than reasoned: #170 timed the window at 11-22ms and caught
+ * the raw read inside it once in ten opens on an idle machine. Neither knob
+ * that slows the renderer can show it - a CPU throttle and a held main thread
+ * both queue the read behind the drawing, because the read is executed by the
+ * renderer too. What does show it is an answer whose body is late, which is
+ * the gap `waitForResponse` leaves open by construction.
+ *
+ * Two clauses, because each covers the other's blind spot:
+ *
+ * - The card count is what the answer carried, which is the clause that holds
+ *   on a reload: the list stays drawn while one is out (#149), so the subject
+ *   line already says what this answer says.
+ * - The subject line is drawn only once `data` is set, which is the clause
+ *   that holds on an open of a Section with no work in it, where the count is
+ *   `0` both before the screen has drawn anything and after.
+ *
+ * What it still cannot see, and so is *untested*: a reload whose list is the
+ * same length as the one on the screen - an edit that renames a piece of work
+ * rather than adding or removing one. The rows that follow such a save assert
+ * the new name through a retrying matcher, which is what covers them today.
+ */
+async function untilActivitiesDrawn(page, response) {
+  const answered = await response.json();
+  await expect(
+    page.getByRole('listitem').getByRole('heading', { level: 3 }),
+  ).toHaveCount(answered.activities.length);
+  await expect(
+    page.getByText(answered.section.subject_id, { exact: true }),
+  ).toBeVisible();
+  return response;
+}
+
+/**
+ * Goes to one Section's activities and hands back the read a row asserts on.
+ *
+ * The drawing is waited for only on an answer that succeeded: #32's ninth
+ * criterion opens somebody else's Section and asserts the refusal, and there
+ * is no list on that screen to wait for. Every other caller reads the list on
+ * the line after this one.
+ */
 async function openActivities(page, sectionId) {
-  return openAt(page, path(sectionId), waitForActivities);
+  return openAt(page, path(sectionId), async fresh => {
+    const response = await waitForActivities(fresh);
+    if (response.ok()) await untilActivitiesDrawn(fresh, response);
+    return response;
+  });
 }
 
 /** One group, found by its category name. */
@@ -88,7 +144,7 @@ async function removeActivity(page, name, { confirm = true } = {}) {
     ),
     page.getByRole('button', { name: 'ลบ', exact: true }).click(),
   ]);
-  if (response.status() === 204) await reloaded;
+  if (response.status() === 204) await untilActivitiesDrawn(page, await reloaded);
   else reloaded.catch(() => {});
   return response;
 }
@@ -171,6 +227,7 @@ module.exports = {
   API,
   path,
   waitForActivities,
+  untilActivitiesDrawn,
   openActivities,
   mySectionIds,
   categoryGroup,

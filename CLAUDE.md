@@ -238,7 +238,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A race between an answer and its drawing is measured by slowing the renderer, not by rerunning
   the row** — a rerun passes, a CPU throttle gives a red and a green. But a read racing an *effect*
   is hidden by that same throttle, which serialises the read behind the pending work: the knob is for
-  the drawing, not for the reading. (#136, #164)
+  the drawing, not for the reading. (#136, #164, #170)
+- **A read the renderer executes cannot be made to lose by slowing the renderer** — a non-retrying
+  locator read queues behind the drawing, so no throttle and no held thread can show it. The knob is
+  the **answer's** own lateness: `waitForResponse` resolves on the headers and the screen waits for
+  the body, which is a window a fixture opens by letting the answer arrive and then waiting before
+  handing it on. A fulfilled route cannot, because it is answered all at once. (#170)
+- **A probe placed in front of the read it is measuring changes the answer** — a round trip is a turn
+  for the renderer, so the probe goes *behind* the read it is about. (#170)
 - ***Was it ever on the screen* is answered by a sample per frame, not by a longer wait** — and a
   sample is taken of the thing the row is about, not of the page. (#164)
 - **A sampler that reads what a control holds cannot tell an absent control from an empty one** — so

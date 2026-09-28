@@ -316,6 +316,33 @@ intermittent. A scratch spec that sends `Emulation.setCPUThrottlingRate` at a ra
 helper waited - a red and a green, which a rerun cannot give. Read the DOM with `page.evaluate` at the moment the response
 resolves to see what the gap actually holds; a locator waits, and that hides it.
 
+**Two things that paragraph does not cover, and #170 found both.** The first is a read the renderer
+itself executes. `allTextContents()` and `allInnerTexts()` do not retry, and they run *in* the page, so
+a throttle - or a held main thread - makes the read queue behind the drawing rather than beat it: #170
+measured 0 reds in 20 at rate 20 and 0 in 20 with the thread held busy for 250ms, on a defect the full
+suite had already caught. What opens that window is the answer's own lateness, because
+`waitForResponse` resolves on the *headers* and the screen is waiting for a body: 11-22ms on an idle
+machine, and the raw read inside it once in ten opens. A row that has to build it wraps `fetch` in an
+init script and waits before handing the answer on, with the thread left free; `page.route` cannot,
+because a fulfilled route is answered all at once and the response event fires at the fulfil. The
+second is that a probe in front of the read changes it - a `page.evaluate` taken at the instant the
+answer resolved saw an empty screen four times in eight, and the read on the line after it saw the
+full list every time, because the round trip is a turn for React. Put the probe *behind* the read it
+is about.
+
+A screen with no pager and no loading row has neither of the two settle points above: `activities-`'s
+`data` starts `null`, so between the answer and the drawing there is a loading sentence and nothing
+else, and nothing to compare. `untilActivitiesDrawn` in `support/activities-screen.js` waits instead
+for the card count the answer carried *and* for the subject line that is only drawn once the answer is
+in - two clauses, because on a reload the subject line already says what the answer says, and on an
+open of an empty Section the count is `0` on both sides. The same helper is on the delete's reload, where the
+screen does not go blank but stale - #149 keeps the old list drawn while a reload is out, and the
+read came back with six names where five belonged. Seven more card-and-grid screens open with
+`openAt(page, path, waitForX)` and no settle point at all - `achievements-`, `behaviors-`, `clos-`,
+`plan-`, `rubric-criteria-`, `scores-` and `plo-mapping-screen.js`, counted on 28 September 2569.
+That is a census with a date on it rather than a claim that they are safe, and the date is what
+expires it.
+
 Four others were removed rather than fixed, and #64 is the record of why. They were counts read after a *refused*
 import in `11b` and `14b`. `ImportPanel` calls `onImported` only on success, so a refused import never re-fetches the
 list: the total standing on the screen is the one from before the upload, whatever the server did with the file, and

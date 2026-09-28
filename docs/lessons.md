@@ -4739,3 +4739,102 @@ dies with `openAt`'s sentence while the other five rows of the three specs stand
 `asked.clear()` and nothing dies, which is the number that took the clause out. One row killed and
 the rest standing is what says a row is about its own subject (#97), and it holds for a control as
 much as for a mutant.
+
+## #170 - the read that beat the drawing, and the two knobs that could not show it
+
+**The ticket was right about the screen and wrong about how to see it.** The full suite of
+28 September 2569 failed `32a` row 1 with `Array []` where three group headings belonged, and the
+ticket filed the mechanism off the code: `groupsOnScreen` is `allTextContents()`, which reads once
+and does not retry, called on the line after `waitForActivities`, which waits for an answer and not
+for a drawing - #132's rule, met again. It then asked for the frequency to be measured under
+`Emulation.setCPUThrottlingRate`, #136's tool, before anything was fixed.
+
+**The throttle showed nothing: 0 reds in 20, ten at rate 1 and ten at rate 20.** Holding the main
+thread busy for 250ms after the answer showed nothing either, another 0 in 20 - and that one had
+been chosen precisely because it made the drawing arrive a quarter of a second late, which it did:
+the instrument measured its own gap at 264-274ms every run, and the row still read all three groups.
+
+**Both knobs fail for one reason, and it is the reason the rule already in `CLAUDE.md` gives.**
+`allTextContents()` is executed *by the renderer*. Anything that makes the drawing late makes the
+read queue behind it, because they are the same queue. #164 wrote this down as *the knob is for the
+drawing, not for the reading*; #170 is that sentence met from the other side, where the read is a
+locator rather than an effect, and it is why a throttle could not have reproduced this defect on any
+number of runs.
+
+**What opens the window is the answer's own lateness.** `page.waitForResponse` resolves when the
+*headers* land; the screen is waiting for a body, and then for the state React sets from it. That is
+a gap inside a single response, and nothing in the page has to be slow for it to be there: on an
+idle machine it measured **11-22 milliseconds**, and the raw read fell inside it **once in ten
+opens** with no instrument at all. So the fixture is a `fetch` wrapper that lets the answer arrive
+and then waits before handing it on - the thread stays free, so the read is free to happen in the
+window. At 400ms it is red every run. `page.route` cannot do this: a fulfilled route is answered all
+at once, so `waitForResponse` resolves at the fulfil and there is no gap left to read into.
+
+**The first instrument closed the window it was measuring.** The first scratch spec read the DOM with
+`page.evaluate` at the instant the answer resolved and then called `groupsOnScreen`. The evaluate saw
+zero groups in four runs of eight - the window is real and wide - and the read that followed saw three
+every time, because the evaluate is itself a round trip and a round trip is a turn for React. The
+probe had to move behind the read it was about before the number meant anything. **A probe placed in
+front of the read it is measuring is a probe that changes the answer**, which is #164's *a sample is
+taken of the thing the row is about* one layer up.
+
+**The fix is the house's, on a screen that has nowhere to put it.** `pager.js`'s `untilDrawn` waits
+for what the answer carried to be what the pager says; this screen has no pager, and #136's
+`settled` has no loading row to wait past either - `data` starts `null`, so between the answer and
+the drawing the screen is a loading sentence and nothing else. `untilActivitiesDrawn` is therefore
+two clauses that cover each other's blind spot: the card count is what the answer carried, which is
+what holds on a *reload*, where the list stays drawn while one is out (#149) and the subject line
+already says what this answer says; and the subject line is drawn only once `data` is set, which is
+what holds on an *open* of a Section with no work in it, where the count is `0` on both sides. What
+neither clause can see is a reload whose list is the same length as the one on screen - an edit that
+renames a piece of work - and the docstring says so with the reason, rather than claiming the
+helper covers it.
+
+**The ticket's census was a grep somebody ran, and the grep had a blind spot of its own.** It said
+`allTextContents()` lived at *10 sites in 7 helpers*; the real figure is 9 in 7 for that spelling,
+and `allInnerTexts()` - the same species, equally non-retrying - adds 12 more in `support/`
+alone, one of which (`pager.js`'s `keysOn`) calls `settled` itself and so is not one of these.
+Counting by the spelling instead of by the species is what made the number look small. Read by what
+actually decides the risk, which is whether a settle point stands in front of the read, the answer is
+different again: eleven of the screens that go through `untilDrawn` or `settled` are covered, and
+**eight card-and-grid screens open with `openAt(page, path, waitForX)` and nothing else at all** -
+`achievements-`, `activities-`, `behaviors-`, `clos-`, `plan-`, `rubric-criteria-`, `scores-` and
+`plo-mapping-screen.js`, with `all-students-` and `radar-chart.js` reading behind them.
+
+**Only one of the eight was fixed, and that is the point rather than an omission.** #68's rule is
+that one hook behind fifteen screens turns fifteen claims into one no mutant can measure apart, and
+#125's is that the same hole in two guards is two tickets when the blast radius differs. The screen
+that was *measured* to be racing got the settle point, its own row and its own control; the other
+seven are a census taken on 28 September 2569 and listed above.
+
+**Which is a deferral, and a deferral in prose is one nobody can find.** The paragraph above was two
+files naming seven screens and no ticket until the review said so - #119's rule exactly. The list
+belongs in the tracker; what belongs here is why it is seven tickets' worth of measuring and not one
+refactor.
+
+**The ticket also asked which sites are *deliberate* settle points, and only three of them can be
+answered here.** `groupsOnScreen`, `namesOnScreen` and `namesInCategory` are raw reads that now sit
+behind a named settle point, which is #50's shape done right rather than a defect. The other
+eighteen are on screens nobody has measured, and labelling them from the code is the hand-kept claim
+this file keeps warning about - so the labelling is the tracker's first criterion, one screen at a
+time, and not a table written here today.
+
+**The reload after a delete is the same defect wearing different clothes.** The review called the
+settle point on `removeActivity` scope creep, and it was right that nothing had measured it - so it
+was measured. With the answer late, the read on the line after the delete came back with **six names
+where five belonged**: #149 keeps the old list drawn while a reload is out, so this screen does not
+go blank here, it stays *stale*. A row that had asserted only *not empty* would have passed on it.
+That is the second row, and the reason the two rows need two controls.
+
+**And row 2's precondition had to stop being a raw read.** Written as one, it failed under row 1's
+control as well - the opener's settle point was holding it up, so neither claim could be measured
+apart from the other, which is what a control is for. It is now the one retrying read in the file,
+and says so.
+
+**The proof is a control, for `160a`'s reason.** `e2e/support/` is not what `mutation/` mutates, so
+the stand-in is run by hand, one per row: taking `untilActivitiesDrawn` back out of `openActivities`
+kills `170a` row 1 alone, taking it out of `removeActivity` kills row 2 alone, and each leaves the
+other nineteen rows of `170a`, `32a`, `33a` and `122a` standing. The message it dies
+with is the full suite's red character for character - `Expected - 5`, `Received + 1`, `Array []` -
+which is the strongest thing a control can say: not that the row can fail, but that it fails as the
+defect did.

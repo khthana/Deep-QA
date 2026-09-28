@@ -17,6 +17,7 @@ const { DASHBOARD } = require('../support/teaching-screen');
 const {
   openActivities,
   waitForActivities,
+  untilActivitiesDrawn,
   mySectionIds,
   activityCard,
   groupsOnScreen,
@@ -98,6 +99,11 @@ test('row 1: the menu entry lands on this section\'s work, filed under the schem
 
   expect(answer.status()).toBe(200);
   expect(new URL(page.url()).pathname).toBe(`${DASHBOARD}/${section}/learningActivities`);
+
+  // This row reaches the screen by the menu rather than by `openActivities`,
+  // so it waits for the drawing itself - #170, where the full suite caught the
+  // two reads below coming back empty. `170a` holds the proof.
+  await untilActivitiesDrawn(page, answer);
 
   expect(await groupsOnScreen(page)).toEqual(
     SCORE_RATIOS.map(ratio => expect.stringContaining(ratio.category)),
