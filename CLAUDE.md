@@ -351,6 +351,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - A number copied from a sibling screen is a decision, not an inheritance. (#45)
 - An accessibility fix does not get to change layout on the way past, and a rule about layout is
   checked with numbers. (#111, #122)
+- **Where a dialog's state lives decides whether closing it forgets.** A form written inside a
+  component that never unmounts has no lifecycle to clear it, so every way out clears it by hand —
+  and on the way **out**, because an effect keyed on the flag the box is drawn from runs after the
+  fields have been drawn from the old values. (#167)
 - **A notice is drawn by a component, so a call that re-mounts that component is a call the notice
   cannot cross** — a save that reloads the shell erases its own *saved* message, and what proves the
   save is then the thing the person was looking at. (#47)

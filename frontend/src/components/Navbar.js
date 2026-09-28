@@ -133,6 +133,34 @@ function Navber({ setAlert }) {
   }, [profile])
 
   /**
+   * Every way out of the change-password box — #167.
+   *
+   * The box is not a component: it is written below, and what is typed into it
+   * lives in this navbar's `pwdData`. So nothing about closing it clears it, and
+   * the navbar is not unmounted by anything a person does here: the next open is
+   * drawn from the state the last one left, which is somebody's current password
+   * on the screen behind an eye they can press.
+   *
+   * Clearing on the way out rather than on the way in, for `ProfilePhotoDialog`'s
+   * reason: `showChangePwd` is what the box is drawn from, so an effect keyed on
+   * it opening would run after the fields had already been drawn from the old
+   * values (#164's shape — a box painted holding what was thrown away). The exit
+   * is the moment that has nothing after it.
+   *
+   * The eyes are put back too. A box reopened with a field revealed reveals an
+   * empty field, so this is not the defect; it is the same sentence — what the
+   * last use of the box chose is not the next one's.
+   */
+  const closeChangePassword = () => {
+    setShowChangePwd(false)
+    setError('')
+    setPwdData({ old_password: '', new_password: '', confirm_password: '' })
+    setShowOld(false)
+    setShowNew(false)
+    setShowConfirm(false)
+  }
+
+  /**
    * The server is the one that checks the current password and the length of
    * the new one; the checks below are the browser being helpful, not the rule.
    *
@@ -163,8 +191,7 @@ function Navber({ setAlert }) {
         message: 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว',
         severity: 'success',
       })
-      setShowChangePwd(false)
-      setPwdData({ old_password: '', new_password: '', confirm_password: '' })
+      closeChangePassword()
     } catch (err) {
       // Close the box, and nothing else - #97. This used to call
       // `sessionExpired()` here as well, which was a second component with an
@@ -177,7 +204,7 @@ function Navber({ setAlert }) {
       // is not the same thing as a dialog, and the expiry box has to be the
       // only thing on the screen for its one button to be findable.
       if (err.expired) {
-        setShowChangePwd(false)
+        closeChangePassword()
         return
       }
       setError(err.message)
@@ -314,10 +341,7 @@ function Navber({ setAlert }) {
                   style={{ zIndex: 99999 }}
                 >
                   <div
-                    onClick={() => {
-                      setShowChangePwd(false)
-                      setError('')
-                    }}
+                    onClick={closeChangePassword}
                     className="absolute inset-0"
                   />
 
@@ -458,10 +482,7 @@ function Navber({ setAlert }) {
                       <div className="mt-8 flex items-center justify-end gap-3 pt-2">
                         <button
                           type="button"
-                          onClick={() => {
-                            setShowChangePwd(false)
-                            setError('')
-                          }}
+                          onClick={closeChangePassword}
                           className="rounded-lg bg-gray-200 px-4 py-2 text-gray-800 transition hover:bg-gray-300"
                         >
                           ยกเลิก

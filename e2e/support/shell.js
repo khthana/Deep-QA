@@ -278,6 +278,7 @@ module.exports = {
   openProfilePhoto,
   photoInput,
   savePhoto,
+  passwordFields,
   submitPasswordChange,
   signOut,
 };

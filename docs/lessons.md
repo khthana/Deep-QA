@@ -4563,3 +4563,76 @@ navbar — so after any row opened and closed that box, the shared locator resol
 every lookup built on it failed in strict mode. It asks by element now, for the same reason
 `avatarImage` does. **What is added to the DOM is added to the set `getByRole` searches**, whether or
 not anyone meant to put it there.
+
+## #167 — the box whose state was never the box's
+
+### Where a dialog's state lives decides whether closing it forgets
+
+#47 fixed one box by giving it a single exit that clears everything, and left a sentence saying the
+change-password box in the same `AnimatePresence` has the same symptom. It does, and the mechanism is
+not the same one. `ProfilePhotoDialog` is a component: had it been unmounted, `useState` would have
+done the clearing for free, and the reason it did not was the un-removed node. The change-password
+form is **not a component**. It is written inside `Navbar.js`, its three fields live in the navbar's
+`pwdData`, and the navbar is not unmounted by anything a person does on any screen. There is no
+lifecycle to lean on. Cancelling set `showChangePwd` to false and cleared `error`; the only place that
+ever put `pwdData` back was the path where the change **succeeded**. So a password typed and then
+cancelled was still in the state, still in the fields, and on the screen again at the next open,
+behind an eye anyone can press — in every browser, with no animation involved.
+
+The fix is #47's shape: one exit, `closeChangePassword()`, clearing the three fields, the refusal and
+the three eyes, called by the cancel button, the backdrop, the expired-session path and the success
+path. It clears on the way **out** rather than on the way in for #164's reason: `showChangePwd` is
+what the box is drawn from, so an effect keyed on it opening would run after the fields had already
+been drawn from the old values.
+
+`167a` is the row — type, reveal, cancel, reopen — and it carries **two** claims, so the file carries
+two mutants. The first draft carried one that deleted the whole exit, and both review axes said the
+same thing about it: a single death cannot tell two claims apart, so the eye reset was written and
+proved by nothing. Split, `cancelkeepsthepasswords` (the state before this ticket exactly) dies at
+`toHaveValue('')` and `keepstheeyesopen` dies at the count of fields still `type="password"`; each
+kills that row alone and leaves `10a`'s eleven standing, including the two that use the same box,
+because they `fill()` over whatever is there. The row also has to *press* an eye before cancelling,
+or the second half is a precondition nobody arranged — and it counts the inputs as well as reading
+them, because a read of what a control holds cannot tell an absent control from an empty one (#164).
+
+### The half of the ticket that a measurement answers with no
+
+The ticket asked whether `ContentMotionDIV`, which accepts `children/className/role/id` and drops
+`initial/animate/exit`, leaves `AnimatePresence` with no exit animation that can ever finish. It does
+not. That component declares its own `exit={{ opacity: 0, y: -4 }}` with a 0.18-second tween: there is
+an exit, it is time-based, and it needs frames. That is why a tab reporting `visibilityState:
+"hidden"` never finishes it — though that measurement was taken on the photo dialog, the sibling in
+the same `AnimatePresence`, and not on this box. Same wrapper, same tween, same mechanism; the
+numbers for this box are nobody's yet, and the sheet says so rather than borrowing them. The
+dropped props are dead, as `ContentMotionDIV`'s own comment says they are, and honouring them was
+already somebody else's question.
+
+The census that goes with it is small enough to state: five files in the frontend use
+`AnimatePresence` — `Navbar.js`, `ProfilePhotoDialog.js`, `RoleDropdown.js`, `SidebarItem.js` and
+`pages/Login.js`. Of those, the children sitting under a component that holds typed state are **three**, not two:
+the navbar's two dialogs, which now clear on the way out, and `LoginForm`, under the
+`AnimatePresence mode="wait"` that swaps the form for a spinner, whose `username` and `password` live
+in `pages/Login.js:69-70`. The third has nothing to forget, and the reason is not the count — it is
+that `LoginForm`'s inputs are uncontrolled (`onChange` and no `value`, `components/LoginForm.js:59,88`).
+What is typed lives in the DOM node; the page's state is a write-only copy kept for the submit, and
+nothing draws from it, so the form coming back gets fresh empty nodes. It forgets more than it
+remembers, which is the opposite defect and nobody's ticket. Every other form in the application is
+mounted by a plain conditional with no exit animation to wait for, and `ConfirmDialog`, which is kept
+mounted, holds no state at all.
+**The policy the ticket asked for — one answer for every dialog — is already the answer everywhere it
+can matter**, which is a cheaper thing to say than a refactor and is said with the census rather than
+from memory.
+
+### What a shared file costs the sweep
+
+`Navbar.js` is held by four other mutation files, so changing it dates every kill count anchored in
+it, whether or not the anchor still matches (#48). `anchors.py` said 0 problems, which answers a
+different question. The five were re-swept one at a time — `10:ejectonrefusal`, `111:dialogstayssilent`,
+`66:portfoliodoorreturns`, `47:avatarneverfetches`, `47:replacementnotredrawn` — and each killed the
+same row it killed before.
+
+Counting the sheet's marks for the new row's sake turned up #154's lesson again, one line up rather
+than twenty down: the sentence that opens *ที่มาของเครื่องหมาย ⚙* still said fifteen rows, and had said
+it since before #105. #154 corrected the total seventy lines below it and never looked up. **What a
+diff touches is what a diff proofreads** — so this time the count came from a script reading the
+table's mark column, and every figure in that section was re-read beside it.
