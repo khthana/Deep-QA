@@ -90,7 +90,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   hole in two guards is two tickets when the blast radius differs by an order of magnitude.
   (#119, #89, #125)
 - Read a file's own comments for the rule before inventing one; a rule borrowed whole borrows its
-  defect too. (#83)
+  defect too — and what an instrument *means* is documented in the file that uses it on purpose,
+  not in the one you are changing: `66a`'s docstring said `framenavigated` fires for history-API
+  moves, and the fence that needed the opposite was built on it four tickets later. (#83, #168)
 - **A guard written for one caller is a claim about every caller** — find the others before
   writing the comment that says they are safe, because that comment is the claim, and a caller
   passed by reference is invisible to a grep for the call. (#68, #133)
@@ -286,6 +288,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the repository outlives the rows that name it unless both are cleared in the same breath, and
   code that deletes proves the directory is its own before it removes it. (#138)
 - Two `includes` cannot fail on a list that is too wide. (#102)
+- **A gate that holds one request is a claim about how many the screen makes** — the screen that asks
+  twice has its second call answered inside its own document, and the row then passes for the wrong
+  reason. Count the calls, or hold them all. (#168)
 - **A gap one seam hands to the other is closed only if the other seam's world can express it** — two
   seams fed by one seed share its blindness. (#106)
 - A test that passes because of a defect tends to explain itself in its own comment. A row that
@@ -335,6 +340,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   a ref *means*, and which controls write it, can leave every comparison and every mutant where
   they stand. (#146)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
+- **A flag paired with a later event is not identity** — a navigation request being out says a document
+  was asked for; it does not say that the next commit is that document's, and measured, the next one is
+  still a `replaceState`. Ask the protocol for the thing itself. (#168)
 - **A fallback that reimplements a library is a claim about that library's answer** — so check it
   by asking the library, not by reasoning from the data's properties: `ำ` really is 1.56mm wide and
   really is `Lo`, and ICU keeps it with its consonant anyway. The character that breaks such a

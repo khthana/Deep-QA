@@ -28,13 +28,12 @@
  *
  * ## How the outgoing document's calls are told apart
  *
- * By identity, not by time. The fence is the moment the new document
- * **commits** — `framenavigated` on the main frame — and the `Request` objects
- * the page makes after it are collected. A response is accepted only if its
- * request is one of them, so an answer to a question the old document asked is
- * ignored however late it arrives, and the wait goes on to the new document's
- * own call. Nothing is compared against a clock, so nothing here can decide
- * anything by being slow (#52).
+ * By identity, not by time. The fence is the moment a new document
+ * **commits**, and the `Request` objects the page makes after it are collected.
+ * A response is accepted only if its request is one of them, so an answer to a
+ * question the old document asked is ignored however late it arrives, and the
+ * wait goes on to the new document's own call. Nothing is compared against a
+ * clock, so nothing here can decide anything by being slow (#52).
  *
  * The commit and not the navigation *request* is the fence, and the difference
  * is the whole of it. A request is sent first and answered later; between the
@@ -45,6 +44,53 @@
  * gone, and the new one cannot have asked for anything before it existed.
  * `160a`'s second row builds exactly that request, and it is what tells the two
  * fences apart.
+ *
+ * ## The commit is asked of the protocol, not of Playwright — #168
+ *
+ * `page.on('framenavigated')` is not the commit of a document. Playwright
+ * reports `history.pushState` and `history.replaceState` through that same
+ * event, and the screens here do it constantly — the landing hop (#120), and
+ * every screen that writes its state into the address. So the fence opened on a
+ * navigation that had fetched nothing, **before the document the `goto` asked
+ * for existed**, and the questions the outgoing document asked after that were
+ * collected as the new document's: the one thing this file exists to refuse,
+ * done by the guard itself. `105a` died of it in the full run of 27 September,
+ * and the census taken before the fix says it was not rare — in **389 of 621**
+ * windows the first `framenavigated` was one of these, with two to six of the
+ * outgoing document's requests collected behind it.
+ *
+ * Chromium names the two apart — `Page.frameNavigated` is a document commit and
+ * `Page.navigatedWithinDocument` is not one — and Playwright folds both into the
+ * one event. So the fence is the protocol event, taken from a CDP session of
+ * this call's own. That makes this file chromium-only, which the suite's single
+ * project already is (`playwright.config.js`), and the main frame is the one the
+ * protocol gives no `parentId` — where Playwright's event was compared against
+ * `page.mainFrame()`, the event carries the answer itself. A session per open is
+ * what it costs, and the cost is under a minute over the whole suite: 33.4
+ * minutes for the run before the fix and 33.7 and 34.0 for the two after it, on
+ * 621 opens.
+ *
+ * A flag was tried first, and it is the thing not to try again: collect
+ * `isNavigationRequest()` on the main frame, and let the next commit count as a
+ * document's if one had been asked for. It reads like identity and is not —
+ * measured, the `goto`'s document request goes out and the **next** commit is
+ * still a `replaceState`, which spends the flag and opens the fence early
+ * exactly as before. A request being out says a document was asked for; it does
+ * not say that this commit is that document's.
+ *
+ * `asked` is **not** emptied at each commit, and the measurement is why. The
+ * ticket proposed exactly that as the fix covering both halves — when a document
+ * commits and is then itself replaced, the requests collected in between belong
+ * to a document that is gone and their bodies went with it. Three numbers say it
+ * would cover nothing. No window in the suite holds two document commits (0 of
+ * 621). A request released into a page that has moved on produces no response the
+ * waiter can match: `168a`'s second row builds that situation and passes with the
+ * clause and without it. And the one way an intermediate document's
+ * answer does reach the waiter is while that document is still on screen — which
+ * is `keepBody`'s read racing the next commit rather than a question of which
+ * document asked, a window to narrow and not a fence to draw, and what covers it
+ * is #160's named sentence. So the clause is not here, and the row that would
+ * have proved it stays as a net that says it is one.
  *
  * Each helper keeps the waiter it already had and hands it here instead of
  * racing it against `page.goto` itself; what it is given is a `page` whose
@@ -72,14 +118,17 @@ async function openAt(page, url, wait) {
   const asked = new Set();
   let committed = false;
 
-  const onCommit = frame => {
-    if (frame === page.mainFrame()) committed = true;
+  const session = await page.context().newCDPSession(page);
+  await session.send('Page.enable');
+
+  const onCommit = ({ frame }) => {
+    if (!frame.parentId) committed = true;
   };
   const onRequest = request => {
     if (committed) asked.add(request);
   };
 
-  page.on('framenavigated', onCommit);
+  session.on('Page.frameNavigated', onCommit);
   page.on('request', onRequest);
 
   try {
@@ -89,7 +138,11 @@ async function openAt(page, url, wait) {
     return response;
   } finally {
     page.off('request', onRequest);
-    page.off('framenavigated', onCommit);
+    session.off('Page.frameNavigated', onCommit);
+    // A row whose page or context is already closing cannot detach, and there is
+    // nothing left to detach from; every other failure here would be reported in
+    // place of the row's own, which is the thing #160 was about.
+    await session.detach().catch(() => {});
   }
 }
 

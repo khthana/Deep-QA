@@ -3645,8 +3645,9 @@ outgoing document is still on screen and still able to ask for things, and a fen
 what it asks. That is a window *narrowed*, described in the file's own docstring as a window *closed* — the
 same sentence the ticket had just criticised the eager read for, written one layer up. **A fix that replaces a
 mitigation is a claim to check against the mitigation's own criticism.** The fence is now the **commit**
-(`framenavigated` on the main frame), which has nothing on the far side of it but the new document: the old
-one is gone, and the new one cannot have asked for anything before it existed.
+— which #168 had to correct from `framenavigated` to the protocol's own event — and it has nothing on
+the far side of it but the new document: the old one is gone, and the new one cannot have asked for
+anything before it existed.
 
 The interesting part is where the second question lives. Thirty-two helpers had the shape, and a fix that
 made each predicate say *and from this document* would have been thirty-two edits and thirty-two chances to
@@ -4636,3 +4637,105 @@ than twenty down: the sentence that opens *ที่มาของเครื�
 it since before #105. #154 corrected the total seventy lines below it and never looked up. **What a
 diff touches is what a diff proofreads** — so this time the count came from a script reading the
 table's mark column, and every figure in that section was re-read beside it.
+
+## #168 — the commit that fetched nothing
+
+`105a` died once in the full browser run of 27 September and passed alone, in `openAt`'s own
+sentence: the answer to `/api/teaching/sections` was gone before it could be read. That sentence is
+#160's fence reporting that it did not hold. The ticket refused to call the row flaky before the
+mechanism was measured (#129) and had already cleared the day's diff with `--list`, which put `105a`
+at row 2 of the suite and #47's changed code at row 584 (#150).
+
+### The fence was standing on an event that means two things
+
+`page.on('framenavigated')` is not the commit of a document. Playwright reports `history.pushState`
+and `history.replaceState` through it as well, and Chromium names the two apart —
+`Page.frameNavigated` for a document commit, `Page.navigatedWithinDocument` for the other. The
+screens here make the second kind constantly: the landing hop of #120, and every screen that writes
+its state into the address. So the fence opened on a navigation that had fetched nothing, **before
+the document the `goto` asked for existed**, and the questions the outgoing document asked after
+that were collected as the new document's — the one thing `navigation.js` exists to refuse, done by
+the guard itself.
+
+**The fact was already written down in the suite.** `66a`'s `recordVisits` says it in its docstring,
+because #66 used the same event deliberately for the history-API moves: *"`framenavigated` fires for
+the history-API moves React Router makes as well as for real document loads."* #160 built a fence on
+that event four tickets later. A helper that uses an event for one purpose has documented what the
+event is; the file that needs the opposite of it is not the file the sentence is in.
+
+### Two hypotheses, measured as a grid
+
+The ticket named two and said to measure them rather than choose (#148, #149): **ก** a same-document
+navigation opening the fence early, **ข** a second document commit leaving the intermediate
+document's requests behind. Both were measured, and the grid is the whole of what decided the fix.
+
+ก was built first as a temporary probe: a CDP session logging `Page.navigatedWithinDocument` and
+`Page.frameNavigated` beside `openAt`'s own listeners, with the outgoing document making a run of
+`replaceState` calls while the navigation was held at the route. It reproduced the sentence every
+time, and the log named the culprit event in Chromium's own words.
+
+Then the whole suite ran with a census in `openAt`: one line per window, every main-frame commit,
+whether a document had been fetched for it, and how many requests had been collected when it
+arrived. Taken on 28 September 2569, on the run immediately before the fix, with the census removed
+again when it landed — so the figures below are a dated survey and not an instrument the tree still
+carries. **621 windows, 50 addresses: in 389 of them the first commit had fetched nothing**, with
+two to six of the outgoing document's requests collected behind it, 829 in all. **No window held two
+document commits — 0 of 621.** So ก is not the rare event the intermittency suggested; it is what
+nearly two thirds of the opens do, and what made `105a` the row that died is only that one of the
+calls behind the false commit matched its waiter and arrived first. **What is intermittent can be
+the row rather than the defect** — #164's rule, met from the other side.
+
+### A flag is not identity
+
+The first fix asked Playwright rather than the protocol: collect `isNavigationRequest()` on the main
+frame, and let the next commit count as a document's if one had been asked for. It reads like
+identity. The debug log killed it in one run — the `goto`'s document request goes out, and the
+**next** commit is still a `replaceState`, which spends the flag and opens the fence exactly as
+early as before. **A request being out says a document was asked for; it does not say that this
+commit is that document's.** The fence is now `Page.frameNavigated` from a CDP session of the call's
+own, which makes the file chromium-only — a dependency the suite's single project already has.
+
+### The fix the ticket asked for covers nothing, and that took three numbers
+
+The ticket's item 2 offered `asked.clear()` in the commit handler as the fix covering both halves,
+and said to let the measurement choose rather than convenience. It did, and it chose against it:
+
+1. No window in the suite holds two document commits (0 of 621).
+2. `168a`'s second row builds the situation anyway — a document commits, asks twice, and is replaced
+   in turn while both answers are held at the route — and it **passes with the clause and without
+   it**. A request released into a page that has moved on produces no response for the waiter to
+   match at all.
+3. The one way an intermediate document's answer does reach the waiter is while that document is
+   still on screen. That is `keepBody`'s read racing the next commit, not a question of which
+   document asked: a window to narrow, which is what #160 refused to ship, and what covers it is
+   #160's second half — the named sentence the row dies with.
+
+So the clause is not in the file, the reason is in its docstring, and the row stays as a **net that
+says it is one** — the shape `47a`'s fourth row established. **A clause a row cannot reach is not a
+safety margin** (#97), and the row that would have proved it is worth keeping anyway when it is the
+thing that goes red if the platform changes its mind.
+
+### What the second row cost, and what it taught
+
+Building it took three attempts and each one was a measurement:
+
+- `page.goto` from the row while the helper's own `goto` is still pending aborts it
+  (`net::ERR_ABORTED`), so the row waits for the first document's `load` — for its own load and not
+  for a duration.
+- Holding the intermediate document's call with `gate` held **one** of two: the dashboard asks
+  `/api/teaching/sections` twice, the second went through, was answered inside its own document, and
+  the waiter took it — so the row was measuring `keepBody` racing a navigation the row itself
+  started, and passed for the wrong reason on the broken code. **A gate that holds one request is a
+  claim about how many the screen makes.** What holds them all is a route the row opens itself.
+- With `gate` installed before the landing screen had been drawn, the held call was the *outgoing*
+  document's and the row measured nothing. The landing is therefore waited for by what it drew, and
+  the row says so: **assert the precondition where it is used** (#51).
+
+### The proof is a control, twice
+
+Harness code is not what `mutation/` mutates, so what stands in for a mutant is the control run by
+hand — #160's precedent. Put `page.on('framenavigated')` back as the fence and `168a`'s first row
+dies with `openAt`'s sentence while the other five rows of the three specs stand; remove
+`asked.clear()` and nothing dies, which is the number that took the clause out. One row killed and
+the rest standing is what says a row is about its own subject (#97), and it holds for a control as
+much as for a mutant.
