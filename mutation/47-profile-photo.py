@@ -42,9 +42,14 @@ So the claim is real and the suite cannot put it at risk - freezing
 `requestAnimationFrame` from the page does not reproduce it, because the frame
 loop bound its own reference at import. Row 4 stays as a net and the reset is
 proved by the hand-walk. The presence itself is not this ticket's; it is shared
-with the change-password box in the same navbar, and is #167 - which also carries a
-second mechanism measured after it was opened: that box's state lives in `Navbar.js` itself and
-nothing clears it on the way out, which is provable at this seam.
+with the change-password box in the same navbar, and it split in two. #167 held the
+second mechanism, measured after it was opened - that box's state lives in `Navbar.js`
+itself and nothing cleared it on the way out, which is provable at this seam - and it
+is closed: every dialog now clears its own state on the way out. **The presence is
+#169**, which is a question for the owner rather than a task, because every way to
+remove the node changes animation timing people see. Two things it asks not to do:
+do not write a mutant for a claim the harness cannot put at risk, and do not delete
+row 4 of `47a`, which is a net on purpose.
 """
 
 from harness import main
