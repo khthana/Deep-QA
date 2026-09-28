@@ -341,7 +341,7 @@ read came back with six names where five belonged. Seven more card-and-grid scre
 `openAt(page, path, waitForX)` and no settle point at all - `achievements-`, `behaviors-`, `clos-`,
 `plan-`, `rubric-criteria-`, `scores-` and `plo-mapping-screen.js`, counted on 28 September 2569.
 That is a census with a date on it rather than a claim that they are safe, and the date is what
-expires it.
+expires it; #171 carries it, one screen at a time.
 
 Four others were removed rather than fixed, and #64 is the record of why. They were counts read after a *refused*
 import in `11b` and `14b`. `ImportPanel` calls `onImported` only on success, so a refused import never re-fetches the

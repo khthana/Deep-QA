@@ -4805,12 +4805,11 @@ different again: eleven of the screens that go through `untilDrawn` or `settled`
 that one hook behind fifteen screens turns fifteen claims into one no mutant can measure apart, and
 #125's is that the same hole in two guards is two tickets when the blast radius differs. The screen
 that was *measured* to be racing got the settle point, its own row and its own control; the other
-seven are a census taken on 28 September 2569 and listed above.
+seven are a census taken on 28 September 2569, listed above and carried by #171.
 
 **Which is a deferral, and a deferral in prose is one nobody can find.** The paragraph above was two
-files naming seven screens and no ticket until the review said so - #119's rule exactly. The list
-belongs in the tracker; what belongs here is why it is seven tickets' worth of measuring and not one
-refactor.
+files naming seven screens and no ticket until the review said so - #119's rule exactly. The list is
+**#171**; what belongs here is why it is seven screens' worth of measuring and not one refactor.
 
 **The ticket also asked which sites are *deliberate* settle points, and only three of them can be
 answered here.** `groupsOnScreen`, `namesOnScreen` and `namesInCategory` are raw reads that now sit
