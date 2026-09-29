@@ -4886,3 +4886,88 @@ The row also carried a sentence that had expired —
 walked on 21 August 2569 with all three accounts, and the table counts 18 ⚙ and 1 ☑ to match.
 **A claim written in prose expires like a number** (#130); here the prose and the mark in the same
 row disagreed, and the mark was the one telling the truth.
+
+## #81 — the hat that changed while the person stood still
+
+#81 came out of the hand-walk of `docs/acceptance/12-role-grants.md` row 4 on 21 August 2569.
+Putting on another hat redrew the left menu and left the address alone, so the breadcrumb read
+*ข้อมูลหลัก / รายวิชาที่รับผิดชอบ* — the heading of one menu over the page of another.
+
+**The ticket's reason for being harmless had expired, and that reason is what set its priority.**
+Its §*ทำไมยังไม่เจ็บวันนี้* said both addresses in the walk were `NotBuiltYet`, so whoever landed
+on one saw *หน้านี้กำลังพัฒนา* whatever hat they wore: no data leaked and nothing was refused.
+`AppRoutes.js:188` now draws `<Rubrics />` and `:214` draws `<TeacherDashboard />`. So the state the
+ticket wrote down as a *prediction* — the stranded screen asks for its data under the new grant, is
+refused, and the refusal reads as the consequence of switching — was the state on the day it was
+taken. The standing rule is that a ticket's *What is wrong* is a claim with a date on it; this is
+the same species one step over. **A ticket's reason for not hurting yet is also a claim with a date,
+and it is the claim that decided how long the ticket waited.** Reading it as still true would have
+been an argument for closing the ticket as premature.
+
+**The fix reuses a rule rather than adding an opinion.** `landingPath` has been the answer to *where
+does this grant belong* since #66, and #120 left it in `menus.js` with exactly one caller,
+`GuestRoute`. Putting on a hat is the same question sign-in asks, so it gets the same answer, and
+the switch now navigates there with `replace`. `?? '/main'` is `GuestRoute`'s own fallback for the
+same `null`. The navigation lives in `RoleDropdown` and not in `switchRole`, because `AuthProvider`
+is mounted outside the `Router` (`index.js`) and has no `useNavigate` to call — the provider is
+where the state changes and the component is where the routing exists.
+
+**The ticket's second candidate was declined on a measurement of what it would have to know.** It
+offered *always land on the new grant's home* or, at least, *move only when the current route is not
+in the new menu*. The second needs a predicate for *is this path in this menu*, and `menus.js`' own
+docstring says why that is not a lookup: the teacher's second group is about one open ตอนเรียน and
+is sliced out until one is open, so for every teacher sub-page the honest answer is *it depends what
+is open*. The predicate would hold a copy of `SidebarItem`'s slicing rule, and a copy of a rule holds
+none of the rule's letters. What the first candidate costs is the case the second would have kept:
+two grants that both reach the screen someone is standing on — a department administrator and a
+committee member both reach Rubric กลาง — are moved anyway. That is written on the row, because a
+cost nobody wrote down is a defect somebody finds.
+
+**A row that passed *because of* the defect had to be rewritten the day it was fixed.** `10a` row 4
+switched to the teacher and then called `page.reload()`, and it only landed back on
+`/main/course-in-program` because a switch left the address alone. Predicted before the fix, then
+measured: with the fix in, that one row failed and nothing else did. It opens the address itself
+with `goto` now, and the reason is a comment on the row — the comment is what says which day that
+was.
+
+**And a wait added to a shared helper would have taken the claim away from the row that makes it.**
+`switchTo` resolves on the server's answer and has fourteen callers; a switch now sets a navigation
+going, so the obvious tidy-up is to have the helper wait for the landing. Two measurements say not
+to. The callers are not racing it: those that then read a screen open it through `openAt`, whose
+fence is the new document's commit (#160, #168), so the calls a switch sets off belong to the
+outgoing document and are refused by construction; the rest read the API through `page.request`,
+which no page navigation touches. And the landing is `81a`'s subject. **A wait in a shared helper
+turns one row's claim into every caller's premise, and the tell is a mutant that kills the whole
+suite instead of two rows** — `staysput` would have timed out inside the helper for all fourteen.
+Measured as it stands, it kills exactly `81a`'s two rows and leaves all eleven of `10a` standing:
+the ⚙ is the row's own. It is the same trap as an attribute a locator is built on (#85, #111), met
+in a helper's wait rather than in a locator.
+
+**What the sweep printed is worth reading twice.** Both rows died at `expect.poll`'s timeout, which
+is what a mutant that stopped the application would also print (#139). The eleven rows of `10a` that
+passed are what says it did not, and the poll is an assertion rather than a wait here for a reason
+the rule turns on: the thing read — `page.url()` — exists in both worlds, and only its value
+differs.
+
+**A finding that is not this ticket's to fix: the sheets' cited line numbers.** The mutation table
+of `docs/acceptance/10-application-shell.md` cites eight line numbers into `10a`, and not one of
+them lands on the assertion it names — 96 is blank, 105 is `}) => {`, 131 is a comment, 342 is a
+`toHaveCount(0)` belonging to another row. The file has grown under them. A script that asks whether
+each `บรรทัด N` in every sheet lands on an assertion reports 124 of 184 citations missing, but that
+number is the instrument's, not the sheets': a citation does not say which file it points into, and
+many point at CSV lines, at source files, or at a layout. **So the honest output is not a mass
+correction but a ticket**, and the shape of the fix is visible in what this one did instead: the new
+row for `staysput` cites its assertions **by name**, which is a string a grep can check and a line
+number never was. #81's own edit shifted four of sheet 10's eight, and they were wrong before it.
+
+**What the review caught was one mark and one sentence, and both are old rules met again.** The
+first draft of the new row on `docs/acceptance/12-role-grants.md` asked for two things — the address
+moved *and* the breadcrumb belongs to the page it is over — and marked the pair ⚙ on the strength of
+`81a`, which asserts `pathname` and nothing else. A row that names two ways in is two rows (#66), and
+the breadcrumb's wording is appearance, which stays hand-walked; so it is two rows now, ⚙ and ☐, and
+the ☐ is a real addition to the walk queue rather than a tidier way of writing the same claim. The
+second was a sentence in `switchTo`'s docstring saying its callers read their screen through
+`openAt`. Two of them do not — `10a` row 4, changed by this very ticket, and `51a` — they hold their
+own waiter across a bare `goto`. The substance held, because a `goto` commits a document too, but the
+sentence was the claim (#68, #133) and it named a helper where it should have named the property. It
+also carried a hand-kept *fourteen*, which was right on the day and is now a `grep` instead.

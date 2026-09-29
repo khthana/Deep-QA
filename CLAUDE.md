@@ -58,6 +58,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
   its own table (#133), a key's name read as its text (#127), an inference drawn from a
   measurement that was itself correct (#165) — and the sheet itself asking for the defect (#89).
+- **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
+  decided how long the ticket waited, so reading it as still true is an argument for closing the
+  ticket unfixed. What the ticket wrote down as a prediction can be the state on the day it is
+  taken. (#81)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -239,6 +243,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A helper that waits for the response has not waited for the drawing** — the first read after it
   can see the empty state, and no amount of retrying saves a wrong *expected* value. Wait for what
   the answer carried to be what the screen shows. (#132)
+- **But a wait *added* to a shared helper turns one row's claim into every caller's premise** — the
+  tell is a mutant that would kill the whole suite instead of the two rows written to catch it.
+  Before adding one, ask whether the callers are racing anything: a caller that opens a screen
+  through `openAt` is fenced by construction. (#81)
 - **A race between an answer and its drawing is measured by slowing the renderer, not by rerunning
   the row** — a rerun passes, a CPU throttle gives a red and a green. But a read racing an *effect*
   is hidden by that same throttle, which serialises the read behind the pending work: the knob is for

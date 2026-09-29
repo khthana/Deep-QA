@@ -54,6 +54,34 @@ const roleOption = (page, label) =>
  * is that a switch is a request the server decides, not a redraw of the menu -
  * a helper that only clicked and waited for the label to change would pass
  * against the inherited localStorage version this replaced.
+ *
+ * ## Since #81 a switch also navigates, and this deliberately does not wait
+ *
+ * Putting on a hat now moves the person to that grant's own landing, so the
+ * moment this returns there is a client-side navigation on its way and the
+ * shell is asking for the landing's data. Nothing here waits for it, for two
+ * measured reasons.
+ *
+ * The callers are not racing it, and the property that says so is the **document
+ * commit**, not any one helper. Every caller that then reads a screen asks for
+ * that screen itself, and the calls this switch sets off were made by the
+ * document being replaced. Where the caller goes through `openAt` that is
+ * enforced rather than argued - its fence collects only what the new document
+ * asked for, so an answer to the old document's question is refused however late
+ * it arrives (#160, #168). Two callers instead hold their own waiter across a
+ * bare `page.goto` - `10a-shell.spec.js` row 4 and `51a-renewal-across-a-switch`
+ * - and for them the argument is the narrower one #160 describes: their
+ * predicates name a path this switch's navigation does not fetch. The remaining
+ * callers read the API through `page.request`, which no page navigation touches.
+ * The list is `grep -rn 'switchTo(' e2e/tests`, not a number written here.
+ *
+ * And a wait here would take the claim away from the row that makes it. Where
+ * a switch lands is `81a`'s subject, asserted there with `expect.poll`; if this
+ * helper waited for it, the landing would become a premise of every call site
+ * instead - `81-a-switch-lands-in-the-new-role.py`'s one mutant would kill every
+ * switching row in the suite by timing out in here, and the two rows written to
+ * prove it would prove nothing of their own. The sweep is the evidence: with the
+ * navigation removed, `81a` lost both rows and all eleven of `10a` stood.
  */
 async function switchTo(page, label) {
   await actingButton(page).click();

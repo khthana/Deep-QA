@@ -138,9 +138,15 @@ test.describe('the shell, in a browser', () => {
 
     await switchTo(page, TEACHER);
 
+    // This row used to reload, and the reload only landed back here because a
+    // switch left the address alone - the defect #81 fixed. The claim above is
+    // unchanged and is now the row's own doing rather than the shell's: the
+    // second visit is asked for, the way the first one was. Written on the row
+    // because a row that needs a defect to be reachable has to be rewritten the
+    // day it is fixed, and the comment is what says which day that was.
     const [asTeacher] = await Promise.all([
       waitForProgramSubjects(page),
-      page.reload(),
+      page.goto(PROGRAM_SUBJECTS),
     ]);
     expect(asTeacher.status()).toBe(403);
     await expect(page.getByText(REFUSALS.forbidden)).toBeVisible();

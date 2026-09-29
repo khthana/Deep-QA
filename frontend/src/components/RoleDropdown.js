@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 
 import { useAuth } from '../context/AuthContext'
 import { roleName } from './MapRole'
+import { landingPath } from './SidebarItem/menus'
 import ContentMotionDIV from './ContentMotionDIV'
 
 /**
@@ -15,12 +17,26 @@ import ContentMotionDIV from './ContentMotionDIV'
  * says that is not a role switch. Here the choice is a request, the server
  * decides whether the grant is held, and the answer is what gets displayed —
  * so the sidebar cannot come to show a hat the server is not honouring.
+ *
+ * It also decides where the switch leaves you, which is #81. The sidebar used
+ * to be redrawn around somebody still standing on the old grant's route, so
+ * the next thing that screen asked for was refused and the refusal read as the
+ * consequence of switching. The landing is `landingPath`'s answer - the same
+ * rule `GuestRoute` has used since #66 - because putting on a hat is the same
+ * question sign-in asks, and a second opinion about where a role belongs is
+ * the shape #66 spent a ticket removing.
+ *
+ * This is the only control that switches grants; a second one would have to do
+ * this too, and the navigation lives here rather than in `switchRole` because
+ * `AuthProvider` is mounted outside the `Router` (`index.js`) and has no
+ * `useNavigate` to call.
  */
 function RoleDropdown({ setAlert }) {
   const { roles, acting, switchRole } = useAuth()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const dropdownRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -47,7 +63,18 @@ function RoleDropdown({ setAlert }) {
     if (isActing(grant)) return
     setBusy(true)
     try {
-      await switchRole(grant)
+      const next = await switchRole(grant)
+      // `replace`, because the route being left is one the new grant has no
+      // menu entry for: pushing would leave it one Back away, still wearing the
+      // hat that cannot use it, which is the state this is here to end.
+      //
+      // `?? '/main'` is `GuestRoute`'s own fallback for the same `null`, and
+      // `menus.js` says why the answer can be `null` at all and why each caller
+      // decides for itself: a role code the menu table has never heard of. The
+      // server has just confirmed the grant is held, so reaching it means the
+      // table and the role list have come apart - `/main` is then somewhere to
+      // stand rather than a guess at what they meant.
+      navigate(landingPath(next.acting.role_id) ?? '/main', { replace: true })
     } catch (err) {
       // A grant revoked between the page loading and this click comes back
       // 403 roleNotHeld. Without this the promise rejects, the picker closes
