@@ -5087,3 +5087,83 @@ in `171a`'s docstring, pointed it at #172 — the acceptance-sheet ticket, nothi
 left it there. A deferral written into prose and not into the tracker is a decision nobody can find
 (#119), which is the sentence #171 exists to close, so it is a ticket now, together with the three
 chart-and-report screens the census missed.
+
+## #174 — the charts that were read before they drew, and the census that counted a shape
+
+#171 closed seven screens and wrote two things down as left over rather than leaving them in prose
+(#119): the read after `27a`'s delete, and three chart-and-report screens its census had not asked.
+This ticket is those four sites. Nothing about the diagnosis was in doubt either — and what it found
+is that **#171's census had counted a shape and not the species**, that one of the four windows is
+the stale one rather than the blank one, and that a row written against a blank screen can be green
+for a reason that has nothing to do with the fix.
+
+**The species is not *card-and-grid*, it is *is there a settle point in front of the read*.**
+#171 counted screens that draw cards and grids, which is a property of the markup. What decides the
+risk is the line between the opener and the raw read: `all-students-screen.js` was in the count and
+is **not** a hole, because in every spec that calls `openHeatmap` a `showIntake` stands **between**
+the open and the read — `43a:125` then `:128`, `43a:155` then `:167`, `45a:189` then `:203` — and
+that helper waits for the cohort line the screen draws from the answer (#132). The first draft of
+this paragraph said *in front of `openHeatmap`*, which is the opposite of where it sits and would
+have sent the next reader looking for something that is not there; the review greped it. Its same-named twin in
+`program-results-screen.js` waits for the response and nothing after it, and returns `null` the
+moment the screen is already on that intake — **a guard that greps the same is not the same guard**
+(#107), and the two named `showIntake` sit four files apart.
+
+**One of the four windows is stale, and the row written for a blank one passes on it.** On the
+by-intake report a change of intake leaves the last cohort's figures drawn until the new answer is
+folded in (#149). The first draft of that row opened the screen and read a cell straight away, which
+is a read of something that does not exist yet: `innerText` **waits** for it and then reads the right
+answer (#139) — measured, the read finished 820ms after the switch on a screen that had never drawn.
+The row that holds the defect settles the first intake, so that there is a table to be stale, then
+changes intake and asks whether what it reads is what the new answer carried — built where the two
+cohorts **disagree** on that figure, and asserting that they disagree where it is used (#51, #117).
+
+**And the probe in front of the read was `response.json()`.** #170's rule is that a round trip is a
+turn for the renderer, so a probe goes behind the read it is about; here the probe was not a
+`page.evaluate` but the answer's own body, because nothing consumes it until the screen's
+continuation does — which is the very thing the window holds back. The read goes first, and
+`wentThroughTheWindow` and the body come after it.
+
+**Six settle-point sites and four helpers, each with that screen's own locator and count** (#68, and
+the ticket asked). Two clauses per helper, covering each other's blind spots as #171's do: a count of
+what the answer carried, and a text or a number the answer named. `untilChartDrawn` counts the table's
+outcome rows and names one column header per year, which is the clause that holds when a year is
+**ticked onto a chart already drawn** and the row count does not move. `untilRollDrawn` counts the
+picker's boxes and names the subject line. `untilCohortDrawn` matches the cohort sentence on the
+intake **and its size** — the strongest clause available, because it is two numbers the answer named —
+and counts the outcome rows where the cohort is not an empty one. Each skips its count where the
+screen draws a sentence instead of a table, and says so.
+
+**The settle point goes at the request, which on three of the four is more than one site.** #171's
+last lesson arrives here as arithmetic: `openResults` and `addYear` are two requests on #36,
+`openReport` and `showIntake` are two on #42/#44, and `removeClo`'s reload is a request that follows a
+write. The reload's wait is registered **before** the click, because it can answer while the DELETE's
+own response is still on its way back to the helper; and a refused DELETE — `27a`'s row for a CLO that
+behaviours hang off — reloads nothing, so nothing is waited for on an answer that did not succeed.
+
+**The numbers, in the order the ticket asked for them.** With the answer held 400ms, every one of the
+five rows written first read wrongly on **ten runs out of ten** — the chart's axes `[]`, the roll `[]`,
+the by-intake cell holding the previous cohort's figure, and the deleted CLO's code still in the list.
+Then all five went **green from the same reads**, which is the half #171 paid for: a red is not a
+measurement until the same read has been seen green. A sixth row was written for the by-intake
+**opener**, which the first pass had left without a row of its own — the review found it, and it was
+measured the same way rather than excused: **ten red of ten** with that site's settle point out and
+**ten green of ten** with it in. That site's window is the blank one, where a read of a cell waits
+instead of failing, so the row reads the **list of outcome codes** once, raw: `[]` on the undrawn
+screen and thirteen codes on the drawn one. The codes and not the row count, although the count is
+the cheaper read — the settle point's own clauses are the cohort sentence and the row count, and a
+row that re-read the row count would be restating the helper rather than asking the screen (#96).
+
+**The review took the probe out of four rows, and #170's rule is the reason.** Four of the six rows
+had `wentThroughTheWindow` — a `page.evaluate` — standing in front of the read they are about, which
+is the very thing the by-intake row's own comment warns against: a round trip is a turn for the
+renderer. At 400ms it changed nothing and the controls killed those rows anyway, but as a standing
+net at the natural 11–22ms gap the probe can hand the renderer the turn that hides a regression. The
+read is now the first thing every row does, and the probe and the body come after it.
+
+**The proof is six controls, run by hand** (`e2e/support/` is not what `mutation/` mutates — `160a`
+says why). Each settle point was taken out alone and `174a` run together with that screen's own spec,
+so one run answers both halves. All six killed **one row — their own** — and left the other five and
+the whole of `36a`, `37a`, `42a`, `44a`, `27a` and `96a` standing. That is what says the six sites are
+six claims rather than one: had the helpers been merged into a single shared hook, one control would
+have killed all six and none of them would have been measurable apart (#68).

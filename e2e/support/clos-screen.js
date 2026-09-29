@@ -117,6 +117,21 @@ async function submitClo(page, fields, method) {
 /**
  * Presses the bin on one card and answers the dialog.
  *
+ * Confirming waits for the **reload** that follows the write before it hands
+ * that write back — #174's half of #171. The screen reloads its list after a
+ * successful DELETE, and until that answer is drawn the card that was removed
+ * is still on screen: the **stale** window rather than the blank one (#149), so
+ * a read asserting only *not empty* would pass on it. Measured with #170's
+ * fixture on 29 September 2569, `codesOnScreen` still held the removed code on
+ * **ten deletes out of ten**. The wait is registered before the click, because
+ * the reload can answer while the DELETE's own response is still on its way
+ * back here. A refused DELETE — `27a`'s row for a CLO that behaviours hang off —
+ * answers 409 and reloads nothing, so the wait is collected only on the 204 and
+ * the other answers hand it to `catch` rather than awaiting it. Collected and
+ * not swallowed: a reload wait that gave up quietly would leave the helper
+ * behaving exactly as it did before this was written, and look like a pass
+ * (#52 — anything written for timing must not be able to decide anything).
+ *
  * Confirming hands back the write. Cancelling hands back the list of DELETEs
  * that were sent while the dialog was up — which is `[]` when the cancel did
  * its job, and is the only honest way to assert that. Asserting instead that
@@ -139,12 +154,15 @@ async function removeClo(page, code, { confirm = true } = {}) {
     page.off('request', watch);
     return deletes;
   }
+  const reloaded = waitForClos(page);
   const [response] = await Promise.all([
     page.waitForResponse(
       answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'DELETE',
     ),
     page.getByRole('button', { name: 'ลบ', exact: true }).click(),
   ]);
+  if (response.status() === 204) await untilClosDrawn(page, await reloaded);
+  else reloaded.catch(() => {});
   return response;
 }
 

@@ -343,9 +343,30 @@ read came back with six names where five belonged. Seven more card-and-grid scre
 own locator and count rather than from one shared helper (#68): `untilClosDrawn`,
 `untilBehaviorsDrawn`, `untilCriteriaDrawn`, `untilPlanDrawn`, `untilScoresDrawn`, `untilGridDrawn`
 and `untilListDrawn`. Each read wrongly on **ten opens out of ten** with the answer held 400ms, and
-`171a` holds a row per screen with a hand-run control behind it. What is **not** closed is the read
-after `27a`'s delete and three chart-and-report screens the census missed, because it counted
-card-and-grid screens rather than the species; both are [#174](https://github.com/khthana/Deep-QA/issues/174).
+`171a` holds a row per screen with a hand-run control behind it.
+
+That census counted **card-and-grid screens**, which is a property of the markup and not the species:
+what decides the risk is whether a settle point stands between the request and the raw read.
+Counted that way on 29 September 2569 there were four sites left, and **#174 closed them the same
+day**: `untilChartDrawn` on #36, `untilRollDrawn` on #37, `untilCohortDrawn` on #42/#44, and the
+reload wait inside `clos-screen.js`'s `removeClo`, which is the read after `27a`'s delete. Three of
+those four are wired at more than one site, because that is where the requests are — `openResults`
+and `addYear`, `openReport` and `showIntake` — and `174a` holds a row per site with a hand-run
+control behind it, each killing its own row and nothing else. `all-students-screen.js` was in the
+count and is **not** a hole: in every spec that calls `openHeatmap` a `showIntake` stands between
+the open and the raw read — `43a:125` then `:128`, `43a:155` then `:167`, `45a:189` then `:203` —
+and that helper waits for the cohort line the screen draws from the answer (#132). Its same-named
+twin on the by-intake report waited for the response only — a guard that greps the same is not the
+same guard (#107). What the census cannot see is exactly that: the line between the open and the
+read may be the settle point itself.
+
+Two of #174's windows are the stale kind rather than the blank kind, and they are measured
+differently. On the by-intake report a change of intake leaves the previous cohort's figures drawn,
+so the row settles one intake, switches to another, and asserts that the two **disagree** on the
+figure it reads. On the opener of the same screen nothing is drawn at all, where a read of a cell
+*waits* rather than fails (#139) — so the row there takes a raw **count**, which is `0` on an undrawn
+screen. And the probe that changes the read need not be a `page.evaluate`: `response.json()` is one
+too, because nothing consumes the body until the screen's continuation does. The read goes first.
 
 Two of those seven are not only at an open, and that is the part worth carrying forward: the same
 headers-only wait is behind every control that re-reads a screen. `rubric-criteria-`'s list is

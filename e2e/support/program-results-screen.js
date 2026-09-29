@@ -22,14 +22,54 @@ const PATH = '/main/programLevelByIntake';
 
 const REPORT_API = '/api/program-results/by-intake';
 
-/** Opens the screen and waits for the report the pickers default to. */
+/**
+ * Waits until what the answer carried is what the report is showing — #174.
+ *
+ * `waitForResponse` resolves when the answer's headers land, and this screen
+ * draws its cohort line and its table from the body that arrives after them.
+ * The window it opens is the **stale** one as often as the blank one: changing
+ * intake leaves the last cohort's figures drawn until the new answer is folded
+ * in, and a read that only asked whether a cell held a number would pass on
+ * them (#149). Measured with #170's fixture on 29 September 2569, the figure a
+ * cell held after a change of intake was the *old* cohort's on **ten changes
+ * out of ten**.
+ *
+ * Two clauses, because each covers the other's blind spot:
+ *
+ * - The cohort line names the intake **and** its size, which is what tells one
+ *   answer from the one before it: this is the screen's own sentence, and it is
+ *   where `all-students-screen.js`'s same-named helper already waits (#132).
+ * - One table row per outcome the answer carried, which is the clause that
+ *   holds where two cohorts happen to agree on the sentence's numbers.
+ */
+async function untilCohortDrawn(page, response) {
+  const answered = await response.json();
+  await expect(cohortLine(page)).toContainText(
+    `ปีรับเข้า ${answered.admission_year} · ${answered.cohort.student_count} คน`,
+  );
+  // A cohort measured against nothing is drawn as a sentence rather than as
+  // thirteen rows of dashes, so there is nothing to count on that one.
+  if (!answered.empty) {
+    await expect(page.locator('table tbody tr')).toHaveCount(answered.plos.length);
+  }
+  return response;
+}
+
+/**
+ * Opens the screen and waits for the report the pickers default to.
+ *
+ * The drawing is waited for only on an answer that succeeded: an account that
+ * reaches no curriculum is refused, and there is no report on that screen.
+ */
 async function openReport(page) {
-  return openAt(page, PATH, (fresh) =>
-    fresh.waitForResponse(
+  return openAt(page, PATH, async (fresh) => {
+    const response = await fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === REPORT_API && answer.request().method() === 'GET',
-    ),
-  );
+    );
+    if (response.ok()) await untilCohortDrawn(fresh, response);
+    return response;
+  });
 }
 
 /**
@@ -65,6 +105,9 @@ async function showIntake(page, admissionYear) {
     ),
     picker.selectOption(admissionYear),
   ]);
+  // At the request and not only at the opener (#174's third criterion): this is
+  // where the stale window opens, because here there is a table already drawn.
+  if (response.ok()) await untilCohortDrawn(page, response);
   return response;
 }
 
@@ -103,4 +146,5 @@ module.exports = {
   verdictOf,
   sourceButton,
   drillDown,
+  untilCohortDrawn,
 };

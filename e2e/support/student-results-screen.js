@@ -1,5 +1,7 @@
 'use strict';
 
+const { expect } = require('@playwright/test');
+
 const { DASHBOARD } = require('./teaching-screen');
 const { openAt } = require('./navigation');
 
@@ -29,14 +31,56 @@ const API = (sectionId) => `/api/teaching/sections/${sectionId}/learning-details
 /** The label the Section's own line carries, in the chart and in the table. */
 const AVERAGE = 'ค่าเฉลี่ยของตอนเรียน';
 
-/** Opens the screen and hands back the read, whatever it answered. */
+/**
+ * Waits until what the answer carried is what the picker is showing — #174.
+ *
+ * `waitForResponse` resolves when the answer's headers land, and this screen
+ * draws its roll and its chart from the body that arrives after them. Measured
+ * with #170's fixture on 29 September 2569, `offeredCodes` read `[]` and
+ * `axesOf` read `[]` on **ten opens out of ten**.
+ *
+ * Two clauses, because each covers the other's blind spot:
+ *
+ * - One box per student the answer carried, which is this screen's own count
+ *   (#68): next door on #36 the same-looking read counts outcomes.
+ * - The subject line, which is the clause that holds for a ตอนเรียน with nobody
+ *   on the roll, where the count is `0` before the screen has drawn anything
+ *   and after.
+ *
+ * That second clause matches a **substring** on purpose, unlike `untilClosDrawn`'s
+ * `{ exact: true }` four files away: this screen draws the code and the subject's
+ * name in one element — `{subject_id} {subject_name_en}` — so an exact match would
+ * find nothing on a screen that is fully drawn. What it claims is that the line
+ * carrying the answer's code is on the page, not that an element equals it (#118).
+ */
+async function untilRollDrawn(page, response) {
+  const answered = await response.json();
+  // A ตอนเรียน nobody has marked draws a sentence where the picker and the chart
+  // go, so there is no box to count — the roll is only offered beside a chart.
+  if (!answered.empty) {
+    await expect(page.locator('input[type="checkbox"][aria-label]')).toHaveCount(
+      answered.students.length,
+    );
+  }
+  await expect(page.getByText(answered.section.subject_id).first()).toBeVisible();
+  return response;
+}
+
+/**
+ * Opens the screen and hands back the read, whatever it answered.
+ *
+ * The drawing is waited for only on an answer that succeeded: the refusal rows
+ * open somebody else's ตอนเรียน and there is no roll on that screen to wait for.
+ */
 async function openStudentResults(page, sectionId) {
-  return openAt(page, path(sectionId), (fresh) =>
-    fresh.waitForResponse(
+  return openAt(page, path(sectionId), async (fresh) => {
+    const response = await fresh.waitForResponse(
       (answer) =>
         new URL(answer.url()).pathname === API(sectionId) && answer.request().method() === 'GET',
-    ),
-  );
+    );
+    if (response.ok()) await untilRollDrawn(fresh, response);
+    return response;
+  });
 }
 
 /**
@@ -74,4 +118,5 @@ module.exports = {
   path,
   search,
   studentBox,
+  untilRollDrawn,
 };

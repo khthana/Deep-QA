@@ -269,6 +269,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A red is not a measurement until the same read has been seen green** — the same rule from the
   failing side. A locator scoped to a heading the screen never draws reads empty drawn and undrawn
   alike, so ten reds of ten can mean nothing, and a fix built on them is wrong the same way. (#171)
+- **A census is evidence about the property it counted** — count by the mechanism, not by what the
+  screen draws: a census of *card-and-grid screens* missed three chart-and-report screens with the
+  same hole, because the species is *is there a settle point between the request and the read*. The
+  line that looks like it belongs to another helper may be the settle point, or may only share its
+  name. (#174)
 - **Anything written for timing must not be able to decide anything.** (#52)
 - **A waiter that matches a path and a method also matches the document the `goto` is replacing** — the
   answer it hands back is a body Chromium discards on commit. Ask which document asked, by identity and
