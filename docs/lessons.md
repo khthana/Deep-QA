@@ -4956,7 +4956,7 @@ them lands on the assertion it names — 96 is blank, 105 is `}) => {`, 131 is a
 each `บรรทัด N` in every sheet lands on an assertion reports 124 of 184 citations missing, but that
 number is the instrument's, not the sheets': a citation does not say which file it points into, and
 many point at CSV lines, at source files, or at a layout. **So the honest output is not a mass
-correction but a ticket**, and the shape of the fix is visible in what this one did instead: the new
+correction but a ticket** - [#173](https://github.com/khthana/Deep-QA/issues/173) - and the shape of the fix is visible in what this one did instead: the new
 row for `staysput` cites its assertions **by name**, which is a string a grep can check and a line
 number never was. #81's own edit shifted four of sheet 10's eight, and they were wrong before it.
 
