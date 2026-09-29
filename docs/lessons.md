@@ -5228,8 +5228,8 @@ so with the number.
 are the same mechanism and **not** the same symptom: an unescaped `|` inside a code span
 (`` `||--o{` ``, `` `POST /api/rubrics/create|update|delete|get-by-program` ``), which GitHub splits on
 just the same, but none of them is an acceptance row and none of them hides a mark. So no seventh
-marked row survives, which is what #172 asked; the nine are a separate ticket, written in the tracker
-rather than into this paragraph (#119).
+marked row survives, which is what #172 asked; the nine are #175, written in the tracker rather than
+into this paragraph (#119).
 
 **No new line in `CLAUDE.md`'s index.** #79's line already says *count the cells, not only the marks*
 and #123's already says *ask the catalogue, not a list*; what #172 adds is that this particular
