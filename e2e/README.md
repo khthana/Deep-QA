@@ -337,11 +337,28 @@ for the card count the answer carried *and* for the subject line that is only dr
 in - two clauses, because on a reload the subject line already says what the answer says, and on an
 open of an empty Section the count is `0` on both sides. The same helper is on the delete's reload, where the
 screen does not go blank but stale - #149 keeps the old list drawn while a reload is out, and the
-read came back with six names where five belonged. Seven more card-and-grid screens open with
-`openAt(page, path, waitForX)` and no settle point at all - `achievements-`, `behaviors-`, `clos-`,
-`plan-`, `rubric-criteria-`, `scores-` and `plo-mapping-screen.js`, counted on 28 September 2569.
-That is a census with a date on it rather than a claim that they are safe, and the date is what
-expires it; #171 carries it, one screen at a time.
+read came back with six names where five belonged. Seven more card-and-grid screens opened with
+`openAt(page, path, waitForX)` and no settle point at all - counted on 28 September 2569 and
+**closed by #171 on 29 September 2569**, each with its own `until…Drawn` written from that screen's
+own locator and count rather than from one shared helper (#68): `untilClosDrawn`,
+`untilBehaviorsDrawn`, `untilCriteriaDrawn`, `untilPlanDrawn`, `untilScoresDrawn`, `untilGridDrawn`
+and `untilListDrawn`. Each read wrongly on **ten opens out of ten** with the answer held 400ms, and
+`171a` holds a row per screen with a hand-run control behind it. What is **not** closed is the read
+after `27a`'s delete and three chart-and-report screens the census missed, because it counted
+card-and-grid screens rather than the species; both are [#174](https://github.com/khthana/Deep-QA/issues/174).
+
+Two of those seven are not only at an open, and that is the part worth carrying forward: the same
+headers-only wait is behind every control that re-reads a screen. `rubric-criteria-`'s list is
+reached by a click from #21's table as well as by an address, and the marks screen's grid is re-read
+by the กิจกรรม picker - which is where `34a` row 11's raw read actually sits. So the settle point goes
+on the **request**, wherever the request is made from, rather than on the opener. The first reading of
+the marks screen put it on the opener and measured ten reds that meant nothing: `columns` is scoped to
+the table headed รหัสนักศึกษา, the screen opens on whichever Activity the seed put first, that one is a
+group Activity, and a group grid is headed กลุ่ม - so the read was `[]` drawn and undrawn alike.
+`ActivityScores.js:269` is why: the screen takes the รายคน/รายกลุ่ม toggle from `activity.activity_type`
+so the row count a settle point waits for is the **answer's** to name and not the caller's. Once per
+Activity, though, and not once per answer - the effect is guarded by a ref keyed on the Activity's id,
+which is why the settle point belongs at an open and at the picker and **not** on a save's own re-read.
 
 Four others were removed rather than fixed, and #64 is the record of why. They were counts read after a *refused*
 import in `11b` and `14b`. `ImportPanel` calls `onImported` only on success, so a refused import never re-fetches the

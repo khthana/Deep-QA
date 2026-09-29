@@ -1,5 +1,7 @@
 'use strict';
 
+const { expect } = require('@playwright/test');
+
 const { BACKEND_URL } = require('./env');
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
@@ -31,9 +33,41 @@ const waitForBehaviors = page =>
     answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
   );
 
-/** Goes to one CLO's behaviours and hands back the read a row asserts on. */
+/**
+ * Waits until what the answer carried is what the screen is showing — #171.
+ *
+ * `clos-screen.js`' `untilClosDrawn` says why this is here and what the two
+ * clauses are for; measured with #170's fixture on 29 September 2569,
+ * `numbersOnScreen` read `[]` on **ten opens out of ten**.
+ *
+ * The รหัสวิชา rather than the CLO's own code is the drawn-from-`data` clause,
+ * because the heading reads *พฤติกรรมที่วัดผลได้ตาม CLO-1* — the code inside a
+ * sentence, which `getByText` would match on a substring whether the row asked
+ * for that or not.
+ */
+async function untilBehaviorsDrawn(page, response) {
+  const answered = await response.json();
+  await expect(page.getByRole('listitem').getByRole('heading')).toHaveCount(
+    answered.behaviors.length,
+  );
+  await expect(
+    page.getByText(answered.offering.subject_id, { exact: true }).first(),
+  ).toBeVisible();
+  return response;
+}
+
+/**
+ * Goes to one CLO's behaviours and hands back the read a row asserts on.
+ *
+ * The drawing is waited for only on an answer that succeeded: the refusal rows
+ * open a CLO that is not theirs and there is no list on that screen to wait for.
+ */
 async function openBehaviors(page, sectionId, cloId) {
-  return openAt(page, path(sectionId, cloId), waitForBehaviors);
+  return openAt(page, path(sectionId, cloId), async fresh => {
+    const response = await waitForBehaviors(fresh);
+    if (response.ok()) await untilBehaviorsDrawn(fresh, response);
+    return response;
+  });
 }
 
 /**
@@ -139,6 +173,7 @@ module.exports = {
   API,
   path,
   waitForBehaviors,
+  untilBehaviorsDrawn,
   openBehaviors,
   mySectionIds,
   myClos,

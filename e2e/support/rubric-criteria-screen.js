@@ -43,6 +43,36 @@ function waitForList(page) {
 }
 
 /**
+ * Waits until what the answer carried is what the table is showing — #171.
+ *
+ * `waitForList` resolves when the answer's headers land; the table is drawn from
+ * a body that arrives after them. Measured with #170's fixture on 29 September
+ * 2569, `listedNames` read one row — the loading row — where three belonged, on
+ * **ten opens out of ten**.
+ *
+ * Two clauses, and the first is unusual in being a number the screen draws from
+ * the answer itself: the sentence over the table reads *Rubric นี้มีเกณฑ์การให้คะแนน `data.total` ข้อ*,
+ * so waiting for it is waiting for this answer's own count rather than for a
+ * shape that a stale table could satisfy. The second is the row count, which is
+ * what says the table caught up with the sentence.
+ *
+ * On an **empty** rubric — `22a`'s first row opens one — the table draws a
+ * placeholder row instead of a body, so the row count is `1` against an answer's
+ * `0`. The count clause is therefore skipped there and the sentence, which reads
+ * *…ให้คะแนน 0 ข้อ* and is drawn only once the answer is in, is what holds.
+ */
+async function untilListDrawn(page, response) {
+  const answered = await response.json();
+  await expect(
+    page.getByText(`มีเกณฑ์การให้คะแนน ${answered.total} ข้อ`, { exact: false }).first(),
+  ).toBeVisible();
+  if (answered.criteria.length) {
+    await expect(page.locator('table tbody tr')).toHaveCount(answered.criteria.length);
+  }
+  return response;
+}
+
+/**
  * Opens one rubric's criteria the way a person does — from #21's list, through
  * the link that row offers.
  *
@@ -53,18 +83,23 @@ function waitForList(page) {
 async function openCriteriaVia(page, rubricRow) {
   const [response] = await Promise.all([waitForList(page), rubricRow.getByRole('link').click()]);
   expect(response.status()).toBe(200);
+  await untilListDrawn(page, response);
   return response;
 }
 
 /** Opens the screen by address, for the rows about somebody who typed one. */
 async function openCriteriaAt(page, rubricId) {
-  return openAt(page, `${RUBRICS}/${rubricId}/criteria`, fresh =>
-    fresh.waitForResponse(
+  return openAt(page, `${RUBRICS}/${rubricId}/criteria`, async fresh => {
+    const response = await fresh.waitForResponse(
       answer =>
         new URL(answer.url()).pathname === `/api/rubrics/${rubricId}/criteria` &&
         answer.request().method() === 'GET',
-    ),
-  );
+    );
+    // Only on an answer that succeeded: the rows that type an id they may not
+    // have get a refusal, and there is no table on that screen to wait for.
+    if (response.ok()) await untilListDrawn(fresh, response);
+    return response;
+  });
 }
 
 /**
@@ -154,6 +189,7 @@ module.exports = {
   table,
   criteriaPath,
   waitForList,
+  untilListDrawn,
   openCriteriaVia,
   openCriteriaAt,
   criterionRow,

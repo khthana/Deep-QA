@@ -211,7 +211,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A ticket that offers to de-duplicate is answered with what the merge costs the proof**, not only
   with what it saves the code — one hook behind fifteen screens turns fifteen claims into one no
   mutant can measure apart. And when a rule holds on many screens, the screen that proves it is chosen by
-  the census, not by the subject. (#68)
+  the census, not by the subject. **But an instrument is not an assertion** — a fixture a second file
+  needs is shared, because no row's claim lives in it. (#68, #171)
 - **When a ticket's proposal is declined, the mutant to write is that proposal made to run** — it
   is the only thing that turns *we chose otherwise* from a sentence on a sheet into a claim the
   suite holds. (#48)
@@ -265,6 +266,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   controls as well as reading them. (#164)
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
+- **A red is not a measurement until the same read has been seen green** — the same rule from the
+  failing side. A locator scoped to a heading the screen never draws reads empty drawn and undrawn
+  alike, so ten reds of ten can mean nothing, and a fix built on them is wrong the same way. (#171)
 - **Anything written for timing must not be able to decide anything.** (#52)
 - **A waiter that matches a path and a method also matches the document the `goto` is replacing** — the
   answer it hands back is a body Chromium discards on commit. Ask which document asked, by identity and

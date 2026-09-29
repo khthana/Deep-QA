@@ -1,5 +1,7 @@
 'use strict';
 
+const { expect } = require('@playwright/test');
+
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
 const { openAt } = require('./navigation');
@@ -32,9 +34,41 @@ const waitForPlan = page =>
     answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
   );
 
-/** Goes to one Section's plan and hands back the read a row asserts on. */
+/**
+ * Waits until what the answer carried is what the screen is showing — #171.
+ *
+ * `clos-screen.js`' `untilClosDrawn` says why this is here and what the two
+ * clauses are for; measured with #170's fixture on 29 September 2569,
+ * `headingsOnScreen` read `[]` on **ten opens out of ten**.
+ *
+ * The clause drawn from `data` is this Section's รหัสวิชา, and the count is the
+ * weeks the answer carried — which is also what makes this screen's settle point
+ * unable to see a *renamed* week, since the count does not move. The rows that
+ * follow such a save assert the new label through a retrying matcher.
+ */
+async function untilPlanDrawn(page, response) {
+  const answered = await response.json();
+  await expect(page.getByRole('listitem').getByRole('heading')).toHaveCount(
+    answered.weeks.length,
+  );
+  await expect(
+    page.getByText(answered.section.subject_id, { exact: true }).first(),
+  ).toBeVisible();
+  return response;
+}
+
+/**
+ * Goes to one Section's plan and hands back the read a row asserts on.
+ *
+ * The drawing is waited for only on an answer that succeeded: the refusal rows
+ * open somebody else's ตอนเรียน and there is no plan on that screen to wait for.
+ */
 async function openPlan(page, sectionId) {
-  return openAt(page, path(sectionId), waitForPlan);
+  return openAt(page, path(sectionId), async fresh => {
+    const response = await waitForPlan(fresh);
+    if (response.ok()) await untilPlanDrawn(fresh, response);
+    return response;
+  });
 }
 
 /** One week's card, found by the full label — number and title together. */
@@ -120,6 +154,7 @@ module.exports = {
   path,
   cardLabel,
   waitForPlan,
+  untilPlanDrawn,
   openPlan,
   mySectionIds,
   weekCard,

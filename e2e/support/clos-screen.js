@@ -28,9 +28,51 @@ const waitForClos = page =>
     answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
   );
 
-/** Goes to the screen for one ตอนเรียน and hands back the read a row is about to assert on. */
+/**
+ * Waits until what the answer carried is what the screen is showing — #171.
+ *
+ * `waitForClos` resolves when the answer's headers land; the screen draws from a
+ * body that arrives after them and from state React sets after that, and draws
+ * *nothing* in between — `data` starts `null`. Measured with #170's fixture on
+ * 29 September 2569, `codesOnScreen` read `[]` on **ten opens out of ten**.
+ *
+ * Two clauses, because each covers the other's blind spot:
+ *
+ * - The card count is what the answer carried, which is the clause that holds
+ *   where a list is already drawn and a second answer is on its way.
+ * - The รหัสวิชา is drawn only once `data` is set, which is the clause that holds
+ *   on an Offering with no outcomes in it, where the count is `0` both before the
+ *   screen has drawn anything and after.
+ *
+ * `.first()` on that second clause, unlike `untilActivitiesDrawn`'s sole match, and
+ * the reason is the locator rather than the screen: the รหัสวิชา is a short string in
+ * its own element, so any wrapper whose only text is that element's matches it too.
+ * The clause claims the code is **drawn**, not that it is drawn once; a row that
+ * wanted *once* would be asserting about markup nothing here is about.
+ */
+async function untilClosDrawn(page, response) {
+  const answered = await response.json();
+  await expect(page.getByRole('listitem').getByRole('heading')).toHaveCount(
+    answered.clos.length,
+  );
+  await expect(
+    page.getByText(answered.offering.subject_id, { exact: true }).first(),
+  ).toBeVisible();
+  return response;
+}
+
+/**
+ * Goes to the screen for one ตอนเรียน and hands back the read a row is about to assert on.
+ *
+ * The drawing is waited for only on an answer that succeeded: the refusal rows
+ * open somebody else's ตอนเรียน and there is no list on that screen to wait for.
+ */
 async function openClos(page, sectionId) {
-  return openAt(page, path(sectionId), waitForClos);
+  return openAt(page, path(sectionId), async fresh => {
+    const response = await waitForClos(fresh);
+    if (response.ok()) await untilClosDrawn(fresh, response);
+    return response;
+  });
 }
 
 /** The section ids this account teaches this term, straight off its own dashboard. */
@@ -110,6 +152,7 @@ module.exports = {
   API,
   path,
   waitForClos,
+  untilClosDrawn,
   openClos,
   mySectionIds,
   cloCard,

@@ -1,5 +1,7 @@
 'use strict';
 
+const { expect } = require('@playwright/test');
+
 const { DASHBOARD } = require('./teaching-screen');
 const { openAt } = require('./navigation');
 
@@ -33,9 +35,62 @@ const waitForScores = (page, sectionId) =>
       answer.request().method() === 'GET',
   );
 
+/**
+ * Waits until what the answer carried is what the grid is showing — #171.
+ *
+ * `waitForScores` resolves when the answer's headers land, and the grid is drawn
+ * from a body that arrives after them. Measured with #170's fixture on
+ * 29 September 2569, `columns` read `[]` on **ten opens out of ten**.
+ *
+ * The heading is the clause drawn only from `data`: it is `data.activity`'s own
+ * name rather than the picker's option — the two can disagree, which is what #133
+ * is about — so it says *this* answer is drawn rather than *an* answer.
+ *
+ * The count clause is the grid's rows, and **which rows those are is the answer's
+ * to say rather than the caller's**. This was measured the wrong way round first:
+ * the screen looks as though it opens on รายคน (`useState('student')`), and the
+ * first draft therefore took an option to switch the count off wherever a row
+ * might have pressed รายกลุ่ม. It does not open there. `ActivityScores.js:269` sets
+ * the toggle from `activity.activity_type`, so a group Activity draws the six กลุ่ม
+ * and not the fifty-seven students — which is why the probe read six rows where
+ * the roll said fifty-seven. The count is therefore taken from the same field the
+ * screen takes it from.
+ *
+ * **Once per Activity, though, and not once per answer** — the effect above is
+ * guarded by a ref keyed on `activity.id`, and that file's own comment says why:
+ * what the work was is a fact, how a teacher enters marks for it is a preference,
+ * and a save answers with a new `data.activity` object every time. So this helper
+ * is wired only where the Activity is new to the document: an open, whose ref
+ * starts empty, and `chooseActivity`, which is the press that changes it. A row
+ * that presses รายคน by hand keeps it — `setEntry` sends no request, so no answer
+ * lands and nothing here runs — and a save's own re-read does not snap it back,
+ * which is `34a` row 11's subject and not this helper's.
+ *
+ * What neither clause can see is an Activity the grid does not draw at all: the
+ * form is behind `clo_rows.length > 0 && rows.length > 0`, so on an Activity with
+ * no attributions, or one whose own kind of row is empty, there is no heading to
+ * wait for. That case returns without waiting rather than spending the timeout
+ * saying so, and the rows about it assert the empty state through retrying
+ * matchers.
+ */
+async function untilScoresDrawn(page, response) {
+  const answered = await response.json();
+  const drawn =
+    answered.activity?.activity_type === 'group' ? answered.groups : answered.students;
+  if (!answered.clo_rows?.length || !drawn?.length) return response;
+
+  await expect(gridHeading(page)).toHaveText(answered.activity.activity_name);
+  await expect(gridRows(page)).toHaveCount(drawn.length);
+  return response;
+}
+
 /** Opens the marks screen of one ตอนเรียน and hands back the marks read. */
 async function openScores(page, sectionId) {
-  return openAt(page, path(sectionId), fresh => waitForScores(fresh, sectionId));
+  return openAt(page, path(sectionId), async fresh => {
+    const response = await waitForScores(fresh, sectionId);
+    if (response.ok()) await untilScoresDrawn(fresh, response);
+    return response;
+  });
 }
 
 /**
@@ -57,6 +112,10 @@ async function chooseActivity(page, sectionId, activityId) {
     waitForScores(page, sectionId),
     picker.selectOption(String(activityId)),
   ]);
+  // The same settle point as the open's, because the same thing decides the
+  // grid: choosing an Activity re-reads it and the screen sets the toggle from
+  // what came back. `untilScoresDrawn` says where that was measured.
+  if (response.ok()) await untilScoresDrawn(page, response);
   return response;
 }
 
@@ -104,6 +163,16 @@ async function saveScores(page, sectionId) {
 const gridHeading = page => page.locator('form h2');
 
 /**
+ * The grid's own rows — one per person or per group, whichever the Activity is.
+ *
+ * Scoped to the form rather than filtered by a heading's words, unlike `columns`:
+ * the first column is named รหัสนักศึกษา or กลุ่ม depending on the Activity, so a
+ * filter on either one would find no table at all on the other kind — which is
+ * the first way this was written and what the measurement caught.
+ */
+const gridRows = page => page.locator('form table tbody tr');
+
+/**
  * The heading over the grid's first column, which is the group toggle's own
  * answer to *whose marks are these*. Read rather than the toggle's own styling
  * because what a row cares about is the grid it got, not which button looks
@@ -120,6 +189,7 @@ module.exports = {
   API,
   path,
   waitForScores,
+  untilScoresDrawn,
   openScores,
   activityPicker,
   chooseActivity,
@@ -130,6 +200,7 @@ module.exports = {
   saveButton,
   saveScores,
   gridHeading,
+  gridRows,
   columns,
   whoColumn,
 };

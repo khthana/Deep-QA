@@ -13,6 +13,7 @@ const {
   namesOnScreen,
   removeActivity,
 } = require('../support/activities-screen');
+const { holdBack, wentThroughTheWindow } = require('../support/late-answer');
 
 /**
  * #170 - the settle point `activities-screen.js` opens through.
@@ -73,33 +74,18 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** How late the screen's own continuation is, in milliseconds. */
-const LATE = 400;
-
 /**
- * Makes the activities answer reach the screen after it has reached the row.
+ * Which answer is held back, for `holdBack` to match against the pathname.
  *
- * Not a busy loop: the thread stays free, so the read is free to happen in the
- * window. `addInitScript` and not `page.route`, because a fulfilled route is
- * answered all at once - `waitForResponse` would resolve at the fulfil and
- * there would be no gap to read into.
+ * The wrapper itself lived here until #171 needed it too; `support/late-answer.js`
+ * holds it now, and says why the knob is the answer's lateness and not the
+ * machine's. Nothing about these two rows changed with the move except the name of
+ * the counter the precondition reads.
  */
-const arriveLate = lateBy => {
-  window.__lateArrivals = 0;
-  const real = window.fetch;
-  window.fetch = async (...args) => {
-    const url = String(args[0]?.url ?? args[0]);
-    const answer = await real(...args);
-    if (/\/api\/teaching\/sections\/\d+\/activities$/.test(url)) {
-      window.__lateArrivals += 1;
-      await new Promise(done => setTimeout(done, lateBy));
-    }
-    return answer;
-  };
-};
+const ACTIVITIES_PATH = '/api/teaching/sections/\\d+/activities$';
 
 test('row 1: a list whose answer arrives late is read drawn, not empty', async ({ page }) => {
-  await page.addInitScript(arriveLate, LATE);
+  await holdBack(page, ACTIVITIES_PATH);
 
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
@@ -111,7 +97,7 @@ test('row 1: a list whose answer arrives late is read drawn, not empty', async (
   // fixture if the screen actually went through it. A page that had been
   // served from somewhere the init script did not reach would read perfectly
   // and prove nothing.
-  expect(await page.evaluate(() => window.__lateArrivals)).toBeGreaterThan(0);
+  await wentThroughTheWindow(page);
 
   // Both reads are raw and non-retrying, which is the point: after the settle
   // point they are reads at a named settle point (#50), and without it they are
@@ -127,7 +113,7 @@ test('row 1: a list whose answer arrives late is read drawn, not empty', async (
 });
 
 test('row 2: the list a delete reloads is read after it is drawn, not before', async ({ page }) => {
-  await page.addInitScript(arriveLate, LATE);
+  await holdBack(page, ACTIVITIES_PATH);
 
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);

@@ -4971,3 +4971,119 @@ second was a sentence in `switchTo`'s docstring saying its callers read their sc
 own waiter across a bare `goto`. The substance held, because a `goto` commits a document too, but the
 sentence was the claim (#68, #133) and it named a helper where it should have named the property. It
 also carried a hand-kept *fourteen*, which was right on the day and is now a `grep` instead.
+
+## #171 — the seven screens, and the ten reds that meant nothing
+
+#170 fixed one screen of eight and wrote the other seven down as a census with a date on it. This
+ticket is that census carried, and it is the first ticket here whose work was *entirely* known
+before it started: seven screens, one hole, one shape of fix, four criteria naming them. Nothing
+about the diagnosis was in doubt. What it found instead was that **one of the seven measurements was
+not a measurement at all**, and that a hole described as belonging to *an open* belongs to every
+control that re-reads the screen.
+
+**The hole, once, so the rest is short.** `openAt(page, path, waitForX)` hands back the response when
+its **headers** land. The screen draws from a body that arrives after them, from `setData` after
+that and from React's next paint after that; a `allTextContents()` or `allInnerTexts()` on the very
+next line of a row is executed by the renderer too, so it does not retry and it does not wait — it
+reads whatever is there, which between the headers and the paint is nothing. #170 timed the natural
+window at 11–22ms and caught the raw read inside it once in ten opens with no instrument at all.
+
+**Measured before fixed, and the instrument is the only one that can do it.** A CPU throttle and a
+held main thread both measured 0 reds in 20 in #170, for the reason above: anything that makes the
+drawing late makes the read queue behind it. The knob is the **answer's** lateness — a `fetch`
+wrapper in an init script that lets the answer arrive and then waits before handing it on, with the
+thread left free. At 400ms every one of the seven read wrongly on **ten opens out of ten** on
+29 September 2569. Six of those numbers stood. The seventh did not.
+
+**The marks screen's ten reds of ten meant nothing, and the tell was in the locator.** `columns`
+scopes itself to the table carrying รหัสนักศึกษา. The screen opens on whichever Activity the seed put
+first, that one is a **group** Activity, and a group grid's first column is headed กลุ่ม — so the read
+was `[]` on a fully drawn screen exactly as it was on an undrawn one. Ten reds that would have been
+ten reds with the fix in. The settle point built on that reading was wrong in the same way and failed
+the moment it ran: `expect(gridRows).toHaveCount(57)` against a received `0`, because the fifty-seven
+students are not what that grid draws. **A red is not a measurement until the same read has been seen
+green** — which is #125's *a row that passes both before and after a fix was never about it*, met from
+the failing side, and it is the second time in three tickets that the thing being measured was the
+read rather than the screen (#164).
+
+**What the wrong measurement was hiding is a property of the screen.** `ActivityScores.js:269` sets
+the รายคน/รายกลุ่ม toggle from `activity.activity_type`. The screen's `useState('student')` looks like a
+default and is not one; the toggle is the **answer's** to name. **Once per Activity, though, and not
+once per answer** — the effect is guarded by a ref keyed on `activity.id`, and the first draft of this
+paragraph said *every time an answer lands*, which the file's own comment contradicts in so many words:
+*Once per Activity, therefore, and not once per load.* #83 and #168 again, and the review caught it. It
+does not move the fix, because the helper is wired only where the Activity is new to the document, but
+it was the sentence the `roll` option was dropped on, so it was load-bearing prose. So
+the row count a settle point waits for is the answer's too — `activity_type === 'group' ? groups :
+students` — and the first draft's `roll` option, which existed to hand the count back to the caller
+when a row had pressed รายกลุ่ม, was a claim about a mechanism that does not exist. It is gone. A
+person pressing the toggle by hand afterwards is not the helper's business either, because `setEntry`
+sends no request and no answer lands.
+
+**And the screen's real raw read was never at the open.** It is `whoColumn` at `34a:452`, four lines
+after the `chooseActivity` at `34a:448`, and `columns` at `34a:197` behind the same press — the กิจกรรม
+picker, which re-reads the grid through the same headers-only wait. (The ticket's table was right about
+`scores-screen.js:117` being that file's raw read; what was wrong is the measurement built on it.)
+The same is true of `rubric-criteria-`, whose list is reached by a click from #21's table as well as
+by an address. So the settle point goes on the **request**, wherever the request is made from, and two
+of the seven helpers have it at two sites. This is #139's rule — *a guard that asks is this still what
+was asked for is written by every control that can take the answer's place* — arriving in the harness
+rather than in the application: **list the controls that re-read the screen, not the one the census
+grepped.**
+
+**Seven settle points and not one helper, because the ticket asked and #68 is why.** One hook behind
+seven screens turns seven claims into one no control can measure apart. Each is written from its own
+screen's locator and its own count, and each is two clauses that cover each other's blind spot, as
+`untilActivitiesDrawn` is: a **count of what the answer carried**, which holds on a reload where the
+old list stays drawn (#149); and a **text the answer named**, which holds on an open whose list is
+empty and whose count is `0` on both sides. Where a screen has no such text the clauses are two
+counts instead — `plo-mapping-`'s heading is a constant and its curriculum's name is in a picker drawn
+either way, so the clauses are the grid's two axes. Where a screen draws a number *from the answer
+itself* that clause is the strongest available: `rubric-criteria-`'s sentence reads
+*Rubric นี้มีเกณฑ์การให้คะแนน `data.total` ข้อ*, which a stale table cannot satisfy. Each docstring says what
+its clauses **cannot** see — `plan-`'s count does not move when a week is renamed, `plo-mapping-`'s
+row count reads 1 against 0 on an empty curriculum — rather than claiming cover.
+
+**The proof is seven controls, run by hand, because `e2e/support/` is not what `mutation/` mutates**
+(`160a` says why). Each was taken out alone and `171a` was run *together with that screen's own
+spec*, so one run answers both halves: what the control kills and what it does not. All seven killed
+one row — their own — with the defect's own message, and left the other six rows and the whole of the
+screen's own spec standing. The marks screen's was repeated because it is the figure that was
+re-measured: **10 red of 10** with the control out, **10 green of 10** with it in.
+
+**Two things the ticket asked for and did not get, both named rather than assumed.** The reads that
+follow a **delete** on these screens were measured rather than covered: on `28a`, `29a` and `31a` the
+raw read after a removal follows a *cancel*, which sends no request and reloads nothing, and each is
+already preceded by a retrying count. The one real one is `27a`'s, where `clos-screen.js`'s
+`removeClo` has no reload wait at all — a sibling of this ticket and not a row of it. The first draft
+wrote it into `171a`'s docstring and left it there, which is the deferral in prose this file keeps
+warning about (#119); the review said so, and it is [#174](https://github.com/khthana/Deep-QA/issues/174) now, with the three screens below. And the prose census in `e2e/README.md`
+and here is now a closed list with a date on the closing, which is #130's rule paying out: the
+sentence expires like the number, and the copy you will miss is in the file you did not think you
+were changing.
+
+**What the review caught was four claims and one copy, and every one of them is an old rule.** The
+first is the load-bearing sentence above: *every time an answer lands* was wrong, and
+`ActivityScores.js` says so in its own comment — *Once per Activity, therefore, and not once per load* —
+which is #83 and #168, read a file's own comments for the rule before inventing one. The second is two
+documents shipped contradicting each other in the same breath (#154): this file said the marks screen's
+raw read was three lines after `chooseActivity` and `171a` said one, and the tree says `whoColumn` at
+`34a:452`, four lines after the `chooseActivity` at `34a:448`. The third is that *the ticket's table is
+wrong in one cell* overstated it — the cell cites `scores-screen.js:117`, which is that file's raw read,
+and so it is; what was wrong is the measurement built on it. The fourth is that the new docstring had
+been inserted **between** `openCriteriaVia`'s docstring and `openCriteriaVia`, leaving one block
+documenting nothing and the only undocumented helper in the diff.
+
+**And the copy is the instrument.** `171a` had re-implemented `170a`'s `fetch` wrapper with the counter
+renamed, so a grep for either name found one copy of two — #96's *a fixture built inside one test file
+is one no other file has*, with the twist that the second file was the one that noticed. It is
+`e2e/support/late-answer.js` now, taking the pattern as an argument, and #68 does not bite because no
+row's claim lives in it: an instrument is not an assertion. The seven controls had already been run
+against the private copy, so one was re-run against the shared one — the same red, the same single row —
+rather than all seven, because what moved is what builds the window and not what the controls take out.
+
+**The deferral was the last finding and the oldest rule.** The first draft named the `27a` delete read
+in `171a`'s docstring, pointed it at #172 — the acceptance-sheet ticket, nothing to do with it — and
+left it there. A deferral written into prose and not into the tracker is a decision nobody can find
+(#119), which is the sentence #171 exists to close, so it is a ticket now, together with the three
+chart-and-report screens the census missed.

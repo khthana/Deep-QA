@@ -40,9 +40,43 @@ function waitForGrid(page) {
   );
 }
 
+/**
+ * Waits until what the answer carried is what the grid is showing — #171.
+ *
+ * `waitForGrid` resolves when the answer's headers land; the grid is drawn from a
+ * body that arrives after them, and between the two the screen holds an empty
+ * `grid`. Measured with #170's fixture on 29 September 2569, `listedCodes` read
+ * `[]` on **ten opens out of ten**.
+ *
+ * Two counts and no text, because this screen's heading is a constant — the
+ * curriculum's name is in a picker, and a picker is drawn whether or not the grid
+ * is. So the clauses are the two axes: one column per ผลการเรียนรู้ and one row per
+ * รายวิชา, which between them cannot both be right on a half-drawn grid.
+ *
+ * What neither clause can see is a curriculum with no outcomes or no subjects:
+ * the screen then draws a placeholder row instead of a body, so the row count is
+ * `1` against an answer's `0`, and the column count is `0` on both sides of the
+ * drawing. Such a curriculum is waited for by neither clause and returns at once;
+ * the rows about that state assert the placeholder through a retrying matcher.
+ */
+async function untilGridDrawn(page, response) {
+  const answered = await response.json();
+  if (!answered.outcomes?.length || !answered.subjects?.length) return response;
+
+  await expect(page.locator('table thead tr th:not(:first-child)')).toHaveCount(
+    answered.outcomes.length,
+  );
+  await expect(page.locator('table tbody tr')).toHaveCount(answered.subjects.length);
+  return response;
+}
+
 /** Opens the screen and asserts the grid a passing row is about to read. */
 async function openMapping(page) {
-  const response = await openAt(page, MAPPING, waitForGrid);
+  const response = await openAt(page, MAPPING, async fresh => {
+    const answer = await waitForGrid(fresh);
+    if (answer.ok()) await untilGridDrawn(fresh, answer);
+    return answer;
+  });
   expect(response.status()).toBe(200);
   return response;
 }
@@ -126,6 +160,7 @@ module.exports = {
   PROGRAM,
   OTHER_PROGRAM,
   waitForGrid,
+  untilGridDrawn,
   openMapping,
   square,
   subjectRow,

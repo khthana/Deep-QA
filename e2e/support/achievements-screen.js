@@ -1,5 +1,7 @@
 'use strict';
 
+const { expect } = require('@playwright/test');
+
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
 const { myClos, numbersOnScreen } = require('./behaviors-screen');
@@ -30,9 +32,37 @@ const waitForCriteria = page =>
     answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
   );
 
-/** Goes to one CLO's criteria and hands back the read a row asserts on. */
+/**
+ * Waits until what the answer carried is what the screen is showing — #171.
+ *
+ * `clos-screen.js`' `untilClosDrawn` says why this is here and what the two
+ * clauses are for; measured with #170's fixture on 29 September 2569,
+ * `numbersOnScreen` read `[]` on **ten opens out of ten**. The รหัสวิชา is the
+ * drawn-from-`data` clause for `behaviors-screen.js`' reason one table over.
+ */
+async function untilCriteriaDrawn(page, response) {
+  const answered = await response.json();
+  await expect(page.getByRole('listitem').getByRole('heading')).toHaveCount(
+    answered.criteria.length,
+  );
+  await expect(
+    page.getByText(answered.offering.subject_id, { exact: true }).first(),
+  ).toBeVisible();
+  return response;
+}
+
+/**
+ * Goes to one CLO's criteria and hands back the read a row asserts on.
+ *
+ * The drawing is waited for only on an answer that succeeded: the refusal rows
+ * open a CLO that is not theirs and there is no list on that screen to wait for.
+ */
 async function openCriteria(page, sectionId, cloId) {
-  return openAt(page, path(sectionId, cloId), waitForCriteria);
+  return openAt(page, path(sectionId, cloId), async fresh => {
+    const response = await waitForCriteria(fresh);
+    if (response.ok()) await untilCriteriaDrawn(fresh, response);
+    return response;
+  });
 }
 
 /**
@@ -129,6 +159,7 @@ module.exports = {
   API,
   path,
   waitForCriteria,
+  untilCriteriaDrawn,
   openCriteria,
   mySectionIds,
   myClos,
