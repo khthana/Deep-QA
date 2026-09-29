@@ -110,7 +110,7 @@ test('37: the roll and the axes are read after the screen is drawn, not before',
   expect(axes[0]).toBe(body.clos[0].clo_number);
 });
 
-/** The third cell of an outcome's row — จำนวนผู้เรียนที่ถูกวัด, the cohort's own count. */
+/** The third cell of an outcome's row — the column the screen heads จำนวนที่วัดได้. */
 const MEASURED = 2;
 
 test('42/44: the figures are read after the new cohort is drawn, not before', async ({ page }) => {
