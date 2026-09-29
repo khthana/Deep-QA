@@ -45,6 +45,7 @@ const { currentTerm } = require('../../db/term');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { integerId } = require('../lib/fields');
+const { REGISTER, WITH_SUBJECT, THIS_ACCOUNTS_SECTION } = require('../lib/register');
 
 /**
  * The one role these routes open for.
@@ -71,10 +72,8 @@ const RETURNED = `cs.section_id, cs.section_number,
                   (SELECT count(*)::int FROM student_course sct
                     WHERE sct.section_id = cs.section_id) AS student_count`;
 
-const FROM = `FROM course_sections_teacher cst
-              JOIN course_sections cs ON cs.section_id = cst.section_id
-              JOIN semester_courses sc ON sc.id = cs.semester_course_id
-              JOIN subjects s ON s.subject_id = sc.subject_id`;
+/** The register, plus the รายวิชา the dashboard's headings name — #104. */
+const FROM = `${REGISTER} ${WITH_SUBJECT}`;
 
 function teachingRoutes(pool) {
   const router = express.Router();
@@ -82,10 +81,10 @@ function teachingRoutes(pool) {
   /**
    * The Sections this account teaches in a given term.
    *
-   * The register is the whole of the WHERE clause. A Teacher's grant is scoped
-   * at their department (see the seed's note on scopes), but the department is
-   * not what decides this and must not be: a colleague's Section is in the same
-   * department and is not theirs.
+   * The register decides whose these are and the term decides which — this is
+   * the one query here whose WHERE clause is not the register alone, which is
+   * why it writes its own rather than taking `lib/register`'s. Why the
+   * department is not what decides it is written there, once.
    */
   async function mine(userId, term) {
     const { rows } = await pool.query(
@@ -137,7 +136,7 @@ function teachingRoutes(pool) {
       }
 
       const { rows } = await pool.query(
-        `SELECT ${RETURNED} ${FROM} WHERE cs.section_id = $1 AND cst.user_id = $2`,
+        `SELECT ${RETURNED} ${FROM} ${THIS_ACCOUNTS_SECTION}`,
         [id, req.session.userId],
       );
       if (!rows[0]) return res.status(404).json({ message: REFUSALS.sectionNotFound });

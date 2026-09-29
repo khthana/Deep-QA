@@ -96,7 +96,7 @@ const express = require('express');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS, sentenceOf } = require('../auth/refusals');
 const { blankToNull, boundedInteger, integerId, round2 } = require('../lib/fields');
-const { sectionOf } = require('./enrolment');
+const { sectionOf, notThisSection } = require('./enrolment');
 const { cloOrder } = require('../lib/cloOrder');
 const { yearRefusal } = require('../lib/year');
 
@@ -290,7 +290,6 @@ function readActivity(body) {
 function activityRoutes(pool) {
   const router = express.Router();
 
-  const notThisSection = (res) => res.status(404).json({ message: REFUSALS.sectionNotFound });
   const notThisActivity = (res) => res.status(404).json({ message: REFUSALS.activityNotFound });
 
   /**

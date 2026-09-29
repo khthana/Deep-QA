@@ -52,7 +52,7 @@ REFERENCE_FILTER = """    return data.previous.entries.filter(
       entry => entry.clo_number === clo.clo_number
     )"""
 
-REGISTER_WHERE = "      WHERE cs.section_id = $1 AND cst.user_id = $2`,"
+REGISTER_WHERE = "      ${THIS_ACCOUNTS_SECTION}`,"
 
 MUTANTS = {
     # One of the four sections of the form stops being offered. The screen is
@@ -169,6 +169,12 @@ MUTANTS = {
     # first teacher sees everything and the second is told their own class does
     # not exist - and the fifth criterion, that the narrative is shared, is
     # exactly the thing that stops being true. Kills row 6.
+    # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one
+    # constant in `lib/register.js` now, so this aims at the call site that
+    # interpolates it - in clos.js, as before. Aiming at the constant
+    # instead would have put all eleven on one line, six of them the same
+    # edit, and no sheet's claim could be told from another's. Re-proved
+    # against 41a.
     "onesectionperoffering": (
         "register",
         REGISTER_WHERE,
@@ -178,6 +184,12 @@ MUTANTS = {
     # ตอนเรียน in the institution, reads its narrative and can edit it - and
     # nothing anywhere says so, because a screen that answers is a screen that
     # looks like it was meant to. ADR-0002 in one clause. Kills row 9.
+    # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one
+    # constant in `lib/register.js` now, so this aims at the call site that
+    # interpolates it - in clos.js, as before. Aiming at the constant
+    # instead would have put all eleven on one line, six of them the same
+    # edit, and no sheet's claim could be told from another's. Re-proved
+    # against 41a.
     "registerignored": (
         "register",
         REGISTER_WHERE,

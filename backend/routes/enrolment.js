@@ -56,6 +56,7 @@ const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, integerId, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { REGISTER, THIS_ACCOUNTS_SECTION, WITH_SUBJECT } = require('../lib/register');
 
 /** Enrolment is the Teacher's own class list, as in `teaching.js` and `clos.js`. */
 const TEACHING = ['TEACHER'];
@@ -108,11 +109,9 @@ async function sectionOf(pool, req, sectionId) {
     // is the join through `course_sections_teacher` and nothing else.
     `SELECT cs.section_id, cs.section_number, sc.academic_year, sc.semester,
             sc.subject_id, s.subject_name_en
-       FROM course_sections_teacher cst
-       JOIN course_sections cs ON cs.section_id = cst.section_id
-       JOIN semester_courses sc ON sc.id = cs.semester_course_id
-       JOIN subjects s ON s.subject_id = sc.subject_id
-      WHERE cs.section_id = $1 AND cst.user_id = $2`,
+       ${REGISTER}
+       ${WITH_SUBJECT}
+      ${THIS_ACCOUNTS_SECTION}`,
     [id, req.session.userId],
   );
   return rows[0] ?? null;
@@ -125,11 +124,11 @@ async function sectionOf(pool, req, sectionId) {
  * Module-level and exported beside `sectionOf`, because the two are one act:
  * resolve the ตอนเรียน, or refuse it. #26 was about to be the fourth verbatim
  * copy, and `lib/fields.js` documents the rule it would have broken - extract
- * at the third. The two copies still in `teachingPlan.js` and `activities.js`
- * are [#104](https://github.com/khthana/Deep-QA/issues/104)'s to fold in; they
- * are not touched here because those files sit in other tickets' mutation
- * sets, and a refactor inside a sweep's reach is how a mutant quietly starts
- * missing.
+ * at the third. #104 folded in the two copies that were still in
+ * `teachingPlan.js` and `activities.js`; it left the refusal here rather than
+ * moving it beside the register's query text, because nine route files now take
+ * this and `sectionOf` from here in one `require`, and `lib/reach.js` gives the
+ * reason a query seam does not own the sentence.
  */
 const notThisSection = (res) => res.status(404).json({ message: REFUSALS.sectionNotFound });
 

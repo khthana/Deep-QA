@@ -75,8 +75,14 @@ MUTANTS = {
     # could import it, and the query lost two spaces of indentation with the
     # move - same MISS, same cause, as `27:anyclo` when `offeringOf` was
     # hoisted. Re-proved against 25a after the rewrite.
+    # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one
+    # constant in `lib/register.js` now, so this aims at the call site that
+    # interpolates it - in enrolment.js, as before. Aiming at the constant
+    # instead would have put all eleven on one line, six of them the same
+    # edit, and no sheet's claim could be told from another's. Re-proved
+    # against 25a.
     "anysection": ("route",
-                   "      WHERE cs.section_id = $1 AND cst.user_id = $2`,",
+                   "      ${THIS_ACCOUNTS_SECTION}`,",
                    "      WHERE cs.section_id = $1 AND $2::text IS NOT NULL`,"),
     # Authorisation intact, grain widened: the list is drawn from the Offering
     # the way `clos.js` resolves one, so both ตอนเรียน of this รายวิชา show all

@@ -213,6 +213,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   mutant can measure apart. And when a rule holds on many screens, the screen that proves it is chosen by
   the census, not by the subject. **But an instrument is not an assertion** — a fixture a second file
   needs is shared, because no row's claim lives in it. (#68, #171)
+- **Extracting shared text costs the proof nothing if the mutants move to the call sites** — the
+  shared constant becomes a premise, like an attribute a locator is built on, and each caller's *use*
+  of it stays a claim. Aiming them at the constant instead is what turns ten sheets' claims into one;
+  that is a choice, not a consequence of the merge. (#104)
 - **When a ticket's proposal is declined, the mutant to write is that proposal made to run** — it
   is the only thing that turns *we chose otherwise* from a sentence on a sheet into a claim the
   suite holds. (#48)

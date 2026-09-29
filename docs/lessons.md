@@ -5235,3 +5235,75 @@ into this paragraph (#119).
 and #123's already says *ask the catalogue, not a list*; what #172 adds is that this particular
 catalogue is now asked by a script, which is this story, not a rule. A rule met again is a sentence
 in the ticket's story, not a second line in the index.
+
+## #104 — the register written three times, and the merge that cost the proof nothing
+
+#104 was opened out of #25's code review, in August, on a prediction: the teaching-register join —
+*does this account teach this ตอนเรียน*, answered by `course_sections_teacher` joined through
+`course_sections` to `semester_courses` — was written out three times, and **#26 Work Groups would be
+the fourth**. Every Section-bound screen after it, #31 to #37, was named as a candidate copy.
+
+**The prediction did not come true, and reading why is most of the ticket.** Counted today, the join
+is still in exactly three places: `teaching.js`'s `FROM`, `clos.js`'s `offeringOf` and
+`enrolment.js`'s `sectionOf`. Nine route files were added in between and not one of them wrote a
+fourth copy, because #25 had already exported `sectionOf` and #27 `offeringOf`, and the later screens
+imported them. So the thing the ticket feared was prevented by the thing the ticket was written
+beside. What was left was the narrower claim underneath: three *queries* that each spell the register
+out, agreeing only because #25's review compared them by hand.
+
+**A raw grep says five files, and the census is not the grep.** `course_sections_teacher` appears in
+five route files; `offerings.js` holds eight of the hits and `evidence.js` one, and none of them is
+this question — they are the maintenance writes that *assign* a teacher to a ตอนเรียน, plus a comment.
+Asking by the identifier found the table; asking by the *question* found the three. (#111's rule, met
+from the side where the wider answer is the wrong one.)
+
+**What the merge cost the proof, measured rather than argued.** #68's rule is that a ticket offering
+to de-duplicate is answered with what the merge costs the proof, not only with what it saves the
+code — one hook behind fifteen screens turns fifteen claims into one no mutant can measure apart. The
+measurement here is the mutation store: **eleven mutants across nine sheets** are anchored on the
+register's WHERE clause, at least one per Section-bound screen, each saying *this screen is authorised
+by the register and not by the department scope*. Moving the text into `lib/register.js` breaks all eleven
+anchors at once, which `python mutation/anchors.py` says in seconds.
+
+The answer is that the merge costs nothing **if the mutants are aimed at the call sites rather than at
+the constant.** The shared text becomes a premise — like an attribute a locator is built on (#85,
+#111) — and what stays a claim is each caller's *use* of it. So `28:anysection` no longer replaces
+clos.js's WHERE clause; it replaces clos.js's `${THIS_ACCOUNTS_SECTION}` with a weakened WHERE written
+out in full, in clos.js, and dies on #28's row 7 exactly as before. Eleven mutants, eleven one-line
+re-aims, nine sheets still owning their own claims. Had they instead been re-aimed at the constant in
+`lib/register.js`, all eleven would have been edits to one line — and six of the eight `anysection`
+mutants are already the *identical* search and replacement, so those six would have become one edit
+and no sheet's claim could be told from another's. That is the cost #68 is about, and it was a choice
+here, not a consequence of the extraction.
+
+**A refusal that is single-sourced for seven files is not a copy to fold into a fourth place.**
+`notThisSection` — the one sentence a ตอนเรียน that is not yours gets, deliberately the same as the
+one that does not exist — was written out in `enrolment.js`, `teachingPlan.js` and `activities.js`,
+and `enrolment.js`'s docblock had already named those two as #104's to fold in. The first draft moved
+it beside the register's query text in `lib/register.js`. That was wrong twice over: seven route files
+import `{ sectionOf, notThisSection }` from `enrolment.js` in one `require`, so the move would have
+split a pair that is one act, and `lib/reach.js` had already written the rule down — a query seam
+answers in facts and does not own the sentence. The two copies were folded into the existing export
+instead, and the new file says in its own docblock what it deliberately does not hold.
+
+**The acceptance is a number that does not move.** The ticket says so itself: the backend suites
+already pin the behaviour from the HTTP surface, so this is a refactor under them, and the suite
+unchanged is the proof that nothing was traded on the way. The ticket writes that number as 411; that
+is August's figure and the suite is 787 today, which is the ordinary way a count in a ticket ages —
+the claim it makes is *unchanged*, and unchanged is what was measured, twice.
+
+**But an anchor check only says a mutant applies; a sweep says it still proves something** (#107). All
+eleven were re-swept, each against the file its own sheet documents, and each killed exactly what it
+killed before the join moved: `24:anysection` three rows in `teaching.test.js` (the Section of the
+year before, the Section that is not yours, the colleague's Section along), `24:currenttermonly` one,
+and one row each for `25a`, `27a`, `28a`, `29a`, `30a`, `31a` and `32a` — the row on every Section-bound
+screen that says *somebody else's ตอนเรียน hides its own contents too*. `41`'s two took row 6 and row 9
+apart, which is the pair that says the narrative is shared and the register still asks who is calling.
+`git status` was read after every restore, and the tree came back identical eleven times.
+
+**Where the ticket's pointers were left standing.** Four sheets and a dozen handoffs cite #104 as the
+ticket that would fold this in. They were read rather than rewritten: each says the join *was* written
+three times, or that this screen imports rather than copies, which is history and is still true. A
+sentence that expires is one that describes the world now (#130); a sentence that describes why a
+screen was built the way it was does not, and rewriting it would have moved line numbers other tickets
+cite (#173).

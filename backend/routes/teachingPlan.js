@@ -48,7 +48,7 @@ const express = require('express');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, boundedInteger, integerId } = require('../lib/fields');
-const { sectionOf } = require('./enrolment');
+const { sectionOf, notThisSection } = require('./enrolment');
 
 /** The plan is the Teacher's own, as in `enrolment.js` — the same door. */
 const TEACHING = ['TEACHER'];
@@ -86,7 +86,6 @@ function readWeek(source) {
 function teachingPlanRoutes(pool) {
   const router = express.Router();
 
-  const notThisSection = (res) => res.status(404).json({ message: REFUSALS.sectionNotFound });
   const notThisWeek = (res) => res.status(404).json({ message: REFUSALS.weekNotFound });
 
   /**

@@ -151,8 +151,14 @@ MUTANTS = {
     # The teaching register leaves the WHERE clause of `sectionOf` - in
     # enrolment.js, where #32 imports it from (#104). Kills row 8 at the 404
     # that answers 200.
+    # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one
+    # constant in `lib/register.js` now, so this aims at the call site that
+    # interpolates it - in enrolment.js, as before. Aiming at the constant
+    # instead would have put all eleven on one line, six of them the same
+    # edit, and no sheet's claim could be told from another's. Re-proved
+    # against 32a.
     "anysection": ("enrolment",
-                   "      WHERE cs.section_id = $1 AND cst.user_id = $2`,",
+                   "      ${THIS_ACCOUNTS_SECTION}`,",
                    "      WHERE cs.section_id = $1 AND $2::text IS NOT NULL`,"),
     # The screen swallows the refusal a failed load carries. Kills row 8 at
     # the banner that never appears.

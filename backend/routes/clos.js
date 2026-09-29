@@ -61,6 +61,7 @@ const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { cloOrder } = require('../lib/cloOrder');
 const { integerId } = require('../lib/fields');
+const { REGISTER, THIS_ACCOUNTS_SECTION } = require('../lib/register');
 
 /** The one role these routes open for, spread at the call site as in teaching.js. */
 const TEACHING = ['TEACHER'];
@@ -124,11 +125,11 @@ const isDuplicate = (error) => error && error.code === '23505';
 /**
  * The Offering behind a Section id, or nothing.
  *
- * The register is the whole of the WHERE clause, exactly as in #24: a
- * colleague's Section is in the same department and is not theirs. Nothing
- * here is restricted to the current term, for #24's reason — a Teacher
- * following a link to last year's Section is asking for a Section they
- * taught, and the dashboard's listing rule is not an authorisation rule.
+ * The register is the whole of the WHERE clause, and since #104 it is written
+ * once, in `lib/register` — which carries the reasons: a colleague's Section is
+ * in the same department and is not theirs, and nothing here is restricted to
+ * the current term. What stays here is the grain: this one resolves through to
+ * the Offering, because ADR-0003 puts the CLO set there.
  *
  * Module-level and exported, as `rubrics.js` exports `reachableRubric` and for
  * the same reason: #28's behaviours are authorised by exactly this question,
@@ -140,10 +141,8 @@ async function offeringOf(pool, req, sectionId) {
   const { rows } = await pool.query(
     `SELECT sc.id AS semester_course_id, sc.program_id, sc.subject_id,
             sc.academic_year, sc.semester
-       FROM course_sections_teacher cst
-       JOIN course_sections cs ON cs.section_id = cst.section_id
-       JOIN semester_courses sc ON sc.id = cs.semester_course_id
-      WHERE cs.section_id = $1 AND cst.user_id = $2`,
+       ${REGISTER}
+      ${THIS_ACCOUNTS_SECTION}`,
     [id, req.session.userId],
   );
   return rows[0] ?? null;

@@ -110,8 +110,14 @@ MUTANTS = {
     # The teaching register leaves the WHERE clause of `offeringOf` - in
     # clos.js, where #30 imports it from. Kills row 10 at the 404 that
     # answers 200.
+    # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one
+    # constant in `lib/register.js` now, so this aims at the call site that
+    # interpolates it - in clos.js, as before. Aiming at the constant
+    # instead would have put all eleven on one line, six of them the same
+    # edit, and no sheet's claim could be told from another's. Re-proved
+    # against 30a.
     "anysection": ("clos",
-                   "      WHERE cs.section_id = $1 AND cst.user_id = $2`,",
+                   "      ${THIS_ACCOUNTS_SECTION}`,",
                    "      WHERE cs.section_id = $1 AND $2::text IS NOT NULL`,"),
     # The screen swallows the refusal a failed load carries. Kills row 10 at
     # the banner that never appears.

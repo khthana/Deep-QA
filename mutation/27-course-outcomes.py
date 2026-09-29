@@ -56,8 +56,14 @@ MUTANTS = {
     # resolves for anybody signed in as a Teacher, and with it every CLO set in
     # the system. The role gate is still there and still says yes - ADR-0002's
     # point, that a scope is not a register.
+    # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one
+    # constant in `lib/register.js` now, so this aims at the call site that
+    # interpolates it - in clos.js, as before. Aiming at the constant
+    # instead would have put all eleven on one line, six of them the same
+    # edit, and no sheet's claim could be told from another's. Re-proved
+    # against 27a.
     "anysection": ("routes",
-                   "WHERE cs.section_id = $1 AND cst.user_id = $2`,",
+                   "${THIS_ACCOUNTS_SECTION}`,",
                    "WHERE cs.section_id = $1 AND (cst.user_id = $2 OR TRUE)`,"),
     # The role gate removed from the read. Every single-role Teacher is
     # unaffected; what changes is that a committee member reaches a Teacher

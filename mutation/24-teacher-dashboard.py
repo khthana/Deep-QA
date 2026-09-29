@@ -64,8 +64,14 @@ MUTANTS = {
     # for anybody signed in as a Teacher. The department gate is still there and
     # still says yes, which is the point - a colleague's Section is in the same
     # department, so scope is not what protects it (ADR-0002).
+    # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one
+    # constant in `lib/register.js` now, so this aims at the call site that
+    # interpolates it - in teaching.js, as before. Aiming at the constant
+    # instead would have put all eleven on one line, six of them the same
+    # edit, and no sheet's claim could be told from another's. Re-proved
+    # against teaching.test.js.
     "anysection": ("routes",
-                   "WHERE cs.section_id = $1 AND cst.user_id = $2",
+                   "${THIS_ACCOUNTS_SECTION}",
                    "WHERE cs.section_id = $1 AND ($2 IS NOT NULL)"),
     # The role gate removed from the dashboard. Every single-role Teacher is
     # unaffected, which is what makes this the mutant for the seventh criterion:
@@ -77,9 +83,15 @@ MUTANTS = {
     # The by-id read restricted to the current term - the dashboard's listing
     # rule enforced as an authorisation rule. A Teacher following a link to a
     # Section they taught last year is refused a Section that is theirs.
+    # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one
+    # constant in `lib/register.js` now, so this aims at the call site that
+    # interpolates it - in teaching.js, as before. Aiming at the constant
+    # instead would have put all eleven on one line, six of them the same
+    # edit, and no sheet's claim could be told from another's. Re-proved
+    # against teaching.test.js.
     "currenttermonly": [
         ("routes",
-         "`SELECT ${RETURNED} ${FROM} WHERE cs.section_id = $1 AND cst.user_id = $2`,",
+         "`SELECT ${RETURNED} ${FROM} ${THIS_ACCOUNTS_SECTION}`,",
          "`SELECT ${RETURNED} ${FROM} WHERE cs.section_id = $1 AND cst.user_id = $2"
          " AND sc.academic_year = $3`,"),
         ("routes",
