@@ -46,6 +46,7 @@
 
 const express = require('express');
 
+const { onSubject, recordActivity } = require('../auth/accounts');
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate } = require('../lib/fields');
@@ -311,7 +312,10 @@ function subjectRoutes(pool) {
         verify: (values) => departmentRefusal(req, values.department_id),
         insert: async (client, values) => {
           try {
-            return { ok: true, row: await insertSubject(client, values) };
+            const row = await insertSubject(client, values);
+            // Inside the row's savepoint - #58, as in every import here.
+            await recordActivity(client, req.auth.userId, 'IMPORT_SUBJECTS', onSubject(row.subject_id));
+            return { ok: true, row };
           } catch (error) {
             if (isDuplicate(error)) return { ok: false, reason: 'duplicateSubjectId' };
             throw error;
@@ -348,7 +352,9 @@ function subjectRoutes(pool) {
       // `is_active` is deliberately not read here. A subject is added to the
       // catalogue because it is being taught; retiring one is the fourth
       // criterion and happens on an edit or on a removal, not at birth.
-      return res.status(201).json({ subject: await insertSubject(pool, draft.values) });
+      const subject = await insertSubject(pool, draft.values);
+      await recordActivity(pool, req.auth.userId, 'CREATE_SUBJECT', onSubject(subject.subject_id));
+      return res.status(201).json({ subject });
     } catch (error) {
       if (isDuplicate(error)) {
         return res.status(409).json({ message: REFUSALS.duplicateSubjectId });
@@ -416,6 +422,7 @@ function subjectRoutes(pool) {
         ],
       );
 
+      await recordActivity(pool, req.auth.userId, 'UPDATE_SUBJECT', onSubject(existing.subject_id));
       return res.status(200).json({ subject: rows[0] });
     } catch (error) {
       return next(error);
@@ -458,8 +465,19 @@ function subjectRoutes(pool) {
         },
       });
 
-      if (outcome.deleted) return res.status(204).send();
+      // Two outcomes, two lines - the reasoning is `routes/programs.js`, which
+      // has the same removal and wrote it down.
+      if (outcome.deleted) {
+        await recordActivity(pool, req.auth.userId, 'DELETE_SUBJECT', onSubject(existing.subject_id));
+        return res.status(204).send();
+      }
       if (outcome.missing) return res.status(404).json({ message: REFUSALS.subjectNotFound });
+      await recordActivity(
+        pool,
+        req.auth.userId,
+        'DEACTIVATE_SUBJECT',
+        onSubject(existing.subject_id),
+      );
       return res.status(200).json({ subject: outcome.row, deactivated: true });
     } catch (error) {
       return next(error);

@@ -42,6 +42,7 @@
 
 const express = require('express');
 
+const { onDepartment, recordActivity } = require('../auth/accounts');
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
@@ -236,6 +237,14 @@ function departmentRoutes(pool) {
                 faculty.facultyId,
               ],
             );
+            // Inside the row's savepoint, so a row that is rolled back takes
+            // its line with it - #58.
+            await recordActivity(
+              client,
+              req.auth.userId,
+              'IMPORT_DEPARTMENTS',
+              onDepartment(rows[0].department_id),
+            );
             return { ok: true, row: rows[0] };
           } catch (error) {
             if (isDuplicate(error)) return { ok: false, reason: 'duplicateDepartmentId' };
@@ -283,6 +292,12 @@ function departmentRoutes(pool) {
         ],
       );
 
+      await recordActivity(
+        pool,
+        req.auth.userId,
+        'CREATE_DEPARTMENT',
+        onDepartment(rows[0].department_id),
+      );
       return res.status(201).json({ department: rows[0] });
     } catch (error) {
       if (isDuplicate(error)) {
@@ -323,6 +338,17 @@ function departmentRoutes(pool) {
         ],
       );
 
+      // One verb for the edit, including the one that switches the department
+      // off: unlike an account, a department has no status route of its own -
+      // `is_active` is a field on this form - so there is no second action here
+      // to tell apart. A programme's removal does have two outcomes, and
+      // `routes/programs.js` writes both.
+      await recordActivity(
+        pool,
+        req.auth.userId,
+        'UPDATE_DEPARTMENT',
+        onDepartment(existing.department_id),
+      );
       return res.status(200).json({ department: rows[0] });
     } catch (error) {
       return next(error);
@@ -355,6 +381,17 @@ function departmentRoutes(pool) {
         await pool.query('DELETE FROM departments WHERE department_id = $1', [
           existing.department_id,
         ]);
+        // After the DELETE, not before it: the refusal below is a delete that
+        // did not happen, and a line saying otherwise would be the one thing an
+        // audit record may not be. The department is gone, and the line names
+        // it by the identifier it had - `target_id` is not a foreign key for
+        // exactly this (migration 0006).
+        await recordActivity(
+          pool,
+          req.auth.userId,
+          'DELETE_DEPARTMENT',
+          onDepartment(existing.department_id),
+        );
         return res.status(204).send();
       } catch (error) {
         if (isReferenced(error)) {

@@ -136,6 +136,24 @@ async function allRoles(pool, userId) {
  * `target` is the record they acted on - `{ kind, id }`, or absent for the
  * actions whose only object is the actor's own account. Migration 0006 says
  * why the row stays with the actor and why the target is not a foreign key.
+ *
+ * **One line per record, including an import** - the question #13 left open and
+ * #58 closed. An import used to write a single `IMPORT_USERS` with no target,
+ * and 0006 wrote that limit down: "which accounts arrived in which upload is
+ * therefore still only answerable from the file". An import that creates twelve
+ * departments did twelve things, and the columns 0006 added exist to say which
+ * twelve. So every import now writes a line per row it wrote, carrying that
+ * row's own target, and keeps its own verb so that a record typed in on a form
+ * is still told from one that arrived in a spreadsheet.
+ *
+ * The twelve are not thereby scattered. `now()` is the transaction's start and
+ * an import is one transaction, so a single upload's lines share a timestamp to
+ * the microsecond - the grouping is in the data rather than in a column added
+ * for it. What it costs is the length of the table, which is the retention
+ * question #13 raised and this ticket does not answer: a two-hundred-row roster
+ * is two hundred lines where it used to be one. Two hundred rows is nothing to
+ * the index, and a log that cannot say what was imported is not the record the
+ * columns were added to keep.
  */
 async function recordActivity(db, userId, activity, target = null) {
   await db.query(
@@ -167,11 +185,29 @@ async function accountStillExists(db, userId) {
 /**
  * The record an entry was written about, when that record is an account.
  *
- * The one kind there is today. It exists so the string `'USER'` is written
- * once rather than at every call site, and so the next kind - a subject, a CLO
- * - arrives beside it instead of as another literal somewhere in a route.
+ * The first kind, and until #58 the only one. It exists so the string `'USER'`
+ * is written once rather than at every call site, and so the kinds that came
+ * after it - the four below - arrive beside it rather than as route literals.
  */
 const onUser = userId => ({ kind: 'USER', id: userId });
+
+/**
+ * The four kinds the master-data screens name - #58, and the "next kind" the
+ * line above was written waiting for.
+ *
+ * They are here rather than in the four routes for the reason `onUser` gives,
+ * and because `target_kind` is `varchar(20)`: a route that spelled its own
+ * string could write a twenty-first character and find out at runtime.
+ *
+ * What is *not* here is a fifth kind for faculties. Nothing maintains a
+ * faculty - `docs/acceptance/14` item 1 says the screen does not exist and that
+ * whose it would be has not been decided - so a kind for it would be a constant
+ * with no caller.
+ */
+const onDepartment = departmentId => ({ kind: 'DEPARTMENT', id: departmentId });
+const onProgram = programId => ({ kind: 'PROGRAM', id: programId });
+const onSubject = subjectId => ({ kind: 'SUBJECT', id: subjectId });
+const onStudent = studentId => ({ kind: 'STUDENT', id: studentId });
 
 /**
  * Whether today falls inside the account's stated window - #11's fourth
@@ -424,6 +460,10 @@ module.exports = {
   accountStillExists,
   recordActivity,
   onUser,
+  onDepartment,
+  onProgram,
+  onSubject,
+  onStudent,
   resolveGoogleAccount,
   resolvePasswordAccount,
   profileOf,

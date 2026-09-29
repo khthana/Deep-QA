@@ -1018,7 +1018,7 @@ Two of the seven are the reason it could never have done that job: the name is a
 across two columns, and the password is required for two role codes and useless for every
 other. *Refused* is what the first draft of this said in four places and it is wrong: nothing on
 the import path refuses a password, `users.js:195` hashes whatever it is given, and
-`accounts.js:275` refuses it at **sign-in**. A guard that lives at another seam is not a guard
+`accounts.js:309` refuses it at **sign-in**. A guard that lives at another seam is not a guard
 this screen's guidance may describe. `backend/routes/users.js` had already written that down in #56's own words - *a header
 cannot say "one of these two"* - and reading it is what turned a deletion into a fix.
 
@@ -5307,3 +5307,92 @@ three times, or that this screen imports rather than copies, which is history an
 sentence that expires is one that describes the world now (#130); a sentence that describes why a
 screen was built the way it was does not, and rewriting it would have moved line numbers other tickets
 cite (#173).
+
+## #58 — the four verbs the ticket named, and the table that added up
+
+The ticket said the master-data screens write nothing to `user_log`, which was true, and asked for
+`CREATE` / `UPDATE` / `DEACTIVATE` / `DELETE` entries for Departments and Programmes. Three things
+in that sentence were claims rather than instructions, and each of them was measured before anything
+was written.
+
+**The verbs are a claim about the routes that exist.** There is no deactivation of a department. A
+department is switched off by `is_active` on its edit form, and #14's removal *refuses* when
+something depends on the record — so a `DEACTIVATE_DEPARTMENT` would be a code for an action no
+route performs. It would also not have fitted: `user_log.activity` is `varchar(20)` and that string
+is twenty-one characters, which is the second time the width has decided a name here (`users.js`
+already merged two verbs into `SET_USER_STATUS` for it). A programme and a subject *do* need the
+verb, and for a reason the ticket did not give: their removal **turns into** a deactivation when
+something references the row, answering 200 with `deactivated: true`, and a line saying `DELETE`
+there contradicts the answer the same request gave the caller. So the ticket's four verbs came out
+as three for one screen and four for two others — read off the routes, not off the ticket. This is
+the *What is wrong* rule in its tenth shape: a diagnosis generalised across screens that do not have
+the same shape (#122), caught by reading the handlers.
+
+**"The screens after this one" is a sentence with a date on it.** #58 was written while #14 and #15
+were the frontier, and it deferred #16 and #17 to "then use the same helper". By the time it was
+taken, both were built and neither logged anything. What settled it was not the ticket but the
+sheets: `14` item 2, `15` item 2 and `16` item 1 all say the same thing in the same words — *one
+ticket for master data as a whole, not a line added to each screen as it is built* — and doing two
+of the four would have been exactly the drip all three refuse. `docs/06` names the phase, and
+stories 25–36 of it are the four screens and their imports (story 37, the last under that heading,
+is pagination everywhere and not a screen), which is where the boundary came from. Sheet `17` never claimed the gap and got the section anyway, because the
+register is the fourth screen of that phase and leaving it out is the thing being fixed.
+
+**The open question, and where the answer was written.** #13 left `IMPORT_USERS` writing one line
+per upload with no target, and migration 0006 wrote the limit down: *which accounts arrived in which
+upload is therefore still only answerable from the file*. The ticket says to decide that and this
+together. The answer is one line per record, in every import, keeping the import's own verb — an
+upload of twelve departments did twelve things, and the columns 0006 added exist to name them. The
+grouping people would want a thirteenth column for is already in the data: `now()` is the
+transaction's start and an import is one transaction, so an upload's lines share a timestamp to the
+microsecond. The cost is the length of the table, which is #13's retention question and is not
+answered here; it is stated with its number instead, because a measured cost written down is not the
+same as a cost hidden.
+
+That decision is recorded in `auth/accounts.js` beside `recordActivity`, and three sentences
+elsewhere had to move with it. `lib/importer.js` said `onCommit` was "where an audit line belongs" —
+it is where a replace-style import removes rows, and the audit line moved into `insert` so that a
+row rolled back to its savepoint takes its line with it. `HistoryPanel.js` said an import's object
+is "a whole file". Migration 0006's own paragraph is now a description of what was true until this
+ticket, and it was **appended to rather than rewritten**: the DDL is untouched, the ledger is by
+filename with no checksum, and the sentence is the reasoning the ticket was answering. A claim
+written in prose expires like a number (#130), and the copy you will miss is in the file you did not
+think you were changing.
+
+**Six mutants, none of them asking whether a line exists.** *Is there a line* dies to deleting any
+`recordActivity` call, which is the weakest claim that could be written. Five of the six ask whether
+the line tells the truth: the refused delete that logs a deletion, the deactivation that logs a
+delete (twice — programmes and subjects are two files and two decisions, #125), the import line with
+no target, and the import line written through the pool instead of the client. That last one killed
+**two** rows rather than one, and the number reported is the one measured (#102): moving the write
+out of the transaction also moves it out of the shared timestamp, because a pool write gets a
+transaction of its own. Both rows are in one file and about one mechanism, so it stayed one mutant.
+
+The sixth asks something else, and it was missing until the review asked for it. The one thing this
+ticket was told to *decide* is #13's open question, and the decision had a test under it but nothing
+that could break it: `usersimportnamesnoaccount` puts the shape #58 turned down — one line per
+upload, naming no account — back into `users.js` and measures one row of fifty-eight dying. That is
+#48's rule, met from the other side: there the proposal was declined and the mutant was the proposal
+made to run, here a question was answered and the mutant is the *other* answer made to run. A
+decision recorded only in a docblock is a sentence; a decision with a mutant against it is a claim
+the suite holds.
+
+**The table that added up.** The mutant count in `mutation/README.md` said 801 and the table summed
+to exactly 801, so nothing inside the document disagreed with anything else in it — and
+`anchors.py` said 822. Six mutant files (`47`, `81`, `117`, `118`, `164`, `167`, twenty-one mutants)
+had never been added to the table at all. This is not the failure #119 and #154 describe. There the
+rule was *count the table*, and counting the table here gives the wrong answer confidently, because
+what is missing from a table is invisible to a sum over it. The instrument that could see it was
+already running daily and was not asked: it counts mutants, not whether a file exists that the
+document does not know about — the same species as the tool that could not say what it did not look
+at (#123), one level up. The seven missing rows were filled in the same change, and the total is
+now 828; the fourth question for `anchors.py` is #176, because a fourth question is what #172 was.
+
+**Where it is proved, and where it is not.** All thirteen new rows are at the backend seam, because
+a line in `user_log` is a database effect and the only screen that shows it is #13's history panel —
+a different screen and a different role, so a browser row would walk two screens to ask what one
+query answers. What the browser seam *could* answer is the twenty new Thai labels, and that is
+appearance, so it is a hand-walk: `ACTIONS` went from eleven codes to twenty-seven and `TARGETS`
+from one kind to five, and nothing yet has looked at whether the history column reads
+*เพิ่มภาควิชา* or `CREATE_DEPARTMENT`. It is written on `13-user-activity-history.md` as item 6
+rather than left as a gap somebody would have to notice (#50).

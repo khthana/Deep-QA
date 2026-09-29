@@ -36,10 +36,18 @@ const PAGE_SIZE = 10
  * The codes `user_log.activity` holds, as a person reads them.
  *
  * Written where the actions are: `recordActivity` is called by the sign-in,
- * account, grant and profile routes, and these are the codes they write. An
- * unrecognised one falls through to the code itself rather than to a blank,
- * because a new activity nobody added a label for should still be visible in
- * an audit rather than silently absent.
+ * account, grant and profile routes, and by the four master-data screens since
+ * #58, and these are the codes they write. An unrecognised one falls through to
+ * the code itself rather than to a blank, because a new activity nobody added a
+ * label for should still be visible in an audit rather than silently absent.
+ *
+ * `user_log.activity` is `varchar(20)`, which is why the pair of verbs an
+ * account's status takes shares one code and why nothing here is longer than
+ * `IMPORT_DEPARTMENTS`. A department has no deactivation of its own because it
+ * has no status route: switching one off is an edit on its form, and #14's
+ * removal refuses rather than deactivating. A programme and a subject do,
+ * because their removal deactivates when something depends on the record, and a
+ * line saying *deleted* would then be false.
  */
 const ACTIONS = {
   LOGIN: 'เข้าสู่ระบบ',
@@ -53,6 +61,22 @@ const ACTIONS = {
   IMPORT_USERS: 'นำเข้าบัญชีผู้ใช้',
   GRANT_ROLE: 'ให้บทบาท',
   REVOKE_ROLE: 'ยกเลิกบทบาท',
+  CREATE_DEPARTMENT: 'เพิ่มภาควิชา',
+  UPDATE_DEPARTMENT: 'แก้ไขภาควิชา',
+  DELETE_DEPARTMENT: 'ลบภาควิชา',
+  IMPORT_DEPARTMENTS: 'นำเข้าภาควิชา',
+  CREATE_PROGRAM: 'เพิ่มหลักสูตร',
+  UPDATE_PROGRAM: 'แก้ไขหลักสูตร',
+  DELETE_PROGRAM: 'ลบหลักสูตร',
+  DEACTIVATE_PROGRAM: 'ปิดการใช้งานหลักสูตร',
+  IMPORT_PROGRAMS: 'นำเข้าหลักสูตร',
+  CREATE_SUBJECT: 'เพิ่มรายวิชา',
+  UPDATE_SUBJECT: 'แก้ไขรายวิชา',
+  DELETE_SUBJECT: 'ลบรายวิชา',
+  DEACTIVATE_SUBJECT: 'ปิดการใช้งานรายวิชา',
+  IMPORT_SUBJECTS: 'นำเข้ารายวิชา',
+  CREATE_STUDENT: 'เพิ่มนักศึกษา',
+  IMPORT_STUDENTS: 'นำเข้านักศึกษา',
 }
 
 /**
@@ -66,11 +90,17 @@ const ACTIONS = {
  * `assigned_by` the same way.
  *
  * Blank for the actions whose only object is the actor's own account, which is
- * what migration 0006 leaves null: signing in and out, switching role,
- * changing one's own password, and an import, whose object is a whole file.
+ * what migration 0006 leaves null: signing in and out, switching role, and
+ * changing one's own password. An import was on that list until #58 and is not
+ * any more - it writes a line per row, each naming the record it wrote, so a
+ * twelve-row upload reads as twelve named lines sharing one timestamp.
  */
 const TARGETS = {
   USER: 'บัญชีผู้ใช้',
+  DEPARTMENT: 'ภาควิชา',
+  PROGRAM: 'หลักสูตร',
+  SUBJECT: 'รายวิชา',
+  STUDENT: 'นักศึกษา',
 }
 
 const actedOn = entry =>

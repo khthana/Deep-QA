@@ -317,7 +317,7 @@ test('row 5: the screen states the rules the header cannot', async ({ page }) =>
   // three a person is most likely to get wrong - which language a name may be in, an era that is not the
   // one a Thai form usually asks for (#125), and a password that is required
   // for two role codes and useless for the rest (nothing on this path refuses
-  // one; `accounts.js:275` turns it away at sign-in).
+  // one; `accounts.js:309` turns it away at sign-in).
   //
   // Asserted before the template is downloaded, in the order a person meets
   // them: guidance that arrives after the file has been filled in is guidance

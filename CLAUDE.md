@@ -57,7 +57,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
   its own table (#133), a key's name read as its text (#127), an inference drawn from a
-  measurement that was itself correct (#165) — and the sheet itself asking for the defect (#89).
+  measurement that was itself correct (#165), a list of verbs naming an action no route performs
+  (#58) — and the sheet itself asking for the defect (#89).
 - **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. What the ticket wrote down as a prediction can be the state on the day it is
@@ -132,6 +133,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   at, not the next one twenty lines down; and two documents changed in the same breath can be shipped contradicting
   each other. After changing what a document counts, re-read every figure in it, and read the pair side by side.
   (#154)
+- **A table that adds up is not a table that is complete** — what is missing from it is invisible to
+  a sum over it, so *count the table* gives a confident wrong answer. Ask the instrument that counts
+  the things rather than the rows, and when it disagrees, the rows are what is short. (#58)
 - **A survey of the store has a date on it, and a successful fix is what expires one.** Read the
   date before the figure. (#50, #85)
 - **A claim written in prose expires like a number** — and the copy you will miss is in the file

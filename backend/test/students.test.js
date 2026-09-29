@@ -573,3 +573,85 @@ test('a student added here is available for Section enrolment', async () => {
     (error) => error.code === '23503',
   );
 });
+
+/**
+ * The activity log, as the two tests below ask about it — ticket #58.
+ *
+ * Read by the acting account, which is where migration 0006 says the line
+ * stays. `LOGIN` is excluded and nothing else is, so a line written without the
+ * target it should carry arrives here instead of being filtered out.
+ */
+const logOf = async (userId) => {
+  const { rows } = await api.pool.query(
+    `SELECT activity, target_kind, target_id, time_stamp FROM user_log
+      WHERE user_id = $1 AND activity <> 'LOGIN'
+      ORDER BY id ASC`,
+    [userId],
+  );
+  return rows;
+};
+
+const DEPT = ACCOUNTS.find((account) => account.alias === 'U_DEPT').id;
+
+const said = (rows) => rows.map((row) => [row.activity, row.target_kind, row.target_id]);
+
+/**
+ * The register has no delete route, so what this file writes it takes out
+ * itself, through the pool and by the codes it wrote — #134: a teardown is
+ * scoped to what the file wrote, not to who wrote it.
+ */
+const forget = (ids) =>
+  api.pool.query('DELETE FROM student WHERE student_id = ANY($1)', [ids]);
+
+test('adding a student writes one line naming them — #58', async () => {
+  const cookie = await signInAs('U_DEPT');
+  const before = (await logOf(DEPT)).length;
+
+  try {
+    assert.equal((await create(cookie, draftOf('66010580'))).status, 201);
+
+    assert.deepEqual(said((await logOf(DEPT)).slice(before)), [
+      ['CREATE_STUDENT', 'STUDENT', '66010580'],
+    ]);
+  } finally {
+    await forget(['66010580']);
+  }
+});
+
+test('an import writes a line per row, whether the row was new or overwritten — #58', async () => {
+  // The register is the one import that does both, and the person did one
+  // thing: uploaded a file. So both rows get the same verb, and what tells them
+  // apart is the register itself rather than the log. The seeded code is the
+  // overwriting half — `students.js` says its import "overwrites a person",
+  // and a line missing from that half would be an edit nothing recorded.
+  const cookie = await signInAs('U_DEPT');
+  const before = (await logOf(DEPT)).length;
+
+  const { rows: original } = await api.pool.query(
+    'SELECT first_name_th, last_name_th, program_id FROM student WHERE student_id = $1',
+    [SEEDED_CODE],
+  );
+  assert.equal(original.length, 1, 'the overwriting half needs a student already there');
+
+  try {
+    const imported = await importCsv(
+      cookie,
+      csvOf([draftOf('66010581'), draftOf(SEEDED_CODE)]),
+    );
+    assert.equal(imported.status, 201);
+
+    const written = (await logOf(DEPT)).slice(before);
+    assert.deepEqual(said(written), [
+      ['IMPORT_STUDENTS', 'STUDENT', '66010581'],
+      ['IMPORT_STUDENTS', 'STUDENT', SEEDED_CODE],
+    ]);
+    assert.deepEqual(written[0].time_stamp, written[1].time_stamp);
+  } finally {
+    await forget(['66010581']);
+    await api.pool.query(
+      `UPDATE student SET first_name_th = $2, last_name_th = $3, program_id = $4
+        WHERE student_id = $1`,
+      [SEEDED_CODE, original[0].first_name_th, original[0].last_name_th, original[0].program_id],
+    );
+  }
+});

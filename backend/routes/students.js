@@ -52,6 +52,7 @@
 
 const express = require('express');
 
+const { onStudent, recordActivity } = require('../auth/accounts');
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate } = require('../lib/fields');
@@ -349,10 +350,14 @@ function studentRoutes(pool) {
         },
         keys: [{ of: (values) => values.student_id, message: REFUSALS.repeatedStudentId }],
         verify: (values) => refuseWrite(req, values),
-        insert: async (client, values) => ({
-          ok: true,
-          row: await writeStudent(client, values, { overwrite: true }),
-        }),
+        insert: async (client, values) => {
+          const row = await writeStudent(client, values, { overwrite: true });
+          // One verb whether the row was new or overwritten, because the import
+          // is the one route here that does both and the person did one thing -
+          // #58. Inside the row's savepoint, as in every import.
+          await recordActivity(client, req.auth.userId, 'IMPORT_STUDENTS', onStudent(row.student_id));
+          return { ok: true, row };
+        },
       });
       return sendImport(res, result, 'students');
     } catch (error) {
@@ -402,6 +407,7 @@ function studentRoutes(pool) {
 
       try {
         const student = await writeStudent(pool, draft.values);
+        await recordActivity(pool, req.auth.userId, 'CREATE_STUDENT', onStudent(student.student_id));
         return res.status(201).json({ student });
       } catch (error) {
         if (isDuplicate(error)) {

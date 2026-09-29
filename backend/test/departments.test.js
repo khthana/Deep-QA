@@ -467,3 +467,117 @@ test('the Central Admin is refused by the server on every endpoint too', async (
     'วิศวกรรมคอมพิวเตอร์',
   );
 });
+
+/**
+ * The activity log, as the four tests below ask about it — ticket #58.
+ *
+ * Read by the *acting* account, because that is where migration 0006 says the
+ * line stays: an entry written when U_FAC edits a department is in U_FAC's
+ * history and in nobody else's. `LOGIN` is excluded and nothing else is,
+ * because signing in is the only other action this file causes — so a line
+ * written without the target it should carry arrives here rather than being
+ * filtered out by a query that asked for departments.
+ */
+const logOf = async (userId) => {
+  const { rows } = await api.pool.query(
+    `SELECT activity, target_kind, target_id, time_stamp FROM user_log
+      WHERE user_id = $1 AND activity <> 'LOGIN'
+      ORDER BY id ASC`,
+    [userId],
+  );
+  return rows;
+};
+
+const FAC = ACCOUNTS.find((account) => account.alias === 'U_FAC').id;
+
+const said = (rows) => rows.map((row) => [row.activity, row.target_kind, row.target_id]);
+
+test('adding, editing and removing a department each write one line — #58', async () => {
+  const cookie = await signInAs('U_FAC');
+  const before = (await logOf(FAC)).length;
+
+  assert.equal(
+    (await create(cookie, { department_id: 'L01', department_name_th: 'วิศวกรรมบันทึก' })).status,
+    201,
+  );
+  assert.equal((await edit(cookie, 'L01', { department_name_th: 'วิศวกรรมบันทึกกลาง' })).status, 200);
+  assert.equal((await remove(cookie, 'L01')).status, 204);
+
+  assert.deepEqual(said((await logOf(FAC)).slice(before)), [
+    ['CREATE_DEPARTMENT', 'DEPARTMENT', 'L01'],
+    ['UPDATE_DEPARTMENT', 'DEPARTMENT', 'L01'],
+    ['DELETE_DEPARTMENT', 'DEPARTMENT', 'L01'],
+  ]);
+
+  // The delete's line survives the record it names. `target_id` is not a
+  // foreign key for this reason and migration 0006 says so; asserting it here
+  // is what makes that a property of the system rather than of the schema.
+  assert.equal((await read(cookie, 'L01')).status, 404);
+});
+
+test('a refused removal writes nothing — #58', async () => {
+  // `05` is referenced by two programmes, a subject and an account, so the
+  // DELETE arrives as 23503 and the department is still there. A line saying it
+  // was deleted would be the one thing an audit record may not be.
+  const cookie = await signInAs('U_FAC');
+  const before = (await logOf(FAC)).length;
+
+  const refused = await remove(cookie, DEPT_COMPUTER);
+  assert.equal(refused.status, 409);
+  assert.equal(refused.body.message, REFUSALS.departmentInUse);
+
+  assert.deepEqual(said((await logOf(FAC)).slice(before)), []);
+});
+
+test('an import writes a line per row, sharing one timestamp — #58', async () => {
+  // The decision #13 left open: one line for the upload, or one per record.
+  // Two rows, two lines, each naming its own department — and the same instant
+  // on both, because `now()` is the transaction's start and an import is one
+  // transaction. That shared timestamp is what groups an upload's lines, which
+  // is why no column was added to do it.
+  const cookie = await signInAs('U_FAC');
+  const before = (await logOf(FAC)).length;
+
+  try {
+    const imported = await importCsv(
+      cookie,
+      csvOf([
+        { department_id: 'L02', department_name_th: 'วิศวกรรมนำเข้าหนึ่ง' },
+        { department_id: 'L03', department_name_th: 'วิศวกรรมนำเข้าสอง' },
+      ]),
+    );
+    assert.equal(imported.status, 201);
+
+    const written = (await logOf(FAC)).slice(before);
+    assert.deepEqual(said(written), [
+      ['IMPORT_DEPARTMENTS', 'DEPARTMENT', 'L02'],
+      ['IMPORT_DEPARTMENTS', 'DEPARTMENT', 'L03'],
+    ]);
+    assert.deepEqual(written[0].time_stamp, written[1].time_stamp);
+  } finally {
+    await remove(cookie, 'L02');
+    await remove(cookie, 'L03');
+  }
+});
+
+test('an import that is rolled back writes no lines either — #58', async () => {
+  // The lines are written inside each row's savepoint, so the transaction that
+  // takes the rows back takes them too. The second row collides with a
+  // department that is already there, which fails at the INSERT rather than at
+  // the read — the path that would otherwise have left a line for the first row
+  // behind it.
+  const cookie = await signInAs('U_FAC');
+  const before = (await logOf(FAC)).length;
+
+  const refused = await importCsv(
+    cookie,
+    csvOf([
+      { department_id: 'L04', department_name_th: 'วิศวกรรมย้อนกลับ' },
+      { department_id: DEPT_COMPUTER, department_name_th: 'วิศวกรรมซ้ำ' },
+    ]),
+  );
+  assert.equal(refused.status, 400);
+
+  assert.deepEqual(said((await logOf(FAC)).slice(before)), []);
+  assert.equal((await read(cookie, 'L04')).status, 404);
+});

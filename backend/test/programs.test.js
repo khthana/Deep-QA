@@ -685,3 +685,95 @@ test('a retired department is reported as retired, and nothing new may be filed 
     ]);
   }
 });
+
+/**
+ * The activity log, as the three tests below ask about it — ticket #58.
+ *
+ * Read by the acting account, which is where migration 0006 says the line
+ * stays. `LOGIN` is excluded and nothing else is, so a line written without the
+ * target it should carry arrives here instead of being filtered out.
+ */
+const logOf = async (userId) => {
+  const { rows } = await api.pool.query(
+    `SELECT activity, target_kind, target_id, time_stamp FROM user_log
+      WHERE user_id = $1 AND activity <> 'LOGIN'
+      ORDER BY id ASC`,
+    [userId],
+  );
+  return rows;
+};
+
+const FAC = ACCOUNTS.find((account) => account.alias === 'U_FAC').id;
+
+const said = (rows) => rows.map((row) => [row.activity, row.target_kind, row.target_id]);
+
+test('adding, editing and removing a programme each write one line — #58', async () => {
+  const cookie = await signInAs('U_FAC');
+  const before = (await logOf(FAC)).length;
+
+  assert.equal(
+    (
+      await create(cookie, {
+        program_id: 'L101',
+        program_name_th: 'หลักสูตรบันทึก',
+        department_id: DEPT_COMPUTER,
+      })
+    ).status,
+    201,
+  );
+  assert.equal((await edit(cookie, 'L101', { program_name_th: 'หลักสูตรบันทึกใหม่' })).status, 200);
+  assert.equal((await remove(cookie, 'L101')).status, 204);
+
+  assert.deepEqual(said((await logOf(FAC)).slice(before)), [
+    ['CREATE_PROGRAM', 'PROGRAM', 'L101'],
+    ['UPDATE_PROGRAM', 'PROGRAM', 'L101'],
+    ['DELETE_PROGRAM', 'PROGRAM', 'L101'],
+  ]);
+});
+
+test('a removal the database turns into a deactivation says so — #58', async () => {
+  // The fourth criterion's two outcomes are two different things to have
+  // happened to the record, so they are two codes. `DELETE_PROGRAM` on a
+  // programme that is still there and still referenced would be a line saying
+  // the opposite of what the same request answered the caller.
+  const cookie = await signInAs('U_FAC');
+  const before = (await logOf(FAC)).length;
+
+  const answer = await remove(cookie, SEEDED.id);
+  assert.equal(answer.status, 200);
+  assert.equal(answer.body.deactivated, true);
+
+  assert.deepEqual(said((await logOf(FAC)).slice(before)), [
+    ['DEACTIVATE_PROGRAM', 'PROGRAM', SEEDED.id],
+  ]);
+
+  // Put the seeded programme back: a file that runs after this one reads the
+  // register it was handed, and this one switched a row off.
+  assert.equal((await edit(cookie, SEEDED.id, { program_name_th: SEEDED.th, program_name_en: SEEDED.en, department_id: SEEDED.department, year: SEEDED.year, is_active: true })).status, 200);
+});
+
+test('an import writes a line per row, sharing one timestamp — #58', async () => {
+  const cookie = await signInAs('U_FAC');
+  const before = (await logOf(FAC)).length;
+
+  try {
+    const imported = await importCsv(
+      cookie,
+      csvOf([
+        { program_id: 'L102', program_name_th: 'หลักสูตรนำเข้าหนึ่ง', department_id: DEPT_COMPUTER },
+        { program_id: 'L103', program_name_th: 'หลักสูตรนำเข้าสอง', department_id: DEPT_COMPUTER },
+      ]),
+    );
+    assert.equal(imported.status, 201);
+
+    const written = (await logOf(FAC)).slice(before);
+    assert.deepEqual(said(written), [
+      ['IMPORT_PROGRAMS', 'PROGRAM', 'L102'],
+      ['IMPORT_PROGRAMS', 'PROGRAM', 'L103'],
+    ]);
+    assert.deepEqual(written[0].time_stamp, written[1].time_stamp);
+  } finally {
+    await remove(cookie, 'L102');
+    await remove(cookie, 'L103');
+  }
+});

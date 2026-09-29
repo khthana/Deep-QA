@@ -82,10 +82,16 @@ const { REFUSALS, sentenceOf } = require('../auth/refusals');
  *   `{ ok: true, row }`, or `{ ok: false, reason }`, or `{ ok: false, message }`
  *   where the sentence names a value the key could not carry.
  * - `onCommit(client)` runs once, inside the transaction, after every row has
- *   been written and before COMMIT. Where an audit line belongs - and, since
- *   #30, where a replace-style import removes what the file no longer names:
- *   returning `{ ok: false, message }` rolls the whole import back and refuses
- *   with that sentence. Any other return value commits as before. Optional.
+ *   been written and before COMMIT. Where a replace-style import removes what
+ *   the file no longer names, since #30: returning `{ ok: false, message }`
+ *   rolls the whole import back and refuses with that sentence. Any other
+ *   return value commits as before. Optional.
+ *
+ *   It used to be where the audit line belonged too, and is not any more. #58
+ *   decided an import writes a line per row rather than one for the upload, so
+ *   the line is written in `insert`, beside the row it names and inside that
+ *   row's savepoint - which is also what makes a rolled-back row take its log
+ *   line with it. `auth/accounts.js` carries the reasoning.
  *
  * Answers `{ ok: true, created: [row] }`, or `{ ok: false, empty: true }` for a
  * file with no rows in it, or `{ ok: false, wrongTemplate: true }` for a file

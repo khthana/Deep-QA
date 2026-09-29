@@ -676,3 +676,128 @@ test('a retired department keeps its subjects, and nothing new may be filed unde
     ]);
   }
 });
+
+/**
+ * The activity log, as the three tests below ask about it — ticket #58.
+ *
+ * Read by the acting account, which is where migration 0006 says the line
+ * stays. `LOGIN` is excluded and nothing else is, so a line written without the
+ * target it should carry arrives here instead of being filtered out.
+ */
+const logOf = async (userId) => {
+  const { rows } = await api.pool.query(
+    `SELECT activity, target_kind, target_id, time_stamp FROM user_log
+      WHERE user_id = $1 AND activity <> 'LOGIN'
+      ORDER BY id ASC`,
+    [userId],
+  );
+  return rows;
+};
+
+const DEPT = ACCOUNTS.find((account) => account.alias === 'U_DEPT').id;
+
+const said = (rows) => rows.map((row) => [row.activity, row.target_kind, row.target_id]);
+
+test('adding, editing and removing a subject each write one line — #58', async () => {
+  const cookie = await signInAs('U_DEPT');
+  const before = (await logOf(DEPT)).length;
+
+  assert.equal(
+    (
+      await create(cookie, {
+        subject_id: 'T5800001',
+        subject_name_th: 'รายวิชาบันทึก',
+        subject_name_en: 'Logged Subject',
+        credits: 3,
+        department_id: DEPT_COMPUTER,
+      })
+    ).status,
+    201,
+  );
+  assert.equal(
+    (
+      await edit(cookie, 'T5800001', {
+        subject_name_th: 'รายวิชาบันทึกใหม่',
+        subject_name_en: 'Logged Subject II',
+        credits: 3,
+      })
+    ).status,
+    200,
+  );
+  assert.equal((await remove(cookie, 'T5800001')).status, 204);
+
+  assert.deepEqual(said((await logOf(DEPT)).slice(before)), [
+    ['CREATE_SUBJECT', 'SUBJECT', 'T5800001'],
+    ['UPDATE_SUBJECT', 'SUBJECT', 'T5800001'],
+    ['DELETE_SUBJECT', 'SUBJECT', 'T5800001'],
+  ]);
+});
+
+test('a removal the database turns into a deactivation says so — #58', async () => {
+  // The same pair as a programme's, and for the same reason: the seeded subject
+  // is named by a Program Subject, so the DELETE comes back as a deactivation
+  // and a line saying *deleted* would contradict the answer the caller got.
+  const cookie = await signInAs('U_DEPT');
+  const before = (await logOf(DEPT)).length;
+
+  const answer = await remove(cookie, SUBJECT.id);
+  assert.equal(answer.status, 200);
+  assert.equal(answer.body.deactivated, true);
+
+  assert.deepEqual(said((await logOf(DEPT)).slice(before)), [
+    ['DEACTIVATE_SUBJECT', 'SUBJECT', SUBJECT.id],
+  ]);
+
+  // Put the seeded subject back: this file's later reads, and any file after
+  // it, were handed a catalogue with it switched on.
+  assert.equal(
+    (
+      await edit(cookie, SUBJECT.id, {
+        subject_name_th: SUBJECT.th,
+        subject_name_en: SUBJECT.en,
+        credits: SUBJECT.credits,
+        department_id: SUBJECT.department,
+        is_active: true,
+      })
+    ).status,
+    200,
+  );
+});
+
+test('an import writes a line per row, sharing one timestamp — #58', async () => {
+  const cookie = await signInAs('U_DEPT');
+  const before = (await logOf(DEPT)).length;
+
+  try {
+    const imported = await importCsv(
+      cookie,
+      csvOf([
+        {
+          subject_id: 'T5800002',
+          subject_name_th: 'รายวิชานำเข้าหนึ่ง',
+          subject_name_en: 'Imported One',
+          credits: 3,
+          department_id: DEPT_COMPUTER,
+        },
+        {
+          subject_id: 'T5800003',
+          subject_name_th: 'รายวิชานำเข้าสอง',
+          subject_name_en: 'Imported Two',
+          credits: 3,
+          department_id: DEPT_COMPUTER,
+        },
+      ]),
+    );
+    assert.equal(imported.status, 201);
+
+    const written = (await logOf(DEPT)).slice(before);
+    assert.deepEqual(said(written), [
+      ['IMPORT_SUBJECTS', 'SUBJECT', 'T5800002'],
+      ['IMPORT_SUBJECTS', 'SUBJECT', 'T5800003'],
+    ]);
+    assert.deepEqual(written[0].time_stamp, written[1].time_stamp);
+  } finally {
+    await remove(cookie, 'T5800002');
+    await remove(cookie, 'T5800003');
+  }
+});

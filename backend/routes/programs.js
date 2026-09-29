@@ -49,6 +49,7 @@
 
 const express = require('express');
 
+const { onProgram, recordActivity } = require('../auth/accounts');
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate } = require('../lib/fields');
@@ -299,6 +300,13 @@ function programRoutes(pool) {
                 values.year,
               ],
             );
+            // Inside the row's savepoint - #58, as in every import here.
+            await recordActivity(
+              client,
+              req.auth.userId,
+              'IMPORT_PROGRAMS',
+              onProgram(rows[0].program_id),
+            );
             return { ok: true, row: rows[0] };
           } catch (error) {
             if (isDuplicate(error)) return { ok: false, reason: 'duplicateProgramId' };
@@ -349,6 +357,7 @@ function programRoutes(pool) {
         ],
       );
 
+      await recordActivity(pool, req.auth.userId, 'CREATE_PROGRAM', onProgram(rows[0].program_id));
       return res.status(201).json({ program: rows[0] });
     } catch (error) {
       if (isDuplicate(error)) {
@@ -415,6 +424,12 @@ function programRoutes(pool) {
         ],
       );
 
+      await recordActivity(
+        pool,
+        req.auth.userId,
+        'UPDATE_PROGRAM',
+        onProgram(existing.program_id),
+      );
       return res.status(200).json({ program: rows[0] });
     } catch (error) {
       return next(error);
@@ -459,8 +474,28 @@ function programRoutes(pool) {
         },
       });
 
-      if (outcome.deleted) return res.status(204).send();
+      // The two outcomes are two lines, because they are two different things
+      // to have happened to the record - #58. A DELETE that the database turned
+      // into a deactivation logged as `DELETE_PROGRAM` would say the programme
+      // is gone when it is still there and still referenced. `outcome.missing`
+      // writes nothing: it is the row disappearing between the read and the
+      // attempt, and nobody did that on this request.
+      if (outcome.deleted) {
+        await recordActivity(
+          pool,
+          req.auth.userId,
+          'DELETE_PROGRAM',
+          onProgram(existing.program_id),
+        );
+        return res.status(204).send();
+      }
       if (outcome.missing) return res.status(404).json({ message: REFUSALS.programNotFound });
+      await recordActivity(
+        pool,
+        req.auth.userId,
+        'DEACTIVATE_PROGRAM',
+        onProgram(existing.program_id),
+      );
       return res.status(200).json({ program: outcome.row, deactivated: true });
     } catch (error) {
       return next(error);

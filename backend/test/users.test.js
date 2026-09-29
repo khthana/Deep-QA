@@ -529,7 +529,7 @@ test('an external assessor with a validity period', async (t) => {
   // The window's year is read as written, and until #125 nothing asked which
   // era it was written in. `2569-09-30` is a well-formed ISO date that `Date`
   // accepts, so it was filed as 2569 of the common era - five centuries out, on
-  // an account created `active` that cannot sign in (`auth/accounts.js:152`)
+  // an account created `active` that cannot sign in (`auth/accounts.js:168`)
   // and, this file having no delete route, cannot be removed either. `readDate`
   // is strict about the *shape* of a date and says so in its own docstring;
   // a guard about format cannot see a mistake about meaning.
@@ -1305,4 +1305,59 @@ test('a Buddhist leap day is told the year, not refused as a day that does not e
 
   assert.equal(response.status, 400);
   assert.equal(response.body.message, REFUSALS.yearEra(2567, 2024));
+});
+
+/**
+ * The question #13 left open, answered — ticket #58.
+ *
+ * `IMPORT_USERS` used to be a single line with no target, written after every
+ * row had been inserted, and migration 0006 wrote that down as a limit: which
+ * accounts arrived in which upload was only answerable from the file. It is a
+ * line per account now, each naming the account it made, and the decision was
+ * taken for all five imports at once — the four master-data screens write the
+ * same shape.
+ */
+const logOf = async (userId) => {
+  const { rows } = await api.pool.query(
+    `SELECT activity, target_kind, target_id, time_stamp FROM user_log
+      WHERE user_id = $1 AND activity = 'IMPORT_USERS'
+      ORDER BY id ASC`,
+    [userId],
+  );
+  return rows;
+};
+
+test('an import writes a line per account, each naming it — #58', async () => {
+  const admin = await signInAs('U_ADMIN');
+  const adminId = ACCOUNTS.find((account) => account.alias === 'U_ADMIN').id;
+  const before = (await logOf(adminId)).length;
+
+  const csv = [
+    IMPORT_COLUMNS.join(','),
+    `LOG_ONE,logone@kmitl.ac.th,,ทดสอบ,บันทึกหนึ่ง,,,,${DEPT_COMPUTER},,TEACHER,${DEPT_COMPUTER},,`,
+    `LOG_TWO,logtwo@kmitl.ac.th,,ทดสอบ,บันทึกสอง,,,,${DEPT_COMPUTER},,TEACHER,${DEPT_COMPUTER},,`,
+  ].join('\r\n');
+
+  try {
+    const response = await importCsv(admin, csv);
+    assert.equal(response.status, 201, response.text);
+    assert.equal(response.body.created, 2);
+
+    const written = (await logOf(adminId)).slice(before);
+    assert.deepEqual(
+      written.map((row) => [row.target_kind, row.target_id]),
+      [
+        ['USER', 'LOG_ONE'],
+        ['USER', 'LOG_TWO'],
+      ],
+    );
+    // One upload is one transaction and `now()` is its start, so the two lines
+    // share an instant. That is what groups them, and it is why no column was
+    // added to say which upload a line came from.
+    assert.deepEqual(written[0].time_stamp, written[1].time_stamp);
+  } finally {
+    // There is no delete route for an account, so this file takes back what it
+    // wrote through the pool, by the two identifiers it wrote — #134.
+    await api.pool.query(`DELETE FROM users WHERE user_id = ANY($1)`, [['LOG_ONE', 'LOG_TWO']]);
+  }
 });

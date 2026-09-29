@@ -47,6 +47,14 @@ ALTER TABLE user_log
 -- account created. Which accounts arrived in which upload is therefore still
 -- only answerable from the file.
 --
+-- That last paragraph describes what was true until #58, which took the limit
+-- out: an import now writes a line per row it wrote, each naming that row, so
+-- IMPORT_USERS carries a target like everything else. Nothing here changed -
+-- the columns and the constraint are what made it possible - and the sentence
+-- stays because it is the reasoning the ticket was answering. The five lines
+-- above it are still exactly true: LOGIN, GOOGLE_LOGIN, LOGOUT, SWITCH_ROLE and
+-- CHANGE_PASSWORD are the actions with no object but the actor.
+--
 -- Written together or not at all: a kind without an id names nothing, an id
 -- without a kind cannot be looked up in any table.
 ALTER TABLE user_log

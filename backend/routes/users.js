@@ -541,11 +541,20 @@ function userRoutes(pool) {
         },
         insert: async (client, { values, role }) => {
           const written = await insertAccount(client, values, role, req.auth.userId);
-          return written.ok ? { ok: true, row: written.user } : written;
+          if (!written.ok) return written;
+          // One line per account, naming it - #58, which decided this question
+          // and #13's together for all five imports. It used to be one line for
+          // the upload with no target, written in `onCommit`; migration 0006
+          // records that as a limit, and `auth/accounts.js` records the answer.
+          // Inside the row's savepoint, so a rolled-back row takes its line.
+          await recordActivity(
+            client,
+            req.auth.userId,
+            'IMPORT_USERS',
+            onUser(written.user.user_id),
+          );
+          return { ok: true, row: written.user };
         },
-        // One line for the upload rather than one per account. Migration 0006
-        // says why it names no target.
-        onCommit: (client) => recordActivity(client, req.auth.userId, 'IMPORT_USERS'),
       });
 
       return sendImport(res, result, 'users');

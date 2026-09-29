@@ -45,13 +45,13 @@ which a header could never have carried them:
       owner cut that clause on 9 September 2569, so the screen carries the
       weaker true half and `readAccount`'s `invalidUser` is stated nowhere)
     the password is required for FULL_ADMIN and EXT_ASSESSOR and useless for
-      the rest - nothing on this path refuses one, `accounts.js:275` does, at
+      the rest - nothing on this path refuses one, `accounts.js:309` does, at
       sign-in
 
 and a third is a defect found while writing it. `2569-09-30` is a well-formed
 ISO date, is accepted, and files the window in the year 2569 **of the common
 era** - five centuries out, on an account that is created `active`, cannot sign
-in (`backend/auth/accounts.js:152`) and cannot be deleted. That is
+in (`backend/auth/accounts.js:168`) and cannot be deleted. That is
 [#125](https://github.com/khthana/Deep-QA/issues/125), and it was closed the
 same day: `readDate` now refuses a year outside 1900-2200 and offers the
 arithmetic. For one day the word `ค.ศ.` on the screen was the only thing
