@@ -119,8 +119,8 @@ class Resolution(unittest.TestCase):
         self.assertIsNone(anchors.runs("21a(", SPECS))
 
 
-class Census(unittest.TestCase):
-    """The check over a store this test made up."""
+class TempStore(unittest.TestCase):
+    """A store on disk this file made up, for the classes that need one."""
 
     def setUp(self):
         self.root = tempfile.mkdtemp()
@@ -133,6 +133,10 @@ class Census(unittest.TestCase):
         with io.open(path, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(text)
         return path
+
+
+class Census(TempStore):
+    """The check over a store this test made up."""
 
     def test_a_clean_store_has_no_problems(self):
         path = self.write("21-rubrics.py", "    cd e2e && npx playwright test 21a-rubrics\n")
@@ -163,6 +167,59 @@ class Census(unittest.TestCase):
         path = self.write("x.py", 'npx playwright test 21a-rubrics --grep "Departments.js"\n')
         problems, arguments, skipped = anchors.commands(SPECS, [path])
         self.assertEqual((problems, arguments, skipped), (0, 1, 2))
+
+
+SHEET = (
+    "| # | เกณฑ์ | ทำอะไร | "
+    "ต้องเห็นอะไร | ✓ |\n"
+    "|---|---|---|---|---|\n"
+    "| 1 | a | b | c | ☑ |\n"
+)
+
+
+class Columns(TempStore):
+    """Does a row render the cells it was written with? - #172."""
+
+    def test_a_sheet_whose_rows_match_its_header(self):
+        self.assertEqual(anchors.columns([self.write("16.md", SHEET)]), (0, 1, 1))
+
+    def test_the_row_with_one_pipe_too_many_is_a_problem(self):
+        # The disease itself: six cells in a five-column table, where Markdown
+        # draws the blank and the mark lands in a cell nobody renders.
+        sheet = SHEET.replace("| c | ☑ |", "| c || ☑ |")
+        problems, tables, rows = anchors.columns([self.write("16.md", sheet)])
+        self.assertEqual((problems, tables, rows), (1, 1, 1))
+
+    def test_a_row_with_one_pipe_too_few_is_a_problem_as_well(self):
+        # The same illness read from the other side: a mark that swallowed its
+        # own column renders in the cell before it.
+        sheet = SHEET.replace("| c | ☑ |", "| c ☑ |")
+        self.assertEqual(anchors.columns([self.write("16.md", sheet)])[0], 1)
+
+    def test_an_escaped_pipe_is_a_character_and_not_a_cell(self):
+        # What the renderer does, which is what this has to do: `\|` is drawn
+        # inside the cell rather than ending it.
+        sheet = SHEET.replace("| b |", "| a \\| b |")
+        self.assertEqual(anchors.columns([self.write("16.md", sheet)])[0], 0)
+
+    def test_a_row_quoted_inside_a_fence_is_skipped(self):
+        # A sheet that quotes a broken row on purpose is explaining the defect,
+        # not carrying it. #172's own ticket does exactly this.
+        sheet = SHEET + "\n```\n| 1 | a | b | c || ☑ |\n```\n"
+        self.assertEqual(anchors.columns([self.write("16.md", sheet)])[0], 0)
+
+    def test_a_table_with_no_rule_under_its_header_is_not_a_table(self):
+        # Two lines that merely hold pipes are prose, and counting them as a
+        # table would report every sentence with a `|` in it.
+        prose = "a | b | c\nd | e\n"
+        self.assertEqual(anchors.columns([self.write("16.md", prose)]), (0, 0, 0))
+
+    def test_two_tables_in_one_file_are_counted_apart(self):
+        # The width is the header's own, not the file's: a four-column table
+        # under a five-column one is not four rows of the first.
+        other = "| a | b | c | d |\n|---|---|---|---|\n| 1 | 2 | 3 | 4 |\n"
+        problems, tables, rows = anchors.columns([self.write("16.md", SHEET + "\n" + other)])
+        self.assertEqual((problems, tables, rows), (0, 2, 2))
 
 
 class Store(unittest.TestCase):

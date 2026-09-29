@@ -5167,3 +5167,71 @@ so one run answers both halves. All six killed **one row — their own** — and
 the whole of `36a`, `37a`, `42a`, `44a`, `27a` and `96a` standing. That is what says the six sites are
 six claims rather than one: had the helpers been merged into a single shared hook, one control would
 have killed all six and none of them would have been measurable apart (#68).
+
+## #172 — the six rows whose marks fell outside the table, and the instrument that was missing
+
+#172 is the follow-up #79 left behind. #79 found a stray `|` in row 8 of
+`docs/acceptance/18-program-subjects.md` — six cells in a five-column table, so Markdown drew the
+empty sixth and the ☑ fell off the end — and a census of every acceptance sheet found **seven** rows
+like it. #79 fixed the one it was holding. The other six waited.
+
+**A survey has a date on it, and a successful fix expires only the part of it that was fixed**
+(#50). So the first move was not to open the two sheets at the line numbers #79 wrote down; it was to
+re-run the census against today's tree. It answered the same six: lines 41, 49 and 50 of
+`13-user-activity-history.md` and lines 76, 93 and 94 of `16-subjects.md`, every one of them
+`... || ☑ |`, every one of them hiding a ☑. The ticket's *What is wrong* was eighteen days old and
+still true — which is the outcome you cannot assume and can only measure (#66, #111).
+
+**The fix is one character per row and nothing else.** The ticket asks for two things that pull the
+same way: the mark must not change (a `|` that swallowed a column is not licence to re-decide what
+the row was walked as) and **the line numbers must not move**, because other tickets cite these
+sheets by line. Removing one `|` does both by construction, and the proof is the diff: six
+insertions, six deletions, no line added or removed, and each pair identical but for the pipe. The
+diff was proofread by rendering it rather than by reading it in the console (the console is cp874),
+line ends side by side.
+
+**Criterion 3 is the ticket's real subject: an instrument, not a memory.** Twice now the defect has
+been found by someone looking — #79's census and this one — and both times the answer was a number
+somebody counted by hand. `mutation/anchors.py` already reads exactly the store this question is
+about, and already asks two questions of it; the third fits beside them with no new file to
+remember to run. `columns()` finds a header (a line holding `|` with a `|---|---|` rule under it),
+takes its width, and counts the cells of every row under it, splitting on `|` that is not escaped —
+because `\|` is a character in a cell and not the edge of one, which is what the renderer does. A
+row whose count differs prints `CELLS <file>:<line> -> N cells in a M-column table`, and `__main__`
+now exits non-zero on it as it does on the other two.
+
+**An instrument is believed after it has been broken, not before** (#124). One of the six pipes was
+put back and the run named that row and no other; the other direction — a row with one pipe too
+*few*, where the mark is swallowed into the cell before it — is the same illness read from the far
+side and is caught too. Seven cases in `anchors_test.py` (29 now, from 22) hold what the check
+promises against a store the test file makes up, for the reason the second question's tests give:
+running it against the real store proves only that the store is clean today, never that a broken row
+would be **found**. Two of those cases are about what must *not* be reported — an escaped pipe, and a
+broken row quoted inside a fence, which is what a sheet does when it is explaining the defect rather
+than carrying it. #172's own ticket does exactly that.
+
+**What it cannot see is written down rather than left to be discovered** (#123): tables written as
+HTML, a row wrapped onto a second line — the same limit the second question has — and the
+*contents* of a cell. A ☑ in the right column that should have been a ⚙ is a different question, and
+a check that pretended to answer it would be the species of tool this one exists to replace.
+
+**The net was cast wider than the ticket asked, to find out whether it could be.** The ticket is about
+`docs/acceptance/`; the check reads what the second question reads — `mutation/*.py`, `mutation/*.md`,
+`docs/acceptance/*.md` and `e2e/README.md` — and after the six rows it reports **243 tables, 2113
+rows, problems 0**. That is what licenses leaving it on: had those extra files been full of prose the
+check misreads as tables, the honest answer would have been to scope it to `docs/acceptance/` and say
+so with the number.
+
+**That store is a boundary, and a boundary is a blind spot, so it is printed rather than assumed**
+(#123). Run the same function over every `.md` in the repository outside `node_modules` and it reports
+**nine** more rows — `docs/03-er-diagram.md:11–14` and five in `docs/05-screen-api-mapping.md`. They
+are the same mechanism and **not** the same symptom: an unescaped `|` inside a code span
+(`` `||--o{` ``, `` `POST /api/rubrics/create|update|delete|get-by-program` ``), which GitHub splits on
+just the same, but none of them is an acceptance row and none of them hides a mark. So no seventh
+marked row survives, which is what #172 asked; the nine are a separate ticket, written in the tracker
+rather than into this paragraph (#119).
+
+**No new line in `CLAUDE.md`'s index.** #79's line already says *count the cells, not only the marks*
+and #123's already says *ask the catalogue, not a list*; what #172 adds is that this particular
+catalogue is now asked by a script, which is this story, not a rule. A rule met again is a sentence
+in the ticket's story, not a second line in the index.

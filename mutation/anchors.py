@@ -57,6 +57,27 @@ there are hundreds of those; `docs/lessons.md` and `docs/handoff/` are narrative
 where a command written the wrong way is sometimes quoted on purpose - the #154
 story quotes `npx playwright test 51a` as the defect it is about. The count of
 tokens it skipped as flags and their values is printed beside the findings.
+
+## The third question: does every row have as many cells as its own header?
+
+A row with one `|` too many is **six cells in a five-column table**. Markdown
+draws the first five, so the mark column draws the blank that was pushed into it
+and the mark itself lands in a sixth cell nobody renders. Seven rows were doing
+this when #79 counted them, and the walk queue is counted off that column: **a
+mark that is written is not a mark that is read**. All seven hid a ☑, so the
+queue was never wrong - but nothing stops the next one hiding a ◐, and that is
+what this exists for (#172).
+
+`columns()` reads the same store as `commands()` and counts the cells of every
+row against the header of its own table, the way the renderer splits them: on
+every `|` that is not escaped, inside code spans as well, because that is what
+GitHub does with a row before it looks at anything else.
+
+**What it does not look at**: a table written in HTML rather than in pipes; a row
+wrapped onto a second line, which it reads as two rows and neither matches; and
+the *contents* of a cell, so a mark in the wrong column of a table whose width is
+right is still invisible to it. Lines inside a fenced block are skipped and
+counted out loud, because a fence is where a sheet quotes a broken row on purpose.
 """
 
 import ast
@@ -379,7 +400,80 @@ def commands(specs=None, files=None):
     return problems, checked, skipped
 
 
+# The edge between two cells: a `|` the row did not escape, because `\|` is a
+# character the renderer draws inside the cell rather than the end of one.
+EDGE = re.compile(r"(?<!\\)\|")
+# A rule is a line made of nothing but pipes, colons, hyphens and space.
+RULE = re.compile(r"[\s:|-]+")
+
+
+def _cells(line):
+    """The cells one table row renders as, split the way the renderer splits it."""
+    body = line.strip()
+    if body.startswith("|"):
+        body = body[1:]
+    if body.endswith("|"):
+        body = body[:-1]
+    return EDGE.split(body)
+
+
+def _is_rule(line):
+    """Is this the `|---|---|` under a header?"""
+    return bool(RULE.fullmatch(line)) and "-" in line
+
+
+def columns(files=None):
+    """(problems, tables read, rows read) over the store's markdown tables.
+
+    Takes its files as an argument for the same reason `commands()` does: the
+    only way to assert that a six-cell row is *found* is to hand it one, and
+    today's store is clean by construction the moment this lands.
+    """
+    named = files is not None
+    if not named:
+        files = _store()[1]
+    problems = tables = rows = fenced_lines = 0
+    for path in files:
+        short = os.path.relpath(path, ROOT).replace("\\", "/")
+        with io.open(path, encoding="utf-8") as handle:
+            lines = handle.read().split("\n")
+        width = None
+        fenced = False
+        for number, line in enumerate(lines, 1):
+            if line.strip().startswith("```"):
+                fenced = not fenced
+                width = None
+                continue
+            if fenced:
+                fenced_lines += 1
+                continue
+            if "|" not in line:
+                width = None
+                continue
+            if width is None:
+                # A header is a line with a `|---|` under it, and nothing else is.
+                if number < len(lines) and _is_rule(lines[number]):
+                    width = len(_cells(line))
+                    tables += 1
+                continue
+            if _is_rule(line):
+                continue
+            rows += 1
+            got = len(_cells(line))
+            if got != width:
+                problems += 1
+                print("CELLS %s:%d -> %d cells in a %d-column table" % (short, number, got, width))
+    if not named:
+        # The store's boundary is the blind spot the other three cannot see, so
+        # it goes in the summary rather than only in the README (#123).
+        print("columns: reading the same %d files as the question above" % len(files))
+        print("columns: tables %d | rows %d | lines skipped inside fences %d | problems %d"
+              % (tables, rows, fenced_lines, problems))
+    return problems, tables, rows
+
+
 if __name__ == "__main__":
     misanchored = check()
     undocumented = commands()[0]
-    sys.exit(1 if (misanchored or undocumented) else 0)
+    miscounted = columns()[0]
+    sys.exit(1 if (misanchored or undocumented or miscounted) else 0)
