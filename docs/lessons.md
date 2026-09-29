@@ -5396,3 +5396,64 @@ appearance, so it is a hand-walk: `ACTIONS` went from eleven codes to twenty-sev
 from one kind to five, and nothing yet has looked at whether the history column reads
 *เพิ่มภาควิชา* or `CREATE_DEPARTMENT`. It is written on `13-user-activity-history.md` as item 6
 rather than left as a gap somebody would have to notice (#50).
+
+## #176 — the fourth question, and the document that agreed with itself
+
+#58 found the mutation store's file table summing to exactly the total written beside it while
+`anchors.py` counted twenty-one more mutants than either. Nothing inside `mutation/README.md`
+disagreed with anything else in it. This ticket is the instrument for that, and the shape of the
+instrument is the whole of it: **`catalogue()` compares the directory with the document, not the
+document with itself.** Every check that existed walked a list of files and asked something of each
+one; none of them asked whether the list the document holds is the list the directory has.
+
+**Four answers, kept apart.** A sheet the table does not name (`NOT IN THE TABLE`), a row naming a
+sheet that is gone (`TABLE ROW NAMES NO FILE`), a row whose figure is not the number of entries in
+that sheet's `MUTANTS` (`COUNT`), and the stated total against the sum of the rows (`TOTAL`). They
+are printed apart because they are different repairs — the first is a row to write, the third is a
+figure to correct — and folding them together is what the old `NO READABLE MUTANTS` did before #172
+split it. `COUNT` is also what makes `TOTAL` worth having: once every row is checked against its own
+file, the total stops being a number somebody has to remember to update and becomes a sum of things
+that were each measured.
+
+**Two more answers that are not problems in disguise.** A sheet whose `MUTANTS` cannot be read gets
+`CANNOT COUNT` and a document with no total at all gets `CANNOT ASK`, both of them problems rather
+than silence. This is #159's rule in a second place: a check that can fail to run has three answers,
+not two, and folding *could not ask* into *fine* is how a store gets a clean report about a question
+nobody answered.
+
+**One list, asked of the directory.** The pattern that recognises a sheet was written in `check()`
+and would have been written a second time here, so it came out as `sheets()` and both questions call
+it. A list of names to skip was the alternative and it is the one #126 already caught: `harness_test.py`
+carries a `MUTANTS` fixture, and a hand-kept skip list counts it as three real mutants the first time
+somebody forgets to extend it. A file added tomorrow is now in both questions or in neither. The
+third copy was in the document itself: `mutation/README.md` told the reader to count the store with
+a hand-written one-liner whose pattern was looser than `SHEET` and which read only the first
+`MUTANTS` assignment in a file — the blind spot `_module` was hardened against in #149. It now says
+to run the instrument. The review found it, and it is the sentence directly above the block that
+this ticket had just edited: what a diff touches is what a diff proofreads (#154), and the line
+below the one you changed is not touched.
+
+**Nine tests, and one measurement they cannot make.** The tests at the `anchors_test.py` seam cover
+each answer against a made-up store built in a temporary directory, which is what lets them say
+*this input gives that problem*. What they cannot say is that the check would have caught the thing
+it was written for, because the store they walk is not the real one. So that was measured by hand
+and written into `mutation/README.md`: the real table put back the way it was on 29 September — six
+rows removed *and* the total lowered to match, so the document is self-consistent again — gives
+`problems 6`, every line a `NOT IN THE TABLE`, and no `TOTAL` at all. That is the exact condition the
+other three questions called clean, and it is the number worth publishing.
+
+**A fixture that varies two things measures neither.** The row-count test first expected one problem
+and got two: moving a row's figure without moving the total makes the document disagree with the file
+*and* with itself, so `COUNT` and `TOTAL` both fire. The expectation was wrong, not the code, and the
+fix was in the fixture — move the total with the row, so the only disagreement left is the one the
+test is about. It is the mutant rule (#101) at the fixture: something written to fail one claim has to
+leave the rest standing.
+
+**An instrument gains a caller and an old defect becomes visible.** `_module` had been opening sheets
+without closing them since it was written; nothing noticed until `_held` called it eighty-four more
+times in one run and Python printed the `ResourceWarning`. The fix is one `with`. Nothing about the
+new question caused it — the new question is only what made the count big enough to hear.
+
+No new line went into `CLAUDE.md`. The rule this ticket is about, *a table that adds up is not a
+table that is complete*, was written there under #58, on the day the hole was found; this is the
+ticket that turned it into something that runs, and a rule met again is a sentence in its story.

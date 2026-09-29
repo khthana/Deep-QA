@@ -252,5 +252,87 @@ class Store(unittest.TestCase):
         self.assertEqual(anchors.commands(), (1, 0, 0))
 
 
+SHEET_SOURCE = (
+    "FILES = {'a': 'x.js'}\n"
+    "MUTANTS = {'one': ('a', 'p', 'q'), 'two': ('a', 'r', 's')}\n"
+)
+
+TABLE = (
+    "| ไฟล์ | ตั๋ว | จำนวน |\n"
+    "|---|---|---:|\n"
+    "| `21-rubrics.py` | #21 x | 2 |\n"
+    "\n"
+    "รวม **2 ตัว** (วันนี้)\n"
+)
+
+
+class Catalogue(TempStore):
+    """Does the document know about every file there is? - #176."""
+
+    def store(self, table=TABLE, source=SHEET_SOURCE, name="21-rubrics.py"):
+        sheet = self.write(name, source)
+        return [sheet], self.write("README.md", table)
+
+    def test_a_document_that_knows_the_whole_catalogue(self):
+        sheets, readme = self.store()
+        self.assertEqual(anchors.catalogue(sheets, readme), (0, 1, 1))
+
+    def test_a_file_the_table_does_not_know_about(self):
+        # The disease itself. Six files were in this state for weeks, and the
+        # sum over the table agreed with the total the whole time.
+        sheets, readme = self.store()
+        sheets.append(self.write("22-rubric-criteria.py", SHEET_SOURCE))
+        problems, files, rows = anchors.catalogue(sheets, readme)
+        self.assertEqual((problems, files, rows), (1, 2, 1))
+
+    def test_a_row_naming_a_file_that_is_gone(self):
+        # The same illness from the other side: a sheet deleted or renamed
+        # leaves a row that reads like a claim about something.
+        sheets, readme = self.store()
+        self.assertEqual(anchors.catalogue([], readme)[0], 1)
+
+    def test_a_row_whose_count_disagrees_with_the_file(self):
+        # This is what makes the total a number a machine checks rather than
+        # one somebody remembered to change.
+        # The total moves with the row, so the one thing left disagreeing is
+        # the row and the file. A fixture that left the total behind would
+        # report two problems and prove neither of them on its own.
+        sheets, readme = self.store(table=TABLE.replace("| 2 |", "| 3 |").replace("**2 ", "**3 "))
+        self.assertEqual(anchors.catalogue(sheets, readme)[0], 1)
+
+    def test_a_total_that_disagrees_with_the_rows(self):
+        sheets, readme = self.store(table=TABLE.replace("**2 ", "**9 "))
+        self.assertEqual(anchors.catalogue(sheets, readme)[0], 1)
+
+    def test_no_total_at_all_is_could_not_ask_rather_than_clean(self):
+        # level, behind, and *could not ask* - the third answer again (#159).
+        sheets, readme = self.store(table=TABLE.split("\n\n")[0] + "\n")
+        self.assertEqual(anchors.catalogue(sheets, readme)[0], 1)
+
+    def test_a_row_quoted_inside_a_fence_is_not_a_row(self):
+        # A README that shows what a row looks like is explaining the table,
+        # not extending it.
+        fenced = TABLE + "\n```\n| `99-invented.py` | #99 x | 7 |\n```\n"
+        sheets, readme = self.store(table=fenced)
+        self.assertEqual(anchors.catalogue(sheets, readme), (0, 1, 1))
+
+    def test_a_sheet_whose_mutants_cannot_be_read_is_said_out_loud(self):
+        # Counting it as zero would make the table's number look wrong for a
+        # reason that is not the table's fault.
+        sheets, readme = self.store(source="MUTANTS = {}\n")
+        self.assertEqual(anchors.catalogue(sheets, readme)[0], 1)
+
+    def test_the_tooling_beside_the_sheets_is_not_a_sheet(self):
+        # `anchors.py`, `harness.py` and the two test files hold no mutants and
+        # belong in no row; a list of names to skip would lie the day somebody
+        # adds one (#126), so the catalogue asks the same pattern `check()` does.
+        sheets = anchors.sheets()
+        self.assertTrue(sheets)
+        names = [os.path.basename(path) for path in sheets]
+        self.assertNotIn("anchors.py", names)
+        self.assertNotIn("harness.py", names)
+        self.assertFalse([name for name in names if name.endswith("_test.py")])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -78,6 +78,36 @@ wrapped onto a second line, which it reads as two rows and neither matches; and
 the *contents* of a cell, so a mark in the wrong column of a table whose width is
 right is still invisible to it. Lines inside a fenced block are skipped and
 counted out loud, because a fence is where a sheet quotes a broken row on purpose.
+
+## The fourth question: does the document know about every file there is?
+
+The three questions above all walk a list of files and ask something of each.
+None of them asks whether `mutation/README.md` knows that list. On 29 September
+2569 its file table summed to exactly the 801 it claimed - nothing inside the
+document disagreed with anything else in it - while this file counted 822. Six
+sheets had never been added to the table at all, twenty-one mutants between
+them, and **what is missing from a table is invisible to a sum over it**: the
+standing rule was *count the table rather than trusting the figure*, and
+counting the table gives a confident wrong answer in exactly this case (#58).
+
+`catalogue()` compares the directory with the document rather than the document
+with itself, and answers four things apart: a sheet the table does not name, a
+row naming a sheet that is gone, a row whose count is not the number of entries
+in that sheet's `MUTANTS`, and the stated total against the sum of the rows.
+The third is what makes the fourth mean anything - with every row checked
+against its own file, the total stops being a number somebody remembered to
+change. It calls `sheets()`, the same list `check()` walks, so a file added
+tomorrow is in both or in neither (#126).
+
+**What it does not look at**: whether a row's *description* still describes its
+sheet, which is prose and is nobody's to count; a second table of files, if one
+is ever written, since it finds rows by their shape and would read both as one;
+and a sheet whose `MUTANTS` it cannot read, where it says so rather than
+comparing the row against a zero that is the sheet's fault and not the table's.
+The total it reads is the first bold integer after the last row, so a bold
+number written into a paragraph between the two would be taken for the total -
+the table is the anchor there, and moving the figure away from it is the one
+edit that can fool this question.
 """
 
 import ast
@@ -133,7 +163,8 @@ def _value(node, env):
 
 def _module(path):
     """(FILES, MUTANTS-as-AST, SUPERSEDED, env) for one mutation file."""
-    tree = ast.parse(io.open(path, encoding="utf-8").read())
+    with io.open(path, encoding="utf-8") as handle:
+        tree = ast.parse(handle.read())
     env, files, mutants, superseded = {}, {}, None, set()
     for node in tree.body:
         if not isinstance(node, ast.Assign) or not isinstance(node.targets[0], ast.Name):
@@ -189,16 +220,23 @@ def _edits(value):
     return None
 
 
+def sheets():
+    """Every mutation sheet in the store, asked of the directory.
+
+    A sheet is named for its ticket - `124-users-template-sample.py`. The
+    tooling beside them is not, and `harness_test.py` holds a `MUTANTS` fixture
+    that a list of names to skip would have counted as three real mutants the
+    first time somebody forgot to extend it (#126). Both questions that need
+    this list call it rather than writing the pattern twice (#97).
+    """
+    return [path for path in sorted(glob.glob(os.path.join(HERE, "*.py")))
+            if SHEET.match(os.path.basename(path))]
+
+
 def check():
     total = checked = problems = unreadable = kept = 0
     source = {}
-    for path in sorted(glob.glob(os.path.join(HERE, "*.py"))):
-        # A sheet is named for its ticket - `124-users-template-sample.py`. The
-        # tooling beside them is not, and `harness_test.py` holds a `MUTANTS`
-        # fixture that a list of names to skip would have counted as three real
-        # mutants the first time somebody forgot to extend it (#126).
-        if not SHEET.match(os.path.basename(path)):
-            continue
+    for path in sheets():
         short = os.path.relpath(path, ROOT).replace("\\", "/")
         files, mutants, superseded, env = _module(path)
         # An empty literal is the same finding as a missing one: a sheet that
@@ -472,8 +510,119 @@ def columns(files=None):
     return problems, tables, rows
 
 
+# A row of the file table: a code span naming a `.py` in the first cell and an
+# integer in the last. Nothing else in the store is shaped like that, so the
+# table is found by what its rows are rather than by where it sits in the file.
+TABLE_ROW = re.compile(r"^\|\s*`([^`]+\.py)`\s*\|.*\|\s*(\d+)\s*\|\s*$")
+# The stated total, which is the first bold integer after the last row. Matched
+# on the bold and the digits rather than on the Thai around it: a pattern that
+# holds a retyped sentence expires the day somebody rewords it.
+TOTAL = re.compile(r"\*\*(\d+)")
+
+
+def _held(path):
+    """How many mutants one sheet holds, or None when its MUTANTS cannot be read."""
+    mutants = _module(path)[1]
+    if not isinstance(mutants, ast.Dict) or not mutants.keys:
+        return None
+    return len(mutants.keys)
+
+
+def _rows(readme):
+    """[(line, name, count)] of the file table, and the total it claims.
+
+    Lines inside a fence are skipped for the reason `columns()` skips them: a
+    document that shows what a row looks like is explaining the table rather
+    than extending it.
+    """
+    with io.open(readme, encoding="utf-8") as handle:
+        lines = handle.read().split("\n")
+    found, fenced, last = [], False, 0
+    for number, line in enumerate(lines, 1):
+        if line.strip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        hit = TABLE_ROW.match(line.strip())
+        if hit:
+            found.append((number, hit.group(1), int(hit.group(2))))
+            last = number
+    claimed = None
+    for number, line in enumerate(lines[last:], last + 1):
+        hit = TOTAL.search(line)
+        if hit:
+            claimed = (number, int(hit.group(1)))
+            break
+    return found, claimed
+
+
+def catalogue(paths=None, readme=None):
+    """(problems, sheets found, rows read) over the store against its own table.
+
+    The three questions above all read the list of files this walks and ask
+    something of each. None of them asks whether the *document* knows that list,
+    and what is missing from a table is invisible to a sum over it: the table
+    said 801, summed to 801, and the store held 822 (#176).
+
+    Takes its world as arguments for the reason `columns()` does - the only way
+    to assert that a missing row is *found* is to hand it a store missing one.
+    """
+    named = paths is not None and readme is not None
+    if not named:
+        # Both or neither, like `commands()`: half a world would walk a
+        # caller's sheets against the real README and call the mismatch a
+        # problem of theirs.
+        paths = sheets()
+        readme = os.path.join(HERE, "README.md")
+    short = os.path.relpath(readme, ROOT).replace("\\", "/")
+    held = {os.path.basename(path): _held(path) for path in paths}
+    rows, claimed = _rows(readme)
+    listed = {name: (number, count) for number, name, count in rows}
+    problems = 0
+
+    for name in sorted(set(held) - set(listed)):
+        problems += 1
+        count = held[name]
+        print("NOT IN THE TABLE %s -> %s holds %s"
+              % (short, name,
+                 "an unreadable number of mutants" if count is None
+                 else "%d mutant%s" % (count, "" if count == 1 else "s")))
+    for name in sorted(set(listed) - set(held)):
+        problems += 1
+        print("TABLE ROW NAMES NO FILE %s:%d -> %s" % (short, listed[name][0], name))
+    for name in sorted(set(listed) & set(held)):
+        number, count = listed[name]
+        if held[name] is None:
+            # Said out loud rather than compared against zero, which would
+            # report the table for a fault that is the sheet's.
+            problems += 1
+            print("CANNOT COUNT %s:%d -> %s holds no readable MUTANTS" % (short, number, name))
+        elif held[name] != count:
+            problems += 1
+            print("COUNT %s:%d -> %s says %d, the file holds %d"
+                  % (short, number, name, count, held[name]))
+
+    summed = sum(count for _, _, count in rows)
+    if claimed is None:
+        # level, behind, and *could not ask* - the third answer (#159). A
+        # document with no total is not a document whose total agrees.
+        problems += 1
+        print("CANNOT ASK %s -> no stated total after the table" % short)
+    elif claimed[1] != summed:
+        problems += 1
+        print("TOTAL %s:%d -> says %d, the table sums to %d" % (short, claimed[0], claimed[1], summed))
+
+    if not named:
+        print("catalogue: reading %d sheets against %s" % (len(paths), short))
+        print("catalogue: rows %d | mutants in the table %d | problems %d"
+              % (len(rows), summed, problems))
+    return problems, len(paths), len(rows)
+
+
 if __name__ == "__main__":
     misanchored = check()
     undocumented = commands()[0]
     miscounted = columns()[0]
-    sys.exit(1 if (misanchored or undocumented or miscounted) else 0)
+    unlisted = catalogue()[0]
+    sys.exit(1 if (misanchored or undocumented or miscounted or unlisted) else 0)
