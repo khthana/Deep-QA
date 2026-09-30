@@ -1,4 +1,7 @@
+import { useLayoutEffect, useReducer, useRef } from 'react'
+
 import { marks } from '../../lib/bands'
+import { shortened } from '../../lib/thaiWrap'
 
 /**
  * The flow between outcomes and the work that assesses them, in SVG and by
@@ -93,7 +96,26 @@ const MIN_NODE = 6
 const MIN_BAND = 1.5
 
 /**
- * How many characters of an Activity's name fit beside the diagram.
+ * The room each column's labels have — #115.
+ *
+ * The right one runs from where its labels start to the edge of the drawing.
+ * The left one is the whole of the drawing in front of its bar, because those
+ * labels are anchored at their end and grow backwards from
+ * `LEFT_LABEL_END` towards nought.
+ *
+ * Both columns, and not only the one the ticket was written about: `clo_number`
+ * is a `varchar(50)` a ผู้สอน types on #27, the left labels had no cut of any
+ * kind, and at this size fifty characters is about four times the ninety-two
+ * units in front of the bar. It is the same clipping with the same blast radius,
+ * one column over, and the criterion #115 states is about a ป้าย and not about
+ * an Activity: *no label may leave the `viewBox`*.
+ */
+const RIGHT_LABEL_ROOM = WIDTH - RIGHT_LABEL_START
+const LEFT_LABEL_ROOM = LEFT_LABEL_END
+
+/**
+ * How many characters of an Activity's name fit beside the diagram — before the
+ * font has been asked, and only then.
  *
  * Chosen against the room and the size the label is written at, not by taste:
  * the labels start at `RIGHT_LABEL_START` and the drawing ends at `WIDTH`, and
@@ -102,12 +124,15 @@ const MIN_BAND = 1.5
  * had it at thirty, which cut names in half with a fifth of the room still
  * empty to their right.
  *
- * That reasoning holds only for the alphabet it was measured in. A count of
- * characters does not bound a width, and forty-eight Roman capitals come to
- * nearly twice the room there is — clipped by the `viewBox` with no `…` to say
- * so. Every Activity in the seed is named in Thai, so nothing here shows it;
- * [#115](https://github.com/khthana/Deep-QA/issues/115) is to cut on the width
- * the label actually measures instead.
+ * That reasoning holds only for the alphabet it was measured in, which is what
+ * [#115](https://github.com/khthana/Deep-QA/issues/115) is: a count of
+ * characters does not bound a width. Forty-eight Roman capitals measure 358
+ * units against the 300 there are, and an `svg` clips what leaves its `viewBox`
+ * with no `…` to say anything was lost. The cut is now `shortened`, against the
+ * width the font gives; this is what a label reads on the commit before the
+ * first measurement, and in a browser with no SVG text metrics at all. It is
+ * never painted — `useLayoutEffect` corrects it inside the same commit — and it
+ * is kept because the alternative on that commit is a name at its full width.
  */
 const LABEL_CHARS = 48
 
@@ -120,8 +145,114 @@ const LABEL_CHARS = 48
  */
 const LABEL_SIZE = 'text-[13px]'
 
-const shorten = text =>
-  text.length > LABEL_CHARS ? `${text.slice(0, LABEL_CHARS - 1)}…` : text
+/**
+ * The provisional cut, in the room the column actually has.
+ *
+ * `LABEL_CHARS` was measured against `RIGHT_LABEL_ROOM` and nothing else, so the
+ * left column gets the same guess scaled to its own width rather than the right
+ * column's number — forty-eight characters in ninety-two units is the defect
+ * this file is fixing, written into its own fallback. The scaling is a straight
+ * line, which is exactly as true as a character count is: it is here to be
+ * wrong by less until the measurement lands, and #115's row 13 is what proves
+ * the measurement lands.
+ */
+const charsFor = room => Math.max(1, Math.round((LABEL_CHARS * room) / RIGHT_LABEL_ROOM))
+
+const shorten = (text, room) => {
+  const chars = charsFor(room)
+  return text.length > chars ? `${text.slice(0, chars - 1)}…` : text
+}
+
+const keyOf = (text, room) => `${room}\u0000${text}`
+
+/**
+ * Every label cut to the room its own column has, measured in the font that
+ * draws it — #115.
+ *
+ * `labels` is a `{ text, room }` for each one, and a measurement is remembered
+ * against **both**: the same words are a different answer in front of a bar and
+ * beside one, and a cache keyed on the words alone would hand the left column
+ * the right column's cut.
+ *
+ * ## Why a probe and not the labels themselves
+ *
+ * The measurement has to be of the glyphs this document shapes, so it is taken
+ * from a `<text>` of the same class inside this same `<svg>`, appended and
+ * removed inside one synchronous body. Measuring the labels in place would mean
+ * writing candidate strings into them, and each of those elements holds the full
+ * name in a `<title>` — the tooltip criterion 1 asks for. The probe has nothing
+ * to lose.
+ *
+ * ## Before paint, and again when the font arrives
+ *
+ * `useLayoutEffect` rather than `useEffect`, for #164's reason on
+ * `EntrySection`: an effect that runs after paint hands the browser the
+ * uncorrected commit and the browser draws it. Here that frame would be a name
+ * at its full width, clipped.
+ *
+ * And the cache is emptied once `document.fonts` is done, because *Noto Sans
+ * Thai* is loaded with `display: swap`: a measurement taken before it arrives is
+ * a claim about whichever fallback was drawing, and every width moves when the
+ * real font swaps in. `pass` is in the dependencies so that emptying the cache
+ * is enough to make this run again.
+ *
+ * Nothing evicts an entry otherwise. Its key is the words and the room, so the
+ * map holds one string per label this screen has been shown since it mounted,
+ * and the screen is remounted by every route it can reach. A screen that could
+ * page through labels without remounting would want a bound here; this one
+ * cannot.
+ */function useMeasuredLabels(labels) {
+  const svg = useRef(null)
+  const cut = useRef(new Map())
+  const [pass, remeasure] = useReducer(n => n + 1, 0)
+  const key = labels.map(label => keyOf(label.text, label.room)).join('\u0001')
+
+  useLayoutEffect(() => {
+    const drawing = svg.current
+    if (!drawing) return
+    const probe = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+    // The one thing this needs, asked of the object that will be asked for it
+    // rather than of the browser's name for its class.
+    if (typeof probe.getComputedTextLength !== 'function') return
+    probe.setAttribute('class', LABEL_SIZE)
+    drawing.append(probe)
+    const widthOf = candidate => {
+      probe.textContent = candidate
+      return probe.getComputedTextLength()
+    }
+
+    let added = false
+    for (const { text, room } of labels) {
+      if (cut.current.has(keyOf(text, room))) continue
+      cut.current.set(keyOf(text, room), shortened(text, room, widthOf))
+      added = true
+    }
+    probe.remove()
+    if (added) remeasure()
+    // `labels` is a fresh array on every render and `key` is what is actually
+    // different about it — the same shape `EntrySection` uses, and for the same
+    // reason.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, pass])
+
+  useLayoutEffect(() => {
+    if (!document.fonts) return
+    let live = true
+    document.fonts.ready.then(() => {
+      if (!live) return
+      cut.current = new Map()
+      remeasure()
+    })
+    return () => {
+      live = false
+    }
+  }, [])
+
+  return {
+    svg,
+    labelOf: (text, room) => cut.current.get(keyOf(text, room)) ?? shorten(text, room),
+  }
+}
 
 /**
  * How thick one band is drawn.
@@ -206,6 +337,13 @@ export default function OutcomeActivityFlow({
   links,
   title,
 }) {
+  const { svg, labelOf } = useMeasuredLabels([
+    ...clos.map(clo => ({ text: clo.clo_number, room: LEFT_LABEL_ROOM })),
+    ...activities.map(activity => ({
+      text: activity.activity_name,
+      room: RIGHT_LABEL_ROOM,
+    })),
+  ])
   const cloIndex = new Map(clos.map((clo, index) => [clo.clo_id, index]))
   const activityIndex = new Map(
     activities.map((activity, index) => [activity.activity_id, index])
@@ -272,6 +410,7 @@ export default function OutcomeActivityFlow({
 
   return (
     <svg
+      ref={svg}
       viewBox={`0 0 ${WIDTH} ${height}`}
       className="h-auto w-full"
       role="img"
@@ -331,7 +470,10 @@ export default function OutcomeActivityFlow({
               dominantBaseline="middle"
               className={`fill-slate-600 ${LABEL_SIZE}`}
             >
-              {node.clo_number}
+              {labelOf(node.clo_number, LEFT_LABEL_ROOM)}
+              {/* The whole of it, for the same reason the right column does it:
+                  a cut is honest only while what was cut is still reachable. */}
+              <title>{node.clo_number}</title>
             </text>
           </g>
         )
@@ -361,7 +503,7 @@ export default function OutcomeActivityFlow({
               dominantBaseline="middle"
               className={`fill-slate-600 ${LABEL_SIZE}`}
             >
-              {shorten(node.activity_name)}
+              {labelOf(node.activity_name, RIGHT_LABEL_ROOM)}
               <title>{node.activity_name}</title>
             </text>
           </g>

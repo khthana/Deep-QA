@@ -5706,3 +5706,91 @@ when a new unflagged site lands would have caught `GrantsPanel` on the day it wa
 the diff, because it is a third kind of test — a static read of the frontend's source, where this
 repository has two seams and both run the application — and *a number that justifies a change is not
 permission to make it*. The cost is published on the ticket instead, as a question.
+
+## #115 — the forty-eight characters that were a width in the wrong unit
+
+**#115 is the defect #39's hand-walk created.** The walk found the diagram's labels cut too short,
+the fix moved `LABEL_CHARS` from 30 to 48, the walker looked again and said yes — and the question
+nobody asked in either direction was *how wide is forty-eight characters*. It has no answer. It has
+one answer per alphabet, and the seed is written in the one where the number happens to work.
+
+**Measured in the diagram's own units** — `viewBox` 880 wide, the right labels starting at 580, so
+300 units of room — forty-eight Roman capitals are **938 units**, ending 58 past the right-hand edge
+of the whole drawing; forty-eight Thai characters are about 290, with nine units to spare. The
+ticket's numbers were a width of 561px and an overrun of 263px, taken with a ruler on the screen at
+1370px, where the scale is 1370/880 = 1.56 units to the pixel. **One of the two reproduces and the
+other does not**: 358 units is 557px, which is the ticket's 561px; 58 units is 90px, which is not its
+263px, and nothing measured this session gets to that figure. The diagnosis is right and the width is
+right, so the fix is unchanged — but *a ticket's supporting numbers are a claim like its main one*
+(#54), and the honest record says which of the two was reproduced rather than reporting that both
+were. The first draft of this sheet said both agreed, which is the failure the rule is about,
+committed while writing up the rule.
+
+**What `<svg>` does with the overflow is the half of the defect that is about the reader.** A `<text>`
+is one line however long it is, `text-overflow` does nothing to it, and the `svg` clips at its
+`viewBox` with nothing to say so. So the name is not merely cut: it is cut **silently**, mid-word,
+and a person reads a shorter name rather than a truncated one. The ticket's criterion has both halves
+in it — *ป้ายต้องไม่เลยขอบ `viewBox`* and *สิ่งที่ตัดต้องลงท้ายด้วย `…` เสมอ* — and they earned
+separate mutants, `labelcutbythecharactercount` for the pixels and `cutsaysnothing` for the reader.
+
+**The fix measures with the thing that will draw it.** A `<text>` appended to the real diagram inside
+`useLayoutEffect`, asked `getComputedTextLength()`, and removed in the same pass — so the font, the
+size and the shaping are the ones on the screen rather than a canvas's second opinion about them, and
+`useLayoutEffect` flushes before paint (#164), so the character count survives as the provisional
+nobody ever sees and as the fallback for a browser with no metrics. That is #117's precedent for a
+fallback: *untested rather than unreachable*.
+
+**Where to cut was already written, and reusing it was the whole saving.** `shortened` lives in
+`thaiWrap.js` and calls `wrapThai` for the first line, so #117's three rules — a word boundary where
+ICU gives one, a grapheme cluster where it does not, never a trailing leading vowel — are **inherited
+rather than restated**, and a helper written to restate a rule independently has to restate it exactly
+(#96). The one thing it adds is measuring the string **with the ellipsis on it**, because advance
+widths are not additive across a shaping boundary and the wrapper measured the line without one.
+
+**The Thai fixture had to be built where the two implementations disagree, and the first one was not.**
+`การนำเสนอโครงงาน…`, the obvious candidate, has an ICU word boundary at exactly index 47, so the
+measured cut and the forty-seven-character cut produce the identical string and
+`labelcutbythecharactercount` would have killed nothing. Four candidates were run through
+`Intl.Segmenter` in Node before one was taken whose boundaries are 37/42/46/49. **A mutant that swaps
+one implementation for another is invisible wherever the two agree** (#117) is a rule about fixtures,
+and this is the second ticket it has caught.
+
+**The left column was fixed rather than deferred, and it is its own mutant.** The ticket says *ป้าย*,
+not *ชื่อกิจกรรม*, and `subject_clo.clo_number` is a `varchar(50)` against ninety-two units with no
+cut of any kind — the same hole at the same blast radius, which is what decides one ticket from two
+(#125). It needed a mutant of its own because those labels are anchored at their end and grow
+backwards: a wrong answer there crosses **zero**, not 880, and a reader that assumed `x + width`
+would report them as fitting however long they were. The e2e helper reads the anchor and computes
+`from`/`to` from it for exactly that reason.
+
+**Two clauses are on the sheet as *not tested*, with reasons, and no mutants.** That
+`useLayoutEffect` flushes before paint would need a sample per frame rather than a longer wait (#164);
+that the cache is emptied and re-measured on `document.fonts.ready` cannot be ordered deterministically
+at the seam. Neither got a surviving mutant, because **a mutant that survives where its own file
+predicted a kill has found a row that does not exist yet** (#118) — writing one for a claim with no
+row is writing down that the row exists.
+
+**And the mutant for the defect itself is the code the ticket diagnosed.** #48 gave the rule for a
+proposal that is declined — *the mutant to write is that proposal made to run*. Its twin is this:
+when a ticket's diagnosis is **accepted**, the mutant to write is the diagnosed code, because nothing
+else turns *forty-eight characters does not bound a width* from a sentence on a sheet into a claim the
+suite holds. All four mutants killed exactly the rows their comments predicted but one:
+`cutsaysnothing` took row 13 as well, which is right and was written down rather than argued away —
+it is the one place all three cutting rows say the same thing.
+
+**Two things the review found, and the second is the ticket's own defect written into its own
+fallback.** `thaiWrap.js` had one mutation leaf and now has two, so `39` and `117` must never be
+swept together — the census in `mutation/README.md` answers 61 shared paths before and 62 after, a
+new pair rather than a group that grew, and the leaf that did not change gets the note as well, the
+shape `38`/`145` and `121`/`130` already have. Then, of `117`'s three mutants that touch the shared
+rules, the first draft of that note said all three now reach `39a`; measured, **one does** —
+`bycharacter` kills row 12, while `novowelretreat` and `nochop` do not reach it at all, because row
+12's name has ICU boundaries so `chop` is never called and its cut does not land after a leading
+vowel. *When a mutant lives in shared code, its leaf is one of the places it kills, not the list*
+(#123) says to go and look; it does not say what you will find.
+
+And the fallback: `shorten` knew `LABEL_CHARS = 48`, a number measured against the right column's
+three hundred units, and the left column has ninety-two. Forty-eight characters in ninety-two units
+is #115, one column over, sitting inside #115's own fallback — the same shape as *a guard written for
+one caller is a claim about every caller* (#68), with the caller being a column. It takes the room now
+and scales the guess to it, which is exactly as true as a character count is, and no truer.

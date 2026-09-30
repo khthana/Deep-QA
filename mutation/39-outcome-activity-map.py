@@ -2,7 +2,7 @@
 """
 #39 ความเชื่อมโยงผลการเรียนรู้และกิจกรรม - the attribution table as a shape.
 
-Sixteen mutants, all of them in the browser. The route is covered at the HTTP
+Twenty mutants, all of them in the browser. The route is covered at the HTTP
 seam - `backend/test/outcome-activity-map.test.js` holds what is in the answer,
 what a link carries, that a node with nothing attached is still in it, and that
 another account's ตอนเรียน is refused - so breaking any of that would fail the
@@ -10,8 +10,9 @@ backend suite rather than `39a`.
 
 What is left is the drawing, and on this screen the drawing carries an unusual
 amount: the whole of what a diagram adds to the two tables under it is that one
-band is visibly fatter than another. Half the mutants below are therefore about
-*width*, which is a claim no assertion at the HTTP surface can reach.
+band is visibly fatter than another. Most of the mutants below are therefore
+about *width* - the bands', and since #115 the labels' - which is a claim no
+assertion at the HTTP surface can reach.
 
     python mutation/39-outcome-activity-map.py save
     python mutation/39-outcome-activity-map.py <mutant>
@@ -27,6 +28,7 @@ from harness import main
 FILES = {
     "flow": "frontend/src/components/results/OutcomeActivityFlow.js",
     "screen": "frontend/src/pages/OutcomeActivityMapping.js",
+    "wrap": "frontend/src/lib/thaiWrap.js",
 }
 
 MUTANTS = {
@@ -192,6 +194,62 @@ MUTANTS = {
         "screen",
         "    } finally {\n      if (isCurrent()) setLoading(false)\n    }",
         "    }",
+    ),
+    # The label cut by counting characters again - #115's defect, made to run.
+    #
+    # This is the state of the file before that ticket, and it is here because
+    # *when a ticket's proposal is declined the mutant to write is that proposal
+    # made to run* has a twin: when a ticket's diagnosis is accepted, the mutant
+    # to write is the diagnosed code. Nothing else turns *forty-eight characters
+    # does not bound a width* from a sentence into a claim the suite holds.
+    #
+    # Kills row 10, where forty-eight Roman capitals are not cut at all by this
+    # rule and reach 938 of the drawing's 880 units, and row 12, where the cut
+    # falls inside a คำ because the forty-seventh character is not a boundary ICU
+    # gives. Leaves row 11 standing: a name that fits is drawn whole either way,
+    # which is what makes those two rows separate claims.
+    "labelcutbythecharactercount": (
+        "flow",
+        "              {labelOf(node.activity_name, RIGHT_LABEL_ROOM)}",
+        "              {shorten(node.activity_name, RIGHT_LABEL_ROOM)}",
+    ),
+    # The outcome column drawn straight from the database again, which is what
+    # it did until #115 - no cut of any kind, because nobody had asked what a
+    # `varchar(50)` looks like in ninety-two units.
+    #
+    # Its own mutant rather than the one above, because these labels are
+    # anchored at their end: a wrong answer here leaves the `viewBox` at nought
+    # rather than at 880, and an assertion written for one edge reports the other
+    # column as fitting however long it is. Kills row 13 alone.
+    "outcomenumberdrawnwhole": (
+        "flow",
+        "              {labelOf(node.clo_number, LEFT_LABEL_ROOM)}",
+        "              {node.clo_number}",
+    ),
+    # A cut that fires where there was room: the guard that returns a text that
+    # already fits, untouched, always says it does not fit.
+    #
+    # Every label then ends in `…` whether anything came off it or not, which is
+    # the same defect as #115 one alphabet over - a reader told there is more of
+    # a name when there is not. Kills row 11 alone; rows 10 and 12 are about
+    # names that really are too wide and are still cut to the room.
+    "everylabelcutwhetherornot": (
+        "wrap",
+        "  if (typeof text !== 'string' || widthOf(text) <= maxWidth) return text",
+        "  if (typeof text !== 'string') return text",
+    ),
+    # The cut made silently. The label fits the room, the whole name is still in
+    # the tooltip, and nothing on the drawing says a name was shortened - which
+    # is exactly what an `svg` clipping at its `viewBox` already did, and the
+    # half of #115 that is about the reader rather than about the pixels.
+    #
+    # Kills rows 10, 12 and 13 at their `…` — every row about a label that was
+    # cut, which is what this mutant is: the one place all three say the same
+    # thing. Leaves row 11, which is about a label that was never cut.
+    "cutsaysnothing": (
+        "wrap",
+        "  return clusters.join('') + ELLIPSIS",
+        "  return clusters.join('')",
     ),
 }
 

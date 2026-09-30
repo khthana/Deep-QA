@@ -243,6 +243,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **When a ticket's proposal is declined, the mutant to write is that proposal made to run** — it
   is the only thing that turns *we chose otherwise* from a sentence on a sheet into a claim the
   suite holds. (#48)
+- **And when a ticket's diagnosis is accepted, the mutant to write is the diagnosed code** — the
+  twin of the line above, and the only thing that turns the diagnosis from a sentence into a claim
+  the suite holds. (#115)
 - **A kill count is a claim about the fixtures as much as about the code** — a seed that gains an
   account carrying the property a mutant is about expires the count of a mutant nobody edited, so
   re-sweep the ones you did not touch. (#48)
@@ -399,6 +402,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   a ref *means*, and which controls write it, can leave every comparison and every mutant where
   they stand. (#146)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
+- **A limit written in one unit is a claim about the unit the room is measured in** — forty-eight
+  characters guarding three hundred units of drawing is invisible in the alphabet the seed happens
+  to be written in, and what overflows an `svg` is clipped mid-word with nothing to say so. (#115)
 - **A flag paired with a later event is not identity** — a navigation request being out says a document
   was asked for; it does not say that the next commit is that document's, and measured, the next one is
   still a `replaceState`. Ask the protocol for the thing itself. (#168)

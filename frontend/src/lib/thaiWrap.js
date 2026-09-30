@@ -44,6 +44,16 @@
  * The caller measures. `widthOf` is the document's own text measurement with the
  * document's own font and size selected, because a width computed any other way
  * is the character count of #115 in a different costume.
+ *
+ * ## And one place on a screen where the browser does not know it either — #115
+ *
+ * The paragraph above is about documents because a browser wraps and ellipsises
+ * CSS text by itself. `<text>` inside an `<svg>` is the exception: it is one line
+ * however long it is, `text-overflow` does nothing to it, and what leaves the
+ * `viewBox` is clipped with nothing to say so. So `shortened` is here, cutting
+ * one line to a measured width rather than to a count of characters, and it is
+ * the three rules above that decide where: a word boundary where ICU gives one,
+ * a cluster boundary where it does not, and never a trailing leading vowel.
  */
 
 /**
@@ -188,3 +198,43 @@ const wrapThai = (text, maxWidth, widthOf) =>
  */
 export const wrapped = (text, maxWidth, widthOf) =>
   typeof text === 'string' ? wrapThai(text, maxWidth, widthOf).join('\n') : text
+
+const ELLIPSIS = '…'
+
+/**
+ * `text` as one line no wider than `maxWidth`, ending in `…` if anything came
+ * off — #115.
+ *
+ * The first line the wrapper would have made, in the room left once the ellipsis
+ * has its own, which is why this asks `wrapThai` instead of restating it: a cut
+ * at a word boundary is what a reader gets to recognise the name from, and the
+ * cluster rule and the leading-vowel rule are already in there and already
+ * measured.
+ *
+ * Then that line is checked **with the ellipsis after it**, because the wrapper
+ * measured it without one and advance widths are not quite additive — a font may
+ * kern or shape a pair differently from the two on their own. The loop is the
+ * honest version of *it will fit, surely*: it measures the string that will be
+ * drawn, and drops one cluster at a time until that string fits.
+ *
+ * A caller whose text already fits gets it back untouched and unmarked. That is
+ * the case the browser seam's control row is about: a cut that fires where there
+ * was room is the same defect as no cut at all, one alphabet over.
+ *
+ * A `maxWidth` narrower than `…` itself is the one input this cannot satisfy: the
+ * loop empties the line and the ellipsis alone is still too wide. It returns the
+ * bare `…` rather than the empty string, because a caller that asked for a width
+ * no glyph fits in has a layout problem and not a text problem, and an empty
+ * label hides it. No caller has such a room — the narrowest is ninety-two units
+ * against an ellipsis of about five.
+ */
+export const shortened = (text, maxWidth, widthOf) => {
+  if (typeof text !== 'string' || widthOf(text) <= maxWidth) return text
+
+  const room = Math.max(maxWidth - widthOf(ELLIPSIS), 0)
+  let clusters = piecesOf(wrapThai(text, room, widthOf)[0] ?? '', 'grapheme')
+  while (clusters.length > 0 && widthOf(clusters.join('') + ELLIPSIS) > maxWidth) {
+    clusters = clusters.slice(0, retreat(clusters, clusters.length - 1))
+  }
+  return clusters.join('') + ELLIPSIS
+}

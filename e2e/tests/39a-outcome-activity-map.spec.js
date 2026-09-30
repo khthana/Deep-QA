@@ -11,6 +11,8 @@ const { mySectionIds } = require('../support/enrolment-screen');
 const {
   openMap,
   bandsOf,
+  labelsOf,
+  widthInDiagram,
   node,
   meanOf,
   activityCountOf,
@@ -377,4 +379,155 @@ test('row 9: the ตอนเรียน of another account is refused rather t
   // refusal with กำลังโหลดข้อมูล… below it for ever, because the read cleared its
   // loading flag only on the way out through success.
   await expect(page.getByText('กำลังโหลดข้อมูล…')).toHaveCount(0);
+});
+
+/**
+ * Forty-eight Roman capitals — #115.
+ *
+ * Forty-eight is the count the cut was written against, so by the character
+ * rule this name is exactly what fits and nothing is taken off it. Measured, it
+ * is nearly twice the room there is, and an `svg` clips what leaves its
+ * `viewBox` without an `…` to say anything was lost. Capitals rather than lower
+ * case because they are the widest thing anybody can type, and every Activity
+ * in the seed is named in Thai, so nothing already in the database can build
+ * this.
+ */
+const WIDEST_48 = 'ASSESSMENT OF PROFESSIONAL ENGINEERING PRACTICES';
+
+test('row 10: a name wider than the room is cut to the room and says so', async ({ page }) => {
+  expect(WIDEST_48).toHaveLength(48);
+  await unattributedActivity(WIDEST_48);
+
+  await openMap(page, section);
+
+  // The premise, asserted where it is used and not where it was set (#51): if
+  // this name fits after all, everything below passes without measuring
+  // anything.
+  const labels = await labelsOf(page);
+  const mine = labels.find((label) => label.full === WIDEST_48);
+  expect(mine).toBeDefined();
+  expect(await widthInDiagram(page, WIDEST_48)).toBeGreaterThan(mine.room);
+
+  // What is drawn ends inside the drawing, and says it was cut.
+  expect(mine.to).toBeLessThanOrEqual(mine.edge);
+  expect(mine.drawn.endsWith('…')).toBe(true);
+  expect(mine.drawn).not.toBe(WIDEST_48);
+  // And what is left is the beginning of the name, so the `…` means *there is
+  // more of this* rather than *something happened to this*.
+  expect(WIDEST_48.startsWith(mine.drawn.slice(0, -1))).toBe(true);
+  // And the whole name is still reachable, which is what makes a cut honest
+  // rather than a loss.
+  expect(mine.full).toBe(WIDEST_48);
+
+  // Every other label of both columns too, so the claim is about the rule and
+  // not about this one name.
+  for (const label of labels) {
+    expect(label.from).toBeGreaterThanOrEqual(0);
+    expect(label.to).toBeLessThanOrEqual(label.edge);
+  }
+});
+
+test('row 11: a name that fits is drawn whole, in the alphabet the seed is written in', async ({
+  page,
+}) => {
+  await openMap(page, section);
+
+  const labels = await labelsOf(page);
+  expect(labels.filter((label) => label.column === 'right').length).toBeGreaterThan(0);
+  expect(labels.filter((label) => label.column === 'left').length).toBeGreaterThan(0);
+
+  // Nothing in the seed reaches the room of its own column, and the widest of
+  // them is what says so: a cut that fired here would be a cut measured against
+  // the wrong thing, which is the failure a fix for #115 can introduce and this
+  // row is the only one that would see.
+  const widest = labels.reduce((wide, label) => (label.width > wide.width ? label : wide));
+  expect(widest.width).toBeLessThanOrEqual(widest.room);
+  for (const label of labels) {
+    expect(label.drawn).toBe(label.full);
+  }
+});
+
+/**
+ * A Thai name past the room, for the half of #115 the alphabet above cannot ask
+ * — where the cut lands.
+ *
+ * Roman text carries spaces, so any cut of it falls at a word boundary by
+ * accident. Thai writes none: where a word ends is ICU's answer and nothing
+ * else's, and a cut measured only in pixels lands inside one. This name is a
+ * sentence a ผู้สอน could plausibly type, at 86 characters against the 48 the
+ * old rule allowed, so it is cut under either rule — what differs is where.
+ *
+ * And it is chosen where the two disagree, which is not the same as chosen long
+ * (#117): ICU gives this name boundaries at 37, 42, 46 and 49, so the forty-
+ * seventh character — where counting stops — is inside a คำ. The first sentence
+ * tried here had a boundary at exactly 47 and the two rules cut it in the same
+ * place, which would have left the mutant below killing nothing.
+ */
+const THAI_TOO_WIDE =
+  'การประเมินผลการเรียนรู้ของผู้เรียนรายบุคคลด้วยแบบประเมินความก้าวหน้าระหว่างภาคการศึกษา';
+
+test('row 12: a Thai name is cut where a word ends, not where the pixels run out', async ({
+  page,
+}) => {
+  await unattributedActivity(THAI_TOO_WIDE);
+
+  await openMap(page, section);
+
+  const labels = await labelsOf(page);
+  const mine = labels.find((label) => label.full === THAI_TOO_WIDE);
+  expect(mine).toBeDefined();
+  expect(await widthInDiagram(page, THAI_TOO_WIDE)).toBeGreaterThan(mine.room);
+
+  expect(mine.to).toBeLessThanOrEqual(mine.edge);
+  expect(mine.drawn.endsWith('…')).toBe(true);
+  const kept = mine.drawn.slice(0, -1);
+  expect(THAI_TOO_WIDE.startsWith(kept)).toBe(true);
+
+  // Where it was cut, asked of the dictionary rather than of the drawing. A cut
+  // that fell inside a คำ would fit the room and carry its `…` just the same,
+  // and this is the only assertion here that would see it.
+  const words = [
+    ...new Intl.Segmenter('th', { granularity: 'word' }).segment(THAI_TOO_WIDE),
+  ].map((word) => word.index);
+  expect(words).toContain(kept.length);
+
+  // And not on one of the five vowels written in front of the consonant they
+  // are pronounced after, which is #117's third rule. This inherits it by
+  // calling `wrapThai`, and `117a` is where it is proved; the assertion is here
+  // as a net over that inheritance, not as its proof.
+  expect('เแโใไ').not.toContain(kept.slice(-1));
+});
+
+/**
+ * An outcome whose number fills the column it is drawn in — #115, on the other
+ * side of the diagram.
+ *
+ * `subject_clo.clo_number` is a `varchar(50)` a ผู้สอน types on #27, and there
+ * are ninety-two units in front of the bar. Forty characters is well inside what
+ * the column accepts and about three times what it can draw, and these labels
+ * are anchored at their end, so what a wrong answer does is run off the left of
+ * the `viewBox` — the edge the right column can never reach.
+ */
+const LONG_CLO_NUMBER = 'CLO-95 ผลการเรียนรู้ด้านทักษะทางปัญญา';
+
+test('row 13: the outcome column is cut to its own room, which runs the other way', async ({
+  page,
+}) => {
+  await unassessedOutcome(LONG_CLO_NUMBER);
+
+  await openMap(page, section);
+
+  const labels = await labelsOf(page);
+  const mine = labels.find((label) => label.full === LONG_CLO_NUMBER);
+  expect(mine).toBeDefined();
+  expect(mine.column).toBe('left');
+  expect(await widthInDiagram(page, LONG_CLO_NUMBER)).toBeGreaterThan(mine.room);
+
+  // Nought is the edge here, and `to` is where the bar is: a label that grew
+  // past its room would have started at a negative number and been clipped with
+  // nothing to say so.
+  expect(mine.from).toBeGreaterThanOrEqual(0);
+  expect(mine.drawn.endsWith('…')).toBe(true);
+  expect(LONG_CLO_NUMBER.startsWith(mine.drawn.slice(0, -1))).toBe(true);
+  expect(mine.full).toBe(LONG_CLO_NUMBER);
 });

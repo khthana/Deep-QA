@@ -221,6 +221,12 @@ UAX #29 ห้ามตัดหน้ามัน ถามเมื่อ 25 �
 """
 from harness import main
 
+# `thaiWrap.js` stopped being this leaf's alone on 30 Sep 2569: #115 gave it a
+# second caller, `shortened`, which cuts the labels of #39's diagram to a measured
+# width and reaches `wrapThai` for where to cut. So **never sweep `117` together
+# with `39`**, and `bycharacter` now kills a row of `39a` as well as this leaf's
+# own — row 12, measured, where `novowelretreat` and `nochop` do not reach it.
+# `mutation/README.md` carries the census figures and the reason.
 FILES = {
     'assessment': 'frontend/src/components/results/assessmentPdf.js',
     'grid': 'frontend/src/components/ploMapping/exportPdf.js',
