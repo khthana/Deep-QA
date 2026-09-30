@@ -5860,3 +5860,20 @@ ticket and the subject matter matched. The census answers `56` and `58`: #102's 
 backend route at all, and #56's holds `departments.js` for the import template. *Compare `FILES`, not
 subject matter* (#85, #87) — the line that was checked by reading a title rather than by running the
 script, in the very paragraph that tells the next person to run the script.
+
+**The parked question was answered the same day, and answering it found the hole under the answer.**
+The ticket's *decide it once and apply it in both* was read here as *a grant counts in both*, not as
+*both answer alike*, and whether the two routes should in fact answer alike was put to the user as
+`docs/06` §Out of Scope requires. The answer was no: the difference is deliberate and was already
+documented in the code from #14/#15 — `routes/departments.js` says a department is retired by
+switching it off, and, six lines further on, that *a programme's removal does have two outcomes, and
+`routes/programs.js` writes both*. It is two families rather than two cases: five routes deactivate
+through `lib/removal`, three refuse.
+
+But the argument holding the refusal up is *the person has a switch already*, and that switch was
+measured after the answer: `frontend/src/api/departments.js` never sends `is_active` and the form has
+no field for it, so a department can be retired only from the CSV import or a raw `PUT` — never from
+the screen the refusal is read on, which is the screen the refusal tells them to use it on. **A
+refusal that names the way out is a claim that the way out is reachable from where it is read.** It
+went to #178 as a question and not a task, because the delivered UI has no notion of a department's
+status at all, so adding the field is adding a control rather than restoring one.

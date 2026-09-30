@@ -431,6 +431,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   is doing between requests, not only what the server does when one arrives. (#99)
 - Before adding a parameterised refusal, find every site that turns that reason into a sentence —
   the grep is `REFUSALS[`. When one change lands at two sites, write a mutant per site. (#125)
+- **A refusal that names the way out is a claim that the way out is reachable from where it
+  is read** — the switch a department was to be retired with exists on the route and in the
+  schema, and has never been on the screen the refusal is read on. Ask which control performs
+  the sentence, not whether the mechanism exists. (#60, #178)
 - When a client must tell two refusals apart, have the server say which at the point of deciding.
   A guard that says *only once* has to say once per what. (#52)
 - A number copied from a sibling screen is a decision, not an inheritance. (#45)
