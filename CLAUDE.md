@@ -87,6 +87,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   somebody else ran**, and matching every file on it answers half of *confirm before you change*.
   But a **copy** of a rule holds none of the rule's letters, so hunt that one by the value, in
   every spelling a screen can write it. (#111, #124, #83, #68, #133, #145)
+- **A census whose population is *the things that carry X* cannot find the thing that carries no
+  X** — and the census you write to replace a grep is evidence for the pattern *it* typed, so the
+  one that reads a comparison only one way round reports a guarded screen as bare. Read the files
+  the instrument names before believing either answer. The other way a census misses is counting by
+  the wrong property, under *Tests and fixtures*. (#141, #174)
 - A ticket that says *unless X* has told you what to go and look for; one that asks you to
   *consider* something is answered by a measurement, and *no, and here is what it would cost* is
   a finished answer. (#101, #89)

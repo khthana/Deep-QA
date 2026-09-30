@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
 import GrantPicker from './GrantPicker'
@@ -96,14 +96,44 @@ export default function GrantsPanel({ user, onError }) {
     }
   }, [load])
 
+  /**
+   * Which account this panel is about, readable after an await - #133, #141.
+   *
+   * `add` and `remove` below are answered with the whole list of grants, so
+   * their answers are drawn exactly like a read and can be superseded exactly
+   * like one - *a save's answer is a read*, the rule #133 wrote for
+   * `ActivityScores.save`. The flag `load` takes cannot serve here: nothing
+   * tears a submit handler down, so what these two ask is *is this still the
+   * account I was sent about*, a question about now, which is what a ref is
+   * for and a prop closed over cannot answer.
+   *
+   * #133 flagged `load` on this panel and did not reach these two, because its
+   * census read the signatures of the functions that already carried a flag -
+   * and a census of what carries the flag cannot see the site that carries
+   * none. Found by #141 walking every `await` again. The situation is the one
+   * `load`'s comment describes and is unreachable for the same reason, so
+   * these draw no row either and the sheet says ยังไม่ได้ทดสอบ.
+   */
+  const onScreen = useRef(user.user_id)
+  useEffect(() => {
+    onScreen.current = user.user_id
+  }, [user.user_id])
+
   const add = async event => {
     event.preventDefault()
     setBusy(true)
     setNotice(null)
     try {
-      const { roles } = await grantRole(user.user_id, draft)
-      setGrants(roles)
-      setDraft(EMPTY)
+      const asked = user.user_id
+      const { roles } = await grantRole(asked, draft)
+      // The list, and the pickers that sent this, only if the panel is still
+      // about the same account (#133) - clearing somebody else's form is #146's
+      // rule at the far end of a write. The notice is said either way, because
+      // it is about what the reader did rather than about what is on screen.
+      if (onScreen.current === asked) {
+        setGrants(roles)
+        setDraft(EMPTY)
+      }
       setNotice({ error: false, message: 'เพิ่มบทบาทเรียบร้อยแล้ว' })
     } catch (error) {
       // Kept inside the panel rather than raised to the screen's banner: the
@@ -131,12 +161,14 @@ export default function GrantsPanel({ user, onError }) {
     setBusy(true)
     setNotice(null)
     try {
+      const asked = user.user_id
       const { roles } = await revokeGrant(
-        user.user_id,
+        asked,
         grant.role_id,
         grant.scope_id
       )
-      setGrants(roles)
+      // The same question as `add`, for the same reason (#133).
+      if (onScreen.current === asked) setGrants(roles)
       setNotice({ error: false, message: 'ยกเลิกบทบาทเรียบร้อยแล้ว' })
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })

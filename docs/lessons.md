@@ -5623,3 +5623,86 @@ suggest 2022. The two years are different concepts and the shared range is a cla
 about curricula. The regex stays, and `programs.js`'s own comment already said why: kept as the text
 the registrar writes rather than converted to anything. A helper named for a type is a promise about
 that type (#107), and this one is named for a date's year.
+
+## #141 — the sixteen line numbers that were mostly right, and the two sites the census could not see
+
+**#141 is a tracker, not a defect, and its criteria say so: measure the list again, then let every site
+end in a row with a mutant or in *not tested* with a reason and a fresh date — and if it cannot be
+closed, fix the register and leave the ticket open.** It exists because #133 left sixteen sites carrying
+a flag whose status lived in prose on sixteen sheets, and *a deferral written into prose and not into the
+tracker is a decision nobody can find* (#119). What this session found is that the ticket was right about
+why it had to exist and wrong about two of its own numbers in opposite directions: its line numbers were
+**mostly right**, and its table of sites was **one short** and blind to two more.
+
+**Criterion 1 names the instrument, and it is the one #133 used: walk every `await`, do not sharpen the
+grep.** 189 calls in 45 files of `frontend/src`, each classified by whether its answer is drawn into
+state and whether anything in the enclosing function guards it. Then the instrument was wrong once, and
+the way that showed is worth keeping: the first guard pattern matched `\.current\s*(!==|===)`, and both
+`SectionResults` and `StudentResults` write the comparison the other way round — `ticket !== latest.current`
+— so two guarded screens came out of the census as unguarded. **A grep is evidence for the pattern you
+typed** (#111) applies to the census you write to replace a grep, and nothing caught it but reading the
+two files. Had the census been believed, this ticket would have opened two defects that do not exist.
+
+**The ticket's line numbers were right thirteen times out of sixteen.** Read out of git at the commit the
+ticket cites and compared with today: `GrantsPanel` 58 → 82, `RubricCriteria` 70 → 76, `LearningDetails`
+79 → 83, and the other thirteen unchanged. *A ticket's diagnosis is a claim from the day it was written*
+cuts the other way too — measuring it is how you learn it is mostly sound, and reporting *the table is
+stale* would have been as wrong as trusting it. The three that moved are also a rule of their own:
+**a citation in the repository is corrected by the next diff that moves it, and the same citation in a
+tracker issue is corrected by nothing.** #130 lengthened `GrantsPanel.js` by 24 lines and updated
+`57-pager.md`'s copy from `:58` to `:82` in the same commit; #141's table on GitHub still said `:58`.
+
+**And the reason none of the sixteen can be closed is still true, measured three ways rather than
+re-read.** Every one of the sixteen `load` callbacks still depends on `useParams` alone (or on the
+`user.user_id` prop, on sheet `12`); the whole tree holds five `navigate()` calls and none of them moves
+to the same route pattern with a different parameter; every `<Link>` on those sixteen screens goes *up*
+to a list that is a different route and unmounts the screen. The browser's own Back and Forward were
+checked too, because they are a control every reader has and no ticket has to add: two URLs of the same
+route shape are never adjacent in the history, since reaching the second always goes through the list.
+So criterion 2 is answered with its second half, sixteen times, and criterion 4 keeps the ticket open.
+
+**What the walk found that the ticket's table does not have is the part worth the session.** Two of them:
+
+*The table is one short.* `ActivityScores.onImported` was given #133's flag and *not tested* on sheet
+`34` on the same day, with its reason — the situation needs an upload that writes a whole class's marks —
+and it is not in #141's sixteen rows. The claims with no row are **seventeen** at this point in the
+count, and **nineteen** once the next paragraph's two are in it — the number the register carries. *A table that adds up is
+not a table that is complete; what is missing from it is invisible to a sum over it* (#58), and the sum
+here was the ticket's own.
+
+*Two sites carry no flag at all.* `GrantsPanel.add` and `GrantsPanel.remove` are answered with the whole
+list of grants and draw it straight onto the screen, which is *a save's answer is a read* letter for
+letter — the rule #133 wrote for `ActivityScores.save` three sites away. #133 never reached them, and the
+mechanism is exact: its second-caller census read **the signatures of the twenty-four functions that
+already carried a flag**, to ask whether each took `isCurrent` required or defaulted. **A census of what
+carries the flag cannot see the site that carries none.** That is the same hole that made #68's sixteen
+into #133's twenty-two, one layer up: there the pattern was `set…(await …)` and the sites that named the
+answer first were invisible; here the population was *flagged functions* and the site that was never
+flagged was invisible. The fix is the flag, in the shape and for the reason the same file had already
+chosen for its own `load`, and it draws no row either, because its situation is unreachable for exactly
+the reason `load`'s comment gives.
+
+**Three more sites were measured and written down rather than guarded.** `showPdf(await getEvidenceFile(…))`
+on sheet `35` and on the two programme reports has no flag and needs none: `showPdf` calls `window.open`
+once per answer, so a late answer gets its own tab and nothing is superseded — **structurally
+unreachable, not untested** (#102), the shape #133 used for `PloMapping.choose`. And the two screens the
+census mis-read, `SectionResults` and `StudentResults`, are written down as guarded by a different
+mechanism, so the next census does not count them as holes — the precedent #133 set by writing
+`TeacherDashboard.js:55` down as **excluded**.
+
+**The rest of the ticket is a mark instead of a paragraph.** Sixteen sheets gained one ☐ row each, naming
+#133 and the tracker, covering every site on that sheet — three on `12`, two on `34` — because
+*explaining a gap in prose is not the same as marking it* (#50), and because #140 had already given ten
+of the same sheets a ☐ row for the same kind of claim thirteen days earlier. Marks by column afterwards:
+☑ 504 · ⚙ 690 · ◐ 19 · ☐ 29, **1,242 rows in 39 sheets**, ☐ up from 13 and the total up from 1,226.
+**Twenty-six of the twenty-nine ☐ rows wait on a ticket rather than on a person**, and the register says
+so, because *a ◐ is one of two kinds — count them apart* (#85) is a rule about ☐ the moment ☐ is used
+this way. That is also a measured answer to #157, which asks the same question about ◐: the disease is
+not specific to the glyph.
+
+**One thing was deliberately not built.** The census that answers criterion 1 is a script, and criterion 1
+will be run again every time this ticket is revisited; keeping it as a checked-in instrument that fails
+when a new unflagged site lands would have caught `GrantsPanel` on the day it was written. It is not in
+the diff, because it is a third kind of test — a static read of the frontend's source, where this
+repository has two seams and both run the application — and *a number that justifies a change is not
+permission to make it*. The cost is published on the ticket instead, as a question.
