@@ -164,7 +164,7 @@ test('#56: a programmes file in this box is refused as the wrong template', asyn
   await importDepartments(
     page,
     csv(
-      'program_id,program_name_th,program_name_en,department_id,year',
+      'program_id,program_name_th,program_name_en,department_id,revision_year',
       '0501,วิศวกรรมคอมพิวเตอร์,Computer Engineering,05,2565',
       '0502,วิศวกรรมซอฟต์แวร์,Software Engineering,05,2565',
     ),

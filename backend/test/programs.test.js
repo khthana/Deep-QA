@@ -47,7 +47,7 @@ const COLUMNS = [
   'program_name_th',
   'program_name_en',
   'department_id',
-  'year',
+  'revision_year',
 ];
 
 const [DEPT_COMPUTER, DEPT_CIVIL] = DEPARTMENTS.map((department) => department.id);
@@ -117,22 +117,22 @@ test('an administrator adds, edits and removes a programme under a department', 
     program_name_th: 'วิศวกรรมหุ่นยนต์',
     program_name_en: 'Robotics Engineering',
     department_id: DEPT_COMPUTER,
-    year: '2566',
+    revision_year: '2566',
   });
   assert.equal(added.status, 201, added.body.message);
   assert.equal(added.body.program.program_name_th, 'วิศวกรรมหุ่นยนต์');
   assert.equal(added.body.program.department_id, DEPT_COMPUTER);
-  assert.equal(added.body.program.year, '2566');
+  assert.equal(added.body.program.revision_year, '2566');
   assert.equal(added.body.program.is_active, true);
 
   const edited = await edit(cookie, 'T5001', {
     program_name_th: 'วิศวกรรมหุ่นยนต์และระบบอัตโนมัติ',
     program_name_en: 'Robotics and Automation Engineering',
-    year: '2567',
+    revision_year: '2567',
   });
   assert.equal(edited.status, 200, edited.body.message);
   assert.equal(edited.body.program.program_name_th, 'วิศวกรรมหุ่นยนต์และระบบอัตโนมัติ');
-  assert.equal(edited.body.program.year, '2567');
+  assert.equal(edited.body.program.revision_year, '2567');
   // Not sent, so left where it was rather than blanked.
   assert.equal(edited.body.program.department_id, DEPT_COMPUTER);
 
@@ -303,11 +303,11 @@ test('a referenced programme is deactivated instead of deleted', async () => {
   const on = await edit(cookie, SEEDED.id, {
     program_name_th: SEEDED.th,
     program_name_en: SEEDED.en,
-    year: SEEDED.year,
+    revision_year: SEEDED.revision_year,
     is_active: true,
   });
   assert.equal(on.body.program.is_active, true);
-  assert.equal(on.body.program.year, SEEDED.year);
+  assert.equal(on.body.program.revision_year, SEEDED.revision_year);
 });
 
 test('the form is offered exactly the departments the caller may use', async () => {
@@ -369,7 +369,7 @@ test('a programme with no name, no department or an unreadable year is refused',
     program_id: 'T9003',
     program_name_th: 'ปีพัง',
     department_id: DEPT_COMPUTER,
-    year: '25',
+    revision_year: '25',
   });
   assert.equal(undated.status, 400);
   assert.equal(undated.body.message, REFUSALS.invalidProgram);
@@ -442,7 +442,7 @@ test('a valid spreadsheet imports every row', async () => {
         program_name_th: 'วิศวกรรมซอฟต์แวร์',
         program_name_en: 'Software Engineering',
         department_id: DEPT_COMPUTER,
-        year: '2565',
+        revision_year: '2565',
       },
       { program_id: 'I0102', program_name_th: 'วิศวกรรมขนส่ง', department_id: DEPT_CIVIL },
     ]),
@@ -458,7 +458,7 @@ test('a valid spreadsheet imports every row', async () => {
   // The English name and the year are optional, as the columns are.
   const sparse = (await read(cookie, 'I0102')).body.program;
   assert.equal(sparse.program_name_en, null);
-  assert.equal(sparse.year, null);
+  assert.equal(sparse.revision_year, null);
 
   for (const id of ['I0501', 'I0102']) assert.equal((await remove(cookie, id)).status, 204);
 });
@@ -612,13 +612,13 @@ test('an edit that empties the year empties it', async () => {
     program_id: id,
     program_name_th: 'หลักสูตรทดสอบปี',
     department_id: DEPT_COMPUTER,
-    year: '2565',
+    revision_year: '2565',
   });
 
-  const cleared = await edit(cookie, id, { program_name_th: 'หลักสูตรทดสอบปี', year: '' });
+  const cleared = await edit(cookie, id, { program_name_th: 'หลักสูตรทดสอบปี', revision_year: '' });
   assert.equal(cleared.status, 200);
-  assert.equal(cleared.body.program.year, null);
-  assert.equal((await read(cookie, id)).body.program.year, null);
+  assert.equal(cleared.body.program.revision_year, null);
+  assert.equal((await read(cookie, id)).body.program.revision_year, null);
 
   assert.equal((await remove(cookie, id)).status, 204);
 });
@@ -749,7 +749,7 @@ test('a removal the database turns into a deactivation says so — #58', async (
 
   // Put the seeded programme back: a file that runs after this one reads the
   // register it was handed, and this one switched a row off.
-  assert.equal((await edit(cookie, SEEDED.id, { program_name_th: SEEDED.th, program_name_en: SEEDED.en, department_id: SEEDED.department, year: SEEDED.year, is_active: true })).status, 200);
+  assert.equal((await edit(cookie, SEEDED.id, { program_name_th: SEEDED.th, program_name_en: SEEDED.en, department_id: SEEDED.department, revision_year: SEEDED.revision_year, is_active: true })).status, 200);
 });
 
 test('an import writes a line per row, sharing one timestamp — #58', async () => {

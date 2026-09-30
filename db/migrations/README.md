@@ -13,6 +13,7 @@ Numbered SQL files, applied in filename order by `../migrate.js` and recorded in
 | `0006_user_log_target.sql` | Which record a log line was written about. Not a foreign key: an audit line has to outlive the record it names. |
 | `0007_work_group_name_unique.sql` | A named work group is unique within its section — the partial index 0003 could not write. Unnamed groups are exempt, because the default is the empty string. |
 | `0008_users_acting_epoch.sql` | How many times an account has switched the grant it is acting as: the one fact a token renewal needs from outside the cookie. |
+| `0009_program_revision_year.sql` | Which year `programs.year` meant: the Buddhist-era year the curriculum was revised, renamed `revision_year` so the one bare `year` in the schema says what the other five do. |
 
 - `NNNN_short_description.sql`, four digits, zero-padded, no gaps.
 - Never edit a file that has been applied anywhere but a local machine; add

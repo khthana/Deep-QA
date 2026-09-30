@@ -116,7 +116,7 @@ const PROGRAMS = [
     th: 'วิศวกรรมคอมพิวเตอร์',
     en: 'Computer Engineering',
     department: '05',
-    year: '2564',
+    revision_year: '2564',
   },
   // The cross-scope programme, for U_COM2.
   {
@@ -124,7 +124,7 @@ const PROGRAMS = [
     th: 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)',
     en: 'Computer Engineering (International Program)',
     department: '05',
-    year: '2564',
+    revision_year: '2564',
   },
   // #102's curriculum, and it is here to be *absent* from things. Until it
   // existed every หลักสูตร in this dataset belonged to department 05, so
@@ -141,7 +141,7 @@ const PROGRAMS = [
     th: 'วิศวกรรมโยธา',
     en: 'Civil Engineering',
     department: '01',
-    year: '2564',
+    revision_year: '2564',
   },
 ];
 
@@ -934,9 +934,9 @@ async function seedOrganisation(client) {
 
   for (const program of PROGRAMS) {
     await client.query(
-      `INSERT INTO programs (program_id, program_name_en, program_name_th, department_id, year)
+      `INSERT INTO programs (program_id, program_name_en, program_name_th, department_id, revision_year)
        VALUES ($1, $2, $3, $4, $5) ON CONFLICT (program_id) DO NOTHING`,
-      [program.id, program.en, program.th, program.department, program.year],
+      [program.id, program.en, program.th, program.department, program.revision_year],
     );
   }
 }

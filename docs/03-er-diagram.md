@@ -539,6 +539,9 @@ activity_scores (คะแนนดิบ)
   ตารางที่ปรากฏเฉพาะใน ERD รวม (รูป 3.78) โดยไม่มีรายละเอียดฟิลด์ ถูกระบุไว้ในหัวข้อ 9 ของ [`02-database-schema.md`](./02-database-schema.md)
 - ชนิดข้อมูลใน Mermaid block ถูกย่อ (เช่น `varchar` แทน `Varchar(100)`) เนื่องจากข้อจำกัดของไวยากรณ์ Mermaid — ความยาวจริงดูได้ที่ไฟล์ schema
 - ข้อสังเกตเรื่อง Unique constraint ที่อาจกว้างเกินไป (`section_number`, `clo_number`, `outcome_code`) ระบุไว้ในหัวข้อ 9 ของไฟล์ schema เช่นกัน
+- `programs.year` ในบล็อกของหัวข้อ 3 เป็นชื่อที่เล่มใช้ rebuild เปลี่ยนเป็น `revision_year` ที่ migration
+  `0009` ([#54](https://github.com/khthana/Deep-QA/issues/54)) เพราะมันเป็นปีที่หลักสูตรถูกปรับปรุง ไม่ใช่ปีการศึกษา
+  — เหตุผลเต็มอยู่ที่หัวข้อ 10.5 ของ [`02-database-schema.md`](./02-database-schema.md)
 
 ---
 

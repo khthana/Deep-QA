@@ -5523,3 +5523,103 @@ inside the corpus the run reads, and it is fenced, so pasting it moved `lines sk
 from 848 to 850 and made the freshly published figure wrong. Re-run, correct the digit, re-run to see
 it hold. A document that describes a measurement over itself is the one place where a hand-kept
 number cannot be trusted even in the second it is written down.
+
+## #54 — the year that did not say which year, and the ticket's own evidence
+
+`programs.year` was the one column in the schema whose name did not say which year it meant, and the
+one that is not an academic year at all: it is the Buddhist-era year the curriculum was revised
+(หลักสูตรปรับปรุง พ.ศ. 2564). The rename is what the ticket asked for and it was cheap in the way the
+ticket said — a nullable `varchar(4)` in no key, so [ADR-0001](adr/0001-three-tier-key-strategy.md)
+never came into it. What cost time was everything the ticket wrote down beside the rename.
+
+**A ticket's supporting identifiers are a claim like its numbers.** #54's first paragraph is its
+argument: every *other* year in the schema spells the concept out, and it names five — two tables
+that do not exist under those names, one that exists but carries no year column, one named only by
+description, and one pluralised. Measured against the `CREATE TABLE` lines: the academic year lives on `semester_courses`,
+`subject_clo`, `subject_score_ratio` and `clo_course_cycle_cloplan`, the admission year on `student`,
+and `program_subjects` has no year of its own. The names in the ticket are `CONTEXT.md`'s — Offering,
+CLO, Program Subject, Student — which are the vocabulary for *concepts*, and the glossary is right to
+use them. The mistake was reading them as columns. By the time one `grep '^CREATE TABLE'` was run the
+list had been copied into three places: the migration's comment header, the new glossary entry and
+the divergence note in `docs/02`. One unmeasured list becomes as many claims as it is pasted into,
+and the check that would have caught it costs a second. The ticket's count of the exempt `Intl`
+usages had drifted the same way — it says two, and there are six in those three trees.
+
+**The migration number had expired, and the file list was a grep somebody else ran.** "a new
+`db/migrations/0007_*.sql`" was written when 0006 was newest; 0007 and 0008 have landed since, so it
+is 0009 (#66, #111 — a claim from the day it was written). Of the ten files the ticket names, three
+hold no call site: `backend/test/fixtures.js`, `db/test/identity_and_organisation.test.js` and
+`db/test/seed.test.js`. Six that do are not on it: `backend/routes/ploMapping.js`,
+`backend/test/departments.test.js`, `db/test/helpers.js`, `e2e/tests/14b-departments-import.spec.js`,
+`e2e/tests/140a-superseded-handler-reload.spec.js` and
+`frontend/src/components/ploMapping/exportPdf.js`. The last one is the one worth naming. It was not
+found by the census that replaced the ticket's list, because that census searched the programme
+screens and the routes; it was found by a second pass shaped on *identifiers* — `.year`, `year:`,
+`'year'` — over the whole of `backend`, `frontend/src`, `db` and `e2e`. It prints the curriculum year
+into the heading of the #20 coverage-grid PDF, which is the one place the value is read by a screen
+that has nothing else to do with curricula. Search for the identifier, not the subject (#83).
+
+**The third criterion cannot be met as written, which is a finding and not a failure.** It asks that
+`grep -rn '\byear\b'` over `backend/`, `frontend/src/` and `db/` return only `academic_year`,
+`admission_year`, `revision_year` and two `Intl` usages. Measured: 693 lines match, and 687 still
+match after removing every line whose only `year` is one of those three names or the `Intl` option —
+across 80 files. They are English prose in docblocks, local variables and parameters named `year`,
+and `backend/lib/year.js`, the Buddhist-era validator whose whole subject is years. A grep for an
+English word in a codebase commented in English is a census of the language, not of the column
+(#111). What answers the criterion's *intent* is the identifier-shaped census: it returns zero
+programme sites, and the only surviving `programs.year` in the tree is in three places that are about
+the rename — the migration's own comment, its row in `db/migrations/README.md`, and the test row
+asserting the bare name is gone. That number went to the ticket as *no, and here is what it would
+cost* (#89) rather than the box being ticked.
+
+**One document, two kinds of citation.** `docs/acceptance/15-programs.md` names `year` six times. Two
+are walk criteria, one is an open question about PUT semantics, and three are cells of a curl table
+dated 19 August 2569 — a table that says of itself, in bold, that a record of one walk is not a thing
+you edit to match today. So the file takes both treatments: the criteria and the open question
+describe what the system *is* and get the new identifier, because a later walker reading `year` would
+look for a CSV header that no longer exists; the dated table keeps every character it measured and
+gains four lines naming the three rows that would read `revision_year` if the walk were repeated. The
+ticket warns about exactly this trap for `docs/02` and `docs/03` — *a divergence note, not a
+find-and-replace* — and the file it does not warn about is the acceptance sheet, one step further
+along, where a global replace would have rewritten a measurement into something nobody took.
+
+**What the new test file can and cannot prove.** `db/test/program_revision_year.test.js` takes over
+the whole-schema rows from 0008's file, as the convention in `db/migrations/README.md` requires, and
+adds four of its own: the new name is there and the bare one is gone, the column kept `varchar(4)`
+and its nullability, nothing keys on it, and it is written and read under the new name. Broken three
+ways to see which row catches what. Widening the column to `varchar(8)` and putting a unique
+constraint on it kills the shape row and the key row and leaves the rest standing. Replacing the
+rename with an `ADD COLUMN` — the shape a rename-by-copying takes — is caught only by the
+`has('year') === false` half, which is why that row asserts both halves and not just the new name
+(#66: a row that names two ways in is two rows, read from the other side). Renaming to
+`revised_year` kills three of the four. The value row is the weak one and says so in its own comment:
+in a schema built from nothing there was no data to survive, so it claims only that the column is
+writable and readable by the new name.
+
+**A divergence subsection that jumps two numbers.** §10 of `docs/02` had 10.1–10.4 for migrations
+0001–0004 and nothing after, because 0005–0008 add columns the thesis never described — nothing to
+diverge from. 0009 does diverge: §2.3 says `year`, and its description, *ปีการศึกษาของหลักสูตร*, is
+the confusion the ticket exists to close. So the note is 10.5 for 0009, and it says in its first
+lines why it is not 10.9.
+
+**The new rule landed inside the rule above it.** The insertion was anchored on the sentence that
+used to end the stray-pipe bullet — *all seven hid a ☑, so the walk queue was never wrong* — and #175
+had appended two more lines after it the same week. So the script spliced #54's bullet between that
+bullet's body and its tail, and the `(#79, #175)` sentence read as the end of #54's. Both reviewers
+found it; neither had to run anything. An anchor chosen inside a bullet is the same species as a
+mutant anchored on the comment beside the code (#123): the thing you matched is not the thing you
+meant. The bullet's real end is its ticket list, which is the only line in it that cannot be appended
+to without a ticket number changing. The same round corrected the count in the bullet above — *nine
+ways* had been true until #58 and #89 appended theirs, and the list reads eleven when the clause
+holding two tickets is counted as the two diagnostic errors it names.
+
+**And one finding was measured and declined.** The Standards reviewer read the surviving
+`/^\d{4}$/` guard on the revision year as Primitive Obsession beside `backend/lib/year.js`, which
+already owns *is this a plausible year* for an Activity's dates and an account's validity window, and
+asked whether the rename should have promoted the guard too. Measured: `yearRefusal` refuses
+anything outside 1900–2200 **of the common era** and offers the Buddhist reading as the fix, so
+handing it 2565 — the correct value, which the column exists to hold as typed — would refuse it and
+suggest 2022. The two years are different concepts and the shared range is a claim about dates, not
+about curricula. The regex stays, and `programs.js`'s own comment already said why: kept as the text
+the registrar writes rather than converted to anything. A helper named for a type is a promise about
+that type (#107), and this one is named for a date's year.

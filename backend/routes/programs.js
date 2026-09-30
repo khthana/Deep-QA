@@ -74,7 +74,7 @@ const { deleteOrDeactivate } = require('../lib/removal');
 const MAINTAINERS = ['FACULTY_ADMIN', 'DEPT_ADMIN'];
 
 /** What a programme is, as this file reads it out. */
-const RETURNED = 'program_id, program_name_th, program_name_en, department_id, year, is_active';
+const RETURNED = 'program_id, program_name_th, program_name_en, department_id, revision_year, is_active';
 
 /** The template's columns, and the fields the import reads from a row. */
 const IMPORT_COLUMNS = [
@@ -82,7 +82,7 @@ const IMPORT_COLUMNS = [
   'program_name_th',
   'program_name_en',
   'department_id',
-  'year',
+  'revision_year',
 ];
 
 /**
@@ -95,7 +95,7 @@ const IMPORT_COLUMNS = [
  * Computer Engineering programme (ADR-0001, tier one) - so it is neither
  * generated nor editable afterwards. The Thai name is required because it is
  * what every screen displays; the English one is optional, as the column is.
- * `year` is the Buddhist-era year of the curriculum revision, four digits,
+ * `revision_year` is the Buddhist-era year the curriculum was revised, four digits,
  * kept as the text the registrar writes rather than converted to anything.
  */
 function readProgram(source, { editing = false } = {}) {
@@ -104,7 +104,7 @@ function readProgram(source, { editing = false } = {}) {
     program_name_th: blankToNull(source.program_name_th),
     program_name_en: blankToNull(source.program_name_en),
     department_id: blankToNull(source.department_id),
-    year: blankToNull(source.year),
+    revision_year: blankToNull(source.revision_year),
   };
 
   if (!editing && !values.program_id) return { ok: false, reason: 'invalidProgram' };
@@ -119,7 +119,7 @@ function readProgram(source, { editing = false } = {}) {
   // A department is what a programme is owned by, so it is required when one is
   // created; on an edit an absent column means "leave it where it is".
   if (!editing && !values.department_id) return { ok: false, reason: 'invalidProgram' };
-  if (values.year && !/^\d{4}$/.test(values.year)) return { ok: false, reason: 'invalidProgram' };
+  if (values.revision_year && !/^\d{4}$/.test(values.revision_year)) return { ok: false, reason: 'invalidProgram' };
 
   return { ok: true, values };
 }
@@ -259,7 +259,7 @@ function programRoutes(pool) {
       program_name_th: 'วิศวกรรมสารสนเทศ',
       program_name_en: 'Information Engineering',
       department_id: '05',
-      year: '2565',
+      revision_year: '2565',
     }),
   );
 
@@ -290,14 +290,14 @@ function programRoutes(pool) {
           try {
             const { rows } = await client.query(
               `INSERT INTO programs
-                 (program_id, program_name_th, program_name_en, department_id, year)
+                 (program_id, program_name_th, program_name_en, department_id, revision_year)
                VALUES ($1, $2, $3, $4, $5) RETURNING ${RETURNED}`,
               [
                 values.program_id,
                 values.program_name_th,
                 values.program_name_en,
                 values.department_id,
-                values.year,
+                values.revision_year,
               ],
             );
             // Inside the row's savepoint - #58, as in every import here.
@@ -346,14 +346,14 @@ function programRoutes(pool) {
       // describes, and it happens on an edit or on a removal, not at birth.
       const { rows } = await pool.query(
         `INSERT INTO programs
-           (program_id, program_name_th, program_name_en, department_id, year)
+           (program_id, program_name_th, program_name_en, department_id, revision_year)
          VALUES ($1, $2, $3, $4, $5) RETURNING ${RETURNED}`,
         [
           draft.values.program_id,
           draft.values.program_name_th,
           draft.values.program_name_en,
           draft.values.department_id,
-          draft.values.year,
+          draft.values.revision_year,
         ],
       );
 
@@ -409,7 +409,7 @@ function programRoutes(pool) {
             SET program_name_th = $2,
                 program_name_en = $3,
                 department_id = $4,
-                year = $5,
+                revision_year = $5,
                 is_active = coalesce($6, is_active),
                 updated_at = now()
           WHERE program_id = $1
@@ -419,7 +419,7 @@ function programRoutes(pool) {
           draft.values.program_name_th,
           draft.values.program_name_en,
           department,
-          draft.values.year,
+          draft.values.revision_year,
           typeof req.body?.is_active === 'boolean' ? req.body.is_active : null,
         ],
       );

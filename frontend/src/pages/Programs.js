@@ -287,7 +287,7 @@ export default function Programs() {
                       <td className="px-4 py-3 text-slate-500">
                         {nameOf(program.department_id)}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{program.year ?? '—'}</td>
+                      <td className="px-4 py-3 text-slate-500">{program.revision_year ?? '—'}</td>
                       <td className="px-4 py-3">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs ${

@@ -203,7 +203,7 @@ function ploMappingRoutes(pool) {
       if (refusal) return res.status(refusal.status).json({ message: REFUSALS[refusal.key] });
 
       const program = await pool.query(
-        `SELECT program_id, program_name_th, program_name_en, year
+        `SELECT program_id, program_name_th, program_name_en, revision_year
            FROM programs WHERE program_id = $1`,
         [programId],
       );

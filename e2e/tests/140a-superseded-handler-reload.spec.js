@@ -98,7 +98,7 @@ test.beforeAll(async () => {
   }
   for (const [i, id] of PROGRAMS.entries()) {
     await db.query(
-      `INSERT INTO programs (program_id, program_name_th, program_name_en, department_id, year)
+      `INSERT INTO programs (program_id, program_name_th, program_name_en, department_id, revision_year)
        VALUES ($1, $2, $3, '05', '2565')`,
       [id, `หลักสูตรของแถว #140 ${i}`, `Programme for #140 ${i}`],
     );

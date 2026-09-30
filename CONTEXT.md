@@ -19,6 +19,13 @@ _Avoid_: division
 A degree curriculum owned by a Department, identified by a code such as `0501`. Owns PLOs and Rubrics.
 _Avoid_: curriculum, course
 
+**Revision Year** (ปีหลักสูตร):
+The Buddhist-era year a Program's curriculum was revised — *หลักสูตรปรับปรุง พ.ศ. 2564*, four digits. A property of the
+Program itself, not of anything taught in it.
+_Avoid_: academic year — the year an Offering is taught in (`semester_courses.academic_year`), a different fact;
+curriculum year, for the same reason *curriculum* is avoided above; program year, which reads as a student's
+year of study (ชั้นปี)
+
 **Subject** (รายวิชา):
 A catalogue entry — a teachable unit with a code such as `01076105`, a credit count and a description. Exists
 independently of any programme or year.

@@ -53,12 +53,19 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 ### A ticket's diagnosis
 
 - **A ticket's *What is wrong* is a claim from the day it was written; measure it before you fix
-  it.** It has been wrong nine ways: aged (#66, #111, #55), never true (#102), generalised from
+  it.** It has been wrong eleven ways: aged (#66, #111, #55), never true (#102), generalised from
   the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
   its own table (#133), a key's name read as its text (#127), an inference drawn from a
   measurement that was itself correct (#165), a list of verbs naming an action no route performs
   (#58) — and the sheet itself asking for the defect (#89).
+- **A ticket's supporting identifiers are a claim like its numbers** — #54's argument named five
+  other years to show this one was the odd one out, and of the five, two tables do not exist under
+  those names, one carries no such column and one is pluralised: they are `CONTEXT.md`'s names for
+  the *concepts*, which is what a glossary is for and not what a schema is called. Ask
+  `CREATE TABLE` before pasting the list, because it gets pasted more than once — this one reached a
+  migration header, a glossary entry and a divergence note before anybody checked, and the ticket's
+  count of the exempt usages had drifted from two to six the same way. (#54)
 - **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. What the ticket wrote down as a prediction can be the state on the day it is
@@ -147,6 +154,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   hid a ☑, so the walk queue was never wrong. Measured against GitHub's own renderer, the cells
   past the header's width are **dropped** rather than moved along, so the mark is gone and not
   merely misplaced. (#79, #175)
+- **A rename reaches a sheet's criteria and not its record** — the criteria rows and the open
+  questions say what the system *is*, so a later walker needs the new identifier in them; a dated
+  walk table says what one measurement returned, and #54's sheet says so itself in bold. Change the
+  first, leave the second and add the note naming which of its rows would read differently today. A
+  global replace over one file does both. (#54)
 
 ### Mutants and sweeps
 

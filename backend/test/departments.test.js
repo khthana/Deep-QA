@@ -356,7 +356,7 @@ test('a programmes file uploaded here is refused as the wrong template', async (
   const response = await importCsv(
     cookie,
     [
-      'program_id,program_name_th,program_name_en,department_id,year',
+      'program_id,program_name_th,program_name_en,department_id,revision_year',
       `0501,วิศวกรรมคอมพิวเตอร์,Computer Engineering,${DEPT_COMPUTER},2565`,
       `0502,วิศวกรรมซอฟต์แวร์,Software Engineering,${DEPT_COMPUTER},2565`,
     ].join('\r\n'),

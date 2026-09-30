@@ -132,7 +132,7 @@ export function exportGridToPdf({ program, subjects, outcomes, mappings }) {
   doc.setFontSize(13)
   doc.text(
     `หลักสูตร ${program.program_id} ${program.program_name_th}` +
-      (program.year ? ` (หลักสูตรปี ${program.year})` : ''),
+      (program.revision_year ? ` (หลักสูตรปี ${program.revision_year})` : ''),
     width / 2,
     19,
     { align: 'center' }

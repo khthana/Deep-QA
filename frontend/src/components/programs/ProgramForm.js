@@ -41,7 +41,7 @@ const EMPTY = {
   program_name_th: '',
   program_name_en: '',
   department_id: '',
-  year: '',
+  revision_year: '',
   is_active: true,
 }
 
@@ -96,7 +96,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
       program_name_th: draft.program_name_th.trim(),
       program_name_en: draft.program_name_en.trim(),
       department_id: draft.department_id,
-      year: draft.year.trim(),
+      revision_year: draft.revision_year.trim(),
       is_active: draft.is_active,
     })
   }
@@ -159,8 +159,8 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
           <Field label="ปีหลักสูตร (พ.ศ.)">
             <input
               className={field}
-              value={draft.year ?? ''}
-              onChange={set('year')}
+              value={draft.revision_year ?? ''}
+              onChange={set('revision_year')}
               inputMode="numeric"
               pattern="\d{4}"
               maxLength={4}

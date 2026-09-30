@@ -87,7 +87,7 @@ async function baseFixtures(pool, tag) {
     [ids.department, ids.faculty],
   );
   await pool.query(
-    `INSERT INTO programs (program_id, program_name_th, department_id, year)
+    `INSERT INTO programs (program_id, program_name_th, department_id, revision_year)
      VALUES ($1, 'หลักสูตร', $2, '2565')`,
     [ids.program, ids.department],
   );

@@ -13,7 +13,7 @@ const { testSchema, dropSchema, baseFixtures, errorCodeOf } = require('./helpers
  *
  * The applied-migration list and the foreign-key type check are not here: they
  * are about the schema as a whole and have moved with every ticket since, to
- * 0008's file.
+ * 0009's file.
  *
  * What the migration adds is two nullable columns saying which record a log
  * line was written about. The two things worth asserting are the two decisions
