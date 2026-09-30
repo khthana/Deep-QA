@@ -581,3 +581,64 @@ test('an import that is rolled back writes no lines either — #58', async () =>
   assert.deepEqual(said((await logOf(FAC)).slice(before)), []);
   assert.equal((await read(cookie, 'L04')).status, 404);
 });
+
+test('a department somebody administers is refused, not deleted — #60', async (t) => {
+  // The same hole as the programme route's, answered the way this route already
+  // answers every reference: a refusal rather than a deactivation. The two
+  // routes differ on that and always have, so *one decision applied to both*
+  // means *a grant counts as a reference in both*, not *both answer alike*.
+  //
+  // `user_roles.scope_id` carries no foreign key, so nothing raises `23503` and
+  // the DELETE goes through. The seed cannot express this either: both of its
+  // departments carry accounts, so the refusal they produce is the other one.
+  const cookie = await signInAs('U_FAC');
+  const holder = ACCOUNTS.find((one) => one.alias === 'U_TEACH2');
+
+  // Both of them, and whether or not the row passes - see the programmes file's
+  // row for why the `finally` below is not enough on its own.
+  t.after(async () => {
+    await request(api.app)
+      .delete(`/api/users/${holder.id}/roles/DEPT_ADMIN/T60`)
+      .set('Cookie', cookie);
+    await remove(cookie, 'T60');
+  });
+
+  const added = await create(cookie, {
+    department_id: 'T60',
+    department_name_th: 'การจัดการสิทธิ์ทดสอบ',
+    department_name_en: 'Engineering Management',
+  });
+  assert.equal(added.status, 201, added.body.message);
+
+  const granted = await request(api.app)
+    .post(`/api/users/${holder.id}/roles`)
+    .set('Cookie', cookie)
+    .send({ role_id: 'DEPT_ADMIN', scope_id: 'T60' });
+  assert.equal(granted.status, 201, granted.body.message);
+
+  try {
+    const refused = await remove(cookie, 'T60');
+    assert.equal(refused.status, 409, `expected a refusal, got ${refused.status}`);
+    assert.equal(refused.body.message, REFUSALS.departmentGranted);
+
+    // The criterion at the seam: the grant still names a department that exists.
+    assert.equal((await read(cookie, 'T60')).status, 200);
+  } finally {
+    await request(api.app)
+      .delete(`/api/users/${holder.id}/roles/DEPT_ADMIN/T60`)
+      .set('Cookie', cookie);
+  }
+
+  assert.equal((await remove(cookie, 'T60')).status, 204);
+
+  // The second criterion, and the only seam that can read it: revoking left the
+  // row in place with `is_active` false, so after the DELETE it would have been
+  // naming a department no table holds. Asked of the table, because no route
+  // serves an inactive grant - which is also why nothing reads the row and why
+  // dropping it costs nobody anything.
+  const { rows } = await api.pool.query(
+    'SELECT is_active FROM user_roles WHERE scope_id = $1',
+    ['T60'],
+  );
+  assert.deepEqual(rows, []);
+});

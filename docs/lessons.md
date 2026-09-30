@@ -5794,3 +5794,69 @@ three hundred units, and the left column has ninety-two. Forty-eight characters 
 is #115, one column over, sitting inside #115's own fallback — the same shape as *a guard written for
 one caller is a claim about every caller* (#68), with the caller being a column. It takes the room now
 and scales the guess to it, which is exactly as true as a character count is, and no truer.
+
+## #60 — the reference the database could not be asked about
+
+`user_roles.scope_id` names a faculty, a department or a programme, and which of the three is
+decided by the role. That is why it carries no foreign key, deliberately, and migration 0001 says
+so above the column. Every other thing that points at a programme points at it with a key, and
+`lib/removal` argues at length that this is the right way round: `ON DELETE RESTRICT` decides, so
+the reference a later migration adds is covered on the day it is added, where a hand-written *is
+anything pointing at this* check silently stops being true. The one reference that cannot be a key
+is the one that reasoning does not reach, and it was the one left dangling.
+
+**The ticket asked a question with three answers and one of them was already refused in the file it
+proposed to change.** Option 3 was *refuse the deletion, with a message saying who holds it*. The
+head of `backend/auth/refusals.js` says, in its own words, that no refusal names a user other than
+the caller, a table, a column or an identifier — #9's second criterion. So *saying who holds it* is
+not a design choice still open; it is a decision that file closed, and the ticket walked into it the
+way #48's did. The new sentence says what to do next and names nobody, and the sheet records that as
+an answer rather than an oversight.
+
+**Three of the ticket's claims about the world were narrower than the world.** It named
+`PROG_MANAGER` as the role scoped to a programme; `EXT_ASSESSOR` is too, and the seed has three of
+those on `0501`. It named `DEPT_ADMIN` for departments; `TEACHER` is scoped to a department as well,
+on `01` and `05`. And *decide it once and apply it in both routes* reads, at first, as *make the two
+routes answer alike* — but they have never answered alike: a referenced programme deactivates and
+answers 200, a referenced department is refused and answers 409, since #14 and #15. The decision that
+can be applied in both is *a grant counts as a reference*; the answer each route gives is each
+route's own. Making them agree would change what a screen says happened, which `docs/06` §Out of
+Scope makes a question and not a fix, so it is asked on the issue rather than written down here as
+a deferral no tracker holds (#119). Measuring the three cost ten minutes and changed the shape of
+the fix.
+
+**The seed could not express the defect, which is why every green suite missed it (#96).** The only
+programme with nothing pointing at it is `0101`, and nobody holds a grant over it; the two that carry
+grants also carry PLOs and rubrics, so `RESTRICT` already deactivates them and the hole never opens.
+Both new rows build the situation themselves — a programme of their own, a grant of their own, and a
+`finally` that takes the grant back (#89).
+
+**The order of the two gates was the whole of the departments half.** The first draft asked about
+grants before attempting the DELETE, and two rows of `14`'s suite went red at once: the seeded
+departments are *both* referenced and granted, so two refusals are true, and asking about grants
+first replaced the sentence that route has always given for that case. That is #112's shape —
+changing a closed ticket's criteria from inside an open one — and the fix is one line of ordering.
+The DELETE goes first, the database keeps the case it already decided, and the grant is the last gate,
+so `departmentGranted` is reached by exactly the case that used to succeed and should not have.
+
+**The half of the criterion nothing could see.** *After a programme is deleted, no row in
+`user_roles` names a `scope_id` that no table holds* cannot be satisfied by the active-grant check
+alone, because revoking a grant does not delete the row: `routes/grants` switches `is_active` off so
+that the record of who granted it survives. Count those rows as references and a programme becomes
+undeletable for ever from the first grant anybody ever issued over it — the cost the ticket itself
+names against option 1. Do not count them and they dangle. What decided it was asking who reads
+them: all five readers of `user_roles` filter `ur.is_active`, so a revoked row naming a destroyed
+programme has no reader and no subject, and it is dropped on the path that destroys the record and
+only there. A deactivated programme still exists, so its revoked grants still name something.
+
+That half also has no seam. No route serves an inactive grant, so the row that proves it asks
+`api.pool` directly — the criterion is about the table, and the table is the only thing that can be
+asked. It is the first assertion in either suite that goes round the HTTP surface, and it is written
+down as that rather than as a convenience.
+
+**And the collision note was wrong in the way the census exists to catch.** The first draft of the
+leaf's header said never sweep `60` with `58` or `102`, because #102 is the department-boundary
+ticket and the subject matter matched. The census answers `56` and `58`: #102's `FILES` holds no
+backend route at all, and #56's holds `departments.js` for the import template. *Compare `FILES`, not
+subject matter* (#85, #87) — the line that was checked by reading a title rather than by running the
+script, in the very paragraph that tells the next person to run the script.

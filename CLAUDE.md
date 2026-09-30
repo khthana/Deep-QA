@@ -349,6 +349,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A cleanup that names the tree has said nothing about the machine** — what a run writes outside
   the repository outlives the rows that name it unless both are cleared in the same breath, and
   code that deletes proves the directory is its own before it removes it. (#138)
+- **A criterion about what a table holds can have no seam that serves it** — the row then asks the
+  database directly and says so on its face, rather than being weakened to what a route can return.
+  (#60)
 - Two `includes` cannot fail on a list that is too wide. (#102)
 - **A gate that holds one request is a claim about how many the screen makes** — the screen that asks
   twice has its second call answered inside its own document, and the row then passes for the wrong
@@ -401,6 +404,15 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **When a guard has to widen, ask first whether what it reads is what is wrong** — changing what
   a ref *means*, and which controls write it, can leave every comparison and every mutant where
   they stand. (#146)
+- **A reference no foreign key can express is the one a `RESTRICT` doctrine leaves dangling** — a
+  polymorphic column carries no constraint to raise, so there the hand-written *is anything pointing
+  at this* check is the right one, and its licence is bounded by the column having no constraint
+  rather than by anybody's list of tables. (#60)
+- **When two refusals are both true, the order of the gates decides which sentence the caller
+  gets** — a new gate put first rewrites the answer a closed ticket's criteria already fixed, so it
+  goes last, where it is reached by exactly the case that used to succeed. It binds only where the
+  two answers differ: the same fix on the sibling route asks first, because both of its answers are
+  the same answer. (#60)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
 - **A limit written in one unit is a claim about the unit the room is measured in** — forty-eight
   characters guarding three hundred units of drawing is invisible in the alphabet the seed happens

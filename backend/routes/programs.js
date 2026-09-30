@@ -57,6 +57,7 @@ const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const { departmentInReach, reachableDepartments } = require('../lib/reach');
 const { deleteOrDeactivate } = require('../lib/removal');
+const { forgetRevokedGrants, isGranted } = require('../lib/scopeGrants');
 
 /**
  * The roles that maintain programmes.
@@ -446,6 +447,10 @@ function programRoutes(pool) {
    * decides, through ON DELETE RESTRICT on all five - so the sixth reference
    * somebody adds is covered on the day it is added.
    *
+   * Except for the one it cannot decide. A role somebody holds over this
+   * programme is a sixth reference that no foreign key can express, and #60
+   * found it dangling: see `blocked` below and `lib/scopeGrants`.
+   *
    * Asking the person to confirm first is the sixth criterion and is the
    * screen's job: there is nothing for a server to confirm against, and a
    * request that arrived is a request that was meant.
@@ -459,8 +464,18 @@ function programRoutes(pool) {
       // shared with #16 and #18, which is also where the reasoning for the
       // savepoint lives.
       const outcome = await deleteOrDeactivate(pool, {
-        remove: (client) =>
-          client.query('DELETE FROM programs WHERE program_id = $1', [existing.program_id]),
+        // The sixth reference, and the one the sentence above is wrong about -
+        // #60. A grant over this programme is a reference too, and it is the
+        // only one the database cannot decide: `user_roles.scope_id` names a
+        // faculty, a department or a programme and therefore carries no foreign
+        // key, so no 23503 arrives and the programme used to be destroyed under
+        // somebody's role. It is asked by hand, here, and `lib/scopeGrants`
+        // says why that is not licence to ask about anything else by hand.
+        blocked: (client) => isGranted(client, existing.program_id),
+        remove: async (client) => {
+          await forgetRevokedGrants(client, existing.program_id);
+          await client.query('DELETE FROM programs WHERE program_id = $1', [existing.program_id]);
+        },
         deactivate: (client) =>
           client.query('UPDATE programs SET is_active = false, updated_at = now() WHERE program_id = $1', [
             existing.program_id,

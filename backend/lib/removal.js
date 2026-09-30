@@ -22,30 +22,40 @@ const { isReferenced } = require('./fields');
  * savepoint and the UPDATE that follows runs after a rollback to it, on the
  * same transaction, with the row still there.
  *
- * What differs between callers is three statements and nothing else, so those
- * are the parameters. Each is handed the client the transaction is on; none of
- * them may commit or roll back, because that is this function's job.
+ * What differs between callers is four statements and nothing else, so those
+ * are the parameters - three of them, and the optional fourth below. Each is
+ * handed the client the transaction is on; none of them may commit or roll
+ * back, because that is this function's job.
  *
  * - `remove(client)` deletes the row.
  * - `deactivate(client)` switches it off.
  * - `load(client)` reads it back as the route wants to answer it.
+ * - `blocked(client)` is optional and answers *is there a reference the
+ *   database cannot raise `23503` for* — #60's grants, and nothing else so far.
+ *   It is asked before the attempt rather than after it, because there is no
+ *   error to catch: a true answer goes straight to `deactivate` on the same
+ *   transaction, so the grant that blocked it cannot be issued or revoked
+ *   between the question and the answer. `lib/scopeGrants` explains why that
+ *   one reference has to be asked by hand when none of the others may be.
  *
  * Answers `{ deleted: true }`, or `{ row }` for the one that was switched off,
  * or `{ missing: true }` if it was not there to read back afterwards - which is
  * a row another request removed between the route's own check and this call.
  */
-async function deleteOrDeactivate(pool, { remove, deactivate, load }) {
+async function deleteOrDeactivate(pool, { remove, deactivate, load, blocked }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query('SAVEPOINT attempt');
-    try {
-      await remove(client);
-      await client.query('COMMIT');
-      return { deleted: true };
-    } catch (error) {
-      if (!isReferenced(error)) throw error;
-      await client.query('ROLLBACK TO SAVEPOINT attempt');
+    if (!(blocked && (await blocked(client)))) {
+      await client.query('SAVEPOINT attempt');
+      try {
+        await remove(client);
+        await client.query('COMMIT');
+        return { deleted: true };
+      } catch (error) {
+        if (!isReferenced(error)) throw error;
+        await client.query('ROLLBACK TO SAVEPOINT attempt');
+      }
     }
 
     await deactivate(client);

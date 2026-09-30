@@ -777,3 +777,82 @@ test('an import writes a line per row, sharing one timestamp — #58', async () 
     await remove(cookie, 'L103');
   }
 });
+
+test('a programme somebody manages is deactivated instead of deleted — #60', async (t) => {
+  // The sixth reference, and the one the database cannot decide:
+  // `user_roles.scope_id` is polymorphic and carries no foreign key on purpose
+  // (ADR-0001, ADR-0002, and migration 0001 says so in its own words), so no
+  // `23503` is raised and `lib/removal` deletes the row.
+  //
+  // The situation needs a programme with no PLO, no Program Subject, no student
+  // and no rubric, because anything else on that list makes the DELETE fail for
+  // a reason that is not this one. The seed's only such programme is `0101` and
+  // it carries no grant, which is why no green suite has ever produced a
+  // dangling grant: nothing in the seed can express the case.
+  const admin = await signInAs('U_FAC');
+  const holder = ACCOUNTS.find((one) => one.alias === 'U_TEACH2');
+
+  // Both of them, and whether or not the row passes. The `finally` below takes
+  // the grant back so that the last assertion can be made at all; this takes
+  // the programme back so that a failure before it does not leave `T0160` for
+  // the files after this one to be handed (#132) or for the next sweep to count
+  // as a kill (#89). Neither may be asserted here - they run after a red.
+  t.after(async () => {
+    await request(api.app)
+      .delete(`/api/users/${holder.id}/roles/PROG_MANAGER/T0160`)
+      .set('Cookie', admin);
+    await remove(admin, 'T0160');
+  });
+
+  const made = await create(admin, {
+    program_id: 'T0160',
+    program_name_th: 'วิศวกรรมการจัดการสิทธิ์',
+    program_name_en: 'Engineering Management',
+    department_id: DEPT_COMPUTER,
+    revision_year: '2569',
+  });
+  assert.equal(made.status, 201, made.body.message);
+
+  const granted = await request(api.app)
+    .post(`/api/users/${holder.id}/roles`)
+    .set('Cookie', admin)
+    .send({ role_id: 'PROG_MANAGER', scope_id: 'T0160' });
+  assert.equal(granted.status, 201, granted.body.message);
+
+  try {
+    // A grant counts as a reference, so this programme is switched off rather
+    // than destroyed, the same answer a PLO or a student already produces.
+    const removed = await remove(admin, 'T0160');
+    assert.equal(removed.status, 200, `expected a deactivation, got ${removed.status}`);
+    assert.equal(removed.body.deactivated, true);
+    assert.equal(removed.body.program.is_active, false);
+
+    // Which is the criterion, read at the seam: the grant still names a
+    // programme that exists. A 204 above would have left it naming nothing.
+    const still = await read(admin, 'T0160');
+    assert.equal(still.status, 200);
+    const held = await request(api.app)
+      .get(`/api/users/${holder.id}/roles`)
+      .set('Cookie', admin);
+    assert.ok(held.body.roles.some((row) => row.role_id === 'PROG_MANAGER' && row.scope_id === 'T0160'));
+  } finally {
+    await request(api.app)
+      .delete(`/api/users/${holder.id}/roles/PROG_MANAGER/T0160`)
+      .set('Cookie', admin);
+  }
+
+  // And with the grant gone it is deletable again, which is what says the grant
+  // was the thing holding it rather than something this test left behind.
+  assert.equal((await remove(admin, 'T0160')).status, 204);
+
+  // The second criterion, and the only seam that can read it: the revoke above
+  // left the row in place with `is_active` false - `routes/grants` keeps it so
+  // that who granted it survives - so after the DELETE it would have been naming
+  // a programme no table holds. No route serves an inactive grant, which is why
+  // this is asked of the table and why dropping the row costs nobody anything.
+  const { rows } = await api.pool.query(
+    'SELECT is_active FROM user_roles WHERE scope_id = $1',
+    ['T0160'],
+  );
+  assert.deepEqual(rows, []);
+});

@@ -46,6 +46,7 @@ const { onDepartment, recordActivity } = require('../auth/accounts');
 const { requireRole, coveredScopes } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
+const { forgetRevokedGrants, isGranted } = require('../lib/scopeGrants');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 
@@ -366,6 +367,22 @@ function departmentRoutes(pool) {
    * tables there are - and the fifth one somebody adds is covered on the day it
    * is added rather than on the day this list is remembered.
    *
+   * With one exception, which is #60. A role somebody holds over this department
+   * is a reference the database cannot express: `user_roles.scope_id` names a
+   * faculty, a department or a programme, so it carries no foreign key, no
+   * 23503 arrives, and the department used to be destroyed under somebody's
+   * role. That one is asked by hand, on the transaction the DELETE is on, and
+   * `lib/scopeGrants` says why it is the only one that may be.
+   *
+   * It is refused rather than deactivated, because that is what this route
+   * already does with every other reference. #60 asks for one decision applied
+   * to both routes, and the decision is *a grant counts as a reference*; the two
+   * routes have always answered a reference differently - a programme
+   * deactivates, a department refuses - and making them answer alike would be a
+   * change to what a screen says happened, which `docs/06` §Out of Scope makes a
+   * question rather than a fix. It is asked on #60; there is no ticket for it,
+   * and this sentence is not one (#119).
+   *
    * Asking the person to confirm first is the same criterion's other half and
    * is the screen's job: there is nothing for a server to confirm against, and
    * a request that arrived is a request that was meant.
@@ -378,9 +395,35 @@ function departmentRoutes(pool) {
         const existing = await reachable(req, req.params.departmentId);
         if (!existing) return res.status(404).json({ message: REFUSALS.departmentNotFound });
 
-        await pool.query('DELETE FROM departments WHERE department_id = $1', [
-          existing.department_id,
-        ]);
+        // One transaction, because the grant check and the DELETE have to be the
+        // same moment: a grant issued between a check outside and a delete
+        // inside would dangle exactly as it did before #60.
+        //
+        // The DELETE goes first and the grant is the last gate. A department can
+        // be both referenced and granted - the seeded two both are - and then
+        // two refusals are true at once. Asking the database first keeps the
+        // sentence it has always given for that case: `departmentInUse` names
+        // the thing the caller has to clear first, and every criterion #14
+        // closed on still reads the same. `departmentGranted` is then exactly
+        // the case that used to succeed and should not have.
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          await client.query('DELETE FROM departments WHERE department_id = $1', [
+            existing.department_id,
+          ]);
+          if (await isGranted(client, existing.department_id)) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ message: REFUSALS.departmentGranted });
+          }
+          await forgetRevokedGrants(client, existing.department_id);
+          await client.query('COMMIT');
+        } catch (error) {
+          await client.query('ROLLBACK').catch(() => {});
+          throw error;
+        } finally {
+          client.release();
+        }
         // After the DELETE, not before it: the refusal below is a delete that
         // did not happen, and a line saying otherwise would be the one thing an
         // audit record may not be. The department is gone, and the line names

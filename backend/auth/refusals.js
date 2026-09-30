@@ -158,6 +158,15 @@ const REFUSALS = {
   duplicateDepartmentId: 'รหัสภาควิชานี้ถูกใช้งานแล้ว',
   invalidDepartment: 'ข้อมูลภาควิชาไม่ครบถ้วนหรือไม่ถูกต้อง',
   departmentInUse: 'ภาควิชานี้มีข้อมูลอื่นอ้างอิงอยู่ จึงลบไม่ได้ หากต้องการเลิกใช้งานให้ปิดการใช้งานแทน',
+  // #60. A role somebody holds over the department is a reference too, and
+  // the only one the database cannot raise: `user_roles.scope_id` carries no
+  // foreign key. It is its own sentence rather than `departmentInUse` because
+  // the way round it is a different action - revoke the grant, which is a
+  // screen away - and because a caller who read *other records* would go
+  // looking through programmes and accounts and find nothing. It names no
+  // holder: whose grant it is, is the rule at the head of this file.
+  departmentGranted:
+    'มีผู้ได้รับสิทธิ์ดูแลภาควิชานี้อยู่ จึงลบไม่ได้ ให้ถอนสิทธิ์นั้นก่อน หรือหากต้องการเลิกใช้งานให้ปิดการใช้งานแทน',
   facultyNotYours: 'ไม่สามารถจัดการภาควิชานอกคณะที่รับผิดชอบได้',
 
   // Programmes - #15. `programNotFound` covers both the programme that does not
