@@ -826,8 +826,8 @@ Deep-QA/
 | `POST /api/program_subjects/import-program-subject` | A06 | `ImportProgSubjectDilog.js` |
 | `GET /api/program_subjects/get-all-program-subjects` | *(ไม่มีผู้เรียก)* | — |
 | `POST /api/program_subjects/get-program-subjectsby-id` | *(ไม่มีผู้เรียก)* | — |
-| `POST /api/rubrics/create|update|delete|get-by-program` | A04 | `RubricTable.js` |
-| `POST /api/rubricDetails/create|update|delete|get-by-code` | A05 | `EditRubricDetail.js` |
+| `POST /api/rubrics/create\|update\|delete\|get-by-program` | A04 | `RubricTable.js` |
+| `POST /api/rubricDetails/create\|update\|delete\|get-by-code` | A05 | `EditRubricDetail.js` |
 | `POST /api/student/get-by-program` | A07 | `MainStudentData.js` |
 | `GET /api/student/get-by-admission-year/:year` | A18 | `courseLevelIndividual.js` |
 | `POST /api/student/import-students` | *(ไม่มีผู้เรียก)* | — |
@@ -842,7 +842,7 @@ Deep-QA/
 | `POST /api/coursSections/update-section-teachers` | A08 | `CardCourseInTerm.js` |
 | `POST /api/coursSections/delete` | A08 | `CardCourseInTerm.js` |
 | `POST /api/teacher/getTeacherCourse` | T01 | `TeacherDashboard.js` |
-| `POST /api/plo/create|update-plo|delete-plo` | A09 | `PLOtable.js` |
+| `POST /api/plo/create\|update-plo\|delete-plo` | A09 | `PLOtable.js` |
 | `POST /api/plo/get-plo-by-program-id` | A09, A10 | `PLOtable.js`, `MappingPLO.js` |
 | `POST /api/plo-mapping/create` | A10 | `MappingPLO.js` |
 | `POST /api/plo-mapping/get-subject-plo-mapping` | A10 | `MappingPLO.js` |
@@ -860,7 +860,7 @@ Deep-QA/
 | `POST /api/studentGroup/import-student-groups` | T03 | `ImportStudentGroupsDialog.js` |
 | `GET /api/studentGroup/get-students-in-group/:group_id` | *(ไม่มีผู้เรียก)* | — |
 | `GET /api/subjectClo/get/:section_id` | T04, T09, T18 | `CourseOutcomes.js`, `AddNewActicity.js`, `ContinuousImprove.js` |
-| `POST /api/subjectClo/create|update` | T04 | `CourseOutcomes.js` |
+| `POST /api/subjectClo/create\|update` | T04 | `CourseOutcomes.js` |
 | `DELETE /api/subjectClo/delete/:clo_id` | T04 | `CourseOutcomes.js` |
 | `GET /api/subjectClo/getPloMappedinCLO/...` | *(ไม่มีผู้เรียก)* | — |
 | `POST/GET/DELETE /api/subjectBe/*` | T05 | `CourseOutcomeBehaviors.js` |
@@ -875,7 +875,7 @@ Deep-QA/
 | `GET /api/activity/get-clo-map/:activity_id` | T09 | `AddNewActicity.js` |
 | `DELETE /api/activity/:activity_id` | T08 | `ActivityCard.js` |
 | `GET /api/activity/:subject_id/:program_id` | A15, A18 | `courseLevelByIntake/AssessmentCriteria.js` |
-| `POST /api/activityScore/upsert|get` | T11 | `ActivityScores.js` |
+| `POST /api/activityScore/upsert\|get` | T11 | `ActivityScores.js` |
 | `POST /api/activityScore/import` | T11 | `ImportActivityScoresDialog.js` |
 | `POST /api/envidence` | T12 | `ActivityScores/AssessmentCriteria.js` |
 | `GET /api/envidence/section/:section_id` | T12, A15, A18 | `AssessmentCriteria.js` (ทั้ง 2 เวอร์ชัน) |

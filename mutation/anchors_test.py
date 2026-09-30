@@ -334,5 +334,67 @@ class Catalogue(TempStore):
         self.assertFalse([name for name in names if name.endswith("_test.py")])
 
 
+class Markdown(TempStore):
+    """The corpus `columns()` walks, once it stopped sharing one with `commands()`."""
+
+    def tree(self, *names):
+        """A repository-shaped directory holding each of `names`, empty."""
+        for name in names:
+            path = os.path.join(self.root, *name.split("/"))
+            if not os.path.isdir(os.path.dirname(path)):
+                os.makedirs(os.path.dirname(path))
+            with io.open(path, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write("")
+        return self.root
+
+    def relative(self, paths):
+        return sorted(os.path.relpath(path, self.root).replace(os.sep, "/")
+                      for path in paths)
+
+    def test_every_markdown_file_the_repository_owns(self):
+        root = self.tree("README.md", "docs/03-er-diagram.md",
+                         "docs/adr/0001-keys.md", "docs/handoff/2026-09-29-x.md",
+                         "mutation/README.md")
+        self.assertEqual(self.relative(anchors.markdown(root)),
+                         ["README.md", "docs/03-er-diagram.md", "docs/adr/0001-keys.md",
+                          "docs/handoff/2026-09-29-x.md", "mutation/README.md"])
+
+    def test_what_is_not_markdown_is_not_in_it(self):
+        root = self.tree("docs/06.md", "mutation/58-log.py", "e2e/tests/58a.spec.js")
+        self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
+
+    def test_the_trees_that_are_not_the_repositorys_to_render(self):
+        # `node_modules` is somebody else's markdown, and the two `DEEP-QA-*`
+        # directories are the student implementation as delivered - read-only
+        # reference, deleted when the rebuild completes. A row broken in either
+        # is not a row anybody may fix, so a check that reports it can only be
+        # silenced by ignoring the check.
+        root = self.tree("docs/06.md",
+                         "node_modules/pkg/README.md",
+                         "frontend/node_modules/pkg/README.md",
+                         "DEEP-QA-BACKEND/README.md",
+                         "DEEP-QA-FRONTEND/README.md",
+                         "_local/notes.md")
+        self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
+
+    def test_the_real_corpus_holds_the_documents_the_store_could_not_see(self):
+        # The store is `mutation/` + `docs/acceptance/` + one file, because that
+        # is where a *command* is documented. Rendering is not about the store,
+        # and the boundary hid nine broken rows until #175 (#123).
+        found = [os.path.relpath(path, anchors.ROOT).replace(os.sep, "/")
+                 for path in anchors.markdown()]
+        self.assertIn("docs/03-er-diagram.md", found)
+        self.assertIn("docs/05-screen-api-mapping.md", found)
+        self.assertIn("docs/lessons.md", found)
+        self.assertIn("CLAUDE.md", found)
+        self.assertFalse([path for path in found if "node_modules" in path])
+        self.assertFalse([path for path in found if path.startswith("DEEP-QA-")])
+
+    def test_the_repository_renders_every_row_in_the_width_its_header_has(self):
+        # The measurement #175 exists for, and the one that expires the day
+        # somebody writes a bare `|` inside a code span again.
+        self.assertEqual(anchors.columns(anchors.markdown())[0], 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

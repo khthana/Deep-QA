@@ -68,15 +68,19 @@ mark that is written is not a mark that is read**. All seven hid a ☑, so the
 queue was never wrong - but nothing stops the next one hiding a ◐, and that is
 what this exists for (#172).
 
-`columns()` reads the same store as `commands()` and counts the cells of every
-row against the header of its own table, the way the renderer splits them: on
-every `|` that is not escaped, inside code spans as well, because that is what
-GitHub does with a row before it looks at anything else.
+`columns()` counts the cells of every row against the header of its own table,
+the way the renderer splits them: on every `|` that is not escaped, inside code
+spans as well, because that is what GitHub does with a row before it looks at
+anything else. It read the same store as `commands()` until #175, which is a
+census of the wrong property - the store is *where a command is written down* and
+the species here is *what renders a table* - and that boundary hid nine rows in
+`docs/03` and `docs/05`. It reads `markdown()` now.
 
 **What it does not look at**: a table written in HTML rather than in pipes; a row
-wrapped onto a second line, which it reads as two rows and neither matches; and
-the *contents* of a cell, so a mark in the wrong column of a table whose width is
-right is still invisible to it. Lines inside a fenced block are skipped and
+wrapped onto a second line, which it reads as two rows and neither matches; the
+*contents* of a cell, so a mark in the wrong column of a table whose width is
+right is still invisible to it; and the five trees `markdown()` leaves out, which
+the run prints rather than keeps to itself. Lines inside a fenced block are skipped and
 counted out loud, because a fence is where a sheet quotes a broken row on purpose.
 
 ## The fourth question: does the document know about every file there is?
@@ -460,16 +464,51 @@ def _is_rule(line):
     return bool(RULE.fullmatch(line)) and "-" in line
 
 
+NOT_OURS = ("node_modules", ".git", "_local", "DEEP-QA-BACKEND", "DEEP-QA-FRONTEND")
+
+
+def markdown(root=None):
+    """Every markdown file this repository owns, asked of the tree.
+
+    The question below is about *rendering*, which has nothing to do with where
+    a command is written down, and while it shared `_store()` it could not see
+    nine broken rows in `docs/03` and `docs/05` - a legend of Mermaid symbols
+    among them, each one a `|` inside a code span, and so the one table that
+    could not show the symbols it exists to explain (#175).
+
+    `NOT_OURS` is the five names whose rows nobody here may fix: two are somebody
+    else's package, `_local` is not in the repository at all, and the `DEEP-QA-*`
+    pair is the student implementation as delivered - read-only reference, deleted
+    when the rebuild completes. A check that reported those could only be silenced
+    by ignoring the check.
+
+    It is a list of names, which is the shape #126 warns about, and the catalogue
+    that would answer instead is `git ls-files`: measured on 30 September this
+    walk is exactly `git ls-files '*.md'` minus the four `DEEP-QA-*` files, so
+    three of the five names are only telling git what git already knows. The walk
+    is kept anyway, because `git ls-files` cannot see a document that has not been
+    added yet - which is the document most likely to have a row nobody has looked
+    at. What the list costs is the day a `dist/` or a `.venv/` holds a `.md`: the
+    rows name each skipped tree so that day is a failing test and not a silence.
+    """
+    root = ROOT if root is None else root
+    found = []
+    for where, directories, names in os.walk(root):
+        directories[:] = [name for name in directories if name not in NOT_OURS]
+        found += [os.path.join(where, name) for name in names if name.endswith(".md")]
+    return sorted(found)
+
+
 def columns(files=None):
-    """(problems, tables read, rows read) over the store's markdown tables.
+    """(problems, tables read, rows read) over the repository's markdown tables.
 
     Takes its files as an argument for the same reason `commands()` does: the
     only way to assert that a six-cell row is *found* is to hand it one, and
-    today's store is clean by construction the moment this lands.
+    today's corpus is clean by construction the moment this lands.
     """
     named = files is not None
     if not named:
-        files = _store()[1]
+        files = markdown()
     problems = tables = rows = fenced_lines = 0
     for path in files:
         short = os.path.relpath(path, ROOT).replace("\\", "/")
@@ -502,9 +541,11 @@ def columns(files=None):
                 problems += 1
                 print("CELLS %s:%d -> %d cells in a %d-column table" % (short, number, got, width))
     if not named:
-        # The store's boundary is the blind spot the other three cannot see, so
-        # it goes in the summary rather than only in the README (#123).
-        print("columns: reading the same %d files as the question above" % len(files))
+        # What it leaves out goes in the summary rather than only in the README,
+        # because a tool that cannot say what it did not look at is the same
+        # species as the hand-kept numbers it checks (#123).
+        print("columns: reading %d markdown files of the whole repository, "
+              "outside %s" % (len(files), ", ".join(NOT_OURS)))
         print("columns: tables %d | rows %d | lines skipped inside fences %d | problems %d"
               % (tables, rows, fenced_lines, problems))
     return problems, tables, rows

@@ -144,7 +144,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A mark that is written is not a mark that is read** — a stray `|` puts it in a column the
   table does not have, and the sheet renders the empty cell beside it; seven rows were doing this.
   Count the cells, not only the marks — then read the numbers before raising the alarm: all seven
-  hid a ☑, so the walk queue was never wrong. (#79)
+  hid a ☑, so the walk queue was never wrong. Measured against GitHub's own renderer, the cells
+  past the header's width are **dropped** rather than moved along, so the mark is gone and not
+  merely misplaced. (#79, #175)
 
 ### Mutants and sweeps
 
@@ -249,6 +251,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 
 - **A retrying negative against an element that removes itself is an assertion that cannot
   fail.** Read the count once, at a named settle point. (#50)
+- **A renderer that normalises what you are counting is a third assertion that cannot fail** — GFM
+  truncates a row to its header width, so a count of the drawn cells is right whether the row is
+  broken or fixed, and the first verification script called both *2 cells of 2*. Count the
+  **source** to find it, and prove the render by reading the cell's **content** back. (#175)
 - **A helper that waits for the response has not waited for the drawing** — the first read after it
   can see the empty state, and no amount of retrying saves a wrong *expected* value. Wait for what
   the answer carried to be what the screen shows. (#132)

@@ -5457,3 +5457,69 @@ new question caused it — the new question is only what made the count big enou
 No new line went into `CLAUDE.md`. The rule this ticket is about, *a table that adds up is not a
 table that is complete*, was written there under #58, on the day the hole was found; this is the
 ticket that turned it into something that runs, and a rule met again is a sentence in its story.
+
+## #175 — the legend that could not show its own symbols
+
+Nine table rows in `docs/03-er-diagram.md` and `docs/05-screen-api-mapping.md` wrote a bare `|`
+inside a code span. GitHub splits a row on `|` **before** it reads a backtick, so those rows render
+with more cells than their header has. Four of them are the Mermaid ER legend, where every symbol in
+the left column contains a `|` — the one table in the repository that could not show the symbols it
+exists to explain.
+
+**The ticket's claim held, which is not the same as being believed.** Re-running `columns()` over
+every `.md` in the tree gave the same nine rows at the same line numbers, so nothing had aged (#66).
+That measurement is cheap and it is the first thing the ticket asks for, so it went first.
+
+**What the renderer actually does was worth asking the renderer.** The ticket said the content
+scatters into the wrong column. Measured against GitHub's own renderer — `POST /markdown`, mode
+`gfm`, which is what draws the file on github.com — it is worse: the row is **truncated** to the
+header's width, so the tail is dropped. `` `POST /api/rubrics/create|update|delete|get-by-program` ``
+renders as three cells reading `` `POST /api/rubrics/create ``, `update`, `delete`; the endpoint's
+last segment, the screen code `A04` and the filename are simply gone. The `docs/03` rows render as a
+lone backtick and an empty cell.
+
+That has a consequence for how the fix is verified: **counting the rendered `<td>` is a count that
+cannot fail.** The truncation guarantees the row has exactly the header's width however broken it is,
+so the first verification script reported both the broken and the fixed form as *2 cells of 2* and
+looked like proof. What moves is the cell's *content*, so the check reads the first cell back and
+compares it, character for character, with the symbol the row exists to show. This is the
+same species as the retrying negative that cannot fail (#50) and the status code that is not an
+assertion (#125): the instrument that finds the defect in the **source** is not the instrument that
+proves the **render**. It went into `CLAUDE.md` beside those two rather than onto #79's line, where
+the first draft put it - #79's line is about a mark that is written and not read, and this is about an
+instrument, so folding it in would have hidden it from everybody looking for that family. What #79's
+line did gain is the correction: the cells past the header's width are dropped, not moved along.
+
+**The tool question, answered by widening.** The ticket's third criterion asks whether `columns()`
+should read all of `docs/`, and says to measure the cost either way rather than answer from memory
+(#89). It widened — to every `.md` in the tree — because the mechanism it is about is *markdown
+rendering*, which has nothing to do with where a command is written down. Sharing `_store()` with
+`commands()` was a census of the wrong property, exactly the mistake #174 describes one level up: the
+store is *files that document a command*, and the species here is *files that render a table*. The
+numbers: the corpus goes from 126 files, 245 tables and 2132 rows to 109 markdown files, 454 tables
+and 3734 rows — the tables nearly double, the rows grow by three quarters — and it finds **nothing
+beyond the nine**. All nine are in
+`docs/`; `docs/adr/`, `docs/agents/`, `docs/handoff/`, `db/migrations/` and the root files give zero
+between them. Widening cost one more thing worth naming: the two questions no longer read the same
+list, so the summary line that said *the same 125 files as the question above* - 126 by the time this
+landed - had to stop saying it, and the module docstring's sentence that `columns()` reads the store
+had to go with it. The review found that one: the copy you will miss is in the file you did not think
+you were changing (#130), even when that file is the one the change is in.
+
+**What it deliberately does not read is a list of names, so the rows say so.** `node_modules`,
+`.git`, `_local` and the two `DEEP-QA-*` trees. A list of names is the shape #126 warns about — the
+day somebody adds a directory it lies — so it is printed in the summary and asserted in a test that
+names each one. The reason for the pair is not tidiness: `DEEP-QA-*` is the student implementation as
+delivered, read-only reference until it is deleted, so a broken row in it is a row nobody here may
+fix, and a check that reported it could only be silenced by turning the check off. The catalogue
+that would answer instead of a list is `git ls-files`, and the review was right to ask: measured, the
+walk is exactly `git ls-files '*.md'` minus the four `DEEP-QA-*` files, so three of the five names
+tell git what git already knows. The walk is kept anyway, and the reason is the one file the
+catalogue cannot see — a document nobody has added yet, which is the document most likely to hold a
+row nobody has looked at. What the list costs is written down with it.
+
+**Publishing the output changed the output.** The README block that shows what the run prints is
+inside the corpus the run reads, and it is fenced, so pasting it moved `lines skipped inside fences`
+from 848 to 850 and made the freshly published figure wrong. Re-run, correct the digit, re-run to see
+it hold. A document that describes a measurement over itself is the one place where a hand-kept
+number cannot be trusted even in the second it is written down.
