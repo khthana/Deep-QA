@@ -77,9 +77,9 @@ export default function ImportPanel({
    * `load` does not clear `data`, so the panel is never unmounted while the
    * picker moves. An import of activity A can therefore draw *imported N rows*
    * inside the panel of activity B, for as long as a CSV import takes. Measured
-   * 1 October 2026 and written up on `docs/acceptance/57-pager.md`; the fix and
-   * its row are a decision, not this ticket's to take quietly, so this says what
-   * is true rather than claiming it cannot happen (#68, #133, #141)
+   * 1 October 2026, written up on `docs/acceptance/57-pager.md` and filed as #179,
+   * whose price is the other nine callers rather than the screen that breaks. So
+   * this says what is true rather than claiming it cannot happen (#68, #133, #141)
    */
   const upload = async event => {
     const file = event.target.files?.[0]

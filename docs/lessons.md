@@ -5926,8 +5926,8 @@ What nobody could see from that screen is the panel's **own** report, because it
 component the screen cannot reach. **A guard written for one caller is a claim about every caller**
 (#68, #133), and a marker is that comment: the one sentence a marker exists to write is the sentence
 most worth checking against the call sites. Measured 1 October 2026, published on #141's sheet, and
-left for the user to decide between a ticket and a fix — adjacent work is not this ticket's to take
-quietly (#119).
+filed as #179 the same day — adjacent work is not this ticket's to take quietly (#119), and the price
+of the fix is the other nine callers rather than the screen that breaks.
 
 **And the instrument was wrong three times, which is why it has fixtures.** The one that matters:
 a call to a parameter was read as a flag, and `onError(error)` and `onImported()` are calls to
