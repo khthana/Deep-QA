@@ -5871,12 +5871,11 @@ switching it off, and, six lines further on, that *a programme's removal does ha
 through `lib/removal`, three refuse.
 
 But the argument holding the refusal up is *the person has a switch already*, and that switch was
-measured after the answer: `frontend/src/api/departments.js` never sends `is_active` and the form has
-no field for it, so a department can be retired only from the CSV import or a raw `PUT` — never from
-the screen the refusal is read on, which is the screen the refusal tells them to use it on. **A
-refusal that names the way out is a claim that the way out is reachable from where it is read.** It
-went to #178 as a question and not a task, because the delivered UI has no notion of a department's
-status at all, so adding the field is adding a control rather than restoring one.
+measured after the answer — measured in the wrong two directories. The grep asked
+`frontend/src/api/` and `frontend/src/pages/`, found no `is_active` in either, and concluded the
+screen has no field, which went to #178 as a question on that basis. **A refusal that names the way
+out is a claim that the way out is reachable from where it is read** — the rule is what #60 earned
+and it still stands. The example under it was wrong, and what it cost is told under #178 below.
 
 ## #141 (the instrument) — the census that fails, and the call that was not a guard
 
@@ -5953,3 +5952,43 @@ nineteen at risk at all — and it would have caught `GrantsPanel.add` on the da
 That last sentence is measured rather than asserted: handed `41ef75e`'s copy of that file, the
 census reports `load` as flagged and `add` and `remove` as bare, which is the finding the hand
 census of 30 September needed two passes and a read of the file to make.
+
+## #178 — the claim that was never true, and the grep that proved the ticket's own blind spot
+
+The ticket came out of #60 above: a refusal telling the person to switch a department off instead,
+and no field on the screen to switch it off with. It was filed as a question because, if true, the
+fix adds a control to the delivered UI rather than restoring one, and the user chose the second of
+its options — put the field on the form, on all four screens, as a two-option `select`. The first
+move was not to write it. **A ticket's *What is wrong* is a claim from the day it was written**, and
+this one failed in the first five minutes: `DepartmentForm.js:108–120` draws a `type="checkbox"`
+labelled *เปิดใช้งาน*, outside the `editing` guard the other forms keep it behind, and `git log -S`
+dates it to `b90ad8c` on 18 August 2026 — #14's own commit, six weeks before the ticket said it was
+missing. Four more forms carry the same field. Nothing was ever broken.
+
+**The ticket's grep was evidence for the pattern it typed** (#111). `frontend/src/api/` holds no
+`is_active` because that layer sends the draft whole — `updateDepartment(id, draft)` →
+`put(..., draft)`, no field list anywhere to find — and `frontend/src/pages/` holds none because the
+forms live in `frontend/src/components/`, which the grep never asked. The ticket's second claim went
+the same way: it offered *CSV import or a raw `PUT`* as the remaining routes, and
+`routes/departments.js:73` has three columns in `IMPORT_COLUMNS` with `readDepartment` never reading
+`is_active` at all, so import could not do it either. The overstatement and the understatement moved
+together, which is what a claim nobody measured looks like.
+
+And this one was not hard to catch, which is the part worth keeping. **The sheet that the ticket's
+own argument cites is the sheet that refutes it**: `docs/acceptance/14-departments.md` item 3 holds
+three hand-walked ☑ rows — *ทางออกคือปิดการใช้งาน*, *ปิดการใช้งานไม่ใช่การถอนสิทธิ์*, *คืนสถานะได้* — one of
+which spells out *แก้ไข 05 → เอาเครื่องหมาย เปิดใช้งาน ออก → บันทึก* as the keystrokes a person
+used. The false claim was written into that same file, 460 lines from the rows that contradict it, and copied to
+`15-programs.md` and to #60's paragraph above — *ใบรับเองเป็นคนขอให้เกิดข้อบกพร่อง* again (#89), and a wrong
+sentence spreading to three files before anybody checked it (#130). My own first grep reproduced the
+ticket's blind spot exactly, asking `api/` and `pages/` and reporting the claim confirmed, before
+asking `components/`.
+
+What was real underneath it split in two, because the two differ by who may decide. **#180** is a
+question: three screens draw a checkbox and two a `select`, the checkbox's label (*เปิดใช้งาน*) is not
+the wording the table's badge uses (*ใช้งานอยู่ / ปิดใช้งาน*), and departments is the only form offering the
+field at creation — all of it `docs/06` §Out of Scope, with the user's preference for `select`
+recorded there as an opinion rather than an instruction. **#181** is a task: of the five screens with
+the field, `16a`, `18a` and `19a` have browser-seam rows pressing it and departments and programmes
+have none, so the refusal's named way out — the one thing #60's rule is about — is held up by
+hand-walked rows alone. That is the gap worth the ticket, and the ticket #178 asked for was not.
