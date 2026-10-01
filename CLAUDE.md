@@ -266,6 +266,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the names. (#67, #48)
 - A fixture that restores itself only when its row passes inflates the next mutant's kill count —
   put it back in `finally` or `afterAll`. (#89, #52)
+- **But a cleanup can speak over the claim two ways** — a throwing `finally` *replaces* the body's
+  error, so a sweep names the restoring step and not the row that just failed; and a cleanup that
+  goes through the code under test cannot land while a mutant is applied, so the next row dies on
+  its own precondition and the kill count is about the row before. Restore below the seam, say
+  nothing about state, report your own failure where a later hook can fail the file. (#181)
 - Report the measured number, not the ticket's — and notice when one number is two (killed and
   hardened). (#102, #48)
 

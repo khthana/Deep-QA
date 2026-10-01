@@ -5992,3 +5992,70 @@ recorded there as an opinion rather than an instruction. **#181** is a task: of 
 the field, `16a`, `18a` and `19a` have browser-seam rows pressing it and departments and programmes
 have none, so the refusal's named way out — the one thing #60's rule is about — is held up by
 hand-walked rows alone. That is the gap worth the ticket, and the ticket #178 asked for was not.
+
+## #181 — the cleanup that spoke over the claim, twice
+
+The ticket was the task half of #178: five forms carry a status field, three screens have a
+browser-seam row that presses their own one, and **ภาควิชา** and **หลักสูตร** had none — which
+matters on the first of them because its `DELETE` refuses rather than closing the row for you, and
+both refusals end *หากต้องการเลิกใช้งานให้ปิดการใช้งานแทน*. **A refusal that names the way out is a
+claim that the way out is reachable** (#60), and that claim was held up by three hand-walked ticks.
+
+**The ticket's own citation table was a claim too.** It listed `16a:252,287` and `18a:356,365` as
+the rows that press a status box, to say the department form's box was not among them. Measured, two
+of those are the department box: `16a` row 97 closes department `01` from a second context, as a
+fixture, and then reads what the subject form's picker offers. So a form that ignored the box was
+already at risk at this seam. What no row asked was the question these rows ask — **does the
+ภาควิชา screen read the field back**, in the badge its own table draws. An instrument is not an
+assertion (#171), and that is the whole difference between the two; the ticket was right about the
+gap and wrong about where its edge was.
+
+**A screen with two ways to close something needs a row per way, and the sheet's table had one.**
+`15-programs.md` is written on *ลบ* against a curriculum that has data under it, which the route
+turns into a deactivation. The form is the other way in, and a mutant that pins what the **form**
+sends cannot reach the route's path at all — `programalwaysopen` left that row standing exactly as
+predicted. So the second way is not an inference from the first, and a criterion row was added to
+the sheet for it rather than the new spec row being hung off the old criterion. One row, one claim.
+
+Then the sweeps, three of them, each of which found the previous one measuring the fixture rather
+than the code.
+
+**A `finally` that throws replaces the error it is cleaning up after.** The first cleanup was the
+same asserting function the body used to set the status, so when a badge assertion failed the
+subject was already closed, the cleanup's own `toBeChecked` threw, and that became the only failure
+printed. Four reds, every one of them pointing at the housekeeping.
+
+**A cleanup that goes through the code under test cannot land while a mutant is applied.** The
+second cleanup was silent but still pressed the form, so under `programalwaysclosed` it could never
+reopen anything: the row after it died on *its* precondition, and the sweep's kill count held a
+number that was about the row before. That is *a fixture that restores itself only when its row
+passes inflates the next mutant's kill count* (#52, #89) one layer out — the fixture now writes the
+column with an `UPDATE`, which is an instrument and not an assertion, and an `afterAll` fails the
+file if any cleanup ever reported trouble, so a green run cannot hide one.
+
+**And a mutant has to be narrow enough that the row's own claim is what dies.** Two of these are
+about the other half of the sentence — *closing a scope is not a revocation* — which no mutant on a
+form can put at risk, so they go where the question is answered, in `coveredScopes`. Written wide,
+over the whole query, the department one took the faculty administrator's own list away and the row
+died at its badge, three assertions before the claim; written over the self-branch alone it dies at
+the claim. The programme one, wide, left the committee's screen with nothing to ask for, so the row
+died at a wait instead of at an assertion (#139) — the row now opens the screen on the *reach* call
+every grant makes rather than on the list only a non-empty one asks for.
+
+**A row can also be reading the wrong person.** The department's revocation row read `teacher.one@`,
+who sits under curriculum `0501`: an account's own scope is its programme if it has one and its
+department otherwise, so a reach that had dropped the department entirely still listed them, and the
+mutant survived against code that was genuinely broken. The row now also reads `dept.admin.05@`,
+whose `program` is `null` — the only kind of account the claim can be broken on. A survivor is a
+question about the fixture as often as about the code (#48).
+
+Two older rules collected their toll on the way. The spec was edited after each sweep, so every
+mutant was run again against the file as it finally stands — **a row written to answer a survivor is
+not proof until that mutant is run again** (#146), which here cost three rounds. And the
+department's grant half and the curriculum's grant half are one sentence, so both were written here
+rather than one of them being deferred into prose (#119).
+
+One more, about the tools rather than the claims. `anchors.py` reads the mutation files as Python
+syntax, and `('authorise', *PAIR)` is a star it cannot evaluate: it said so — `UNREADABLE` — which
+is the whole of *a tool that cannot say what it did not look at* (#123) working. The constants are
+spelled out now, and the two new anchors are checked like every other.

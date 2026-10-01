@@ -8,10 +8,10 @@ const { openAt } = require('./navigation');
 /**
  * The curriculum screen — #15.
  *
- * Written for `docs/acceptance/57-pager.md` row 4, which is the only row of
- * this screen the browser seam reaches so far: #15's own checklist was walked
- * by hand and has no spec file. What is here is therefore what that one row
- * needs — open, import, find a row, delete it — and not the whole screen.
+ * Written for `docs/acceptance/57-pager.md` row 4 — open, import, find a row,
+ * delete it — and added to by #181, which brought this screen's own status rows
+ * to the browser seam. The rest of #15's checklist is still walked by hand, so
+ * this module is those two subjects and not the whole screen.
  */
 
 const PROGRAMS = '/main/programs';
@@ -57,6 +57,49 @@ const programRow = (page, programId) =>
     .filter({ has: page.getByRole('cell', { name: programId, exact: true }) });
 
 /**
+ * Opens the editor on one row and waits for the programme to be read back.
+ *
+ * Its own request, as the departments screen's is: the form is drawn from this
+ * answer, so the status box below reads what the server holds rather than what
+ * the list happens to be showing.
+ */
+async function openEditor(page, programId) {
+  await Promise.all([
+    page.waitForResponse(
+      answer =>
+        new URL(answer.url()).pathname === `${API}/${programId}` &&
+        answer.request().method() === 'GET',
+    ),
+    programRow(page, programId).getByRole('button', { name: 'แก้ไข' }).click(),
+  ]);
+  await expect(page.getByRole('heading', { name: 'แก้ไขหลักสูตร' })).toBeVisible();
+}
+
+/**
+ * The form's status control - drawn only on an edit here, because a programme
+ * is created in order to be offered and the route reads no such field on a
+ * creation. See `departments-screen.js` for what #180 asks about its shape.
+ */
+const statusBox = page => page.getByRole('checkbox', { name: 'เปิดใช้งาน' });
+
+/** Presses *บันทึก* and waits for the list the save reloads. */
+async function save(page) {
+  const [reloaded] = await Promise.all([
+    waitForList(page),
+    page.getByRole('button', { name: 'บันทึก' }).click(),
+  ]);
+  return reloaded;
+}
+
+/**
+ * The status badge of one row - the fifth cell, as the table's own header
+ * orders them (รหัส · ชื่อ · ภาควิชา · ปี · สถานะ · จัดการ) - one further along than the departments
+ * table's, which is why each screen says its own index here.
+ */
+const statusOf = (page, programId) =>
+  programRow(page, programId).getByRole('cell').nth(4);
+
+/**
  * Deletes one programme through the screen's own confirmation, and waits for
  * the list that follows.
  *
@@ -82,5 +125,9 @@ module.exports = {
   importPrograms,
   listTable,
   programRow,
+  openEditor,
+  statusBox,
+  save,
+  statusOf,
   removeProgram,
 };

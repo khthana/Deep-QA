@@ -40,6 +40,51 @@ const departmentRow = (page, departmentId) =>
     .filter({ has: page.getByRole('cell', { name: departmentId, exact: true }) });
 
 /**
+ * Opens the editor on one row and waits for the department to be read back.
+ *
+ * The screen asks for the record again when the pencil is pressed rather than
+ * drawing the form from the row in hand, so the status box below is showing
+ * what the server holds and not what the list happened to carry.
+ */
+async function openEditor(page, departmentId) {
+  await Promise.all([
+    page.waitForResponse(
+      answer =>
+        new URL(answer.url()).pathname === `${API}/${departmentId}` &&
+        answer.request().method() === 'GET',
+    ),
+    departmentRow(page, departmentId).getByRole('button', { name: 'แก้ไข' }).click(),
+  ]);
+  await expect(page.getByRole('heading', { name: 'แก้ไขภาควิชา' })).toBeVisible();
+}
+
+/**
+ * The form's status control.
+ *
+ * A checkbox today, which is what every row built on this is a claim about;
+ * #180 asks whether the five forms that carry this field should all use the
+ * `select` two of them use, and if that is answered yes this is the one line
+ * that changes.
+ */
+const statusBox = page => page.getByRole('checkbox', { name: 'เปิดใช้งาน' });
+
+/** Presses *บันทึก* and waits for the list the save reloads. */
+async function save(page) {
+  const [reloaded] = await Promise.all([
+    waitForList(page),
+    page.getByRole('button', { name: 'บันทึก' }).click(),
+  ]);
+  return reloaded;
+}
+
+/**
+ * The status badge of one row - the fourth cell, as the table's own header
+ * orders them (รหัส · ชื่อ (ไทย) · ชื่อ (อังกฤษ) · สถานะ · จัดการ).
+ */
+const statusOf = (page, departmentId) =>
+  departmentRow(page, departmentId).getByRole('cell').nth(3);
+
+/**
  * The screen's own list, told apart from the rejection report's table.
  *
  * `first()` because the list is drawn above the import panel, and a refused
@@ -72,6 +117,10 @@ module.exports = {
   openDepartments,
   importDepartments,
   departmentRow,
+  openEditor,
+  statusBox,
+  save,
+  statusOf,
   listTable,
   removeDepartment,
 };
