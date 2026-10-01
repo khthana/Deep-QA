@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 30 September 2569 that is
-`2026-09-30-the-reference-no-key-could-express.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 1 October 2569 that is
+`2026-10-01-the-census-that-became-an-instrument.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
