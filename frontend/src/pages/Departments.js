@@ -432,6 +432,7 @@ export default function Departments() {
             title="นำเข้าภาควิชาจากไฟล์"
             subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
             templateName="departments-template.csv"
+            target="departments"
             fetchTemplate={importTemplate}
             send={importDepartments}
             onImported={() => {

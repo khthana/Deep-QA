@@ -376,6 +376,7 @@ export default function Students() {
             title="นำเข้ารายชื่อนักศึกษาจากไฟล์"
             subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย รหัสนักศึกษาที่มีอยู่แล้วจะถูกปรับปรุงข้อมูลแทนการเพิ่มซ้ำ"
             templateName="students-template.csv"
+            target="students"
             fetchTemplate={importTemplate}
             send={importStudents}
             onImported={() => {

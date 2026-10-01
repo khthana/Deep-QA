@@ -337,6 +337,7 @@ export default function Programs() {
             title="นำเข้าหลักสูตรจากไฟล์"
             subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
             templateName="programs-template.csv"
+            target="programs"
             fetchTemplate={importTemplate}
             send={importPrograms}
             onImported={() => {

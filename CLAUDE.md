@@ -70,6 +70,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. What the ticket wrote down as a prediction can be the state on the day it is
   taken. (#81)
+- **A ticket that names a race has named a window, not the population of ways in** — the same wrong
+  screen can be reachable with no race at all, and that way lasts until a reload, so it is the one a
+  person meets. Measure for the raceless sibling before accepting the sequence the ticket wrote.
+  (#179)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -408,6 +412,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)
+- **A superseded-answer guard goes around the drawing, not around the escalation** — the report
+  belongs to what was asked for, but the refusal with no rows in it (an expired session, a role that
+  may not) belongs to the person, and the shell says it wherever they have since moved to. One
+  question above the whole `catch` swallows it. (#179, and #131)
+- **A new guard upstream rewrites what a downstream guard's untested claim is** — it does not prove
+  it. The queue row for `onImported` did not become proved when the panel began refusing first; that
+  path became structurally unreachable, and what is left untested is a different half. Say which
+  half, with a date, rather than moving the mark. (#179)
 - **When a guard has to widen, ask first whether what it reads is what is wrong** — changing what
   a ref *means*, and which controls write it, can leave every comparison and every mutant where
   they stand. (#146)

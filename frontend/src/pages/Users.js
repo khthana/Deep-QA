@@ -430,6 +430,7 @@ export default function Users() {
             subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
             notes={IMPORT_NOTES}
             templateName="users-template.csv"
+            target="users"
             fetchTemplate={importTemplate}
             send={importUsers}
             onImported={() => {

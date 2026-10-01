@@ -299,6 +299,7 @@ export default function StudentGroups() {
             title="นำเข้ากลุ่มงาน"
             subtitle="ดาวน์โหลดแบบฟอร์ม กรอกชื่อกลุ่มและรหัสนักศึกษาบรรทัดละหนึ่งคน แล้วอัปโหลดกลับเข้ามา กลุ่มที่ยังไม่มีจะถูกสร้างให้ และนักศึกษาที่อยู่ในกลุ่มอยู่แล้วจะถูกปฏิเสธทั้งไฟล์"
             templateName="section-groups-template.csv"
+            target={sectionId}
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importGroups(sectionId, csv)}
             onStart={() => setNotice(null)}

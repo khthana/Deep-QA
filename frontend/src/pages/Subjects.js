@@ -384,6 +384,7 @@ export default function Subjects() {
             title="นำเข้ารายวิชาจากไฟล์"
             subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
             templateName="subjects-template.csv"
+            target="subjects"
             fetchTemplate={importTemplate}
             send={importSubjects}
             onImported={() => {

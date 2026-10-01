@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import ContentMotionDIV from './ContentMotionDIV'
 import { saveAsFile } from '../api/client'
@@ -41,12 +41,56 @@ import { saveAsFile } from '../api/client'
  * The file is read in the browser and posted as its own text. There is no
  * multipart upload and nothing is written to the server's disk, so a request
  * that failed leaves nothing behind to clean up.
+ *
+ * ## `target` says what the report is about, and every caller passes one - #179
+ *
+ * The report is about the thing the file was sent for, and for nine of the ten
+ * callers nothing on the screen re-aims it: six pass a constant naming the
+ * register they import into, and three the `sectionId` from `useParams`, which
+ * no control on those screens changes -
+ * every link on them goes up a level and takes the panel with it. That last part
+ * is a measurement with the same expiry as #133's reading of `loadList`, not a
+ * property of the router: a route that let a person step sideways between
+ * sections would keep these panels mounted through the change, and the prop
+ * below is what makes that harmless on the day it lands. The tenth is
+ * `pages/ActivityScores.js`, whose target is the กิจกรรม a `<select>` beside this
+ * panel chooses, and that screen's `load` leaves `data` standing while it moves -
+ * so the panel is still here, with the previous กิจกรรม's report in it.
+ *
+ * So the panel is told what it is aimed at, and the prop has no default: a
+ * default of *nothing has changed* is the mistake #133 is about, written one
+ * level further out, and nothing in a shared component can see which of its
+ * callers has a picker. What a caller whose target cannot change passes is the
+ * name of the register it imports into, which is the truth about it.
+ *
+ * **Nothing enforces it, and that is a gap and not a decision.** An eleventh
+ * caller that forgets `target` gets `undefined` on both sides of every
+ * comparison here, which is the silent old behaviour - *yes, still current* -
+ * and no instrument says so: `frontend/` has no component test harness (no file
+ * under `src` is named `*.test.js`) and `prop-types` is not a dependency, so
+ * a throw on a missing prop could not be proved by anything, and the census in
+ * `frontend/scripts/` reads a screen's own `await`s and never a component's
+ * props. Measured 1 ตุลาคม 2569, written here so the next caller is read rather
+ * than trusted.
+ *
+ * Three things follow from the prop, and they answer different ways in -
+ * `mutation/179-the-report-of-another-activity.py` has a mutant for each:
+ *
+ * - **What is remembered is forgotten when the target changes**, below, before
+ *   anything is drawn from it. This one needs no race: a report that has already
+ *   landed outlives the move until a reload otherwise.
+ * - **An answer is drawn only if it is still the answer to what the screen is
+ *   asking**, in `upload`, which is the race the ticket was written for.
+ * - **And the sentence the shell speaks is not an answer**, so it stays outside
+ *   the guard: a refusal with no rows in it is about the person, not about the
+ *   target, and the person hears it wherever the picker has since moved to.
  */
 export default function ImportPanel({
   title,
   subtitle,
   notes,
   templateName,
+  target,
   fetchTemplate,
   send,
   onStart,
@@ -56,7 +100,30 @@ export default function ImportPanel({
   const [busy, setBusy] = useState(false)
   const [report, setReport] = useState(null)
   const [filename, setFilename] = useState('')
+  const [aimedAt, setAimedAt] = useState(target)
   const input = useRef(null)
+
+  // What the panel is aimed at *now*, for the answer that comes back later to
+  // compare itself against. A ref and not the state above, because `upload`
+  // reads it from the render the file was chosen in, where the state still
+  // holds the target of that moment - which is exactly what has to be compared
+  // against rather than trusted.
+  const latest = useRef(target)
+  useEffect(() => {
+    latest.current = target
+  }, [target])
+
+  // Forgetting, during the render that first sees the new target rather than in
+  // an effect after it: an effect keyed on the change runs once the fields have
+  // already been drawn from the old values, which is #167's frame, and here
+  // those values are a green line saying that somebody else's file was
+  // imported. React's own shape for this - the state that says which target the
+  // rest was read for, set beside what is being thrown away.
+  if (target !== aimedAt) {
+    setAimedAt(target)
+    setReport(null)
+    setFilename('')
+  }
 
   const download = async () => {
     try {
@@ -67,23 +134,17 @@ export default function ImportPanel({
   }
 
   /**
-   * superseded-answer: this is a **hole, not an exemption** - the one of these
-   * seven that is. The file input is the only way in and it is `disabled={busy}`, so
-   * no second import can be begun while this answer is out, and nine of this
-   * panel's ten callers pass a target that cannot change without the screen
-   * going: a bare function, or a closure over a `useParams` value. The tenth is
-   * `pages/ActivityScores.js`, where the target is `activityId` - state, written
-   * by a picker beside this panel that is never disabled - and that screen's own
-   * `load` does not clear `data`, so the panel is never unmounted while the
-   * picker moves. An import of activity A can therefore draw *imported N rows*
-   * inside the panel of activity B, for as long as a CSV import takes. Measured
-   * 1 October 2026, written up on `docs/acceptance/57-pager.md` and filed as #179,
-   * whose price is the other nine callers rather than the screen that breaks. So
-   * this says what is true rather than claiming it cannot happen (#68, #133, #141)
+   * The file input is the only way in and it is `disabled={busy}`, so no second
+   * import can be begun while this answer is out. What can happen while it is
+   * out is the screen being re-aimed - #179, and `target` above is how this
+   * knows. The answer is a read like any other: it is drawn only if it is still
+   * the answer to what the screen is asking (#133, #140), and here *what was
+   * asked* is the target as it stood when the file was chosen.
    */
   const upload = async event => {
     const file = event.target.files?.[0]
     if (!file) return
+    const asked = target
     setFilename(file.name)
     setReport(null)
     // The screen's own banner, not this panel's report - #91. Choosing a file
@@ -96,6 +157,7 @@ export default function ImportPanel({
     setBusy(true)
     try {
       const result = await send(await file.text())
+      if (latest.current !== asked) return
       setReport({ ok: true, created: result.created })
       onImported?.()
     } catch (error) {
@@ -110,8 +172,27 @@ export default function ImportPanel({
       // the rows below" over a table with no rows in it and threw away the one
       // sentence that said what was wrong (#14 row 7, and every other screen
       // with this panel on it).
-      if (error.details?.length) setReport({ ok: false, errors: error.details })
-      else onError?.(error)
+      //
+      // Asked on this side rather than once above the `try`, because the answer
+      // is bound inside it and binding it outside would hide this site from the
+      // census that found #179 (`frontend/scripts`). It is one question read
+      // twice rather than two opinions (#97): `asked` and `latest` are written
+      // in one place each.
+      //
+      // And asked around the drawing only. The per-row report is drawn in this
+      // panel, about the target the file was sent to, so a superseded one is
+      // thrown away - but the refusal the shell speaks is about what the person
+      // did, and `34-activity-marks.md` settled that side for the save's banner
+      // already: it speaks every time and names what was asked for, because it
+      // reports the action and not the screen. An escalation that must always
+      // happen does not go behind a question that can refuse it (#131), and the
+      // one that reaches here is an expired session or a role that may not
+      // import - the kinds the person has to be told about wherever they have
+      // since moved the picker to.
+      if (error.details?.length) {
+        if (latest.current !== asked) return
+        setReport({ ok: false, errors: error.details })
+      } else onError?.(error)
     } finally {
       setBusy(false)
       // So the same file can be chosen again after it has been corrected;

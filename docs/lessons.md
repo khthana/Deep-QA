@@ -6059,3 +6059,66 @@ One more, about the tools rather than the claims. `anchors.py` reads the mutatio
 syntax, and `('authorise', *PAIR)` is a star it cannot evaluate: it said so — `UNREADABLE` — which
 is the whole of *a tool that cannot say what it did not look at* (#123) working. The constants are
 spelled out now, and the two new anchors are checked like every other.
+
+## #179 — the race that was also not a race, and the guard that made another guard unreachable
+
+`ImportPanel` keeps its report in its own state, and that report is about *the activity the file was
+sent to*. The ticket, which #141's census had opened the day before, described a race: choose
+activity A, pick a CSV, move the `<select>` to B while the answer is out, and A's report is drawn
+under B's heading. Ten screens draw this panel; nine of them cannot express that, because their
+target is a closure over `useParams` or nothing at all. The tenth is `ActivityScores`, whose target
+is state a control beside the panel writes, and whose `load` does not clear `data`, so the panel is
+never unmounted while the picker moves. **A guard written for one caller is a claim about every
+caller** (#68, #133) — and the guard that screen already had, `onImported` asking `onScreen`, cannot
+reach inside the panel at all.
+
+**A ticket that names a race has named a window; the same wrong screen can also be reachable with no
+race at all.** Measuring before fixing found a second way in that the ticket does not describe and
+that needs no timing: a report that has *landed* simply stays there when the picker moves, because
+nothing clears it. That one is not a narrow window — it lasts until a reload — and it is the one a
+person actually meets, since it needs no haste. So the fix was two mechanisms measured as a grid
+rather than one argued for (#148), four rows red before it with each red at its own claim, and the
+mutant that removes only the forgetting leaves the two racing rows standing. That standing pair is
+what proves the mechanisms are genuinely separate and not one thing written twice.
+
+**A new guard upstream rewrites what a downstream guard's untested claim is.** `34-activity-marks.md`
+carried a ☐ row from #141 covering two points, one of them `onImported`, with the measured reason
+that building its situation would need a real whole-class upload and that delaying it would make the
+import row measure something else (16 ก.ย.). Both halves of that aged in one day. The situation is
+buildable with `gate` and a fabricated 201 — nothing is written at all — and, more interestingly,
+after this fix the panel stops a superseded import answer *before* `onImported` is called, so the
+screen's flag is no longer what answers on that path: it is structurally unreachable there (#102's
+third category), not proved. What is left for #141 is a different half — the **re-read** that `load`
+fires after a successful import, superseded while in flight. The mark did not move; its sentence did,
+and the sheet says which half and on what date (#54).
+
+**The clearing goes in the render, not in an effect.** An effect keyed on the target change draws the
+old report once before clearing it — the same shape as #167, where a dialog's fields were drawn from
+the old values by an effect keyed on the flag the box is drawn from. And the question *is this still
+what was asked for* is asked on both sides of the `try`, separately, because the success branch's
+answer is bound inside it: asked once above, the site the census found would have vanished from the
+census. One question read twice is not two opinions (#97).
+
+**And the prop is not forced, which is a gap written down rather than a decision.** The shape the
+ticket guessed at — a guard prop the panel is *forced* to receive, like `load`'s `isCurrent` — is not
+enforceable here. `isCurrent` is a call argument, so omitting it throws; a prop is not, and
+`frontend/` has no component test harness (no `*.test.js` under `src`) and no `prop-types`, so a
+throw on a missing `target` could not be proved by anything. Nor would the census catch it: it reads
+a screen's own `await`s, never a component's props, so an eleventh caller that forgets the prop gets
+`undefined` on both sides of every comparison — the silent old behaviour — with nothing going red.
+The census did its part: the marker above `upload` came out and the figures moved *guarded 54 → 55,
+marked 7 → 6* with no change to the instrument, because a ref compared with `!==` is the shape it
+recognises. What covers the rest is a measured sentence in the panel's docstring and on the sheet,
+which is weaker than an instrument and is said to be.
+
+**Then the review found the guard swallowing something that was never an answer about the screen.**
+Written once above the whole `catch`, it also stopped `onError` — and what reaches `onError` is the
+refusal with no rows in it: an expired session, a role that may not import. Those are about the
+person and the request, so the shell says them wherever the picker has since moved to, and this very
+sheet had already settled that side for the save's banner, which speaks every time *because it
+reports the action and not the screen*. **A superseded-answer guard goes around the drawing, not
+around the escalation** (#131). The row for it reads the banner's count once at the settle point
+rather than retrying for its text, because a retrying read of what a mutant removed dies at a timeout
+and looks exactly like a mutant that stopped the application (#139) — and the mutant is the declined
+arrangement made to run (#48), which is the only thing that holds the edge of a guard in place. It
+cost a re-sweep of all four, since the file it measures had gained a row (#146).

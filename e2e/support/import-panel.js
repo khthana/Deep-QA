@@ -57,12 +57,35 @@ async function importCsv(page, { path, text, name }) {
       answer =>
         new URL(answer.url()).pathname === path && answer.request().method() === 'POST',
     ),
-    page
-      .locator('input[type="file"]')
-      .setInputFiles({ name, mimeType: 'text/csv', buffer: Buffer.from(text, 'utf8') }),
+    chooseFile(page, { text, name }),
   ]);
   return response;
 }
+
+/** The file input, which is the only way an import is begun. */
+const fileInput = page => page.locator('input[type="file"]');
+
+/**
+ * Begins an import without waiting for it to be answered - #179, for a row that
+ * has to do something while the answer is still out. `importCsv` above is this
+ * plus the wait, and cannot be the one that holds an answer open.
+ */
+const chooseFile = (page, { text, name }) =>
+  fileInput(page).setInputFiles({ name, mimeType: 'text/csv', buffer: Buffer.from(text, 'utf8') });
+
+/**
+ * The label on the button while an import is out, which is the panel's own say
+ * that the answer has not landed yet. A row that waits for it to go has waited
+ * for the panel's turn at the answer, which is the settle point a count of what
+ * was *not* drawn needs (#50).
+ */
+const uploading = page => page.getByText('กำลังนำเข้า…');
+
+/** The green line a finished import draws, whatever number it carries. */
+const importedLine = page => page.getByText(/นำเข้าสำเร็จ \d+ รายการ/);
+
+/** The name of the file the panel is showing beside its button. */
+const chosenFile = (page, name) => page.getByText(name, { exact: true });
 
 /** What the pager says the list holds. */
 async function total(page) {
@@ -97,6 +120,10 @@ module.exports = {
   headerOf,
   csv,
   importCsv,
+  chooseFile,
+  uploading,
+  importedLine,
+  chosenFile,
   total,
   reportTable,
   reportedLines,

@@ -509,6 +509,7 @@ export default function ActivityScores() {
               title="นำเข้าคะแนนจากไฟล์"
               subtitle="ดาวน์โหลดแบบฟอร์มของกิจกรรมนี้ กรอกคะแนนแล้วอัปโหลดกลับเข้ามา ไฟล์ต้องมีนักศึกษาครบทุกคนของตอนเรียนนี้ รหัสและชื่อต้องตรงกับทะเบียน และคอลัมน์คะแนนต้องตรงกับที่เลือกไว้ มิฉะนั้นจะถูกปฏิเสธทั้งไฟล์"
               templateName="activity-marks-template.csv"
+              target={`${sectionId}/${activityId}`}
               fetchTemplate={() => scoresTemplate(sectionId, activityId, { mode })}
               send={csv => importScores(sectionId, activityId, csv)}
               onStart={() => setNotice(null)}

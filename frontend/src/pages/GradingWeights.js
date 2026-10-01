@@ -320,6 +320,7 @@ export default function GradingWeights() {
             title="นำเข้าสัดส่วนคะแนนจากไฟล์"
             subtitle="ไฟล์หนึ่งคือทั้งชุด — หมวดที่ไม่อยู่ในไฟล์จะถูกลบออก และน้ำหนักทั้งไฟล์ต้องรวมได้ 100"
             templateName="weighting-scheme-template.csv"
+            target={sectionId}
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importWeights(sectionId, csv)}
             onStart={() => setNotice(null)}

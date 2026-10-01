@@ -252,6 +252,7 @@ export default function SubjectStudents() {
             title="นำเข้ารายชื่อนักศึกษา"
             subtitle="ดาวน์โหลดแบบฟอร์ม กรอกรหัสนักศึกษา แล้วอัปโหลดกลับเข้ามา ทุกรหัสต้องมีอยู่ในทะเบียนนักศึกษากลางแล้ว"
             templateName="section-students-template.csv"
+            target={sectionId}
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importEnrolments(sectionId, csv)}
             onStart={() => setNotice(null)}
