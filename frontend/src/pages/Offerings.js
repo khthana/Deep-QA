@@ -220,6 +220,12 @@ export default function Offerings() {
    * teacher picker is the third: it closes when the save returns, so a refusal
    * that came back looking like a success closed the box and threw away every
    * tick with it - and the person then has to remember who they had chosen.
+   *
+   * superseded-answer: the panel this reads back is guarded - `refresh` draws
+   * only for the ask it is handed - and the banner is deliberately not, which is
+   * the decision `asked` is documented with above: the sentence is about a write
+   * the person made and not about the panel they are now looking at, so it is
+   * drawn whichever panel that is. Measured 1 October 2026 (#139, #141)
    */
   const onSection = async work => {
     const ask = asked.current

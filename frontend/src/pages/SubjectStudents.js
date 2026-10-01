@@ -137,6 +137,14 @@ export default function SubjectStudents() {
    * The list is reloaded rather than having the new row pushed onto it: the
    * page being shown is a page of ten sorted by code, and a student whose code
    * sorts before the last one on it does not belong at the bottom.
+   *
+   * superseded-answer: what is drawn from the answer is a sentence about the
+   * enrolment that has just finished, and nothing can begin a second one while
+   * this is out - the submit button is `disabled={busy}` and a disabled default
+   * button is what stops Enter in the field submitting too. The reload it calls
+   * is guarded on its own account (#140). Unreachable with a date on it: a
+   * second control that enrols, or one that changes `sectionId` without leaving
+   * the screen. Measured 1 October 2026 (#133, #131, #141)
    */
   const add = async event => {
     event.preventDefault()

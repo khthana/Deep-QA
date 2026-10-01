@@ -161,6 +161,10 @@ export default function PloMapping() {
    * untested (#102), and **it has a date on it** (#131): anything that reads
    * `grid.mappings` for a count rather than by key makes it reachable the day
    * it lands.
+   *
+   * superseded-answer: no square can look a stale cell up, because every one is
+   * drawn from `grid.outcomes` by key - unreachable with a date on it, the
+   * paragraph above (#133, #131, #141)
    */
   const choose = async (subjectId, outcomeId, level) => {
     setNotice(null)

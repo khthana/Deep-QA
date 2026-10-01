@@ -90,8 +90,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A census whose population is *the things that carry X* cannot find the thing that carries no
   X** — and the census you write to replace a grep is evidence for the pattern *it* typed, so the
   one that reads a comparison only one way round reports a guarded screen as bare. Read the files
-  the instrument names before believing either answer. The other way a census misses is counting by
-  the wrong property, under *Tests and fixtures*. (#141, #174)
+  the instrument names before believing either answer. **A rule that is too loose fails the other
+  way and only breaking a real site shows it** — one that reads any call to a parameter as a guard
+  answers *guarded* whatever the code says, and its fixtures pass either way. The other way a census
+  misses is counting by the wrong property, under *Tests and fixtures*. (#141, #174)
 - A ticket that says *unless X* has told you what to go and look for; one that asks you to
   *consider* something is answered by a measurement, and *no, and here is what it would cost* is
   a finished answer. (#101, #89)
@@ -511,6 +513,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
+| `frontend/scripts/` | The census of #133's family, as an instrument: `npm run census` goes red when a screen draws an answer with no guard and no written reason. Its own fixtures are `npm run census:test`. |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the

@@ -51,6 +51,18 @@ export const AuthProvider = ({ children }) => {
   // The heartbeat that is out, which every sign-out waits for - #99, below.
   const beating = useRef(null)
 
+  /**
+   * superseded-answer: this holds `loading` up for its whole duration, and both
+   * route guards in `routes/AppRoutes.js` return `<LoadingScreen />` while it is
+   * up - so the shell that holds every control, the grant picker included, is
+   * unmounted for exactly as long as this answer is out and there is nothing on
+   * screen that could ask for a different one. That is what stops it, not a
+   * guard: `switchRole` below waits for the heartbeat and not for this, and this
+   * is the write that would put the old grant back on (#51). Unreachable with a
+   * date on it: anything that refreshes the shell's own state without the
+   * curtain - which is also what would make the comparison worth writing.
+   * Measured 1 October 2026 (#133, #131, #141)
+   */
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -224,6 +236,15 @@ export const AuthProvider = ({ children }) => {
    * Put on another of the caller's own grants. The server re-issues the
    * cookie and answers with the new state, so what is stored here is what the
    * server has agreed to honour and never what was asked for.
+   *
+   * superseded-answer: `components/RoleDropdown.js` says it is the only control
+   * that switches grants, and it closes its menu and disables its own toggle
+   * while this is out, so no second switch can be asked for. The one press that
+   * is still live beside it is ออกจากระบบ, and `logout` ends in
+   * `window.location.replace`, so an answer landing after it draws into a
+   * document already being replaced rather than signing the browser back in.
+   * Unreachable with a date on it: a second grant control, or a sign-out that
+   * stays in the page. Measured 1 October 2026 (#51, #133, #141)
    */
   const switchRole = useCallback(async grant => {
     await beating.current

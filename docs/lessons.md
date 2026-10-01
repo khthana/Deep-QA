@@ -5877,3 +5877,79 @@ the screen the refusal is read on, which is the screen the refusal tells them to
 refusal that names the way out is a claim that the way out is reachable from where it is read.** It
 went to #178 as a question and not a task, because the delivered UI has no notion of a department's
 status at all, so adding the field is adding a control rather than restoring one.
+
+## #141 (the instrument) — the census that fails, and the call that was not a guard
+
+The ticket's first four criteria were answered on 30 September and its fourth holds it open, so what
+was left was not a row to write. It was the thing the ticket's own lesson asks for: a census whose
+population is *every `await`*, run by a machine rather than by a person, because **a census of what
+carries the flag cannot find the site that carries none** and the hand census had already proved that
+twice over. The choice was put to the user as a cost — about seventy lines and one more command before
+a commit — and taken: `frontend/scripts/superseded-answers.js`, `npm run census`, red when a site
+draws an answer with neither a guard nor a written reason. What landed is 452 lines and 198 of
+fixtures, and the estimate is left standing here because it was what the choice was made on: almost
+all of the difference is the reasons written into it, which is the part that makes it readable by the
+next person rather than only runnable.
+
+**The exemptions live in the source, not in the script.** A tool that skips things by name starts
+lying the day a file is added (#126), and a list inside the instrument is the hand-kept number it was
+written to replace. So a site with no guard carries
+`// superseded-answer: <why it cannot be drawn late> (#NNN)` in its own function or in the comment
+above it, and the script refuses a marker with no reason of its own or no ticket — a marker is a claim
+like any other, so it is counted and can be printed.
+
+**Its first run found four sites nobody had ever classified**, which is exactly the species the
+ticket says a flag census is blind to: `ImportPanel.upload`, `SubjectStudents.add`,
+`AuthContext.load` and `AuthContext.switchRole`. Three measure as structurally unreachable today with
+a date on it (#102, #131) rather than as holes; the fourth is a hole, and the paragraph after this one
+is how that was found. The interesting one of the three is `AuthContext.load`.
+It looked like a real defect for an hour: the file's own heartbeat is guarded against precisely this
+hazard — *landing after a switch it would put the old grant back on* (#51) — and `load`, which writes
+the same state from an answer, is not. What stops it is not a guard. `load` holds `loading` up for its
+whole duration and both route guards in `routes/AppRoutes.js` return `<LoadingScreen />` while it is
+up, so **the shell that holds every control, the grant picker included, is unmounted for exactly as
+long as the answer is out**. The same shape as #47's dialog that a focused tab unmounts: a state a
+person could be in, removed by the mechanism before anything can reach it. Had that been argued
+rather than measured, the answer would have been wrong in either direction.
+
+**And the first marker written was wrong, which is the lesson the markers themselves needed.** The
+one on `ImportPanel.upload` said the panel's target "is a prop, which only the screen above can change
+and only by unmounting this panel". `ImportPanel` has **ten** callers. Nine of them pass either a bare
+function or a closure over a `useParams` value, so the target really cannot change without the screen
+going; the tenth is `ActivityScores`, where the target is `activityId` — **state, written by a picker
+on the screen that is never disabled**. So an import of activity A can be in flight while the person
+moves the picker to B, and `setReport({ ok: true, created })` then draws *nothing was saved* or
+*imported N rows* inside a panel that is now about B. The window is the whole of a CSV import, which is
+the slowest write in the application, and the screen's own docstring says the race is known: *the
+picker is on screen the whole time a file is uploading* — which is why `onImported` asks `onScreen`.
+What nobody could see from that screen is the panel's **own** report, because it is state inside a
+component the screen cannot reach. **A guard written for one caller is a claim about every caller**
+(#68, #133), and a marker is that comment: the one sentence a marker exists to write is the sentence
+most worth checking against the call sites. Measured 1 October 2026, published on #141's sheet, and
+left for the user to decide between a ticket and a fix — adjacent work is not this ticket's to take
+quietly (#119).
+
+**And the instrument was wrong three times, which is why it has fixtures.** The one that matters:
+a call to a parameter was read as a flag, and `onError(error)` and `onImported()` are calls to
+parameters too. What caught it was breaking the thing it is about (#124) — replacing every
+`isCurrent()` in `GrantsPanel.js` with `true` and asking the census, which still answered *guarded*.
+**A census that answers *guarded* whatever the code says is the one thing it must not be**, and it
+would have reported the defect #133 fixed as fixed. The rule became *the value has to decide
+something* — the test of an `if` or a `?:`, or what a `return` hands back, with `&&`, `||` and `!`
+walked *through* rather than counted, because being an operand of `||` is not deciding anything and
+`cached || onDone()` reads as a guard if the operator alone is taken for one. Both readings measured
+54 guarded sites on the real tree, so nothing was relying on either. The narrowed rule immediately
+found a seventh site, `Offerings.onSection`, whose banner is
+deliberately unguarded for a reason #139 had already written twelve lines above it and which no census
+had ever counted as a drawing site at all. The other two: the marker was read to the end of its line
+instead of to the end of its comment, so the ticket number in its last sentence was missed and all six
+real markers were rejected; and two `await`s on one line counted as two sites, which is the
+instrument's own figures being wrong in the direction nobody checks.
+
+**An instrument is not an assertion** (#171), so not one mark moved on any sheet. The nineteen claims
+with no row are still nineteen claims with no row. What changed is that from today a new site that
+draws an answer with no flag turns `npm run census` red, which is the only thing that can put those
+nineteen at risk at all — and it would have caught `GrantsPanel.add` on the day it was written.
+That last sentence is measured rather than asserted: handed `41ef75e`'s copy of that file, the
+census reports `load` as flagged and `add` and `remove` as bare, which is the finding the hand
+census of 30 September needed two passes and a read of the file to make.

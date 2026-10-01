@@ -66,6 +66,21 @@ export default function ImportPanel({
     }
   }
 
+  /**
+   * superseded-answer: this is a **hole, not an exemption** - the one of these
+   * seven that is. The file input is the only way in and it is `disabled={busy}`, so
+   * no second import can be begun while this answer is out, and nine of this
+   * panel's ten callers pass a target that cannot change without the screen
+   * going: a bare function, or a closure over a `useParams` value. The tenth is
+   * `pages/ActivityScores.js`, where the target is `activityId` - state, written
+   * by a picker beside this panel that is never disabled - and that screen's own
+   * `load` does not clear `data`, so the panel is never unmounted while the
+   * picker moves. An import of activity A can therefore draw *imported N rows*
+   * inside the panel of activity B, for as long as a CSV import takes. Measured
+   * 1 October 2026 and written up on `docs/acceptance/57-pager.md`; the fix and
+   * its row are a decision, not this ticket's to take quietly, so this says what
+   * is true rather than claiming it cannot happen (#68, #133, #141)
+   */
   const upload = async event => {
     const file = event.target.files?.[0]
     if (!file) return

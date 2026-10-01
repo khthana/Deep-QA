@@ -49,6 +49,12 @@ export default function TeacherDashboard() {
   const [notice, setNotice] = useState(null)
   const navigate = useNavigate()
 
+  /**
+   * superseded-answer: `listMySections()` is handed nothing, so there is no
+   * second request for this answer to be the wrong one of - the register at
+   * `docs/acceptance/57-pager.md` has it as ไม่นับ for that reason, measured
+   * again 1 October 2026 (#133, #141)
+   */
   const load = useCallback(async () => {
     setLoading(true)
     try {
