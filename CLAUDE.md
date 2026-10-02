@@ -66,6 +66,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   `CREATE TABLE` before pasting the list, because it gets pasted more than once — this one reached a
   migration header, a glossary entry and a divergence note before anybody checked, and the ticket's
   count of the exempt usages had drifted from two to six the same way. (#54)
+- **A ticket's reason for being *untestable* is a claim like its numbers** — #141's was
+  three correct measurements resting on one word: *two addresses of the same route shape are
+  never adjacent in history*. The browser's own history list travels any number of entries in one
+  move, so a sequence that goes up through an unmounting list is one jump from being a sibling move.
+  Measure whether the document survived; do not reason about it. (#141)
 - **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. What the ticket wrote down as a prediction can be the state on the day it is

@@ -6208,3 +6208,68 @@ which is a deferral written into the sheet; a deferral that is only prose is a d
 find (#119), so it is also a ticket to open. The figures expired the ordinary way — the spec files
 grew, repeatedly, from tickets that had no reason to look at this table (#130) — and that is an
 instrument-shaped gap, not twenty-two edits.
+
+## #141 (the way in) — the word that was doing the work
+
+#141 is a tracker, not a defect: nineteen claims of #133's and #140's family that carry the
+superseded-answer flag and have no row proving it, because the ticket argued the situation cannot be
+built. Its own §วัดใหม่ measured that argument three ways on 30 September, and **all three
+measurements were right** — every `load` on the sixteen screens depends on `useParams` alone, none of
+the tree's five `navigate()` calls moves to the same route shape, and every `<Link>` on those screens
+goes *up*, to a list that unmounts the screen. The conclusion drawn from them was *two URLs
+of the same route shape are never adjacent in history, because reaching the second always goes
+through the list.*
+
+**Adjacent was the word doing the work, and the browser does not need them adjacent.** Back and
+Forward are not one-step controls: press and hold either and it opens the history list, and clicking
+an entry in it travels however many entries away it is in a single move. A person who reads CLO-1's
+behaviours, goes up to the list, and opens CLO-2's has written `[behaviours 1, list, behaviours 2]`
+into their own history; the entry two back is then one click away, and the move never passes through
+the list. React Router matches the same route element either side of it, so the component is never
+unmounted, and the screen re-reads for the CLO it landed on while the one it left is still in flight.
+That is *a ticket that names a race has named a window, not the population of ways in* (#179) one
+level up: what the ticket enumerated was the controls that move **one entry**, and the population is
+the controls that change the **address without replacing the document**. Nineteen claims that had
+waited for a ticket to add sibling navigation were reachable all along, by a control that ships with
+the browser.
+
+**Measured, not reasoned.** The row writes a marker on `window` after the one document load and reads
+it back after the jump; if the document had been replaced the marker would be gone, and the whole
+argument with it. The assertion is the heading against the address — the heading is drawn from
+`data.clo.clo_number`, which is the **answer**, and the address is what was **asked for**, so a
+superseded answer makes the two disagree, which is the defect in one sentence. Both, and the marker,
+are three clauses of one `toEqual`, so no run proves one of them while leaving another unreached.
+
+**The first measurement of the row was red, and for none of the reasons the row is about.** It jumped
+as soon as the click returned, which is before the click has been turned into a request:
+nothing was in flight, so there was nothing to supersede, and the answer the row then waited for was
+never asked for at all. It died at the timeout — which is what a mutant that stopped the application
+would print too (#139) — and the saved snapshot, read before the stack (#160), was the one that said
+so: the screen was on the list, not on behaviours. The repair is the same sentence as #160's: wait
+for the thing itself, by identity, never by a clock (#52). `page.waitForRequest` for that CLO's
+behaviours, and only then `history.go(-2)`.
+
+**One site of nineteen, because that was the call made.** `MeasurableBehaviors.js` is where the
+situation is cheapest to build honestly — two CLOs of one Section, each with its own behaviours, both
+reachable by links the screens already draw. Ten of the remaining screens read `sectionId` alone, so
+their version of the sequence needs an account holding two Sections, and the seed's `teacherOne`
+holds one; growing the seed is a question, not a task. #141 stays open under its own criterion 4, and
+the deferral is in the tracker rather than in prose (#119).
+
+**And the new row does not prove the guard below it.** Sheet `28` carries two claims, the read's flag
+(#133) and the handler's (#140), and the handler's compares `onScreen.current === load` for something
+that changes what `load` asks for *while a reload after a save or a delete is still out*. The jump can
+do that in principle and no row does it, so that half keeps ☐ with a fresh date — *say which half,
+with a date, rather than moving the mark* (#179). The twelve sibling screens are the same shape one
+layer out: twelve carry the sentence *nothing here can supersede a request today* in its own source,
+and each is now false, because **a claim written in prose expires like a number** (#130). **The
+thirteenth is the one the grep could not see**: `TeacherSection.js` makes the same claim in its own
+words, and a review found it where a search for one sentence had reported twelve — which is this
+ticket's own lesson about a census of *the things that carry X*, turned on the ticket (#111, #141).
+Only the screen with the row had its comment corrected; the other twelve are on the ticket.
+
+**And the register got one attribution wrong, which the same review measured.** The new section
+said the one-row gap between today's count and #179's figure was #93's row; counted at the
+commits, #93 moved no count at all, and the figure was written inside #179's own commit, which
+counted three new ⚙ rows where it had added four. *What a diff touches is what a diff proofreads*
+(#154) — including when the diff is the one publishing the correction.

@@ -29,7 +29,7 @@ where the decision lives. **Do not run this sweep while `27`'s is applied**, and
 
 Killing them:
 
-    cd e2e && npx playwright test 41a
+    cd e2e && npx playwright test tests/41a-improvement-plan.spec.js
 """
 
 from harness import main
