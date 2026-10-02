@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 1 October 2569 that is
-`2026-10-01-the-census-that-became-an-instrument.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 2 October 2569 that is
+`2026-10-02-the-twelve-values-nobody-had-seen.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -518,6 +518,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - What a walk is for is the appearance: ask the person to look, one property at a time. A row
   waiting on a situation the seed does not contain is walkable — build the situation and restore
   it afterwards. (#39; *What the hand-walks found*, *A ⚙ that was never earned*)
+- **An instrument that still answers when nothing is drawn cannot say the screen was seen** — a
+  hidden tab screenshots black while the DOM reads correctly, and an image path printed into a
+  reply reaches nobody. Ask what is in front, and send the picture. (#184)
 - If a ticket is about to decide a screen's fate, walk that screen after it, not before. (#66)
 - A near-miss caught inside your own change is not a finding about the store. (#124)
 

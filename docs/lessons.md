@@ -6273,3 +6273,37 @@ said the one-row gap between today's count and #179's figure was #93's row; coun
 commits, #93 moved no count at all, and the figure was written inside #179's own commit, which
 counted three new ⚙ rows where it had added four. *What a diff touches is what a diff proofreads*
 (#154) — including when the diff is the one publishing the correction.
+
+## #184 — the twelve values that had been corrected but not seen
+
+#93 took the code off the front of every programme, department and subject label, and corrected the
+twelve acceptance rows that quoted the old value. It corrected them **from the code**. #184 is the
+one hand-walk round that followed, and its point is not ceremony: the ticket says to look at *the
+space and the wrapping the code used to occupy*, which is the one question reading the source cannot
+answer.
+
+Four accounts, twelve rows, and each group asked as two halves with **layout first** — the half the
+code cannot answer goes first, so it is not answered by momentum after the words have already been
+agreed. Eight answers, all *inside the frame* and *matches on every row*. No mismatch, so no ticket:
+criterion 4 closed empty, which is the answer it was written to be able to give.
+
+**What the walk returned that no row asks for** is in the PLO table's *programme* column, where the
+international programme's name now wraps across two lines in the middle of its bracket. It is the
+space the code used to occupy, exactly as the ticket predicted something might be, and the person
+looking accepted it. It is written on sheet `19` as a thing that was seen, not as a row — a walk's
+observation that belongs to nobody's claim still belongs on the sheet with a date.
+
+**A sentence written for seven sheets is seven claims.** The dated note replacing *corrected from the
+code* said *both rows* — true on five sheets and false on `20` and `21`, which carry one row each.
+The draft went in on all seven before the diff was read. *What a diff touches is what a diff
+proofreads* (#154), and here the diff was the one publishing the correction, again.
+
+**And the instrument lied in the one way that looks like proof.** Chrome does not paint a tab whose
+`visibilityState` is `hidden`: the screenshots come back black while `javascript_tool` keeps reading
+the DOM correctly and reporting what the labels say. A measurement that is right is not a screen that
+was seen — the whole value of this ticket is the difference. The same round also printed four image
+paths into a reply, where they reached nobody; a picture that does not arrive is not a picture shown.
+
+**The register, once more.** The ⚙ figure carried in the head through the session was 705; counted by
+the mark column at the commit it is 708, and the three are #93's rows, not a drift. A hand-kept number
+in a file that grows every ticket is already wrong (#119) — and so is one kept in a head.
