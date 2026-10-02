@@ -6181,8 +6181,10 @@ so the mutant is the code put back in front of the name, and the name goes with 
 `nolabelcode` → `labelwithcode`. This is #115 read forwards — when a ticket's diagnosis is accepted,
 the mutant to write is the diagnosed code — and `16:M10` is the same move on the department line.
 
-**A sheet that quotes a label quotes a value, and a dated walk table quotes a day.** Eleven criteria
-rows in seven sheets carried the old string. They were corrected, because they say what the system
+**A sheet that quotes a label quotes a value, and a dated walk table quotes a day.** Twelve criteria
+rows in seven sheets carried the old string - two each in 16, 17, 18, 19 and 23, one each in
+20 and 21, counted off the commit's own hunks rather than off memory, which is where the
+eleven in the commit message came from. They were corrected, because they say what the system
 *is*; the dated walk sections were left alone and given a note naming which of their rows would read
 differently today, which is #54's rule. Several of the corrected rows are ☑ and stay ☑ — their claims
 are *this is text and not a dropdown* and *this comes from the programme* — but the new string has
