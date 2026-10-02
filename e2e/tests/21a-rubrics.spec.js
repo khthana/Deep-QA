@@ -23,6 +23,7 @@ const {
   filterTo,
   criteriaLink,
 } = require('../support/rubrics-screen');
+const { statedLabel } = require('../support/stated-label');
 
 /**
  * docs/acceptance/21-rubrics.md — the scales a หลักสูตร marks against, read
@@ -75,7 +76,7 @@ test('a committee member is told which curriculum is theirs, and sees its rubric
   await signIn(page, ACCOUNTS.committee0501);
   await openRubrics(page);
 
-  await expect(page.getByText('0501 วิศวกรรมคอมพิวเตอร์', { exact: true })).toBeVisible();
+  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toBeVisible();
   await expect(page.getByRole('combobox')).toHaveCount(0);
 
   await expect(rubricRow(page, SEEDED[0].code)).toContainText(SEEDED[0].th);

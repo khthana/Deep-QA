@@ -27,6 +27,7 @@ const {
   listedCodes,
   filterTo,
 } = require('../support/plos-screen');
+const { statedLabel } = require('../support/stated-label');
 
 /**
  * docs/acceptance/19-programme-learning-outcomes.md — what a graduate of a
@@ -74,7 +75,8 @@ test.afterAll(() => release());
  * its own copy of a name is a row that passes whatever the name is.
  */
 const nameOf = programId => PROGRAMS.find(program => program.id === programId).th;
-const named = programId => `${programId} ${nameOf(programId)}`;
+/** The word the bar puts in front of that name where there is no choice - #93. */
+const PROGRAMME = 'หลักสูตร';
 
 /** Every outcome 0503 holds — its ข้อหลัก and their ข้อย่อย. */
 const INTL_OUTCOMES = PLOS_INTL.reduce((total, plo) => total + 1 + plo.subs.length, 0);
@@ -95,7 +97,7 @@ test('a committee member is told which curriculum is theirs, and sees its own PL
   await signIn(page, ACCOUNTS.committee0501);
   await openPlos(page);
 
-  await expect(page.getByText('0501 วิศวกรรมคอมพิวเตอร์', { exact: true })).toBeVisible();
+  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toBeVisible();
   await expect(page.getByRole('combobox')).toHaveCount(0);
 
   await expect(ploRow(page, 'PLO-1')).toContainText(SEEDED[0].title);
@@ -108,7 +110,7 @@ test('the other curriculum holds its own PLO-1, and it is a different outcome', 
   await signIn(page, ACCOUNTS.committee0503);
   await openPlos(page);
 
-  await expect(page.getByText('0503 วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)')).toBeVisible();
+  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)')).toBeVisible();
   await expect(ploRow(page, 'PLO-1')).toContainText(PLOS_INTL[0].title);
   await expect(ploRow(page, 'PLO-1')).not.toContainText(SEEDED[0].title);
 });
@@ -334,7 +336,7 @@ test('the curriculum filter offers the curricula in reach and nothing wider', as
 
   const filter = programFilter(page);
   await expect(filter).toHaveCount(1);
-  expect(await offeredLabels(filter)).toEqual(['0501', '0503'].map(named));
+  expect(await offeredLabels(filter)).toEqual(['0501', '0503'].map(nameOf));
 });
 
 test('the screen lands on the first curriculum in reach, with that curriculum drawn', async ({
@@ -384,7 +386,7 @@ test('a committee member reaching one curriculum is told which, and is given no 
   await openPlos(page);
 
   await expect(programFilter(page)).toHaveCount(0);
-  await expect(page.getByText(named('0503'), { exact: true })).toBeVisible();
+  await expect(statedLabel(page, PROGRAMME, nameOf('0503'))).toBeVisible();
   await expect(ploRow(page, 'PLO-1')).toContainText(PLOS_INTL[0].title);
 });
 

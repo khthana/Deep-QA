@@ -107,7 +107,7 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
                   value={program.program_id}
                   disabled={program.is_active === false && program.program_id !== draft.program_id}
                 >
-                  {program.program_id} {program.program_name_th}
+                  {program.program_name_th}
                 </option>
               ))}
             </select>

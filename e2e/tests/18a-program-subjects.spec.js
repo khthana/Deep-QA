@@ -29,6 +29,7 @@ const {
   confirmRemoval,
 } = require('../support/program-subjects-screen');
 const { saidBy } = require('../support/confirm-dialog');
+const { statedLabel } = require('../support/stated-label');
 
 /**
  * docs/acceptance/18-program-subjects.md — what a curriculum is made of, read
@@ -125,7 +126,7 @@ test('row 1: one programme is stated rather than asked, and it is the one the se
   // The list says which curriculum is being read without offering a choice
   // there is none of - a กรรมการหลักสูตร holds exactly one.
   await expect(programFilter(page)).toHaveCount(0);
-  await expect(page.getByText('0501 วิศวกรรมคอมพิวเตอร์', { exact: true })).toBeVisible();
+  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toBeVisible();
 
   await openAddForm(page);
 

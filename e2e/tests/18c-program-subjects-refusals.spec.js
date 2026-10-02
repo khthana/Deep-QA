@@ -21,6 +21,7 @@ const {
   openEditor,
   save,
 } = require('../support/program-subjects-screen');
+const { statedLabel } = require('../support/stated-label');
 
 /**
  * docs/acceptance/18-program-subjects.md, criterion 8 — who reaches which
@@ -92,7 +93,7 @@ test('row 8: the committee of one curriculum is shown that one and only that one
   // Told which, rather than asked - so there is no filter to be set wrongly and
   // no option naming a curriculum this account does not hold.
   await expect(
-    page.getByText('0503 วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)', { exact: true }),
+    statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)'),
   ).toBeVisible();
   await expect(programFilter(page)).toHaveCount(0);
 

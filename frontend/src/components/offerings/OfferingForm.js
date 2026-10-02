@@ -138,13 +138,13 @@ export default function OfferingForm({
                 <option value="">เลือกหลักสูตร</option>
                 {usable.map(program => (
                   <option key={program.program_id} value={program.program_id}>
-                    {program.program_id} {program.program_name_th}
+                    {program.program_name_th}
                   </option>
                 ))}
               </select>
             ) : (
               <span className="block rounded-lg bg-gray-100 p-2.5 text-sm text-gray-900">
-                {onlyOne ? `${onlyOne.program_id} ${onlyOne.program_name_th}` : '—'}
+                {onlyOne ? onlyOne.program_name_th : '—'}
               </span>
             )}
           </Field>
@@ -165,7 +165,7 @@ export default function OfferingForm({
               </option>
               {subjects.map(subject => (
                 <option key={subject.subject_id} value={subject.subject_id}>
-                  {subject.subject_id} {subject.subject_name_th}
+                  {subject.subject_name_th}
                 </option>
               ))}
             </select>

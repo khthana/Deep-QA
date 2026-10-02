@@ -12,6 +12,7 @@ const {
   filterToTerm,
   offeringRow,
 } = require('../support/offerings-screen');
+const { statedLabel } = require('../support/stated-label');
 
 /**
  * docs/acceptance/23-offerings.md, criterion 9 — the one screen the committee
@@ -62,7 +63,7 @@ test('row 9: the committee of another curriculum sees none of this one', async (
   // Told which curriculum, rather than asked - one programme in reach, so there
   // is no filter that could be set to somebody else's.
   await expect(
-    page.getByText('0503 วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)', { exact: true }),
+    statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)'),
   ).toBeVisible();
 
   // 0501's seeded term is real and is not theirs. The filter is the server's

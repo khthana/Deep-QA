@@ -360,6 +360,8 @@ export default function ActivityScores() {
         <>
           <div>
             <p className="text-xs font-medium text-slate-400">
+              {/* label-code: the line above the heading, the one place on this screen
+                  that says which section is being read (#93) */}
               {list.section.subject_id} {list.section.subject_name_en}
             </p>
             <h1 className="mt-1 text-xl font-semibold text-primary">คะแนนกิจกรรมการเรียนรู้</h1>

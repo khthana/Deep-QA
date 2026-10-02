@@ -30,10 +30,11 @@ MUTANTS = {
                       "program_id: defaultProgram || '',"),
     # 18a row 1: one programme is stated, not offered as a choice of one
     "alwaysfilter": ("page", "{programs.length > 1 ? (", "{programs.length > 0 ? ("),
-    # 18a row 1 / 18c row 8: the label names the curriculum by its code
-    "nolabelcode": ("page",
-                    "{programs[0].program_id} {programs[0].program_name_th}",
-                    "{programs[0].program_name_th}"),
+    # 18a row 1 / 18c row 8: the label names the curriculum, and the mutant
+    # puts its code back in front of the name - #93 took it out
+    "labelwithcode": ("page",
+                    "{programs[0].program_name_th}",
+                    "{programs[0].program_id} {programs[0].program_name_th}"),
     # 18b row 7: a refused file is rolled back whole
     "keepgood": ("importer",
                  "      await client.query('ROLLBACK');\n      return { ok: false,",

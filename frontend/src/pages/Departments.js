@@ -457,6 +457,8 @@ export default function Departments() {
         title="ยืนยันการลบภาควิชา"
         message={
           removing
+            // label-code: the question names the record about to be destroyed, where two of them
+            // sharing a name is the whole reason the code is in the sentence (#93)
             ? `ต้องการลบภาควิชา ${removing.department_id} ${removing.department_name_th} ใช่หรือไม่ หากมีหลักสูตร รายวิชา หรือผู้ใช้งานอ้างอิงอยู่ ระบบจะไม่ลบให้`
             : ''
         }

@@ -139,7 +139,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
                   value={department.department_id}
                   disabled={department.is_active === false}
                 >
-                  {department.department_id} {department.department_name_th}
+                  {department.department_name_th}
                   {department.is_active === false && ' (ปิดใช้งาน)'}
                 </option>
               ))}

@@ -146,6 +146,8 @@ export function exportAssessmentToPdf({ section, subject, rule, clos }) {
   // guess the year of.
   doc.setFontSize(HEADING)
   doc.text(
+    // label-code: the heading of the exported report, which names the subject it is of to
+    // a reader who does not have the screen in front of them (#93)
     `${subject.subject_id} ${subject.subject_name_th}`,
     width / 2,
     24,

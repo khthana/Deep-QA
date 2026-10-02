@@ -274,6 +274,8 @@ export default function Offerings() {
         asked.current = ask
         setNotice({
           error: false,
+          // label-code: the notice says what was just created, and the next thing the person
+          // does is find that offering by its code in the registrar's list (#93)
           message: `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
         })
       }
@@ -456,7 +458,7 @@ export default function Offerings() {
                     <option value="">ทุกหลักสูตร</option>
                     {programs.map(entry => (
                       <option key={entry.program_id} value={entry.program_id}>
-                        {entry.program_id} {entry.program_name_th}
+                        {entry.program_name_th}
                       </option>
                     ))}
                   </select>
@@ -466,7 +468,7 @@ export default function Offerings() {
                   <span className="flex items-center gap-2 text-sm text-slate-600">
                     หลักสูตร
                     <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                      {programs[0].program_id} {programs[0].program_name_th}
+                      {programs[0].program_name_th}
                     </span>
                   </span>
                 )
@@ -612,6 +614,8 @@ export default function Offerings() {
         title="ยืนยันการยกเลิกการเปิดรายวิชา"
         message={
           removing?.offering
+            // label-code: the question names the record about to be destroyed, where two of them
+            // sharing a name is the whole reason the code is in the sentence (#93)
             ? `ต้องการยกเลิกการเปิดรายวิชา ${removing.offering.subject_id} ${removing.offering.subject_name_th} ปีการศึกษา ${removing.offering.academic_year} ภาคการศึกษา ${removing.offering.semester} ใช่หรือไม่ ตอนเรียนทั้งหมดและการกำหนดผู้สอนจะถูกลบไปด้วย หากมีนักศึกษาลงทะเบียนหรือมีการบันทึกคะแนนแล้ว ระบบจะไม่อนุญาตให้ลบ`
             : ''
         }

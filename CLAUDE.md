@@ -98,6 +98,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   way and only breaking a real site shows it** — one that reads any call to a parameter as a guard
   answers *guarded* whatever the code says, and its fixtures pass either way. The other way a census
   misses is counting by the wrong property, under *Tests and fixtures*. (#141, #174)
+- **A marker written for an instrument has to be in a syntax the instrument reads** - `//`
+  between two JSX tags is `JSXText`: the parser sees no comment and the browser draws the words
+  on the screen, so a census read three marked sites as bare and a note addressed to it nearly
+  shipped above a report heading. The same species as a tool that cannot say what it did not look
+  at, except that what it could not look at was the note written for it. (#93)
 - A ticket that says *unless X* has told you what to go and look for; one that asks you to
   *consider* something is answered by a measurement, and *no, and here is what it would cost* is
   a finished answer. (#101, #89)
@@ -338,6 +343,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   are the same text, and `getByText` matches a substring whether or not the row writes
   `exact: false`, so that grep is evidence about the option. Ask by the value, then let the full
   suite say which candidates were real. (#118)
+- **A locator can be unique only by accident of the thing you are about to remove** - six rows
+  matched a label by code-and-name and every one was unambiguous *because* of the code; the name
+  alone matches fifty-three elements, which at least fails loudly. The repair is not a narrowing
+  `nth` but reading the **statement** - the word and the name inside one element - which is the
+  stronger claim, and it needs the markup measured: JSX drops the newline before an adjacent
+  `<span>`, so the text has no space in it. (#93)
 - **A criterion answered *no* needs a row as much as one answered *yes*** — and the row has to
   assert what is still there, or it is measuring the other refusal that reaches the same status
   code. Between two fixture shapes, take the one the code already draws and nothing has ever made
@@ -531,7 +542,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
-| `frontend/scripts/` | The census of #133's family, as an instrument: `npm run census` goes red when a screen draws an answer with no guard and no written reason. Its own fixtures are `npm run census:test`. |
+| `frontend/scripts/` | Two censuses, as instruments. `npm run census` runs both and goes red when a screen draws an answer with no guard and no written reason (#133's family), or draws a label with a code in front of the name and no written reason (#93's). Their own fixtures are `npm run census:test`. |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the

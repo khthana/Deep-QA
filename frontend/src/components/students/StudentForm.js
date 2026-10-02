@@ -146,7 +146,7 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
               <option value="">เลือกหลักสูตร</option>
               {offered.map(program => (
                 <option key={program.program_id} value={program.program_id}>
-                  {program.program_id} {program.program_name_th}
+                  {program.program_name_th}
                 </option>
               ))}
             </select>
@@ -154,8 +154,13 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
           {/* Taken from the หลักสูตร, so it is shown and not asked for. */}
           <Field label="ภาควิชา">
             <span className={derived}>
+              {/* label-code: the fallback, not the label. #93 took the code off
+                  the front of the name; where there is no name this draws the
+                  code alone, which is what the field drew before and is more
+                  than the blank an empty name would leave. The census cannot
+                  see this one - the name is behind a `??` and not a column (#93) */}
               {picked
-                ? `${picked.department_id} ${department?.department_name_th ?? ''}`.trim()
+                ? department?.department_name_th ?? picked.department_id
                 : 'ตามหลักสูตรที่เลือก'}
             </span>
           </Field>

@@ -131,6 +131,8 @@ export function exportGridToPdf({ program, subjects, outcomes, mappings }) {
   })
   doc.setFontSize(13)
   doc.text(
+    // label-code: the identity of the exported document, which has to say which curriculum
+    // it is of to a reader who does not have the screen in front of them (#93)
     `หลักสูตร ${program.program_id} ${program.program_name_th}` +
       (program.revision_year ? ` (หลักสูตรปี ${program.revision_year})` : ''),
     width / 2,
@@ -169,6 +171,8 @@ export function exportGridToPdf({ program, subjects, outcomes, mappings }) {
   doc.setFontSize(BODY)
   const subjectCell = subject =>
     wrapped(
+      // label-code: a cell of the exported table, read away from the system, where the code
+      // is how a reader finds the subject in the registrar's catalogue (#93)
       `${subject.subject_id} ${subject.subject_name_th}`,
       SUBJECT_WIDTH - CELL_PADDING * 2,
       one => doc.getTextWidth(one)

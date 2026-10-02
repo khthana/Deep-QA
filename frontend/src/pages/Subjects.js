@@ -266,7 +266,7 @@ export default function Subjects() {
                     <option value="">ทุกภาควิชา</option>
                     {departments.map(entry => (
                       <option key={entry.department_id} value={entry.department_id}>
-                        {entry.department_id} {entry.department_name_th}
+                        {entry.department_name_th}
                       </option>
                     ))}
                   </select>
@@ -276,7 +276,7 @@ export default function Subjects() {
                   <span className="flex items-center gap-2 text-sm text-slate-600">
                     ภาควิชา
                     <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                      {departments[0].department_id} {departments[0].department_name_th}
+                      {departments[0].department_name_th}
                     </span>
                   </span>
                 )
@@ -409,6 +409,8 @@ export default function Subjects() {
         title="ยืนยันการลบรายวิชา"
         message={
           removing
+            // label-code: the question names the record about to be destroyed, where two of them
+            // sharing a name is the whole reason the code is in the sentence (#93)
             ? `ต้องการลบรายวิชา ${removing.subject_id} ${removing.subject_name_th} ใช่หรือไม่ หากมีหลักสูตรหรือการเปิดสอนอ้างอิงอยู่ ระบบจะปิดการใช้งานให้แทนการลบ`
             : ''
         }

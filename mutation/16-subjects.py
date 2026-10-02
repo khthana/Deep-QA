@@ -64,10 +64,11 @@ MUTANTS = {
  'M9': [('page',
    "              if (page === 1) load(() => onScreen.current === load)\n              else setPage(1)\n",
    "")],
- # the filter line naming the department without saying which one
+ # the department's code put back in front of its name, which is what #93
+ # took out of every label that names a department, a programme or a subject
  'M10': [('page',
-   "                      {departments[0].department_id} {departments[0].department_name_th}",
-   "                      {departments[0].department_name_th}")],
+   "                      {departments[0].department_name_th}",
+   "                      {departments[0].department_id} {departments[0].department_name_th}")],
  # the English name not drawn beside the Thai one
  'M11': [('page',
    "                          {subject.subject_name_en}",

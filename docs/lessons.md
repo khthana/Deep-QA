@@ -6122,3 +6122,87 @@ rather than retrying for its text, because a retrying read of what a mutant remo
 and looks exactly like a mutant that stopped the application (#139) — and the mutant is the declined
 arrangement made to run (#48), which is the only thing that holds the edge of a guard in place. It
 cost a re-sweep of all four, since the file it measures had gained a row (#146).
+## #93 — the code in front of the name, and the three markers the parser never saw
+
+The ticket is one sentence — a label that names a programme, a department or a subject reads as the
+name, because that is what the person wanted to read — and it was opened before most of the screens
+that draw such a label existed. Its first criterion says so: *every place*, including the screens
+built after it was written. So the population is the thing to find, and a hand list of places I
+remembered is the wrong instrument for a population that grew for a year after the ticket was filed.
+What found it was a census of the same species as #141's: a Babel walk for an `X_id` drawn
+immediately in front of the same `X`'s `X_name_th`, in the three spellings a screen uses — JSX
+children with a blank `JSXText` between two containers, a template literal with a whitespace quasi,
+and a left-nested `a + ' ' + b`. Requiring the *same prefix* on both reads is what keeps
+`student_id` beside `full_name_th` out of it, and `rubric_code` with it.
+
+Forty-seven sites, of which twenty keep the code on purpose: the confirm sentences, the notice after
+an offering is created, the small line above seven teacher screens' own headings, two report
+headings, a report row and three PDFs. **A sentence that identifies the thing about to be deleted is
+not a label offered for choosing**, which is the distinction the ticket's criterion is actually
+about, and the one the census cannot make — so each of those carries a written reason the census
+reads, `// label-code: <why> (#NNN)`, with a minimum length and a ticket number so that the reason
+cannot be the word *fine*. The instrument ends at *guarded or bare*; what it buys is that one more
+screen cannot be added silently.
+
+**And the first version of that rule read `_name_th` only.** Seven of those eyebrow lines name their
+รายวิชา in English, `{data.section.subject_id} {data.section.subject_name_en}`, and the census
+reported every one of them clean — the review found them by hand. That is **a census is evidence
+about the property it counted** (#174) landing on the census written to answer the lesson: the
+species is *a code in front of this record's name*, and I had counted *in front of its Thai name*.
+Widening `nameOf` to `_name_(th|en)` turned the count from twelve marked of twelve to nineteen of
+nineteen with seven reds in between, which is the shape of a rule that can fail (#141).
+
+**A `//` comment between two JSX tags is not a comment.** It is `JSXText`: the parser sees a string,
+the browser draws it on the screen, and the census — which reads comments out of Babel's comment
+table — reported three of the thirteen as bare. Both halves of that are bad, and the half that
+matters is the first: the words *label-code: the heading of the report* would have shipped visible
+above a report heading. A fixture now holds both directions, the drawn one and `{/* ... */}`. This is
+the same species as #126 — a tool that cannot say what it did not look at — except that here the
+thing it could not look at was my own note to it.
+
+**And a locator can be unique only by accident of the thing you are about to remove.** Eight e2e
+assertions in six files
+read their label with `getByText('0503 ชื่อ')`, and every one of them was unambiguous *because the
+code was in the string*. Take the code out and the name alone matches up to fifty-three elements on
+the PLO screen — a strict-mode violation, which at least fails loudly rather than passing on the
+wrong element. The repair is not a narrowing `nth`: it is to read the **statement** the screen makes,
+the word and the name inside one element, which is a stronger claim than the old one — it says the
+bar labels this name as a programme, not merely that the name appears. Getting there needed a measured
+fact about the markup: **JSX drops the newline between a word and an adjacent `<span>`**, so the
+element's `textContent` has no space in it and `'หลักสูตร ชื่อ'` finds nothing on all six screens.
+That lives in `e2e/support/stated-label.js` with the shape written down, and it is shared because
+**an instrument is not an assertion** (#171) — no row's claim lives in the helper.
+
+**The two mutants had to be turned round, not re-aimed.** `18:nolabelcode` took the code out of the
+label; #93 performed exactly that, so the mutant's find string stopped matching and
+`python mutation/anchors.py` said so — which is the cheap end of *an anchor check tells you a mutant
+no longer applies* (#107). But the fix is not a new anchor. The row's claim is now the opposite claim,
+so the mutant is the code put back in front of the name, and the name goes with it:
+`nolabelcode` → `labelwithcode`. This is #115 read forwards — when a ticket's diagnosis is accepted,
+the mutant to write is the diagnosed code — and `16:M10` is the same move on the department line.
+
+**A sheet that quotes a label quotes a value, and a dated walk table quotes a day.** Eleven criteria
+rows in seven sheets carried the old string. They were corrected, because they say what the system
+*is*; the dated walk sections were left alone and given a note naming which of their rows would read
+differently today, which is #54's rule. Several of the corrected rows are ☑ and stay ☑ — their claims
+are *this is text and not a dropdown* and *this comes from the programme* — but the new string has
+not been on a screen in front of anybody, and the note says the value was corrected from the code
+rather than from a walk.
+
+**Finding those rows took two instruments, and each was blind where the other saw.** I first changed
+the four I had found with a grep for the two programme codes beside the two seeded names. Asked
+properly — by the *value*, every name the seed holds, with anything ending in digits in front of it —
+three more came out, in sheets for screens I had not thought I was touching (#130). And that scan
+still missed one: `20-outcome-to-subject-mapping.md:94` writes the code and then an ellipsis instead
+of the name, so a census that hunts the name cannot see it. The scan that found it counts by the
+*sentence* — a row using a verb of reading, with a code in it — and that one in turn would never have
+found the two dropdown rows that say *the only option is `0501`* without a reading verb at all. Three
+instruments, and seven rows I would otherwise have left standing; **a census is evidence about the
+property it counted** (#174), and the answer to one is another census, not a longer grep.
+
+**The mutation table's line numbers were fifteen and thirteen lines short**, and only the row I had
+to touch was re-measured. The other twenty-two are flagged in the dated note as not re-measured,
+which is a deferral written into the sheet; a deferral that is only prose is a decision nobody can
+find (#119), so it is also a ticket to open. The figures expired the ordinary way — the spec files
+grew, repeatedly, from tickets that had no reason to look at this table (#130) — and that is an
+instrument-shaped gap, not twenty-two edits.

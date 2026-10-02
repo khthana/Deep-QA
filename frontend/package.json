@@ -27,7 +27,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "format": "prettier --write src scripts",
-    "census": "node scripts/superseded-answers.js",
+    "census": "node scripts/census.js",
     "census:test": "node --test \"scripts/*.test.js\""
   },
   "eslintConfig": {

@@ -43,6 +43,8 @@ export default function SectionsPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-medium text-primary">
+            {/* label-code: the heading of the offering this panel is working on, which is the
+                screen's identity and not a label anybody chose from (#93) */}
             {offering.subject_id} {offering.subject_name_th}
           </h2>
           <p className="mt-1 text-sm text-slate-500">

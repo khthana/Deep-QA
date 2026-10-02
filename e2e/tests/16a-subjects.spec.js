@@ -17,6 +17,7 @@ const {
   fillNewSubject,
   save,
 } = require('../support/subjects-screen');
+const { statedLabel } = require('../support/stated-label');
 
 /**
  * docs/acceptance/16-subjects.md — the subject catalogue, read through the
@@ -129,7 +130,7 @@ test('row 92: the header names the catalogue being read', async ({ page }) => {
   // walker; what is asserted here is that the line says which department's
   // catalogue this is, which comes from `GET /api/departments/reachable`.
   await expect(
-    page.getByText('05 วิศวกรรมคอมพิวเตอร์', { exact: true }),
+    statedLabel(page, 'ภาควิชา', 'วิศวกรรมคอมพิวเตอร์'),
   ).toBeVisible();
 });
 

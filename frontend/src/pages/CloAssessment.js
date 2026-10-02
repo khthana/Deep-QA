@@ -106,6 +106,8 @@ export default function CloAssessment() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-medium text-slate-400">
+                {/* label-code: the heading of the report, the one place on this screen that
+                    says which offering is being read (#93) */}
                 {data.subject.subject_id} {data.subject.subject_name_th}
               </p>
               <h1 className="mt-1 text-xl font-semibold text-primary">

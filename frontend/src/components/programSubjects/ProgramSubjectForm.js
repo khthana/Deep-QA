@@ -141,7 +141,7 @@ export default function ProgramSubjectForm({
                   value={program.program_id}
                   disabled={program.is_active === false && program.program_id !== draft.program_id}
                 >
-                  {program.program_id} {program.program_name_th}
+                  {program.program_name_th}
                 </option>
               ))}
             </select>
@@ -220,7 +220,7 @@ export default function ProgramSubjectForm({
                 </option>
                 {found.map(subject => (
                   <option key={subject.subject_id} value={subject.subject_id}>
-                    {subject.subject_id} {subject.subject_name_th} ({subject.credits} หน่วยกิต)
+                    {subject.subject_name_th} ({subject.credits} หน่วยกิต)
                   </option>
                 ))}
               </select>

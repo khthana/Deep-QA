@@ -362,6 +362,8 @@ export default function Programs() {
         title="ยืนยันการลบหลักสูตร"
         message={
           removing
+            // label-code: the question names the record about to be destroyed, where two of them
+            // sharing a name is the whole reason the code is in the sentence (#93)
             ? `ต้องการลบหลักสูตร ${removing.program_id} ${removing.program_name_th} ใช่หรือไม่ หากมี PLO รายวิชาในหลักสูตร นักศึกษา หรือผลการเรียนอ้างอิงอยู่ ระบบจะปิดการใช้งานให้แทนการลบ`
             : ''
         }

@@ -34,6 +34,8 @@ export default function ContributionsPanel({ drill, heading, nothing, onOpenEvid
           {drill.subjects.map(subject => (
             <div key={subject.subject_id} className="rounded-lg border border-gray-200 bg-white p-4">
               <p className="text-sm font-medium text-slate-700">
+                {/* label-code: a row of a report rather than a label, naming the subjects a
+                    score came from beside the registrar's own records (#93) */}
                 {subject.subject_id} {subject.subject_name_th}
               </p>
               <p className="mt-1 text-xs text-slate-500">
