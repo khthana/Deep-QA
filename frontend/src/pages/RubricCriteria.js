@@ -70,9 +70,14 @@ export default function RubricCriteria() {
 
   // #133 - what is drawn is the answer to the request the screen still wants.
   // `rubricId` comes from the route and the way to another rubric is the list
-  // above, which unmounts this screen, so nothing here can supersede a request
-  // today: this is #68's rule (`frontend/src/pages/Students.js`), not a defect
-  // anybody has seen, and the sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  // above, which unmounts this screen - but the history list behind the back
+  // button travels however many entries away an entry is in one move, so a
+  // reader who opens one Rubric's criteria, goes up, and opens another's can
+  // come back to the first without passing through the list, and this flag is
+  // what stops the answer left behind from landing on top (#141). Measured
+  // rather than reasoned about:
+  // `e2e/tests/141a-superseded-answer-across-a-history-jump.spec.js` holds the
+  // row and `141:rubriccriteriastalewins` the mutant that breaks this line.
   const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
@@ -105,8 +110,10 @@ export default function RubricCriteria() {
    * #140 - the list a handler reloads is drawn only if it is still the list the
    * screen is on: nothing tears a handler down, so it asks whether `load` is
    * still the one it was sent with. `frontend/src/pages/Students.js` carries the
-   * reasons. For the reason #133 gives above `load`, nothing here can change
-   * what `load` asks for while a reload is out, so no row proves this and the
+   * reasons. The history jump described above `load` can change what `load`
+   * asks for, but only one taken while a reload after a save or a delete is
+   * still out supersedes *this* answer, and no row does that yet (#141, #179),
+   * so nothing proves this half and the
    * sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
    */
   const onScreen = useRef(load)

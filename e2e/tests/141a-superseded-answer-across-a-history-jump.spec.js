@@ -7,11 +7,28 @@ const { signIn } = require('../support/auth');
 const { mySectionIds } = require('../support/enrolment-screen');
 const {
   API: BEHAVIORS_API,
-  waitForBehaviors,
   untilBehaviorsDrawn,
   myClos,
 } = require('../support/behaviors-screen');
-const { path: closPath, waitForClos } = require('../support/clos-screen');
+const {
+  API: CRITERIA_API,
+  untilCriteriaDrawn,
+} = require('../support/achievements-screen');
+const { openClos, waitForClos } = require('../support/clos-screen');
+const {
+  openActivities,
+  untilActivitiesDrawn,
+  waitForActivities,
+} = require('../support/activities-screen');
+const { evidenceLink } = require('../support/evidence-screen');
+const {
+  criteriaLink,
+  openRubrics,
+  waitForList: waitForRubrics,
+} = require('../support/rubrics-screen');
+const {
+  untilListDrawn: untilRubricCriteriaDrawn,
+} = require('../support/rubric-criteria-screen');
 
 /**
  * #141 — the way in that was said not to exist.
@@ -50,42 +67,129 @@ const { path: closPath, waitForClos } = require('../support/clos-screen');
  *
  * ## What this file holds, and what it does not
  *
- * One row, for `pages/MeasurableBehaviors.js` — sheet `28`. It is the site whose
- * situation is cheapest to build honestly: two CLOs of one Section, each with
- * its own behaviours, and both reachable by the links the screens already draw.
- * The remaining fifteen sites of #133's family, and the twenty-one handler sites
- * of #140 on the same screens, are the same mechanism with a different address,
- * and #141 stays open for them under its own criterion 4 — a deferral that is
- * in the tracker rather than in prose (#119).
+ * Four rows, one per site whose situation a browser can build **today**, and the
+ * word is doing work: the jump needs two addresses of one route shape, so it
+ * needs a parent list that offers a link to each of two siblings. Measured on
+ * 3 October 2569, three of #133's remaining fifteen sites have one and twelve do
+ * not — `AchievementCriteria` under a CLO (sheet `29`), `ActivityEvidence` under
+ * an Activity (sheet `35`), `RubricCriteria` under a central Rubric (sheet `22`)
+ * — and `MeasurableBehaviors` (sheet `28`), which is where this file started.
+ *
+ * The twelve that are left take `sectionId` from the address, and the only thing
+ * in the application that produces a different one is the dashboard's own list
+ * (`pages/TeacherDashboard.js`), which `/api/teaching/sections` filters to the
+ * **current term**: `teacher.one` holds two Sections and one of them is
+ * 2568/1, so the list draws one row and there is no second address to jump
+ * between. That is the reason, re-measured, and it is not the reason #141 and
+ * `57-pager` had written down — they said the account held one Section. The
+ * register carries the corrected sentence and the date; the ticket stays open
+ * under its own criterion 4 for the twelve, which is a deferral in the tracker
+ * rather than in prose (#119).
+ *
+ * The mechanism is written once, in `heldAnswerLosesTheJump`, because what
+ * differs between the four is only an address. No claim lives in it: every row
+ * reads its own screen and asserts its own three clauses after it returns, and
+ * each mutant breaks one page file, so no mutant can be killed by another row
+ * (#171's rule for an instrument that is not an assertion).
  *
  * The race is built the way `133a` builds its own: the superseded answer is held
  * back with `page.route` and the one that supersedes it is not, so which arrives
  * second is a fact about this file rather than about the machine. The screen is
  * read once, after the held answer has landed.
  *
- * The assertion is the heading against the address, because the heading is drawn
- * from the **answer** (`data.clo.clo_number`) and the address is what was
- * **asked for**. A superseded answer makes those two disagree, which is the
- * defect in one sentence. `mutation/141-superseded-across-a-history-jump.py`
- * carries the mutant.
+ * Each row's assertion is the heading against the address, because the heading
+ * is drawn from the **answer** — the CLO's number, the Activity's name, the
+ * Rubric's code — and the address is what was **asked for**. A superseded answer
+ * makes those two disagree, which is the defect in one sentence.
+ * `mutation/141-superseded-across-a-history-jump.py` carries the four mutants,
+ * one per page file, and each kills one row.
  */
 
-/** Long enough for the CLO the jump lands on to be back and drawn first. */
+/** Long enough for the sibling the jump lands on to be back and drawn first. */
 const HELD_MS = 2_000;
 
 /**
- * The render the held answer would cause. `untilBehaviorsDrawn` cannot be used
- * here — waiting for the right CLO to be drawn is the thing under test — so this
- * is a wait with no settle point behind it, which is the one place in this file
- * where a number decides something. It is held to that by the mutant: with the
- * guard removed the stale draw landed inside it on the sweep.
+ * The render the held answer would cause. The screens' own `until…Drawn`
+ * helpers cannot be used here — waiting for the right sibling to be drawn is the
+ * thing under test — so this is a wait with no settle point behind it, which is
+ * the one place in this file where a number decides something. It is held to
+ * that by the mutants: with a guard removed the stale draw landed inside it on
+ * every sweep.
  */
 const SETTLE_MS = 250;
 
 const sleep = ms => new Promise(done => setTimeout(done, ms));
 
-const forClo = (url, sectionId, cloId) =>
-  new URL(url).pathname === `/api/teaching/sections/${sectionId}/clos/${cloId}/behaviors`;
+/**
+ * The jump, built once for the four rows that differ only in their address.
+ *
+ * This is an instrument and not an assertion — it ends with the screen in the
+ * state a row is about and reads nothing, so every claim is still written in the
+ * row that called it. What it does:
+ *
+ * - marks the document, so a row can say the router never replaced it;
+ * - holds the **sibling's** answer back with `page.route` and leaves the other
+ *   alone, so which arrives second is a fact about this file rather than about
+ *   the machine, the way `133a` builds its own race;
+ * - opens the first sibling, goes up to the list by the link the screen draws,
+ *   and opens the second — which is what puts two addresses of one shape two
+ *   entries apart;
+ * - waits for the second read to be **out** before jumping, by identity and
+ *   never by a clock: the first measurement of row one jumped while the click
+ *   was still being turned into a request, and the answer it then waited for was
+ *   never asked for;
+ * - jumps two entries in one move, which is what the history list behind the
+ *   back button does. `goBack()` would be two moves through the list, and the
+ *   list unmounts the screen — the whole reason the sites were said to be
+ *   unreachable;
+ * - returns once both answers are in, the held one second, and the screen has
+ *   had a turn to draw it.
+ */
+async function heldAnswerLosesTheJump(
+  page,
+  { anyChild, isFor, intoChild, untilDrawn, upToParent, landed, held },
+) {
+  await page.evaluate(mark => {
+    window.__document = mark;
+  }, DOCUMENT);
+
+  await page.route(anyChild, async (route, request) => {
+    if (isFor(request.url(), held)) await sleep(HELD_MS);
+    await route.continue();
+  });
+
+  const first = page.waitForResponse(answer => isFor(answer.url(), landed));
+  await intoChild(landed);
+  await untilDrawn(await first);
+
+  await upToParent();
+
+  const heldRequested = page.waitForRequest(request => isFor(request.url(), held));
+  const heldArrived = page.waitForResponse(answer => isFor(answer.url(), held));
+  const landedAgain = page.waitForResponse(answer => isFor(answer.url(), landed));
+  await intoChild(held);
+  await heldRequested;
+
+  await page.evaluate(() => window.history.go(-2));
+
+  await landedAgain;
+  await heldArrived;
+  await page.waitForTimeout(SETTLE_MS);
+}
+
+/** The link back up, which each of these screens draws in its own words. */
+const upLink = (page, name) => page.getByRole('link', { name, exact: true }).first();
+
+const UP_TO_CLOS = 'ผลการเรียนรู้รายวิชา';
+const UP_TO_ACTIVITIES = 'กิจกรรมการเรียนรู้ในรายวิชา';
+const UP_TO_RUBRICS = 'กลับไปหน้าข้อมูล Rubric กลาง';
+
+const BEHAVIORS_HEADING = 'พฤติกรรมบ่งชี้ของ';
+const CRITERIA_HEADING = 'เกณฑ์การบรรลุผลของ';
+const EVIDENCE_HEADING = 'หลักฐานการประเมินของ';
+const RUBRIC_CRITERIA_HEADING = 'เกณฑ์การให้คะแนนของ Rubric';
+
+const DOCUMENT = 'the one the router has been moving inside';
 
 test('behaviours the back button has left behind do not land on top of the CLO it went to', async ({
   page,
@@ -99,68 +203,32 @@ test('behaviours the back button has left behind do not land on top of the CLO i
   expect(clos.length).toBeGreaterThan(1);
   const [landed, held] = clos;
 
-  const intoBehaviours = clo =>
-    page.getByRole('link', { name: `พฤติกรรมบ่งชี้ของ ${clo.clo_number}`, exact: true });
-
   // The only document load. Every move after it is the router's own, which is
   // what makes the jump a traversal inside one document rather than a reload.
-  const opening = waitForClos(page);
-  await page.goto(closPath(sectionId));
-  await opening;
-  await page.evaluate(() => {
-    window.__document = 'the one the router has been moving inside';
-  });
+  await openClos(page, sectionId);
 
-  const anyBehaviours = url => BEHAVIORS_API.test(url.pathname);
+  const anyChild = url => BEHAVIORS_API.test(url.pathname);
+  const isFor = (url, clo) =>
+    new URL(url).pathname ===
+    `/api/teaching/sections/${sectionId}/clos/${clo.clo_id}/behaviors`;
 
   try {
-    await page.route(anyBehaviours, async (route, request) => {
-      if (forClo(request.url(), sectionId, held.clo_id)) await sleep(HELD_MS);
-      await route.continue();
+    await heldAnswerLosesTheJump(page, {
+      anyChild,
+      isFor,
+      intoChild: clo =>
+        page
+          .getByRole('link', { name: `${BEHAVIORS_HEADING} ${clo.clo_number}`, exact: true })
+          .click(),
+      untilDrawn: response => untilBehaviorsDrawn(page, response),
+      upToParent: async () => {
+        const back = waitForClos(page);
+        await upLink(page, UP_TO_CLOS).click();
+        await back;
+      },
+      landed,
+      held,
     });
-
-    // The first CLO's behaviours, clicked off its own card: history entry one.
-    const first = waitForBehaviors(page);
-    await intoBehaviours(landed).click();
-    await untilBehaviorsDrawn(page, await first);
-
-    // Up to the list by the link this screen offers: history entry two. This is
-    // the step #141 read as the end of the matter — it does unmount the screen,
-    // and it is also what puts two behaviour addresses two entries apart.
-    const back = waitForClos(page);
-    await page.getByRole('link', { name: 'ผลการเรียนรู้รายวิชา', exact: true }).first().click();
-    await back;
-
-    // The other CLO's behaviours: history entry three, and the read that is held.
-    const heldRequested = page.waitForRequest(request =>
-      forClo(request.url(), sectionId, held.clo_id),
-    );
-    const heldArrived = page.waitForResponse(answer =>
-      forClo(answer.url(), sectionId, held.clo_id),
-    );
-    const landedAgain = page.waitForResponse(answer =>
-      forClo(answer.url(), sectionId, landed.clo_id),
-    );
-    await intoBehaviours(held).click();
-
-    // The request has to be **out** before the jump, or there is nothing to
-    // supersede and the row passes without ever racing anything. Waited for by
-    // identity rather than by a clock: the first measurement of this row jumped
-    // while the click was still being turned into a request, and the answer it
-    // then waited for was never asked for.
-    await heldRequested;
-
-    // The jump: two entries in one move, which is what the history list behind
-    // the back button does. `goBack()` would be two moves through the list, and
-    // the list unmounts the screen — the whole reason the sixteen were said to
-    // be unreachable.
-    await page.evaluate(() => window.history.go(-2));
-
-    // Both answers are in, the held one second, and the screen has had a turn
-    // to draw it.
-    await landedAgain;
-    await heldArrived;
-    await page.waitForTimeout(SETTLE_MS);
 
     // Three clauses in one assertion, so none of them is the one left unreached
     // on the run that proves another: the document was never replaced, the
@@ -170,14 +238,197 @@ test('behaviours the back button has left behind do not land on top of the CLO i
       document: await page.evaluate(() => window.__document),
       address: new URL(page.url()).pathname.match(/courseOutcomes\/(\d+)\/behaviors/)[1],
       heading: (
-        await page.getByRole('heading', { name: /^พฤติกรรมบ่งชี้ของ / }).innerText()
+        await page.getByRole('heading', { name: new RegExp(`^${BEHAVIORS_HEADING} `) }).innerText()
       ).trim(),
     }).toEqual({
-      document: 'the one the router has been moving inside',
+      document: DOCUMENT,
       address: String(landed.clo_id),
-      heading: `พฤติกรรมบ่งชี้ของ ${landed.clo_number}`,
+      heading: `${BEHAVIORS_HEADING} ${landed.clo_number}`,
     });
   } finally {
-    await page.unroute(anyBehaviours);
+    await page.unroute(anyChild);
+  }
+});
+
+test('achievement criteria the back button has left behind do not land on top of the CLO it went to', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.teacherOne);
+  const [sectionId] = await mySectionIds(page);
+  const clos = (await myClos(page, sectionId)).filter(clo => clo.clo_number);
+
+  expect(clos.length).toBeGreaterThan(1);
+  const [landed, held] = clos;
+
+  await openClos(page, sectionId);
+
+  const anyChild = url => CRITERIA_API.test(url.pathname);
+  const isFor = (url, clo) =>
+    new URL(url).pathname ===
+    `/api/teaching/sections/${sectionId}/clos/${clo.clo_id}/criteria`;
+
+  try {
+    await heldAnswerLosesTheJump(page, {
+      anyChild,
+      isFor,
+      // The CLO card draws the two ways in side by side, and each carries the
+      // CLO in its label — which is the only thing that tells the criteria link
+      // of one CLO from another's.
+      intoChild: clo =>
+        page
+          .getByRole('link', { name: `${CRITERIA_HEADING} ${clo.clo_number}`, exact: true })
+          .click(),
+      untilDrawn: response => untilCriteriaDrawn(page, response),
+      upToParent: async () => {
+        const back = waitForClos(page);
+        await upLink(page, UP_TO_CLOS).click();
+        await back;
+      },
+      landed,
+      held,
+    });
+
+    expect({
+      document: await page.evaluate(() => window.__document),
+      address: new URL(page.url()).pathname.match(/courseOutcomes\/(\d+)\/criteria/)[1],
+      heading: (
+        await page.getByRole('heading', { name: new RegExp(`^${CRITERIA_HEADING} `) }).innerText()
+      ).trim(),
+    }).toEqual({
+      document: DOCUMENT,
+      address: String(landed.clo_id),
+      heading: `${CRITERIA_HEADING} ${landed.clo_number}`,
+    });
+  } finally {
+    await page.unroute(anyChild);
+  }
+});
+
+test('evidence the back button has left behind does not land on top of the Activity it went to', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.teacherOne);
+  const [sectionId] = await mySectionIds(page);
+
+  await openActivities(page, sectionId);
+
+  // The two Activities are read off the list's own links rather than from the
+  // seed: the id is in the address each link carries and the name is in its
+  // label, which is what the screen will draw its heading from.
+  const links = page.locator('a[href$="/evidence"]');
+  const howMany = await links.count();
+  expect(howMany).toBeGreaterThan(1);
+  const activities = [];
+  for (let index = 0; index < howMany; index += 1) {
+    const href = await links.nth(index).getAttribute('href');
+    const label = await links.nth(index).getAttribute('aria-label');
+    activities.push({
+      id: href.match(/learningActivities\/(\d+)\/evidence/)[1],
+      name: label.slice(EVIDENCE_HEADING.length).trim(),
+    });
+  }
+  const [landed, held] = activities;
+
+  // The heading is the Activity's **name**, so two Activities sharing one would
+  // make the assertion pass whichever answer had been drawn.
+  expect(landed.name).not.toBe(held.name);
+
+  const anyChild = url =>
+    /^\/api\/teaching\/sections\/\d+\/activities\/\d+\/evidence$/.test(url.pathname);
+  const isFor = (url, activity) =>
+    new URL(url).pathname ===
+    `/api/teaching/sections/${sectionId}/activities/${activity.id}/evidence`;
+
+  try {
+    await heldAnswerLosesTheJump(page, {
+      anyChild,
+      isFor,
+      intoChild: activity => evidenceLink(page, activity.name).click(),
+      // This screen has no `until…Drawn` helper, because no other row of #35
+      // needs one: nothing it asserts is read off a list this screen draws. The
+      // settle point is the heading carrying what the answer carried, which is
+      // the same clause the other three wait for one level down.
+      untilDrawn: async () => {
+        await expect(
+          page.getByRole('heading', { name: `${EVIDENCE_HEADING} ${landed.name}` }),
+        ).toBeVisible();
+      },
+      upToParent: async () => {
+        const back = waitForActivities(page);
+        await upLink(page, UP_TO_ACTIVITIES).click();
+        await untilActivitiesDrawn(page, await back);
+      },
+      landed,
+      held,
+    });
+
+    expect({
+      document: await page.evaluate(() => window.__document),
+      address: new URL(page.url()).pathname.match(/learningActivities\/(\d+)\/evidence/)[1],
+      heading: (
+        await page.getByRole('heading', { name: new RegExp(`^${EVIDENCE_HEADING} `) }).innerText()
+      ).trim(),
+    }).toEqual({
+      document: DOCUMENT,
+      address: String(landed.id),
+      heading: `${EVIDENCE_HEADING} ${landed.name}`,
+    });
+  } finally {
+    await page.unroute(anyChild);
+  }
+});
+
+test('rubric criteria the back button has left behind do not land on top of the Rubric it went to', async ({
+  page,
+}) => {
+  // The central Rubrics are a committee screen, and `22a` signs this account in
+  // for every one of its rows.
+  await signIn(page, ACCOUNTS.committee0501);
+  await openRubrics(page);
+
+  // Two Rubrics, read off the table's own rows: the code is the first cell and
+  // the id is in the address the criteria link carries.
+  const codes = await page.locator('table tbody tr td:first-child').allTextContents();
+  expect(codes.length).toBeGreaterThan(1);
+  const rubrics = [];
+  for (const code of codes.slice(0, 2).map(cell => cell.trim())) {
+    const href = await criteriaLink(page, code).getAttribute('href');
+    rubrics.push({ code, id: href.match(/rubrics\/(\d+)\/criteria/)[1] });
+  }
+  const [landed, held] = rubrics;
+
+  const anyChild = url => /^\/api\/rubrics\/\d+\/criteria$/.test(url.pathname);
+  const isFor = (url, rubric) => new URL(url).pathname === `/api/rubrics/${rubric.id}/criteria`;
+
+  try {
+    await heldAnswerLosesTheJump(page, {
+      anyChild,
+      isFor,
+      intoChild: rubric => criteriaLink(page, rubric.code).click(),
+      untilDrawn: response => untilRubricCriteriaDrawn(page, response),
+      upToParent: async () => {
+        const back = waitForRubrics(page);
+        await upLink(page, UP_TO_RUBRICS).click();
+        await back;
+      },
+      landed,
+      held,
+    });
+
+    expect({
+      document: await page.evaluate(() => window.__document),
+      address: new URL(page.url()).pathname.match(/rubrics\/(\d+)\/criteria/)[1],
+      heading: (
+        await page
+          .getByRole('heading', { name: new RegExp(`^${RUBRIC_CRITERIA_HEADING} `) })
+          .innerText()
+      ).trim(),
+    }).toEqual({
+      document: DOCUMENT,
+      address: String(landed.id),
+      heading: `${RUBRIC_CRITERIA_HEADING} ${landed.code}`,
+    });
+  } finally {
+    await page.unroute(anyChild);
   }
 });

@@ -6254,7 +6254,9 @@ situation is cheapest to build honestly — two CLOs of one Section, each with i
 reachable by links the screens already draw. Ten of the remaining screens read `sectionId` alone, so
 their version of the sequence needs an account holding two Sections, and the seed's `teacherOne`
 holds one; growing the seed is a question, not a task. #141 stays open under its own criterion 4, and
-the deferral is in the tracker rather than in prose (#119).
+the deferral is in the tracker rather than in prose (#119). **The clause after the semicolon is
+false, measured on 3 October 2569: `teacherOne` holds two Sections, and what stops the sequence is
+the dashboard's term filter — see §#141 (closing what could be closed).**
 
 **And the new row does not prove the guard below it.** Sheet `28` carries two claims, the read's flag
 (#133) and the handler's (#140), and the handler's compares `onScreen.current === load` for something
@@ -6307,3 +6309,66 @@ paths into a reply, where they reached nobody; a picture that does not arrive is
 **The register, once more.** The ⚙ figure carried in the head through the session was 705; counted by
 the mark column at the commit it is 708, and the three are #93's rows, not a drift. A hand-kept number
 in a file that grows every ticket is already wrong (#119) — and so is one kept in a head.
+
+## #141 (closing what could be closed) — three ways in that were already there, and a conclusion that was right for the wrong reason
+
+The ticket's criterion 1 says to measure the list again before touching it, and the list it meant was
+sixteen file-and-line pairs. Measured on 3 October 2569 the lines had all moved and nothing had
+vanished, which is the ordinary outcome. What had not been measured before was something the ticket
+never asked: **not which parameter a screen reads, but whether anything above it links to two of its
+siblings.**
+
+**The sixteen were one species because of how they were found, and they are two.** Every one of them
+reads `useParams` and every one of them had the same sentence written over its `load`, so the ticket
+treated the difference between them as an address. But the jump needs *two* addresses of one route
+shape, and what produces the second one is the parent screen's own list of links. Three of the
+sixteen have a parent that offers a link to each sibling — `AchievementCriteria` under a CLO,
+`ActivityEvidence` under an Activity, `RubricCriteria` under a central Rubric — and twelve do not,
+because their parameter is `sectionId` and the only thing in the application that produces a
+different one is the teacher dashboard's own list. The three got rows the same day. *A ticket that
+names a race has named a window, not the population of ways in* (#179) one more layer out: here the
+population was not even a set of controls, it was a property of the screen above.
+
+**A conclusion can be right for the wrong reason, and the reason is what dates it.** The register
+and this file both said the twelve were unreachable because the seed's `teacherOne` holds one
+Section. It holds two — section 1 in 2569/1 and section 3 in 2568/1 — and §#25 of this file has said
+so since the day it was written: *Section 3 is last year's, and teacher.one teaches it.* The
+conclusion survives: `mine()` in `backend/routes/teaching.js` filters to `currentTerm()`, so the
+dashboard draws one row and there is no second address to jump between. But the two reasons expire
+on different days. *The account holds one Section* expires the day any account gains a second one;
+*the dashboard lists one term* expires the day this account gains a Section **in the current term**,
+or the day #24's screen changes what it lists. A claim that is wrong about the mechanism while right
+about the fact is the hardest kind to notice, because nothing it predicts is wrong yet.
+
+**A screen whose table is empty can still prove this claim.** `activity_evidence` holds no rows in
+the seed, and the first question about `ActivityEvidence` was whether a row could assert anything at
+all. It can: the heading is drawn from `data.activity.activity_name`, so what the row is about — *is
+this the answer to the address I am on* — is drawn whether the answer carries one file or none. The
+claim is about what the screen draws **from** the answer, not about how much the answer carries, and
+asking for a bigger fixture would have been asking for the wrong thing (and the seed is the user's
+call, not a task to take quietly).
+
+**Four rows over one mechanism, and the row that was already proved had to be proved again.** The
+jump is written once now, in `heldAnswerLosesTheJump`, because what differs between the four is an
+address; every row still reads its own screen and asserts its own three clauses, which is what keeps
+the helper an instrument rather than a claim (#171). The cost is that `141a`'s first row is not the
+row the 2 October sweep measured — it is a rewrite of it — so `jumpstalewins` was run again rather
+than believed. *A row written to answer a survivor is not proof until that mutant is run again*
+(#146) holds for a row rewritten under a refactor too, and it is the whole reason the refactor was
+affordable: four mutants, one per page file, and each one kills exactly its own row.
+
+**And the hand-kept numbers were caught by the instrument, not by the diff.** Adding three mutants
+made `mutation/README.md`'s per-file count read 1 where the file holds 4, and correcting that made
+its total read 849 where the table sums to 852 — the second one twenty lines below the first, found
+only because `python mutation/anchors.py` counts the things rather than the rows (#58) and was run
+twice. *What a diff touches is what a diff proofreads* (#154), again, and the same run found nothing
+else: 852 mutants, 871 anchors, no MISS.
+
+**And the figure `anchors.py` does not count is the one that decides whether a sweep is safe.** Three
+new `FILES` entries added no new shared path — all three page files were already held by other
+sheets — so the total the census reports is 63 either way, and only the *group* moved: three fours
+became fives and one five became a six, 24/9/13/9/6/2 to 24/9/11/10/7/2. What that costs is written
+in one line of this sheet's header: its *do not sweep this together with* list went from four sheets
+to eleven. *The figure that decides is the group, not the total* (#125) read from the other end —
+the group is also what says how expensive the sheet now is to run beside anything else, which is a
+second thing *a ticket that offers to de-duplicate* (#68) buys with the proof it keeps.

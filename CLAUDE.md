@@ -79,6 +79,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   screen can be reachable with no race at all, and that way lasts until a reload, so it is the one a
   person meets. Measure for the raceless sibling before accepting the sequence the ticket wrote.
   (#179)
+- **A conclusion that is right for the wrong reason expires on the wrong day** — the reason is what
+  dates it, so a premise that is false while the conclusion holds is the hardest kind to notice:
+  nothing it predicts is wrong yet. *The account holds one Section* and *the dashboard lists one
+  term* were the same verdict and two different expiry dates, and `docs/lessons.md` had had the
+  true one in §#25 all along. (#141)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
