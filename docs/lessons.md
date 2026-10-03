@@ -6331,8 +6331,12 @@ population was not even a set of controls, it was a property of the screen above
 
 **A conclusion can be right for the wrong reason, and the reason is what dates it.** The register
 and this file both said the twelve were unreachable because the seed's `teacherOne` holds one
-Section. It holds two — section 1 in 2569/1 and section 3 in 2568/1 — and §#25 of this file has said
-so since the day it was written: *Section 3 is last year's, and teacher.one teaches it.* The
+Section. It holds two — `section_id` 1 in 2569/1 and `section_id` 3 in 2568/1, **both of them
+ตอนเรียน 1** — and §#25 of this file has said
+so since the day it was written: *Section 3 is last year's, and teacher.one teaches it.*
+Every sentence in that chain names the Section by its **id**, which is #116's defect written
+in prose: `section_id` is a surrogate key and `section_number` is the label a person reads,
+so *section 3* is a class that does not exist. Corrected 3 Oct 2569, while measuring #116. The
 conclusion survives: `mine()` in `backend/routes/teaching.js` filters to `currentTerm()`, so the
 dashboard draws one row and there is no second address to jump between. But the two reasons expire
 on different days. *The account holds one Section* expires the day any account gains a second one;
@@ -6372,3 +6376,148 @@ in one line of this sheet's header: its *do not sweep this together with* list w
 to eleven. *The figure that decides is the group, not the total* (#125) read from the other end —
 the group is also what says how expensive the sheet now is to run beside anything else, which is a
 second thing *a ticket that offers to de-duplicate* (#68) buys with the proof it keeps.
+
+## #116 — the label that was a key, and the row that was green by accident of a word nobody had written yet
+
+The breadcrumb printed `3` where a person reads *ตอนเรียน 1*. The first question `docs/06` §Out of
+Scope asks of a screen defect is whether the fix restores something or adds something, and the
+delivered system answers it: its own address carried `{subject}-Section-{n}`, which is a name. Moving
+the Section into the URL as a key (ADR-0004) is the rebuild's own decision, so a trail that prints
+the key is something **the rebuild lost**, not something nobody ever had. A task, not a question —
+and the test is what the delivered app drew at that position, not whether the proposal sounds like an
+improvement.
+
+**The ticket's fallback was a sentence about a class that does not exist.** It offered *ตอนเรียน
+{id}* as the cheap half, a label needing "no data from the server". `section_id` 3 is **ตอนเรียน 1 of
+2568/1**, so that fallback would have drawn *ตอนเรียน 3* — a class nobody teaches. There is no true
+label anywhere inside the address, which is what *a surrogate key is not a label* costs once it
+reaches a screen. The same measurement then handed over the fixture: id 3 is the **only** row in the
+seed where the id and the number disagree, so it is the one address at which a crumb printing the id
+and a crumb printing the name read differently. *A mutant that swaps one implementation for another
+is invisible wherever the two agree* (#117) — and so is the defect itself, which is why the row that
+a person would have written first, on the Section the dashboard actually opens, would have passed
+before the fix and after it.
+
+**The ticket's population was four screens and it is seventeen.** It named #36 #37 #38 #39, the
+sheets whose walks found the symptom. The real population is every screen under
+`/teacher/teacherDashboard/:sectionId`, and `:sectionId` is a **pathless** route: sixteen of those
+seventeen never fetch the Section at all, so there is nothing on those screens that knows its number.
+That is what decided the mechanism — the shell asks, once per section in the address, and every
+screen under it is relabelled by one call it does not make. *A ticket's file list is a grep somebody
+else ran* (#133), here one run over the sheets that happened to be walked rather than over the route
+table. The ids deeper than the Section — `cloId`, `activityId`, `rubricId` — are #185.
+
+**And the sentence that stood here about #185 was wrong, which is the rule about tickets read back
+on one I filed myself.** It said the delivered app printed the raw id at the CLO position too, so a
+third of #185 was an addition and therefore a question. Measured:
+`DEEP-QA-FRONTEND/.../CourseOutcomes/CourseOutcomes.js:647` navigates to
+`CLO-${clo.clo_number}` — a **label**, and not even the key the rebuild's route now carries. The
+replacement sentence was then wrong the other way: the delivered app reached the Activity and the
+Rubric screen by **fixed words** — `activityScores/AssessmentCriteria`, `rubrics/edit-Rubric` —
+so its trail read a sentence at those positions as well, and the rebuild is what put a number
+there. All three segments are restorations and none of them is an addition; what is left to decide
+is only how to pay for the name, two of the three having no request that answers one record by id.
+**A ticket I write is dated the day I write it as well.** #185 carries both corrections.
+
+**The ticket's fallback is not the ticket's target, and the first round shipped the fallback.**
+#116 wrote its target as a whole sentence — *ตอนเรียน 1 · ปีการศึกษา 2569* — and offered *ตอนเรียน {id}*
+beneath it as the least that would do, "without waiting for data from the server". The first round
+drew *ตอนเรียน 1*, with no year, and this file said the ticket was implemented. The licence for the
+fallback was a **condition** — *if the breadcrumb does not know that data when it draws* — and the
+implementation falsified it in its own first line: the shell asks the server, and the answer carries
+`academic_year` beside the number it was already reading. A condition like that is measured against
+the code you wrote, not read as a softer wording of the ask.
+
+The year is also not decoration. `section_id` 1 and 3 are **both ตอนเรียน 1**, so the number on its
+own is one sentence about two classes — the same measurement that chose the fixture says which half
+is load-bearing. The repair is a fourth row (the ticket's own example, on the Section of the current
+term, which is where a trail that wrote *today's* year would read correctly), two more mutants
+(`yeardropped` and `yearistoday`, which are the two claims about the year told apart — #145), and a
+second sweep. What found it was a review reading the **ticket**; nothing in the diff was wrong on its
+own terms, every row was green, and the sheet's prose described what the code did.
+
+**The census could not see the guard in the spelling it was first written in.** The resolver carries
+the #133-family guard, and the first draft wrote it as `getMySection(id).then(...)`.
+`frontend/scripts/superseded-answers.js` walks `AwaitExpression` and nothing else, so the new site
+was not reported as unguarded — it was not reported at all, and `npm run census` stayed green at
+61/55 while a screen drew an answer the instrument had never looked at. Rewritten with `await`, the
+census moved to 62/56 and the site became countable. *A census whose population is the things that
+carry X cannot find the thing that carries no X* (#141) in its sharpest form: the property being
+counted was a **syntax**, and the same code in the other spelling is outside the population. A
+comment on the resolver now says which spelling the instrument reads, for the same reason #93 wrote a
+note to a census in a syntax the census could parse.
+
+**And the row the fix broke was green by accident of a word nobody had written yet.** `24a` row 3
+read `page.getByText('ตอนเรียน 1', { exact: false })`, which was unambiguous because exactly one
+element on that screen said those words. The breadcrumb now says them too, so the row died of a
+strict-mode violation in the clean baseline — the fix's own doing, not a flake, and ruled in by the
+two mutants that suppress the new label leaving `24a` green. *A locator can be unique only by
+accident of the thing you are about to remove* (#93) read from the other end: a fix that **adds** a
+word to a screen is a change to every locator that matched that word loosely. The repair is the same
+one #93 found — not a narrowing `nth` but the **statement**: `^ตอนเรียน 1 · ${termLabel()} · `, which
+is ตอนเรียน, the term and the next clause inside one element, and is the stronger claim the row was
+always making. Proved by flipping the number to 9 and watching it go red, because *a red is not a
+measurement until the same read has been seen green* (#171) is also true the other way round.
+
+**And then the same thing a second time, in the same ticket, over the other word.** The repair of
+`24a` was followed by a grep for *ตอนเรียน 1* and by no grep at all for *ปีการศึกษา*, which is the
+second word the new label puts on a screen, so the clean baseline came back red again — three rows
+this time, `27a`, `28a` and `29a`, each reading ``getByText(`ปีการศึกษา ${offering.academic_year}`,
+{ exact: false })`` on a screen whose own subject line had been the only thing saying the year. The
+rule is therefore not *repair the row that went red*: a label is a **set of words**, and the census
+is one query per word it adds, in every spelling a screen can write it (#83). Asked that way the
+population was exactly those three — everything else that reads a year is role-scoped,
+placeholder-scoped, already `^`-anchored, or reads a named element. The repair is the statement
+again, `^ปีการศึกษา ${offering.academic_year}\b`, which the trail cannot match because the trail
+says the Section first; and the three rows keep asserting what they were for, that the record on
+the screen is the Offering's and not the address's (ADR-0003 meeting ADR-0004).
+
+**The mutants that were not written, and why that is a sentence with a date on it.** The resolver
+carries two guards with no mutant. One is `isCurrent()`, #133's family. The other arrived with the
+year: the label is kept **with the id it was asked for**, and the crumb draws it only where the two
+agree. That one is not about a late answer at all — a move between two Sections renders once with
+the new address and the previous answer still in state, because effects run after that render, so an
+unpaired label would name one class at another's address with no race in it (#179). Both are
+unreachable from a screen today for the same reason: the dashboard lists the current term and this
+account teaches one Section in it, so two Sections of one account cannot be reached one after the
+other without the shell unmounting. A mutant removing either would survive **by structure, not for
+want of a claim**, and those are two different readings of one survivor (#118). What is written on
+sheet 10 instead is the reason, the date, and the thing that would expire it: a seed holding a second
+Section of the same account in the current term — the same decision that is holding #141's
+remaining twelve, and the owner's to make.
+
+The first draft of this paragraph gave a second reason — that `section_id` 1 and 3 are both
+ตอนเรียน 1, so a stale answer would write the same label as the right one. The year made that false
+the moment it was drawn: the two labels now differ by *ปีการศึกษา*, which is exactly what makes the
+pairing worth writing. **A reason for an untestable claim expires like the claim**, and the fix that
+expired this one was in the same diff.
+
+**The sweep was seven full runs of 687 rows, all of them taken after the last repair.** Clean
+baseline 687 of 687 in 36.3 minutes; `idwins` and `yeardropped` kill rows 1, 2 and 3;
+`skipstheindex` rows 1 and 3; `onlytheindex` row 2; `yearistoday` rows 1 and 2; `refusalinvents`
+row 4. Every one died at `toEqual` and not at a timeout, which is the signature of a wrong screen
+rather than of a mutant that stopped the application (#139). Two mutants killing the same three
+rows is not two mutants proving one claim: what separates those rows is the other four, which cut
+the set by depth and by year, and row 3 travels with row 1 because it is a Section index too.
+**Nothing measured before the repairs was carried over** — four of these seven had a number from
+the earlier tree and every one of them was thrown away, because a kill count is a claim about the
+suite it was taken from (#146), and that suite had three red rows in it.
+
+**And the repaired reads were then broken on purpose**, because the three of them are three copies
+of one rule and a copy holds none of the rule's letters (#145): with the expected year moved by one
+all three go red at `toBeVisible`, and the green is the baseline. A locator rewritten to be
+*stronger* is still a locator nobody has watched fail.
+
+**Two process notes, both of them rules that have been written down already.** The first run of the
+repaired spec failed with playwright's own *http://localhost:3400/api/health is already used*: a
+`--reporter=line` run from the sweep that was stopped two hours earlier was still alive, holding both
+ports and the schema. *A run that was stopped may not have stopped* (#146) — the tell this time was
+not the harness refusing to `save` but a port that answered. And sheet 10's ⚙ count was wrong in
+**three** places, not the two a reader would find: the line opening the section, the totals line
+seventy lines below it, and a sentence under the totals that says the figure again in words. The
+third is what *grep the sentence as well as the figure* (#130) is for. All three had been wrong since
+#167 added a row, which is the ticket that wrote *if this number is to be right, something has to
+count it, not a sentence warning about it* ten lines above the number it then left wrong. The
+instrument that could count it is `mutation/anchors.py`, which already reads every sheet's tables —
+but that is adjacent work, not the second half of the sentence this ticket closes (#119), so it is
+raised as a question rather than taken quietly.

@@ -98,7 +98,13 @@ test('row 1: the card link lands on that CLO, and the list is numbered from one'
   const { offering, behaviors } = await answer.json();
   expect(behaviors).toHaveLength(2);
   expect(await numbersOnScreen(page)).toEqual([1, 2]);
-  await expect(page.getByText(`ปีการศึกษา ${offering.academic_year}`, { exact: false })).toBeVisible();
+  // Anchored at the element's start since #116: the trail above now says
+  // *ตอนเรียน 1 · ปีการศึกษา <year>* too, so a substring read matches the
+  // crumb as well as this screen's own subject line. The statement is the
+  // stronger claim anyway - the year *opens* that line (#93).
+  await expect(
+    page.getByText(new RegExp(`^ปีการศึกษา ${offering.academic_year}\\b`)),
+  ).toBeVisible();
 });
 
 test('row 2: the two teachers of two sections are reading one list', async ({ page, browser }) => {

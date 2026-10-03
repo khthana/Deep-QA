@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 3 October 2569 that is
-`2026-10-03-the-parent-that-links-to-two-siblings.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 4 October 2569 that is
+`2026-10-03-the-word-that-was-not-in-the-address.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -75,6 +75,15 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. What the ticket wrote down as a prediction can be the state on the day it is
   taken. (#81)
+- **A ticket's own fallback is not the ticket's target, and the clause that licences it is a
+  condition to measure against your own code.** #116 wrote its target as a sentence and offered a
+  cheaper half *at minimum, with no data from the server*; the first round drew the cheap half and
+  the sheet called it the fix — while the implementation was asking the server, and the answer
+  carried the missing part beside the one that was drawn. The fallback is a claim like the ticket's
+  numbers too: this one would have drawn *Section 3* for a class nobody teaches, because the id in
+  the address is a surrogate key and the number a person reads is a label. The measurement that
+  refutes such a fallback usually hands over the fixture as well, being the place where the two
+  disagree (#117). (#116)
 - **A ticket that names a race has named a window, not the population of ways in** — the same wrong
   screen can be reachable with no race at all, and that way lasts until a reload, so it is the one a
   person meets. Measure for the raceless sibling before accepting the sequence the ticket wrote.
@@ -353,12 +362,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   are the same text, and `getByText` matches a substring whether or not the row writes
   `exact: false`, so that grep is evidence about the option. Ask by the value, then let the full
   suite say which candidates were real. (#118)
-- **A locator can be unique only by accident of the thing you are about to remove** - six rows
-  matched a label by code-and-name and every one was unambiguous *because* of the code; the name
-  alone matches fifty-three elements, which at least fails loudly. The repair is not a narrowing
+- **A locator can be unique only by accident of the thing you are about to remove — or to add** -
+  six rows matched a label by code-and-name and every one was unambiguous *because* of the code; the
+  name alone matches fifty-three elements, which at least fails loudly. The repair is not a narrowing
   `nth` but reading the **statement** - the word and the name inside one element - which is the
   stronger claim, and it needs the markup measured: JSX drops the newline before an adjacent
-  `<span>`, so the text has no space in it. (#93)
+  `<span>`, so the text has no space in it. **A fix that puts words on a screen is a change to every
+  locator that matched any of them loosely** — census one query per word it adds, not
+  one for the word the first red named; the clean baseline is where that shows. (#93, #116)
 - **A criterion answered *no* needs a row as much as one answered *yes*** — and the row has to
   assert what is still there, or it is measuring the other refusal that reaches the same status
   code. Between two fixture shapes, take the one the code already draws and nothing has ever made

@@ -22,6 +22,10 @@ contents, and what overflowed was `<main>`, which the shell clipped.
 Killing them:
 
     cd e2e && npx playwright test 98a
+
+Do not sweep alongside `116-a-breadcrumb-that-reads-the-section.py`: it holds the
+same `frontend/src/pages/Mainpage.js`, and it is the only file the two share. Ask
+the `FILES` census in `mutation/README.md`, not the subject matter (#125).
 """
 
 from harness import main

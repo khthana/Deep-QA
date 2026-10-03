@@ -96,7 +96,13 @@ test('row 1: the set opens under a section and names the year it belongs to', as
   // whole of ADR-0003 meeting ADR-0004 on one screen.
   expect(new URL(page.url()).pathname).toBe(`${DASHBOARD}/${section}/courseOutcomes`);
   expect(await codesOnScreen(page)).toEqual(clos.map(clo => clo.clo_number));
-  await expect(page.getByText(`ปีการศึกษา ${offering.academic_year}`, { exact: false })).toBeVisible();
+  // Anchored at the element's start since #116: the trail above now says
+  // *ตอนเรียน 1 · ปีการศึกษา <year>* too, so a substring read matches the
+  // crumb as well as this screen's own subject line. The statement is the
+  // stronger claim anyway - the year *opens* that line (#93).
+  await expect(
+    page.getByText(new RegExp(`^ปีการศึกษา ${offering.academic_year}\\b`)),
+  ).toBeVisible();
 });
 
 test('row 2: the two teachers of two sections are reading one list', async ({ page, browser }) => {

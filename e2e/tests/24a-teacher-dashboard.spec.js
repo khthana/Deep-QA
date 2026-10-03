@@ -100,7 +100,14 @@ test('row 3: choosing a section puts its id in the address', async ({ page }) =>
   await chooseSection(page, SUBJECT);
 
   expect(sectionInUrl(page)).toMatch(/^\d+$/);
-  await expect(page.getByText(`ตอนเรียน 1`, { exact: false })).toBeVisible();
+
+  // The screen's own statement, and not the two words on their own. Until #116
+  // the words `ตอนเรียน 1` were on the page exactly once, so a substring match
+  // was unambiguous *because of* a thing nobody had written yet: the trail now
+  // says them too. The repair is to read the sentence this screen draws —
+  // ตอนเรียน, the term and the headcount in one element — which is the stronger
+  // claim and the one this row was always making.
+  await expect(page.getByText(new RegExp(`^ตอนเรียน 1 · ${termLabel()} · `))).toBeVisible();
 });
 
 test('row 3: a section-specific menu entry leads to that section and not to a placeholder', async ({
