@@ -153,7 +153,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - Read both ways: down the ⚙ rows for one naming no mutant, and through the mutation file for a
   mutant no row cites — and read a *kills* column as a claim about the criteria table too.
   **A row naming the wrong mutant is the third way**, and the sweep table that contradicts it can
-  be in the file written the same day. (#44, #97, #101, #117)
+  be in the file written the same day. The fourth is a row that cites the right mutant and never
+  states its claim — an overclaim read backwards, and the only one of the four that leaves the
+  sheet looking modest. (#44, #97, #101, #117, #116)
 - **A row that names two ways in is two rows.** Read every *both … and* as two claims. (#66)
 - **Explaining a gap in prose is not the same as marking it.** (#50)
 - Check what an assertion actually says, not only that one exists; where a sheet says *ordered
@@ -310,6 +312,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   truncates a row to its header width, so a count of the drawn cells is right whether the row is
   broken or fixed, and the first verification script called both *2 cells of 2*. Count the
   **source** to find it, and prove the render by reading the cell's **content** back. (#175)
+- **A waiter that filters on the value is a fourth** — a predicate requiring `status() === 404`
+  makes the `expect` below it read what it guaranteed, and a route that answered otherwise hangs in
+  the waiter and dies at the timeout instead of reading as a red. Match the waiter by the request,
+  which is what identifies the answer; assert the answer. (#116)
 - **A helper that waits for the response has not waited for the drawing** — the first read after it
   can see the empty state, and no amount of retrying saves a wrong *expected* value. Wait for what
   the answer carried to be what the screen shows. (#132)

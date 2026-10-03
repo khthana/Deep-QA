@@ -117,10 +117,12 @@ test('row 4: a Section that is refused leaves the crumb saying nothing untrue', 
     page,
     `/teacher/teacherDashboard/${NOT_THEIRS}`,
     inDocument =>
+      // Matched by path alone and not by status, because a predicate that asked
+      // for 404 would make the assertion below unable to fail: a route that
+      // answered 200 would time out here instead of reading as a red, and the
+      // row would be about the waiter rather than about the refusal (#50).
       inDocument.waitForResponse(
-        answer =>
-          new URL(answer.url()).pathname === `/api/teaching/sections/${NOT_THEIRS}` &&
-          answer.status() === 404,
+        answer => new URL(answer.url()).pathname === `/api/teaching/sections/${NOT_THEIRS}`,
       ),
   );
   expect(refusal.status()).toBe(404);

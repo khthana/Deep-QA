@@ -88,6 +88,14 @@ export default function MainPage() {
    * by `api/client.js` wherever the person has got to, and is not this catch's
    * business either.
    *
+   * The write in that `catch` cannot be observed today, and this says so rather
+   * than letting it read as proved: the effect nulls the label as it starts, so
+   * a refusal has nothing to undo, and `isCurrent()` there decides nothing
+   * either - a later run has already nulled it on entry. What holds the claim
+   * is the *absence* of a write, which is why `refusalinvents` kills row 4 by
+   * adding one and not by removing this. The line stays because it says at the
+   * site what a refusal must not do, and because it is that mutant's anchor.
+   *
    * What the label says is the ticket's own sentence — *ตอนเรียน 1 · ปีการศึกษา 2569* — and
    * not the fallback it offered beside it. *ตอนเรียน {id}*, "without waiting for
    * data from the server", is a sentence about a class that does not exist as

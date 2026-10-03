@@ -6412,12 +6412,22 @@ on one I filed myself.** It said the delivered app printed the raw id at the CLO
 third of #185 was an addition and therefore a question. Measured:
 `DEEP-QA-FRONTEND/.../CourseOutcomes/CourseOutcomes.js:647` navigates to
 `CLO-${clo.clo_number}` — a **label**, and not even the key the rebuild's route now carries. The
-replacement sentence was then wrong the other way: the delivered app reached the Activity and the
-Rubric screen by **fixed words** — `activityScores/AssessmentCriteria`, `rubrics/edit-Rubric` —
-so its trail read a sentence at those positions as well, and the rebuild is what put a number
-there. All three segments are restorations and none of them is an addition; what is left to decide
+sentence written **here** to replace it was then wrong the other way about the other two segments —
+#185's own bullet on those was right from the start. The delivered app reached the Activity and the
+Rubric screen by **fixed words**, `activityScores/AssessmentCriteria` and `rubrics/edit-Rubric`, so
+its trail read a sentence at those positions as well, and the rebuild is what put a number there.
+All three segments are restorations and none of them is an addition; what is left to decide
 is only how to pay for the name, two of the three having no request that answers one record by id.
 **A ticket I write is dated the day I write it as well.** #185 carries both corrections.
+
+**And the row that cites a mutant whose claim it never states is an overclaim read backwards.**
+The criterion row for this ticket named four rows and six mutants, and said what the crumb must
+read at two addresses and nothing at all about what it must read when the Section is refused —
+which is `116a` row 4 and `refusalinvents`, a row and a mutant, proving a claim no criterion on
+the sheet made. The two faults are read off the same column: *the row claims more than its
+assertions cover* and *the assertions cover more than the row claims*, and only the second one
+leaves the sheet looking modest. Reading a *kills* column as a claim about the criteria table
+(#97) has to be done in both directions.
 
 **The ticket's fallback is not the ticket's target, and the first round shipped the fallback.**
 #116 wrote its target as a whole sentence — *ตอนเรียน 1 · ปีการศึกษา 2569* — and offered *ตอนเรียน {id}*
@@ -6521,3 +6531,26 @@ count it, not a sentence warning about it* ten lines above the number it then le
 instrument that could count it is `mutation/anchors.py`, which already reads every sheet's tables —
 but that is adjacent work, not the second half of the sentence this ticket closes (#119), so it is
 raised as a question rather than taken quietly.
+
+**And the row written for the refusal held its own answer inside the instrument that found it.**
+`116a` row 4 waited with a predicate that matched the path *and* required `status() === 404`, then
+asserted `toBe(404)` on what came back — which is a read of what the filter had already
+guaranteed. A route that answered 200 for somebody else's Section would not have made that line
+red; it would have hung in the waiter and died at the timeout, which is the same thing a mutant
+that stops the application prints (#139). The species is the retrying negative (#50) one layer up:
+the instrument that finds the thing also decided what the thing is. The repair is to match the
+waiter by the **request** — the path, which is what identifies the answer — and to leave the
+**answer** to the assertion. Nothing else on the row moved, and the four rows' kills stand: the
+mutants are about what the crumb draws, which this does not touch.
+
+**And the clause no mutant can reach was named rather than left reading as proved.** The resolver's
+`catch` writes `setSectionLabel(null)`, and that write cannot be observed: the effect nulls the
+label as it starts, so a refusal has nothing to undo, and the `isCurrent()` in front of it decides
+nothing either, because a later run has already nulled it on entry. What holds the criterion is the
+*absence* of a write, which is exactly why `refusalinvents` kills row 4 by **adding** one rather
+than by removing this — a mutant for a declined proposal (#48), not for the line it replaces. So
+the clause is the second of the three (#102): structurally unreachable, not proved and not untested.
+The line stays, because it says at the site what a refusal must not do, and because it is that
+mutant's anchor — and sheet 10 now says which of the three it is, beside the two guards it already
+names as untested. Saying it is the whole of the fix; a sheet that is silent here reads as a sheet
+with one more proved clause than it has.
