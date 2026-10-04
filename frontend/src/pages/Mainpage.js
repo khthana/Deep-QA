@@ -5,7 +5,10 @@ import Breadcrumb from '../components/Breadcrumb'
 import { useAuth } from '../context/AuthContext'
 import { Outlet, useLocation } from 'react-router-dom'
 import ContentMotionDIV from '../components/ContentMotionDIV'
-import { breadcrumbNameMap } from '../components/breadcrumbNameMap'
+import {
+  breadcrumbNameMap,
+  breadcrumbNameByParent,
+} from '../components/breadcrumbNameMap'
 import { getMySection } from '../api/teaching'
 import { getCourseOutcome } from '../api/clos'
 import { getActivity } from '../api/activities'
@@ -75,6 +78,39 @@ export function labelledIdCrumb(pathname) {
   }
 
   return null
+}
+
+/**
+ * The sentence for a crumb that is a *word*, where the word does not say which
+ * screen -- #189.
+ *
+ * `breadcrumbNameMap` is keyed on the segment and holds one sentence per word,
+ * which `criteria` has two screens for. The disambiguating half is the nearest
+ * word *above* the crumb -- `rubrics` or `courseOutcomes` -- and it is found by
+ * walking up rather than by counting, for the reason written over
+ * `breadcrumbNameByParent`: the id between is what puts both parents two
+ * crumbs up, and that is a fact about today's addresses.
+ *
+ * The walk steps over all-digit segments, which is what an id is here: every
+ * key in an address is a surrogate integer (ADR-0001). A segment that is not
+ * all digits standing in an id's place -- a hand-typed `/courseOutcomes/abc/
+ * criteria` -- is therefore read as the word above, the pair misses, and the
+ * crumb falls through to the map. That address's screen is a refusal, so the
+ * wording under it names no class that exists; this is untested rather than
+ * unreachable, and written down (4 October 2569) rather than guarded, because
+ * a guard here would be a second claim about the format with nothing to put it
+ * at risk (#124).
+ *
+ * `undefined` when nothing is written for the pair, so the caller falls through
+ * to the map and then to the segment, which is the order that was there before.
+ */
+export function wordCrumbLabel(segments, index) {
+  const above = segments
+    .slice(0, index)
+    .reverse()
+    .find(segment => !/^\d+$/.test(segment))
+
+  return breadcrumbNameByParent[`${above}/${segments[index]}`]
 }
 
 /**
@@ -249,9 +285,14 @@ export default function MainPage() {
     const sectionCrumb = teacherSectionCrumb(location.pathname)
     const deepCrumb = labelledIdCrumb(location.pathname)
 
+    const decodedNames = pathnames.map(decodeURIComponent)
+
     const crumbs = pathnames.map((path, index) => {
-      const decodedPath = decodeURIComponent(path)
-      let label = breadcrumbNameMap[decodedPath] || decodedPath
+      const decodedPath = decodedNames[index]
+      let label =
+        wordCrumbLabel(decodedNames, index) ||
+        breadcrumbNameMap[decodedPath] ||
+        decodedPath
 
       const href = '/' + pathnames.slice(0, index + 1).join('/')
 

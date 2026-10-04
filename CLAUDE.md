@@ -244,6 +244,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
 - **A change to a function's signature reaches every mutant that writes a call to it**, not only
   those anchored on one — grep the replacement strings too; `anchors.py` reads anchors. (#140)
+- **A formatter run is a change to every mutant anchored in that file, and the diff does not say
+  so** — it reads as whitespace. The installed prettier is newer than the committed style, so it
+  does not reproduce the tree it is run on (`Mainpage.js` and `CourseOutcomes.js` already fail it
+  clean, which `npx prettier --check` says without writing): do not run
+  `npm run format`, and run `anchors.py` if anything has. (#189)
 - **A comparison no mutant at the call can split is split where its operand is written** — leave
   one control out of the dependencies of the effect that writes the ref. (#144)
 - An anchor check tells you a mutant no longer applies; only a sweep tells you it no longer proves

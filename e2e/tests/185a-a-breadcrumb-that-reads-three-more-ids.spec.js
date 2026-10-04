@@ -67,6 +67,17 @@ const EVIDENCE = 'หลักฐานการประเมิน';
 const RUBRICS = 'ข้อมูล Rubric กลาง';
 const RUBRIC_CRITERIA = 'เกณฑ์การให้คะแนนของ Rubric';
 
+/**
+ * The same word, the other screen -- #189.
+ *
+ * `criteria` ends two of this router's addresses and `breadcrumbNameMap` holds
+ * one sentence per word, so the CLO's screen drew the Rubric's sentence until
+ * the owner answered on 4 October 2569 that the trail follows the screen. The
+ * two constants are what proves the pair apart: the same resolver reads them,
+ * and a mutant that forgets the address answers `RUBRIC_CRITERIA` for both.
+ */
+const CLO_CRITERIA = 'เกณฑ์การบรรลุผล';
+
 /** Section 3 is Section *1* of 2568/1, taught by `teacher.one@` -- 116a's fixture. */
 const OTHER_YEAR = 3;
 
@@ -115,13 +126,14 @@ test('row 1: the CLO crumb reads its number, not the id in the address', async (
   // `kind:id` key is for.
   await page.goto(`${DASHBOARD_PATH}/${OTHER_YEAR}/courseOutcomes/${clo.clo_id}/criteria`);
 
-  // `criteria` is one key of `breadcrumbNameMap` and two screens reach it, so
-  // the last crumb here reads the Rubric's sentence on a CLO's screen. That is
-  // what the map has always held and the wording is `docs/06` section Out of
-  // Scope's to answer, not this row's; the row reads what is drawn.
+  // And the last crumb is this screen's own word, not the other screen's --
+  // #189. `criteria` ends both addresses, so the word alone cannot name the
+  // screen; `wordCrumbLabel` reads the word above it, and this is the half of
+  // the pair that the map's one entry could not hold. Row 3 reads the other
+  // half on the Rubric's address, which is why one mutant cannot kill both.
   await expect
     .poll(() => crumbsOn(page))
-    .toEqual([DASHBOARD, LAST_YEAR_LABEL, COURSE_OUTCOMES, 'CLO-1', RUBRIC_CRITERIA]);
+    .toEqual([DASHBOARD, LAST_YEAR_LABEL, COURSE_OUTCOMES, 'CLO-1', CLO_CRITERIA]);
 });
 
 test('row 2: the Activity crumb reads its name', async ({ page }) => {

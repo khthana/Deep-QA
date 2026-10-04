@@ -6911,3 +6911,126 @@ The five existing shell mutants were **not** re-swept this time, and the reason 
 #191's: what expires a kill count is a fixture or a spec file that moved (#48), and neither
 moved here. Adding a mutant does not expire the others — it is the suite that would have to
 change. Saying which of the two situations you are in is the part worth writing down.
+
+## #189 — one word, two screens, and the test that answered the other way
+
+A `question` ticket, from #185's review round, and the twin of #190: the last crumb on
+`courseOutcomes/:cloId/criteria` reads *เกณฑ์การให้คะแนนของ Rubric*, because `criteria` is the
+one key of `breadcrumbNameMap` that two addresses reach and a map keyed on a word holds one
+sentence per word. `docs/06` §Out of Scope says who answers that, so the work was to measure
+and ask — and this time the answer came back the other way: **read along the path, and use the
+glossary's word.**
+
+Three of the ticket's claims were confirmed as written. Two of its own were not:
+
+- It called the destination *เกณฑ์การวัดและประเมินผลของ CLO*, which is a **fourth** name,
+  matching neither the screen's own heading (`AchievementCriteria.js:188`), nor sheet `29`, nor
+  the glossary. *A ticket's supporting identifiers are a claim like its numbers* (#54) — the
+  same arrival as in #190, one ticket later.
+- It argued from ADR-0004, which freezes `:sectionId` as the carrier of Section context and
+  writes `<screen>` as a **placeholder**. It says nothing about the leaf word, and the rebuild
+  has already changed one: `activityScores/AssessmentCriteria` became `evidence`, with the old
+  key still sitting in the map holding exactly `evidence`'s text.
+
+And its census was counted by the wrong property. It had grepped the string; the species is the
+mechanism — *words that are the last segment of more than one served address* (#174). Counted
+that way across the 35 served addresses there are 34 distinct last words, and `criteria` is the
+only one of them two screens reach. Which happens to make the ticket's headline **right**, by a
+census that could have said otherwise: the thing it asked about is unique in the system, so no
+answer here generalises to a second case, because there is no second case.
+
+### The test that decided #190 answers the other way here
+
+#190 kept the word *Rubric* in front of the code on the argument that the crumb follows the
+screen: the destination writes `เกณฑ์การให้คะแนนของ Rubric {rubric_code}` as its own heading, so
+the crumb was not inventing a habit. That is the same question, and asked of the second screen
+it answers the other way, with three sources agreeing and none of them being the word the crumb
+draws today:
+
+- `CONTEXT.md:76` — **Achievement Criteria (เกณฑ์การบรรลุผล)**, the vocabulary `CLAUDE.md`
+  requires in issues, tests and commits.
+- `AchievementCriteria.js:188` — the heading, `เกณฑ์การบรรลุผลของ {clo_number}`, asserted at
+  `29a:101`.
+- `CourseOutcomes.js:327` — the inbound link, whose text **and** `aria-label` both say it.
+
+Two tickets, one test, two answers: the test is *what does the destination call itself*, and the
+reason the answers differ is that the destinations differ. A rule read off #190's outcome rather
+than off #190's reason would have kept the word here too.
+
+### What the answer cost
+
+Twelve lines of resolver, one changed expectation, and two mutants.
+
+The resolver is keyed `nearest-word-above/word` — `courseOutcomes/criteria` — and not by a
+segment count or an offset, because *the id sits between them* is a fact about today's addresses
+and not about the rule. `wordCrumbLabel` walks up past the numeric segments to the nearest word
+and asks the new map; the old map stays exactly where it was, below it, as the fallback for the
+34 words that are nobody's special case.
+
+One assertion changed: row 1 of `185a` now expects `เกณฑ์การบรรลุผล` as its last crumb. No new
+row, no new criterion, so no mark counter moved — the pair of claims this ticket creates is held
+by mutants, not by rows.
+
+Two mutants, because *two mutants varying one property cannot see a third* and the pairing of a
+word to a path has two links to break (#96):
+
+- `criteriawordfrommap` takes the path knowledge out of the shell, so the map answers *Rubric*'s
+  sentence for both screens, as it did before this ticket. It kills row 1 **alone** — row 3 is
+  on the Rubric address, where that sentence is the right one.
+- `criteriawordforboth` is the other link, reversed: the new sentence goes **into** the map, so
+  the Rubric screen reads the CLO's word. It kills rows 3 **and 6**.
+
+My own comment on that second mutant said *row 3 alone* before it was run. Measured, it is two,
+and the two are not one claim counted twice: where the code is shared no mutant can tell the
+rows apart, so what each row adds is that its own way in arrives there, and the kill is the
+proof (#191).
+
+The pairing has a **third** link, and it is the one with no mutant: *walk up to the nearest
+word* rather than *count two segments back*. A counting mutant answers identically on all 35
+addresses served today, so it would survive with nothing wrong — a claim the harness cannot put
+at risk. Both sheets say so in a sentence that names which kind of gap it is, *untested* and not
+*structurally unreachable* (#102, #107), because explaining a gap in prose is not the same as
+marking it (#50). What would expire that sentence is an address where the word and the id are
+not two segments apart.
+
+The review round then found #154 again, twice, in files this diff had itself edited: the
+mutation README's row for this sheet had its count column corrected to 12 while the prose in the
+same row still broke it down as six plus four, and the sheet's own group heading still named one
+file after the diff had added a second to `FILES`. *What a diff touches is what a diff
+proofreads* — and what it proofreads is the line you were looking at.
+
+Two of the existing mutants were re-swept, which is neither zero nor all. The spec file moved,
+so what expires is the kill count of every mutant whose rows' expectations changed (#48):
+`clonumberfromid` and `crumbatthewrongindex`, both of which name row 1. Three others kill rows
+that did not move and were not re-run, and the reason is written on the sheet rather than left
+to be guessed — which is the half of #190's lesson that survives into a round where something
+*did* move.
+
+### A formatter is a change to every mutant anchored in the file
+
+`npx prettier --write src/pages/Mainpage.js`, run to tidy twelve new lines, reformatted the
+whole file and rewrote the exact lines **five** mutants anchor on. Nothing in the diff announced
+that: it reads as whitespace.
+
+The cause is that the installed prettier is newer than the committed style — the pristine
+`Mainpage.js` already fails this version, and so does `CourseOutcomes.js`, while `Breadcrumb.js`
+and `AppRoutes.js` pass — `npx prettier --check` reports that without writing
+anything. So the formatter does not reproduce the tree it is run on, and
+`npm run format` is not a safe command in this repository.
+
+This is the sibling of #140 — *a change to a function's signature reaches every mutant that
+writes a call to it* — with one difference that matters: a signature change is visible in the
+diff, and this is not. The repair was `git checkout --` and re-applying the three edits by hand,
+and the instrument that confirmed it was `python mutation/anchors.py`, which is the only thing
+that could have.
+
+### A paragraph assembled from source lines puts spaces inside Thai words
+
+The dated paragraph for this ticket was built by a patch script from Python string literals
+split across source lines, and every split left a space behind. Thai does not write spaces
+between words — but this repository's prose uses the space as a **clause** separator constantly,
+so a scan for *space between two Thai letters* over the added lines returned 111 hits of which 8
+were the defect. The scan is a list to read, not a rule to apply.
+
+The eight were cut by character offset, taken out of the files themselves, so that no Thai was
+retyped on the way — which is the same reason patch scripts are anchored on ASCII.
