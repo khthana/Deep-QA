@@ -6857,3 +6857,57 @@ And the expiry: the reason #185's round gave for leaving two kinds unproved was 
 its own block or a refusal that is not a 404 (#131). The sheet keeps the whole of the old paragraph
 rather than editing it away, because what it records is how long the claim stood with nothing under
 it.
+
+## #190 — the word nothing could have broken
+
+A `question` ticket, from #185's review round: the Rubric crumb draws `Rubric RUB-02` while
+the other two deeper kinds draw a bare value. (The ticket wrote the example as `BR-20`,
+which in this repository is not a rubric code at all but a *business rule* about attainment
+bands, named that way all through `backend/lib/attainment.js` -- #54's rule arriving in the
+smallest way it can.) `docs/06` §Out of Scope says who answers that, so the work was to
+measure and ask, and the answer came back **keep it**.
+
+Four of the measurements were worth more than the three options were:
+
+- The neighbouring crumbs write the word in **three** places, not the two the ticket named,
+  and the third is the next crumb on the same row — so the row reads *Rubric* three times in
+  four cells. That is an argument the ticket had not made, and it is an argument against the
+  option the ticket was defending.
+- The destination screen writes its own heading as `เกณฑ์การให้คะแนนของ Rubric {rubric_code}`:
+  the word, then the bare code, with the name on the line below. The crumb is not inventing a
+  habit; it is the screen's own.
+- The width objection to drawing the name was measured rather than argued, and it shrank. The
+  Rubric names in the seed run 13–27 characters, the fixed crumb labels reach 38, and the
+  **Activity** crumb — the sibling kind standing in the same position — already draws a bare
+  44-character name today. Nothing in any of the three options is unprecedented in that row.
+- `rubric_name` is not a column. There is `rubric_name_th` and `rubric_name_en`, both already
+  in the answer, so the third option carries a choice of language that the other two kinds do
+  not have. *A ticket's supporting identifiers are a claim like its numbers* (#54) again.
+
+And the ticket's cost estimate was one item too long: it priced in a run of #93's census, and
+that census cannot see this family by construction — its own docstring says `rubric_code` is
+not an `_id`, and that `rubric_name_th` drawn beside `rubric_code` is deliberate. A cost is a
+claim like a count, which is the #54/#55 family met again rather than a rule of its own: the
+census was run anyway, as a net, and came back `problems 0`.
+
+### What the answer cost, which was not nothing
+
+*Keep it* reads like a ticket that closes with no work. It does not, because of #48: **when a
+ticket's proposal is declined, the mutant to write is that proposal made to run.** The
+proposal here was *draw the bare code*. Row 3 had asserted the word since #185 — the
+`toEqual` at `185a:161` was born with it — but nothing in the harness could put that
+assertion at risk: `rubriccodeisid`, the mutant that already fires at that exact line,
+**keeps** the word and swaps the code for the id. Which is to say row 3's ⚙ was not
+covering the row *whole* — the mark's own condition — and the half it left out was the
+half this ticket was asked about. Two mutants varying one property cannot see a third
+(#96); one of them has to be crafted per link.
+
+`rubricwordgone` is that one, and it killed `185a` row 3 alone, dying at the `toEqual` that
+read `RUB-02` where `Rubric RUB-02` was expected. Row 3 is named *the Rubric crumb reads its
+code*, and it was holding two claims all along: that the crumb reads the code, and that the
+word stands in front of it. Only the first had a mutant.
+
+The five existing shell mutants were **not** re-swept this time, and the reason is the twin of
+#191's: what expires a kill count is a fixture or a spec file that moved (#48), and neither
+moved here. Adding a mutant does not expire the others — it is the suite that would have to
+change. Saying which of the two situations you are in is the part worth writing down.
