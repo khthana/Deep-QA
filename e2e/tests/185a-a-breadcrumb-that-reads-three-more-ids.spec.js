@@ -39,14 +39,10 @@ const { DASHBOARD: DASHBOARD_PATH } = require('../support/teaching-screen');
  *
  * ## What is not here
  *
- * Three things.
+ * Two things.
  *
  * Whether the trail *looks* right is appearance and stays a hand-walked row on
  * `docs/acceptance/10`.
- *
- * The second of the two CLO addresses -- `courseOutcomes/:cloId/criteria` --
- * is the same segment at the same index resolved by the same call, so it is
- * one claim with row 1 and not two.
  *
  * And the pairing guard, which keys the label by `kind:id` rather than by id
  * alone, has no row: the frame it is about is the single render after a move
@@ -95,6 +91,21 @@ test('row 1: the CLO crumb reads its number, not the id in the address', async (
   await expect
     .poll(() => crumbsOn(page))
     .toEqual([DASHBOARD, LAST_YEAR_LABEL, COURSE_OUTCOMES, 'CLO-1', BEHAVIORS]);
+
+  // The other address of the same shape, measured rather than argued. It is
+  // the same branch of the resolver at the same index, which is a reason to
+  // expect the same answer and not a proof of it (#141), and it is a sibling
+  // move between two addresses that share the fifth segment -- the move the
+  // `kind:id` key is for.
+  await page.goto(`${DASHBOARD_PATH}/${OTHER_YEAR}/courseOutcomes/${clo.clo_id}/criteria`);
+
+  // `criteria` is one key of `breadcrumbNameMap` and two screens reach it, so
+  // the last crumb here reads the Rubric's sentence on a CLO's screen. That is
+  // what the map has always held and the wording is `docs/06` section Out of
+  // Scope's to answer, not this row's; the row reads what is drawn.
+  await expect
+    .poll(() => crumbsOn(page))
+    .toEqual([DASHBOARD, LAST_YEAR_LABEL, COURSE_OUTCOMES, 'CLO-1', RUBRIC_CRITERIA]);
 });
 
 test('row 2: the Activity crumb reads its name', async ({ page }) => {
@@ -141,14 +152,22 @@ test('row 4: an id the server refuses leaves the crumb saying nothing untrue', a
   // own rejected fallback, naming an outcome that does not exist.
   await signIn(page, ACCOUNTS.teacherOne);
 
+  // The shell asks for the CLO's name in a request of its own, so the screen's
+  // sentence is not a settle point for it: two requests, and nothing orders
+  // them. The waiter is matched by the request, which is what identifies the
+  // answer, and the status is asserted rather than filtered on (#116).
+  const resolverAnswered = page.waitForResponse(response =>
+    response.url().endsWith(`/api/teaching/sections/${OTHER_YEAR}/clos/999999`),
+  );
+
   const refused = await openBehaviors(page, OTHER_YEAR, 999999);
   expect(refused.status()).toBe(404);
+  expect((await resolverAnswered).status()).toBe(404);
 
-  // A settle point and not a wait: the screen words the same refusal the
-  // resolver was handed, so once the sentence is on screen the resolver has
-  // had its answer too. The crumb is then read once -- polling for the number
-  // here would be a read that cannot fail, since the number is also what the
-  // trail says before any answer arrives (#50).
+  // And then the screen's own refusal, which gives the renderer its turns.
+  // The crumb is read once after both -- polling for the number here would be
+  // a read that cannot fail, since the number is also what the trail says
+  // before any answer arrives (#50).
   await expect(page.getByText(REFUSALS.cloNotFound)).toBeVisible();
 
   expect(await crumbsOn(page)).toEqual([

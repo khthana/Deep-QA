@@ -6788,3 +6788,32 @@ rows 1 and 4, since both open a CLO address. It killed row 1 only: at row 4 the 
 there is no label to put at the wrong index, and what the mutant measures turns out to be the
 position alone. The nine were otherwise one row each, `clonumberfromid` two (row 1 by the id, row 4
 by inventing `CLO-999999`), and the four backend mutants one row each in their own files.
+
+**And the review found three things, each of them a rule this file already carries.**
+
+The sheet's *neighbours in the same file* paragraph named one of its three `FILES`. `Mainpage.js`
+was the interesting path and the one the ticket was about, so it was the one written down -- which
+is comparing subject matter while quoting the rule against it. Measured with `README`'s own script,
+#185 raises three groups at once: `Mainpage.js` from a pair to a three, `backend/routes/clos.js`
+from five to six, `backend/routes/activities.js` from three to four. The total shared-path count
+stands at 64 either way, which is the trap `mutation/README.md` writes eight times in its own
+words -- *a total that does not move is not a census that did not change* -- and the figure that
+decides a sweep is the group, not the total (#85, #87, #125).
+
+Row 1 read one of the two CLO addresses and the spec's own docstring argued the other away: same
+segment, same index, same call, therefore one claim. That is a reason to expect the same answer and
+not a measurement of it (#141), and it cost one `goto` to find out. It reads `CLO-1` too -- and the
+second address is a sibling move across the fifth segment, which is the move the `kind:id` key
+exists for, so the row that was argued away is the row nearest the untested guard. Its last crumb
+reads *the Rubric's* sentence, because `criteria` is one key of `breadcrumbNameMap` and two screens
+reach it; that is older than this ticket and the wording is `docs/06` section Out of Scope's to
+answer.
+
+And row 4's settle point was a claim about **how many requests the screen makes** (#168, one seam
+along). The comment said the screen words the refusal the resolver was handed, so the sentence on
+screen means the resolver has its answer -- but the shell asks in a request of its own, and nothing
+orders the two. The mutant killed the row, so the ordering held on the runs that were measured,
+which is exactly the shape of a row that passes for a reason nobody wrote down. The repair is the
+waiter matched by the request with the status asserted under it (#116), and then the three mutants
+that cover the two changed rows run again, because *a row written to answer a mutant is not proof
+until that mutant is run again* (#146). All three still kill the same rows.
