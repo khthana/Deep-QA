@@ -6626,3 +6626,65 @@ questions with a real artefact on disk **and** with none, which is the fix's poi
 times, where the old walk said 115 and 114. Backend 802/802. And the README's own count of this
 file's rows said 29 while the file held 43: a hand-kept number in a file that grows every ticket,
 corrected to 53 with the date beside it (#119).
+
+## #187 — the fixture and the code were reading two different clocks
+
+Two rows in `backend/test/auth.test.js` built their situation with `current_date`, which is the
+day of the **server's** `TimeZone`, and drove `validityRefusal`, which decides with
+**`Asia/Bangkok`**. Both windows are one day wide, so the hours when the two clocks name different
+days are the hours the rows are red. `TimeZone` is `UTC` — asked of the database on 4 October 2569
+rather than inferred from `db/docker-compose.yml`, which is what the ticket had done and what it
+listed under *what has not been measured* — so the window is **00:00–07:00 Bangkok**, and the fix
+is two expressions: `(now() at time zone 'Asia/Bangkok')::date`.
+
+**A red that comes and goes with the hour is the shape to distrust, and the way to measure it is
+to build the hour.** Waiting for 02:00 is not a measurement, and the ticket's own evidence was
+collected either side of the boundary by accident of when somebody ran the suite. A session
+timezone three hours behind UTC makes
+`(now() at time zone 'Asia/Bangkok')::date - current_date` equal **1** at nine in the morning,
+which is that window exactly; `pg` is pure JS, so the knob is the pool's own `options` and not
+`PGTZ`. Measured that way the grid is four cells: old fixture unshifted 41/41, old fixture shifted
+**one red**, new fixture shifted 42/42, new fixture unshifted 42/42.
+
+**The ticket said two rows were red; one was.** The other `not ok` was `Google sign-in`, the
+parent of the row that died — *a top-level `node --test` test reads like a suite header in
+`not ok` lines, so read the names* (#48), met again in the evidence of a ticket rather than in a
+sweep. And the sentence under it was impossible before anybody ran anything: it claimed
+`current_date + 1` and `current_date - 1` were *both* today in Bangkok, when a database day one
+behind makes the first today (admitted, red) and the second the day before yesterday (still
+refused, green). **A ticket's evidence is a claim like its numbers**, and the arithmetic in its
+own explanation is the cheapest place to catch it.
+
+**Both fixtures were still wrong, and the second one's redness is in the mirror state.** That half
+was measured where it could be: `validityRefusal` exports the day it decides with as a parameter,
+and a `valid_until` equal to Bangkok's today answers `admitted` — so a database clock running a
+day *ahead* reddens the `- 1` row the way UTC reddens the `+ 1` one. No session timezone can
+produce that at 09:00, because +07:00 is never a whole day from any offset postgres accepts, so it
+is written down as a unit measurement and not as a row (#117's rule about saying so with the
+number).
+
+**A defect that only exists for part of the day cannot be held by a value assertion.** A row that
+compares dates is green for seventeen hours whatever the fixture says, and forcing the
+disagreement needs a timezone chosen from the current hour — which would make the clock decide
+which claim runs, and *anything written for timing must not be able to decide anything* (#52). So
+the net is a scan of the suite's own text: no fixture may build a validity window one day out with
+the database's clock. That is `anchors.py`'s move from #186 — when a value cannot express it, ask
+the text — and it is the move the file already makes for #50, which reads the refusal reasons out
+of `accounts.js`'s source rather than listing them twice. The scan says what it cannot see:
+windows two or more days from the boundary, which is the `-20` and `-10` shape in
+`authorise.test.js` that a one-day skew cannot reach, which is why it matches a literal 1.
+
+The mutant is the diagnosed code (#115), and because the diagnosed code is a fixture, this is the
+one sheet in `mutation/` that breaks a test file rather than shipped code. Two mutants and not one
+with two edits, because the fix landed at two sites (#125). Its first draft then met its own
+lesson: the anchors were written `"… %s …" % BANGKOK`, which `anchors.py` cannot unfold, so the run
+printed `UNREADABLE` twice and exited 1 with `problems 0` — **a marker written for an instrument
+has to be in a syntax the instrument reads** (#93), in the very file whose job is to read them.
+And #89's two mutants were re-swept although nothing touched them, because the fixtures they kill
+through moved: a kill count is a claim about the fixtures as much as about the code (#48).
+`onesentenceforboth` and `endsareswapped` still kill their own rows.
+
+Measured after: backend **803/803** (802 plus the new row), `anchors.py` problems 0 and
+`unreadable 0` in all four questions, `anchors_test.py` 53 green, `harness_test.py` 17 green. The
+`mutation/README.md` catalogue and its hand-kept total moved with the new sheet, 858 → 860, which
+is the one number `anchors.py` would have caught on its own.

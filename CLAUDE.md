@@ -53,12 +53,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 ### A ticket's diagnosis
 
 - **A ticket's *What is wrong* is a claim from the day it was written; measure it before you fix
-  it.** It has been wrong eleven ways: aged (#66, #111, #55), never true (#102), generalised from
+  it.** It has been wrong twelve ways: aged (#66, #111, #55), never true (#102), generalised from
   the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
   its own table (#133), a key's name read as its text (#127), an inference drawn from a
   measurement that was itself correct (#165, #186), a list of verbs naming an action no route performs
-  (#58) — and the sheet itself asking for the defect (#89).
+  (#58), a count of red rows inflated by the runner's output shape, with an explanation under it
+  that was arithmetically impossible before anybody ran anything (#187) — and the sheet itself
+  asking for the defect (#89).
 - **A ticket's supporting identifiers are a claim like its numbers** — #54's argument named five
   other years to show this one was the odd one out, and of the five, two tables do not exist under
   those names, one carries no such column and one is pluralised: they are `CONTEXT.md`'s names for
@@ -293,7 +295,7 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   record, and throw away whatever was measured beside it. (#146)
 - A `mode: 'serial'` spec reports the first dying row and skips the rest, so measure each row on
   its own; a top-level `node --test` test reads like a suite header in `not ok` lines, so read
-  the names. (#67, #48)
+  the names — including in a ticket's evidence, where it read as a second red row. (#67, #48, #187)
 - A fixture that restores itself only when its row passes inflates the next mutant's kill count —
   put it back in `finally` or `afterAll`. (#89, #52)
 - **But a cleanup can speak over the claim two ways** — a throwing `finally` *replaces* the body's
@@ -350,6 +352,16 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   line that looks like it belongs to another helper may be the settle point, or may only share its
   name. (#174)
 - **Anything written for timing must not be able to decide anything.** (#52)
+- **A fixture builds its situation with a clock, and it has to be the clock the code decides
+  with** — `current_date` is the server's `TimeZone` and the code read `Asia/Bangkok`, so two
+  one-day windows were red for the seven hours a day the two name different days. Ask the database
+  what its zone is rather than reading the compose file, and **build the hour** to measure it: a
+  shifted session timezone reproduces the window on demand, where waiting for it is not a
+  measurement. Such a defect cannot then be *held* by a value assertion — a date comparison is
+  green for the rest of the day whatever the fixture says, and choosing the shift from the current
+  hour would let the clock decide which claim runs. The net is a scan of the suite's own text,
+  which is #186's move one seam along, and it says which distances from the boundary it cannot
+  see. (#187)
 - **A waiter that matches a path and a method also matches the document the `goto` is replacing** — the
   answer it hands back is a body Chromium discards on commit. Ask which document asked, by identity and
   never by a clock. (#160)

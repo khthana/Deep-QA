@@ -32,7 +32,7 @@
 
 const { after, before, test } = require('node:test');
 const assert = require('node:assert/strict');
-const { readFileSync } = require('node:fs');
+const { readFileSync, readdirSync } = require('node:fs');
 const path = require('node:path');
 
 const jwt = require('jsonwebtoken');
@@ -572,7 +572,7 @@ test('Google sign-in', async (t) => {
   // is exactly who meets this rule. `U_TEACH` carries none in the seed, so
   // `resetValidity` puts back the `NULL` it started with.
   await t.test('refuses an account whose validity window has closed', async () => {
-    await api.pool.query(`UPDATE users SET valid_until = current_date - 1 WHERE user_id = $1`, [
+    await api.pool.query(`UPDATE users SET valid_until = (now() at time zone 'Asia/Bangkok')::date - 1 WHERE user_id = $1`, [
       byAlias('U_TEACH'),
     ]);
 
@@ -591,7 +591,7 @@ test('Google sign-in', async (t) => {
   // these two functions make: a reason no subtest produces is a reason the
   // list cannot be checked against - #89.
   await t.test('refuses an account whose validity window has not opened', async () => {
-    await api.pool.query(`UPDATE users SET valid_from = current_date + 1 WHERE user_id = $1`, [
+    await api.pool.query(`UPDATE users SET valid_from = (now() at time zone 'Asia/Bangkok')::date + 1 WHERE user_id = $1`, [
       byAlias('U_TEACH'),
     ]);
 
@@ -848,4 +848,55 @@ test('the Google callback, with Google stubbed and everything after it real', as
       assert.equal(sessionCookie(response), undefined);
     }),
   );
+});
+
+/**
+ * #187. The two validity fixtures above build their day with the database's
+ * clock; the code they drive decides with Bangkok's. This is the net that says
+ * they do not drift back.
+ *
+ * It is a scan of the suite's own text and not an assertion about a value,
+ * because a value cannot express the defect at every hour. The two clocks are
+ * `TimeZone` on the server (UTC, asked on 4 October 2569 rather than read off
+ * `db/docker-compose.yml`) and `Asia/Bangkok` in `accounts.js`, so they name
+ * different days only between 00:00 and 07:00 Bangkok. A row comparing dates
+ * is therefore green for seventeen hours a day whatever the fixture says, and
+ * a fixed session timezone cannot help: no offset is a whole day away from
+ * +07:00, so the disagreement a row forces is itself only a few hours wide.
+ * Shifting the session zone **does** reproduce it on demand, which is how the
+ * fix was measured; what it cannot do is hold the claim afterwards. So the
+ * question is asked of the text, which is the same move `anchors.py` made for
+ * #186 and the same move the reasons scan above makes for #50.
+ *
+ * What it cannot see: a window built from the database's clock two or more
+ * days from the boundary, which is the shape `authorise.test.js` uses at -20
+ * and -10 days and which a one-day skew cannot reach. That is the line between
+ * what #187 found and what it deliberately left alone, and it is why this
+ * matches a literal 1 rather than any offset.
+ */
+test("no fixture builds a validity window a day out with the database's clock", () => {
+  // Built from pieces so the pattern does not match this file, which holds the
+  // only other copy of it. A marker that an instrument reads has to be in a
+  // syntax the instrument reads (#93); the inverse is a scan that finds itself.
+  const dbClock = new RegExp('current' + '_date' + String.raw`\s*[-+]\s*1\b`);
+  const windowed = /valid_(from|until)\s*=/;
+
+  const files = readdirSync(__dirname)
+    .filter(name => name.endsWith('.test.js'))
+    .sort();
+  // The census is evidence about the population it counted, so it says how big
+  // that was: a scan that silently read nothing would pass (#123).
+  assert.ok(files.length > 30, `only ${files.length} test files were read`);
+
+  const offenders = [];
+  for (const name of files) {
+    const text = readFileSync(path.join(__dirname, name), 'utf8');
+    text.split('\n').forEach((line, index) => {
+      if (windowed.test(line) && dbClock.test(line)) {
+        offenders.push(`${name}:${index + 1}`);
+      }
+    });
+  }
+
+  assert.deepEqual(offenders, []);
 });
