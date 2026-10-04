@@ -6579,7 +6579,10 @@ written by the same file that could not act on it.
 `git ls-files --others --ignored --exclude-standard --directory` once, 44ms, and the walk prunes
 anything git ignores that is on disk, named or not. The five names stay, for two reasons that
 are not sentiment: a tree pruned by name is never walked, which is what keeps `node_modules`
-cheap; and three of them are what answers on the day there is no git to ask. That day is the
+cheap; and they are what answers on the day there is no git to ask. The review asked how many
+of them the catalogue would have covered and the answer is two: `.git` is never in `ls-files`'s
+answer at all, and the two `DEEP-QA-*` trees are tracked rather than ignored, so only
+`node_modules` and `_local` are things git would have said anyway. That day is the
 third answer (#159), and this file already had the pattern — `CANNOT ASK` for a README with no
 stated total — so the new one says `CANNOT ASK` too, counts as a problem, and names what it
 can no longer see. Read the file's own comments for the rule before inventing one (#83).
@@ -6601,8 +6604,25 @@ with name-only pruning, **finds** the artefact. Then both were broken on purpose
 stubbed to an empty set fails three rows, and dropping the `problems += 1` fails the third-answer
 row — which is the only thing that says they are nets and not decoration (#124).
 
-Measured after: 51 rows in `anchors_test.py`, green; `anchors.py` problems 0 in all four
+**The review round found the defect the fix was one character short of.** `-z` was missing, and
+without it git prints any path holding a byte above 127 as a quoted, octal-escaped string, which
+no comparison in the walk can match — and this repository's documents are written in Thai. It
+was latent only because all fifteen ignored paths here are ASCII today, which is #126's shape one
+layer down: an instrument that cannot say what it did not look at, where what it could not look at
+is a spelling rather than a name. Measured in a throwaway repository rather than reasoned about,
+and the row that holds it is red the moment `-z` comes off and green with it — alone, once the
+split goes back to the newline it used before, which is what makes it that decision's control and
+not a mutant that stops everything. Two more came out of the same round: `timeout=30`, whose
+`TimeoutExpired` is not an `OSError` and so is a third answer of its own rather than a hang at
+closing time; and the catalogue asked **once** and handed to the walk, so the sentence that
+reports the number is about the walk that happened and not about a second question asked after it
+(the same shape as a cleanup speaking over the claim, #181, one seam along). The deviation from
+the ticket's own `check-ignore` is now written down where it was decided: it would also prune a
+document that is tracked *and* ignored, which is a document somebody added on purpose and whose
+rows are ours to fix, and it is one call per path.
+
+Measured after: 53 rows in `anchors_test.py`, green; `anchors.py` problems 0 in all four
 questions with a real artefact on disk **and** with none, which is the fix's point — 114 both
 times, where the old walk said 115 and 114. Backend 802/802. And the README's own count of this
 file's rows said 29 while the file held 43: a hand-kept number in a file that grows every ticket,
-corrected to 51 with the date beside it (#119).
+corrected to 53 with the date beside it (#119).

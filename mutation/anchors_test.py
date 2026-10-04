@@ -441,23 +441,31 @@ Received: 404
 class Ignored(TempStore):
     """What the catalogue says is on disk and is not this repository's - #186."""
 
-    def repo(self, ignore, **files):
-        """A real git repository, holding a `.gitignore` and each named file.
+    def repo(self, files, **ignores):
+        """A real git repository: `files` is {"a/b.md": text}, `ignores` the
+        `.gitignore` files, named by their directory (`root=`, `e2e=`).
 
-        A real one and not a directory of the right name, because what is being
-        measured is git's answer: a fixture that only *looks* ignored passes
-        whether the code asks anybody or not (#141).
+        A real repository and not a directory of the right name, because what
+        is being measured is git's answer: a fixture that only *looks* ignored
+        passes whether the code asks anybody or not (#141).
         """
         subprocess.check_output(["git", "init", "-q"], cwd=self.root,
                                 stderr=subprocess.STDOUT)
-        self.write(".gitignore", ignore)
+        for where, text in sorted(ignores.items()):
+            name = ".gitignore" if where == "root" else where + "/.gitignore"
+            self.put(name, text)
         for name, text in sorted(files.items()):
-            path = os.path.join(self.root, *name.split("__"))
-            if not os.path.isdir(os.path.dirname(path)):
-                os.makedirs(os.path.dirname(path))
-            with io.open(path, "w", encoding="utf-8", newline="\n") as handle:
-                handle.write(text)
+            self.put(name, text)
         return self.root
+
+    def put(self, name, text):
+        """One file at a slash-separated path under the root, parents made."""
+        path = os.path.join(self.root, *name.split("/"))
+        if not os.path.isdir(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+        with io.open(path, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(text)
+        return path
 
     def relative(self, paths):
         return sorted(os.path.relpath(path, self.root).replace(os.sep, "/")
@@ -467,9 +475,33 @@ class Ignored(TempStore):
         # The defect: `test-results/` is in `e2e/.gitignore` and not in
         # `NOT_OURS`, so git cannot see the artefact and the walk can.
         root = self.repo(
-            "test-results/\n",
-            **{"docs__06.md": "| a | b |\n|---|---|\n| 1 | 2 |\n",
-               "e2e__test-results__116a-row-4-chromium__error-context.md": ARTEFACT})
+            {"docs/06.md": "| a | b |\n|---|---|\n| 1 | 2 |\n",
+             "e2e/test-results/116a-row-4-chromium/error-context.md": ARTEFACT},
+            e2e="test-results/\n")
+        self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
+
+    def test_the_gitignore_that_hides_it_is_the_nested_one(self):
+        # The row above writes `e2e/.gitignore`, which is where the real one is
+        # (`e2e/.gitignore:2`), and this says that is the shape being measured:
+        # a pattern at the root would have been a different claim, and
+        # `--exclude-standard` is what reads the nested file at all.
+        root = self.repo(
+            {"e2e/test-results/x-chromium/error-context.md": ARTEFACT},
+            e2e="test-results/\n")
+        self.assertIn("e2e/test-results/", anchors.ignored(root)[0])
+        self.assertEqual(anchors.markdown(root), [])
+
+    def test_a_tree_whose_name_is_thai_is_pruned_like_any_other(self):
+        # Found by the review of #186: git prints a path holding any byte above
+        # 127 quoted and octal-escaped unless it is asked otherwise, so without
+        # `-z` the answer for this tree is
+        # `"\340\271\200..."` and no comparison in the walk can match it.
+        # The documents here are written in Thai, so this is the next failure
+        # and not a hypothetical one.
+        root = self.repo(
+            {"docs/06.md": "",
+             u"\u0e02\u0e2d\u0e07\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07/x.md": ""},
+            root=u"\u0e02\u0e2d\u0e07\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07/\n")
         self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
 
     def test_the_walk_finds_that_artefact_when_nobody_is_asked(self):
@@ -477,9 +509,9 @@ class Ignored(TempStore):
         # tautology: the artefact is reachable, and the catalogue is what
         # removes it. Break the real site before trusting the instrument (#141).
         root = self.repo(
-            "test-results/\n",
-            **{"docs__06.md": "",
-               "e2e__test-results__116a-row-4-chromium__error-context.md": ARTEFACT})
+            {"docs/06.md": "",
+             "e2e/test-results/116a-row-4-chromium/error-context.md": ARTEFACT},
+            e2e="test-results/\n")
         walked = []
         for where, directories, names in os.walk(root):
             directories[:] = [name for name in directories if name not in anchors.NOT_OURS]
@@ -489,13 +521,14 @@ class Ignored(TempStore):
     def test_a_document_the_catalogue_ignores_by_name_is_not_in_it_either(self):
         # The species is *what the catalogue says*, not *what a tree is called*,
         # so a single ignored file is the same answer as an ignored tree.
-        root = self.repo("scratch-*.md\n",
-                         **{"docs__06.md": "", "scratch-notes.md": ""})
+        root = self.repo({"docs/06.md": "", "scratch-notes.md": ""},
+                         root="scratch-*.md\n")
         self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
 
     def test_what_the_catalogue_says_about_the_fixture(self):
-        root = self.repo("test-results/\n",
-                         **{"e2e__test-results__x-chromium__error-context.md": ARTEFACT})
+        root = self.repo(
+            {"e2e/test-results/x-chromium/error-context.md": ARTEFACT},
+            e2e="test-results/\n")
         theirs, could_not_ask = anchors.ignored(root)
         self.assertIsNone(could_not_ask)
         self.assertIn("e2e/test-results/", theirs)
@@ -514,9 +547,12 @@ class Ignored(TempStore):
         self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
 
     def test_the_real_repository_can_be_asked(self):
+        # What is asserted is that the question can be put here and that the
+        # walk obeys the answer - not which trees this machine happens to hold.
+        # `frontend/node_modules/` would be red on a clone where nobody has run
+        # `npm install`, for a reason that is not the code's.
         theirs, could_not_ask = anchors.ignored()
         self.assertIsNone(could_not_ask)
-        self.assertIn("frontend/node_modules/", theirs)
         here = [os.path.relpath(path, anchors.ROOT).replace(os.sep, "/")
                 for path in anchors.markdown()]
         for path in here:
@@ -548,6 +584,10 @@ class Ignored(TempStore):
         # corpus - the file count, which moved 115 -> 114 while nobody added a
         # document - and not a false report about somebody else's table.
         path = self.write("error-context.md", ARTEFACT)
+        # The precondition, asserted where it is used (#154): the answer below
+        # is only interesting because the text *has* pipes in it, and a fixture
+        # that lost them would read the same.
+        self.assertGreaterEqual(ARTEFACT.count("|"), 3)
         self.assertEqual(anchors.columns([path]), (0, 0, 0))
 
 

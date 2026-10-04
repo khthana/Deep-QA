@@ -471,31 +471,48 @@ NOT_OURS = ("node_modules", ".git", "_local", "DEEP-QA-BACKEND", "DEEP-QA-FRONTE
 # here. `--others --ignored` is the pair that means *ignored and untracked*, and
 # `--directory` collapses an ignored tree to its own line instead of printing
 # every file under it.
-CATALOGUE = ("git", "ls-files", "--others", "--ignored", "--exclude-standard", "--directory")
+#
+# `-z` is here for Thai rather than for newlines in filenames: without it git
+# prints any path holding a byte above 127 quoted and octal-escaped, which no
+# comparison below could ever match, and this repository's documents are
+# written in Thai. Measured in a throwaway repository on 4 October 2569, after
+# the review of #186 asked - the fix was latent only because all fifteen
+# ignored paths here are ASCII today, which is #126's shape one layer down.
+#
+# `check-ignore`, which #186 proposed, is a different answer and not only a
+# different spelling: it would also prune a document that is tracked *and*
+# ignored, which is a document somebody added on purpose and whose rows are
+# ours to fix. It is also one call per path rather than one call.
+CATALOGUE = ("git", "ls-files", "--others", "--ignored", "--exclude-standard",
+             "--directory", "-z")
 
 
 def ignored(root=None):
     """`(paths, could_not_ask)` - what the catalogue says is not this repository's.
 
     The paths are relative to `root`, slashes forward, and an ignored tree ends
-    in one, which is how git prints them. `could_not_ask` is the third answer
+    in one, which is how git prints them under `-z` - raw bytes, no quoting. `could_not_ask` is the third answer
     (#159): on the day there is no git to ask, this says so in a sentence
     instead of handing back an empty set that reads like *nothing is ignored*.
     """
     root = ROOT if root is None else root
     try:
         answer = subprocess.run(CATALOGUE, cwd=root, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+                                stderr=subprocess.PIPE, timeout=30)
+    except subprocess.TimeoutExpired:
+        # Its own answer and not an `OSError`: a git that hangs would otherwise
+        # hang the closing-time run with nothing printed.
+        return frozenset(), "git did not answer within 30s"
     except OSError as refusal:
         return frozenset(), "git could not be run (%s)" % refusal
     if answer.returncode != 0:
         said = answer.stderr.decode("utf-8", "replace").strip().split("\n")
         return frozenset(), "git refused (%s)" % (said[0] or "exit %d" % answer.returncode)
-    printed = answer.stdout.decode("utf-8", "replace").split("\n")
+    printed = answer.stdout.decode("utf-8", "replace").split("\0")
     return frozenset(line for line in printed if line), None
 
 
-def markdown(root=None):
+def markdown(root=None, theirs=None):
     """Every markdown file this repository owns, asked of the tree.
 
     The question below is about *rendering*, which has nothing to do with where
@@ -523,13 +540,25 @@ def markdown(root=None):
     nobody has thought of yet.
 
     The names are kept rather than replaced because they are cheaper - a tree
-    pruned by name is never walked - and because three of them are what answers
-    on the day git cannot be asked. The walk is kept instead of `git ls-files`
+    pruned by name is never walked - and because the catalogue cannot answer for
+    all of them: `.git` is never listed by `ls-files`, and the two `DEEP-QA-*`
+    trees are tracked, so only `node_modules` and `_local` are things git would
+    have said anyway. They are also the answer on the day there is no git to
+    ask. The walk is kept instead of `git ls-files`
     for the reason it always was: git cannot see a document that has not been
     added yet, which is the document most likely to have a row nobody has looked
-    at. Measured on 4 October 2569 it is still exactly `git ls-files '*.md'`
-    minus the four `DEEP-QA-*` files plus the unadded one, with a real artefact
-    on disk this time.
+    at. Measured on 4 October 2569, with a real artefact on disk this time, it
+    is still exactly `git ls-files '*.md'` minus the four `DEEP-QA-*` files:
+    118 - 4 + 0 = 114, where the nought is the unadded documents, of which
+    there are none today. #186's own table said 117 and 1; both were true when
+    it was written and the pair expired together, in one commit, which is why
+    this line carries the arithmetic and not only the total.
+
+    `theirs` is the catalogue's answer when a caller already has it, which is
+    how `columns()` makes its summary describe the walk that happened rather
+    than a second question asked afterwards. A caller that leaves it out gets
+    its own call, and a caller that cannot ask gets the names only and is not
+    told - that part is `columns()`'s to say, because it is the one that prints.
 
     What the catalogue is *not* is a report: measured on the same day, every one
     of the 112 pipes in a real `error-context.md` sits inside a fence, so
@@ -538,7 +567,7 @@ def markdown(root=None):
     the corpus, and a count nobody can stand behind is enough.
     """
     root = ROOT if root is None else root
-    theirs = ignored(root)[0]
+    theirs = ignored(root)[0] if theirs is None else theirs
     found = []
     for where, directories, names in os.walk(root):
         inside = os.path.relpath(where, root).replace("\\", "/")
@@ -558,8 +587,12 @@ def columns(files=None):
     today's corpus is clean by construction the moment this lands.
     """
     named = files is not None
+    could_not_ask = None
     if not named:
-        files = markdown()
+        # Asked once and handed to the walk, so the summary below is about the
+        # files that were read and not about a second question (#186).
+        theirs, could_not_ask = ignored()
+        files = markdown(theirs=theirs)
     problems = tables = rows = fenced_lines = 0
     for path in files:
         short = os.path.relpath(path, ROOT).replace("\\", "/")
@@ -594,18 +627,18 @@ def columns(files=None):
     if not named:
         # What it leaves out goes in the summary rather than only in the README,
         # because a tool that cannot say what it did not look at is the same
-        # species as the hand-kept numbers it checks (#123). Asked a second time
-        # here, once for the walk and once for the sentence about it, because an
-        # answer carried between the two could be a stale one and the call is
-        # 44ms (#186).
-        theirs, could_not_ask = ignored()
+        # species as the hand-kept numbers it checks (#123).
         if could_not_ask:
             problems += 1
             print("CANNOT ASK -> %s; pruned by the %d names only, so a tree nobody "
                   "has named is counted as ours" % (could_not_ask, len(NOT_OURS)))
-        print("columns: reading %d markdown files of the whole repository, "
-              "outside %s and the %d paths git ignores"
-              % (len(files), ", ".join(NOT_OURS), len(theirs)))
+            print("columns: reading %d markdown files of the whole repository, "
+                  "outside %s and nothing else"
+                  % (len(files), ", ".join(NOT_OURS)))
+        else:
+            print("columns: reading %d markdown files of the whole repository, "
+                  "outside %s and the %d paths git ignores"
+                  % (len(files), ", ".join(NOT_OURS), len(theirs)))
         print("columns: tables %d | rows %d | lines skipped inside fences %d | problems %d"
               % (tables, rows, fenced_lines, problems))
     return problems, tables, rows
