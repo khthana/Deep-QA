@@ -7,6 +7,9 @@ import { Outlet, useLocation } from 'react-router-dom'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import { breadcrumbNameMap } from '../components/breadcrumbNameMap'
 import { getMySection } from '../api/teaching'
+import { getCourseOutcome } from '../api/clos'
+import { getActivity } from '../api/activities'
+import { getRubric } from '../api/rubrics'
 import Alert from '@mui/material/Alert'
 import Snackbar from '@mui/material/Snackbar'
 
@@ -35,6 +38,63 @@ export function teacherSectionCrumb(pathname) {
   return { id: segments[2], index: 2 }
 }
 
+/**
+ * Where a deeper id sits in an address, and which call can name it -- #185.
+ *
+ * The same defect as `teacherSectionCrumb`'s one segment further down, and in
+ * three shapes rather than one: a CLO id under `courseOutcomes`, an Activity
+ * id under `learningActivities`, and a Rubric id under `/main/rubrics`. All
+ * three are surrogate keys (ADR-0001) that the rebuild put in the address, so
+ * `breadcrumbNameMap` has no entry for them and never could, and the trail
+ * printed the number. The delivered system printed a name in all three places:
+ * it navigated with `CLO-${clo.clo_number}` and used the constant words
+ * `activityScores` and `edit-Rubric`, so this is restoring what was there and
+ * not adding something new -- which is what #185's own correction settles.
+ *
+ * One resolver and one table rather than three effects, because the three
+ * differ only in which request names the segment. The `kind` travels with the
+ * id for the reason #116's index does: the pairing guard below needs both, and
+ * two of the three kinds sit at the same index.
+ */
+export function labelledIdCrumb(pathname) {
+  const segments = pathname.split('/').filter(Boolean)
+  const numeric = index => /^\d+$/.test(segments[index] || '')
+
+  if (segments[0] === 'main' && segments[1] === 'rubrics' && numeric(2)) {
+    return { kind: 'rubric', id: segments[2], index: 2 }
+  }
+
+  const section = teacherSectionCrumb(pathname)
+  if (!section) return null
+
+  if (segments[3] === 'courseOutcomes' && numeric(4)) {
+    return { kind: 'clo', id: segments[4], index: 4, sectionId: section.id }
+  }
+  if (segments[3] === 'learningActivities' && numeric(4)) {
+    return { kind: 'activity', id: segments[4], index: 4, sectionId: section.id }
+  }
+
+  return null
+}
+
+/**
+ * What each kind is called, asked of the server -- #185.
+ *
+ * Each is the single-item read of its own module and nothing more: the shell
+ * is above the screens and holds no list, and sharing a store with the screen
+ * below would turn two claims into one no mutant could measure apart (#68).
+ *
+ * The text is the label a person reads, which is not the id: `clo_number` is
+ * *CLO-1* and `rubric_code` is institution-wide, while `clo_id` and
+ * `rubric_id` are keys. The CLO's number is drawn as it stands rather than
+ * with a word in front of it, because it already carries one.
+ */
+const DEEPER_NAMES = {
+  clo: async crumb => (await getCourseOutcome(crumb.sectionId, crumb.id)).clo.clo_number,
+  activity: async crumb => (await getActivity(crumb.sectionId, crumb.id)).activity.activity_name,
+  rubric: async crumb => `Rubric ${(await getRubric(crumb.id)).rubric.rubric_code}`,
+}
+
 export default function MainPage() {
   const location = useLocation()
   const { acting } = useAuth()
@@ -42,6 +102,7 @@ export default function MainPage() {
   const [breadcrumbItem, setBreadcrumbItem] = useState([])
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [sectionLabel, setSectionLabel] = useState(null)
+  const [deepLabel, setDeepLabel] = useState(null)
   const [alert, setAlert] = useState({
     open: false,
     message: '',
@@ -134,9 +195,59 @@ export default function MainPage() {
     }
   }, [sectionIdInPath])
 
+  const deeper = labelledIdCrumb(location.pathname)
+  const deeperKind = deeper ? deeper.kind : null
+  const deeperId = deeper ? deeper.id : null
+  const deeperSectionId = deeper ? deeper.sectionId ?? null : null
+
+  /**
+   * The name of whatever the deeper id names -- #185.
+   *
+   * #116's effect one segment down, and deliberately its twin: null on entry,
+   * one request per address, the answer drawn only behind `isCurrent()` so a
+   * superseded one is dropped (#133's family, and written as an `await` behind
+   * a predicate so `scripts/superseded-answers.js` can read it), and the label
+   * stored with the key it was asked for.
+   *
+   * The key is `kind:id` and not the id alone, because `:cloId` and
+   * `:activityId` are both the fifth segment: a move from one Activity's
+   * evidence to the CLO with the same id renders once with the new address and
+   * the old answer still in state, which is #179's raceless sibling and needs
+   * no race to be wrong. Paired, the crumb falls back to the number for that
+   * frame, which is what was there before and says nothing untrue.
+   *
+   * A refusal is left to say nothing, for #116's reasons exactly: an id in an
+   * address somebody typed may be somebody else's, the screen below words that
+   * refusal, and an expired session is announced by `api/client.js` wherever
+   * the person has got to. Inventing *CLO-{id}* from the segment would be a
+   * sentence about an outcome that does not exist.
+   */
+  useEffect(() => {
+    setDeepLabel(null)
+    if (!deeperKind) return
+
+    let current = true
+
+    const load = async isCurrent => {
+      try {
+        const text = await DEEPER_NAMES[deeperKind]({ id: deeperId, sectionId: deeperSectionId })
+        if (isCurrent()) setDeepLabel({ key: `${deeperKind}:${deeperId}`, text })
+      } catch (refusal) {
+        if (isCurrent()) setDeepLabel(null)
+      }
+    }
+
+    load(() => current)
+
+    return () => {
+      current = false
+    }
+  }, [deeperKind, deeperId, deeperSectionId])
+
   useEffect(() => {
     const pathnames = location.pathname.split('/').filter(Boolean)
     const sectionCrumb = teacherSectionCrumb(location.pathname)
+    const deepCrumb = labelledIdCrumb(location.pathname)
 
     const crumbs = pathnames.map((path, index) => {
       const decodedPath = decodeURIComponent(path)
@@ -153,6 +264,17 @@ export default function MainPage() {
         label = sectionLabel.text
       }
 
+      // #185, the same pairing one segment down. `deepCrumb` is recomputed here
+      // from the address being drawn rather than read from the render above, so
+      // the crumb and the key it is compared against come from one source.
+      if (
+        deepCrumb &&
+        index === deepCrumb.index &&
+        deepLabel?.key === `${deepCrumb.kind}:${deepCrumb.id}`
+      ) {
+        label = deepLabel.text
+      }
+
       return { label, href }
     })
 
@@ -162,7 +284,7 @@ export default function MainPage() {
       return
     }
     setBreadcrumbItem(crumbs)
-  }, [location, acting, sectionLabel])
+  }, [location, acting, sectionLabel, deepLabel])
 
   /**
    * The grants and the acting one come from the context, which reads them

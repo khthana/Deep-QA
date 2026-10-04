@@ -435,3 +435,74 @@ test('the wrong role and the anonymous are refused at the door', async () => {
   assert.equal((await request(api.app).get(url(section.id))).status, 401);
   assert.equal((await request(api.app).delete(url(section.id) + '/1')).status, 401);
 });
+
+/**
+ * #185's read: one Activity, by id, for the shell's breadcrumb.
+ *
+ * Appended at the end so the line numbers this file's tickets cite still
+ * land. The route is `sectionOf` then `activityOf`, so what these rows are
+ * about is the pairing and the two sentences -- the columns of the list are
+ * #32's rows, above.
+ */
+const oneActivity = (cookie, sectionId, activityId) =>
+  request(api.app)
+    .get(url(sectionId) + '/' + activityId)
+    .set('Cookie', cookie);
+
+test('one activity comes back on its own, carrying the name a person reads', async () => {
+  // The crumb is `activity_name` and not the id in the address, which is the
+  // whole of #185: `activities.id` is a surrogate key (ADR-0001).
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const [first] = (await listOf(cookie, section.id)).activities;
+
+  const answered = await oneActivity(cookie, section.id, first.id);
+  assert.equal(answered.status, 200);
+  assert.equal(answered.body.activity.id, first.id);
+  assert.equal(answered.body.activity.activity_name, first.activity_name);
+  assert.ok(answered.body.activity.activity_name, 'the name is what the crumb is for');
+  assert.equal(answered.body.activities, undefined, 'the single read answers one, not the list');
+});
+
+test("one activity of the sibling Section is not readable through my address", async () => {
+  // #28's pairing rule at the read, where the DELETE above already holds it:
+  // a real id, my own Section, and somebody else's work.
+  const mine = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const sibling = await seededSection('U_MULTI', CURRENT_YEAR);
+  const hers = await deletable(sibling, CURRENT_YEAR);
+
+  const refused = await oneActivity(mine, section.id, hers);
+  assert.equal(refused.status, 404);
+  assert.equal(refused.body.message, REFUSALS.activityNotFound);
+
+  // And the sibling reads her own through hers, which is what says the
+  // refusal was about the pairing and not about the row.
+  const theirs = await teaching('U_MULTI');
+  assert.equal((await oneActivity(theirs, sibling.id, hers)).status, 200);
+
+  for (const id of ['abc', '1;drop', '9999999999999999999999']) {
+    const unusable = await oneActivity(mine, section.id, id);
+    assert.equal(unusable.status, 404, 'id ' + id + ' answered ' + unusable.status);
+    assert.equal(unusable.body.message, REFUSALS.activityNotFound);
+  }
+});
+
+test('one activity through somebody else\'s Section is the section refusal', async () => {
+  const stranger = await teaching('U_TEACH2');
+  const mine = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const [first] = (await listOf(mine, section.id)).activities;
+
+  const refused = await oneActivity(stranger, section.id, first.id);
+  assert.equal(refused.status, 404);
+  assert.equal(refused.body.message, REFUSALS.sectionNotFound);
+});
+
+test('one activity is behind the same door as the list', async () => {
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const dept = await signInAs('U_DEPT');
+
+  assert.equal((await oneActivity(dept, section.id, 1)).status, 403);
+  assert.equal((await request(api.app).get(url(section.id) + '/1')).status, 401);
+});

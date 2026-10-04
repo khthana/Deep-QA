@@ -30,3 +30,14 @@ export const updateCourseOutcome = (sectionId, cloId, draft) =>
 
 export const deleteCourseOutcome = (sectionId, cloId) =>
   del(`/api/teaching/sections/${sectionId}/clos/${cloId}`)
+
+/**
+ * One CLO of this Section's Offering, by id -- #185.
+ *
+ * For the shell, which is above the screen and holds no list: the breadcrumb
+ * needs the `clo_number` of the one CLO the address names, and `clo_id` is a
+ * surrogate key (ADR-0001) that reads as a bare number until something asks.
+ * The screens below keep using `getCourseOutcomes`; nothing shares a store.
+ */
+export const getCourseOutcome = (sectionId, cloId) =>
+  get(`/api/teaching/sections/${sectionId}/clos/${cloId}`)

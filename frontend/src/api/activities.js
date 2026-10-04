@@ -25,3 +25,12 @@ export const updateActivity = (sectionId, activityId, draft) =>
 
 export const deleteActivity = (sectionId, activityId) =>
   del(`/api/teaching/sections/${sectionId}/activities/${activityId}`)
+
+/**
+ * One Activity of this Section, by id -- #185.
+ *
+ * The shell's breadcrumb, for the reason `getCourseOutcome` gives: the crumb
+ * needs `activity_name`, and `activities.id` is a surrogate key (ADR-0001).
+ */
+export const getActivity = (sectionId, activityId) =>
+  get(`/api/teaching/sections/${sectionId}/activities/${activityId}`)

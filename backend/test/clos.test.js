@@ -609,3 +609,71 @@ test('an id too large for the column is ไม่พบ, not a 500', async () =>
     assert.equal(byPlo.body.message, REFUSALS.ploNotMapped);
   }
 });
+
+/**
+ * #185's read: one CLO, by id, for the shell's breadcrumb.
+ *
+ * Appended at the end so the line numbers this file's own tickets cite still
+ * land. The route is the list's question asked of one row: `offeringOf` then
+ * `cloOf`, which is why these rows are about the pairing and the two
+ * refusals rather than about the columns, which #27's rows already hold.
+ */
+const oneClo = (cookie, sectionId, cloId) =>
+  request(api.app)
+    .get(url(sectionId) + '/' + cloId)
+    .set('Cookie', cookie);
+
+test('one CLO comes back on its own, carrying the number a person reads', async () => {
+  // The crumb is `clo_number` and not the id in the address: the id is a
+  // surrogate key (ADR-0001) and the number is the label, which is the whole
+  // of #185. So this row asserts the label, not merely a 200.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const first = (await list(cookie, section)).body.clos[0];
+
+  const answered = await oneClo(cookie, section, first.clo_id);
+  assert.equal(answered.status, 200);
+  assert.equal(answered.body.clo.clo_id, first.clo_id);
+  assert.equal(answered.body.clo.clo_number, 'CLO-1');
+  assert.equal(answered.body.clos, undefined, 'the single read answers one CLO, not the set');
+});
+
+test('one CLO of another year is not readable through this year Section', async () => {
+  // The grain refuses, as it does for the edit and the delete above: a real
+  // id, a Section the caller really teaches, and the wrong Offering.
+  const cookie = await teaching('U_TEACH');
+  const now = await seededSection('U_TEACH', CURRENT_YEAR);
+  const lastYears = (await list(cookie, await seededSection('U_TEACH', PRIOR_YEAR))).body.clos[0];
+
+  const refused = await oneClo(cookie, now, lastYears.clo_id);
+  assert.equal(refused.status, 404);
+  assert.equal(refused.body.message, REFUSALS.cloNotFound);
+
+  for (const id of ['not-a-clo', ...OVERWIDE_IDS]) {
+    const unusable = await oneClo(cookie, now, id);
+    assert.equal(unusable.status, 404, id + ' answered ' + unusable.status);
+    assert.equal(unusable.body.message, REFUSALS.cloNotFound);
+  }
+});
+
+test('one CLO through a Section the caller does not teach is the section refusal', async () => {
+  // The order of the two gates, read from the outside: the stranger is told
+  // about the Section and never about the CLO, which is the sentence #24 gave
+  // and the reason the shell can ask without leaking which ids are real.
+  const stranger = await teaching('U_TEACH2');
+  const mine = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const first = (await list(mine, section)).body.clos[0];
+
+  const refused = await oneClo(stranger, section, first.clo_id);
+  assert.equal(refused.status, 404);
+  assert.equal(refused.body.message, REFUSALS.sectionNotFound);
+});
+
+test('one CLO is behind the same door as the set', async () => {
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const dept = await signInAs('U_DEPT');
+
+  assert.equal((await oneClo(dept, section, 1)).status, 403);
+  assert.equal((await request(api.app).get(url(section) + '/1')).status, 401);
+});

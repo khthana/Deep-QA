@@ -447,6 +447,34 @@ function activityRoutes(pool) {
   );
 
   /**
+   * One Activity, by id -- #185's read, for the shell's breadcrumb.
+   *
+   * The Section first and the Activity second, which is the DELETE's order
+   * and the same two sentences: a stranger hears about the Section, and an
+   * id that is not of this Section hears about the Activity. Two columns,
+   * because the crumb is the name: the shell is above the screen and holds no
+   * list, and asking for the whole list to read one label out of it is the
+   * request this answers instead.
+   */
+  router.get(
+    '/teaching/sections/:sectionId/activities/:activityId',
+    requireRole(...TEACHING),
+    async (req, res, next) => {
+      try {
+        const section = await sectionOf(pool, req, req.params.sectionId);
+        if (!section) return notThisSection(res);
+
+        const activity = await activityOf(section.section_id, req.params.activityId);
+        if (!activity) return notThisActivity(res);
+
+        res.json({ activity });
+      } catch (error) {
+        next(error);
+      }
+    },
+  );
+
+  /**
    * Which of the body's four ids, if any, belongs to somebody else's grain —
    * and then whether the attribution itself holds together.
    *

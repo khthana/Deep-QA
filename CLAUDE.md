@@ -56,7 +56,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   it.** It has been wrong twelve ways: aged (#66, #111, #55), never true (#102), generalised from
   the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
-  its own table (#133), a key's name read as its text (#127), an inference drawn from a
+  its own table (#133), a key's name read as its text (#127) or a parameter's name read as a
+  claim about what the caller puts in it (#185), an inference drawn from a
   measurement that was itself correct (#165, #186), a list of verbs naming an action no route performs
   (#58), a count of red rows inflated by the runner's output shape, with an explanation under it
   that was arithmetically impossible before anybody ran anything (#187) — and the sheet itself
@@ -234,6 +235,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **Two mutants that vary the same property cannot see a third property.** One crafted value
   proves one link of a guard; craft one per link, before the sweep. Say which of three a clause
   is: proved, structurally unreachable, or untested. (#96, #107, #102)
+- **A mutant name can collide across sheets, and the sheet is where it shows** — the harness
+  keys a mutant inside its own file, so two tickets fixing the same shape write the same name,
+  and a criteria sheet that carries both tickets' rows then reads as one mutant cited twice.
+  Rename the second before the table is written. (#185)
 - **A mutant outlives its ticket but not its anchor.** Run `python mutation/anchors.py` while
   finishing a ticket, anchor to the code a mutant breaks and never to the comment beside it, and
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
@@ -460,6 +465,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   then give each kind of work its own flag. A counter that changes what the screen disables is a
   question, not a fix, and so is a release more careful than the one it replaced; the clause no
   mutant can reach is where to look for one. (#142)
+- **A guard that pairs an answer with what it was asked for has to name what *identifies* the
+  request** — an id alone does not, once two kinds of request share a position in the address.
+  Two kinds at one segment make the key `kind:id`, and one resolver with a table of callers
+  rather than one effect per kind. (#185)
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)

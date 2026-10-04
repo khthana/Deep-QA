@@ -243,6 +243,34 @@ function cloRoutes(pool) {
     },
   );
 
+  /**
+   * One CLO, by id -- #185's read, for the shell's breadcrumb.
+   *
+   * The same two questions as the edit below, in the same order and with the
+   * same two sentences: the Section first, so a stranger is told about the
+   * Section and never about the CLO, then the Offering's own grain. It exists
+   * because the shell is above the screen and holds no list: the crumb needs
+   * the one row the address names, and asking for the whole set to read one
+   * label out of it is the request this answers instead.
+   */
+  router.get(
+    '/teaching/sections/:sectionId/clos/:cloId',
+    requireRole(...TEACHING),
+    async (req, res, next) => {
+      try {
+        const offering = await offeringOf(pool, req, req.params.sectionId);
+        if (!offering) return res.status(404).json({ message: REFUSALS.sectionNotFound });
+
+        const clo = await cloOf(pool, offering, req.params.cloId);
+        if (!clo) return res.status(404).json({ message: REFUSALS.cloNotFound });
+
+        return res.status(200).json({ clo });
+      } catch (error) {
+        return next(error);
+      }
+    },
+  );
+
   /** Adding one — the first criterion. */
   router.post(
     '/teaching/sections/:sectionId/clos',

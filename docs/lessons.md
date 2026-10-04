@@ -6715,3 +6715,76 @@ since, and `# fail` counts a parent suite beside the rows under it. What #187 co
 the `auth.test.js` column, and measured per file it is exactly what the sheet claims, four rows and
 three. A dated measurement is left where it stands (#54); the number reported is the one measured
 (#102).
+
+## #185 — three segments, three prices, and a precondition that passed on a field that was not there
+
+#116 taught the shell to read the Section out as a name. #185 is the same defect one segment
+deeper, in the three shapes that were left: a CLO id under `courseOutcomes`, an Activity id under
+`learningActivities`, and a Rubric id under `/main/rubrics`. All three are surrogate keys
+(ADR-0001) that the rebuild put in the address, and `breadcrumbNameMap` turns a segment that is a
+*word* into a sentence, so none of them could ever have an entry there.
+
+**The ticket had already corrected itself, and the correction is what decided the work.** Its body
+filed `:cloId` as a *question* — the delivered system had the same route, so its trail must have
+printed the id too. A comment on it the same day measured the caller instead of the route table:
+`CourseOutcomes.js` navigated with `CLO-${clo.clo_number}`, so the segment carried **`CLO-3`**, a
+label. All three shapes are therefore restorations, and `docs/06` §Out of Scope had nothing left to
+ask. What remained was one question that was the owner's, and it was asked and answered: *the price
+of the name*. The answer was to add the two single-item endpoints rather than have the shell pull
+the same list the screen below already pulls, because sharing a store turns two claims into one no
+mutant can measure apart (#68). A parameter's name says nothing about what the caller put in it —
+#127 taught the other half of this, a key's name read as its text.
+
+**The three shapes cost three different things, and the ticket's own table said so.** `:rubricId`
+needed no server work at all: `GET /api/rubrics/:rubricId` has answered one rubric since #21. The
+other two had only the Section's whole list, so this ticket added
+`GET …/sections/:sectionId/clos/:cloId` and `GET …/sections/:sectionId/activities/:activityId`,
+each the list's own two questions asked of one row — `offeringOf` then `cloOf`, `sectionOf` then
+`activityOf` — with the gates in the order the siblings use, so a stranger is told about the
+Section and never about what is inside it.
+
+**Three kinds that share a segment make the pairing key `kind:id` and not `id`.** #116 stores the
+label with the id it was asked for and draws it only where the two agree, which is #179's raceless
+sibling: a move between two Sections renders once with the new address and the previous answer
+still in state. Here `:cloId` and `:activityId` are both the fifth segment, so a move from an
+Activity's evidence to a CLO that happens to carry the same number would satisfy a guard keyed by
+the id alone. The key had to name what identifies the request, not what distinguishes it inside one
+kind.
+
+That guard has no row, and for a different reason than #116's two. #116's cannot be built at all
+today — one account, one listed Section. This one can be built; what cannot be read is the wrongness,
+because the only wrong frame is a single render, and what the crumb falls back to in that frame is
+the number, which is also what it says before any answer arrives. *A read that cannot fail is not a
+row* (#50). Measuring it wants a sample per frame (#164), which is adjacent work, so
+`docs/acceptance/10` says so with the date rather than with a mark.
+
+**A precondition can pass on a field that does not exist.** Row 3's fixture reads the rubric list
+and asserts the code is not the id, so the row cannot be green by the two coinciding. It passed on
+the first run — and then the row died at a 404, because `rubrics.js` returns the column as `r.id`
+and the row had asked for `rubric.rubric_id`. `undefined` is not equal to a code, so the guard was
+satisfied by the absence of the thing it was guarding, and the address it built was
+`/main/rubrics/undefined/criteria`. This is #164's sampler one seam along: *an instrument that
+reads what a thing holds cannot tell an absent thing from an empty one* — there a control, here a
+field of a response. The repair that survives a renamed column is to assert the value is there
+before asserting what it is not, which is what the row does now.
+
+**The fixture is the prior year's Section, and the seed's own order is why.** `seedOutcomesForYear`
+runs the current year first, so `clo_id` 1..9 carry `CLO-1`..`CLO-9` — and on those the ticket's own
+rejected fallback, `CLO-${id}`, reads correctly. The 2568 set carries the same nine numbers on nine
+other ids. Measured with the mutant applied, the crumb read `CLO-10` where it should read `CLO-1`,
+which is the whole of #117: *a mutant that swaps one implementation for another is invisible
+wherever the two agree, so the fixture is built where they disagree*. The row asserts that
+disagreement itself rather than trusting the seed to keep it.
+
+**A mutant name can collide across sheets, and the sheet is where it shows.** The shell mutant that
+makes the refusal invent a label is the same shape as #116's, so it was called `refusalinvents` too
+— and `docs/acceptance/10` carries both tickets' rows in one table, where two rows with one name
+read as the same mutant cited twice. Renamed `deeprefusalinvents` before the table was written.
+Nothing in the harness objects: the name is a key in its own file, and the collision is only
+legible where a reader looks it up.
+
+**And one prediction was wrong in the sweep's favour.** `crumbatthewrongindex` was expected to kill
+rows 1 and 4, since both open a CLO address. It killed row 1 only: at row 4 the server refuses, so
+there is no label to put at the wrong index, and what the mutant measures turns out to be the
+position alone. The nine were otherwise one row each, `clonumberfromid` two (row 1 by the id, row 4
+by inventing `CLO-999999`), and the four backend mutants one row each in their own files.
