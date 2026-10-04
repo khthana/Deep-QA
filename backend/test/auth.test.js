@@ -868,18 +868,40 @@ test('the Google callback, with Google stubbed and everything after it real', as
  * question is asked of the text, which is the same move `anchors.py` made for
  * #186 and the same move the reasons scan above makes for #50.
  *
- * What it cannot see: a window built from the database's clock two or more
- * days from the boundary, which is the shape `authorise.test.js` uses at -20
- * and -10 days and which a one-day skew cannot reach. That is the line between
- * what #187 found and what it deliberately left alone, and it is why this
- * matches a literal 1 rather than any offset.
+ * What it cannot see, in the order the review round found them:
+ *
+ * - A window built from the database's clock two or more days from the
+ *   boundary, which is the shape `authorise.test.js:567` uses at -20 and -10
+ *   days and which a one-day skew cannot reach. That is the line between what
+ *   #187 found and what it deliberately left alone, and it is why this matches
+ *   a literal 1 rather than any offset.
+ * - Anything outside this directory. `db/seed.js` writes every account's
+ *   window as `current_date + $n`, and `e2e/tests/52a-access-ended.spec.js`
+ *   writes `CURRENT_DATE - 20`; the first is the seed, which is what option 2
+ *   of the ticket would have moved and is therefore not this row's to decide,
+ *   and the second is the other seam's tree. The population is the backend
+ *   suite's own files, and a census is evidence about the population it
+ *   counted (#141).
+ * - A window assembled somewhere else - in a helper, or out of a variable -
+ *   rather than written into the statement. The scan reads text, so it reads
+ *   the spelling and not the value.
+ *
+ * What it *can* see, since the review round: either case. The two fixtures the
+ * ticket is about were lowercase, and both of the suite's other validity
+ * fixtures are uppercase, so the first draft's pattern would have read a
+ * future `CURRENT_DATE - 1` as clean - hunt a copy of a rule by the value, in
+ * every spelling it can be written in (#145). And the window and the clock are
+ * matched as one expression rather than as two tests on one line, because an
+ * `UPDATE` that wraps is the shape `authorise.test.js` already uses.
  */
 test("no fixture builds a validity window a day out with the database's clock", () => {
   // Built from pieces so the pattern does not match this file, which holds the
   // only other copy of it. A marker that an instrument reads has to be in a
   // syntax the instrument reads (#93); the inverse is a scan that finds itself.
-  const dbClock = new RegExp('current' + '_date' + String.raw`\s*[-+]\s*1\b`);
-  const windowed = /valid_(from|until)\s*=/;
+  // `\s` spans newlines, so a statement that wraps between the column and the
+  // clock is read as one expression, and `i` reads either case.
+  const aDayOut = String.raw`valid_(?:from|until)\s*=\s*`
+    + 'current' + '_date' + String.raw`\s*[-+]\s*1\b`;
 
   const files = readdirSync(__dirname)
     .filter(name => name.endsWith('.test.js'))
@@ -891,11 +913,11 @@ test("no fixture builds a validity window a day out with the database's clock", 
   const offenders = [];
   for (const name of files) {
     const text = readFileSync(path.join(__dirname, name), 'utf8');
-    text.split('\n').forEach((line, index) => {
-      if (windowed.test(line) && dbClock.test(line)) {
-        offenders.push(`${name}:${index + 1}`);
-      }
-    });
+    for (const hit of text.matchAll(new RegExp(aDayOut, 'gi'))) {
+      // The line the match starts on, so the report names a place a person can
+      // open rather than an offset into a file.
+      offenders.push(`${name}:${text.slice(0, hit.index).split('\n').length}`);
+    }
   }
 
   assert.deepEqual(offenders, []);

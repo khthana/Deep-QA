@@ -6688,3 +6688,30 @@ Measured after: backend **803/803** (802 plus the new row), `anchors.py` problem
 `unreadable 0` in all four questions, `anchors_test.py` 53 green, `harness_test.py` 17 green. The
 `mutation/README.md` catalogue and its hand-kept total moved with the new sheet, 858 → 860, which
 is the one number `anchors.py` would have caught on its own.
+
+**The review round found the net reading one spelling of the rule.** The first draft matched
+`current_date` case-sensitively, and the two fixtures it was written for are the only lowercase
+ones: `authorise.test.js:567` and `e2e/tests/52a-access-ended.spec.js:92` both write
+`CURRENT_DATE`. So a future `CURRENT_DATE - 1` would have passed the net silently, in the spelling
+the ticket's own neighbours use — *a copy of a rule holds none of the rule's letters, so hunt that
+one by the value, in every spelling it can be written in* (#83, #145), and the thing being hunted
+here is not a letter of the rule but a letter of the defect. The second half was shape rather than
+spelling: the window and the clock were two tests on **one line**, so a statement that wraps between
+the column and the clock — which is the shape `authorise.test.js` already uses — was invisible. Both
+are one regex that pairs the two across whitespace with `i`, and the repair is measured rather than
+reasoned: lowercase one line caught before and after, uppercase and wrapped **missed → caught**, and
+the fixed shape and the `-20` shape missed in both, which is what says the row has not become a
+false positive. The population is now written on the row as well: this directory, because
+`db/seed.js` builds every account's window as `current_date + $n` and that is the seed, which is
+what option 2 would have moved and is not this row's to decide.
+
+**And the ticket's re-sweep prediction named a sheet that does not mutate the code.** It wrote that
+*the mutants of #52 aimed at `validityRefusal` should still kill their rows*; no #52 sheet touches
+it — `89-two-ends-of-a-window.py` and `48-assessor-validity-window.py` do, and the first round
+re-swept only #89. Both were measured in the end. #89's two still kill their own row and the reasons
+row. #48's four, suite-wide today, fail 34 · 4 · 30 · 2 where its sheet says 24 · 1 · 21 · 1 — and
+that gap is **not** this ticket's: the sheet's figures are dated 24 August 2569, the suite has grown
+since, and `# fail` counts a parent suite beside the rows under it. What #187 could have moved is
+the `auth.test.js` column, and measured per file it is exactly what the sheet claims, four rows and
+three. A dated measurement is left where it stands (#54); the number reported is the one measured
+(#102).

@@ -354,7 +354,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **Anything written for timing must not be able to decide anything.** (#52)
 - **A fixture builds its situation with a clock, and it has to be the clock the code decides
   with** — `current_date` is the server's `TimeZone` and the code read `Asia/Bangkok`, so two
-  one-day windows were red for the seven hours a day the two name different days. Ask the database
+  one-day windows were built a day out, one of them red for the seven hours a day the two clocks
+  name different days and the other only in the mirror direction. Ask the database
   what its zone is rather than reading the compose file, and **build the hour** to measure it: a
   shifted session timezone reproduces the window on demand, where waiting for it is not a
   measurement. Such a defect cannot then be *held* by a value assertion — a date comparison is
