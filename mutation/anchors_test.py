@@ -17,6 +17,7 @@ stdlib `unittest`, for the reason `harness_test.py` gives.
 import io
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -394,6 +395,160 @@ class Markdown(TempStore):
         # The measurement #175 exists for, and the one that expires the day
         # somebody writes a bare `|` inside a code span again.
         self.assertEqual(anchors.columns(anchors.markdown())[0], 0)
+
+
+# The head of the `error-context.md` playwright wrote on 4 October 2569, when
+# row 4 of `116a` was broken on purpose to prove its own assertion could fail.
+# Cut to the two fences that carry its pipes, which is where every one of the
+# hundred and twelve in the real file was: a page snapshot and a source listing.
+ARTEFACT = """# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+
+# Test info
+
+- Name: 116a-a-breadcrumb-that-reads-the-section.spec.js >> row 4
+- Location: tests\\116a-a-breadcrumb-that-reads-the-section.spec.js:113:1
+
+# Error details
+
+```
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 403
+Received: 404
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=f1e4]:
+  - navigation [ref=f1e6]:
+    - link [ref=f1e9] [cursor=pointer]
+```
+
+# Test source
+
+```
+  26 |   // The label is stored with the id it was asked for, and the crumb
+  27 |   // draws it only where the two agree.
+  28 |   expect(await crumbsOn(page)).toEqual([DASHBOARD, String(NOT_THEIRS)]);
+```
+"""
+
+
+class Ignored(TempStore):
+    """What the catalogue says is on disk and is not this repository's - #186."""
+
+    def repo(self, ignore, **files):
+        """A real git repository, holding a `.gitignore` and each named file.
+
+        A real one and not a directory of the right name, because what is being
+        measured is git's answer: a fixture that only *looks* ignored passes
+        whether the code asks anybody or not (#141).
+        """
+        subprocess.check_output(["git", "init", "-q"], cwd=self.root,
+                                stderr=subprocess.STDOUT)
+        self.write(".gitignore", ignore)
+        for name, text in sorted(files.items()):
+            path = os.path.join(self.root, *name.split("__"))
+            if not os.path.isdir(os.path.dirname(path)):
+                os.makedirs(os.path.dirname(path))
+            with io.open(path, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write(text)
+        return self.root
+
+    def relative(self, paths):
+        return sorted(os.path.relpath(path, self.root).replace(os.sep, "/")
+                      for path in paths)
+
+    def test_the_tree_the_catalogue_ignores_is_not_in_the_corpus(self):
+        # The defect: `test-results/` is in `e2e/.gitignore` and not in
+        # `NOT_OURS`, so git cannot see the artefact and the walk can.
+        root = self.repo(
+            "test-results/\n",
+            **{"docs__06.md": "| a | b |\n|---|---|\n| 1 | 2 |\n",
+               "e2e__test-results__116a-row-4-chromium__error-context.md": ARTEFACT})
+        self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
+
+    def test_the_walk_finds_that_artefact_when_nobody_is_asked(self):
+        # Which is what makes the row above a measurement rather than a
+        # tautology: the artefact is reachable, and the catalogue is what
+        # removes it. Break the real site before trusting the instrument (#141).
+        root = self.repo(
+            "test-results/\n",
+            **{"docs__06.md": "",
+               "e2e__test-results__116a-row-4-chromium__error-context.md": ARTEFACT})
+        walked = []
+        for where, directories, names in os.walk(root):
+            directories[:] = [name for name in directories if name not in anchors.NOT_OURS]
+            walked += [name for name in names if name.endswith(".md")]
+        self.assertIn("error-context.md", walked)
+
+    def test_a_document_the_catalogue_ignores_by_name_is_not_in_it_either(self):
+        # The species is *what the catalogue says*, not *what a tree is called*,
+        # so a single ignored file is the same answer as an ignored tree.
+        root = self.repo("scratch-*.md\n",
+                         **{"docs__06.md": "", "scratch-notes.md": ""})
+        self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
+
+    def test_what_the_catalogue_says_about_the_fixture(self):
+        root = self.repo("test-results/\n",
+                         **{"e2e__test-results__x-chromium__error-context.md": ARTEFACT})
+        theirs, could_not_ask = anchors.ignored(root)
+        self.assertIsNone(could_not_ask)
+        self.assertIn("e2e/test-results/", theirs)
+
+    def test_when_there_is_no_catalogue_to_ask_it_says_which_of_three(self):
+        # level, behind, and *could not ask* (#159). A tree with no git in it is
+        # not a tree with nothing ignored, and the run says so rather than
+        # reporting a number it cannot stand behind.
+        root = self.root
+        os.makedirs(os.path.join(root, "docs"))
+        self.write(os.path.join("docs", "06.md"), "")
+        theirs, could_not_ask = anchors.ignored(root)
+        self.assertEqual(theirs, frozenset())
+        self.assertTrue(could_not_ask)
+        # And the five names still answer, so the fallback is the walk it was.
+        self.assertEqual(self.relative(anchors.markdown(root)), ["docs/06.md"])
+
+    def test_the_real_repository_can_be_asked(self):
+        theirs, could_not_ask = anchors.ignored()
+        self.assertIsNone(could_not_ask)
+        self.assertIn("frontend/node_modules/", theirs)
+        here = [os.path.relpath(path, anchors.ROOT).replace(os.sep, "/")
+                for path in anchors.markdown()]
+        for path in here:
+            for mine in theirs:
+                self.assertFalse(path.startswith(mine), "%s is under %s" % (path, mine))
+
+    def test_the_run_says_so_when_the_catalogue_cannot_be_asked(self):
+        # `columns()` reads `ROOT` by construction - the point of the summary is
+        # that it is about the real corpus - so the only way to put the third
+        # answer in front of it is to answer for git. The row is about the
+        # branch being wired, not about git's mechanics, which the rows above
+        # measure against a real repository.
+        def refuse(root=None):
+            return frozenset(), "git could not be run (made up by this row)"
+
+        was = anchors.ignored
+        anchors.ignored = refuse
+        self.addCleanup(setattr, anchors, "ignored", was)
+        problems = anchors.columns()[0]
+        # One problem and not a number of them: the corpus itself is clean, and
+        # the name-only walk reads every tree the catalogue would have pruned,
+        # so this also says those trees hold no broken row today.
+        self.assertEqual(problems, 1)
+
+    def test_the_artefact_is_invisible_to_the_render_check_itself(self):
+        # Measured on 4 October 2569, and it refutes half of #186's own
+        # diagnosis: every pipe in a real `error-context.md` is inside a fence,
+        # so question three reports nothing. What this ticket fixes is the
+        # corpus - the file count, which moved 115 -> 114 while nobody added a
+        # document - and not a false report about somebody else's table.
+        path = self.write("error-context.md", ARTEFACT)
+        self.assertEqual(anchors.columns([path]), (0, 0, 0))
 
 
 if __name__ == "__main__":

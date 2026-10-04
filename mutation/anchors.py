@@ -79,8 +79,8 @@ the species here is *what renders a table* - and that boundary hid nine rows in
 **What it does not look at**: a table written in HTML rather than in pipes; a row
 wrapped onto a second line, which it reads as two rows and neither matches; the
 *contents* of a cell, so a mark in the wrong column of a table whose width is
-right is still invisible to it; and the five trees `markdown()` leaves out, which
-the run prints rather than keeps to itself. Lines inside a fenced block are skipped and
+right is still invisible to it; and the trees `markdown()` leaves out - the five
+names and whatever git ignores - which the run prints rather than keeps to itself. Lines inside a fenced block are skipped and
 counted out loud, because a fence is where a sheet quotes a broken row on purpose.
 
 ## The fourth question: does the document know about every file there is?
@@ -119,6 +119,7 @@ import glob
 import io
 import os
 import re
+import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -466,6 +467,33 @@ def _is_rule(line):
 
 NOT_OURS = ("node_modules", ".git", "_local", "DEEP-QA-BACKEND", "DEEP-QA-FRONTEND")
 
+# What is on disk and not in the repository, asked of git rather than listed
+# here. `--others --ignored` is the pair that means *ignored and untracked*, and
+# `--directory` collapses an ignored tree to its own line instead of printing
+# every file under it.
+CATALOGUE = ("git", "ls-files", "--others", "--ignored", "--exclude-standard", "--directory")
+
+
+def ignored(root=None):
+    """`(paths, could_not_ask)` - what the catalogue says is not this repository's.
+
+    The paths are relative to `root`, slashes forward, and an ignored tree ends
+    in one, which is how git prints them. `could_not_ask` is the third answer
+    (#159): on the day there is no git to ask, this says so in a sentence
+    instead of handing back an empty set that reads like *nothing is ignored*.
+    """
+    root = ROOT if root is None else root
+    try:
+        answer = subprocess.run(CATALOGUE, cwd=root, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    except OSError as refusal:
+        return frozenset(), "git could not be run (%s)" % refusal
+    if answer.returncode != 0:
+        said = answer.stderr.decode("utf-8", "replace").strip().split("\n")
+        return frozenset(), "git refused (%s)" % (said[0] or "exit %d" % answer.returncode)
+    printed = answer.stdout.decode("utf-8", "replace").split("\n")
+    return frozenset(line for line in printed if line), None
+
 
 def markdown(root=None):
     """Every markdown file this repository owns, asked of the tree.
@@ -482,20 +510,43 @@ def markdown(root=None):
     when the rebuild completes. A check that reported those could only be silenced
     by ignoring the check.
 
-    It is a list of names, which is the shape #126 warns about, and the catalogue
-    that would answer instead is `git ls-files`: measured on 30 September this
-    walk is exactly `git ls-files '*.md'` minus the four `DEEP-QA-*` files, so
-    three of the five names are only telling git what git already knows. The walk
-    is kept anyway, because `git ls-files` cannot see a document that has not been
-    added yet - which is the document most likely to have a row nobody has looked
-    at. What the list costs is the day a `dist/` or a `.venv/` holds a `.md`: the
-    rows name each skipped tree so that day is a failing test and not a silence.
+    The five names were the whole answer until #186, which is the shape #126
+    warns about: `e2e/test-results/` is ignored in `e2e/.gitignore` and named
+    nowhere here, so playwright's `error-context.md` - one file per row that
+    died - walked straight in, and the corpus moved 115 -> 114 on 3 October
+    while nobody added or deleted a document. It bites at the worst moment,
+    because this file is run at closing time, which is just after a sweep, which
+    is when `test-results/` is fullest. So the names are the floor and
+    `ignored()` is the rest: anything git ignores and happens to be on disk is
+    pruned too, which answers for the `dist/` and the `.venv/` the docstring
+    here used to predict as *a failing test and not a silence*, and for the one
+    nobody has thought of yet.
+
+    The names are kept rather than replaced because they are cheaper - a tree
+    pruned by name is never walked - and because three of them are what answers
+    on the day git cannot be asked. The walk is kept instead of `git ls-files`
+    for the reason it always was: git cannot see a document that has not been
+    added yet, which is the document most likely to have a row nobody has looked
+    at. Measured on 4 October 2569 it is still exactly `git ls-files '*.md'`
+    minus the four `DEEP-QA-*` files plus the unadded one, with a real artefact
+    on disk this time.
+
+    What the catalogue is *not* is a report: measured on the same day, every one
+    of the 112 pipes in a real `error-context.md` sits inside a fence, so
+    `columns()` reads no table in it and #186's second half - that the render
+    check reports somebody else's rows - did not reproduce. What was wrong is
+    the corpus, and a count nobody can stand behind is enough.
     """
     root = ROOT if root is None else root
+    theirs = ignored(root)[0]
     found = []
     for where, directories, names in os.walk(root):
-        directories[:] = [name for name in directories if name not in NOT_OURS]
-        found += [os.path.join(where, name) for name in names if name.endswith(".md")]
+        inside = os.path.relpath(where, root).replace("\\", "/")
+        prefix = "" if inside == "." else inside + "/"
+        directories[:] = [name for name in directories
+                          if name not in NOT_OURS and prefix + name + "/" not in theirs]
+        found += [os.path.join(where, name) for name in names
+                  if name.endswith(".md") and prefix + name not in theirs]
     return sorted(found)
 
 
@@ -543,9 +594,18 @@ def columns(files=None):
     if not named:
         # What it leaves out goes in the summary rather than only in the README,
         # because a tool that cannot say what it did not look at is the same
-        # species as the hand-kept numbers it checks (#123).
+        # species as the hand-kept numbers it checks (#123). Asked a second time
+        # here, once for the walk and once for the sentence about it, because an
+        # answer carried between the two could be a stale one and the call is
+        # 44ms (#186).
+        theirs, could_not_ask = ignored()
+        if could_not_ask:
+            problems += 1
+            print("CANNOT ASK -> %s; pruned by the %d names only, so a tree nobody "
+                  "has named is counted as ours" % (could_not_ask, len(NOT_OURS)))
         print("columns: reading %d markdown files of the whole repository, "
-              "outside %s" % (len(files), ", ".join(NOT_OURS)))
+              "outside %s and the %d paths git ignores"
+              % (len(files), ", ".join(NOT_OURS), len(theirs)))
         print("columns: tables %d | rows %d | lines skipped inside fences %d | problems %d"
               % (tables, rows, fenced_lines, problems))
     return problems, tables, rows

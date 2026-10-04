@@ -6554,3 +6554,55 @@ The line stays, because it says at the site what a refusal must not do, and beca
 mutant's anchor — and sheet 10 now says which of the three it is, beside the two guards it already
 names as untested. Saying it is the whole of the fix; a sheet that is silent here reads as a sheet
 with one more proved clause than it has.
+
+## #186 — the instrument was consulted at the moment its input was dirtiest
+
+`mutation/anchors.py` walks the whole tree for markdown and skips five **names**:
+`node_modules`, `.git`, `_local` and the two `DEEP-QA-*` reference trees. `e2e/test-results/`
+is not among them. It is in `e2e/.gitignore`, which makes git blind to it and leaves the disk
+seeing it, and playwright writes one `error-context.md` there per row that dies. So the corpus
+this file counts moved 115 — 114 on 3 October while nobody added or deleted a document, and
+the ticket was opened from that drift rather than from a failing check.
+
+**The timing is the lesson, not the name that was missing.** `anchors.py` is run at closing
+time, which is just after a sweep, which is exactly when `test-results/` is fullest — so the
+number it prints moves with how many rows the last mutant killed, and it moves at the one
+moment somebody is reading it to decide whether a ticket may close. Twice during #116 the fix
+was `rm -rf e2e/test-results` before asking. What a test run leaves on disk is part of the tree
+an instrument walks (#138 said the neighbouring thing about what a run writes outside the
+repository), and the docstring here had predicted the day: *what the list costs is the day a
+`dist/` or a `.venv/` holds a `.md`*. The day came and nothing went red, because the tree that
+appeared was not on the list the rows name — #126's rule met again, and the prediction was
+written by the same file that could not act on it.
+
+**The fix asks the catalogue and keeps the list as a floor.** `ignored()` runs
+`git ls-files --others --ignored --exclude-standard --directory` once, 44ms, and the walk prunes
+anything git ignores that is on disk, named or not. The five names stay, for two reasons that
+are not sentiment: a tree pruned by name is never walked, which is what keeps `node_modules`
+cheap; and three of them are what answers on the day there is no git to ask. That day is the
+third answer (#159), and this file already had the pattern — `CANNOT ASK` for a README with no
+stated total — so the new one says `CANNOT ASK` too, counts as a problem, and names what it
+can no longer see. Read the file's own comments for the rule before inventing one (#83).
+
+**And half of the ticket's diagnosis did not reproduce.** It said the artefacts would also trip
+#175's render check, which would report somebody else's broken table and could only be silenced
+by switching the check off. Measured against a real `error-context.md` — produced on purpose by
+breaking row 4 of `116a` again — every one of its 112 `|` characters sits inside a fence: a YAML
+page snapshot and a quoted source listing. `columns()` reads it as `(0, 0, 0)`. That half was an
+inference from the half that was true, which is #165's species, and the row that records the
+measurement is in `anchors_test.py` so nobody re-derives it. What was wrong was the corpus, and
+a count nobody can stand behind is enough to fix.
+
+**The fixture had to be a real git repository.** A directory called `test-results` with an empty
+`.md` in it passes whether the code asks anybody or not: the question is *what does git say*, so
+the row does `git init`, writes a `.gitignore`, and puts the real artefact's text inside
+(#141, #132). Beside it is the row that makes the first one a measurement: the same tree, walked
+with name-only pruning, **finds** the artefact. Then both were broken on purpose — `ignored()`
+stubbed to an empty set fails three rows, and dropping the `problems += 1` fails the third-answer
+row — which is the only thing that says they are nets and not decoration (#124).
+
+Measured after: 51 rows in `anchors_test.py`, green; `anchors.py` problems 0 in all four
+questions with a real artefact on disk **and** with none, which is the fix's point — 114 both
+times, where the old walk said 115 and 114. Backend 802/802. And the README's own count of this
+file's rows said 29 while the file held 43: a hand-kept number in a file that grows every ticket,
+corrected to 51 with the date beside it (#119).

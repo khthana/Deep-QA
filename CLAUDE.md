@@ -57,7 +57,7 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
   its own table (#133), a key's name read as its text (#127), an inference drawn from a
-  measurement that was itself correct (#165), a list of verbs naming an action no route performs
+  measurement that was itself correct (#165, #186), a list of verbs naming an action no route performs
   (#58) — and the sheet itself asking for the defect (#89).
 - **A ticket's supporting identifiers are a claim like its numbers** — #54's argument named five
   other years to show this one was the odd one out, and of the five, two tables do not exist under
@@ -521,6 +521,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   (#122, #67)
 - When asking whether two things may be shown together, look at what makes a row nameable. (#101)
 - Before removing something, ask what it was teaching. (#124)
+- **An instrument is read at the moment its input is dirtiest** — `anchors.py` is run at closing
+  time, which is just after a sweep, which is when `test-results/` is fullest, so its file count moved
+  with the rows the last mutant killed. What a test run leaves on disk is part of the tree an
+  instrument walks, and the catalogue that knows which trees are not ours is `git ls-files --others
+  --ignored`; a list of names cannot answer for the tree nobody has named yet. (#186)
 - A tool that cannot say what it did not look at is the same species as the hand-kept numbers it
   checks; when a tool skips things by name, adding a file makes it lie; a guard that reads the
   world before it writes has to survive every state the world is in. Ask the catalogue, not a
