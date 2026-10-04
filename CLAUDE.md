@@ -249,6 +249,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - An anchor check tells you a mutant no longer applies; only a sweep tells you it no longer proves
   anything — including when re-aiming it is the right fix. (#107, #68)
 - When a mutant lives in shared code, its sheet is one of the places it kills, not the list. (#123)
+- **One mutant killing several rows is several *reachability* claims, not one claim counted twice** —
+  where the code is shared no mutant can tell the rows apart, so what each row adds is that its own
+  way in arrives there, and the kill is the proof: one that did not arrive would pass. (#191)
 - **A mutant reproduces the behaviour it was written for, not the world around it** — so it is not
   a *before* to measure layout against, even when it is the code that came before. (#105)
 - **A mutant that substitutes a default is invisible everywhere the real value differs from it** —

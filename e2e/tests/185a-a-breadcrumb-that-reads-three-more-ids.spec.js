@@ -8,6 +8,8 @@ const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
 const { breadcrumb } = require('../support/shell');
 const { openBehaviors, myClos } = require('../support/behaviors-screen');
+const { evidencePath } = require('../support/evidence-screen');
+const { openAt } = require('../support/navigation');
 const { openCriteriaAt } = require('../support/rubric-criteria-screen');
 const { DASHBOARD: DASHBOARD_PATH } = require('../support/teaching-screen');
 
@@ -71,6 +73,20 @@ const OTHER_YEAR = 3;
 /** What the trail says for it, read from the row that proved it. */
 const LAST_YEAR_LABEL = 'ตอนเรียน 1 · ปีการศึกษา 2568';
 
+/**
+ * An id no seed row carries, for the three refusal rows -- #185 row 4, #191
+ * rows 5 and 6.
+ *
+ * Those three are the same claim asked of three kinds, and they are three
+ * claims rather than one: what each adds is that *this* kind's refusal reaches
+ * the shared `catch` in the shell at all. The write that `catch` must not make
+ * is one line for all three kinds, so `deeprefusalinvents` breaks all three at
+ * once -- and that is what proves the reachability, since a kind whose refusal
+ * never arrived there would go on reading the number with the mutant applied,
+ * and its row would pass.
+ */
+const REFUSED_ID = 999999;
+
 test('row 1: the CLO crumb reads its number, not the id in the address', async ({ page }) => {
   await signIn(page, ACCOUNTS.teacherOne);
 
@@ -118,7 +134,7 @@ test('row 2: the Activity crumb reads its name', async ({ page }) => {
   const [activity] = (await answer.json()).activities;
   expect(activity.activity_name).toBeTruthy();
 
-  await page.goto(`${DASHBOARD_PATH}/${OTHER_YEAR}/learningActivities/${activity.id}/evidence`);
+  await page.goto(evidencePath(OTHER_YEAR, activity.id));
 
   await expect
     .poll(() => crumbsOn(page))
@@ -156,11 +172,13 @@ test('row 4: an id the server refuses leaves the crumb saying nothing untrue', a
   // sentence is not a settle point for it: two requests, and nothing orders
   // them. The waiter is matched by the request, which is what identifies the
   // answer, and the status is asserted rather than filtered on (#116).
-  const resolverAnswered = page.waitForResponse(response =>
-    response.url().endsWith(`/api/teaching/sections/${OTHER_YEAR}/clos/999999`),
+  const resolverAnswered = page.waitForResponse(
+    response =>
+      new URL(response.url()).pathname ===
+      `/api/teaching/sections/${OTHER_YEAR}/clos/${REFUSED_ID}`,
   );
 
-  const refused = await openBehaviors(page, OTHER_YEAR, 999999);
+  const refused = await openBehaviors(page, OTHER_YEAR, REFUSED_ID);
   expect(refused.status()).toBe(404);
   expect((await resolverAnswered).status()).toBe(404);
 
@@ -174,7 +192,80 @@ test('row 4: an id the server refuses leaves the crumb saying nothing untrue', a
     DASHBOARD,
     LAST_YEAR_LABEL,
     COURSE_OUTCOMES,
-    '999999',
+    String(REFUSED_ID),
     BEHAVIORS,
   ]);
+});
+
+test('row 5: an Activity id the server refuses leaves the crumb saying nothing untrue', async ({
+  page,
+}) => {
+  // Row 4 for the second of the three kinds. #191, which opened this, was about
+  // the reason and not the situation: the situation was always buildable, and
+  // the round that closed #185 wrote the row for one kind.
+  await signIn(page, ACCOUNTS.teacherOne);
+
+  // The shell's own request, waited for by the request and asserted on by
+  // status (#116) -- and the half that says this kind reaches the shell's
+  // `catch` without a mutant having to be run to find out.
+  const resolverAnswered = page.waitForResponse(
+    response =>
+      new URL(response.url()).pathname ===
+      `/api/teaching/sections/${OTHER_YEAR}/activities/${REFUSED_ID}`,
+  );
+
+  // The screen's own request is that same path with `/evidence` on the end, so
+  // matching by pathname keeps the two waiters off each other's answer. The
+  // waiter stays here rather than moving into `evidence-screen.js`: a wait
+  // added to a shared helper turns one row's claim into every caller's premise
+  // (#81), and this one has a single caller. The address does come from that
+  // helper, because the address is not a claim of any row.
+  const refused = await openAt(
+    page,
+    evidencePath(OTHER_YEAR, REFUSED_ID),
+    inDocument =>
+      inDocument.waitForResponse(
+        answer =>
+          new URL(answer.url()).pathname ===
+          `/api/teaching/sections/${OTHER_YEAR}/activities/${REFUSED_ID}/evidence`,
+      ),
+  );
+  expect(refused.status()).toBe(404);
+  expect((await resolverAnswered).status()).toBe(404);
+
+  // The screen's own refusal is the settle point, and the crumb is read once
+  // after it: polling for the number would be a read that cannot fail, the
+  // number being what the trail says before any answer arrives (#50).
+  await expect(page.getByText(REFUSALS.activityNotFound)).toBeVisible();
+
+  expect(await crumbsOn(page)).toEqual([
+    DASHBOARD,
+    LAST_YEAR_LABEL,
+    ACTIVITIES,
+    String(REFUSED_ID),
+    EVIDENCE,
+  ]);
+});
+
+test('row 6: a Rubric id the server refuses leaves the crumb saying nothing untrue', async ({
+  page,
+}) => {
+  // The third kind, and the one whose resolver reads a route older than #185:
+  // `GET /api/rubrics/:id` has answered one rubric since #21.
+  await signIn(page, ACCOUNTS.committee0501);
+
+  const resolverAnswered = page.waitForResponse(
+    response => new URL(response.url()).pathname === `/api/rubrics/${REFUSED_ID}`,
+  );
+
+  // `openCriteriaAt` hands back the screen's own answer and waits for the
+  // drawing only when it succeeded, which is how a refused id goes through the
+  // same helper as row 3.
+  const refused = await openCriteriaAt(page, REFUSED_ID);
+  expect(refused.status()).toBe(404);
+  expect((await resolverAnswered).status()).toBe(404);
+
+  await expect(page.getByText(REFUSALS.rubricNotFound)).toBeVisible();
+
+  expect(await crumbsOn(page)).toEqual([HOME, RUBRICS, String(REFUSED_ID), RUBRIC_CRITERIA]);
 });

@@ -6817,3 +6817,43 @@ which is exactly the shape of a row that passes for a reason nobody wrote down. 
 waiter matched by the request with the status asserted under it (#116), and then the three mutants
 that cover the two changed rows run again, because *a row written to answer a mutant is not proof
 until that mutant is run again* (#146). All three still kill the same rows.
+
+
+## #191 — one mutant, three rows, and what the third row was actually for
+
+The ticket was small and fully specified: #185's refusal row existed for one of the three kinds
+the shell's resolver names, the other two rode the same `catch`, and the sheet said so with a date
+rather than with a mark. Write the two rows. The question the ticket put under that — *if one mutant
+kills all three rows, are these three claims or one claim asked three times?* — is the part worth
+writing down.
+
+**The answer is three claims, and the thing that makes them three is not the code they share.**
+The write that a refusal must not make is one line for all three kinds, so there is no mutant that
+can separate them: `deeprefusalinvents` turns that line into a label invented from the segment, and
+with it applied all three rows read `CLO-999999` where they expect `999999`. Measured: `185a` green
+6 of 6, then **3 failed, 3 passed**, the three being rows 4, 5 and 6 exactly, each at its `toEqual`.
+
+What each row adds is that **its kind's refusal reaches that block at all**. The three kinds are
+resolved by three different requests, written in three different modules over the one client in
+`api/client.js`; nothing about the `catch` being shared says a 404 from `/api/rubrics/:id` ends up in
+it. And the proof of reachability is the
+mutant killing the row: *a kind whose refusal never arrived there would go on reading the number
+with the mutant applied, and its row would pass*. The sheet already records that shape from the
+other side — `crumbatthewrongindex` **survives** row 4, because a refusal leaves it no label to put
+at the wrong index, so what that mutant measures is the position and not the refusal. So a kill count
+is not a tally of one claim; it is one reachability claim per row, and a row with no mutant able to
+kill it would be the one proving nothing.
+
+The corollary is the reason the two rows also assert the resolver's own 404 at the request seam.
+That assertion needs no mutant: it says the shell asked and was refused, which is the half of
+reachability a green run can hold on its own.
+
+No new mutant was written. The anchor line is one line with one mutant on it already, and a second
+mutant on the same line would be the same claim measured twice — *two places holding one opinion is
+not a safety margin* (#97) read from the mutation side.
+
+And the expiry: the reason #185's round gave for leaving two kinds unproved was *they share a
+`catch`*. That reason was true and it was dated, because it stops being true the day one kind gets
+its own block or a refusal that is not a 404 (#131). The sheet keeps the whole of the old paragraph
+rather than editing it away, because what it records is how long the claim stood with nothing under
+it.
