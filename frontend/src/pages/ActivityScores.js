@@ -121,12 +121,12 @@ export default function ActivityScores() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }
 
-  // #133 - the picker's own options, and the screen's second read. `load`
-  // below is the one the กิจกรรม picker can supersede; this one is asked with
-  // `sectionId` alone, which comes from `useParams` (ADR-0004), so nothing on
-  // the screen can replace its request today. It takes the flag for the rule
-  // rather than for a defect anybody has seen, and #34's sheet says
-  // ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  // #133 - the picker's own options, and the screen's second read. `load` below
+  // is the one the picker can supersede; this one is asked with `sectionId`
+  // alone, so nothing on the screen can - but a jump between two Sections that
+  // leaves it mounted can, and the browser has one. Walked in `141b`, broken by
+  // `mutation/141-superseded-across-a-section-jump.py`. The half #34's sheet
+  // still marks ยังไม่ได้ทดสอบ is `onImported`, on `load` below.
   const loadList = useCallback(async isCurrent => {
     setLoading(true)
     try {

@@ -289,6 +289,7 @@ async function signOut(page) {
 
 module.exports = {
   breadcrumb,
+  menu,
   menuLink,
   menuEntries,
   PROGRAMS,

@@ -59,10 +59,10 @@ export default function CloAssessment() {
   const [showRubric, setShowRubric] = useState(false)
 
   // #133 - what is drawn is the answer to the request the screen still wants.
-  // `sectionId` comes from the route and every link goes up a level, so nothing
-  // here can supersede a request today: this is #68's rule
-  // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
-  // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  // Superseding one needs a jump between two Sections that leaves this screen
+  // mounted: the history list travels any distance in one move and the address
+  // bar reaches a term the dashboard cannot list. Walked in `141b`, broken by
+  // `mutation/141-superseded-across-a-section-jump.py`.
   const load = useCallback(async isCurrent => {
     setLoading(true)
     try {

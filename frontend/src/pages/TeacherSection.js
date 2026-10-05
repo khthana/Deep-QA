@@ -42,11 +42,11 @@ export default function TeacherSection() {
   // #133 - what is drawn is the answer to the request the screen still wants.
   // The grep that ticket published looked for `set...(await ...)` and this line
   // names the answer first, so no list built from it could carry this screen.
-  // `sectionId` comes from `useParams` (ADR-0004) and the menu under this
-  // screen hangs off that same id, so superseding a request means walking from
-  // one ตอนเรียน to another without the component coming down - which every
-  // link here goes *up* to the dashboard to do. The sheet says ยังไม่ได้ทดสอบ
-  // rather than ไม่ต้องมี.
+  // `sectionId` comes from `useParams` (ADR-0004), so superseding a request
+  // needs a jump between two Sections that leaves this screen mounted: the
+  // history list travels any distance in one move and the address bar reaches
+  // a term the dashboard cannot list. Walked in `141b`, broken by
+  // `mutation/141-superseded-across-a-section-jump.py`.
   const load = useCallback(async isCurrent => {
     setLoading(true)
     setSection(null)

@@ -7151,3 +7151,121 @@ record — so it is `idInAddress`. The shared sampler the review also named (`16
 third copy of `crumbsOn`) is an instrument and not an assertion, so merging it would cost the proof
 nothing (#171); it touches three closed tickets' files, so it is raised as a question in the
 handoff rather than done here, the same way #189 left `/^\d+$/`.
+
+## #141 (the asymmetric way in) — the eleven sites the blocker's own expiry date hid
+
+Fifteen claims of the #133 family were still without a row, and eleven of them shared one reason,
+written into `docs/acceptance/57-pager.md` on 3 October: `mine()` in `backend/routes/teaching.js`
+filters by `currentTerm()`, so the teacher's dashboard lists one Section; `TeacherDashboard.js` is
+the only place in the application that produces another `sectionId`; therefore **there is no
+second address to jump to**. Re-measured today, every one of those three statements is still true
+to the word.
+
+What was false was the step between them and the conclusion, and it was never written down: that
+*both* addresses have to be produced by the application. Only the second does.
+
+### The two routes are asymmetric, and that is the way in
+
+`GET /api/teaching/sections` is term-filtered. `GET /api/teaching/sections/:id` deliberately is
+not — it answers for every Section the account teaches, which is the whole reason a teacher can
+open last year's work at all. So the filtered route produces the second address and the
+unfiltered one produces the first, and the first needs no link on any screen: the address bar, a
+bookmark, or a reload of a tab left open from last term is enough.
+
+The sequence that follows was measured rather than argued, in a throwaway probe deleted once the
+real rows existed:
+
+1. open this screen for `section_id` 3 (2568/1) by its address — the row's one document load
+2. up to the dashboard through the sidebar
+3. click the card for `section_id` 1 (2569/1), with its answer held by `page.route`
+4. `window.history.go(-2)`, or `-3` from a child screen, then release the answer
+
+A mark written on `window` before step 2 is still there after step 4, so the document was not
+replaced, and `history.state.idx` goes from 2 back to 0 in one move. Both Sections are
+`section_number` "1" of the same Subject, which is why the read is the **academic year**: each of
+the eleven screens draws it from its own answer, in the one paragraph under its single `<h1>`, and
+the shell has no `<h1>` of its own. One locator serves all eleven, with no Thai literal in the
+spec (#118), and the comparison is of two values rather than of presence. Each row asserts its own
+precondition — `expect(landedYear).not.toEqual(heldYear)` — because both years come from the seed
+(#129).
+
+### The rule: an expiry condition is a claim about which way in its author had in mind
+
+The 3 October paragraph did the right thing by #81 and wrote down what would expire it: *the day
+the seed gains a second Section for this account in the current term, or the day screen #24
+changes its filter*. That sentence is what kept the blocker looking fresh for two days. But a
+date written for a blocker is a date on **the way in its author was thinking of**, and a way in
+that never needed that condition is invisible to it — the asymmetric entry had been open since the
+sentence was written. This is #179 one layer along: a ticket that names a race has named a window
+and not the population of ways in, and a *reason* that names a way in has likewise named a way in,
+not the population. Where #179's advice was to look for the raceless sibling, this one's is to ask
+which of the two addresses has to come from inside the application at all.
+
+It also sharpens the earlier #141 lesson rather than repeating it. *A conclusion that is right for
+the wrong reason expires on the wrong day* was written when the conclusion was right; here the
+conclusion was **wrong**, and the reason is what made it look not yet due.
+
+### Eleven rows, eleven mutants, and a name that had already been used
+
+`e2e/tests/141b-superseded-answer-across-a-section-jump.spec.js` holds one row per screen and
+`mutation/141-superseded-across-a-section-jump.py` one mutant per screen file. Run against `141b`
+alone, every mutant failed **1 of 11 and left the other ten standing**, always its own screen's
+row, always at `toEqual` and never at a timeout, in 69–72 seconds, with `git status` clean after
+each `restore`. The defect's signature is `address` for the Section the jump reached, the `window`
+mark intact, and `years` expecting `2568` and receiving `2569` — a superseded answer drawn over
+the current one, not an application that stopped (#52).
+
+The first name written for the `ActivityScores` mutant was `scoresstalewins`, which
+`mutation/133-superseded-on-screen.py` already has: #185's collision, met again and renamed before
+the criteria table was written.
+
+Two things about reading that sweep are worth keeping. The eleven rows are generated in a loop, so
+all eleven report the **same** `141b:257`; what distinguishes them is the row's title, which is
+also how a single one is run (`-g`). And the first rewrite of the eleven `#133` comment blocks grew
+them from five lines to eleven, which staled the line numbers cited in
+`docs/05-screen-api-mapping.md`, sheets `10` · `34` · `57`, `docs/lessons.md` and a handoff; it was
+reverted and redone line-neutral, asserted per block and verified with `git diff --numstat`.
+Tickets cite line numbers, and so do sheets.
+
+### The counter and the register disagreed by eight, and the commit settled it
+
+The register's rule is to count the marks with an instrument that reads the column. The instrument
+written for it gave ☑ 491 where the 3 October record says ☑ 499, and the temptation was to decide
+which of the two was wrong by argument. What settled it was running the instrument **at the commit
+the record was written at** — and it took two corrections to get there:
+
+* requiring the table's header to start `| # |` and end in the tick column missed eight ☑ rows in
+  two dated hand-walk tables on sheets `12` and `15`, whose last column is headed **ผล**
+* reading the last cell of any table row missed three rows on sheet `41`, whose table is
+  `| เกณฑ์ | ผล | พิสูจน์ที่ |` — the mark is the **middle** cell
+
+Finding the mark column from each table's own header gave ☑ 499 · ⚙ 711 · ◐ 23 · ☐ 25 = 1,258 at
+`c78a3ed`, which is that commit's record on all four marks. That agreement is what makes it the
+register's instrument rather than a fourth opinion — a census is evidence about the property it
+counted (#174), so the way to trust a new one is to make it answer something already recorded. It
+reads the **source** cell and not the rendered one on purpose: GFM truncates a row to its header's
+width, so counting the render would omit exactly the broken rows #175 exists to find. It reports
+none today.
+
+At HEAD the same instrument gives ⚙ 713 · ☐ 25 = 1,260, and after this change ⚙ 724 · ☐ 15 =
+1,261 — eleven ⚙ gained but only ten ☐ spent, because sheet `34` gained a row rather than changing
+a mark: its `loadList` half is proved and its `onImported` half keeps the ☐ it had, with the date
+and which half (#179). The hand-walk queue is untouched at 38.
+
+Four claims of the nineteen are left — `GrantsPanel.load` · `.add` · `.remove`, whose parameter is
+a prop and not a segment of the address, and `ActivityScores.onImported` — so criterion 4 keeps the
+ticket open.
+
+The full-suite sweep then found the one thing the single-file runs could not. Ten of the eleven
+mutants killed exactly their own row; `groupsstalewins` killed a second, `26a` row 5 — *a group
+filled to ten refuses the eleventh* — whose card read `members: 9` of the ten it had just put
+there. It does not reproduce: `26a` alone passes 12 of 12 clean, passes 12 of 12 **with the
+mutant applied**, and row 5 alone with the mutant passes three times more. So the mutant is
+necessary and not sufficient, and the mechanism is half the suite's: `place()` waits for the POST
+and returns, not for the GET that save triggers, so row 5 fires its second `add` across the first
+one's reload. The room to fill is 2 in both worlds — the biggest seeded group holds eight, which
+is a question for the database and not for the row — so what differs is the machine's load, not
+the shape of the world the row was handed. What the red says is therefore not that `26a` row 5
+holds this defect: it is *a row that catches a defect on some runs is not the row that holds it*
+(#129) met from the mutant's side, where the intermittency belongs to the kill and not to the
+read. The row that holds it builds its own situation, and sheet `26`'s ⚙ comes from `141b`.

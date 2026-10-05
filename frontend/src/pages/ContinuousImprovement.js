@@ -105,11 +105,11 @@ export default function ContinuousImprovement() {
   const [removing, setRemoving] = useState(null)
 
   // #133 - what is drawn is the answer to the request the screen still wants.
-  // `sectionId` is the only parameter and it comes from `useParams` - the route
-  // reaches this screen through one ตอนเรียน at a time and offers no way to
-  // another, so nothing here can supersede a request today: this is #68's rule
-  // (`frontend/src/pages/Students.js`), not a defect anybody has seen, and the
-  // sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+  // `sectionId` is the only parameter and it comes from `useParams`, so nothing
+  // on this screen can supersede a request - but a jump between two Sections
+  // that leaves it mounted can: the history list travels any distance in one
+  // move and the address bar reaches a term the dashboard cannot list. Walked
+  // in `141b`, broken by `mutation/141-superseded-across-a-section-jump.py`.
   const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
@@ -148,9 +148,9 @@ export default function ContinuousImprovement() {
    * #140 - the list a handler reloads is drawn only if it is still the list the
    * screen is on: nothing tears a handler down, so it asks whether `load` is
    * still the one it was sent with. `frontend/src/pages/Students.js` carries the
-   * reasons. For the reason #133 gives above `load`, nothing here can change
-   * what `load` asks for while a reload is out, so no row proves this and the
-   * sheet says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   * reasons. The jump #133's comment above `load` now names reaches this guard
+   * too, taken while a reload a handler sent is still out - but no row walks
+   * that sequence yet, so the sheet still says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
    */
   const onScreen = useRef(load)
   useEffect(() => {

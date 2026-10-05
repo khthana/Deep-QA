@@ -78,6 +78,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. What the ticket wrote down as a prediction can be the state on the day it is
   taken. (#81)
+- **A blocker's own expiry condition is a claim about which way in its author had in mind** — the
+  date is right for that way in and blind to any other, so writing it down (which #81 asks for)
+  is what keeps the blocker looking fresh. #179 one layer along: a *reason* that names a way in
+  has named a way in, not the population. Ask which half of the situation has to come from inside
+  the application at all — of two addresses, only the second did. (#141)
 - **A ticket's own fallback is not the ticket's target, and the clause that licences it is a
   condition to measure against your own code.** #116 wrote its target as a sentence and offered a
   cheaper half *at minimum, with no data from the server*; the first round drew the cheap half and
@@ -176,6 +181,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A hand-kept number in a file that grows every ticket is already wrong** — count the table,
   and after correcting a figure grep for the wrong value again. A rule written to correct a wrong
   number is itself a claim to check. (#119, #96, #48)
+- **When the instrument and a hand-kept figure disagree, run the instrument at the commit the
+  figure was written at** — that, and not argument, says which of the two is wrong, and a counter
+  that reproduces a record's four figures at its own commit is the record's instrument rather than
+  a fourth opinion. Both of this one's first two rules were evidence about the property they
+  counted (#174): a mark column is found from each table's own header, because a sheet heads it
+  `✓` or `ผล` and can put it in the middle. (#141)
 - **What a diff touches is what a diff proofreads** — correcting one hand-kept figure finds the one you were looking
   at, not the next one twenty lines down; and two documents changed in the same breath can be shipped contradicting
   each other. After changing what a document counts, re-read every figure in it, and read the pair side by side.
