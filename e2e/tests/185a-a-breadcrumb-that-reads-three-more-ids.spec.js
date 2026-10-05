@@ -47,11 +47,19 @@ const { DASHBOARD: DASHBOARD_PATH } = require('../support/teaching-screen');
  * `docs/acceptance/10`.
  *
  * And the pairing guard, which keys the label by `kind:id` rather than by id
- * alone, has no row: the frame it is about is the single render after a move
- * between two addresses of the same shape, and what the crumb falls back to in
- * that frame is the number -- which is also what it says before any answer has
- * arrived. A read that cannot fail is not a row (#50). `docs/acceptance/10`
- * says so with the date rather than with a mark.
+ * alone, has no proof here. The frame it is about is the single render after a
+ * move between two addresses of the same shape, and what the crumb falls back
+ * to in that frame is the number -- which is also what it says before any answer
+ * has arrived. A read that cannot fail is not a row (#50).
+ *
+ * #188 built that move and sampled it per frame:
+ * `188a-the-pairing-guard-reads-the-kind.spec.js`. Two things it measured belong
+ * here. Row 1 below is **not** that move -- `page.goto` is a document load, so
+ * the shell comes down and there is no stale answer to refuse; the move is a
+ * jump inside one document (#141). And the frame reaches the DOM but never a
+ * paint, because React commits the correction in the same task, so that row is a
+ * net and not a proof and the mutant for the key survives. `docs/acceptance/10`
+ * carries the numbers, with the date.
  */
 
 /** Every crumb the trail draws, in order, as a person reads them. */
@@ -121,9 +129,12 @@ test('row 1: the CLO crumb reads its number, not the id in the address', async (
 
   // The other address of the same shape, measured rather than argued. It is
   // the same branch of the resolver at the same index, which is a reason to
-  // expect the same answer and not a proof of it (#141), and it is a sibling
-  // move between two addresses that share the fifth segment -- the move the
-  // `kind:id` key is for.
+  // expect the same answer and not a proof of it (#141).
+  //
+  // It is *not* the move the `kind:id` key is for, which this said until #188
+  // measured it: `page.goto` is a document load, the shell is unmounted and
+  // `deepLabel` starts at `null`, so no stale answer survives the hop. That
+  // move is a jump inside one document, and it is `188a`'s.
   await page.goto(`${DASHBOARD_PATH}/${OTHER_YEAR}/courseOutcomes/${clo.clo_id}/criteria`);
 
   // And the last crumb is this screen's own word, not the other screen's --

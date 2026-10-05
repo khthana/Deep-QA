@@ -7034,3 +7034,120 @@ were the defect. The scan is a list to read, not a rule to apply.
 
 The eight were cut by character offset, taken out of the files themselves, so that no Thai was
 retyped on the way — which is the same reason patch scripts are anchored on ASCII.
+
+## #188 — the frame that reached the DOM and never reached a paint
+
+#116 taught the shell to keep a fetched label *with the thing it was asked for* and to draw it
+only where the two still agree; #185 took the same guard one segment deeper, where three kinds
+share a position in the address and the key is therefore `kind:id` rather than the id alone. The
+`kind:` half had nothing under it. `185a` said so in its own docstring, `docs/acceptance/10` said
+so with a date, and #188 was opened because **a deferral written into prose and not into the
+tracker is a decision nobody can find** (#119).
+
+The ticket was right that the instrument was missing and wrong about why. Both halves are worth
+writing down, because the wrong half is the kind of claim that reads like a measurement.
+
+### The move the ticket cited is a document load
+
+#188's *why there is no row* says the situation is already built — *`185a` row 1 walks that
+sibling move* — and that only the reading is impossible. `185a` row 1 moves with `page.goto`.
+That is a document load: the shell unmounts, `deepLabel` starts at `null`, and there is no stale
+answer for a pairing guard to refuse. The move it cited cannot exhibit the defect however
+cleverly it is read, and the row's own comment claimed otherwise until this ticket.
+
+What builds the situation is #141's sentence, written for the opposite case: *the browser's own
+history list travels any number of entries in one move*. Three addresses opened inside one
+document — this CLO's criteria, the Activities list, the evidence of the Activity that happens to
+carry the same id — put a cross-kind sibling move one `history.go(-2)` away, with no document
+commit in it. The row measures that distance from the router's own `history.state.idx` rather
+than assuming it, because one step back lands on the list, whose address carries no deeper id and
+nulls the label on the way through.
+
+The ids coinciding is a property of the seed, not of the schema: `subject_clo` and `activities`
+are separate sequences, so the row reads both sets off the server and asserts the overlap where
+it uses it (#129). Section 3's CLOs are ids 10–18 and its Activities 13–18, which is six pairs to
+choose from today and nothing the row depends on.
+
+### The census first: the shell has two of these guards, and the reason is the fetches
+
+Criterion 1 asked how many pairing guards the shell has, and said to walk the code rather than
+trust the ticket's list of two. Two is right, and what makes it answerable is counting by the
+**mechanism** and not by the shape of a grep (#174, #83): the species is *an answer the shell
+fetched, stored beside what it was asked for*. The shell fetches three things —
+`getMySection` and the `DEEPER_NAMES` table, both keyed by the address, and `Navbar.js`'
+`getProfilePhoto`, which is keyed by the account and has nothing to pair. So `Mainpage.js:304`
+and `:311–317`, and no third site.
+
+### The mutant survives, and the measurement is what the DOM did
+
+`keybyidalone` is the rejected proposal made to run (#48): the label stored by the id alone and
+compared by the id alone. It is one mutant with two edits, because half of it misses at every
+address and would kill all six of `185a`'s rows instead of one (#97). It survives `188a`.
+
+What it does to the screen was then read off the `MutationObserver`'s own **records**. A callback
+that reads the live DOM is as blind as the frame sampler: it fires once per microtask checkpoint,
+by which time React has done every write of the task. The records do not — they carry each write
+in order, with `oldValue`.
+
+* **Clean.** The three crumbs that change are written in document order inside one commit: the
+  word for `courseOutcomes`, then the number over the Activity's name, then this screen's own word.
+* **Mutated.** The middle one is written **last**, after the two that flank it. That out-of-order
+  pair is the stale commit, and between the two writes the trail really did hold the Activity's
+  name with the CLO's address on either side of it.
+
+And both commits land inside one task — one observer callback holds all of them, in the same
+millisecond — while the six frames sampled across the jump fall outside it. The paint never
+holds it.
+
+### Why the paint is the only unit worth reading
+
+It would be easy to write a row on the reconstructed DOM states instead, and it would kill the
+mutant. It would also be wrong: inside a single commit the DOM is mid-write, and the clean code
+passes through combinations of crumb and address that are just as untrue — the second bullet
+above is only a *defect* because the two writes belong to two commits, which is a fact about
+React's scheduling rather than about the trail. A claim about what a person reads has to be
+anchored at the frame, and there the answer is that the defect is unreachable.
+
+So this is #47's sixth way to read a sweep met again — **a survivor can be a claim the harness
+cannot put at risk** — with a different mechanism under it. #47's was a hidden tab keeping a
+component the seam unmounts. This one is a correction that the framework commits in the same task
+as the mistake, so no frame falls between them. By #47's precedent the mutant comes out, because
+a register of mutants that never die is a register nobody reads; there is no `mutation/188-*.py`,
+and what stays is the measurement and a row that says on its face that it is a net. The claim is
+**untested**, with the reason, the React version it was measured on (19.2.8) and what would expire
+it — not *not needed*, which is what #188's own third criterion asked for.
+
+The net is worth its three seconds for one reason: the day a paint does fall inside that window,
+`188a` row 1 goes red by itself, and nobody has to remember that this is where to look.
+
+### What the review round added
+
+Four things, and three of them are rules already in this file read from a new side.
+
+**An expiry written as a version is a claim about the manifest, not about the number measured.**
+The record said *re-measure when React moves to a major version*; `frontend/package.json` pins
+`^19.1.0`, so a minor arrives on its own at the next install — and a minor that yields between the
+two commits is exactly the change this net exists for. What expires the measurement is the
+installed number moving at all.
+
+**The line citations in the paragraph written the day before were stale, and two ways.** This
+ticket grew `185a` by eleven lines, which moved the three crumb assertions #189's paragraph cites
+(#130: *grep `File.js:` when a file grows lines*). Measuring them found they had also been wrong
+on the day #189 wrote them, by twelve lines each — #154's *what a diff touches is what a diff
+proofreads*, from the other end: #189's own diff grew the file it was citing, and the citations
+were taken before it.
+
+**A sampler's preconditions are a claim about which values it can tell apart.** The row asserted
+that the Activity's name differs from the CLO's number — the answer — and not that it differs from
+the **id**, which is what #116's fallback draws before the answer arrives. Equal, `holding` and
+`bare` would have counted the same frames and the net would have been reading its own
+precondition. Both are asserted now.
+
+**And two names came in by copy.** `OTHER_YEAR` was `185a`'s constant, where there is another year
+to be other than; here the value is a `sectionId` in the address (ADR-0004) and nothing else, so it
+is `SECTION_ID`. The sampler's `number` field held `clo_id` in a file that also reads `clo_number`
+— the surrogate key and the label a person reads, which is the distinction #116 and #185 exist to
+record — so it is `idInAddress`. The shared sampler the review also named (`164a`'s pair, and a
+third copy of `crumbsOn`) is an instrument and not an assertion, so merging it would cost the proof
+nothing (#171); it touches three closed tickets' files, so it is raised as a question in the
+handoff rather than done here, the same way #189 left `/^\d+$/`.

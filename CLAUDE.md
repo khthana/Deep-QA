@@ -354,6 +354,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A sampler that reads what a control holds cannot tell an absent control from an empty one** — so
   a precondition written that way passes on the broken screen and fails on the fixed one. Count the
   controls as well as reading them. (#164)
+- **A mistake the framework corrects in the same task never reaches a paint** — so *was it ever on
+  the screen* is answered **no** however long the sampler runs, the stale state being visible only
+  in a `MutationObserver`'s records (a callback reading the live DOM is as blind as the frames), and
+  the guard that prevents it cannot be put at risk at this seam: the mutant comes out and the row
+  stays as a net. Read at the frame anyway — inside one commit the DOM is mid-write and the clean
+  code passes through untrue combinations too. (#188)
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
 - **A red is not a measurement until the same read has been seen green** — the same rule from the
