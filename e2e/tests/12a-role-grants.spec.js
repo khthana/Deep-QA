@@ -171,7 +171,10 @@ test('rows 2 and 3: the grantee gains and loses the access on their next request
   // reload is needed for is the shell, which reads `/api/me` when it mounts -
   // so the picker learns of a new grant on the next load and not on the next
   // click inside the shell. That is weaker than the row's "press any menu
-  // item" and the checklist says so.
+  // item", and since #77 the checklist says so with a mark rather than only in
+  // prose: criterion 2 is two rows there, the server-enforced half carrying the
+  // gear this file earns and the picker's half a ☐ naming the ticket. What this
+  // row proves is the first half. Explaining a gap is not marking it (#50).
   //
   // The picker comes back showing the committee rather than the teacher
   // because the session never recorded a choice - `actingFrom` falls back to

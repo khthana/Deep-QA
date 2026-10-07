@@ -92,6 +92,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the address is a surrogate key and the number a person reads is a label. The measurement that
   refutes such a fallback usually hands over the fixture as well, being the place where the two
   disagree (#117). (#116)
+- **A ticket's cost line is a claim about the shape its author pictured, not about the option** —
+  and unlike its other claims this one is about the *fix*, so it is what decides which option gets
+  built. #77 priced one option at a request it adds, when the price was a full-screen curtain its
+  own neighbour had already measured, plus a race the function's own docstring had dated; and
+  priced another at *spreads session knowledge into every endpoint*, when the mount point that
+  already holds the data and the client funnel that already holds the listener made it two sites
+  and one `exposedHeaders` line. Re-derive each price from the mount points before choosing. (#77)
 - **A ticket that names a race has named a window, not the population of ways in** — the same wrong
   screen can be reachable with no race at all, and that way lasts until a reload, so it is the one a
   person meets. Measure for the raceless sibling before accepting the sequence the ticket wrote.

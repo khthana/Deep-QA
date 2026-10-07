@@ -7269,3 +7269,102 @@ the shape of the world the row was handed. What the red says is therefore not th
 holds this defect: it is *a row that catches a defect on some runs is not the row that holds it*
 (#129) met from the mutant's side, where the intermittency belongs to the kill and not to the
 read. The row that holds it builds its own situation, and sheet `26`'s ⚙ comes from `141b`.
+
+## #77 (the picker that does not catch up) — the option list was the thing that had aged
+
+Every factual claim in #77 measured true, seven weeks after it was written, which is rare enough
+in this rebuild to be worth saying first. `AuthContext.js` holds **five** effects — the count is
+worth getting right, since a published number is a one-minute grep (#55) — and their dependency
+lists are `[state]`, `[]`, `[]`, `[working]`, `[load]`; the file's other four lists belong to
+`useCallback`s and are all `[]`. **None of the nine watches the location**, and nothing in
+`frontend/src/context/` or `RoleDropdown.js` references `useLocation` or `pathname`.
+`attachRoles` really does read the grants afresh on every
+request, so the server-enforced half really is not affected. `12a-role-grants.spec.js` really
+does call `await grantee.reload()` before reading the picker, with a comment admitting the dodge.
+And open question 6 of `docs/acceptance/12-role-grants.md` really does say all of it.
+
+What had aged was the part nobody reads as a claim: the **list of options**, and the cost written
+beside each one.
+
+### Option 1's cost is not the request it adds
+
+The ticket priced *re-read `/api/me` when the pathname changes* at "one request per menu press".
+The request is the cheap part. `load` opens with `setLoading(true)`, and both guards in
+`routes/AppRoutes.js` answer a loading shell with `<LoadingScreen />` — so calling it on a
+navigation unmounts the entire shell, navbar and picker and all, on every menu press. That is not
+a deduction: `Navbar.js` is already the one caller that does this with the shell mounted, and
+#47 measured the consequence and wrote it into the code — a success message raised across a first
+photo upload is erased, because the same unmount takes `Mainpage`, which holds the snackbar. The
+row is `47a`'s *a replacement is fetched again, without the shell reloading around it*.
+
+So option 1 as written costs a full-screen curtain per navigation. A probe measured how long:
+`GET /api/me` is **5.3–8.7 ms over 25 runs, median 6.3 ms**, against a measured frame budget of
+16.7 ms — 0.4 of a frame. That reads like nothing, and #120's rule is to ask what is holding it
+to nothing. Three things: the browser, the server and the database are on one machine; the pool
+is warm; and one call is only **three** queries — `sessionAdmission` and `allRoles` at the guard,
+plus the single `users` row in the handler, because `shellState` builds everything else out of the
+`req.auth.roles` the guard has already read. The first two do not survive a deployment; the third
+does, being a property of the code rather than of the machine, and there the curtain becomes the
+round trip — two to five frames of blank screen on every menu press. The measurement is honest
+and it does not transfer, which is the only useful thing to say about it.
+
+Avoiding the curtain means a silent variant of `load`, and that is a second price the ticket does
+not name. `load`'s own docstring records why its superseded-answer site needs no guard: the
+curtain unmounts everything that could ask for a different answer, so nothing can. It then names
+the event that would expire that reasoning — *anything that refreshes the shell's own state
+without the curtain*. A silent re-read on navigation **is** that event, measured and dated on
+1 October. It would put an in-flight `/api/me` answer in the air beside a live `RoleDropdown`,
+which is #51's defect at a new site: the answer lands after a switch and puts the old grant back.
+A ticket's cost line can be missing the price that the fix's own neighbours already quoted.
+
+### Option 3's cost line was wrong, and the code said so in two places
+
+The ticket priced *let any response carry the grants* at "no extra request, but it spreads
+session knowledge into every endpoint". Measured, the cheapest shape of it spreads knowledge into
+**no** endpoint and touches two sites plus one line:
+
+- `app.js:108` mounts `requireSession` + `attachRoles` once, above all thirty-one route modules,
+  so `req.auth.roles` is already populated on every `/api` request that is not health or sign-in.
+  `shellState` proves it is enough, because it builds the picker's whole list out of exactly that.
+  A middleware on the next line can attach it to every response **with no query at all**.
+- `client.js` is already a single funnel with this exact shape in it. `onSessionExpired` and
+  `onAccessEnded` are one-listener seams registered once by `AuthContext`, for the stated reason
+  that a rule depending on every screen remembering it is a rule most screens will miss. A third
+  listener is the same move.
+- and `cors({ origin, credentials: true })` carries no `exposedHeaders`, so a response header is
+  invisible to JavaScript until it is named there. One line, and a real one: it is the difference
+  between the header shape and a body shape, and only the body shape touches every endpoint.
+
+The lesson is not that option 3 should win — that is not ours to decide. It is that **a ticket's
+cost line is a claim about the shape its author pictured, not about the option**, and it is the
+claim that decides which option gets built. Re-derive it from the mount points before choosing.
+
+### Splitting the row was the part that needed no decision
+
+Criterion 2's second row carried one ⚙ over two halves and explained the gap underneath it:
+*but the spec has to reload the page, not "press any menu item"*. That is #50 exactly — explaining
+a gap in prose is not the same as marking it — and #66's *a row that names two ways in is two
+rows*, which the sheet had already applied three rows down, to criterion 4 and a breadcrumb. So
+the row is now two: the server-enforced half keeps the ⚙ that `12a` earns, and the picker's
+half is a ☐ naming
+#77, which is a working link between two sheets rather than a hole in one. Open question 6 gained
+the ticket number it had never been given, and `12a`'s comment now points back at both. The mark
+tally moved ☐ 15 → 16, 1,261 rows → 1,262, measured with the instrument that reproduces the
+record's four figures at `HEAD` rather than by arithmetic on the record.
+
+### And a ⚙ that reaches one direction of its row
+
+Reading the split row's remaining gear the other way, as `CLAUDE.md` asks: the half that stayed
+asserts both directions of one mechanism — 403 before the grant, 200 after it, and 403 again
+after the revoke. The mutants behind it reach the **second** direction only. `M4` makes revoke
+set `is_active = true`; `M5` drops `ur.is_active` from `allRoles`' filter; `everyrefusalends` in
+`52-access-ended.py` turns every 403 into an ended session and so works through the baseline —
+it may well take the 200 down too, but by destroying the session the first 403 was asserted on,
+which is a kill for the wrong reason and evidence for nothing about how fresh the grants read is.
+Nothing in 883 mutants puts `expect(await reachProgramSubjects(grantee)).toBe(200)` at risk
+*for that assertion's own reason* — the claim that a *new* grant takes effect on the next
+request. It is breakable (a module-level
+memo of `allRoles` would do it, in the shape `M2` already uses to insert code rather than alter
+it), so this is a missing mutant and not an unprovable claim. Adjacent to #77 and deferred to the
+tracker as [#193](https://github.com/khthana/Deep-QA/issues/193) rather than to this paragraph,
+because a deferral written only into prose is a decision nobody can find (#119, #89).
