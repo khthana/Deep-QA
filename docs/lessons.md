@@ -7368,6 +7368,8 @@ memo of `allRoles` would do it, in the shape `M2` already uses to insert code ra
 it), so this is a missing mutant and not an unprovable claim. Adjacent to #77 and deferred to the
 tracker as [#193](https://github.com/khthana/Deep-QA/issues/193) rather than to this paragraph,
 because a deferral written only into prose is a decision nobody can find (#119, #89).
+The shape named in that parenthesis was measured when #193 was taken, and it breaks the row
+one assertion too early: see §#193.
 
 ### What happened when the owner chose: option 3, and the census that nearly sank it
 
@@ -7508,3 +7510,75 @@ The ordering claim itself gets the same treatment, in the three-way form: `read_
 of two readings wins, and no row builds two readings out of order. That is **untested**, not
 structurally unreachable — `route.fulfill` could craft it — and the sheet says which, with a date
 (#102).
+
+## #193 — the mutant that had to fail one line and not the line above it
+
+#77 left this ticket behind on purpose, and its first sentence was a prediction: the 200 on
+criterion 2's server half is breakable, and *a module-level memo of `allRoles` would do it, in the
+shape `M2` already uses to insert code rather than alter it*. Two days later the ticket was taken,
+and the prediction was the first thing measured — which is the rule for a ticket's numbers, its
+identifiers, its reason for being untestable and its reason for not hurting yet, and is no less
+the rule when the ticket is one's own.
+
+Three of its claims had aged in two days. `attachRoles` is mounted at `backend/app.js:115`, not
+`:108`, because #77 added a line to that file above it; the mutant count was 886, not 883, for the
+same reason; and the 200 assertion the ticket quoted now exists in two rows rather than one, #77's
+row 8 having added a second. The first two are #173's family — a citation by line number ages the
+day anything above it grows — and the third is worth more than a correction, because it says a
+mutant written for this claim proves two rows' reachability rather than one (#191). That last
+one was a consequence and not yet a measurement, which is a poor thing to leave in the ticket
+whose subject is unmeasured claims; the review round said so and it was then run. `M13` does
+kill row 8, at `:391`, its own 200, with the picker assertions above it passing — the shell
+reading fresh either way. One mutant over shared code cannot tell the two ways in apart, so
+what each row adds is that its own way in — a reload for one, a menu press for the other —
+arrives there, and the kill is that proof.
+
+**But the claim itself held.** Nothing among the 886 made a freshly given grant invisible: `M2`
+deletes grants in the account-update route, which is not this flow; `M3` and `M7` change who the
+granter was recorded as; `M4` and `M5` are the revoking direction; `48`'s pair refuse the account
+at the door on its validity window, which would take the 200 down while leaving both 403s standing
+and mean nothing about freshness, exactly as `everyrefusalends` does. There is no cache to break,
+`attachRoles` reading the grants on every request, so the refutation had to insert code.
+
+### Where the prediction was wrong, and the only way to find out
+
+The prediction named the right shape and the wrong site. A memo of `allRoles` inside `attachRoles`
+makes the stale reading the **whole** of `req.auth` — so `/api/me` answers with it too, the shell
+redraws from it, and the row dies at the acting-role button it asserts *before* the 200. Run as a
+mutant of its own, that is what it did: `12a-role-grants.spec.js:193`, element not found, with
+line 194 never reached. The 200 would have been left exactly as unproved as it was, behind a red
+row and a gear that looked earned.
+
+What makes the difference is where the row's earlier assertions sit, and what is above what.
+`requireRole` is where the 200 is decided, and `/api/me` is mounted above every `requireRole` in
+`app.js` — so a memo *there* leaves the shell reading fresh, the button assertion passes, and the
+row dies at `:194`, its own assertion, which is the whole of what a gear means. That is `M13`: two
+edits, a `Map` above `requireRole` and the guard deciding from the first acting role it ever saw
+for that account.
+
+The rule, which is the twin of the one about a ticket's cost line: **a ticket's proposed shape for
+a mutant is a claim like its numbers, and the thing the claim is about is not always where the
+mutant goes.** The claim here is about freshness, which lives in `attachRoles`; the assertion that
+states the claim is decided in `requireRole`. Choosing the site by the subject rather than by the
+assertion puts the red on the wrong line — and a red on the wrong line is not a measurement of the
+row (#171, read from the other side: a red is not a measurement until the same read has been seen
+green, and this read was never about the 200 at all).
+
+### What was not measured, and is argued instead
+
+The two flanking 403s had to stay standing, and only one of them was watched doing it. The
+baseline 403 passed under `M13` and so did the button; the third 403 was never reached, the row
+having stopped at `:194`. It cannot be reached in that row, so the sheet says what is true rather
+than claiming a measurement: `M13` makes the guard refuse, and an expectation of 403 is not
+something a refusal can fail. The whole file was then run clean — ten rows, all green — which is
+the other half of the pair the gear rests on.
+
+`M13` is wide, as `M5` is wide: it freezes every account's acting role for the life of the process,
+because the freshness it removes is shared by every guarded route. That is a property of the claim
+and not a flaw in the mutant, and the two rows it fails are in one file, where the row before
+them stands.
+
+One name was checked rather than assumed: `16-subjects.py` has an `M13` of its own. No sheet
+carries rows from both files, so the two never meet in one table — which is the condition #185's
+collision actually turns on, and it is written in the file beside the mutant rather than trusted to
+memory.

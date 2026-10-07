@@ -77,6 +77,45 @@ MUTANTS = {
  'M12': ('authcontext',
    "acting: stillHeld ? prev.acting : acting }",
    "acting }"),
+ # ---- #193: the giving direction of criterion 2 --------------------------
+ # `M4` and `M5` reach the revoking direction only, so
+ # `expect(await reachProgramSubjects(grantee)).toBe(200)` - a grant just
+ # given takes effect on the next request - had nothing that could fail it
+ # for its own reason. Nothing to alter, either: `attachRoles` reads the
+ # grants on every request and there is no cache to break, so the mutant
+ # inserts, which is the shape `M2` above already uses.
+ #
+ # It goes in `requireRole` and not in `attachRoles` because of where the
+ # row's assertions sit. `requireRole` is what decides the 200, and
+ # `/api/me` is mounted above every `requireRole`, so the shell still reads
+ # the grants fresh and the acting-role button the row checks before the 200
+ # still says what it should. The same staleness in `attachRoles` reaches
+ # both and kills the row at that button instead, which would leave the 200
+ # exactly as unproved as it was. Measured, not reasoned: the proposed shape
+ # ran as a mutant of its own and died at `12a-role-grants.spec.js:193`, the
+ # acting-role button, with the 200 one line below it never reached. This
+ # one dies at `:194`.
+ #
+ # The two flanking 403s must stay green: before the grant and after the
+ # revoke, the remembered role is the teaching one either way. A mutant that
+ # takes all three has stopped the application rather than proved a row.
+ #
+ # It kills two rows, both at their own 200: `rows 2 and 3` at `:194`, which
+ # arrives by a reload, and #77's `row 8` at `:391`, which arrives by a menu
+ # press. The picker assertions above the second one pass, the shell reading
+ # fresh either way. One mutant over shared code cannot tell the two ways in
+ # apart, so what each row adds is that its own way in gets there, and the
+ # kill is that proof (#191).
+ #
+ # `16-subjects.py` has an `M13` of its own. No sheet carries rows from both
+ # files, so the two never meet in one table (#185).
+ 'M13': [('authorise',
+   "function requireRole(...roleIds) {\n  const allowed = new Set(roleIds);\n",
+   "const actedAs = new Map();\nfunction requireRole(...roleIds) {\n  const allowed = new Set(roleIds);\n"),
+  ('authorise',
+   "    return allowed.has(req.auth.acting.role_id) ? next() : forbid(res);\n",
+   "    if (!actedAs.has(req.auth.userId)) actedAs.set(req.auth.userId, req.auth.acting.role_id);\n"
+   "    return allowed.has(actedAs.get(req.auth.userId)) ? next() : forbid(res);\n")],
  'M9': ('importer',
    "      await client.query('ROLLBACK');\n      return { ok: false,",
    "      await client.query('COMMIT');\n      return { ok: false,"),

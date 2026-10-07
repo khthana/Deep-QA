@@ -243,6 +243,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   shared expression to its branch; when *does it choose the right thing* stops the application,
   mutate to a different choice rather than to no choice; a mutant that removes a condition must
   keep its parameters referenced. (#97, #102, #101)
+- **A ticket’s proposed shape for a mutant is a claim, and what the claim is about is not
+  always where the mutant goes** — the site is chosen by which line has to go red. #193’s
+  claim was about the freshness of a grants read, which lives in `attachRoles`; the assertion
+  stating it is decided in `requireRole`, and `/api/me` is mounted above every `requireRole`,
+  so the memo the ticket proposed one layer up went stale for the shell as well and killed the
+  row at the assertion *before* the target — leaving it exactly as unproved, behind a red row.
+  (#193)
 - Before reading a kill count that looks like the suite as a mutant that stops everything, read
   the names for a leak. (#52)
 - **Two places holding one opinion is not a safety margin; it is a claim neither of them can be
