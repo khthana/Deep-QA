@@ -7368,3 +7368,143 @@ memo of `allRoles` would do it, in the shape `M2` already uses to insert code ra
 it), so this is a missing mutant and not an unprovable claim. Adjacent to #77 and deferred to the
 tracker as [#193](https://github.com/khthana/Deep-QA/issues/193) rather than to this paragraph,
 because a deferral written only into prose is a decision nobody can find (#119, #89).
+
+### What happened when the owner chose: option 3, and the census that nearly sank it
+
+The owner chose the third option, so the measure-then-ask ticket became an implementation ticket
+two days later. `attachRoles` already reads the grants on every request; what it did not do was
+say so to the browser. It does now, as `X-Deep-Grants` — base64 JSON, set straight after
+`req.auth` is built and before any route runs, so the header is what the guards are about to
+decide with rather than a second read of its own. `client.js` announces it through a third
+listener beside `onSessionExpired` and `onAccessEnded`, and `AuthContext` replaces the grant list
+from it. No request was added, and nothing raises `loading`, which is the whole point: the two
+cheaper-looking options both unmounted the shell for the length of a request.
+
+The one premise option 3 rests on is that **every screen asks the server something**, because a
+screen that asks nothing gets no answer to ride on. That premise is a census, and the census was
+wrong twice before it was right — which is #174 three times over in one afternoon. Version one
+counted the exports of `client.js` and reported *0 of 37 screens ask on mount*, a figure #155's own
+measurement refutes in one line. Version two followed the imports but not the indirections, and
+reported *26 call only outside an effect* — `load` is a `useCallback`, so a screen that calls it
+inside `useEffect` reads as a screen that calls it on a press. Version three follows one level of
+local function and gives **34 of 35 ask on mount**, the exception being `NotBuiltYet`, which draws
+a placeholder and asks nothing. Both controls behaved: `ProgramSubjects` (known to ask) and
+`NotBuiltYet` (known not to). A census is evidence about the property it counted, and the property
+here was never *does this file import the API* but *does a mount reach a request* — three
+instruments, three different properties, two wrong answers.
+
+### The guard that had to be narrower than the header
+
+Reading the implementation before writing it found the one hazard: the header is built from the
+cookie **as the request carried it**, so the answer to a switch describes the role being switched
+*away from*. Taking `acting` from the header would walk the person back one move every time they
+changed hats. So the listener is narrow: the grant *list* is always replaced, and `acting` is
+taken only when the grant being worn is no longer in that list — which is the revoke case, where
+the server has already fallen back to the most senior still held and nothing on this side knows.
+
+That narrowness is a second claim, and it was invisible until row 8 gained an assertion for it.
+Row 8 grants a committee role to somebody wearing a teaching one and read the picker's new option;
+the header's own `acting` in that situation says *committee* (most senior held, no choice ever
+recorded), so "take the header's acting" and "keep what is worn while it is held" draw different
+screens at exactly that point — which is where the fixture belongs (#117). Without the added
+assertion the two rules were one row and no mutant could have told them apart. With it, `M12`
+kills row 8 and leaves row 9 standing: the control that separates the narrow rule from the broad
+one, which is #145's shape one subject along.
+
+### Two rows, and the two orders that could not build them
+
+The browser rows are two because the ticket reports two directions (#66), and the reload that
+rows 2–3 use stays where it is: reaching criterion 2's first half by the oldest route there is
+leaves it standing whatever happens to the second, so a regression in the header is rows 8–9's red
+and not the whole file's. The comment above those rows, which said the picker catches up only on a
+load, was true the day it was written and is now rewritten — a claim in prose expires like a
+number (#130).
+
+Row 9 failed twice before it passed, both times on its own arrangement rather than on its claim:
+
+- It granted the committee role **before** the grantee signed in. `actingFrom` hands out the most
+  senior grant held, so the person arrived already wearing it, and the teaching dashboard
+  `chooseSection` needs was not the shell they were in. The row died in `chooseSection` at the
+  timeout, and the stack said where it waited while the saved snapshot said what the screen had
+  decided — the acting button read *กรรมการหลักสูตร 0501* before anything had been pressed (#160).
+- Reordered, it then hung in `switchTo`, waiting for a `PUT /api/me/acting-role` that never
+  happened — because **the switch it was arranging had already occurred**. There is no acting
+  cookie until somebody chooses on purpose, so the reload that took the new grant into the picker
+  also put the person into the role. What was written as an arrangement was an assertion; it is
+  asserted now, where it is used (#51).
+
+Both are the same species: *the mechanism under test can erase the precondition a row arranged for
+it* — except here the mechanism was the seeding rule, and what it erased was the arrangement's
+reason to exist.
+
+### What the sweep said
+
+Three mutants, one per site plus one for the rule (#125). `M10` takes the `carryGrants` call out of
+`attachRoles`; `M11` reverses `ticket > announced` in the client so nothing is announced; `M12`
+takes `acting` from the header unconditionally. Each row was measured **on its own**, because `12a`
+is a `mode: 'serial'` file and the first run against `M10` reported row 8 failed and row 9
+*skipped* — a serial spec reports the first dying row and skips the rest (#67). Measured apart:
+`M10` and `M11` each kill row 8 at its own `toBeVisible` and row 9 at its own `toHaveText`; `M12`
+kills row 8 at the acting-button assertion and leaves row 9 green. `M10` also kills three of the
+four backend sub-tests, the survivor being the net that asserts the header is *absent* from an
+answer nobody was admitted to — which is what a net is for.
+
+The tally moved ☐ 16 → 15 and 1,262 rows → 1,263: criterion 2's picker half became a ⚙, and
+criterion 3 gained the revoking direction as a row of its own. The hand-walk queue stays at **38**,
+and for a reason worth writing down — it was 39 marks minus one ☐ that named a ticket, and it is
+now 38 marks minus none, the link having become a gear. Two different sums, the same number.
+
+### The review round, and the key that ordered the wrong thing
+
+The standards and spec reviews between them raised seven things. Two were wrong and one was right
+in a way that made it worse than reported.
+
+**The one that mattered.** The client announced only the newest grant list, keyed on `seq` — the
+order the requests *left in*. The paragraph above it argued from the order they were *answered*
+in, and concluded that an answer behind the high-water mark describes a state the screen has
+already improved on. That does not follow, and the review spotted it. What the review got wrong
+was the consequence: it called the gap "self-healing and strictly safer than the reverse". It is
+the opposite. If the server happens to read a later-departing request first, the answer that
+arrives second carries the *higher ticket and the older snapshot*, and applying it puts a revoked
+grant back on the picker — the exact defect row 9 exists to prove is fixed. A finding can be true
+and its blast radius still be wrong in the safe direction, which is the one to re-derive yourself.
+
+The key is the moment the grants were **read**, and only the server knows that, so the server now
+says it: `read_at` beside `roles` in the header. `seq`, `ticket` and the remount reset all came
+out — a timestamp needs no lifecycle, which also answered a *Mysterious Name* finding about
+`announced` reading like a boolean. **An ordering key has to be the order of the thing it
+orders**: #185's rule about naming what *identifies* a request, one step along to what *orders*
+two of them. And the residual is written on the code rather than argued away — two readings inside
+one millisecond are a tie, and the later-arriving one wins; they describe different states only if
+a grant was written between them.
+
+**The two that were wrong.** The spec review reported the ticket's follow-up about #155 as
+"untouched and unticketed" — #155 *is* that ticket, and it is open. And the standards review
+offered to merge `AuthContext`'s `held` with `RoleDropdown`'s `isActing`, which are the same two
+`&&`s on the same pair. Declined on §#68's terms: a ticket that offers to de-duplicate is answered
+with what the merge costs the proof. These are two different decisions — may this hat be clicked,
+and may this hat be kept — and merged they become one claim no mutant can tell apart.
+
+**The three that were right and cheap.** The test spelt `'x-deep-grants'` as a literal twice while
+the module exports the name, which is #145 exactly: a copy of a rule holds none of the rule's
+letters, and a lower-cased copy holds not even the capitals. The header's docstring claimed the
+payload is what `shellState` would have sent and nothing asserted the `acting` half — and it could
+not be asserted where it was claimed, `authorise.test.js` mounting a synthetic guarded app with no
+body to compare against. That row went to `shell.test.js`, the one place the two live together.
+And a 104-character `module.exports` was rewrapped by hand, the formatter being off limits (#189).
+
+**The one that was right and became a note instead of a fix.** Criterion 2's steps say *press
+**any** menu item*, and a ⚙ earned by two presses is not a universal. What the two presses prove
+is the mechanism, which sits at one site in the client funnel and fires on every answer; what
+*any* adds is that every screen reaches that site, and that is a population claim — answered by a
+census, not by a row (#174, #68). So the row now carries the census's number, its date and its one
+exception (34 of 35 screens ask on mount; `NotBuiltYet` asks nothing and has nothing for the
+picker to catch up with), and says in as many words that **the census is a dated measurement and
+not an instrument**: it is not in `npm run census`, so nothing will catch the next screen that
+asks the server nothing. Writing down what the instrument cannot measure is the rule (#123);
+promoting this census to an instrument is a ticket, not a line in a sheet.
+
+The ordering claim itself gets the same treatment, in the three-way form: `read_at` decides which
+of two readings wins, and no row builds two readings out of order. That is **untested**, not
+structurally unreachable — `route.fulfill` could craft it — and the sheet says which, with a date
+(#102).

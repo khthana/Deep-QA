@@ -15,6 +15,8 @@ const {
   addGrant,
   revoke,
 } = require('../support/grants-panel');
+const { actingButton, roleOption, menuLink } = require('../support/shell');
+const { DASHBOARD, openDashboard, chooseSection } = require('../support/teaching-screen');
 
 /**
  * docs/acceptance/12-role-grants.md - granting, revoking, and the two things
@@ -44,6 +46,8 @@ test.describe.configure({ mode: 'serial' });
 const COMMITTEE = ROLE_NAMES.PROG_MANAGER;
 const PROGRAM = '0501';
 const PROGRAM_SUBJECTS = '/api/program-subjects';
+/** The section `teacher.one@` teaches, for the rows that open the teacher shell. */
+const SUBJECT = '01076105';
 
 /**
  * Whatever the run did, `teacher.one@` is not on the committee when it ends.
@@ -167,14 +171,18 @@ test('rows 2 and 3: the grantee gains and loses the access on their next request
   await addGrant(page, { role: 'PROG_MANAGER', scope: PROGRAM });
 
   // Criterion 2's second row. A reload rather than a fresh sign-in: the cookie
-  // is the one issued before the grant existed, and it still works. What the
-  // reload is needed for is the shell, which reads `/api/me` when it mounts -
-  // so the picker learns of a new grant on the next load and not on the next
-  // click inside the shell. That is weaker than the row's "press any menu
-  // item", and since #77 the checklist says so with a mark rather than only in
-  // prose: criterion 2 is two rows there, the server-enforced half carrying the
-  // gear this file earns and the picker's half a ☐ naming the ticket. What this
-  // row proves is the first half. Explaining a gap is not marking it (#50).
+  // is the one issued before the grant existed, and it still works.
+  //
+  // The reload is **deliberately kept** now that #77 is fixed and a press would
+  // do. Criterion 2 is two rows on the checklist - the access the server
+  // enforces, and the picker catching up - and what this row proves is the
+  // first. Reaching it by the oldest route there is leaves it standing whatever
+  // happens to the second, which rows 8 and 9 at the end of this file own: a
+  // regression in the grants header is their red and not this row's too.
+  //
+  // What this comment used to say - that the picker learns of a grant on the
+  // next load and not on the next press, and that criterion 2's picker half is
+  // a square naming #77 - was true the day it was written and is not now.
   //
   // The picker comes back showing the committee rather than the teacher
   // because the session never recorded a choice - `actingFrom` falls back to
@@ -298,4 +306,165 @@ test('control: the grant the seed made is the one the panel shows', async ({ pag
   // each of those assertions without a single rule being enforced.
   await expect(grantRow(page, ROLE_NAMES.TEACHER, '05')).toHaveCount(1);
   await expect(grantCell(page, ROLE_NAMES.TEACHER, '05', 'ผู้กำหนด')).toHaveText('admin01');
+});
+
+/**
+ * The subject of these last two rows is #77, and what they are about is the
+ * **absence of a reload**.
+ *
+ * Rows 2 and 3 above grant and revoke, and read the picker after
+ * `grantee.reload()`. That reload is why criterion 2 was two rows on the
+ * checklist with one of them a square: the row's own words are "press any menu
+ * item", a left-menu press is a client-side route change, and `AuthContext`
+ * read `/api/me` once, at mount - so the picker caught up on the next load and
+ * not on the next press. Of the three options #77 priced, the owner chose the
+ * third: every answer under the API's session guard carries the caller's grants,
+ * so the request the new screen was making anyway brings the list with it.
+ *
+ * Which makes the sentinel below the assertion that matters as much as the
+ * picker is. `window.__pressedNotReloaded` is set on the document before the
+ * press and read after it: a reload would take it with it, and a row that only
+ * read the picker would pass against a shell that had reloaded itself. The
+ * other two options would both have unmounted the whole shell for the length of
+ * a request - `load` holds `loading` up and both route guards answer a loading
+ * shell with `<LoadingScreen/>` - so this is also the assertion that says which
+ * option is in the tree.
+ *
+ * Two rows rather than one. The ticket reports two directions - a grant given
+ * that cannot be worn, and a grant revoked that is still offered - and a row
+ * that names two ways in is two rows (#66). Each builds its own situation (#129)
+ * and takes it out again through the panel, inside the file's `hold()` net.
+ */
+test('row 8 (#77): a grant given reaches the picker on a menu press, with no reload', async ({
+  browser,
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openUsers(page);
+  await openEditor(page, ACCOUNTS.teacherOne);
+
+  const theirs = await browser.newContext();
+  const grantee = await theirs.newPage();
+  await signIn(grantee, ACCOUNTS.teacherOne, PASSWORD);
+  await openDashboard(grantee);
+  await chooseSection(grantee, SUBJECT);
+
+  // The precondition, read where it is used rather than assumed from the seed
+  // (#129): one grant on offer, and the picker showing it.
+  await actingButton(grantee).click();
+  await expect(roleOption(grantee, ROLE_NAMES.TEACHER)).toBeVisible();
+  await expect(roleOption(grantee, `${COMMITTEE} ${PROGRAM}`)).toHaveCount(0);
+
+  await addGrant(page, { role: 'PROG_MANAGER', scope: PROGRAM });
+
+  // Set on the document that is about to make the press. A reload replaces the
+  // document and takes this with it, which is the whole of what tells a fix
+  // that carries the grants on an answer apart from one that reloads the shell.
+  await grantee.evaluate(() => {
+    window.__pressedNotReloaded = true;
+  });
+
+  // The press. A client-side route change, and the one request it makes is the
+  // new screen's own - the grants ride on that answer.
+  await menuLink(grantee, 'รายชื่อนักศึกษาของรายวิชา').click();
+  await grantee.waitForURL(new RegExp(`${DASHBOARD}/[^/]+/subjectStudents$`));
+
+  await expect(actingButton(grantee)).toBeVisible();
+  await actingButton(grantee).click();
+  await expect(roleOption(grantee, `${COMMITTEE} ${PROGRAM}`)).toBeVisible();
+
+  // And the hat they are wearing is not changed under them. The header's own
+  // `acting` says the committee here - it is the most senior grant held and the
+  // session has never recorded a choice - but somebody else's save does not move
+  // a person into a role mid-screen. `acting` is taken from the header in one
+  // case only, the grant being worn having gone, which is row 9's.
+  await expect(actingButton(grantee)).toHaveText(
+    new RegExp(`^${ROLE_NAMES.TEACHER}`),
+  );
+
+  // After the read, not before it: a round trip is a turn for the renderer, and
+  // a probe in front of the thing it is measuring changes the answer (#170).
+  expect(await grantee.evaluate(() => window.__pressedNotReloaded === true)).toBe(true);
+
+  // And the grant is real, not only drawn: the picker offering a hat the server
+  // would refuse is the other half of what #77 reports.
+  expect(await reachProgramSubjects(grantee)).toBe(200);
+
+  const removed = await revoke(page, COMMITTEE, PROGRAM);
+  expect(removed.status()).toBe(200);
+  await theirs.close();
+});
+
+test('row 9 (#77): a grant revoked leaves the picker, and the hat worn falls back', async ({
+  browser,
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openUsers(page);
+  await openEditor(page, ACCOUNTS.teacherOne);
+
+  const theirs = await browser.newContext();
+  const grantee = await theirs.newPage();
+  await signIn(grantee, ACCOUNTS.teacherOne, PASSWORD);
+
+  // The teaching shell first, and the grant afterwards. The other order cannot
+  // build this situation at all: `actingFrom` hands out the most senior grant
+  // held, so a person granted the committee before they sign in arrives wearing
+  // it, and the teaching dashboard `chooseSection` needs is not the shell they
+  // are in. The first run of this row died in `chooseSection` for exactly that,
+  // with the acting button reading the committee in the saved snapshot.
+  await openDashboard(grantee);
+  await chooseSection(grantee, SUBJECT);
+  await addGrant(page, { role: 'PROG_MANAGER', scope: PROGRAM });
+
+  // A reload to take the new grant into the picker, deliberately: this row
+  // builds its own situation (#129) rather than resting on the mechanism row 8
+  // is about, and what it is about is the *other* direction - the grant being
+  // taken away. The reload is the precondition, so the sentinel below is set
+  // after it, not before.
+  await grantee.reload();
+
+  // And the reload is all it takes to be *wearing* it, which is the case the
+  // picker cannot recover from on its own. Nothing switched on purpose here:
+  // there is no acting cookie until somebody does, so the load handed out the
+  // most senior grant held, which the new one is. Asserted where it is used
+  // rather than arranged - the first attempt at this row arranged a `switchTo`
+  // and hung, because the switch it asked for had already happened.
+  await expect(actingButton(grantee)).toHaveText(
+    new RegExp(`^${COMMITTEE} ${PROGRAM}`),
+  );
+
+  const removed = await revoke(page, COMMITTEE, PROGRAM);
+  expect(removed.status()).toBe(200);
+
+  await grantee.evaluate(() => {
+    window.__pressedNotReloaded = true;
+  });
+
+  // A press inside the committee's own shell, on an entry that *navigates*:
+  // `หลักสูตร` next to it is a group header - it carries `sub` and no `path` in
+  // `SidebarItem/ProgManager.js`, so pressing it opens the group and asks the
+  // server nothing, which is not the press this row is about.
+  //
+  // The answer may well be a refusal by the time it arrives, the grant having
+  // gone, and that is the point rather than a problem: a 403 from a route under
+  // the session guard carries the header like any other answer, which is why
+  // `client.js` reads it above its own `!response.ok` branch.
+  await menuLink(grantee, 'ข้อมูล Rubric กลาง').click();
+
+  // The hat is gone, so the picker says what the server is honouring instead -
+  // the teaching grant, which is all that is left. This is `actingFrom`'s
+  // fallback becoming visible without a reload.
+  await expect(actingButton(grantee)).toHaveText(
+    new RegExp(`^${ROLE_NAMES.TEACHER}`),
+  );
+  await actingButton(grantee).click();
+  await expect(roleOption(grantee, `${COMMITTEE} ${PROGRAM}`)).toHaveCount(0);
+
+  expect(await grantee.evaluate(() => window.__pressedNotReloaded === true)).toBe(true);
+
+  // And the server agrees, which is what makes the picker's answer true rather
+  // than merely tidy.
+  expect(await reachProgramSubjects(grantee)).toBe(403);
+  await theirs.close();
 });

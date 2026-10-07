@@ -99,6 +99,67 @@ export const onAccessEnded = listener => {
   accessEndedListener = listener
 }
 
+/**
+ * The shell's listener for the caller's grants having changed - #77.
+ *
+ * A third listener beside the two above, and for their reason: what a grant
+ * list is worth depends on state only `AuthContext` holds, and a rule each
+ * screen has to remember is a rule most of them will not. Every answer under
+ * the API's session guard carries `X-Deep-Grants`, so a left-menu press - which
+ * is a client-side route change and asks `/api/me` nothing - still brings the
+ * picker up to date on the request the new screen was making anyway.
+ *
+ * **Only the newest reading is announced.** Two requests out at once come back
+ * in whichever order the network gives them, and the header on each describes
+ * the grants as they stood when *that request was read*. Applying the older
+ * reading after the newer one would put a revoked grant back on the picker -
+ * the same superseded-answer shape as #51 and #133, arriving through a header
+ * rather than through a body.
+ *
+ * The order worth comparing them in is therefore the order they were **read**
+ * in, and only the server knows that, so the server says it: `read_at`. The
+ * order the requests *left* in is not the same order and cannot stand in for
+ * it - a request that leaves first can be read second, and keying on departure
+ * would then drop the newer reading and keep the older, which is the one
+ * direction that matters. This is #68's rule about asking what identifies the
+ * request, one layer out: what identifies a *reading* is when it was read.
+ *
+ * What this cannot tell apart is two readings inside the same millisecond; the
+ * later-arriving one wins. They describe different states only if a grant was
+ * written between them.
+ */
+let grantsListener = null
+/** The `read_at` of the newest reading announced, so older ones are dropped. */
+let announcedAt = 0
+
+export const onGrantsChanged = listener => {
+  grantsListener = listener
+}
+
+/** The header's name, spelt once; `backend/auth/authorise.js` sets it. */
+export const GRANTS_HEADER = 'X-Deep-Grants'
+
+/**
+ * Base64 of JSON, because `role_name` is Thai and a header is latin-1. A
+ * header this side cannot read is nothing to raise an error about: the answer
+ * the caller asked for is fine, and the picker simply stays as it was until the
+ * next request - so this swallows rather than throws.
+ */
+const readGrants = response => {
+  const raw = response.headers.get(GRANTS_HEADER)
+  if (!raw) return null
+  try {
+    const decoded = JSON.parse(
+      new TextDecoder().decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0)))
+    )
+    const usable =
+      Array.isArray(decoded.roles) && typeof decoded.read_at === 'number'
+    return usable ? decoded : null
+  } catch {
+    return null
+  }
+}
+
 async function api(
   path,
   { method = 'GET', body, signal, contentType, accept } = {}
@@ -122,6 +183,17 @@ async function api(
         : { 'Content-Type': contentType ?? 'application/json' },
     body: body === undefined || raw || multipart ? body : JSON.stringify(body),
   })
+
+  // Before the refusal below as well as before the body: a 403 from a route
+  // this grant may not reach is answered *under* the guard, so it carries the
+  // header too, and it is one of the answers that says the grants moved.
+  if (grantsListener) {
+    const grants = readGrants(response)
+    if (grants && grants.read_at > announcedAt) {
+      announcedAt = grants.read_at
+      grantsListener(grants)
+    }
+  }
 
   // A refusal is JSON whatever was asked for, because the error handler and
   // the guards answer in JSON on every route.

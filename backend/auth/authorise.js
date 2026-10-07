@@ -39,6 +39,57 @@ const { REFUSALS } = require('./refusals');
  */
 const GLOBAL_SCOPE = 'FULL_ADMIN';
 
+/**
+ * The header every answer under this middleware carries the caller's grants in
+ * - #77, and the third of the options that ticket offered.
+ *
+ * The defect it closes is on the browser: `AuthContext` reads `/api/me` once,
+ * at mount, and a left-menu press is a client-side route change, so a grant
+ * given or revoked while somebody is working reaches the guards on the next
+ * request and reached the picker only on the next reload. Of the three options
+ * priced, this one adds no request and unmounts no shell: the answer to the
+ * request the new screen already makes brings the grants with it.
+ *
+ * Here rather than in each route because this is where the rows are read.
+ * `allRoles` has just run; the header costs no query, and being set above all
+ * 31 route modules it is on every answer by construction rather than by each
+ * route remembering - which is the same argument as the guard it sits in.
+ *
+ * Base64 because a header is latin-1 by the HTTP grammar and `role_name` is
+ * Thai: setting the prose directly produces either a throw or mojibake in the
+ * picker, depending on the stack. JSON inside it, so the browser rebuilds
+ * exactly the array `shellState` would have sent.
+ */
+const GRANTS_HEADER = 'X-Deep-Grants';
+
+/**
+ * Writes that header, and is the one place that decides what it holds.
+ *
+ * `acting` rides along because of the case the picker cannot otherwise recover
+ * from: the grant somebody is *wearing* is revoked, `actingFrom` falls back to
+ * the most senior still held, and nothing on the screen knows. What the browser
+ * does with it is narrower than what is sent - see `AuthContext`, which keeps
+ * its own `acting` unless the one it holds has gone - because this header is
+ * built from the cookie as it arrived, and on the answer to a switch that is
+ * the grant being switched *away* from.
+ */
+const carryGrants = (res, auth) =>
+  res.setHeader(
+    GRANTS_HEADER,
+    Buffer.from(
+      JSON.stringify({
+        // When these grants were read. The browser compares answers by this
+        // and by nothing of its own, because the order requests leave in is
+        // not the order they are read in - `onGrantsChanged` in
+        // `frontend/src/api/client.js` says what that costs.
+        read_at: Date.now(),
+        roles: auth.roles,
+        acting: { role_id: auth.acting.role_id, scope_id: auth.acting.scope_id },
+      }),
+      'utf8',
+    ).toString('base64'),
+  );
+
 const forbid = (res) => res.status(403).json({ message: REFUSALS.forbidden });
 
 /**
@@ -122,6 +173,9 @@ function attachRoles(pool) {
       if (roles.length === 0) return endAccess(res, 'noRole');
 
       req.auth = { userId, roles, acting: actingFrom(roles, req.session.acting) };
+      // After `req.auth`, and before any route: what the header carries is what
+      // the guards are about to decide with, never a second read of its own.
+      carryGrants(res, req.auth);
       return next();
     } catch (error) {
       return next(error);
@@ -291,4 +345,11 @@ async function coveredScopes(pool, scopeId) {
   return rows.map((row) => row.scope_id);
 }
 
-module.exports = { GLOBAL_SCOPE, attachRoles, requireRole, requireScope, coveredScopes };
+module.exports = {
+  GLOBAL_SCOPE,
+  attachRoles,
+  GRANTS_HEADER,
+  requireRole,
+  requireScope,
+  coveredScopes,
+};

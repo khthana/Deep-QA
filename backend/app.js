@@ -41,7 +41,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const { attachRoles } = require('./auth/authorise');
+const { attachRoles, GRANTS_HEADER } = require('./auth/authorise');
 const { REFUSALS } = require('./auth/refusals');
 const { frontendUrl } = require('./config');
 const { requireSession } = require('./auth/session');
@@ -84,7 +84,14 @@ function createApp({ pool }) {
 
   const app = express();
 
-  app.use(cors({ origin: frontendUrl(), credentials: true }));
+  // `exposedHeaders` is what lets the browser read the one header this API adds
+  // to its answers - #77. A cross-origin fetch sees only the six safelisted
+  // response headers unless the server names the others, so without this line
+  // the grants are sent, arrive, and are invisible to `api/client.js`: the
+  // picker would go on being stale with nothing to show why.
+  app.use(
+    cors({ origin: frontendUrl(), credentials: true, exposedHeaders: [GRANTS_HEADER] }),
+  );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   // The import file, posted as its own text rather than as a multipart upload:

@@ -23,7 +23,7 @@ const request = require('supertest');
 
 const { PASSWORD, ACCOUNTS, byAlias, DEPARTMENTS, PROGRAMS } = require('../../db/seed');
 const { actingEpoch } = require('../auth/accounts');
-const { attachRoles, requireRole } = require('../auth/authorise');
+const { attachRoles, GRANTS_HEADER, requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const {
   COOKIE_NAME,
@@ -54,6 +54,26 @@ async function signInAs(alias) {
 }
 
 const me = (cookie) => request(api.app).get('/api/me').set('Cookie', cookie);
+
+/**
+ * #77's header says it carries what `shellState` would have sent, and this is
+ * the one place the two can be compared: `authorise.test.js` mounts a synthetic
+ * guarded app and has no `/api/me` to read a body from. Two places holding one
+ * opinion is a claim neither of them can be shown to hold (#97) - so the claim
+ * is made here, once, over both halves of the payload.
+ */
+test('the grants header carries what the shell was told', async () => {
+  const cookie = await signInAs('U_TEACH');
+  const response = await me(cookie);
+
+  assert.equal(response.status, 200);
+  const raw = response.headers[GRANTS_HEADER.toLowerCase()];
+  assert.ok(raw, `no ${GRANTS_HEADER} header on the shell's own answer`);
+  const carried = JSON.parse(Buffer.from(raw, 'base64').toString('utf8'));
+
+  assert.deepEqual(carried.roles, response.body.roles);
+  assert.deepEqual(carried.acting, response.body.acting);
+});
 
 const switchTo = (cookie, selection) =>
   request(api.app).put('/api/me/acting-role').set('Cookie', cookie).send(selection);

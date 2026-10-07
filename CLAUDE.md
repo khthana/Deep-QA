@@ -470,6 +470,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **The mechanism under test can erase the precondition a row arranged for it** — the ageing a
   renewal undoes, the state a reload clears. Assert the precondition where it is used, not where it
   is set. (#51)
+- **An arrangement that hangs can be an assertion in disguise** — a row that sets up a state the
+  system's own defaults have already reached waits for a request nobody is going to make, and dies
+  at the timeout. Its twin is the order that makes the state unreachable: where a rule picks for
+  the person (the most senior grant held), arranging the precondition too early puts them in a
+  shell the row cannot use. Ask what is true on arrival before arranging anything. (#77)
 - **A row that catches a defect on some runs is not the row that holds it** — the row that holds it
   builds the situation itself, rather than waiting for another spec to leave one behind. But a row
   that builds its own situation is still handed a world it did not build: assert the shape it needs,
@@ -501,6 +506,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   request** — an id alone does not, once two kinds of request share a position in the address.
   Two kinds at one segment make the key `kind:id`, and one resolver with a table of callers
   rather than one effect per kind. (#185)
+- **An ordering key has to be the order of the thing it orders** — #185's rule one step along,
+  from what *identifies* a request to what *orders* two answers. A counter on the client counts
+  departures, and the state an answer describes was read on the server: a request that leaves
+  first can be read second, so keying on departure drops the newer reading and keeps the older,
+  which is the one direction that matters. Have the server say when it read, and write down what
+  the key cannot tell apart. (#77)
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)

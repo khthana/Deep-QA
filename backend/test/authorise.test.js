@@ -30,7 +30,13 @@ const {
   DEPARTMENTS,
   PROGRAMS,
 } = require('../../db/seed');
-const { GLOBAL_SCOPE, attachRoles, requireRole, requireScope } = require('../auth/authorise');
+const {
+  GLOBAL_SCOPE,
+  attachRoles,
+  GRANTS_HEADER,
+  requireRole,
+  requireScope,
+} = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { requireSession } = require('../auth/session');
 const { startApi, guardedApp } = require('./helpers');
@@ -626,5 +632,179 @@ test('a refusal that ends the session', async (t) => {
     assert.equal(response.status, 403);
     assert.equal(response.body.message, REFUSALS.inactive);
     assert.equal('accessEnded' in response.body, false);
+  });
+});
+
+/**
+ * #77 option 3: every answer carries the caller's grants.
+ *
+ * The defect is on the browser: `AuthContext` reads `/api/me` once, at mount, so
+ * a grant given or revoked while somebody is working reaches the server's guards
+ * on the next request and reaches the picker on the next *reload*. Of the
+ * ticket's three options the owner chose the third - the answer to whatever
+ * request the new screen already makes carries the grants, so no request is
+ * added and no shell is unmounted.
+ *
+ * This is the server half: the header is set here, above all 31 route modules,
+ * from the same `req.auth.roles` the shell's own `/api/me` body is built from.
+ * It is base64 because the role names are Thai and a header is latin-1.
+ *
+ * What the rows below are about is *freshness*, which is the whole of #77: the
+ * header on request N+1 has to show a grant written between N and N+1. The
+ * fallback half - what the header says the caller is acting as once the grant
+ * they were wearing is revoked - is the second row, because that is the case the
+ * picker cannot otherwise recover from.
+ */
+test('the grants header', async (t) => {
+  // The name is read from the module rather than retyped: a copy of a rule
+  // holds none of the rule's letters (#145). Lower-cased because node's header
+  // map is, which this line is also the only assertion about.
+  const field = GRANTS_HEADER.toLowerCase();
+  const decode = (response) => {
+    const raw = response.headers[field];
+    assert.ok(raw, `no ${GRANTS_HEADER} header on the answer`);
+    const carried = JSON.parse(Buffer.from(raw, 'base64').toString('utf8'));
+    // What the client orders answers by, so every row here is also a row about
+    // it being there to order by.
+    assert.equal(typeof carried.read_at, 'number');
+    return carried;
+  };
+
+  await t.test('rides on an answer under the guard, carrying what was read', async () => {
+    const cookie = await signInAs('U_TEACH');
+
+    const response = await asUser(cookie, attached());
+
+    assert.equal(response.status, 200);
+    const carried = decode(response);
+    assert.deepEqual(
+      carried.roles.map((grant) => grant.role_id),
+      response.body.roles,
+      'the header and the body disagree about which grants were read',
+    );
+    assert.deepEqual(
+      carried.roles.map((grant) => grant.scope_id),
+      response.body.scopes,
+    );
+    // Not only the ids: the picker draws the name, so the name has to survive
+    // the encoding. A latin-1 header would arrive mojibake and the dropdown
+    // would draw it.
+    for (const grant of carried.roles) {
+      assert.equal(typeof grant.role_name, 'string');
+      assert.ok(grant.role_name.length > 0);
+      assert.ok(/[฀-๿]/.test(grant.role_name), 'role_name is not Thai');
+    }
+    assert.equal(carried.acting.role_id, carried.roles[0].role_id);
+
+    // And the ordering key moves forward, which is what makes it an ordering
+    // key. Non-decreasing rather than increasing: two reads inside one
+    // millisecond are a tie, and the comment on `onGrantsChanged` says what
+    // that costs rather than pretending it cannot happen.
+    const later = decode(await asUser(cookie, attached()));
+    assert.ok(
+      later.read_at >= carried.read_at,
+      `read_at went backwards: ${carried.read_at} then ${later.read_at}`,
+    );
+  });
+
+  await t.test('shows a grant added since the last answer', async (sub) => {
+    const cookie = await signInAs('U_TEACH');
+    const before = decode(await asUser(cookie, attached()));
+
+    // What was there before, so the teardown puts that back rather than
+    // deleting a row the seed may own (#134).
+    const key = [byAlias('U_TEACH'), 'PROG_MANAGER', PROGRAM_THAI];
+    const { rows: existing } = await api.pool.query(
+      `SELECT is_active FROM user_roles
+       WHERE user_id = $1 AND role_id = $2 AND scope_id = $3`,
+      key,
+    );
+    await api.pool.query(
+      `INSERT INTO user_roles (user_id, role_id, scope_id, assigned_by, is_active)
+       VALUES ($1, $2, $3, $1, true)
+       ON CONFLICT (user_id, role_id, scope_id)
+       DO UPDATE SET is_active = true`,
+      key,
+    );
+    sub.after(() =>
+      existing.length
+        ? api.pool.query(
+            `UPDATE user_roles SET is_active = $4
+             WHERE user_id = $1 AND role_id = $2 AND scope_id = $3`,
+            [...key, existing[0].is_active],
+          )
+        : api.pool.query(
+            `DELETE FROM user_roles WHERE user_id = $1 AND role_id = $2 AND scope_id = $3`,
+            key,
+          ),
+    );
+
+    const after = decode(await asUser(cookie, attached()));
+
+    assert.equal(
+      before.roles.some((grant) => grant.role_id === 'PROG_MANAGER'),
+      false,
+      'the fixture did not start from the state it needs',
+    );
+    assert.equal(
+      after.roles.some(
+        (grant) => grant.role_id === 'PROG_MANAGER' && grant.scope_id === PROGRAM_THAI,
+      ),
+      true,
+      'the next answer did not carry the grant written between the two requests',
+    );
+  });
+
+  await t.test('says what the caller is acting as once that grant is gone', async (sub) => {
+    const cookie = await signInAs('U_MULTI');
+    const held = decode(await asUser(cookie, attached()));
+    const second = held.roles[1];
+    assert.ok(second, 'U_MULTI is expected to hold more than one grant');
+
+    const switched = await request(api.app)
+      .put('/api/me/acting-role')
+      .set('Cookie', cookie)
+      .send({ role_id: second.role_id, scope_id: second.scope_id });
+    assert.equal(switched.status, 200);
+    const switchedCookie = switched.headers['set-cookie'];
+
+    const wearing = decode(await asUser(switchedCookie, attached()));
+    assert.equal(wearing.acting.role_id, second.role_id);
+    assert.equal(wearing.acting.scope_id, second.scope_id);
+
+    await api.pool.query(
+      `UPDATE user_roles SET is_active = false
+       WHERE user_id = $1 AND role_id = $2 AND scope_id = $3`,
+      [byAlias('U_MULTI'), second.role_id, second.scope_id],
+    );
+    sub.after(() =>
+      api.pool.query(
+        `UPDATE user_roles SET is_active = true
+         WHERE user_id = $1 AND role_id = $2 AND scope_id = $3`,
+        [byAlias('U_MULTI'), second.role_id, second.scope_id],
+      ),
+    );
+
+    const fallen = decode(await asUser(switchedCookie, attached()));
+
+    assert.equal(
+      fallen.roles.some((grant) => grant.role_id === second.role_id
+        && grant.scope_id === second.scope_id),
+      false,
+    );
+    // The cookie still names the revoked grant; `actingFrom` falls back to the
+    // most senior still held, and the header says so, which is how the picker
+    // stops offering a hat the server will not honour.
+    assert.equal(fallen.acting.role_id, fallen.roles[0].role_id);
+    assert.equal(fallen.acting.scope_id, fallen.roles[0].scope_id);
+  });
+
+  // The refusals above this middleware answer before `req.auth` exists, so
+  // there is nothing to carry and nothing may be invented.
+  await t.test('is absent from an answer nobody was admitted to', async () => {
+    const response = await request(attached()).get('/guarded');
+
+    assert.equal(response.status, 401);
+    assert.equal(GRANTS_HEADER.toLowerCase() in response.headers, false);
   });
 });

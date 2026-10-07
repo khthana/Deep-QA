@@ -19,6 +19,9 @@ FILES = {
     'grants': 'backend/routes/grants.js',
     'accounts': 'backend/auth/accounts.js',
     'importer': 'backend/lib/importer.js',
+    'authorise': 'backend/auth/authorise.js',
+    'client': 'frontend/src/api/client.js',
+    'authcontext': 'frontend/src/context/AuthContext.js',
 }
 
 MUTANTS = {
@@ -56,6 +59,24 @@ MUTANTS = {
  # be shown to be the thing that carries the claim. Same edit as `keepgood` in
  # mutation/18-program-subjects.py, against the same shared importer - which is
  # the point, since one rollback serves every screen's import.
+ # ---- #77: the picker catching up without a reload -------------------------
+ # One mutant per site, because the fix landed at two (#125): the answer has to
+ # carry the grants, and the client has to announce them. Either one alone is
+ # the defect #77 reported, and neither stops the application - which is what
+ # makes them mutants rather than outages.
+ 'M10': ('authorise',
+   "      carryGrants(res, req.auth);\n",
+   ""),
+ 'M11': ('client',
+   "    if (grants && grants.read_at > announcedAt) {",
+   "    if (grants && grants.read_at < announcedAt) {"),
+ # Not a site but the rule the listener is narrow by: `acting` comes from the
+ # header only once the grant being worn is gone. With this gone the shell moves
+ # a person into a role somebody else just granted them, which is why row 8
+ # asserts the hat it is wearing and not only the list it offers.
+ 'M12': ('authcontext',
+   "acting: stillHeld ? prev.acting : acting }",
+   "acting }"),
  'M9': ('importer',
    "      await client.query('ROLLBACK');\n      return { ok: false,",
    "      await client.query('COMMIT');\n      return { ok: false,"),

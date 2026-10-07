@@ -7,7 +7,14 @@ import {
   useState,
 } from 'react'
 
-import { get, onAccessEnded, onSessionExpired, post, put } from '../api/client'
+import {
+  get,
+  onAccessEnded,
+  onGrantsChanged,
+  onSessionExpired,
+  post,
+  put,
+} from '../api/client'
 
 /**
  * Who is signed in, which of their grants they are working as, and how to
@@ -144,6 +151,57 @@ export const AuthProvider = ({ children }) => {
       if (reason === 'expired' || signedIn.current) setExpired(true)
     })
     return () => onSessionExpired(null)
+  }, [])
+
+  /**
+   * The picker catching up without a reload - #77.
+   *
+   * Every answer under the API's session guard carries the caller's grants, so
+   * the request a screen makes when the person presses a left-menu entry brings
+   * the list with it. That is the whole of the fix: no request is added, and
+   * nothing here raises `loading`, so the shell is not unmounted - which the two
+   * cheaper-looking options both did, `load` holding the curtain up for their
+   * whole duration (see `load` above, and #47's note in `Navbar.js`).
+   *
+   * **What it replaces, and what it leaves alone.** `roles` is the list the
+   * picker draws, and the header's is newer by construction, so it wins.
+   * `acting` is not: this header is built from the cookie as the request
+   * carried it, so the answer to a switch describes the grant being switched
+   * *away* from, and taking it would walk the person back. The one case where
+   * the header's `acting` is the only truth available is the grant being worn
+   * having been revoked - the server has already fallen back to the most senior
+   * still held, and nothing on this side knows. So: keep what is worn while it
+   * is still held, and take the server's word once it is not.
+   *
+   * `setState` from the previous state rather than from `state`, because this
+   * listener is registered once and would otherwise close over the state of the
+   * mount - the reason `signedIn` above is a ref. Nothing is written while
+   * nobody is signed in: `prev` is `null` between sign-out and sign-in, and a
+   * grant list arriving then belongs to the session that has just ended.
+   */
+  useEffect(() => {
+    onGrantsChanged(({ roles, acting }) => {
+      setState(prev => {
+        if (prev === null) return prev
+        const held = grant =>
+          grant.role_id === prev.acting?.role_id &&
+          grant.scope_id === prev.acting?.scope_id
+        const stillHeld = roles.some(held)
+        const sameList =
+          prev.roles?.length === roles.length &&
+          roles.every((grant, index) => {
+            const was = prev.roles[index]
+            return (
+              was?.role_id === grant.role_id && was?.scope_id === grant.scope_id
+            )
+          })
+        // Nothing moved: return the same object, so no screen re-renders for a
+        // header that said what it said on the last request too.
+        if (sameList && stillHeld) return prev
+        return { ...prev, roles, acting: stillHeld ? prev.acting : acting }
+      })
+    })
+    return () => onGrantsChanged(null)
   }, [])
 
   /**
