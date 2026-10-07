@@ -252,6 +252,13 @@ class Store(unittest.TestCase):
         self.assertIsNone(specs)
         self.assertEqual(anchors.commands(), (1, 0, 0))
 
+    def test_no_spec_directory_is_a_third_answer_for_citations_too(self):
+        # The same state, and the fifth question has to score it the same way:
+        # a walk that resolved nothing has not said the store is clean. The
+        # first round of #173 printed `CANNOT ASK` per citation and returned
+        # no problem, so the walk exited 0 with nothing asked.
+        self.assertEqual(anchors.citations(), (1, 0, 0, 0))
+
 
 SHEET_SOURCE = (
     "FILES = {'a': 'x.js'}\n"
@@ -589,6 +596,102 @@ class Ignored(TempStore):
         # that lost them would read the same.
         self.assertGreaterEqual(ARTEFACT.count("|"), 3)
         self.assertEqual(anchors.columns([path]), (0, 0, 0))
+
+
+class Citations(TempStore):
+    """Does a citation still name something that is there? - #173.
+
+    These resolve their spec tokens against the real `e2e/tests`, which is the
+    half of the question that cannot be faked: a fixture suite would prove the
+    regex and say nothing about whether a sheet in this repository still
+    points at an assertion. The sheets are made up; the specs are not.
+    """
+
+    def sheet(self, text):
+        return [self.write("10-made-up.md", text)]
+
+    def test_a_name_that_is_still_in_the_spec(self):
+        files = self.sheet("| x | `10a:the second window, before the session ends` |\n")
+        self.assertEqual(anchors.citations(files), (0, 1, 0, 0))
+
+    def test_a_name_that_is_gone(self):
+        # The disease. A row names an assertion, the assertion is renamed or
+        # deleted by another ticket, and nothing about the row looks wrong.
+        files = self.sheet("| x | `10a:where the box used to be` |\n")
+        self.assertEqual(anchors.citations(files), (1, 1, 0, 0))
+
+    def test_a_token_naming_no_spec_at_all(self):
+        files = self.sheet("| x | `99z:anything` |\n")
+        self.assertEqual(anchors.citations(files)[0], 1)
+
+    def test_a_token_naming_two_specs(self):
+        # The other half of that branch, and it is not hypothetical: a token
+        # is matched as a substring because that is what Playwright does
+        # (#154, #158), so `22a` names `22a-rubric-criteria` and
+        # `122a-weight-total-in-words` both. A glob anchored at the start of
+        # the basename answered *one file* here, which is this question
+        # giving a clean answer about an ambiguous citation - the one answer
+        # it must not give. The store had such a citation when this was
+        # written and the fix was to name the file.
+        self.assertEqual(len(anchors._needle("22a", anchors._store()[0])), 2)
+        files = self.sheet("| x | `22a:106` |\n")
+        self.assertEqual(anchors.citations(files)[0], 1)
+
+    def test_a_number_in_the_checkable_shape_is_counted_and_not_checked(self):
+        # The third answer, and the reason this question exists. The line is
+        # there - it is line 194 of a file with more than 194 lines - and that
+        # is not the question anybody asked (#159, #173).
+        files = self.sheet("| x | `10a:194` |\n")
+        self.assertEqual(anchors.citations(files), (0, 0, 1, 0))
+
+    def test_the_old_spellings_are_counted_where_they_stand(self):
+        # Thai with no file beside the number, a bare `:N`, and a path with one
+        # on the end: three spellings, three citations, nothing checked.
+        files = self.sheet("| x | \u0e1a\u0e23\u0e23\u0e17\u0e31\u0e14 96 \u00b7 `:58` "
+                           "\u00b7 `Navbar.js:58` |\n")
+        self.assertEqual(anchors.citations(files), (0, 0, 3, 0))
+
+    def test_a_citation_in_the_new_shape_is_not_also_counted_as_an_old_one(self):
+        # `10a-shell.spec.js:row 3` holds a path and a colon, which is the
+        # third old spelling exactly. Counting it twice would make the figure
+        # for what is left to convert grow every time something is converted.
+        files = self.sheet("| x | `10a-shell.spec.js:row 3: two grants` |\n")
+        self.assertEqual(anchors.citations(files), (0, 1, 0, 0))
+
+    def test_a_citation_inside_a_fence_is_counted_out_loud_and_not_read(self):
+        # `mutation/README.md` writes two of these as examples of the shape,
+        # and counting them made the store's own figure for how much is
+        # converted move when nothing was converted. The rule `columns()`
+        # follows for a quoted broken row, for the same reason - and the
+        # count comes back rather than only being printed, because *skipped
+        # quietly* and *counted out loud* are the same green otherwise
+        # (#126).
+        files = self.sheet("```\n`10a:where the box used to be`\n\u0e1a\u0e23\u0e23\u0e17"
+                           "\u0e31\u0e14 96\n```\n")
+        self.assertEqual(anchors.citations(files), (0, 0, 0, 2))
+
+    def test_what_it_cannot_tell_is_that_the_string_is_in_a_comment(self):
+        # Written down rather than fixed: `The price #94 pays` is a comment in
+        # `10a` and not an assertion, and nothing here can tell the two apart.
+        # A citation that lands in a comment reads as clean.
+        files = self.sheet("| x | `10a:The price #94 pays` |\n")
+        self.assertEqual(anchors.citations(files), (0, 1, 0, 0))
+
+    def test_a_token_that_names_nothing_in_an_empty_suite_is_still_a_problem(self):
+        # Handed a spec list rather than asked for one: an empty list is a
+        # suite with no files in it, which is *this citation resolves to
+        # nothing* and not *there was nobody to ask*. The second is in
+        # `Store`, where the tree has no `e2e/tests` at all.
+        self.assertEqual(anchors.citations(self.sheet("| x | `10a:anything` |\n"), [])[0], 1)
+
+    def test_the_real_store_has_no_rotten_citation_by_name(self):
+        # The count is asserted beside the problems: a `CITATION` that matched
+        # nothing would pass on problems alone, which is an assertion that
+        # cannot fail.
+        problems, checked, numbered, _ = anchors.citations()
+        self.assertEqual(problems, 0)
+        self.assertGreaterEqual(checked, 14)
+        self.assertGreater(numbered, 0)
 
 
 if __name__ == "__main__":

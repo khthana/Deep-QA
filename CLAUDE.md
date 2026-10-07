@@ -198,6 +198,19 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   at, not the next one twenty lines down; and two documents changed in the same breath can be shipped contradicting
   each other. After changing what a document counts, re-read every figure in it, and read the pair side by side.
   (#154)
+- **A citation by line number ages the day anything above it grows** — so a sheet cites an
+  assertion by a string that can be found in the spec, and the instrument says which of three
+  it is (#159's shape: still there, gone, or no suite to ask). But citing code by its text is a
+  claim that the text is unique, and where it is not — the same line twice in one test, two
+  mutants dying on it — the fix is a `message` in the spec, not a cleverer citation. An
+  instrument that reads its own documentation counts its own examples, so it skips fences and
+  says how many; and a dated record is not a citation (#54). The three ways the instrument itself
+  was wrong: it re-derived a resolution rule this repo had already measured and written down four
+  hundred lines up in the same file (the substring rule, #154/#158) and so answered *one file*
+  about an ambiguous citation; it printed *could not ask* without reaching the exit code, which is
+  a fourth answer and not a third; and the figure it published was counted by a second counter I
+  wrote instead of by the instrument, so it measured the old spelling and missed five of its own
+  species. (#173)
 - **A table that adds up is not a table that is complete** — what is missing from it is invisible to
   a sum over it, so *count the table* gives a confident wrong answer. Ask the instrument that counts
   the things rather than the rows, and when it disagrees, the rows are what is short. (#58)

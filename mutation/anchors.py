@@ -112,6 +112,53 @@ The total it reads is the first bold integer after the last row, so a bold
 number written into a paragraph between the two would be taken for the total -
 the table is the anchor there, and moving the figure away from it is the one
 edit that can fool this question.
+
+## The fifth question: does a citation still name something that is there?
+
+A mutation row says which assertion died, and for most of the store it says so
+with a **line number** into a spec file that grows every ticket. #81 edited one
+row of `e2e/tests/10a-shell.spec.js`; `docs/acceptance/10-application-shell.md`
+cited eight numbers into that file and not one of them landed on the assertion
+it named. The distances were unequal - the file had grown above them and in the
+middle - so there was no offset that fixed the table, and the numbers had to be
+measured one at a time. The same table's citation into `11a` was still correct,
+which is why this answers three things and not two: folding *moved* into
+*cannot be checked* sends somebody hunting a number that is not wrong (#159,
+#173).
+
+`citations()` reads one shape, and it is the store's own idiom for a place in a
+file with the one difference that matters - a string to find where the number
+used to be:
+
+    `10a:the second window, before the session ends`
+    `11a-users-refusals.spec.js:expect(response.status()).toBe(403)`
+
+The token before the colon resolves against `e2e/tests` as a **substring**,
+the way Playwright matches a command's argument and the way `runs()` already
+does it one question above - a glob anchored at the start of the basename says
+one file where the real rule says two, and `22a` is a token this store cites
+today for which the two answers differ. Exactly one file is the only clean
+answer. Everything after it is searched for in that file: found is clean,
+absent is a problem, and a token that names no file or two is a problem. A
+citation whose needle is **all digits** is counted and never checked, because a
+line number cannot be checked for the thing anybody wants to know - that the
+line exists is not the question, and answering the easy half would be the same
+mistake the sheets made.
+
+**What it does not look at**, and the counts it prints instead: a citation by
+number in any of the three spellings the sheets write one in, which it counts
+and splits by what the number points into, because the summed figure is the
+tool's and not the sheets' - a path into `e2e/tests` is this question's own
+species left unconverted, a path into source is `57-pager.md`'s register of
+guard sites and points at code rather than at an assertion, and a bare number
+is one that nothing in its cell resolves. A name written in prose or in italics
+rather than in this shape: the sheets italicise a UI word, an emphasis and an
+assertion's name alike, and a rule that read all three as citations answered
+*gone* for four prose phrases out of six findings when it was tried. Whether
+the string it found is in an assertion at all rather than in a comment above
+one. And whether that assertion is the one the mutant kills, which no static
+reading can say and only a sweep can - this question is that a citation still
+points somewhere, not that it points at the right thing.
 """
 
 import ast
@@ -754,9 +801,147 @@ def catalogue(paths=None, readme=None):
     return problems, len(paths), len(rows)
 
 
+# A citation: the spec a sheet names and the thing inside it that a mutant
+# breaks, in one code span - `10a:the second window, before the session ends`.
+# The shape is the store's own idiom for a place in a file, `Navbar.js:58`,
+# with one difference that is the whole of #173: what follows the colon is a
+# string to find rather than a line to count.
+CITATION = re.compile(r"`(\d+[a-z](?:[\w-]*\.spec\.js)?):([^`\n]+)`")
+
+# A citation by number, in the three spellings the sheets write one in, and
+# split by what the number points into rather than summed - because the summed
+# figure is the one #173 says is the tool's and not the sheets'. A path into
+# `e2e/tests` is this question's own species, unconverted; a path into source
+# is `57-pager.md`'s register of guard sites, which is a pointer to code and
+# not to an assertion; and a bare number is one nothing in its cell resolves.
+NO_FILE = re.compile(u"บรรทัด(?:ที่)?\\s*\\d+"
+                     r"|`:\d+`")
+A_FILE = re.compile(r"([\w./-]+\.(?:js|py|csv|json|md)):\d+")
+
+
+def _needle(token, specs):
+    """Every spec a citation's token names, matched as Playwright matches one.
+
+    A glob anchored at the start of the basename is the wrong rule and the
+    file next door says so: `runs()` searches the pattern against the path
+    because `21a-` also names `121a-grants-notice-in-view` (#154, #158). Of
+    the tokens this store cites, `22a` is already two files under the right
+    rule and one under the wrong one - so the glob answered *resolved* about
+    an ambiguous citation, which is the one answer this question must not
+    give. The token is escaped: it is a name here, not a pattern.
+    """
+    found = [path for path in specs if re.search(re.escape(token), path)]
+    return sorted(found)
+
+
+def citations(files=None, specs=None):
+    """(problems, citations checked, citations by number counted, fenced).
+
+    Takes its world as an argument for the reason `commands()` does: the only
+    way to assert that a rotten citation is *found* is to hand it one.
+    """
+    named = files is not None
+    if specs is None:
+        # A made-up sheet still resolves against the real `e2e/tests`: that
+        # half of the question cannot be faked, and a fixture suite would
+        # prove the regex while saying nothing about this repository.
+        store_specs, store_files = _store()
+        specs = store_specs
+        if not named:
+            files = store_files
+            print("citations: reading %d files of mutation/, docs/acceptance/ "
+                  "and e2e/README.md" % len(files))
+    if specs is None:
+        # Asked once and scored as a problem, which is what the three
+        # questions above this one do with the same state: *could not ask* is
+        # not clean, and folding it into clean is the mistake #159 is about,
+        # read from the other side. (#173's review round)
+        print("CANNOT ASK: no e2e/tests directory, so no citation was resolved")
+        return 1, 0, 0, 0
+    checked = gone = unreadable = skipped = 0
+    # The three the summed figure hides, counted apart.
+    bare = into_spec = elsewhere = 0
+    problems = 0
+    for path in files:
+        short = os.path.relpath(path, ROOT).replace("\\", "/")
+        try:
+            with io.open(path, encoding="utf-8") as handle:
+                text = handle.read()
+        except (IOError, OSError, UnicodeDecodeError) as refusal:
+            unreadable += 1
+            problems += 1
+            print("UNREADABLE %s -> %s" % (short, refusal))
+            continue
+        fenced = False
+        for number, line in enumerate(text.split("\n"), 1):
+            if line.strip().startswith("```"):
+                fenced = not fenced
+                continue
+            if fenced:
+                # A fence is where a document writes an example of a citation,
+                # or quotes a broken one on purpose - this file's own README
+                # does both. Counted out loud rather than read, which is the
+                # rule `columns()` follows for the same reason.
+                skipped += len(CITATION.findall(line)) + len(NO_FILE.findall(line))
+                continue
+            rest = []
+            end = 0
+            for found in CITATION.finditer(line):
+                rest.append(line[end:found.start()])
+                end = found.end()
+                token, thing = found.group(1), found.group(2).strip()
+                where = _needle(token, specs)
+                if len(where) != 1:
+                    problems += 1
+                    print("SPEC %s:%d -> `%s` names %d files%s"
+                          % (short, number, token, len(where),
+                             " (" + ", ".join(where) + ")" if where else ""))
+                    continue
+                spec = os.path.join(ROOT, "e2e", where[0])
+                if thing.isdigit():
+                    # The third answer, and the one this question exists to
+                    # stop anybody giving by hand: a line number says which
+                    # line, and which line is not which assertion. Counted.
+                    into_spec += 1
+                    continue
+                checked += 1
+                with io.open(spec, encoding="utf-8") as handle:
+                    inside = handle.read()
+                if thing not in inside:
+                    gone += 1
+                    problems += 1
+                    print("GONE %s:%d -> %r is nowhere in %s"
+                          % (short, number, thing[:70], os.path.basename(spec)))
+            rest.append(line[end:])
+            # What is left of the line after the citations above are cut out,
+            # so a citation in the checkable shape is never also counted as
+            # one of the old kind - `10a-shell.spec.js:row 3` holds a path and
+            # a colon, which is the third old spelling exactly.
+            remains = "".join(rest)
+            bare += len(NO_FILE.findall(remains))
+            for named_file in A_FILE.findall(remains):
+                if named_file.endswith(".spec.js"):
+                    into_spec += 1
+                else:
+                    elsewhere += 1
+
+    numbered = bare + into_spec + elsewhere
+    if not named:
+        print("citations: by name %d | of those gone %d | inside a fence, counted and not "
+              "read %d | unreadable %d | problems %d"
+              % (checked, gone, skipped, unreadable, problems))
+        print("citations: by number %d - %d into a spec, %d into something that is not "
+              "a spec, %d with no file beside the number" % (numbered, into_spec, elsewhere, bare))
+    # `skipped` is returned and not only printed, so a row can assert that
+    # what a fence holds was counted out loud rather than quietly ignored -
+    # the two are the same green otherwise (#126, #173's review).
+    return problems, checked, numbered, skipped
+
+
 if __name__ == "__main__":
     misanchored = check()
     undocumented = commands()[0]
     miscounted = columns()[0]
     unlisted = catalogue()[0]
-    sys.exit(1 if (misanchored or undocumented or miscounted or unlisted) else 0)
+    uncited = citations()[0]
+    sys.exit(1 if (misanchored or undocumented or miscounted or unlisted or uncited) else 0)

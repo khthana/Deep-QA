@@ -7582,3 +7582,151 @@ One name was checked rather than assumed: `16-subjects.py` has an `M13` of its o
 carries rows from both files, so the two never meet in one table — which is the condition #185's
 collision actually turns on, and it is written in the file beside the mutant rather than trusted to
 memory.
+
+## #173 — the citation that aged the day the file grew, and the eight that had all aged
+
+The ticket said that sheet 10's mutation table cites its assertions by line numbers that have
+moved. Measured first, as a ticket's numbers always are: all eight numbers pointing into
+`e2e/tests/10a-shell.spec.js` were wrong, every single one, and the ticket's own proposed
+corrections were still right. So this one is in the small class of tickets whose diagnosis was
+true on the day it was taken — which is worth writing down, because the lesson index now carries
+twelve ways a diagnosis has been wrong and the reader should not conclude that measuring is a
+formality that always overturns.
+
+Two things the measurement added that the ticket had not said. The distances were **14 to 22
+lines and unequal**, because the file had grown both above the table's first citation and in the
+middle of it, so there is no single offset that corrects the table — every number has to be
+measured on its own. And the file grew **another eleven lines during this ticket** (412 → 423),
+which is the ticket's argument in its shortest possible form: the correction expires while it is
+being written.
+
+### The third answer had a concrete case, which is why it is not an argument
+
+The sheet also cites `11a-users-refusals.spec.js:41`, and that number was **still correct**. A
+tool with two answers — *right* or *stale* — would have had nothing to say about it, and the
+natural thing to build, a tool that flags every line-number citation, would have sent somebody to
+check a number that was not wrong. This is #159's shape arriving with an example rather than as a
+principle: *level*, *behind*, and *could not ask* are three answers because the state that proves
+the difference is the one the two-answer check cannot see.
+
+### What the store already does, found by asking it rather than by designing
+
+The first grammar tried was the obvious one: a citation is an *italicised* phrase naming an
+assertion. Run over the store it produced six findings and **four of them were false** — a cell
+in `45-program-level-individual.md` names a backend test row *and* a spec, so the italics inside
+it belong to the other file; and prose italics like `*assertive*` and a quoted phrase are not
+citations at all. A ~25% false-positive rate on a six-item population is not an instrument; a
+rule that loose answers *gone* whatever the code says, which is #174's second half read from the
+documentation side.
+
+What replaced it came from the store, not from design. Two things were already true: the repo's
+existing way of naming an assertion is the **Playwright `message` argument** (`81a` has two), and
+the shape `` `10a:194` `` — a spec token, a colon, a position — already appears 37 times. So the
+convention written down is the store's own idiom with the one change that is the whole ticket:
+**a string that can be found, in the place of a number that can be counted.**
+
+### Two assertions that no citation by text could tell apart
+
+Three mutants were re-run rather than read, because their rows hold more than one assertion
+written with the same text and reading the code cannot say which one goes red first. Two of them
+— `lump403` and `keepdeadcookie` — die on **the same line of code, twice in the same test**: the
+second window's `expiryDialog` count, once before the session ends and once after it reloads.
+A citation by line number cannot tell those apart once the file grows, and a citation by the text
+of the assertion cannot tell them apart *at all*.
+
+So the name had to be put **into** the spec rather than read out of it: both got a `message`
+argument, with the comment saying why. The rule: **a convention that cites code by its text is a
+claim that the text is unique, and where it is not, the fix is in the code and not in the
+citation.** The sheet says which seven of the ten were identified by a once-only string and that
+this is the weaker claim — the same honesty the measured/derived split asks for everywhere else.
+
+### The instrument's own documentation moved its own figure
+
+`citations()` reads the store, so it reads this README, so the **fenced examples** written to
+explain the convention were counted as real citations — the by-name figure went 14 → 16 and the
+store's number moved on a day nothing was converted. It skips fences now and counts them out
+loud, which is the rule `columns()` already followed for the same reason. Writing `` `Navbar.js:58` ``
+in new prose as an example of the old spelling moved a second figure the same way; that one is
+left counted and the README says so, because a tool that reads its own documentation counts its
+own examples and a number is a number, not a place to grant exemptions.
+
+Then the figures moved a third time, and this is the part worth the paragraph. The explanatory
+paragraph added to sheet 10 contains the sentence *died at line 364* — a dated measurement, not a
+pointer — and the repo-wide count went 441 → 442 with the bare count 304 → 305, after both
+documents had already been written with the old pair. #154's rule is exactly this and it still
+caught me: **what a diff touches is what a diff proofreads.** Correcting 441 found the figure I
+was looking at and not `inside a fence, counted and not read 2` twenty lines up in the same
+dated block, which had gone to 5 for a different reason. The sentence *this sheet still has six
+numbers in it* was a guess in the same breath; counted, it is **19 — eleven with no file beside
+the number and eight pointing into source** — and not one of them is a citation of an assertion,
+which is the claim the ticket was actually about.
+
+### The debt, written with a count and split by what it points into
+
+441, then 442, is a tool's number and the ticket said so: a single sum invites nobody to act. Split
+by what the number points into it is **38 into a spec** (this question's own species, unconverted),
+**99 into something that is not a spec** (mostly `57-pager.md`'s anchor register, which points at
+code and not at an assertion), and **305 with no file written beside the number at all**, which no
+instrument can resolve. All three print on every run, so nobody maintains them by hand — the
+answer to a hand-kept number is not a better hand.
+
+And what is not converted on purpose: a **dated record** is not a citation. The sweep tables and
+the `#188`/`#189`/`#190` paragraphs say what one measurement returned on one day, so their numbers
+are results and not pointers — #54's rule, *the criteria change, the record does not*. The
+instrument counts them among the ones it does not check, and the sheet says why, with the count.
+
+### What the review round found, and it was the instrument
+
+Three defects, and all three were in the thing written to stop the defect.
+
+**The resolution rule was the wrong one, and it answered *clean* about an ambiguous
+citation.** `_needle()` resolved a spec token with a glob anchored at the start of the basename.
+Playwright matches a positional argument as a **substring**, which this repository knows — it is
+`CLAUDE.md`'s own line from #154 and #158, and `runs()`, two hundred lines up in the same file,
+says so in its docstring: *`21a-` looks like it names `21a-rubrics` and matches
+`121a-grants-notice-in-view` as well.* Measured, 37 tokens resolve differently under the two
+rules, and one of them, `22a`, is a token this store cites today. So the glob did not merely
+under-report: it answered *resolved, one file* about a citation that names two, which is the one
+answer this question exists not to give. Under the right rule the walk went red immediately and
+named a real ambiguous citation in sheet 10 — which is the payoff of *break a real site before
+trusting an instrument*, except that here the instrument broke the site by itself the moment it
+was made honest.
+
+The lesson is sharper than *read the neighbouring file*: **a rule the repository has already
+written down, in the same file, about the same thing, is not a rule you get to re-derive.** I
+wrote a glob because a glob is what one reaches for; `runs()` had the measured answer and a
+comment explaining why, four hundred lines from the code that needed it.
+
+**Could-not-ask was folded into clean** — the mistake #159 is about, committed by the ticket whose
+own documentation quotes #159. `citations()` printed `CANNOT ASK` per citation and returned no
+problem, so with no `e2e/tests` the walk prints fourteen notices and exits 0: *the store is
+clean*, about a store nobody asked. The three questions above it all do `problems += 1` for the
+same state. A third answer that does not reach the exit code is a fourth answer.
+
+**And the fenced count was printed but not returned**, so no row could tell *counted out loud*
+(#126) from *quietly ignored* — the fence test asserted `(0, 0, 0)` and would have passed either
+way. It comes back from the call now, and the test asserts the number.
+
+### The count I published was evidence about the property I counted
+
+The sheet said *19 numbers left in this sheet*. The real figure is **24**, and the five missing
+ones are precisely this ticket's own species: citations in the new code-span shape whose needle is
+a line number, `185a:147` and its neighbours, in the dated `#188`/`#189` paragraphs. My count had
+asked the **residue** — what is left of a line after the new-shape citations are cut out — which
+is by construction blind to a new-shape citation that is still a line number. #174's rule, from
+the documentation side: **a census is evidence about the property it counted**, and the property I
+counted was *old-spelling citations*, not *citations by number*. The instrument had the right
+answer all along; I had written my own second counter rather than asking it, which is the same
+move as a hand-kept figure.
+
+So the honest paragraph names three buckets and not two, says the five are dated records kept
+under #54, and says which one was changed and why: `22a` was ambiguous, and naming its file is
+not re-measuring the record.
+
+One thing the review asked for was answered *no, with the measurement*. Three of the fourteen
+citations name a **test title** rather than assertion text, which is a weaker claim — a title does
+not rot when the assertion inside it changes. But those three sit beside assertion citations in
+the same row and do a different job: they say which of several rows a mutant kills. That is
+written on the sheet as a weakness rather than fixed, which is what criterion 3 asks for, and the
+measurement that goes with it is that each of the fourteen needles occurs **exactly once** in its
+spec — the claim a citation by text rests on, now a number rather than an assumption.

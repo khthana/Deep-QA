@@ -311,7 +311,15 @@ test.describe('the shell, in a browser', () => {
 
     const other = await context.newPage();
     await openAndSettle(other, PROGRAM_SUBJECTS);
-    await expect(expiryDialog(other)).toHaveCount(0);
+    // Named, like the one at the foot of this row, because the two are the
+    // same line of code in the same test and two different mutants die on
+    // them - `lump403` here and `keepdeadcookie` there. A citation that is a
+    // line number cannot tell them apart once the file grows, and a citation
+    // that is the text of the assertion cannot tell them apart at all (#173).
+    await expect(
+      expiryDialog(other),
+      'the second window, before the session ends',
+    ).toHaveCount(0);
 
     await expireSession(page);
 
@@ -327,7 +335,10 @@ test.describe('the shell, in a browser', () => {
     // server has answered proves nothing.
     await other.reload();
     await other.waitForLoadState('networkidle');
-    await expect(expiryDialog(other)).toHaveCount(0);
+    await expect(
+      expiryDialog(other),
+      'the second window, after it reloads into no session',
+    ).toHaveCount(0);
 
     // Dropped at a sign-in page that can be typed into, which is the whole of
     // what makes this cost payable.
