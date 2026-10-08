@@ -7911,3 +7911,97 @@ typed `ํ` where the text has `ำ` — U+0E4D NIKHAHIT against U+0E33 SARA AM,
 confusable pair the content scan exists to catch — and reported *NOT PRESENT* for two windows that
 were in the file all along. The content was clean; the instrument reading it was not. A tool written
 to check a retyped string is a retyped string.
+
+## #103 — the five numbers that were five numbers, and the parameter that was already wrong
+
+The ticket said so itself: *ไม่ใช่การเปลี่ยนตัวเลขห้าตัว* — not a change of five
+numbers; the page has to be re-thought, perhaps by moving `OUTCOME_WIDTH` or by cutting the cell
+padding. Measured before anything was edited, it was a change of five numbers, and the thing that
+did need re-thinking was a parameter the ticket named for the wrong reason.
+
+### The cost line was a claim about the shape its author pictured (#77 again)
+
+The ticket priced the raise from one figure: `PLO-13` at 10pt is about 10mm, so at 14pt it is
+about 14mm, so the thirteen columns stop fitting A4. Asked of jsPDF with the real face selected,
+the code is **7.93mm at 10pt** and **11.11mm at 14pt**, in a column autoTable gives **17.4mm** —
+it widens the four two-digit columns for their content out of the 15.0mm the others get. Nothing
+had to move: not the page, not `CELL_PADDING`, not `SUBJECT_WIDTH`. The legend line, which is one
+`doc.text` with no width and so cannot wrap, draws **272.4mm** from a 10mm margin against the
+287mm the table ends at on the narrowest page this document has — 4.6mm of room, measured rather
+than hoped for, and written into the comment beside it with what would consume it (a sixth level,
+or a longer sentence for one of the five).
+
+### But the measurement taken to price the fix found a defect older than the ticket
+
+`OUTCOME_WIDTH` sizes the **page**, not the column: `pageFor` is
+`MARGIN*2 + SUBJECT_WIDTH + OUTCOME_WIDTH * n`, and autoTable then spreads whatever is left of the
+page across the outcome columns. So the parameter is the rate the page grows at per column, and at
+**9mm** it grew slower than a code needs: measured at 10pt, every one of twenty codes wraps at
+twenty outcomes, and so does every one of thirty at thirty. The seed has thirteen, which is under
+the A4 floor, so the floor was hiding it — the value had been wrong since the file was written and
+could not be reached by the data anybody had. Raised to **14**, none of thirty wraps.
+
+This is the rule the ticket paid for: *a ticket about the value at today's input is answered by
+measuring the parameter across its range.* The ticket pointed at `OUTCOME_WIDTH` as a thing the
+fix might have to spend; it was a thing the fix walked into, and saying which is the difference
+between a defect this change caused and one it uncovered.
+
+Both review axes then said the same thing from the other side: the raise is a change the ticket
+did not ask for, and **nothing can be broken to make it fail**. At thirteen outcomes the page sits
+on the A4 floor at either value, so the columns differ by 0.05mm and no row sees it; a mutant
+putting 9 back survives everything. The owner chose to keep 14, and **#195** carries what is
+missing - the row, the mutant, and which of the three ways in (grow the seed, inject the answer,
+or open a unit seam under `frontend/`) buys it. A measured number is not permission; the number
+plus the owner's answer plus a ticket is.
+
+### A gap is read against the size of the line in it
+
+The three baselines were 12 / 19 / 25mm at 16 / 13 / 10pt. Keeping them and raising the type to
+20 / 16 / 14 leaves the same millimetres holding a larger line: the air between them goes from
+1.53 and 1.70 ems to **1.24 and 1.21**, which is where a Thai upper vowel and a tone mark live.
+The baselines went to 14 / 22 / 29, which gives 1.42 and 1.42.
+
+The comment first written above them said the old spacing *put each line into the one above it*.
+Measured, nothing overlapped at either set of numbers. The rewrite states the ems and says so out
+loud, because a comment that claims a collision which never happened is the same species of claim
+as a ticket's numbers — and it is the harder one to catch, since it is written by the person who
+just measured something true next to it.
+
+### Three criteria, three rows, and two of them are nets
+
+The criterion a machine can hold is *nothing smaller than 14pt*: `pdf-text.js` has reported each
+drawn line's point size since #117, so the row reads the saved bytes, asks `isReadable` first (the
+*could not ask* third answer, #159, for the day jsPDF compresses by default), asserts the line
+count **before** the sizes because a filter over `[]` passes whatever the sizes are (#50), and then
+asserts no line is under 14.
+
+The other two rows — the codes still fit their columns on one page, the รายวิชา column still
+reads code and Thai name on one line — **passed at 10pt as well**, measured on the red run before
+the change: 1 failed of 11, and the one was the size row. They are nets, which is a thing worth
+writing only because a mutant says there is something under them. `bigtype` (20pt) and
+`narrowsubject` (30mm) are those mutants.
+
+The name row avoids a Thai literal: it reads the subject cell off the screen, which stacks the code
+above the name, and compares it with the cell in the file, which draws them on one line, so the row
+is a cross-check of two drawings of one answer rather than a second copy of the seed's text.
+
+### And the prediction of a mutant's blast radius was wrong, the way predictions are
+
+The comment written above `bigtype` before it was run said it kills the fitting row alone, because
+the subject name is still one line at 20pt in a 69.6mm column. Run, it kills **two**: the name's
+first line measures 62.5mm at 20pt and the rest goes to a second line. Raising the type is paid for
+by both columns, so two rows dying is the assertions working — but the number came off the run, and
+the comment that said otherwise was written in the same file, in the same hour, by someone who had
+measured the column width correctly. #51's rule reads the same from this side: the prediction
+answers the sweep's question before anybody asks the row.
+
+Measured, one at a time, with a `save` before each and `git status` after each `apply` and each
+`restore`: `smalltype` 1 row, `bigtype` 2, `narrowsubject` 1.
+
+### What the walk still owes
+
+Criterion 5's page row goes back to **☐**. Three of its halves are machine-held now; the half that
+is left is whether the whole page reads comfortably at the new size, which is not the same claim as
+*no line is under 14pt* and is the reason the ticket asked for the re-walk by name. #100 did
+exactly this to the same row, and the sentence it wrote then is the one that governs now: a row
+walked under conditions that have since changed is not carried forward.

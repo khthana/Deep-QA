@@ -2,10 +2,11 @@
 """
 #20 การเชื่อมโยงผลการเรียนรู้กับรายวิชา - the coverage grid.
 
-Eight mutants, one per ⚙ row of `docs/acceptance/20-outcome-to-subject-mapping.md`.
-Six break the thing their row is about and nothing else, so a run under one of
-them names the row it kills rather than falling over everywhere at once. Two do
-not: `onelevel` kills three rows and `emptyise` kills two. Their comments say
+Eleven mutants. The sheet carries 13 ⚙ rows; the two this file does not reach are
+held from their own files, by `117:notwrappedgrid` and `133:mappingstalewins`.
+Eight break the thing their row is about and nothing else, so a run under one of
+them names the row it kills rather than falling over everywhere at once. Three do
+not: `onelevel` kills three rows, and `emptyise` and `bigtype` kill two each. Their comments say
 which rows and why the wider blast radius is the assertions working rather than
 a mutant that is too blunt. Every count here was read off a run, not reasoned
 about - the first version of this file claimed a precision two of them did not
@@ -177,6 +178,45 @@ MUTANTS = {
     "letfaculty": ("route",
                    "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];",
                    "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN', 'FACULTY_ADMIN'];"),
+
+    # #103's three, and the reason there are three is that the ticket's criteria
+    # are three claims: the type is big enough, the columns still hold a code at
+    # that size, and the one column that can wrap still holds a name on one line.
+    # One mutant each, and what each one kills was read off its own run rather
+    # than predicted: `smalltype` 1 row, `bigtype` 2, `narrowsubject` 1. The
+    # second and third rows both passed at 10pt as well, so they are nets, and
+    # these mutants are what says they are nets with something under them.
+
+    # The type goes back to where the walk found it. Kills the row that reads
+    # every size out of the saved bytes, and nothing else: at 10pt the thirteen
+    # codes still fit their columns and the subject name is still one line, which
+    # is precisely why no row in this file noticed for six weeks.
+    "smalltype": ("export",
+                  "const BODY = 14",
+                  "const BODY = 10"),
+
+    # The other direction, which is the one the fix had to measure rather than
+    # argue: type raised without asking what it costs the columns. At 20pt
+    # `PLO-13` is 15.9mm in a 12.6mm content width, so every one of the thirteen
+    # codes is cut onto a second line - measured 13 of 13, and not only the four
+    # two-digit ones, which was the first guess here as well. Kills two rows, not the one this comment first claimed:
+    # the fitting row, and the name row as well, because the seeded subject's
+    # first line measures 62.5mm at 20pt and the name runs onto a second inside
+    # the same 69.6mm column. That is the assertions working - raising type costs
+    # both columns - and the prediction written here before the run said the name
+    # survived, which is the species of claim this repo measures rather than
+    # argues. The size row passes: every size is still at or above 14.
+    "bigtype": ("export",
+                "const BODY = 14",
+                "const BODY = 20"),
+
+    # The subject column is squeezed to a width the name cannot sit on one line
+    # in. Kills the name row alone: the page floor keeps A4, so the outcome
+    # columns get *wider* and the codes are safer than before, and every size is
+    # untouched.
+    "narrowsubject": ("export",
+                      "const SUBJECT_WIDTH = 72",
+                      "const SUBJECT_WIDTH = 30"),
 }
 
 main(FILES, MUTANTS)

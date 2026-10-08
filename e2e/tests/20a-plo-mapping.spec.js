@@ -20,6 +20,7 @@ const {
   askFor,
   exportPdf,
 } = require('../support/plo-mapping-screen');
+const { isReadable, linesOf, cellsOf, overflows } = require('../support/pdf-text');
 
 /**
  * #20 — การเชื่อมโยงผลการเรียนรู้กับรายวิชา, the coverage grid, in a browser.
@@ -269,6 +270,93 @@ test('the export hands over a PDF named for the curriculum, with a Thai face emb
   const raw = bytes.toString('latin1');
   expect(raw).toContain('THSarabun');
   expect(raw).toContain('/FontFile2');
+});
+
+test('the type in the exported PDF is nowhere smaller than 14pt', async ({ page }) => {
+  // #103. The walk that passed the sheet's fifth criterion reported the page
+  // unreadable anyway, and nothing in this file could see it: the row above asks
+  // whether a Thai face travelled with the document and says nothing about the
+  // size it is drawn at. A Thai face has a lower x-height than a Latin one at
+  // the same point size and carries vowels above and below that need the room,
+  // so 10pt was a document a person had to lean into. The floor is the ticket's.
+  //
+  // `isReadable` first, because every number below is read out of an
+  // uncompressed content stream: the day jsPDF compresses by default this goes
+  // red as a question rather than passing as an answer.
+  await signIn(page, ACCOUNTS.committee0501);
+  await openMapping(page);
+
+  const bytes = await fs.readFile(await (await exportPdf(page)).path());
+  expect(isReadable(bytes)).toBe(true);
+
+  const lines = linesOf(bytes);
+  // A filter over nothing is `[]`, which passes whatever the sizes are, so the
+  // population is asserted before the property is.
+  expect(lines.length).toBeGreaterThan(20);
+  expect(lines.filter(one => one.size < 14).map(one => `${one.text.slice(0, 16)} ${one.size}pt`))
+    .toEqual([]);
+});
+
+test('at that size the outcome codes still fit their columns, one line each, on one page', async ({
+  page,
+}) => {
+  // The other half of #103, and a different claim from the size: raising the
+  // type is only a fix if the thirteen columns still hold a code without cutting
+  // it. The codes are read back from the document and compared with the ones the
+  // screen listed, so neither the count nor the order is a constant in here.
+  //
+  // `overflows` is the general form of the same question - the long name this
+  // file places in the curriculum wraps in the รายวิชา column at this size, and
+  // a line that ran past its cell would be the fix breaking what #117 proved.
+  await signIn(page, ACCOUNTS.committee0501);
+  await openMapping(page);
+  const listed = await listedCodes(page);
+
+  const bytes = await fs.readFile(await (await exportPdf(page)).path());
+  expect(isReadable(bytes)).toBe(true);
+  const lines = linesOf(bytes);
+
+  const codes = cellsOf(lines).filter(cell => /^PLO-\d+$/.test(cell.text));
+  expect(codes.map(cell => cell.text)).toEqual(listed);
+  // A cell drawn on two lines is a code cut in half: `cellsOf` joins the lines
+  // with nothing between them, so a wrapped `PLO-13` reads the same and is found
+  // by the line count rather than by the text.
+  expect(codes.filter(cell => cell.lines.length > 1).map(cell => cell.text)).toEqual([]);
+  expect(new Set(lines.map(one => one.page)).size).toBe(1);
+  expect(overflows(lines)).toEqual([]);
+});
+
+test('the รายวิชา column still holds the code and the Thai name the screen shows', async ({
+  page,
+}) => {
+  // #103's third criterion. The column is the one cell here that can wrap, so
+  // the size this ticket raises is the size that decides whether a name stays
+  // whole - and what it is compared against is the screen, not a string typed
+  // in this file: the document and the grid are two drawings of one answer, and
+  // the screen stacks what the PDF puts on one line.
+  await signIn(page, ACCOUNTS.committee0501);
+  await openMapping(page);
+
+  const stacked = (
+    await subjectRow(page, SEEDED_SUBJECT).locator('td:first-child').innerText()
+  )
+    .split('\n')
+    .map(part => part.trim())
+    .filter(Boolean);
+  expect(stacked).toHaveLength(2);
+
+  const bytes = await fs.readFile(await (await exportPdf(page)).path());
+  expect(isReadable(bytes)).toBe(true);
+  const cell = cellsOf(linesOf(bytes)).find(one => one.text.startsWith(SEEDED_SUBJECT));
+  expect(cell).toBeDefined();
+  expect(cell.text).toBe(stacked.join(' '));
+  // One line is the seed's name, not the criterion: the ticket says the รายวิชา
+  // column will wrap more often at 14pt and asks only that the code and the name
+  // can still be read. 49.2mm of name in 69.6mm of content is what makes the two
+  // agree today (measured), and #117's row is the one that holds the wrapping
+  // itself. If the seed ever carries a longer name, the claim to keep is the line
+  // above; this one is what `20:narrowsubject` and `20:bigtype` are aimed at.
+  expect(cell.lines).toHaveLength(1);
 });
 
 test.describe('การเชื่อมโยงผลการเรียนรู้กับรายวิชา ที่ครึ่งจอ', () => {

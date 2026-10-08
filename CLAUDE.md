@@ -565,6 +565,17 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   two answers differ: the same fix on the sibling route asks first, because both of its answers are
   the same answer. (#60)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
+- **A ticket about the value at today's input is answered by measuring the parameter across its
+  range** — the one #103 pointed at as a cost of its fix was already wrong before it: at 9mm per
+  column the page grew slower than a code needs, so every code wrapped at twenty outcomes, hidden
+  by the A4 floor at the thirteen the seed has. Say which, because *a defect this change caused*
+  and *one it walked into* are different sentences - and the one it walked into still needs a row,
+  a mutant and a ticket (#195), because at the floor no row can tell the two values apart. (#103)
+- **A size raise is a change to every gap around it, and a gap is read in ems of the line in it** —
+  the same millimetres gave 1.53 ems of air at 13pt and 1.24 at 16, which is where a Thai upper
+  vowel goes. Then report what the measurement found and not the harm you expected: nothing
+  overlapped at either set of numbers, and the comment claiming a collision was written by the
+  person who had just measured the thing beside it. (#103)
 - **A limit written in one unit is a claim about the unit the room is measured in** — forty-eight
   characters guarding three hundred units of drawing is invisible in the alphabet the seed happens
   to be written in, and what overflows an `svg` is clipped mid-word with nothing to say so. (#115)
