@@ -52,24 +52,33 @@ import { wrapped } from '../../lib/thaiWrap'
  * autoTable widens for their content - against a `PLO-13` that is 11.1mm wide at
  * 14pt bold. Measured 8 October 2569, with the figures at 10pt beside them: the
  * same code was 7.9mm in a column of the same width - 15.1mm then against 15.0
- * now - so the paragraph this replaces
- * was wrong about both numbers in the same breath and right about the conclusion.
+ * now - so the paragraph this replaces was wrong about both numbers in the same
+ * breath and right about the conclusion.
  *
  * `OUTCOME_WIDTH` is **14 and not 9** for the same measurement read the other
- * way. It is what the page grows by per column once thirteen stop fitting, and
- * at 9mm a column of a wider page gets less than a code needs: measured at this
- * size, twenty outcomes put every one of the twenty codes onto two lines, and
- * thirty did too. At 14 none of the thirty wraps. The old value was already short
- * at 10pt - it broke at twenty columns rather than at sixteen - so this is a
- * defect the fix walked into rather than one it caused. **Nothing proves the new
- * value**: at the seed's thirteen outcomes the page is held at the A4 floor either
- * way, so the two values give the same column to within 0.05mm and no row and no
- * mutant can tell them apart. #195 holds that, with the three ways in priced; the
- * owner chose to keep 14 and carry the ticket. The sentence below is
- * only true with the new value: the page is built to the table rather than the
- * table squeezed onto the page, A4 landscape when that is enough and wider by the
- * column count when it is not. A wide sheet is what a coverage matrix is printed
- * on.
+ * way. It is what the page grows by per column once thirteen stop fitting, and at
+ * 9mm a column of a wider page gets less than a code needs. Measured on 8 October
+ * 2569, the first column count at which a code is cut in half is the
+ * **seventeenth** at this size, and was the **twenty-second** at 10pt; at 14mm
+ * nothing is cut as far as twenty-six columns, which is where that sweep stopped,
+ * at either size. So the old value was already short before this ticket raised
+ * the type - a defect the fix walked into rather than one it caused, and the type
+ * raise moved the break five columns closer. (The sentence that stood here said
+ * *twenty rather than sixteen*, which was reasoned from one page's widths rather
+ * than measured, and was wrong about both counts.)
+ *
+ * The seed cannot reach any of this: at thirteen outcomes the page sits on the A4
+ * floor at either value, and the columns are then identical - 15.03mm nine times
+ * and 17.44mm four times, whichever value is set - so every row above this one
+ * passes at 9mm as well. **#195** is the row that does not: it injects twenty
+ * outcomes into the answer the screen draws from, where 9mm gives 9.42mm columns
+ * against a code that needs 11.11mm and cuts all twenty, and 14mm gives 12.87mm
+ * and cuts none. `20:narrowpage` is its mutant.
+ *
+ * The sentence this section is named for is only true with the new value: the
+ * page is built to the table rather than the table squeezed onto the page, A4
+ * landscape when that is enough and wider by the column count when it is not. A
+ * wide sheet is what a coverage matrix is printed on.
  *
  * *An empty cell and an `E` are drawn differently.* They are different rows in
  * the database — no row at all against a row saying this outcome is *not*

@@ -570,7 +570,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   column the page grew slower than a code needs, so every code wrapped at twenty outcomes, hidden
   by the A4 floor at the thirteen the seed has. Say which, because *a defect this change caused*
   and *one it walked into* are different sentences - and the one it walked into still needs a row,
-  a mutant and a ticket (#195), because at the floor no row can tell the two values apart. (#103)
+  a mutant and a ticket, because at the floor the two values give identical columns - #195 built
+  both, at the count where they disagree about every column and not at the first count they
+  disagree at. (#103)
 - **A size raise is a change to every gap around it, and a gap is read in ems of the line in it** —
   the same millimetres gave 1.53 ems of air at 13pt and 1.24 at 16, which is where a Thai upper
   vowel goes. Then report what the measurement found and not the harm you expected: nothing

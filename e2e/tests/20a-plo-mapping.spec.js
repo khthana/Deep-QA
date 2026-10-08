@@ -9,6 +9,7 @@ const { hold } = require('../support/hold');
 const { BACKEND_URL } = require('../support/env');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const {
+  API,
   PROGRAM,
   OTHER_PROGRAM,
   openMapping,
@@ -88,6 +89,16 @@ const SEEDED = { code: 'PLO-12', level: 'A' };
 
 /** The รายวิชา the seed places in 0501 — the grid's one row until this file adds another. */
 const SEEDED_SUBJECT = '01076105';
+
+/**
+ * How many ผลการเรียนรู้ข้อหลัก the wide-curriculum row injects - #195.
+ *
+ * Twenty, and not the seventeen where nine millimetres first cuts a code in
+ * half: measured on 8 October 2569, at twenty it cuts all twenty and fourteen
+ * cuts none, where at seventeen the row would turn on one code's width. Twenty
+ * is the widest count that was measured, not a proven worst case.
+ */
+const WIDE_OUTCOMES = 20;
 
 /**
  * Writes the pair straight through #16's and #18's endpoints, as the
@@ -321,6 +332,76 @@ test('at that size the outcome codes still fit their columns, one line each, on 
   // A cell drawn on two lines is a code cut in half: `cellsOf` joins the lines
   // with nothing between them, so a wrapped `PLO-13` reads the same and is found
   // by the line count rather than by the text.
+  expect(codes.filter(cell => cell.lines.length > 1).map(cell => cell.text)).toEqual([]);
+  expect(new Set(lines.map(one => one.page)).size).toBe(1);
+  expect(overflows(lines)).toEqual([]);
+});
+
+test('a curriculum with twenty outcomes still fits a code in every column', async ({ page }) => {
+  // #195, which is the half of #103 nothing could see. `OUTCOME_WIDTH` sizes the
+  // *page* and not the column - `pageFor` is
+  // `MARGIN*2 + SUBJECT_WIDTH + OUTCOME_WIDTH * n`, and autoTable then spreads
+  // whatever is left across the outcome columns - so the constant is the rate the
+  // page grows at per column. At the seed's thirteen the page sits on the A4
+  // floor at either value, and measured, the columns are then *identical* -
+  // 15.03mm nine times and 17.44mm four times at both values, to the last digit
+  // autoTable reports - so no row above can tell 9mm from 14mm, which is why the
+  // old value survived from the day the file was written. Measured, 9mm starts cutting codes in half at the seventeenth
+  // column at this size (at the twenty-second at the old 10pt).
+  //
+  // Twenty outcomes, injected rather than seeded: the row replaces a field of the
+  // answer the screen is about to draw from and writes nothing, which is #117 row
+  // 8's move on this same screen. Growing the seed would put twenty ข้อหลัก in
+  // front of every row in the suite that counts anything, to prove a property of
+  // one constant.
+  await page.route(
+    address => new URL(address).pathname === API,
+    async route => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      const answer = await route.fetch();
+      const grid = await answer.json();
+      // The seeded ids are untouched, so the real columns keep their cells; the
+      // added ones carry ids nothing can collide with and no mappings, which is
+      // the state a curriculum is in before anybody has filled the grid in.
+      const from = grid.outcomes.length;
+      for (let i = from; i < WIDE_OUTCOMES; i += 1) {
+        grid.outcomes.push({
+          outcome_id: 900000 + i,
+          outcome_code: `PLO-${i + 1}`,
+          outcome_title: `ผลการเรียนรู้ที่ ${i + 1}`,
+          outcome_type: 'PLO',
+          parent_outcome_id: null,
+          sequence_order: i + 1,
+          level_depth: 1,
+        });
+      }
+      await route.fulfill({ response: answer, json: grid });
+    },
+  );
+
+  await signIn(page, ACCOUNTS.committee0501);
+  await openMapping(page);
+
+  // The precondition, and it has to be read against the constant rather than
+  // against the answer: `openMapping` asserts one column per outcome of the
+  // answer *the page received*, which is the injected one, so a route that never
+  // fired leaves thirteen against thirteen and passes. This line is what says the
+  // injection landed - and a screen that drew thirteen columns from a
+  // twenty-outcome answer would make every assertion below it pass on the seed's
+  // page, which is the page this ticket is not about.
+  const listed = await listedCodes(page);
+  expect(listed).toHaveLength(WIDE_OUTCOMES);
+
+  const bytes = await fs.readFile(await (await exportPdf(page)).path());
+  expect(isReadable(bytes)).toBe(true);
+  const lines = linesOf(bytes);
+
+  const codes = cellsOf(lines).filter(cell => /^PLO-\d+$/.test(cell.text));
+  expect(codes.map(cell => cell.text)).toEqual(listed);
+  // The claim: twenty codes, each on one line. At `OUTCOME_WIDTH` 9 every one of
+  // the twenty is cut onto a second line, because the page stops growing and the
+  // columns are 9.42mm against a code that needs 11.11mm; at 14 the narrowest
+  // column is 12.87mm and none of them is cut. `20:narrowpage` is that mutant.
   expect(codes.filter(cell => cell.lines.length > 1).map(cell => cell.text)).toEqual([]);
   expect(new Set(lines.map(one => one.page)).size).toBe(1);
   expect(overflows(lines)).toEqual([]);

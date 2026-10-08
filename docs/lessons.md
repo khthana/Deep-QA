@@ -7948,8 +7948,9 @@ between a defect this change caused and one it uncovered.
 
 Both review axes then said the same thing from the other side: the raise is a change the ticket
 did not ask for, and **nothing can be broken to make it fail**. At thirteen outcomes the page sits
-on the A4 floor at either value, so the columns differ by 0.05mm and no row sees it; a mutant
-putting 9 back survives everything. The owner chose to keep 14, and **#195** carries what is
+on the A4 floor at either value, so the columns are identical and no row sees it; a mutant
+putting 9 back survives everything. (This paragraph said *0.05mm* until #195 measured it: the
+figure came from reading 10pt/9mm against 14pt/14mm, which is a font size standing in for a width.) The owner chose to keep 14, and **#195** carries what is
 missing - the row, the mutant, and which of the three ways in (grow the seed, inject the answer,
 or open a unit seam under `frontend/`) buys it. A measured number is not permission; the number
 plus the owner's answer plus a ticket is.
@@ -8005,3 +8006,75 @@ is left is whether the whole page reads comfortably at the new size, which is no
 *no line is under 14pt* and is the reason the ticket asked for the re-walk by name. #100 did
 exactly this to the same row, and the sentence it wrote then is the one that governs now: a row
 walked under conditions that have since changed is not carried forward.
+
+## #195 — the constant two values of which were one value, because of a floor
+
+#103 raised `OUTCOME_WIDTH` from 9 to 14 and measured why. Nothing held it: the sweep that closed
+that ticket would have passed with the old value still in the file, and the ticket said so on its
+own sheet. #195 was opened to fix that, and what it turned out to be about is **why** no row could
+see it.
+
+### A clamp makes two values of a constant the same value
+
+`OUTCOME_WIDTH` does not size a column. It sizes the **page**:
+
+    pageFor = outcomes => [Math.max(297, MARGIN * 2 + SUBJECT_WIDTH + OUTCOME_WIDTH * n), 210]
+
+autoTable then spreads whatever is left across the outcome columns. So the constant is the rate the
+page grows at per column — and `Math.max` means it has no effect at all until the page leaves the
+A4 floor. With `MARGIN * 2 + SUBJECT_WIDTH` at 92mm that happens at **23** outcomes at 9mm and at
+**15** at 14mm. The seed has thirteen. Measured, the two values give the same page and columns that
+are **identical** - 15.03mm nine times and 17.44mm four times at both values - so every row in
+`20a-plo-mapping.spec.js` passes at either value, which is exactly what the clean run under
+`20:narrowpage` would have shown before this ticket: a mutant surviving the **eleven** rows the file
+then held.
+
+This is #117's rule one step along. There, a mutant that swaps one implementation for another is
+invisible wherever the two agree, and the fixture is built where they disagree. Here the agreement
+is **imposed by a clamp** rather than by the values: no fixture inside the clamp's range can tell
+them apart, however it is shaped, so the row's job is to leave the range first and only then to
+read anything.
+
+### Choosing the count by where the two disagree most, not first
+
+The first column count at which 9mm cuts a code in half is the **seventeenth** at 14pt (and was the
+twenty-second at the old 10pt). Building the row there would have made it turn on one code's width.
+At **twenty** the same two values give 20 of 20 codes cut against 0 of 20, and the narrowest column
+is 9.42mm against a code that needs 11.11mm, or 12.87mm. Twenty is what the row injects, for #154's
+reason read forwards: build the fixture where the candidates disagree, and prefer the point where
+the disagreement is the whole population rather than one cell.
+
+### The way in, and the two that were priced and declined
+
+Three ways were on the ticket. **Growing the seed** is the owner's call and would put twenty
+ข้อหลัก in front of every row in the suite that counts anything, to prove a property of one
+constant. **A unit seam under `frontend/`** is a seam this repo does not have, opened for one
+assertion. **Injecting the answer** is what #117 row 8 already does on this same screen: the row
+replaces a field of the response the screen is about to draw from, writes nothing, and the seeded
+ids are untouched, so the real columns keep their cells and the twenty added ones carry no mappings
+— which is the state a curriculum is in before anybody has filled the grid in.
+
+The injection's precondition has to be read against the constant and not against the answer, which
+is the correction both review axes made: `untilGridDrawn` asserts one `th` per outcome of **the
+answer the page received**, which is the injected one, so a route that never fired leaves thirteen
+against thirteen and passes. `toHaveLength(WIDE_OUTCOMES)` is what says the injection landed. It is
+also what stops a screen that drew thirteen columns from a twenty-outcome answer making every
+assertion below it pass on the seed's page — which is the page this ticket is not about. The first
+draft of this paragraph had the two the other way round, and #40's rule is the one it broke: check
+what an assertion actually says, not only that one exists.
+
+### And the ticket's four numbers, and then two more of mine
+
+A hand measurement on 8 October 2569, building the same table at each (size, `OUTCOME_WIDTH`, n)
+with jsPDF and reading it back through `e2e/support/pdf-text.js`, contradicted four figures in
+#195's own body: 9mm at twenty outcomes is a **297mm**
+page with 0 of 20 cut at 10pt (the first cut is at 22), not 302mm with 20 of 20; and the 14mm pages
+at twenty and thirty are **372mm** and **512mm**, not 402 and 542. The ticket was written in the
+hour its own diagnosis was correct, which is the usual shape.
+
+The paragraph #103 left in `exportPdf.js` had the same species in it — *it broke at twenty columns
+rather than at sixteen* was reasoned from one page's widths and wrong about both counts — and so
+did the first draft of **this ticket's own record**, which said the 9mm page does not grow until
+twenty-nine outcomes. The arithmetic is `92 + 9n > 297`, which is 23. Three wrong numbers about one
+clamp, written by three readings of a measurement that was right each time. The rule is #165's, and
+the cheap part of it is that a page width is a sum anybody can add up before writing it down.

@@ -2,9 +2,9 @@
 """
 #20 การเชื่อมโยงผลการเรียนรู้กับรายวิชา - the coverage grid.
 
-Eleven mutants. The sheet carries 13 ⚙ rows; the two this file does not reach are
+Twelve mutants. The sheet carries 14 ⚙ rows; the two this file does not reach are
 held from their own files, by `117:notwrappedgrid` and `133:mappingstalewins`.
-Eight break the thing their row is about and nothing else, so a run under one of
+Nine break the thing their row is about and nothing else, so a run under one of
 them names the row it kills rather than falling over everywhere at once. Three do
 not: `onelevel` kills three rows, and `emptyise` and `bigtype` kill two each. Their comments say
 which rows and why the wider blast radius is the assertions working rather than
@@ -217,6 +217,19 @@ MUTANTS = {
     "narrowsubject": ("export",
                       "const SUBJECT_WIDTH = 72",
                       "const SUBJECT_WIDTH = 30"),
+
+    # #195, and the only thing that turns #103's raise of this constant from a
+    # measurement into a claim the suite holds. `OUTCOME_WIDTH` sizes the page,
+    # so it is the rate the page grows at per column: at the seed's thirteen
+    # outcomes the page is held at the A4 floor either way and the columns are
+    # then identical - 15.03mm nine times and 17.44mm four times at both values -
+    # which is why this mutant would have survived every row in this file before
+    # #195's. The wide-curriculum row injects twenty outcomes, where
+    # 9mm gives 9.42mm columns against a code that needs 11.11mm and cuts all
+    # twenty in half, and 14mm gives 12.87mm and cuts none.
+    "narrowpage": ("export",
+                   "const OUTCOME_WIDTH = 14",
+                   "const OUTCOME_WIDTH = 9"),
 }
 
 main(FILES, MUTANTS)
