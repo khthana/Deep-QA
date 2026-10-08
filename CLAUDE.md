@@ -177,9 +177,18 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   by X*, check the assertion reads X rather than passing it through. (#40, #96)
 - **A ☐ that names a ticket is a working link between two sheets, not a gap in one of them.**
   Never invent a fifth mark. (#97, #66)
-- A ◐ is one of two kinds — a request no control can produce, which waits on nobody, or an
-  attribute that reached the DOM and needs an ear, which is a real queue. Count them apart. (#85,
-  #111, #122 — told under *The ◐ and ☐ rows*)
+- **A ◐ is one of three kinds, and the third is the one a two-kind definition hides** — a request
+  no control can produce, which waits on nobody; an attribute that reached the DOM and needs an
+  ear, which is a real queue; and a half that waits on a **ticket**, which is not in the walk queue
+  at all, so putting it in front of a person asks them to walk what cannot pass yet. The row says
+  which, and they are counted apart — the split itself is a survey with a date on it and lives in
+  §#157, not here, because no instrument reproduces it. (#85, #111, #122, #157 — told under *The ◐
+  and ☐ rows* and §#157)
+- **A legend is a claim about the sheet's own rows, and its two halves can contradict each other** —
+  one sheet carried a mark its legend said did not exist, and another's count sentence said *three*
+  while its own entry called itself *the fourth value*. `python mutation/anchors.py` asks the first
+  of those two — every mark a row carries is defined, in one spelling across the sheets — and cannot
+  ask the second: the count sentence is a hand measurement with a date on it. (#157)
 - **A row can gain a walkable half the day a ticket lands** — a ☑ going back to ◐ is not always a
   regression; it can mean there is something on the screen to look at for the first time. (#105)
 - A sheet that hands a claim to another sheet has written a pointer a later ticket can delete;

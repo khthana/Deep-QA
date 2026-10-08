@@ -159,6 +159,37 @@ the string it found is in an assertion at all rather than in a comment above
 one. And whether that assertion is the one the mutant kills, which no static
 reading can say and only a sweep can - this question is that a citation still
 points somewhere, not that it points at the right thing.
+
+## The sixth question: does a sheet define the marks its own rows carry?
+
+The four marks are the vocabulary the whole store is written in, and each sheet
+teaches them again in its own legend. Measured on 8 October 2569, the sheets
+spelled the half mark **ten** different ways and one of them,
+`12-role-grants.md`, carried the mark in a row while its legend said its last
+column had three values and defined three - a sheet using a mark its own legend
+declares not to exist. Ten spellings is a figure that goes back to ten the
+first time somebody writes an eleventh by hand; a question that fails the run
+does not.
+
+`legends()` finds each sheet's legend as the first run of lines outside a fence
+and outside a table that puts **two** different marks in bold - one mark alone
+is prose, because a sheet writes *that row was [half] for a long time* forty
+lines below its own legend - and then asks two separate things: that every mark
+a row carries is defined there, and that all the sheets define the half mark in
+one spelling. The second is counted as **one problem per sheet outside the
+biggest group**, because the number a reader needs is how many sheets are left
+to edit and not how many spellings exist.
+
+**What it does not look at**: whether the one spelling is the *right* one.
+Thirty-eight sheets agreeing on a wrong sentence is green here; the wording
+itself is settled in #157, in `docs/lessons.md` and in `CLAUDE.md`, and this
+question holds the agreement rather than the words. The **count sentence** that
+introduces most legends - *the last column has four values* - which is prose and
+not an entry, and which was wrong on two sheets this question called clean,
+both corrected by hand with a date on the measurement. The other three marks'
+wording, which diverges the same way and is a different ticket's blast radius
+(#119). And which *kind* of half-walked a row means - a person, a ticket, or
+nothing at all - which is written in the row and counted by hand.
 """
 
 import ast
@@ -938,10 +969,212 @@ def citations(files=None, specs=None):
     return problems, checked, numbered, skipped
 
 
+# The four values an acceptance row's mark column can carry, written as escapes
+# because this file is read in a console that cannot print them.
+WALKED = u"\u2611"
+HALF = u"\u25d0"
+NOT_WALKED = u"\u2610"
+GEAR = u"\u2699"
+MARKS = WALKED + HALF + NOT_WALKED + GEAR
+# The headers a sheet gives that column: a tick, the Thai for *result*, or the
+# walked mark itself. A sheet can put the column in the middle rather than
+# last, so it is found from each table's own header and never assumed (#141).
+MARK_HEADS = (u"\u2713", u"\u0e1c\u0e25", WALKED)
+# A legend entry: the mark in bold, which is how all four registers write one.
+ENTRY = re.compile(u"\\*\\*([" + MARKS + u"])\\*\\*")
+GAP = re.compile(r"\s+")
+
+
+def _mark_column(row):
+    """Which cell of this header row holds the mark, or None."""
+    for position, cell in enumerate(row):
+        if any(head in cell for head in MARK_HEADS):
+            return position
+    return None
+
+
+def _used(lines):
+    """The marks this sheet's acceptance tables carry, and how many.
+
+    A mutation table and a sweep table are tables in an acceptance sheet and
+    are not acceptance tables - they have no mark column - so counting their
+    cells would be counting by the wrong property (#174).
+    """
+    used = set()
+    counted = 0
+    fenced = False
+    index = None
+    for number, line in enumerate(lines):
+        if line.strip().startswith("```"):
+            fenced = not fenced
+            index = None
+            continue
+        if fenced:
+            continue
+        if "|" not in line:
+            index = None
+            continue
+        if _is_rule(line):
+            continue
+        row = _cells(line)
+        following = lines[number + 1] if number + 1 < len(lines) else ""
+        if "|" in following and _is_rule(following):
+            index = _mark_column(row)
+            continue
+        if index is None or index >= len(row):
+            continue
+        for mark in row[index]:
+            if mark in MARKS:
+                used.add(mark)
+                counted += 1
+    return used, counted
+
+
+def _legend(lines):
+    """The lines of this sheet's legend block, or None when it has none.
+
+    A legend is where the vocabulary is listed, so the block is the first run
+    of lines outside a fence and outside a table that puts **two** different
+    marks in bold.  One mark alone is prose: `11-user-accounts.md` writes *that
+    row was [half] for a long time* forty lines below its own legend, and a
+    rule that read any bold mark as an entry would take that sentence for a
+    second definition of the mark.
+    """
+    fenced = False
+    block = []
+    for line in lines:
+        if line.strip().startswith("```"):
+            fenced = not fenced
+            block = []
+            continue
+        if fenced:
+            continue
+        if not line.strip() or "|" in line:
+            if len(set(ENTRY.findall(" ".join(block)))) > 1:
+                return block
+            block = []
+            continue
+        block.append(line)
+    if len(set(ENTRY.findall(" ".join(block)))) > 1:
+        return block
+    return None
+
+
+def _entry(block, mark):
+    """What the legend says about one mark, as one line of normalised text.
+
+    The entry ends at the next mark in bold, which is what separates the four
+    entries of the inline register - one running sentence rather than four
+    bullets, written that way on four sheets.  The whitespace is collapsed
+    because the claim is that the sheets say the same sentence and not that
+    they wrap it in the same places: a sheet that reflows a paragraph has not
+    redefined the mark, and an instrument that said so would go red for every
+    reflow.
+    """
+    said = " ".join(line.strip().lstrip("-").strip() for line in block)
+    found = ENTRY.search(said)
+    while found and found.group(1) != mark:
+        said = said[found.end():]
+        found = ENTRY.search(said)
+    if not found:
+        return None
+    said = said[found.end():]
+    after = ENTRY.search(said)
+    if after:
+        said = said[:after.start()]
+    # The separator the inline register puts between two entries belongs to
+    # neither of them.
+    return GAP.sub(" ", said).strip().rstrip(u"\u00b7").strip()
+
+
+def legends(files=None):
+    """(problems, sheets read, marks read, spellings of the half mark) - #157.
+
+    Two claims about `docs/acceptance/`, and they are different claims:
+
+    * **every mark a sheet's rows carry is defined in that sheet's legend.**
+      The defect this found is `12-role-grants.md`, whose legend said its last
+      column had three values while a row of it carried a fourth - a sheet
+      using a mark its own legend declares not to exist.  The claim is one way
+      round on purpose: a legend may teach the whole vocabulary, and a mark it
+      defines that no row carries is not a defect.
+    * **all of them define the half mark in one spelling.**  It had **ten**
+      on 8 October 2569, measured by grouping the sheets' own entries - the
+      ticket said two, which was a subtraction between two greps rather than a
+      count - and that is what made the walk queue uncountable from the sheets,
+      because the mark is the only one that names a queue and `CLAUDE.md` says
+      its kinds must be counted apart.
+
+    What it cannot measure, written down because a tool that cannot say what it
+    did not look at is the same species as the hand-kept numbers it checks
+    (#123): whether the one spelling is the *right* one.  Thirty-eight sheets
+    agreeing on a wrong sentence is green here, and the sentence itself is
+    settled in the ticket, in `docs/lessons.md` and in `CLAUDE.md` - this
+    question holds the agreement, not the wording.  Nor does it read the other
+    three marks' wording, which diverges the same way and is a different
+    ticket's blast radius (#119).
+    """
+    named = files is not None
+    if not named:
+        where = os.path.join(ROOT, "docs", "acceptance")
+        if not os.path.isdir(where):
+            # level, behind, and *could not ask* - the third answer, which
+            # folding into *clean* would tell somebody with no sheets on disk
+            # that their legends agree (#159).
+            print("CANNOT ASK: no docs/acceptance directory, so no legend was read")
+            return 1, 0, 0, 0
+        files = sorted(glob.glob(os.path.join(where, "*.md")))
+    problems = read = marks = 0
+    spellings = {}
+    silent = []
+    for path in files:
+        short = os.path.basename(path)
+        with io.open(path, encoding="utf-8") as handle:
+            lines = handle.read().split("\n")
+        read += 1
+        used, counted = _used(lines)
+        marks += counted
+        block = _legend(lines)
+        defined = set() if block is None else set(ENTRY.findall(" ".join(block)))
+        if block is None and used:
+            silent.append(short)
+        for mark in sorted(used - defined):
+            problems += 1
+            print("UNDEFINED %s -> a row carries %r and the legend does not define it"
+                  % (short, mark))
+        if HALF in defined:
+            spellings.setdefault(_entry(block, HALF), []).append(short)
+    if len(spellings) > 1:
+        # One problem per sheet outside the biggest group: the number that
+        # matters is how many sheets are left to edit, not how many spellings
+        # there are. The groups are all printed, biggest first, because which
+        # of them is the odd one out is the reader's to see and not this
+        # function's to decide.
+        groups = sorted(spellings.items(), key=lambda pair: (-len(pair[1]), pair[1][0]))
+        problems += sum(len(sheets) for _, sheets in groups[1:])
+        for said, sheets in groups:
+            print("SPELLING %d sheet(s) -> %r (%s)"
+                  % (len(sheets), (said or u"")[:60], ", ".join(sheets[:4])))
+    if not named:
+        if silent:
+            print("legends: %d sheet(s) carry a mark and no legend at all: %s"
+                  % (len(silent), ", ".join(silent)))
+        print("legends: reading %d sheets of docs/acceptance | marks %d | sheets "
+              "defining the half mark %d | spellings of it %d | problems %d"
+              % (read, marks, sum(len(sheets) for sheets in spellings.values()),
+                 len(spellings), problems))
+    return problems, read, marks, len(spellings)
+
+
 if __name__ == "__main__":
     misanchored = check()
     undocumented = commands()[0]
     miscounted = columns()[0]
     unlisted = catalogue()[0]
     uncited = citations()[0]
-    sys.exit(1 if (misanchored or undocumented or miscounted or unlisted or uncited) else 0)
+    # Each name above holds one kind of fault; this one holds two - a mark no
+    # legend defines and a sheet spelling the half mark its own way - so it is
+    # named for the question rather than for a kind it does not have on its own.
+    legend_faults = legends()[0]
+    sys.exit(1 if (misanchored or undocumented or miscounted or unlisted or uncited
+                   or legend_faults) else 0)

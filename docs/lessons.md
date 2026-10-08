@@ -7730,3 +7730,184 @@ the same row and do a different job: they say which of several rows a mutant kil
 written on the sheet as a weakness rather than fixed, which is what criterion 3 asks for, and the
 measurement that goes with it is that each of the fourteen needles occurs **exactly once** in its
 spec — the claim a citation by text rests on, now a number rather than an assumption.
+
+## #157 — the mark that was defined for two of the three things it meant
+
+The ticket asked which of **two** readings of ◐ the sheets mean, and settled on the one
+`CLAUDE.md` already uses. The premise was the thing to measure: the store did not hold two
+readings. It held **ten**.
+
+### All four of the ticket's numbers were counted by the wrong property
+
+*81 ◐ rows* is a grep of the glyph. Today the glyph occurs **116** times across the 39 sheets, and
+only **23** of those are marks: 13 are the legend entries that define it, 69 are prose that
+mentions it, and 11 sit in other cells of a table. The population a mark audit is about is the
+**mark column**, which #141 already wrote down how to find — from each table's own header, which a
+sheet heads `✓` or `ผล` and can put in the middle — and that column holds 23. *21 narrow-legend
+sheets* was 22 by the time it was read. And *12 sheets with ◐ and neither legend line* was a
+subtraction between two greps; asked directly, the sheets spelled the mark **ten** different ways,
+of which the ticket's two were only the two most common.
+
+So the ticket's own question — *which of these two?* — could not have been answered as asked, and
+the answer that outlives it is not the sweep. It is the **sixth question** in
+`mutation/anchors.py`: `legends()`, which holds two claims — every mark a sheet's rows carry is
+defined in that sheet's own legend, and all the sheets define ◐ in one spelling, counting one
+problem per sheet outside the largest group. Ten spellings is a number that goes back to ten the
+first time somebody writes an eleventh by hand; a question that fails the run does not.
+
+### The instrument reproduces the record, which is what makes it the record's instrument
+
+`legends()` reports `marks 1263`, and the handoff's own table is ☑ 499 · ⚙ 726 · ◐ 23 · ☐ 15,
+which is 1,263 exactly. #174's rule from the other side: a counter that reproduces the record's
+figures at the record's own commit is the record's instrument rather than a fourth opinion.
+
+### Reading the 23 marks found four kinds where `CLAUDE.md` said two
+
+`CLAUDE.md` said a ◐ is one of two kinds — a request no control can produce, which waits on
+nobody, or an attribute that reached the DOM and needs an ear, which is a real queue. Surveyed on
+**8 October 2569**, before this ticket's own edits, the 23 were: **9** permanent by structure,
+**7** waiting on an ear, **4** whose server half is walked and whose screen half is queued on a
+person, **2** whose remaining half waits on a **ticket** (#49 and #166), and **1** that said
+nothing at all about which half remained. After the edits below the split is **9 · 12 · 2** with
+none unnamed, which is the figure to read if you are counting the walk queue — and it is a survey
+with a date rather than a property of the store, because no instrument reproduces it: `legends()`
+counts all four marks together and cannot see a kind.
+
+The third kind is the one the two-kind definition had no room for, and it is the kind that matters
+most to read correctly, because a ◐ waiting on a ticket is *not* in the walk queue: asking a person
+to walk it is asking them to walk something that cannot pass yet. So the settled entry names all
+three — a person, a ticket whose number the row cites, or nothing at all — and says, as the old
+line did, that they are counted apart.
+
+### The two rows that looked like defects were correct, and the one that was wrong named no half
+
+Under the narrow reading, `43-program-level-all-students.md:66` and `47-profile-photo.md:68` both
+read as defects: a ◐ whose remaining half is neither a server half nor a screen half. Under the
+settled wording they are the ticket kind, they already cite their numbers, and nothing about them
+changes. That is the ticket's third step answered: the narrow definition was making two correct
+rows look wrong, which is the direction a definition gets wrong quietly.
+
+`42-program-level-by-intake.md:65` was the one real defect — a ◐ that said which seam proved the
+half that was walked and nothing about the half that was not. It gained the clause, naming the
+screen as the remaining half and a person as what it waits on, with the note that the seed marks
+everybody so the situation has to be built and taken out again (#39's rule, and the sibling sheet's
+own last row is the precedent). **No mark moved**, so the walk queue is 23 before and after.
+
+**And then the review round found four more, by holding the new wording to its own word.** The
+settled entry demands *in bold* that the row says which half is missing and what that half waits
+on. `14-departments.md:66` and `:67` and `15-programs.md:77` and `:78` — all four of them #60's
+rows — named the seam that proved the walked half and said nothing about the other, exactly as
+`42:65` had. They had read as compliant under the old wording because the old wording *was* the
+missing sentence: it said the walked half is the server's and the rest is what the screen draws, so
+a row inheriting that needed to say nothing. **Demoting the common case to a common case is what
+made four silent rows visible** — a definition that carries the rows is a definition that hides
+what they do not say.
+
+The first instinct was to say instead that a row whose walk column holds steps has thereby named
+its remaining half. Measured, that rule cannot be written: the acceptance tables come in **14
+header shapes**, of which the dominant one (134 tables) is *# · criterion · walk · evidence · mark*
+but several have no walk column at all, so *the walk column* is not a property every ◐ row has.
+Four clauses, one per row, is the cheaper and checkable answer. The first attempt at a census here
+also read `cells[1]` as the walk column, which is the **criterion** on the dominant shape — a
+census counting by the wrong property, found because its total came back 12 where `legends()` says
+23.
+
+### The defect the ticket could not see, and the one that contradicted itself inside one legend
+
+`12-role-grants.md` carried ◐ in a row while its legend said *the last column has three values* and
+defined three — a sheet using a mark its own legend says does not exist. That is what `legends()`
+reports as `UNDEFINED`, and it is the defect the ticket's grep could not have found, because the
+ticket was looking for sheets that define the mark **badly** and this one did not define it at all.
+
+`14-departments.md` is the stranger one: its count sentence said *three* while its own ◐ entry
+described itself as *the fourth value of this column*. The two halves of one legend contradicted
+each other, and the global replace that settled the entry fixed the sentence as a side effect —
+which is luck, not a method. So the count sentence was measured across all 39 sheets on purpose:
+exactly those two were wrong, both are now right, and a third that reads as a disagreement
+(`15-programs.md`, four entries and a sentence saying three) is correct as written, because it says
+the column *used to have* three during the walk and gained a fourth at #57. A dated record is left
+alone and the note names which of its rows would read differently today — #54, and the reason the
+instrument must not be taught to "fix" it.
+
+### What the instrument cannot measure, said with the numbers
+
+It says the 38 sheets agree on one spelling; it cannot say that spelling is the **right** one — that
+was settled by reading, once, and the sheets now hold the reading rather than the argument. It does
+not read the **count sentence**, which is where both of this ticket's content defects lived; that
+was done by hand here and is written down as a hand measurement with a date. And it does not read
+the wording of the other three marks, whose blast radius is different — that is adjacent work and
+belongs in the tracker rather than in this paragraph, which is #119's rule and the reason this
+sentence names it instead of quietly deferring it.
+
+### Breaking a real sheet is what says the instrument can see its defect
+
+#141's census proved that an instrument of this shape passes its own fixtures whichever way it is
+wrong, so two real sheets were made wrong and put back, restoring below the seam and in `finally`
+(#181):
+
+| the tree | problems | spellings |
+|---|---|---|
+| clean | 0 | 1 |
+| one sheet rewords its entry | 1 | 2 |
+| restored | 0 | 1 |
+| one sheet carries the mark and loses its entry | 1 | 1 |
+| restored | 0 | 1 |
+
+The second break is the one that matters: problems go up while spellings stay at 1, which is the
+two claims being separately observable rather than one claim counted twice.
+
+### The Thai I typed was wrong three times, and once in a way `unicodedata` passed
+
+Three times a Thai string was retyped as codepoints and came out misspelled — twice the vowel
+U+0E36 written as U+0E35 in the word for *half*, which made the grep lifted out of the issue body
+return zero and made one break fail to land, and once U+0E22 for U+0E0D in the word for *most*.
+The fourth was worse: a typed consonant was U+0E8A LAO LETTER SO TAM where Thai U+0E0A was meant,
+and `unicodedata.name()` passed it, because Lao is assigned. The scan now requires every Thai
+character to be inside U+0E01–U+0E5B, and the new clauses are checked against the store itself by a
+**3-character sliding window** — measured, the misspelling of *half* occurs 0 times in the corpus
+against 844 for the correct spelling, where a 2-character window gives 3 against 844 and is not a
+separation. The wrong forms are named here by codepoint and not shown, because pasting one into
+this file would put it in the corpus that check measures against and teach it to accept the typo
+for good.
+
+### Three of the new question's fifteen claims had nothing that could make them red
+
+The review round put mutants on the new rows, and three branches survived — written the same day,
+in the same file, by the same hand as the twelve that were at risk:
+
+- `GAP.sub(" ", said)` → `said.strip()` **survived**. `said` is built by joining *stripped* lines,
+  so the reflow tolerance the row was written for is done by the join, and the row proved the join.
+  The fixture that puts the collapsing at risk needs a run of whitespace **inside one line** — a
+  double space, which survives the strip, and a tab, which a person cannot see in the diff at all.
+- `problems += sum(len(sheets) for _, sheets in groups[1:])` → `problems += len(groups) - 1`
+  **survived**. The only fixture had two groups of one sheet each, where both readings give 1.
+  *One per sheet outside the biggest group* and *one per group after the first* disagree for the
+  first time at **two sheets each**: two to edit against one group. A count whose two readings
+  agree on every fixture is a count nobody has measured.
+- `_legend`'s *two different marks* rule is written **twice** — once inside the loop and once after
+  it, for a block that runs to the end of the file — and nothing reached the second copy. The
+  fixture is a sheet whose last line mentions a mark in passing with no trailing newline; it has to
+  be the file's **only** block, or the loop returns first and the tail is never asked.
+
+All three now die on their own row and on no other, which is the other half of the claim: one
+mutant killing one row says the rows are separate claims rather than one counted three times.
+
+The rule is `CLAUDE.md`'s own, read from the failing side — *before trusting a new assertion, break
+the thing it is about* — and the instrument I had just finished writing to catch hand-kept numbers
+was itself carrying three assertions that could not fail.
+
+### `python -I` throws away `PYTHONIOENCODING`
+
+`-I` implies `-E`, so a script run as `PYTHONIOENCODING=utf-8 python -I -` prints through cp874
+again. One patch script died on the first `·` in a progress line — and died **after**
+`io.open(...).write()`, so one of four files was patched, three were not, and the exit status said
+the whole thing had failed. Two repairs, both cheap: print nothing but ASCII from a script that
+edits Thai, and make the re-run **idempotent** — the second version asks whether the clause is
+already there and says *already applied*, rather than asserting it is absent and refusing to
+finish the job it half did.
+
+The same hour, a diagnostic script written to print the context of each suspicious letter-triple
+typed `ํ` where the text has `ำ` — U+0E4D NIKHAHIT against U+0E33 SARA AM, which is the
+confusable pair the content scan exists to catch — and reported *NOT PRESENT* for two windows that
+were in the file all along. The content was clean; the instrument reading it was not. A tool written
+to check a retyped string is a retyped string.

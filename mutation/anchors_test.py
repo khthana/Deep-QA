@@ -252,6 +252,13 @@ class Store(unittest.TestCase):
         self.assertIsNone(specs)
         self.assertEqual(anchors.commands(), (1, 0, 0))
 
+    def test_no_acceptance_directory_is_a_third_answer_as_well(self):
+        # The sixth question's own third answer: a tree with no sheets in it
+        # has not told anybody that the legends agree. `legends()` reads the
+        # directory rather than the spec list, so this is the state that
+        # proves the difference (#159).
+        self.assertEqual(anchors.legends(), (1, 0, 0, 0))
+
     def test_no_spec_directory_is_a_third_answer_for_citations_too(self):
         # The same state, and the fifth question has to score it the same way:
         # a walk that resolved nothing has not said the store is clean. The
@@ -692,6 +699,218 @@ class Citations(TempStore):
         self.assertEqual(problems, 0)
         self.assertGreaterEqual(checked, 14)
         self.assertGreater(numbered, 0)
+
+
+# The four marks, written here as escapes rather than as glyphs: this file is
+# read in a console that cannot print them, and a fixture whose text cannot be
+# shown is a fixture nobody proofreads.
+WALKED = u"\u2611"      # the row is walked
+HALF = u"\u25d0"        # walked half way - the mark this question is about
+NOT_WALKED = u"\u2610"  # not walked
+GEAR = u"\u2699"        # covered by the browser seam
+TICK_HEAD = u"\u2713"   # one of the two headers a sheet gives the mark column
+THAI_HEAD = u"\u0e1c\u0e25"
+DOT = u"\u00b7"        # what the inline register puts between two entries
+
+
+def legend(*entries):
+    """A legend block in the bullet register the sheets use."""
+    return u"\n".join(u"- **%s** %s" % pair for pair in entries)
+
+
+def table(*marks, **kwargs):
+    """A table with a mark column, by default the last one."""
+    head = kwargs.get("head", TICK_HEAD)
+    first = kwargs.get("first", False)
+    if first:
+        rows = [u"| %s | x |" % mark for mark in marks]
+        return u"\n".join([u"| %s | what |" % head, u"|---|---|"] + rows)
+    rows = [u"| x | %s |" % mark for mark in marks]
+    return u"\n".join([u"| what | %s |" % head, u"|---|---|"] + rows)
+
+
+class Legends(TempStore):
+    """Does every sheet define the marks it uses, in one spelling? - #157.
+
+    The sheets are made up, for the reason `Census` gives: the only way to
+    assert that a second spelling of the half mark is *found* is to write one,
+    and the real store is one spelling by construction the moment this lands.
+    """
+
+    def sheets(self, *texts):
+        return [self.write("%d-made-up.md" % (10 + number), text)
+                for number, text in enumerate(texts)]
+
+    def test_a_sheet_whose_legend_defines_every_mark_it_uses(self):
+        files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n"
+                            + table(WALKED, HALF))
+        problems, read, marks, spellings = anchors.legends(files)
+        self.assertEqual((problems, read, marks, spellings), (0, 1, 2, 1))
+
+    def test_a_mark_the_table_carries_and_the_legend_does_not_define(self):
+        # The defect this question exists for: sheet 12 of the real store said
+        # its last column had three values while a row of it carried a fourth.
+        files = self.sheets(legend((WALKED, u"walked"), (NOT_WALKED, u"not walked"))
+                            + u"\n\n" + table(WALKED, HALF))
+        self.assertEqual(anchors.legends(files)[0], 1)
+
+    def test_a_mark_the_legend_defines_and_the_table_never_uses_is_not_one(self):
+        # A legend may teach the whole vocabulary; what it may not do is leave
+        # out a value its own rows carry. The claim is one way round on purpose.
+        files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way"),
+                                   (NOT_WALKED, u"not walked"), (GEAR, u"seam"))
+                            + u"\n\n" + table(WALKED))
+        self.assertEqual(anchors.legends(files)[0], 0)
+
+    def test_two_sheets_spelling_the_half_mark_differently(self):
+        files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way"))
+                            + u"\n\n" + table(HALF),
+                            legend((WALKED, u"walked"), (HALF, u"the server half passed"))
+                            + u"\n\n" + table(HALF))
+        problems, read, marks, spellings = anchors.legends(files)
+        self.assertEqual((read, marks, spellings), (2, 2, 2))
+        # One problem per sheet outside the biggest group, which is the number
+        # of sheets left to edit rather than the number of spellings.
+        self.assertEqual(problems, 1)
+
+    def test_the_count_is_sheets_to_edit_and_not_spellings_to_choose_between(self):
+        # Two sheets each, so the two readings of the count disagree for the
+        # first time: *one per sheet outside the biggest group* is 2 and *one
+        # per group after the first* is 1. The row above cannot tell them
+        # apart - both give 1 when every group holds one sheet - which is why
+        # the arithmetic needs a group with two sheets in it to be at risk at
+        # all.
+        files = self.sheets(
+            legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n" + table(HALF),
+            legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n" + table(HALF),
+            legend((WALKED, u"walked"), (HALF, u"the server half passed"))
+            + u"\n\n" + table(HALF),
+            legend((WALKED, u"walked"), (HALF, u"the server half passed"))
+            + u"\n\n" + table(HALF))
+        problems, read, _, spellings = anchors.legends(files)
+        self.assertEqual((read, spellings), (4, 2))
+        self.assertEqual(problems, 2)
+
+    def test_the_same_sentence_wrapped_differently_is_one_spelling(self):
+        # The claim is that the sheets say the same sentence, not that they wrap
+        # it in the same places: a sheet that rewraps a paragraph has not
+        # redefined the mark, and an instrument that said so would go red for
+        # every reflow.
+        files = self.sheets(u"- **%s** walked\n- **%s** half way, and the row says which half\n"
+                            % (WALKED, HALF) + u"\n" + table(HALF),
+                            u"- **%s** walked\n- **%s** half way, and the row says\n  which half\n"
+                            % (WALKED, HALF) + u"\n" + table(HALF))
+        problems, _, _, spellings = anchors.legends(files)
+        self.assertEqual((problems, spellings), (0, 1))
+
+    def test_a_run_of_spaces_inside_one_line_is_the_same_spelling_too(self):
+        # The row above rewraps the sentence across lines, which the joining of
+        # stripped lines already handles on its own - so it leaves the
+        # whitespace collapsing unproved, and a question that collapses nothing
+        # passes it. The run has to be *inside* one line to be at risk: a
+        # double space survives the strip, and a tab is whitespace a person
+        # cannot see in the diff at all.
+        files = self.sheets(
+            legend((WALKED, u"walked"), (HALF, u"half way, and the row says which half"))
+            + u"\n\n" + table(HALF),
+            legend((WALKED, u"walked"),
+                   (HALF, u"half  way, and the row\tsays which half"))
+            + u"\n\n" + table(HALF))
+        problems, _, _, spellings = anchors.legends(files)
+        self.assertEqual((problems, spellings), (0, 1))
+
+    def test_the_inline_register_is_a_legend_too(self):
+        # Four sheets write the legend as one running sentence rather than as
+        # four bullets, and the entry then ends at the next mark instead of at
+        # the end of the line.
+        files = self.sheets(u"the last column has four values - **%s** walked %s **%s** half way "
+                            u"%s **%s** not walked\n\n"
+                            % (WALKED, DOT, HALF, DOT, NOT_WALKED) + table(HALF),
+                            legend((WALKED, u"walked"), (HALF, u"half way"))
+                            + u"\n\n" + table(HALF))
+        problems, _, _, spellings = anchors.legends(files)
+        self.assertEqual((problems, spellings), (0, 1))
+
+    def test_a_block_that_defines_one_mark_and_no_other_is_not_a_legend(self):
+        # The rule that tells the two apart, asserted from the failing side:
+        # a legend lists the vocabulary, so one entry alone is a sentence. No
+        # sheet in the store writes a one-entry legend, and the row below is
+        # the reason the rule has to be this way round.
+        files = self.sheets(u"- **%s** half way\n\n" % HALF + table(HALF))
+        self.assertEqual(anchors.legends(files), (1, 1, 1, 0))
+
+    def test_a_bold_mark_in_a_sentence_of_prose_is_not_a_legend_entry(self):
+        # `11-user-accounts.md` writes `was **half** for a long time` forty
+        # lines below its legend. A region that defines one mark and no other
+        # is prose; a legend is where the vocabulary is listed.
+        files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n"
+                            + u"that row was **%s** for a long time and the reason was\n" % HALF
+                            + u"the browser rather than the rule\n\n"
+                            + table(WALKED, HALF))
+        problems, _, _, spellings = anchors.legends(files)
+        self.assertEqual((problems, spellings), (0, 1))
+
+    def test_a_legend_quoted_inside_a_fence_is_not_a_legend(self):
+        files = self.sheets(u"```\n" + legend((WALKED, u"walked"), (HALF, u"half way"))
+                            + u"\n```\n\n" + table(HALF))
+        # No legend at all, so the mark the table carries is undefined - and
+        # the sheet is counted as one with no legend rather than passed over.
+        problems, read, marks, _ = anchors.legends(files)
+        self.assertEqual((problems, read, marks), (1, 1, 1))
+
+    def test_a_mark_inside_a_fence_is_not_a_mark(self):
+        files = self.sheets(legend((WALKED, u"walked")) + u"\n\n"
+                            + u"```\n" + table(HALF) + u"\n```\n")
+        self.assertEqual(anchors.legends(files), (0, 1, 0, 0))
+
+    def test_the_mark_column_is_found_from_the_header_and_not_assumed_last(self):
+        # A sheet heads the column with a tick or with the Thai for *result*,
+        # and can put it anywhere in the row (#141).
+        files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n"
+                            + table(HALF, head=THAI_HEAD, first=True))
+        self.assertEqual(anchors.legends(files), (0, 1, 1, 1))
+
+    def test_a_table_with_no_mark_column_holds_no_marks(self):
+        # A mutation table and a sweep table are tables in an acceptance sheet
+        # and are not acceptance tables; counting their cells as marks is
+        # counting by the wrong property (#174).
+        files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n"
+                            + u"| mutant | kills |\n|---|---|\n| a | %s |\n" % HALF)
+        self.assertEqual(anchors.legends(files), (0, 1, 0, 1))
+
+    def test_a_sheet_with_no_legend_and_no_mark_is_still_counted(self):
+        # What it did not look at is part of the answer (#123): a sheet with
+        # nothing to say about the marks is read and counted, not skipped.
+        files = self.sheets(u"# a sheet with prose and nothing else\n")
+        self.assertEqual(anchors.legends(files), (0, 1, 0, 0))
+
+    def test_a_one_mark_block_at_the_end_of_a_file_is_prose_and_not_a_legend(self):
+        # The same rule as the bullet above, at the one place it is written
+        # twice: a block that runs to the end of the file is tested after the
+        # loop rather than inside it, and nothing reached that copy, so a
+        # sheet whose last line mentions a mark in passing could have been
+        # read as defining it. The sheet is left with no legend at all, which
+        # is what makes the row carrying the mark a problem.
+        files = self.sheets(table(HALF) + u"\nthe row was **%s** for a long time" % HALF)
+        problems, read, marks, spellings = anchors.legends(files)
+        self.assertEqual((problems, read, marks, spellings), (1, 1, 1, 0))
+
+    def test_the_real_sheets_define_the_half_mark_in_one_spelling(self):
+        # The counts are asserted beside the problems: a question that found no
+        # legend at all would pass on problems alone, which is an assertion
+        # that cannot fail (#50).
+        problems, read, marks, spellings = anchors.legends()
+        self.assertEqual(problems, 0)
+        self.assertGreaterEqual(read, 39)
+        # Every sheet carries more than one mark, so this says the tables were
+        # read and not merely the legends. The figure itself - 1,263 on 8
+        # October 2569, which is the walk record's own total - is printed and
+        # deliberately not pinned here: pinning it would make a hand-kept
+        # number in a file that grows every ticket, and the floor it was
+        # written as first was 23, which is the count of *one* of the four
+        # marks and so a floor borrowed from another population (#174).
+        self.assertGreater(marks, read)
+        self.assertEqual(spellings, 1)
 
 
 if __name__ == "__main__":
