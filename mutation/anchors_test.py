@@ -14,6 +14,7 @@ Run:
 stdlib `unittest`, for the reason `harness_test.py` gives.
 """
 
+import glob
 import io
 import os
 import shutil
@@ -257,7 +258,7 @@ class Store(unittest.TestCase):
         # has not told anybody that the legends agree. `legends()` reads the
         # directory rather than the spec list, so this is the state that
         # proves the difference (#159).
-        self.assertEqual(anchors.legends(), (1, 0, 0, 0))
+        self.assertEqual(anchors.legends(), (1, 0, 0, {}))
 
     def test_no_spec_directory_is_a_third_answer_for_citations_too(self):
         # The same state, and the fifth question has to score it the same way:
@@ -745,7 +746,8 @@ class Legends(TempStore):
         files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n"
                             + table(WALKED, HALF))
         problems, read, marks, spellings = anchors.legends(files)
-        self.assertEqual((problems, read, marks, spellings), (0, 1, 2, 1))
+        self.assertEqual((problems, read, marks, spellings),
+                         (0, 1, 2, {WALKED: 1, HALF: 1}))
 
     def test_a_mark_the_table_carries_and_the_legend_does_not_define(self):
         # The defect this question exists for: sheet 12 of the real store said
@@ -768,7 +770,7 @@ class Legends(TempStore):
                             legend((WALKED, u"walked"), (HALF, u"the server half passed"))
                             + u"\n\n" + table(HALF))
         problems, read, marks, spellings = anchors.legends(files)
-        self.assertEqual((read, marks, spellings), (2, 2, 2))
+        self.assertEqual((read, marks, spellings), (2, 2, {WALKED: 1, HALF: 2}))
         # One problem per sheet outside the biggest group, which is the number
         # of sheets left to edit rather than the number of spellings.
         self.assertEqual(problems, 1)
@@ -788,7 +790,7 @@ class Legends(TempStore):
             legend((WALKED, u"walked"), (HALF, u"the server half passed"))
             + u"\n\n" + table(HALF))
         problems, read, _, spellings = anchors.legends(files)
-        self.assertEqual((read, spellings), (4, 2))
+        self.assertEqual((read, spellings), (4, {WALKED: 1, HALF: 2}))
         self.assertEqual(problems, 2)
 
     def test_the_same_sentence_wrapped_differently_is_one_spelling(self):
@@ -801,7 +803,7 @@ class Legends(TempStore):
                             u"- **%s** walked\n- **%s** half way, and the row says\n  which half\n"
                             % (WALKED, HALF) + u"\n" + table(HALF))
         problems, _, _, spellings = anchors.legends(files)
-        self.assertEqual((problems, spellings), (0, 1))
+        self.assertEqual((problems, spellings), (0, {WALKED: 1, HALF: 1}))
 
     def test_a_run_of_spaces_inside_one_line_is_the_same_spelling_too(self):
         # The row above rewraps the sentence across lines, which the joining of
@@ -817,7 +819,7 @@ class Legends(TempStore):
                    (HALF, u"half  way, and the row\tsays which half"))
             + u"\n\n" + table(HALF))
         problems, _, _, spellings = anchors.legends(files)
-        self.assertEqual((problems, spellings), (0, 1))
+        self.assertEqual((problems, spellings), (0, {WALKED: 1, HALF: 1}))
 
     def test_the_inline_register_is_a_legend_too(self):
         # Four sheets write the legend as one running sentence rather than as
@@ -829,7 +831,8 @@ class Legends(TempStore):
                             legend((WALKED, u"walked"), (HALF, u"half way"))
                             + u"\n\n" + table(HALF))
         problems, _, _, spellings = anchors.legends(files)
-        self.assertEqual((problems, spellings), (0, 1))
+        self.assertEqual((problems, spellings),
+                         (0, {WALKED: 1, HALF: 1, NOT_WALKED: 1}))
 
     def test_a_block_that_defines_one_mark_and_no_other_is_not_a_legend(self):
         # The rule that tells the two apart, asserted from the failing side:
@@ -837,7 +840,7 @@ class Legends(TempStore):
         # sheet in the store writes a one-entry legend, and the row below is
         # the reason the rule has to be this way round.
         files = self.sheets(u"- **%s** half way\n\n" % HALF + table(HALF))
-        self.assertEqual(anchors.legends(files), (1, 1, 1, 0))
+        self.assertEqual(anchors.legends(files), (1, 1, 1, {}))
 
     def test_a_bold_mark_in_a_sentence_of_prose_is_not_a_legend_entry(self):
         # `11-user-accounts.md` writes `was **half** for a long time` forty
@@ -848,7 +851,7 @@ class Legends(TempStore):
                             + u"the browser rather than the rule\n\n"
                             + table(WALKED, HALF))
         problems, _, _, spellings = anchors.legends(files)
-        self.assertEqual((problems, spellings), (0, 1))
+        self.assertEqual((problems, spellings), (0, {WALKED: 1, HALF: 1}))
 
     def test_a_legend_quoted_inside_a_fence_is_not_a_legend(self):
         files = self.sheets(u"```\n" + legend((WALKED, u"walked"), (HALF, u"half way"))
@@ -861,14 +864,14 @@ class Legends(TempStore):
     def test_a_mark_inside_a_fence_is_not_a_mark(self):
         files = self.sheets(legend((WALKED, u"walked")) + u"\n\n"
                             + u"```\n" + table(HALF) + u"\n```\n")
-        self.assertEqual(anchors.legends(files), (0, 1, 0, 0))
+        self.assertEqual(anchors.legends(files), (0, 1, 0, {}))
 
     def test_the_mark_column_is_found_from_the_header_and_not_assumed_last(self):
         # A sheet heads the column with a tick or with the Thai for *result*,
         # and can put it anywhere in the row (#141).
         files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n"
                             + table(HALF, head=THAI_HEAD, first=True))
-        self.assertEqual(anchors.legends(files), (0, 1, 1, 1))
+        self.assertEqual(anchors.legends(files), (0, 1, 1, {WALKED: 1, HALF: 1}))
 
     def test_a_table_with_no_mark_column_holds_no_marks(self):
         # A mutation table and a sweep table are tables in an acceptance sheet
@@ -876,13 +879,13 @@ class Legends(TempStore):
         # counting by the wrong property (#174).
         files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n"
                             + u"| mutant | kills |\n|---|---|\n| a | %s |\n" % HALF)
-        self.assertEqual(anchors.legends(files), (0, 1, 0, 1))
+        self.assertEqual(anchors.legends(files), (0, 1, 0, {WALKED: 1, HALF: 1}))
 
     def test_a_sheet_with_no_legend_and_no_mark_is_still_counted(self):
         # What it did not look at is part of the answer (#123): a sheet with
         # nothing to say about the marks is read and counted, not skipped.
         files = self.sheets(u"# a sheet with prose and nothing else\n")
-        self.assertEqual(anchors.legends(files), (0, 1, 0, 0))
+        self.assertEqual(anchors.legends(files), (0, 1, 0, {}))
 
     def test_a_one_mark_block_at_the_end_of_a_file_is_prose_and_not_a_legend(self):
         # The same rule as the bullet above, at the one place it is written
@@ -893,9 +896,58 @@ class Legends(TempStore):
         # is what makes the row carrying the mark a problem.
         files = self.sheets(table(HALF) + u"\nthe row was **%s** for a long time" % HALF)
         problems, read, marks, spellings = anchors.legends(files)
-        self.assertEqual((problems, read, marks, spellings), (1, 1, 1, 0))
+        self.assertEqual((problems, read, marks, spellings), (1, 1, 1, {}))
 
-    def test_the_real_sheets_define_the_half_mark_in_one_spelling(self):
+    def test_the_walked_mark_is_held_too(self):
+        # #157 held one mark of four and said so in its own docstring, which is
+        # where this ticket's deferral lived until it reached the tracker
+        # (#119). The three rows here are the same fixture as the half mark's,
+        # one per mark, because a loop over one mark answers *clean* to all
+        # three and no fixture of #157's could tell the difference.
+        files = self.sheets(
+            legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n" + table(WALKED),
+            legend((WALKED, u"walked by hand"), (HALF, u"half way"))
+            + u"\n\n" + table(WALKED))
+        problems, _, _, spellings = anchors.legends(files)
+        self.assertEqual((problems, spellings), (1, {WALKED: 2, HALF: 1}))
+
+    def test_the_gear_mark_is_held_too(self):
+        files = self.sheets(
+            legend((WALKED, u"walked"), (GEAR, u"the browser seam covers it"))
+            + u"\n\n" + table(GEAR),
+            legend((WALKED, u"walked"), (GEAR, u"the browser seam covers it, "
+                                              u"and the drawing is still a walk"))
+            + u"\n\n" + table(GEAR))
+        problems, _, _, spellings = anchors.legends(files)
+        self.assertEqual((problems, spellings), (1, {WALKED: 1, GEAR: 2}))
+
+    def test_the_not_walked_mark_is_held_too(self):
+        files = self.sheets(
+            legend((WALKED, u"walked"), (NOT_WALKED, u"not walked"))
+            + u"\n\n" + table(NOT_WALKED),
+            legend((WALKED, u"walked"), (NOT_WALKED, u"not walked - the browser "
+                                                     u"decides it and no request is made"))
+            + u"\n\n" + table(NOT_WALKED))
+        problems, _, _, spellings = anchors.legends(files)
+        self.assertEqual((problems, spellings), (1, {WALKED: 1, NOT_WALKED: 2}))
+
+    def test_one_sheet_outside_the_biggest_group_in_two_marks_is_two_problems(self):
+        # The arithmetic the four marks make reachable for the first time: the
+        # count is one problem per sheet *per mark*, so a sheet that words two
+        # entries its own way is two sheets to edit and not one. Summing the
+        # marks' counts and counting the sheets that differ at all disagree
+        # here, and this is the only row where they do.
+        agreed = legend((WALKED, u"walked"), (GEAR, u"the browser seam covers it"))
+        files = self.sheets(agreed + u"\n\n" + table(WALKED, GEAR),
+                            agreed + u"\n\n" + table(WALKED, GEAR),
+                            legend((WALKED, u"walked by hand"),
+                                   (GEAR, u"the browser seam covers it, and the "
+                                          u"drawing is still a walk"))
+                            + u"\n\n" + table(WALKED, GEAR))
+        problems, _, _, spellings = anchors.legends(files)
+        self.assertEqual((problems, spellings), (2, {WALKED: 2, GEAR: 2}))
+
+    def test_the_real_sheets_define_every_mark_in_one_spelling(self):
         # The counts are asserted beside the problems: a question that found no
         # legend at all would pass on problems alone, which is an assertion
         # that cannot fail (#50).
@@ -910,7 +962,28 @@ class Legends(TempStore):
         # written as first was 23, which is the count of *one* of the four
         # marks and so a floor borrowed from another population (#174).
         self.assertGreater(marks, read)
-        self.assertEqual(spellings, 1)
+        self.assertEqual(spellings, {WALKED: 1, HALF: 1, NOT_WALKED: 1, GEAR: 1})
+
+    def test_the_walked_definition_says_the_http_seam_counts(self):
+        # The one clause this question pins by its text, because its absence is
+        # the defect #194 is about: twenty-eight sheets wrote a sentence that
+        # was silent on what decides whether a row has left the walk queue, so
+        # a walker reading only their own sheet could not tell whether its
+        # marks meant a person had looked or `supertest` had. It is pinned here
+        # and the gear mark's appearance half is not, for a reason that is
+        # about this file and not about the claim: this one is writable in
+        # ASCII and the other is Thai, and a fixture whose text the console
+        # cannot print is a fixture nobody proofreads. The other half is held
+        # by the sheets' own text, by #194 and by `docs/lessons.md`.
+        sheets = sorted(glob.glob(os.path.join(
+            anchors.ROOT, "docs", "acceptance", "*.md")))
+        self.assertGreaterEqual(len(sheets), 39)
+        for path in sheets:
+            with io.open(path, encoding="utf-8") as handle:
+                block = anchors._legend(handle.read().split("\n"))
+            said = anchors._entry(block or [], WALKED)
+            self.assertIsNotNone(said, os.path.basename(path))
+            self.assertIn("seam HTTP", said, os.path.basename(path))
 
 
 if __name__ == "__main__":

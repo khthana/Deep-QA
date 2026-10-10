@@ -983,6 +983,13 @@ MARK_HEADS = (u"\u2713", u"\u0e1c\u0e25", WALKED)
 # A legend entry: the mark in bold, which is how all four registers write one.
 ENTRY = re.compile(u"\\*\\*([" + MARKS + u"])\\*\\*")
 GAP = re.compile(r"\s+")
+# The marks whose wording the sixth question holds, in the order a sheet lists
+# them, and a name per mark for the report - a report that printed the glyph
+# would crash in the console this file is read in, which is the same reason
+# the four values above are written as escapes.
+HELD = (WALKED, HALF, NOT_WALKED, GEAR)
+MARK_NAMES = {WALKED: "walked", HALF: "half", NOT_WALKED: "not walked",
+              GEAR: "gear"}
 
 
 def _mark_column(row):
@@ -1088,7 +1095,7 @@ def _entry(block, mark):
 
 
 def legends(files=None):
-    """(problems, sheets read, marks read, spellings of the half mark) - #157.
+    """(problems, sheets read, marks read, spellings per mark) - #157, #194.
 
     Two claims about `docs/acceptance/`, and they are different claims:
 
@@ -1098,21 +1105,37 @@ def legends(files=None):
       using a mark its own legend declares not to exist.  The claim is one way
       round on purpose: a legend may teach the whole vocabulary, and a mark it
       defines that no row carries is not a defect.
-    * **all of them define the half mark in one spelling.**  It had **ten**
-      on 8 October 2569, measured by grouping the sheets' own entries - the
-      ticket said two, which was a subtraction between two greps rather than a
-      count - and that is what made the walk queue uncountable from the sheets,
-      because the mark is the only one that names a queue and `CLAUDE.md` says
-      its kinds must be counted apart.
+    * **all of them define each of the four marks in one spelling.**  The
+      half mark had **ten** on 8 October 2569, measured by grouping the
+      sheets' own entries - the ticket said two, which was a subtraction
+      between two greps rather than a count - and that is what made the walk
+      queue uncountable from the sheets, because the mark is the only one that
+      names a queue and `CLAUDE.md` says its kinds must be counted apart.
+      #157 held that one mark and deferred the other three into this
+      docstring, where nobody could find the decision (#119); #194 measured
+      them at **four, eight and two** spellings, which is 36 sheets outside
+      the biggest group, and brought them in.  The count is one problem per
+      sheet **per mark**, so a sheet that words two entries its own way is two
+      sheets to edit - the arithmetic the four marks made reachable, and the
+      one place summing the marks and counting the differing sheets disagree.
 
     What it cannot measure, written down because a tool that cannot say what it
     did not look at is the same species as the hand-kept numbers it checks
-    (#123): whether the one spelling is the *right* one.  Thirty-eight sheets
+    (#123): whether the one spelling is the *right* one.  Thirty-nine sheets
     agreeing on a wrong sentence is green here, and the sentence itself is
     settled in the ticket, in `docs/lessons.md` and in `CLAUDE.md` - this
-    question holds the agreement, not the wording.  Nor does it read the other
-    three marks' wording, which diverges the same way and is a different
-    ticket's blast radius (#119).
+    question holds the agreement, not the wording.  One clause is pinned by
+    its text and it is pinned in `anchors_test.py` rather than here, with the
+    reason it is the only one.
+
+    Nor can it tell a second *definition* of a mark from a reason that is true
+    of one sheet only: `15-programs.md` wrote both of its own, and the two
+    read identically to this function.  #194 moved them out of the legend to a
+    dated note below it, which is where a claim about one sheet's rows belongs
+    (#54) - so what keeps that distinction is the convention and not this
+    question, and a sheet that puts such a reason back inside its legend is
+    reported as a second spelling, which is the direction the error should
+    fall in.
     """
     named = files is not None
     if not named:
@@ -1122,10 +1145,13 @@ def legends(files=None):
             # folding into *clean* would tell somebody with no sheets on disk
             # that their legends agree (#159).
             print("CANNOT ASK: no docs/acceptance directory, so no legend was read")
-            return 1, 0, 0, 0
+            # The fourth value counts spellings per mark everywhere else,
+            # so here it is an empty count and not a zero: a signature
+            # change reaches every one of its own returns (#140).
+            return 1, 0, 0, {}
         files = sorted(glob.glob(os.path.join(where, "*.md")))
     problems = read = marks = 0
-    spellings = {}
+    spellings = dict((mark, {}) for mark in HELD)
     silent = []
     for path in files:
         short = os.path.basename(path)
@@ -1142,28 +1168,42 @@ def legends(files=None):
             problems += 1
             print("UNDEFINED %s -> a row carries %r and the legend does not define it"
                   % (short, mark))
-        if HALF in defined:
-            spellings.setdefault(_entry(block, HALF), []).append(short)
-    if len(spellings) > 1:
-        # One problem per sheet outside the biggest group: the number that
-        # matters is how many sheets are left to edit, not how many spellings
-        # there are. The groups are all printed, biggest first, because which
-        # of them is the odd one out is the reader's to see and not this
-        # function's to decide.
-        groups = sorted(spellings.items(), key=lambda pair: (-len(pair[1]), pair[1][0]))
-        problems += sum(len(sheets) for _, sheets in groups[1:])
-        for said, sheets in groups:
-            print("SPELLING %d sheet(s) -> %r (%s)"
-                  % (len(sheets), (said or u"")[:60], ", ".join(sheets[:4])))
+        for mark in HELD:
+            if mark in defined:
+                spellings[mark].setdefault(_entry(block, mark), []).append(short)
+    counted = {}
+    for mark in HELD:
+        if not spellings[mark]:
+            continue
+        # One problem per sheet outside the biggest group, per mark: the number
+        # that matters is how many sheets are left to edit, not how many
+        # spellings there are. The groups are all printed, biggest first,
+        # because which of them is the odd one out is the reader's to see and
+        # not this function's to decide.
+        groups = sorted(spellings[mark].items(),
+                        key=lambda pair: (-len(pair[1]), pair[1][0]))
+        counted[mark] = len(groups)
+        if len(groups) > 1:
+            problems += sum(len(sheets) for _, sheets in groups[1:])
+            for said, sheets in groups:
+                print("SPELLING %s %d sheet(s) -> %r (%s)"
+                      % (MARK_NAMES[mark], len(sheets), (said or u"")[:60],
+                         ", ".join(sheets[:4])))
     if not named:
         if silent:
             print("legends: %d sheet(s) carry a mark and no legend at all: %s"
                   % (len(silent), ", ".join(silent)))
-        print("legends: reading %d sheets of docs/acceptance | marks %d | sheets "
-              "defining the half mark %d | spellings of it %d | problems %d"
-              % (read, marks, sum(len(sheets) for sheets in spellings.values()),
-                 len(spellings), problems))
-    return problems, read, marks, len(spellings)
+        print("legends: reading %d sheets of docs/acceptance | marks %d | %s | "
+              "problems %d"
+              % (read, marks,
+                 " | ".join("%s: %d sheet(s), %d spelling(s)"
+                            % (MARK_NAMES[mark],
+                               sum(len(sheets)
+                                   for sheets in spellings[mark].values()),
+                               counted[mark])
+                            for mark in HELD if mark in counted),
+                 problems))
+    return problems, read, marks, counted
 
 
 if __name__ == "__main__":
@@ -1173,8 +1213,9 @@ if __name__ == "__main__":
     unlisted = catalogue()[0]
     uncited = citations()[0]
     # Each name above holds one kind of fault; this one holds two - a mark no
-    # legend defines and a sheet spelling the half mark its own way - so it is
-    # named for the question rather than for a kind it does not have on its own.
+    # legend defines and a sheet spelling any of the four marks its own way -
+    # so it is named for the question rather than for a kind it does not have
+    # on its own.
     legend_faults = legends()[0]
     sys.exit(1 if (misanchored or undocumented or miscounted or unlisted or uncited
                    or legend_faults) else 0)

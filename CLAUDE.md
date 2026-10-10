@@ -189,6 +189,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   while its own entry called itself *the fourth value*. `python mutation/anchors.py` asks the first
   of those two — every mark a row carries is defined, in one spelling across the sheets — and cannot
   ask the second: the count sentence is a hand measurement with a date on it. (#157)
+- **A fact that is true of one sheet only reads exactly like a second definition when it sits
+  inside that sheet's legend** — no instrument can tell them apart, so the convention is what
+  keeps them apart: a one-sheet reason goes below the block with a date on it, because a legend
+  teaches the vocabulary and a one-sheet fact is a record (#54's split). And when a sweep decides
+  which wording all the sheets will carry, the plurality is not the answer — here the biggest
+  group was the **silent** one for two marks of three, and the meaning had been settled in this
+  file all along. (#194)
 - **A row can gain a walkable half the day a ticket lands** — a ☑ going back to ◐ is not always a
   regression; it can mean there is something on the screen to look at for the first time. (#105)
 - A sheet that hands a claim to another sheet has written a pointer a later ticket can delete;
@@ -424,6 +431,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   same hole, because the species is *is there a settle point between the request and the read*. The
   line that looks like it belongs to another helper may be the settle point, or may only share its
   name. (#174)
+- **A census built around a cause is read against its control group, not on its own** — the
+  population *where the cause is absent* has a rate too, and when that rate is the lower one the
+  cause was not the cause: ⚙ rows naming a drawn property were **commoner** on the sheets whose
+  legend already carried the appearance clause (96 of 312) than on the sheets that lacked it
+  (65 of 419), which says the wording never decided how a row got marked. (#194)
 - **Anything written for timing must not be able to decide anything.** (#52)
 - **A fixture builds its situation with a clock, and it has to be the clock the code decides
   with** — `current_date` is the server's `TimeZone` and the code read `Asia/Bangkok`, so two

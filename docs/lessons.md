@@ -8290,3 +8290,116 @@ matching every file on it answers half of *confirm before you change*. The rows 
 `37`:59, `38`:66, 67, 80, 104 and 196, `43`:67 and `45`:80 — each keeping its September record as
 a record and gaining a dated one beside it, because a dated walk table says what one measurement
 returned and not what the system is.
+
+## #194 — the three marks #157 left out, and the control that refuted the reason for sweeping them
+
+[#157](https://github.com/khthana/Deep-QA/issues/157) taught one mark of the four to the sixth
+question and left the other three where it found them, which was not nowhere: it wrote the
+deferral into `legends()`'s own docstring. That is the #119 shape — *a deferral written into prose
+and not into the tracker is a decision nobody can find* — and this ticket exists because somebody
+did find it, in the file, a month later.
+
+### Criterion 1, and the row the ticket's own table had counted once
+
+The ticket's table was 8 October's, at `f4da863`; re-measured at `75431b8` it reproduced exactly —
+☑ four spellings over 39 defining sheets, biggest group 28; ⚙ eight, biggest 15; ☐ two, biggest
+38; ◐ one, 38 sheets, which is #157's sentence untouched. What the table could not say is that the
+sheet outside the biggest group for ☐ is also outside it for ☑: `15-programs.md` appears once in a
+table whose rows are marks, and it was two of the thirty-six sheets to edit. The arithmetic the
+four marks made reachable for the first time is exactly that — **one problem per sheet per mark**,
+so summing the marks' counts and counting the sheets that differ at all give different numbers, and
+`anchors_test.py` has one row whose only job is to be the place where they disagree.
+
+### The agreed sentence is not the biggest group's
+
+The temptation with a census of spellings is to let the plurality win, and here the plurality was
+the silent one twice over: 28 sheets' ☑ sentence said nothing about which seam a walked row was
+walked at, and 25 sheets' ⚙ sentence said nothing about the appearance half staying a person's.
+Both meanings were already decided — `CLAUDE.md` §Marks on the sheets says *a row proved only at
+the HTTP seam is ☑*, and §Two test seams says appearance stays a hand-walked row — so the sweep
+took the two nine-and-one-sheet minorities that said so and wrote them into all thirty-nine. **A
+census of wordings is evidence about the wordings; which wording is right is not in it.**
+
+One clause is pinned by its text, `seam HTTP`, and it is pinned in `anchors_test.py` and not in
+`legends()`, with the reason written beside it: the ⚙ sentence's appearance half is Thai, and a
+fixture whose text the console cannot print is a fixture nobody proofreads. So the instrument
+holds the agreement, one row holds the clause whose absence was the defect, and the rest is held by
+the sheets, by this story and by `CLAUDE.md`.
+
+### A reason that is true of one sheet reads exactly like a second definition
+
+`15-programs.md` had written two of its own facts into its legend — that its ☑ rows were proved at
+HTTP and recorded under *ผลการเดินด้วย curl*, and that its ☐ row is browser-only with no request to
+check. Both are true, and to `legends()` they are indistinguishable from a sheet teaching the
+vocabulary differently. They moved below the legend as a dated note, which is where a claim about
+one sheet's rows belongs (#54's shape: the criteria say what the system is, a dated record says
+what one measurement returned). The question cannot tell the two apart and now says so in its
+docstring; a sheet that puts such a reason back inside its legend is reported as a second spelling,
+which is the direction the error should fall in.
+
+### The second counter was wrong, and the published instrument is what said so
+
+Criterion 4 needed the gear rows selected, so a second walk over the tables was written for it —
+and it answered 641 where the published figure is 731. Ninety rows, one per table: its header rule
+read *the next line is a separator* as a prefix test that an empty line satisfies, so every table's
+last row was counted as a header. The published counter had the rule right. **A counter that
+disagrees with the instrument the figures came from is the counter's bug until it is proved
+otherwise** — and the cheap way to prove it either way is to reconcile per sheet, where ninety
+differences spread one-per-table over thirty-nine sheets name the shape immediately.
+
+### Criterion 4: the read-back, and the control that refuted its premise
+
+The population is 1,244 rows — the ☑, ⚙ and ☐ of the 1,267 marks, the 23 ◐ belonging
+to the mark that names its own queue and to #157 — which nobody reads one by one, so the
+selection was written down: every ⚙ row whose criterion or expectation names a drawn property, by a list of fourteen
+words (colour, wording, menu, icon, order, position, spacing, bold, background, band, grey, size,
+placeholder, font). That is 161 of 731, and the 65 on sheets whose legend had been silent about
+appearance were read back by hand. None of them meant something else: the words were mentions
+rather than claims — a menu *pressed* on the way to a screen, a banner whose *text* is asserted,
+and more than once the criterion was *this is said in words and not by colour alone*, which is the
+opposite of an appearance claim. Three rows on `38-learning-detail-heatmap.md` do assert colour at
+the browser seam, and the colour was hand-walked twice (3 September and 10 October) in sibling ☑
+rows two lines below, which those ⚙ rows do not mention. That is an observation about the record
+and not a wrong mark - the marks are right and the walk happened - so it changed nothing here; it
+is put to the owner as a question, because adding a cross-reference to three rows is the kind of
+edit that moves a sheet's line numbers under the tickets that cite them, and a sheet's record is
+not rewritten to tidy it.
+
+The control is what made the half worth running. The fourteen sheets whose legend already carried
+the appearance clause were read by the same selection, and the rate there is *higher* — 96 hits of
+312 gear rows, against 65 of 419 where the clause was missing. **If the cause a census was built
+around is real, the control group should be quieter; when it is louder, the cause was not the
+cause.** The sheets' wording was never what decided how a row got marked, which is an argument for
+the sweep being cheap bookkeeping and against the ticket's own expectation that this half would be
+where the defects were.
+
+### The other two marks, and the rows that were right while their legend was wrong
+
+The first pass selected ⚙ rows only, which is one mark of the three the criterion names, and the ⚙
+control result is evidence about ⚙ wording and transfers nowhere. The walked mark's defect shape is
+the mirror image and lives on a different set of sheets: the nine whose own sentence said *เดินด้วย
+มือจบแล้ว* — walked by hand — where a row proved only at the HTTP seam would be a row claiming a
+person looked when nobody did. The twenty-eight silent sheets cannot hold that defect, because
+silence licenses either proof and the agreed sentence says so; that is the written reason for
+leaving their 323 walked rows out. On the eleven narrow sheets (the nine, plus `15`, whose own
+sentence said its rows were HTTP-proved, and `47`, which already carried the agreed wording) there
+are 176 walked rows, and **56 of them name a server proof with no hand walk** — every one saying
+*พิสูจน์ที่ seam HTTP* or naming `backend/test/…` on its own face. So those rows had been telling
+the truth their legend denied, and the defect was the sentence: a mark would have been the wrong
+thing to change.
+
+The ☐ rows are 14 in all, so they were read whole with no selection: each says *ยังไม่ได้ทดสอบ* with
+either no caller able to make the request or a ticket number — `47` row 5 names
+[#166](https://github.com/khthana/Deep-QA/issues/166), which is a ☐ pointing at a ticket and not a
+gap in the sheet (#97's rule). Nothing to change there either.
+
+### Criterion 5, and the figures that did not move
+
+Each branch was broken on its own and the reds read, not merely counted: holding one mark again
+(#157's shape) reddens 14 rows including the three written per mark; counting problems per spelling
+instead of per sheet reddens exactly the one row written for that arithmetic; reporting a mark only
+when it has more than one spelling reddens 13; and dropping the `seam HTTP` clause from one sheet's
+legend reddens exactly the two rows that read the real store. Marks were not touched: ☑ 499 · ⚙ 731
+· ◐ 23 · ☐ 14, the same 1,267 in 39 sheets that `anchors.py` prints. The ticket's own figures were
+⚙ 726 and ☐ 15 on 8 October; the five gear rows arrived with #141, #113 and #195 since, and the ☐
+is #103's row 5, walked since. Two sets of figures, said rather than hidden.
