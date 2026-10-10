@@ -8403,3 +8403,93 @@ legend reddens exactly the two rows that read the real store. Marks were not tou
 · ◐ 23 · ☐ 14, the same 1,267 in 39 sheets that `anchors.py` prints. The ticket's own figures were
 ⚙ 726 and ☐ 15 on 8 October; the five gear rows arrived with #141, #113 and #195 since, and the ☐
 is #103's row 5, walked since. Two sets of figures, said rather than hidden.
+
+## #155 — the fixture the spec file said did not exist
+
+[#81](https://github.com/khthana/Deep-QA/issues/81) had already carried half of
+this ticket away, and its own spec file said so: a switch now navigates to the
+first entry of the new grant's menu, the open screen unmounts, and the next one
+asks for its data under the new hat. So the first move was to re-measure the
+ticket, which is #66's rule and which paid again. **The ticket's table is dated
+23 September 2569, six days before #81 landed, and two of its four rows now read
+differently** — the URL does change, and the stale table is gone. Measured on
+10 October 2569, the exact sequence it describes (`course-in-program`, committee
+→ teacher) navigates to `/teacher/teacherDashboard`, draws none of the old
+screen's rows, and asks `/api/program-subjects` nothing.
+
+What is left is one case, and `81a`'s docstring had already named it: the switch
+whose landing is the address the person is already standing on. `landingPath` is
+keyed on `role_id` alone, so two grants of one role code at different scopes
+share a landing; `navigate` then goes where the router already is, nothing
+remounts, nothing is asked, and the table keeps the other scope's rows while the
+picker and the server both say the new grant. It is two presses from anywhere:
+the first switch lands you on the shared landing, and the second is stale.
+
+### The sentence that said it could not be a row
+
+`81a`'s docstring did not only name the residue. It said the residue could not
+be measured, because **no seeded account has the shape** — one role code held
+twice at two scopes. That sentence is true about the seed and says nothing about
+the system: #12's grants route makes the shape at runtime, over HTTP, as
+`admin@`. `155a` posts the second grant in `beforeAll` and deletes it in
+`afterAll`, and the seed was never touched, so the question *may I grow the
+seed* — which is the owner's — never had to be asked.
+
+**A claim that a situation has no fixture is a claim about the seed. Ask whether
+a route can build it at runtime before believing it**, and the sentence to
+distrust is the one written in a spec file, because it reads like a measurement
+and is usually a memory of one.
+
+### The decision was the owner's, and it had two halves
+
+`docs/06` §Out of Scope settles who answers a ticket like this, so what went to
+the owner was a narrowed choice, measured rather than argued: re-read always, or
+re-read only where the address does not change. The answer on 10 October 2569
+was the second, which is why there are **two** rows and not one. Row 1 is the
+re-read. Row 2 is the half that says *only there*: the screen a moving switch is
+leaving is not re-read on its way out. Keying the outlet on the acting grant
+alone — the cheaper-looking shape — remounts the screen being left, fires its
+load under a hat that may not read it, and draws the refusal for as long as the
+navigation takes to land. Row 2 is what refuses it, and `alwaysreread` is that
+proposal made to run (#48).
+
+The price was read off the mount points before choosing (#77): one `<Outlet />`
+in `Mainpage.js` serves both route subtrees, so the fix is three small sites —
+`RoleDropdown` decides, because it is the only place that knows both the landing
+and where the router is standing; `Mainpage` holds the key; `Navbar` passes the
+callback through — and not thirty-six pages.
+
+### Three lessons met again, in the order they cost time
+
+**#181.** Row 1's first red was replaced by its own teardown. The row ran out the
+60-second timeout, Playwright closed the test context, and the `finally` that
+revoked the grant threw *Target page, context or browser has been closed* over
+the assertion that had actually failed. The repair is the one §#181 wrote: the
+fixture moved to `beforeAll`/`afterAll` on a worker-scoped request context,
+which outlives a timed-out row, and a cleanup that fails carries its own message
+to a second `afterAll` instead of speaking over the row.
+
+**#139.** `noreread` then killed row 1 at a `waitForResponse` timeout rather than
+at its claim — a read of something a mutant stops from existing is a wait, not
+an assertion. The expected list now comes from the server through
+`page.request.get`, below the seam the row is about, and the mutant dies on
+`.toEqual(owed)` with both lists printed.
+
+**#107.** The fix split `navigate(landingPath(…) ?? '/main', { replace: true })`
+into a `landing` constant and a `navigate(landing, …)`, which left #81's
+`staysput` anchored on a line that no longer exists. `python mutation/anchors.py`
+said so in seconds while the ticket was being finished, which is where it
+belongs. Re-aimed, with the date and the reason written into the mutant file,
+and then re-swept, because an anchor check says a mutant no longer applies and
+only a sweep says it no longer proves anything.
+
+### What the re-sweep found, which is a fact and not an argument
+
+The re-aimed `staysput` still kills both of `81a`'s rows — and it kills `155a`
+row 2 as well, leaving row 1 standing. That is not a defect in either row.
+**Row 2's situation is #81's navigation**: a switch that *moves* is the thing
+#81 built, so a mutant that takes the navigation away removes the situation row
+2 is about, and the kill is the proof that row 2 really arrives there (#191's
+framing, one ticket along). Row 1 stands because its landing equals its address,
+which is the one case `staysput` cannot change. The sheet says this; nobody has
+to re-derive it from the two files.

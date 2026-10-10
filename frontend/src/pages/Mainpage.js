@@ -138,6 +138,25 @@ export default function MainPage() {
   const [breadcrumbItem, setBreadcrumbItem] = useState([])
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [sectionLabel, setSectionLabel] = useState(null)
+  /**
+   * What the open screen is keyed on - #155.
+   *
+   * A switch that moves carries the open screen away with it and the next one
+   * mounts asking for its data under the new grant. A switch that lands where
+   * the router already is moves nothing, and the screen would go on showing
+   * another scope's rows under a picker that now reads this one. `RoleDropdown`
+   * is where that case is told apart, because it is where the landing is
+   * resolved; this is the generation the screen is drawn at, and raising it
+   * is what remounts it. A remount and not a re-fetch: what the screen was
+   * holding - a filter, a page, a field typed and not saved - goes with it,
+   * which is wider than #155's option 1 and is the price of keying one
+   * outlet instead of fifteen loads.
+   *
+   * On the outlet rather than on the shell, because the shell is what says
+   * which hat is on: remounting it would take the picker, the sidebar and the
+   * breadcrumb down with the screen.
+   */
+  const [screenEpoch, setScreenEpoch] = useState(0)
   const [deepLabel, setDeepLabel] = useState(null)
   const [alert, setAlert] = useState({
     open: false,
@@ -339,7 +358,10 @@ export default function MainPage() {
     <ContentMotionDIV className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8FAFC]">
       {/* 1. Navbar */}
       <div className="fixed left-0 top-0 z-[60] w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
-        <Navber setAlert={setAlert} />
+        <Navber
+          setAlert={setAlert}
+          onStayedPut={() => setScreenEpoch(epoch => epoch + 1)}
+        />
       </div>
 
       <div className="relative flex h-full w-full pt-[64px]">
@@ -383,7 +405,7 @@ export default function MainPage() {
           {/* Page Content: พื้นที่แสดงผลหลัก */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 lg:px-8">
             <div className="animate-in fade-in mx-auto w-full max-w-[1920px] duration-500">
-              <Outlet />
+              <Outlet key={screenEpoch} />
             </div>
           </div>
         </main>

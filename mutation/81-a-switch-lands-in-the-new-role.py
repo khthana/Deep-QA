@@ -27,6 +27,10 @@
 (`stalelabel`) — **ห้ามกวาดพร้อมกัน** (#125) แฟ้มรับผลคือ
 `docs/acceptance/10-application-shell.md`
 
+## สมอย้ายเมื่อ 10 ต.ค. 2569 (#155)
+
+#155 แยกบรรทัดนั้นเป็นสองบรรทัด เพราะปลายทางต้องถูกอ่านอีกครั้งเพื่อเทียบกับที่ที่ router ยืน — สมอของ `staysput` จึงเปลี่ยนเป็น`navigate(landing, { replace: true })` ข้ออ้างของมันไม่เปลี่ยน คือ *การสลับพาไปที่เมนูของหมวกใบใหม่* และกวาดซ้ำหลังเล็งใหม่แล้ว (การตรวจสมอบอกว่ามันไม่ตรงแล้ว มีแต่การกวาดที่บอกว่ามันยังพิสูจน์อะไรอยู่ — #107)
+
 ## คำสั่ง
 
     python mutation/81-a-switch-lands-in-the-new-role.py save
@@ -48,7 +52,7 @@ MUTANTS = {
     # กว่าการลบทั้งย่อหน้า
     'staysput': (
         'dropdown',
-        "      navigate(landingPath(next.acting.role_id) ?? '/main', { replace: true })\n",
+        "      navigate(landing, { replace: true })\n",
         '',
     ),
 }

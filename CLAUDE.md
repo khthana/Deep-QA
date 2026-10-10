@@ -53,8 +53,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 ### A ticket's diagnosis
 
 - **A ticket's *What is wrong* is a claim from the day it was written; measure it before you fix
-  it.** It has been wrong twelve ways: aged (#66, #111, #55), never true (#102), generalised from
-  the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
+  it.** It has been wrong twelve ways: aged (#66, #111, #55, #155), never true (#102), generalised
+  from the symptom (#122) or from the fix (#67), a mechanism that does not exist (#101), already
   decided the other way in the file it proposes to change (#48), filed under the wrong half of
   its own table (#133), a key's name read as its text (#127) or a parameter's name read as a
   claim about what the caller puts in it (#185), an inference drawn from a
@@ -478,6 +478,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   assert what is still there, or it is measuring the other refusal that reaches the same status
   code. Between two fixture shapes, take the one the code already draws and nothing has ever made
   it draw. (#48)
+- **A claim that a situation has no fixture is a claim about the seed** — ask whether a route
+  can build it at runtime before believing it, and distrust that sentence most in a spec file,
+  where it reads like a measurement and is usually the memory of one. (#155)
 - **A defect that survived green suites usually survived because no fixture could express it**,
   and the fix is a fixture. A fixture built inside one test file is one no other file has; a
   seeded role needs the role's distinguishing property; ask a question of the rule, not of the

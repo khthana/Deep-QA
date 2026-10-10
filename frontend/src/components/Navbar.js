@@ -9,7 +9,7 @@ import ContentMotionDIV from './ContentMotionDIV'
 import { AnimatePresence } from 'framer-motion'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 
-function Navber({ setAlert }) {
+function Navber({ setAlert, onStayedPut }) {
   const { profile, photo, logout, changePassword, reload } = useAuth()
   const [username, setUsername] = useState('')
   const [isOpen, setIsOpen] = useState(false) // State สำหรับเปิด/ปิดเมนู
@@ -235,7 +235,7 @@ function Navber({ setAlert }) {
         </div>
 
         <div className="flex  justify-center">
-          <RoleDropdown setAlert={setAlert} />
+          <RoleDropdown setAlert={setAlert} onStayedPut={onStayedPut} />
         </div>
 
         {/* --- ฝั่งขวา: User Profile --- */}

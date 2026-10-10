@@ -72,26 +72,36 @@ const {
  * changed only in the way the fix forced - it used to reach its second answer by
  * reloading, which worked only while a switch left the address alone.
  *
- * ## What this fix does not reach, which is #155's
+ * ## What this fix does not reach, which was #155's - closed 10 October 2569
  *
  * #155 is the *data* half of the same press: the screen standing open goes on
  * showing what the old grant fetched. It predicted that navigating would carry
  * most of it away, leaving the case of *a screen the new grant also reaches*,
  * where it expected no navigation at all. That is not the residue, because this
- * navigates unconditionally: a shared screen is left too. What survives is the
+ * navigates unconditionally: a shared screen is left too. What survived is the
  * narrower case where the address does not change - the person is already
  * standing on `landingPath` of the grant they are putting on, so `navigate` goes
- * where the router already is, nothing remounts and nothing re-reads. Its
- * structural sibling is two grants of the same role code at different scopes,
- * since `landingPath` is keyed by `role_id` alone; **no seeded account has that
- * shape** (every account in `db/seed.js` holding two grants holds two different
- * codes), so it is a note and not a row.
+ * where the router already is and nothing remounts. Its structural sibling is
+ * two grants of the same role code at different scopes, since `landingPath` is
+ * keyed by `role_id` alone.
  *
- * Which means #155's own option 2 - *navigate, and let the mount do it* - is in
- * effect everywhere else now, as a consequence of #81 rather than as an answer to
- * #155. What a screen should do when the grant under it changes is still the
- * spec owner's to settle (`docs/06` §Out of Scope), and what is left to settle
- * is the two cases above.
+ * **The three sentences that used to stand here have all expired, and they are
+ * the reason this paragraph is rewritten rather than deleted.** They said the
+ * shape *no seeded account has* could not be a row; that nothing re-reads; and
+ * that what a screen should do when the grant under it changes was still the
+ * owner's to settle. Measured and answered on 10 October 2569: #12's grants
+ * route builds the shape at runtime, so `155a` is the row and the seed was not
+ * touched; the owner settled it - *re-read, but only where the address does not
+ * change*; and `frontend/src/pages/Mainpage.js` keys the outlet on a number
+ * that `RoleDropdown` raises in exactly that case. A claim that a situation has
+ * no fixture is a claim about the seed, and this file is where that claim was
+ * written (`CLAUDE.md` §Tests and fixtures, #155).
+ *
+ * #155's own option 2 - *navigate, and let the mount do it* - is in effect
+ * everywhere else, as a consequence of #81 rather than as an answer to #155,
+ * and `155a`'s second row is what holds it there: the screen a moving switch is
+ * leaving is not re-read on its way out. `staysput` below kills that row too,
+ * because the navigation it removes is the situation that row is about.
  */
 
 let release;

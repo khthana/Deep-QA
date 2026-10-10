@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 
 import { useAuth } from '../context/AuthContext'
@@ -30,13 +30,24 @@ import ContentMotionDIV from './ContentMotionDIV'
  * this too, and the navigation lives here rather than in `switchRole` because
  * `AuthProvider` is mounted outside the `Router` (`index.js`) and has no
  * `useNavigate` to call.
+ *
+ * And it says when that navigation moved nobody, which is #155. Where the
+ * landing is the screen already open - two grants of one role code at different
+ * scopes always, since `landingPath` is keyed on `role_id` alone - `navigate`
+ * goes where the router already is, so nothing unmounts and the open screen
+ * goes on showing the rows it fetched under the hat just taken off. The owner
+ * settled on 10 October 2569 that the screen is re-read in exactly that case
+ * and in no other, so the decision is made here, where both halves are known:
+ * the landing this switch is about, and where the router stands. `onStayedPut`
+ * is what `Mainpage` keys the open screen on.
  */
-function RoleDropdown({ setAlert }) {
+function RoleDropdown({ setAlert, onStayedPut }) {
   const { roles, acting, switchRole } = useAuth()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const dropdownRef = useRef(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -74,7 +85,21 @@ function RoleDropdown({ setAlert }) {
       // server has just confirmed the grant is held, so reaching it means the
       // table and the role list have come apart - `/main` is then somewhere to
       // stand rather than a guess at what they meant.
-      navigate(landingPath(next.acting.role_id) ?? '/main', { replace: true })
+      const landing = landingPath(next.acting.role_id) ?? '/main'
+      navigate(landing, { replace: true })
+      // #155. Read before the navigation is believed to have moved anything:
+      // `location` is this render's, which is where the router was when the
+      // press happened, and a landing equal to it is a navigation that changes
+      // nothing. Announcing it unconditionally instead - keying the open screen
+      // on the acting grant - would remount the screen being left on the way
+      // out, firing its load under a hat that may not read it.
+      // What it cannot tell apart: a navigation that happened while the
+      // switch was in flight - the shell moving on a 401, say. `location`
+      // is then the address of a render that has been left, and the
+      // comparison can say *stayed put* about a press that moved. The cost
+      // is one remount of a screen that has just mounted, which is why
+      // this is written down rather than guarded.
+      if (landing === location.pathname) onStayedPut?.()
     } catch (err) {
       // A grant revoked between the page loading and this click comes back
       // 403 roleNotHeld. Without this the promise rejects, the picker closes
