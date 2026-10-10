@@ -240,6 +240,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   first, leave the second and add the note naming which of its rows would read differently today. A
   global replace over one file does both. (#54)
 
+- **A net for a premise has nothing on the sheet to mark** — a row that counts what makes a
+  claim unreachable is not itself a criterion of that sheet, so adding a row to have somewhere
+  to put a mark writes the sheet a claim its ticket never made. The citation goes inside the
+  ☐ cell of the claims it holds up, beside the date and the condition that would re-date them.
+  `47a` row 4 is not this shape: that one *is* a criterion of #47, which is why it can hold a
+  ☑. (#141)
+
 ### Mutants and sweeps
 
 - Read a sweep five ways: a **MISS** means the anchor moved; a **survivor** may be a claim never

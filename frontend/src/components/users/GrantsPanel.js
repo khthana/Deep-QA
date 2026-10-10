@@ -77,8 +77,8 @@ export default function GrantsPanel({ user, onError }) {
   // opened after this one is closed and this panel unmounted. The flag is
   // here for the rule rather than for a defect anybody has seen - the day
   // the screen offers a roll beside the form, it is what stops one person's
-  // roles being drawn under another's name. The sheet says ยังไม่ได้ทดสอบ
-  // rather than ไม่ต้องมี.
+  // roles being drawn under another's name. `141c` row 4 counts the controls
+  // that would make it reachable; the sheet says ยังไม่ได้ทดสอบ, not ไม่ต้องมี.
   const load = useCallback(async isCurrent => {
     try {
       const { roles } = await listGrants(user.user_id)

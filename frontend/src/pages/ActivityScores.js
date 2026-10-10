@@ -173,8 +173,8 @@ export default function ActivityScores() {
    * the whole time a file is uploading. It asks `onScreen` the same question
    * instead. `frontend/src/pages/Students.js` carries the rule;
    * `133a-superseded-answer-on-one-screen.spec.js` carries the row for the
-   * picker, and #34's sheet says ยังไม่ได้ทดสอบ for the import path, which no
-   * row can build without writing a class's marks.
+   * picker, and `141c` row 3 the row for the import path — not the import's
+   * own answer but the re-read it fires, superseded while the picker moves.
    */
   const load = useCallback(async isCurrent => {
     if (!activityId) return

@@ -8078,3 +8078,103 @@ did the first draft of **this ticket's own record**, which said the 9mm page doe
 twenty-nine outcomes. The arithmetic is `92 + 9n > 297`, which is 23. Three wrong numbers about one
 clamp, written by three readings of a measurement that was right each time. The rule is #165's, and
 the cheap part of it is that a page width is a sum anybody can add up before writing it down.
+
+## #141 (the half another guard hid) — the reason's next sentence said where to walk
+
+Four of #141's nineteen claims were left after the asymmetric way in, and each said on its
+sheet why it could not be reached. Three of the four were `GrantsPanel`'s `load`, `add` and
+`remove`; the fourth was `ActivityScores`' `onImported` half. The ticket's own rule applies to
+both groups — *a ticket's reason for being untestable is a claim like its numbers* — and this
+round it was wrong once more, for the third time in this ticket, in the way that is hardest to
+see: the sentence that refutes it was **already written on the sheet, in the same paragraph**.
+
+### Criterion 1 first, and this time the list had not moved
+
+`frontend/scripts/superseded-answers.js` at HEAD, and the same census run against the tree of
+the commit the 5 October register was written at (`git archive` into a scratch directory, with
+`NODE_PATH` pointing at `frontend/node_modules`), agreed line for line: the same sixteen sites,
+no new drawing point, `problems 0` both runs. The register's arithmetic was therefore the thing
+to read, not re-derive.
+
+### The reason was right about the half it named
+
+`34`'s sheet had said *ยังไม่ได้ทดสอบ* about `onImported` since #133, and on 1 October it was
+re-measured and the reason **rewritten**: #179 had given `ImportPanel` a `target` of
+`` `${sectionId}/${activityId}` ``, so an import whose picker has moved is refused by the panel
+and `onImported` is never called with anything to refuse. That is exactly right. It is also the
+reason I had read, and stopped at.
+
+The next clause of that same note said the rest of it: *what it still answers alone is the answer
+of the **re-read** that `load` fires after a successful import, superseded on the way*. That is a
+different sequence and nobody had walked it — let the import succeed with the picker unmoved, so
+`onImported` does fire; hold the re-read it fires; move the picker; release. There
+`onScreen.current === activityId` is the only thing standing.
+
+So the generalisation is not about guards at all. **A reason that explains why one way in cannot
+reach a guard has said nothing about the others, and the sheet that wrote the reason carefully is
+the sheet most likely to have written the other way in down beside it.** #179's rule — *a new
+guard upstream rewrites what a downstream guard's untested claim is, it does not prove it* — is
+what produced that honest note; reading only its first half is what wasted five days.
+
+### The mutant that had survived was the finding
+
+A single-edit mutant removing that comparison had been written first and **survived all eight
+rows**, which looked like #47's species: a claim the harness cannot put at risk. It was not. It
+was #118's: *a mutant that survives where its own file predicted a kill has found a row that does
+not exist yet — the fix is the row, not the mutant.* The same edit, renamed
+`141:importrereadstalewins`, now kills exactly one row of nine, at the `toEqual`: the picker reads
+`5`, the กิจกรรม it was moved to, while the heading above the grid is drawn from the superseded
+answer. #133's shape, with nothing else red.
+
+Two guards stacked on one symptom were then separated by three runs over the same two files, which
+is the grid #148/#149 asks for rather than an argument about which one holds the claim:
+
+| mutant | result | rows that died |
+|---|---|---|
+| `141:importrereadstalewins` — the `onImported` flag alone | 1 failed, 8 passed | `141c` row 3 |
+| `179:drawsasupersededsuccess` — the panel's flag alone | 2 failed, 7 passed | `141c` row 2 (the `superseded` half only) · `179a` item 4 |
+| `141:importanswerwinsthepicker` — both | 3 failed, 6 passed | `141c` row 2 (both halves) · row 3 · `179a` item 4 |
+
+The pair mutant is kept because it is the measurement that says the two flags hold one half each;
+without it, the single one looks like a mutant on code nothing needs.
+
+### The three that stay open got a row for the premise, not for the claim
+
+`GrantsPanel`'s three are still unreachable, and the reason is `Users.js`: the form replaces the
+table, so a second account cannot be opened without the panel unmounting. That sentence lived in
+two comments — the component's and `e2e/support/grants-panel.js`' — and *explaining a gap in prose
+is not the same as marking it* (#50). Row 4 counts the controls rather than reading one (#164):
+with an editor up, there are zero แก้ไข buttons, zero accounts tables and zero rows for that
+account, read green first in the list the editor was opened from so that a locator which can never
+match would fail there instead of passing (#171).
+
+That row has no mutant and says so. Making it red means drawing the table beside the form, which
+is a JSX restructure and not a string swap, so #48's *the mutant to write is the declined proposal
+made to run* cannot be built with this harness.
+
+**And the row carries no mark at all, which is not the same as `47a` row 4.** The first draft of
+this story, of `57-pager.md`'s register and of the mutation file's header all said it was ☑ — the
+shape of `47a` row 4, and both review axes caught it: `47a` row 4 is a criterion of #47, so it has
+a row on the sheet and that row holds a ☑. This premise is not a criterion of #12 — nothing on that
+sheet states *the screen cannot open a second account while the panel is up*, and inventing a
+criterion row to hold a mark would be writing the sheet a claim its ticket never made. So **a net
+for a premise has nothing on the sheet to mark**, and its citation goes inside the ☐ cell of the
+claims it holds up, which is where a reader of that gap will look. The mark on the claims stays ☐,
+with a date and the condition that would re-date it.
+
+Two small instrument notes from the same afternoon. `listTable` in `users-screen.js` is
+`table.first()`, and the editor draws two tables of its own, so a count taken through it reads 1 on
+exactly the screen row 4 is about — the locator had to be scoped by the one column header the
+accounts list carries. And a file-level `beforeEach` that signs in as a teacher makes an
+administrator's row time out inside `signIn`, looking for a form the shell has already replaced;
+the fix is a `test.describe` that owns the hook, with the module's helpers left outside it.
+
+### What closed, and what did not
+
+Sixteen of the nineteen claims now have a row — one on 2 October, three on 3 October, eleven
+on 5 October and this one. The register in `57-pager.md` was recounted with
+the instrument rather than adjusted — ☑ 498 · ⚙ 731 · ◐ 23 · ☐ 15, 1,267 rows in 39 sheets, where
+5 October had recorded ☑ 499 · ⚙ 724 · ◐ 23 · ☐ 15 and 1,261. The difference belongs to #103 and
+#195, which landed in between: *a hand-kept number in a file that grows every ticket is already
+wrong*, and the only safe move is to run the counter, not to add and subtract from the old figure.
+Criterion 4 therefore holds the ticket open on three claims, which is what it is for.
