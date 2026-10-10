@@ -205,11 +205,11 @@ test('row 2: a cell’s colour is the band its number is in, across all five', a
   // a permuted map through — five colours, each on the wrong band, which is a
   // heatmap that is exactly as wrong as one painted in a single colour.
   expect(shades).toEqual([
-    'bg-red-100',
-    'bg-amber-100',
-    'bg-yellow-50',
-    'bg-lime-100',
-    'bg-emerald-100',
+    'bg-red-400',
+    'bg-amber-400',
+    'bg-yellow-400',
+    'bg-lime-400',
+    'bg-emerald-400',
   ]);
 });
 

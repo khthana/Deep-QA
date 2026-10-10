@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import BandLegend from '../components/results/BandLegend'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
-import { BANDS, score } from '../lib/bands'
+import { BANDS, FLAG, score } from '../lib/bands'
 import { OUTCOME_TYPES } from '../lib/outcomes'
 import {
   IntakeSelect,
@@ -360,7 +360,7 @@ export default function ProgramLevelCompare() {
                                   by people who cannot tell two shades of a
                                   ramp apart. */}
                               {cell.passed === false && (
-                                <span className="ml-1 font-bold">!</span>
+                                <span className={FLAG}>!</span>
                               )}
                             </span>
                           </td>

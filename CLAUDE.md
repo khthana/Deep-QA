@@ -612,6 +612,19 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - A number copied from a sibling screen is a decision, not an inheritance. (#45)
 - An accessibility fix does not get to change layout on the way past, and a rule about layout is
   checked with numbers. (#111, #122)
+- **A contrast ratio is a claim about a glyph against its background, not about whether the glyph
+  is read as a separate signal** — a mark the same colour as the figure beside it is read as part
+  of the figure, and 5.84 passed AA while the person said it had sunk. The repair is a colour the
+  figure does not have, paid for with a halo rather than with the ratio. And **raising a
+  background is a change to everything drawn on it**, so the census is the mark, not the screen
+  the walk was on — and the census is keyed on the **mechanism**, which here is *a mark drawn
+  over a `BANDS` cell* and not the flag's name: three screens write `flagged` and the fourth
+  writes `passed === false`, so counting by the name found three of four. (#113)
+- **A condition written onto a premise is a claim about the population the premise was drawn
+  from** — dating it protects it against the future and says nothing about the sibling already
+  outside it. The same hour's census found a fourth screen whose mark is a *share of students*
+  while its colour is a *mean*, so there the carefully dated *it only lands on band 1* was not
+  conditionally true but false that day. (#113)
 - **Where a dialog's state lives decides whether closing it forgets.** A form written inside a
   component that never unmounts has no lifecycle to clear it, so every way out clears it by hand —
   and on the way **out**, because an effect keyed on the flag the box is drawn from runs after the
@@ -652,6 +665,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 
 - **A walk asks whether what was drawn can be read; it cannot ask whether what should exist is all
   there.** (#50)
+- **A walk step written for another row can refute the premise of the fix you made ten minutes
+  ago** — its whole job is to move the thing your premise assumed still, which is why the sheet's
+  own old note had said so in September. Keep the behaviour if the configuration is not shipped,
+  but write the condition and its date beside the constant — and then ask which screens the
+  condition was drawn from, because on this ticket one of four was already outside it. (#113)
 - **Every automated row asks whether a control works; only a person asks whether it is there to be
   found** — or whether responding was worth offering. (#45, #40)
 - Not drawing a thing is not the same as not leaving a hole where it was, and drawing a thing is

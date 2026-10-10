@@ -8178,3 +8178,115 @@ the instrument rather than adjusted — ☑ 498 · ⚙ 731 · ◐ 23 · ☐ 15, 
 #195, which landed in between: *a hand-kept number in a file that grows every ticket is already
 wrong*, and the only safe move is to run the counter, not to add and subtract from the old figure.
 Criterion 4 therefore holds the ticket open on three claims, which is what it is for.
+
+## #113 — the level the ticket proposed failed the ticket's own number, and the mark on top sank
+
+#37's walk had ended with a sentence rather than a defect: *สีมันออกไปทางอ่อนไปหน่อย*, measured
+that day as backgrounds 1.03 to 1.22 times the page's white. #113 turned it into two numbers — a
+background at least 1.5 against white and text at least 4.5 on it — and proposed a level: *200*.
+
+**The ticket's proposed level failed the ticket's own first number.** Tailwind's 200 measures 1.16
+to 1.45 vsWhite, so four of the five bands would still have been under the line the same ticket
+asked for. This is `#103`'s rule one step along: a ticket's cost line is a claim about the shape
+its author pictured, and so is a ticket's *parameter*. 400 is the lowest uniform level where every
+band passes both numbers — 1.51 to 2.77 against white, 5.06 to 5.84 for the text — and it was
+chosen by measuring the ramp at each level rather than by reading the palette table, which is what
+the ticket asked for in the words *วัดจากหน้าจอจริง ไม่ใช่จากตาราง Tailwind*. Band 1 reads at
+`text-red-950` and not at 900 for the same reason and not as an exception: 900 on `bg-red-400` is
+3.62, under AA. The criterion is the contrast number, not the digit on the token.
+
+### What the re-walk found that the arithmetic could not
+
+The ticket's sixth criterion is the expensive one — the walked rows of #37, #38, #42, #43 and #45
+record *สิ่งที่ตาคนเห็นในวันนั้น*, and a palette change makes those records false. Re-walking them is
+not bookkeeping; it is where this ticket earned its only finding.
+
+Row 66 of `38` builds nine scores on the nine BR-20 edges and reads the colour and the `!` of each.
+Re-walked on 10 October 2569, every edge fell in the band the arithmetic predicted — and the person
+looking at it said *`!` จมไปกับพื้น*. **The mark's contrast had not failed; it was 5.84, which passes AA.**
+What had failed was that the mark was the same colour as the figure beside it, so on a background
+strong enough to carry both it read as part of the figure rather than as a second signal. A ratio
+is a claim about a glyph against its background. It says nothing about whether the glyph is read
+as a separate thing.
+
+The repair is a colour the figure does not have. White is 2.77 on `bg-red-400` and would have
+failed the contrast the ticket exists to raise, so the halo pays for it: `text-red-950` immediately
+around every stroke is the contrast the eye actually reads a glyph against. A chip was built and
+looked at on the same walk and read as a second control inside the cell, which is why the shipped
+answer is a shadow.
+
+**And the mark is drawn by four screens, not by the one the walk was on.** `LearningDetails`,
+`ProgramLevelAllStudents` and `ProgramLevelIndividual` each wrote `<span className="ml-1
+font-bold">!</span>` over a `BANDS` cell, so all three sank the same day and for one reason.
+**The first count was three, and it was wrong** — a review found `ProgramLevelCompare` drawing
+the same mark over the same cell from `passed === false` rather than from `flagged`, so a
+census that looks for the flag's name cannot see it. The species is *a mark drawn over a
+`BANDS` cell*; counting by the name is counting by what three of the four happen to call it,
+which is #174's rule arriving one ticket later with the same shape. Sheet `44` carries no row
+about colour or about the mark, so nothing on a sheet went false — which is why the fourth
+screen was invisible to the re-walk as well as to the grep. Raising
+a background is a change to everything drawn on it, and the census is the mark, not the screen. The
+look moved to `FLAG` in `lib/bands.js`, where the file's own argument for `BANDS` already applies
+— and the four uses stay four claims, because each screen's walk is what asserts its own.
+
+### The walk step that refuted the fix's premise
+
+The first draft of `FLAG`'s docstring said the shadow's colour was safe because *the figure is
+flagged only where it is below the pass line, which is band 1*. Row 80 of the same sheet then asked
+for `BAND_FLOORS` to be moved to `[0, 2.5, 3.5, 4.0, 4.8]` and the server restarted — a step
+written three tickets earlier to prove the legend reads the rule rather than a copy in the browser.
+With the floors moved, the mark came up on `bg-amber-400`, where a dark red halo is worth much less
+than it is on red, **and the sentence written twenty minutes earlier was false.**
+
+`38`'s own notes had said so since September, under the heading *ธงกับแถบเป็นเส้นเดียวกันโดยบังเอิญ*:
+the flag follows `PASS` and the colour follows `BAND_FLOORS[1]`, two constants that are equal in
+the delivered configuration and nothing makes them equal, which is [#110]. #141's rule is the
+general one — a conclusion that is right for the wrong reason expires on the wrong day — and what
+#113 adds is where such a premise gets caught: **a walk step written for another row can refute the
+premise of the fix you made ten minutes ago, because its whole job is to move the thing your
+premise assumed still.** The configuration is not one this installation ships, so the shadow was
+kept after being looked at there; what changed is that the condition and its date are now written
+in the docstring, beside the constant, rather than being a thing the author happened to know.
+That paragraph did not survive the afternoon either, for a reason the next section is about.
+
+### The fourth screen, and the premise that was false there without any condition
+
+The mark is drawn by four screens and the first census found three, because three of them write
+`flagged` and `ProgramLevelCompare` writes `passed === false`. That much is #174's rule arriving a
+ticket later: count by the mechanism, which is *a mark drawn over a `BANDS` cell*.
+
+What the walk of the fourth screen then found is one layer past that. `FLAG`'s docstring had just
+been given a careful paragraph saying the dark red halo is safe because the mark lands on band 1,
+with the condition — `BAND_FLOORS[1]` is written *as* `PASS` — and the date the condition was
+checked. On the fourth screen that paragraph is not conditionally true, it is **false today**: the
+mark is `passRate > OUTCOME_PASS_PERCENT`, a share of students, and the colour is `bandOf(mean)`.
+A cohort with a mean of 3.9 and a pass rate of 55 per cent is an ordinary cohort, so the mark can
+land on any of the five bands in the configuration this installation ships.
+
+So **a condition written onto a premise is a claim about the population the premise was drawn
+from** — the dating protects it against the future and says nothing about the sibling that was
+already outside it. The paragraph was written in the same hour as the census that found the fourth
+screen, and it generalised from the three; both mistakes have the same shape, which is why the
+second one was invisible to the author of the first.
+
+The seed contains no failing outcome, so the fourth screen draws no mark at all and there was
+nothing to look at. The situation was built the way `38`'s row 80 builds its own — raise
+`OUTCOME_PASS_PERCENT` to 95, restart the server, look, restore — which is the sheet's technique
+borrowed for a different constant. The mark came up white-on-dark-red over `bg-yellow-400` and was
+read as a separate signal, so nothing in the code changed; what changed is the sentence that said
+why.
+
+And the reason the screen was invisible to the re-walk is on its own sheet: `44` carries no row
+about colour and no row about the mark. A re-walk driven by *which rows name a token* can only
+reach the screens whose sheets say something about tokens, which is a census by the wrong property
+one more time — the row that would have caught it is the row nobody wrote.
+
+### What the re-walk did not change
+
+Four of the documents the ticket's file list named carry these letters and are not this palette:
+`42`'s row 76 and `45`'s rows 77 and 107 are a Y chip and a *ยังไม่มีคะแนน* badge, and `38`'s
+row 105 is the unmeasured-outcome chip. *A ticket's file list is a grep somebody else ran*, and
+matching every file on it answers half of *confirm before you change*. The rows that did move are
+`37`:59, `38`:66, 67, 80, 104 and 196, `43`:67 and `45`:80 — each keeping its September record as
+a record and gaining a dated one beside it, because a dated walk table says what one measurement
+returned and not what the system is.

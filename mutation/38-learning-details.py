@@ -111,8 +111,8 @@ MUTANTS = {
     # a printout, a screen reader, or a reader who cannot tell the two shades
     # apart, which is what *distinctly flagged* is asking for. Kills row 3.
     "noflagmark": ("screen",
-                   "                                  {cell.flagged && <span className=\"ml-1 font-bold\">!</span>}",
-                   "                                  {false && <span className=\"ml-1 font-bold\">!</span>}"),
+                   "                                  {cell.flagged && <span className={FLAG}>!</span>}",
+                   "                                  {false && <span className={FLAG}>!</span>}"),
     # The flag reaches one hundredth too far and marks a student who passed:
     # exactly 3.0 is the pass line, and this puts an exclamation mark next to
     # it. Kills row 3 at the half that says three is not flagged.

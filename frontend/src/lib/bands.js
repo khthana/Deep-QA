@@ -23,14 +23,96 @@
  * missing key rather than a silently wrong shade. The *ranges* are not here:
  * they arrive as `band_floors` with the data, because a legend that kept its
  * own copy of the numbers would go on saying 3.0 – 3.4 after the rule moved.
+ *
+ * **All five sit at 400, and the level is a measurement rather than a taste.**
+ * #37's walk found the ramp too faint to read as colour at all — measured off
+ * the running screen, every band's background was between 1.03 and 1.22 times
+ * the page's white, which is a tint a reader has to look for. #113 asked for
+ * two numbers instead: a background at least 1.5 against white, so the colour
+ * is seen without being hunted, and text at least 4.5 on it, which is AA for
+ * the 12px these cells are set in. The ticket proposed level 200; measured,
+ * 200 reaches only 1.16–1.45 and fails the first of its own numbers. 400 is
+ * the lowest uniform level where every band passes both: 1.51–2.77 against
+ * white, 5.06–5.84 for the text.
+ *
+ * Band 1 is the one exception, and it is the same rule rather than a lapse:
+ * `text-red-900` on `bg-red-400` is 3.62, under AA, so band 1 reads at 950.
+ * The criterion is the contrast number, not the digit on the token.
+ *
+ * `chip` is left where it was. A chip carries no text and its job is to key
+ * the legend to the cells, which it does at any level the eye can pair with
+ * them; its own spread of 300–500 is untidy and was looked at on 10 October
+ * 2569 and deliberately kept, so a later reader does not read it as drift.
  */
 export const BANDS = {
-  1: { cell: 'bg-red-100 text-red-900', chip: 'bg-red-500' },
-  2: { cell: 'bg-amber-100 text-amber-900', chip: 'bg-amber-400' },
-  3: { cell: 'bg-yellow-50 text-yellow-800', chip: 'bg-yellow-300' },
-  4: { cell: 'bg-lime-100 text-lime-900', chip: 'bg-lime-400' },
-  5: { cell: 'bg-emerald-100 text-emerald-900', chip: 'bg-emerald-500' },
+  1: { cell: 'bg-red-400 text-red-950', chip: 'bg-red-500' },
+  2: { cell: 'bg-amber-400 text-amber-900', chip: 'bg-amber-400' },
+  3: { cell: 'bg-yellow-400 text-yellow-900', chip: 'bg-yellow-300' },
+  4: { cell: 'bg-lime-400 text-lime-900', chip: 'bg-lime-400' },
+  5: { cell: 'bg-emerald-400 text-emerald-900', chip: 'bg-emerald-500' },
 }
+
+/**
+ * The mark that rides beside a flagged figure, as a class.
+ *
+ * Here and not in the four screens that draw it because all four sank the
+ * same way the day the ramp was darkened, and for one reason: on the pale
+ * `bg-red-100` the ramp used to be painted in, the mark could be the cell's
+ * own text colour and be read, while on `bg-red-400` `text-red-950` is 5.84 —
+ * which passes AA and still sank, because a mark the same colour as the
+ * figure beside it is read as part of the figure rather than as a second
+ * signal. The walk of 10 October 2569 said so in those words.
+ *
+ * White is 2.77 on `bg-red-400` and so would fail the contrast this ticket
+ * exists to raise — the shadow is what pays for it, putting `text-red-950`
+ * immediately around every stroke, which is the contrast the eye actually
+ * reads a glyph against. It is a shadow and not a chip because a chip was
+ * looked at on the same walk and read as a second control inside the cell.
+ * `#450a0a` is `red-950` written out, because an arbitrary value in a
+ * Tailwind class cannot name a token; it is the same colour band 1's own
+ * text reads at, and the two move together.
+ *
+ * **The fourth screen was found by a review and not by the walk.**
+ * `LearningDetails`, `ProgramLevelAllStudents` and `ProgramLevelIndividual`
+ * draw the mark from `flagged`; `ProgramLevelCompare` draws it from
+ * `passed === false`, which is BR-17 at the level of an outcome and a
+ * cohort rather than a student. A census that looks for the flag's name
+ * cannot see it. The mechanism is *a mark drawn over a `BANDS` cell*, and
+ * counting by that is what finds all four.
+ *
+ * **The shadow's colour does not assume the mark lands on band 1, because on
+ * one of the four screens it does not.** The first draft of this paragraph
+ * said it did, with a condition and a date; the condition was true of the three
+ * `flagged` screens and false of the fourth, which is the same mistake as
+ * counting the screens by the flag's name, made one paragraph later.
+ *
+ * On the three, the mark follows `PASS` and the colour follows `BAND_FLOORS`,
+ * which are two settings and not one; they coincide today only because
+ * `backend/lib/attainment.js` writes the second band's floor *as* `PASS`. The
+ * walk of 10 October 2569 moved the floors to `[0, 2.5, 3.5, 4.0, 4.8]`, which
+ * is what `38`'s row about the legend asks for, and watched the mark come up on
+ * `bg-amber-400`, where a dark red halo is worth much less than it is on red.
+ * `38`'s own note *the flag and the band are one line by coincidence* is that
+ * observation one layer down, written before this constant existed.
+ *
+ * On `ProgramLevelCompare` the two are not even nearly one line, and **no
+ * configuration has to move**: the mark is `passed === false`, which is
+ * `passRate > OUTCOME_PASS_PERCENT` — a share of students — while the colour is
+ * `bandOf(mean)`. A cohort can hold a mean of 3.9 and a pass rate of 55 per
+ * cent on the same outcome, so with the configuration this installation ships
+ * the mark can land on any of the five. The same walk raised
+ * `OUTCOME_PASS_PERCENT` to 95 to build the situation the seed does not contain
+ * and looked at it on `bg-yellow-400`; the answer both times was that the mark
+ * still reads as a separate signal, so the constant is kept. What is written
+ * down here is the reason it was kept, which is a measurement and not a range
+ * of backgrounds the halo was designed for.
+ *
+ * The mark stays a character and not an icon for #38's reason, which has not
+ * changed: below the line has to survive being printed and being read by
+ * somebody who cannot tell two shades of a ramp apart.
+ */
+export const FLAG =
+  'ml-1 font-bold text-white [text-shadow:0_0_2px_#450a0a,0_1px_1px_#450a0a]'
 
 /** A number as a figure, or an em dash where there is no number to show. */
 export const figure = (value, suffix = '') =>

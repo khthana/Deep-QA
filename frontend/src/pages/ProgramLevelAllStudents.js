@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import BandLegend from '../components/results/BandLegend'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
-import { BANDS, score } from '../lib/bands'
+import { BANDS, FLAG, score } from '../lib/bands'
 import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/results/CohortPickers'
 import { getStudentHeatmap } from '../api/programResults'
 
@@ -260,7 +260,7 @@ export default function ProgramLevelAllStudents() {
                                     reason: below three has to survive being
                                     printed and being read by somebody who
                                     cannot tell two shades of a ramp apart. */}
-                                {cell.flagged && <span className="ml-1 font-bold">!</span>}
+                                {cell.flagged && <span className={FLAG}>!</span>}
                               </span>
                             </td>
                           )

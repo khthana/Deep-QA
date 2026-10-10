@@ -4,7 +4,7 @@ import BandLegend from '../components/results/BandLegend'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ContributionsPanel from '../components/results/ContributionsPanel'
 import Notice from '../components/Notice'
-import { BANDS, score } from '../lib/bands'
+import { BANDS, FLAG, score } from '../lib/bands'
 import { OUTCOME_TYPES } from '../lib/outcomes'
 import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/results/CohortPickers'
 import { getEvidenceFile, showPdf } from '../api/evidence'
@@ -430,7 +430,7 @@ export default function ProgramLevelIndividual() {
                                         the line has to survive being printed
                                         and being read by somebody who cannot
                                         tell two shades of a ramp apart. */}
-                                    {plo.flagged && <span className="ml-1 font-bold">!</span>}
+                                    {plo.flagged && <span className={FLAG}>!</span>}
                                   </span>
                                 </td>
                                 <td className="px-4 py-3 text-center">

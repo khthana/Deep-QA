@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
-import { BANDS, figure, rangeOf, score } from '../lib/bands'
+import { BANDS, FLAG, figure, rangeOf, score } from '../lib/bands'
 import { getLearningDetails } from '../api/learningDetails'
 
 /**
@@ -203,7 +203,7 @@ export default function LearningDetails() {
                                   }`}
                                 >
                                   {cell.score === null ? '—' : cell.score.toFixed(2)}
-                                  {cell.flagged && <span className="ml-1 font-bold">!</span>}
+                                  {cell.flagged && <span className={FLAG}>!</span>}
                                 </span>
                               </td>
                             )
