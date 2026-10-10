@@ -125,12 +125,14 @@ export default function ContinuousImprovement() {
             : String(answered.clos[0]?.clo_id ?? '')
         )
       }
+      return true
     } catch (error) {
       // #151 - a reload that fails keeps what the screen last drew, and the
       // form open on it. `CourseOutcomes.js` carries the reasons.
       if (isCurrent()) {
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -225,8 +227,8 @@ export default function ContinuousImprovement() {
       if (mine) {
         setEditing(null)
       }
-      await load(() => onScreen.current === load)
-      if (showing.current === sent)
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent)
         setNotice({ error: false, message: `บันทึก${written}แล้ว` })
     } catch (error) {
       if (showing.current === sent && !error.expired)
@@ -244,8 +246,8 @@ export default function ContinuousImprovement() {
     try {
       await deleteEntry(sectionId, removing.entry_id)
       setRemoving(null)
-      await load(() => onScreen.current === load)
-      if (showing.current === sent)
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent)
         setNotice({ error: false, message: `ลบ${removed}แล้ว` })
     } catch (error) {
       // The dialog closes either way, for AchievementCriteria's reason: a

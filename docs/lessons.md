@@ -8493,3 +8493,154 @@ row 2 as well, leaving row 1 standing. That is not a defect in either row.
 framing, one ticket along). Row 1 stands because its landing equals its address,
 which is the one case `staysput` cannot change. The sheet says this; nobody has
 to re-derive it from the two files.
+
+## #152 — the decision that was about the sentence, not about the line
+
+#152 is a `question` ticket, so the first move is the measurement and the second
+is the choice put to the owner. Both halves came back different from what the
+ticket wrote.
+
+### The population was counted by the screens, not by the mechanism
+
+The ticket's first line says *the seven teacher screens* and its table has seven
+rows, one line-number pair each. The mechanism it describes is narrower and
+commoner than that: **a handler awaits something that cannot throw, and then
+says it went right.** Counted that way — a census over `frontend/src/pages/`
+that reads each file's locally defined `async`es, decides which of them swallow
+(a `catch` that holds no `throw`, or no `throw` of its own and every async it
+awaits is itself swallowing), and asks whether the success sentence is set
+before or after such an await — the population is **twenty files, thirty-nine
+sites**, of which **ten files and eighteen sites** set the sentence after.
+Counting by *teacher screen* answers seven whatever the code says (#174).
+
+Three of the ten are not on the ticket at all: `GradingWeights.js`,
+`StudentGroups.js` and `SubjectStudents.js`, the last with two sites. And the
+ticket's own note — *`remove` has the same shape, not measured* — was right:
+seven of the eighteen are removals, and these rows are that measurement.
+
+The census also lost a file between two passes, which is how a third reporting
+channel was found. `RubricCriteria.js`'s `load` reports its failure with
+`setRefusal` — screen state rather than an overwritable notice — and a census
+written around `setNotice` and `report` cannot see it. That file is in the
+BEFORE group not by order but by channel: it is the one place in the tree that
+already does what the ticket's option 2 asks for.
+
+### The escape clause was false for four of the eighteen
+
+The ticket says the refusal survives only when another form was opened in the
+meantime — the `showing.current === sent` guard, which is false when it was.
+Read the three lines above each of the eighteen sites and **fourteen are guarded
+and four are bare**: `GradingWeights.save`, `StudentGroups.after`,
+`SubjectStudents.add` and `SubjectStudents.remove` have no such guard, so on
+those four the escape clause never applied and the sentence always won. The four
+sit on exactly the three screens the ticket never found, which is one
+measurement read twice.
+
+Two of the seven cited line pairs had also drifted, by five and six lines, and
+both now point at the write rather than at the reload.
+
+### *As today* was not one thing
+
+The ticket's three options are **the refusal wins**, **both are said** and **as
+today**. All three were already in the tree. Nine screens let the refusal win,
+by order. `RubricCriteria.js` says both, by channel. Ten screens say the success
+sentence over the refusal. So option 3 is not *change nothing*; it is *keep two
+behaviours, ten to ten* — and that was the sentence the owner needed, because
+the question being put to them was not whether to change the code but which of
+two behaviours the system should have.
+
+**A ticket's *as today* option is a claim that today is one thing. Count it like
+any other of the ticket's numbers.**
+
+### The decision, read literally, broke a closed ticket
+
+The owner chose the refusal, and bringing the eighteen into line with the other
+ten reads as one move: put the sentence above the reload, which is what the ten
+BEFORE files do. Built that way it is a four-line diff per file and it passes
+`152a` whole.
+
+It also **fails fourteen rows of `149a`** — every card screen, on both the save
+and the removal. #149's claim is that a reload keeps an open form, and its rows
+assert that the banner of the earlier save is *not* on the screen once a later
+form has been opened. A sentence set before the reload is set before the guard
+can see where the person has moved to, so it lands over the new form. The
+measurement took four minutes; the argument would have taken longer.
+
+So the decision was implemented the other way up. `load` now reports whether it
+drew — `return true` as the last statement of its `try`, `return false` as the
+last of its `catch`, the `finally` returning nothing so it replaces neither
+answer — and each of the eighteen handlers asks both questions: *did the reload
+draw* and *is the screen still where it was*. Both tickets hold.
+
+**An owner's decision is about what the person reads, not about the diff that
+occurs to you first.** The cheapest implementation of a decision can break a
+closed ticket, and which closed tickets it touches is a measurement: run their
+suites against the obvious version before building it.
+
+### The fix reached thirty-six mutants in eight files
+
+Two lines changed at eighteen sites, and those two lines are what six other
+mutation files were anchored on. `anchors.py` went from 0 problems to 36:
+twenty-eight of `149`'s (six shared constants), `140`'s two enrolment mutants,
+`25:addstaysonpage`, and `savenoreload` on `27`, `28`, `29`, `30` and `31`.
+Thirty-one of them re-aim by making the same insertion the page files got, and
+each mutant means exactly what it meant.
+
+The other five do not. `savenoreload` **deletes** the awaited reload; re-aimed
+by insertion it would leave `reloaded` undefined and every one of those screens
+would throw on the next line — a mutant that stops the application, which is one
+of the five ways to read a sweep and the one that proves nothing. Those five
+substitute `const reloaded = true` instead: the same claim (nothing was
+re-read) in code that still runs.
+
+**When a fix puts a value where a call was, a mutant that deleted the call
+cannot be re-aimed by insertion — substitute the value.** #140's rule one layer
+along: a change to a function's signature reaches every mutant that writes a
+call to it, and a change to what a call *returns* reaches every mutant that
+removed one.
+
+Two of those five also had a Thai sentence inside the anchor, there to make it
+unique. The uniqueness was never the sentence's to provide — `const reloaded =
+await load(…)` occurs once in each of those files, and the `setEditing(null)`
+prefix separates the save from the removal — so the tuples were rewritten
+without the Thai rather than with it retyped, which is the retyping that goes
+wrong.
+
+### What the re-sweep said
+
+An anchor check says a mutant still applies; only a sweep says it still proves
+anything (#107, #68). Twenty-nine of the thirty-three were re-measured, and
+twenty-eight of those landed exactly where their own record says: `27a` rows 4
+and 8, `28a` and `29a` rows 3 · 4 · 5, `30a` rows 3 and 5 — which is the figure
+`30`'s table already carried from its 17 September re-sweep, not the older one
+above it — and twenty-four of `149`'s each **failing 1 and passing 28** at its
+own screen's own row, read from the names in the log rather than from the count.
+
+The twenty-ninth is the one worth writing down. `31:savenoreload` used to fail
+six rows: row 3, which is its claim, rows 2 and 4, which die at their own
+reloads, and rows 5, 6 and 8, which its own table recorded as contamination —
+the restores of rows 2–4 never reached the screen, so the file cleaned up
+incompletely. Re-aimed by substitution it fails three. Nothing about the claim
+moved: the mutant now *keeps* the reload call and only lies about its answer, so
+the restores do reach the screen and the three bystanders are clean. **The
+contamination was a property of the deletion, not of the claim** — so a mutant
+re-aimed by substitution can be narrower than the one it replaces, and the
+figure to compare it against is the row it was written for and not the total.
+
+The four that are not in the twenty-nine are `ContinuousImprovement.js`'s, and
+neither of their reasons is a measurement: one crashed the browser mid-run
+(`Target crashed`, then the worker exited by itself) and three were cut off when
+the sweep was stopped. A red from a crashed worker is not a red (#171 from the
+failing side), and what was measured beside a stopped run is thrown away
+(#146) — so all four are re-swept rather than read.
+
+Stopping the sweep taught one more thing. The harness restored cleanly, the ten
+page files read exactly as the implementation left them, and `anchors.py` said
+*problems 0* — then the same check two minutes later, after nothing but
+documentation edits, reported three anchors of `ContinuousImprovement.js`
+missing, and two minutes after that reported none again. The file was clean
+throughout, by `git diff` and by counting each of the three anchors in it by
+hand. Something left over from the killed run was still writing the tree.
+**An instrument read just after a sweep is stopped can be reading a straggler's
+write** — the processes the runner leaves behind outlive the runner, so clear the
+ports, ask the machine what is still alive, and read the instrument twice.

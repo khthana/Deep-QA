@@ -212,8 +212,8 @@ MUTANTS = {
     # row 6 left rows behind and row 8 died at its 201 rather than at the line
     # about the list - a kill by contamination, which proves nothing.
     "savenoreload": ("screen",
-                     "        setEditing(null)\n      }\n      await load(() => onScreen.current === load)",
-                     "        setEditing(null)\n      }"),
+                     "        setEditing(null)\n      }\n      const reloaded = await load(() => onScreen.current === load)\n",
+                     "        setEditing(null)\n      }\n      const reloaded = true\n"),
     # The removal removes nothing. `AND FALSE` keeps $1 bound, so the statement
     # is legal, the transaction commits, and the route answers 204 - the exact
     # shape of a delete that a row asserting only the status code would call

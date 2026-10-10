@@ -88,9 +88,8 @@ MUTANTS = {
     # never fires - kills rows 3 and 5 at the await that times out, which is
     # the row asserting the screen returns to canonical state.
     "savenoreload": ("screen",
-                     "      await load(() => onScreen.current === load)\n"
-                     "      setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })",
-                     "      setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })"),
+                     "      const reloaded = await load(() => onScreen.current === load)\n",
+                     "      const reloaded = true\n"),
     # The courtesy total reads 100 whatever the keys say. Kills row 4 at
     # `รวม 90 / 100` - the one assertion about the line itself.
     "totalfrozen": ("screen",

@@ -61,12 +61,14 @@ export default function LearningActivities() {
     try {
       const answer = await getActivities(sectionId)
       if (isCurrent()) setData(answer)
+      return true
     } catch (error) {
       // #151 - a reload that fails keeps what the screen last drew, and the
       // form open on it. `CourseOutcomes.js` carries the reasons.
       if (isCurrent()) {
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -134,8 +136,8 @@ export default function LearningActivities() {
       if (mine) {
         setEditing(null)
       }
-      await load(() => onScreen.current === load)
-      if (showing.current === sent)
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกกิจกรรมแล้ว' })
     } catch (error) {
       // The form stays open on a refusal, unlike the delete dialog: the draft
@@ -155,8 +157,8 @@ export default function LearningActivities() {
     try {
       await deleteActivity(sectionId, removing.id)
       setRemoving(null)
-      await load(() => onScreen.current === load)
-      if (showing.current === sent)
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบกิจกรรมแล้ว' })
     } catch (error) {
       // The dialog closes either way, for CourseOutcomes' reason: a dialog

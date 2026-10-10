@@ -72,12 +72,14 @@ export default function GradingWeights() {
           }))
         )
       }
+      return true
     } catch (error) {
       if (isCurrent()) {
         setData(null)
         setDraft([])
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -133,8 +135,8 @@ export default function GradingWeights() {
           weight: row.weight.trim() === '' ? null : Number(row.weight),
         }))
       )
-      await load(() => onScreen.current === load)
-      setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded) setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
     } finally {

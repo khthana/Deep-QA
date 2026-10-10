@@ -67,12 +67,14 @@ export default function ActivityEvidence() {
     try {
       const answer = await getEvidence(sectionId, activityId)
       if (isCurrent()) setData(answer)
+      return true
     } catch (error) {
       // #151 - a reload that fails keeps what the screen last drew, and the
       // form open on it. `CourseOutcomes.js` carries the reasons.
       if (isCurrent()) {
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -137,8 +139,8 @@ export default function ActivityEvidence() {
       if (mine) {
         setEditing(null)
       }
-      await load(() => onScreen.current === load)
-      if (showing.current === sent)
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกหลักฐานการประเมินแล้ว' })
     } catch (error) {
       if (showing.current === sent && !error.expired)
@@ -155,8 +157,8 @@ export default function ActivityEvidence() {
     try {
       await deleteEvidence(sectionId, removing.evidence_id)
       setRemoving(null)
-      await load(() => onScreen.current === load)
-      if (showing.current === sent)
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบหลักฐานการประเมินแล้ว' })
     } catch (error) {
       // The dialog closes either way, for MeasurableBehaviors' reason: a dialog

@@ -86,11 +86,13 @@ export default function SubjectStudents() {
     try {
       const answer = await listEnrolled(sectionId, { page })
       if (isCurrent()) setData(answer)
+      return true
     } catch (error) {
       if (isCurrent()) {
         setData(null)
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -127,8 +129,12 @@ export default function SubjectStudents() {
    * asked for directly.
    */
   const reload = useCallback(async () => {
-    if (page === 1) await load(() => onScreen.current === load)
-    else setPage(1)
+    if (page === 1) return load(() => onScreen.current === load)
+    // Stepping back to the first page is a reload the effect runs, and
+    // nothing has refused anything - #152 is about a refusal, so this
+    // counts as a reload that drew.
+    setPage(1)
+    return true
   }, [page, load])
 
   /**
@@ -153,11 +159,12 @@ export default function SubjectStudents() {
     try {
       const { student } = await enrolStudent(sectionId, code.trim())
       setCode('')
-      await reload()
-      setNotice({
-        error: false,
-        message: `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
-      })
+      const reloaded = await reload()
+      if (reloaded)
+        setNotice({
+          error: false,
+          message: `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
+        })
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
     } finally {
@@ -175,12 +182,14 @@ export default function SubjectStudents() {
       // The last student on the last page leaves an empty page behind them,
       // which reads as a list that lost everything. #57's screens step back for
       // the same reason.
+      let reloaded = true
       if (data.students.length === 1 && page > 1) setPage(page - 1)
-      else await load(() => onScreen.current === load)
-      setNotice({
-        error: false,
-        message: `นำ ${student.student_id} ${student.full_name_th} ออกจากตอนเรียนแล้ว`,
-      })
+      else reloaded = await load(() => onScreen.current === load)
+      if (reloaded)
+        setNotice({
+          error: false,
+          message: `นำ ${student.student_id} ${student.full_name_th} ออกจากตอนเรียนแล้ว`,
+        })
     } catch (error) {
       // The dialog closes either way — CourseOutcomes' reason: leaving it open
       // over a refusal puts the banner behind it and offers a button that

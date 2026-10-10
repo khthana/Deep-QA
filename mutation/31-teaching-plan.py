@@ -86,13 +86,10 @@ MUTANTS = {
     "savenoreload": ("screen",
                      "        setEditing(null)\n"
                      "      }\n"
-                     "      await load(() => onScreen.current === load)\n"
-                     "      if (showing.current === sent)\n"
-                     "        setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })",
+                     "      const reloaded = await load(() => onScreen.current === load)\n",
                      "        setEditing(null)\n"
                      "      }\n"
-                     "      if (showing.current === sent)\n"
-                     "        setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })"),
+                     "      const reloaded = true\n"),
     # The delete takes every topic wearing the same week number, not the one
     # row the person named - the CLO screens' renumbering instinct sneaking
     # into a place where the number is not a key. Kills row 4 where the seeded

@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 5 October 2569 that is
-`2026-10-05-the-way-in-that-needed-no-link.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 10 October 2569 that is
+`2026-10-10-the-mark-that-was-read-as-part-of-the-figure.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -108,6 +108,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   nothing it predicts is wrong yet. *The account holds one Section* and *the dashboard lists one
   term* were the same verdict and two different expiry dates, and `docs/lessons.md` had had the
   true one in §#25 all along. (#141)
+- **A ticket's *as today* option is a claim that today is one thing** — #152 offered three and all
+  three were already in the tree: nine screens let the refusal win by order, one by a third
+  reporting channel, ten said the success sentence over it. So *as today* meant *keep two
+  behaviours, ten to ten*, which is the sentence the owner needed, the question being which
+  behaviour the system should have rather than whether to change the code. (#152)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -305,6 +310,16 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
 - **A change to a function's signature reaches every mutant that writes a call to it**, not only
   those anchored on one — grep the replacement strings too; `anchors.py` reads anchors. (#140)
+- **When a fix puts a value where a call was, a mutant that deleted the call cannot be re-aimed by
+  insertion — substitute the value.** #140's rule one layer along: a change to what a call
+  *returns* reaches every mutant that removed one, and five of the thirty-six #152 moved were
+  `savenoreload`, which deletes the reload: re-aimed by insertion they left the new `const`
+  undefined, which is a mutant that stops the application and proves nothing. A Thai sentence
+  inside such an anchor is not what made it unique and comes out rather than being retyped.
+  **Such a mutant can then be narrower than the one it replaced** — `31:savenoreload` had failed
+  six rows and failed three, the three bystanders having been contaminated by the *deletion* and
+  not by the claim, so the re-sweep is read against the row the mutant was written for and not
+  against the total. (#152)
 - **A formatter run is a change to every mutant anchored in that file, and the diff does not say
   so** — it reads as whitespace. The installed prettier is newer than the committed style, so it
   does not reproduce the tree it is run on (`Mainpage.js` and `CourseOutcomes.js` already fail it
@@ -366,7 +381,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   reads the mutant that is applied, not the code. (#146)
 - **A run that was stopped may not have stopped.** The tell is the harness refusing to `save`
   over a mutant nobody applied; ask the tree with every sheet's replacement strings, not the
-  record, and throw away whatever was measured beside it. (#146)
+  record, and throw away whatever was measured beside it. (#146) **An instrument read just
+  after one is stopped can be reading a straggler's write** — `anchors.py` said *problems 0*,
+  then three missing anchors in one file, then *problems 0* again, over a tree that was clean
+  by `git diff` every time. Clear the ports, ask the machine what is still alive, read it
+  twice. (#152)
 - A `mode: 'serial'` spec reports the first dying row and skips the rest, so measure each row on
   its own; a top-level `node --test` test reads like a suite header in `not ok` lines, so read
   the names — including in a ticket's evidence, where it read as a second red row. (#67, #48, #187)
@@ -655,6 +674,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   measurement says is *holding* it to almost nothing. One frame because nothing in the hop waits on
   the network is a property of today's data flow, and the ticket that would change that is already
   open. (#120)
+- **An owner's decision is about what the person reads, not about the diff that occurs to you
+  first** — and the cheapest implementation of it can break a closed ticket. #152's *the refusal
+  wins*, built as the obvious order swap, failed **fourteen** rows of `149a`, because a sentence
+  set before the reload is set before the guard can see where the person has moved to. Which
+  closed tickets the cheap reading touches is a measurement: run their suites against it before
+  building it, and if it breaks one, implement the decision the other way up — here by making the
+  awaited loader report whether it drew, so both tickets hold. (#152)
 - **A number that justifies a change is not permission to make it.** A measurement answers what a
   change costs; whether it may be made is `docs/06` §Out of Scope, and the tell is that nothing in
   the diff can be broken to make the changed line fail. Publish both numbers and ask. (#105)

@@ -94,11 +94,13 @@ export default function StudentGroups() {
     try {
       const answer = await listGroups(sectionId)
       if (isCurrent()) setData(answer)
+      return true
     } catch (error) {
       if (isCurrent()) {
         setData(null)
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -135,9 +137,9 @@ export default function StudentGroups() {
    * and the read costs one request against a list that is a few dozen rows.
    */
   const after = async message => {
-    await load(() => onScreen.current === load)
+    const reloaded = await load(() => onScreen.current === load)
     setWrites(count => count + 1)
-    setNotice({ error: false, message })
+    if (reloaded) setNotice({ error: false, message })
   }
 
   const failed = error => {

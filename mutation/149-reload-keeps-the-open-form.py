@@ -129,14 +129,14 @@ LINE_ALWAYS = '      {loading && <p className="text-sm text-slate-500">'
 SAVE_ASKED = (
     '        setEditing(null)\n'
     '      }\n'
-    '      await load(() => onScreen.current === load)\n'
-    '      if (showing.current === sent)\n'
+    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      if (reloaded && showing.current === sent)\n'
 )
 SAVE_KEPT = (
     '        setEditing(null)\n'
     '      }\n'
-    '      await load(() => onScreen.current === load)\n'
-    '      if (mine)\n'
+    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      if (reloaded && mine)\n'
 )
 
 # ประโยคของการบันทึกไม่ถามอะไรเลย - ก่อน #149 มันใช้ `mine` ร่วมกับการปิด และ `closewins` ฆ่าทั้งสองครึ่ง
@@ -144,8 +144,8 @@ SAVE_KEPT = (
 SAVE_UNGUARDED = (
     '        setEditing(null)\n'
     '      }\n'
-    '      await load(() => onScreen.current === load)\n'
-    '      if (true || showing.current === sent)\n'
+    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      if (reloaded && (true || showing.current === sent))\n'
 )
 
 # `remove` จับ `sent` ตอนถูกกด
@@ -153,20 +153,20 @@ REMOVE_TOP = '  const remove = async () => {\n    const sent = showing.current\n
 REMOVE_TOP_LATE = '  const remove = async () => {\n'
 REMOVE_ASKED = (
     '      setRemoving(null)\n'
-    '      await load(() => onScreen.current === load)\n'
-    '      if (showing.current === sent)\n'
+    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      if (reloaded && showing.current === sent)\n'
 )
 # ประโยคของการลบไม่ขึ้นเลย - ครึ่งที่ตัวบนมองไม่เห็น
 REMOVE_UNSAID = (
     '      setRemoving(null)\n'
-    '      await load(() => onScreen.current === load)\n'
-    '      if (false && showing.current === sent)\n'
+    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      if (reloaded && false && showing.current === sent)\n'
 )
 REMOVE_ASKED_LATE = (
     '      setRemoving(null)\n'
-    '      await load(() => onScreen.current === load)\n'
+    '      const reloaded = await load(() => onScreen.current === load)\n'
     '      const sent = showing.current\n'
-    '      if (showing.current === sent)\n'
+    '      if (reloaded && showing.current === sent)\n'
 )
 
 # เขียนเป็น dict ตรง ๆ ไม่ใช่ loop - `anchors.py` อ่าน `MUTANTS` จาก AST และ dict ว่างที่ถูก

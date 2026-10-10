@@ -69,6 +69,7 @@ export default function CourseOutcomes() {
     try {
       const answer = await getCourseOutcomes(sectionId)
       if (isCurrent()) setData(answer)
+      return true
     } catch (error) {
       // #151 - a reload that fails keeps what the screen last drew, and the
       // form open on it: clearing `data` here took the list down with
@@ -81,6 +82,7 @@ export default function CourseOutcomes() {
       if (isCurrent()) {
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -156,8 +158,8 @@ export default function CourseOutcomes() {
       if (mine) {
         setEditing(null)
       }
-      await load(() => onScreen.current === load)
-      if (showing.current === sent)
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกผลการเรียนรู้รายวิชาแล้ว' })
     } catch (error) {
       if (showing.current === sent && !error.expired)
@@ -174,8 +176,8 @@ export default function CourseOutcomes() {
     try {
       await deleteCourseOutcome(sectionId, removing.clo_id)
       setRemoving(null)
-      await load(() => onScreen.current === load)
-      if (showing.current === sent)
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบผลการเรียนรู้รายวิชาแล้ว' })
     } catch (error) {
       // The dialog closes either way. Leaving it open over a refusal puts the
