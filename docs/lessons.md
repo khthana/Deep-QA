@@ -8834,3 +8834,66 @@ safe — when what matters is whether *any* other file holds these paths. Nine d
 `141-superseded` `141-the-guard` and `179` hold the marks screen, two of them both.
 The rule was never about the ticket next door; it is **compare `FILES`** (#85, #87, #125),
 and the comparison has to be against the whole directory.
+
+## #200 — the instrument that measured the hand walk's scope as well as the code
+
+#152 found its eighteen sites by walking every `await` in `frontend/src` by hand, because
+neither census here can see the property: `superseded-answers.js` asks whether a drawing is
+guarded, and `label-codes.js` asks about a label. #200 is that walk made into an instrument
+that fails — `frontend/scripts/swallowed-refusals.js`, built on `superseded-answers.js`'s
+architecture, down to the babel walk, the exported `examine`, the marker with a reason and a
+ticket, and the hard exit 2 when `@babel/parser` is not there to be required.
+
+Its question is three claims in sequence, each read from the code rather than from a list of
+screens: does this function say a **success** sentence; does it `await` a function declared
+in the same file whose `catch` does not rethrow; and is the answer of that call **read** —
+directly in an `if`, or through a name bound to it. A function that says nothing but a
+refusal is not in the family. A loader that reports by throwing is not either, because the
+handler's own `catch` sees that refusal. And a `setNotice` whose argument it cannot classify
+is reported as a problem of its own rather than dropped, so the shape that arrives next
+cannot arrive unseen (#126).
+
+**The first run was the measurement, and it was not about the code #152 changed.** 37
+functions say a success sentence around a swallowing loader; 17 read the answer; **20 do
+not**, in ten admin page files — `Departments` `Offerings` `Plos` `Programs`
+`ProgramSubjects` `RubricCriteria` `Rubrics` `Students` `Subjects` `Users`, almost all of
+them `save` and `confirmRemoval` in pairs, with `Offerings.runCopy` and `Users.toggle`
+beside them. Two were measured by hand before any of this was believed: `Users.load` and
+`Programs.load` catch, say their own refusal and return `undefined`, and both screens'
+handlers say *saved* and then `await load(…)` reading nothing. They are #152's defect to the
+letter, on the screens #152 scoped out.
+
+So the lesson is about the relationship between the walk and the instrument, not about
+either one: **a census written to replace a hand walk measures the walk's scope as well as
+the code.** The hand walk counted what it was about to fix; the instrument counts the
+property, and the difference between the two numbers is what the earlier ticket chose not to
+do. That difference had been invisible for a day, in prose, in a closed ticket — and it is
+now #203.
+
+Which settled what #200 could close with. The ticket asked for the new file to be added to
+`CENSUSES`, and `npm run census` is a gate, so wiring it in while 20 real sites are red
+would have turned the gate red for everybody. Marking those sites would have written twenty
+claims nobody holds. The owner chose the third way on 11 October 2569 — commit the
+instrument unwired, open #203 for the twenty, and let #203 do the wiring as its last step,
+which is in #203's task list and not only in its prose (#119, #89, #125).
+
+**The before-and-after reading was identical at first, and that was the tell.** A script run
+over `git show <rev>:<file>` reported *answer read 16 · unread 21* at both `fe0b3ee` and
+`fe0b3ee^`, for a commit whose own `--stat` lists all ten files. Node's `execSync` on Windows
+goes through `cmd.exe`, where `^` is the escape character, so `fe0b3ee^` had been quietly
+read as `fe0b3ee` and the two runs were one run. Resolved to the SHA, `e15bef9` gives **0 of
+37 read**, which is the instrument red on the whole corpus before #152 and the thing #141's
+rule asks for: it has been seen to fail on real sites, not only on its own fixtures. The
+shape to keep is that two readings agreeing to the digit are a reason to check that two
+different things were read, and the cheapest check is `git rev-parse` on both.
+
+One number of #152's does not appear in this census: it says eighteen sites and the
+instrument sees seventeen. The eighteenth is `SubjectStudents`' deferral, where the handler
+hands the sentence to `waiting.current` for the loader to say, so the handler says nothing
+and is not in the population at all. The census's own fixtures hold that shape, along with
+its three blind spots as claims rather than as prose: a loader arriving as a parameter has no
+declaration to read, a `catch` inside a nested function counts as the loader's own, and one
+setter's name is all it reads — so the run prints every other `set…` name in the tree that
+looks like a notice and was not read, by name, for a new spelling to show up as a new word.
+Today those are `setAlert` `setError` `setErrorMessage`. 20 fixtures, and `npm run census:test`
+goes from 32 to 52.

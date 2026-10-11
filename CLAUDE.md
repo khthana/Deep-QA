@@ -462,6 +462,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A red is not a measurement until the same read has been seen green** — the same rule from the
   failing side. A locator scoped to a heading the screen never draws reads empty drawn and undrawn
   alike, so ten reds of ten can mean nothing, and a fix built on them is wrong the same way. (#171)
+- **A census written to replace a hand walk measures the walk's scope as well as the code** —
+  the walk counted what it was about to fix; the instrument counts the property, and the
+  difference between the two numbers is what the earlier ticket chose not to do. Its first run
+  is therefore a finding about a closed ticket as much as a check on the new one, and when that
+  finding is a red gate the instrument is committed unwired with a ticket for the gap rather
+  than wired with the gap marked. (#200)
 - **A census is evidence about the property it counted** — count by the mechanism, not by what the
   screen draws: a census of *card-and-grid screens* missed three chart-and-report screens with the
   same hole, because the species is *is there a settle point between the request and the read*. The
@@ -774,7 +780,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
-| `frontend/scripts/` | Two censuses, as instruments. `npm run census` runs both and goes red when a screen draws an answer with no guard and no written reason (#133's family), or draws a label with a code in front of the name and no written reason (#93's). Their own fixtures are `npm run census:test`. |
+| `frontend/scripts/` | Three censuses, as instruments. `npm run census` runs the two wired into it and goes red when a screen draws an answer with no guard and no written reason (#133's family), or draws a label with a code in front of the name and no written reason (#93's). The third, `swallowed-refusals.js` (#152's family, built by #200), is run by hand and **not** in `CENSUSES`: it is red on twenty real sites that #203 is open for, and #203 wires it in. Their own fixtures are `npm run census:test`. |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the
