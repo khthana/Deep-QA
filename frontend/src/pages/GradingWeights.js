@@ -75,8 +75,12 @@ export default function GradingWeights() {
       return true
     } catch (error) {
       if (isCurrent()) {
-        setData(null)
-        setDraft([])
+        // #151's rule, which #201 carried to this screen: a read that fails
+        // keeps what the screen last drew, and its refusal is the banner above
+        // it. Here that is one decision and not two — the screen is drawn
+        // inside `{data && (` and every input reads `draft`, so blanking either
+        // one takes the typed numbers with it, and what the person would have
+        // compared the refusal against is the draft they were looking at.
         if (!error.expired) setNotice({ error: true, message: error.message })
       }
       return false

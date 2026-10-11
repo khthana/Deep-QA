@@ -157,6 +157,29 @@ export default function ActivityScores() {
   }, [loadList])
 
   /**
+   * Which Activity the grid on screen was drawn for - #201.
+   *
+   * #151's rule is *a read that fails keeps what the screen last drew*, and on
+   * the seven card screens that is the whole of it: their `load` depends on
+   * `sectionId` alone, so a refused read is always a re-read of the same
+   * question. This screen's depends on `activityId` too, and then the rule has
+   * two halves. The re-read an import fires is the same question, and keeping
+   * the grid keeps the marks typed beside it - which is the half the person
+   * loses without this. The read a move of the picker asks for is a different
+   * question, and keeping the grid would leave the previous Activity's rows
+   * under its own heading (`activity` is `data.activity`, not the picker's
+   * option) while the picker reads the new one: #133's mismatch, arrived at
+   * through a refusal instead of through a race.
+   *
+   * The ref holds what `data` is of rather than what was asked for, which is
+   * why it is written where `setData` is and read in the `catch`. The owner
+   * settled which half is which on 11 October 2569; `201a` row 3 is the net
+   * that says *only*, and the mutant that keeps unconditionally is what proves
+   * the row is doing work.
+   */
+  const drawn = useRef('')
+
+  /**
    * The marks of the กิจกรรม the picker is on now - #133.
    *
    * #68's shape. The ticket files this screen under *`useParams`*; only
@@ -180,10 +203,13 @@ export default function ActivityScores() {
     if (!activityId) return
     try {
       const answer = await getScores(sectionId, activityId)
-      if (isCurrent()) setData(answer)
+      if (isCurrent()) {
+        drawn.current = String(activityId)
+        setData(answer)
+      }
     } catch (error) {
       if (isCurrent()) {
-        setData(null)
+        if (drawn.current !== String(activityId)) setData(null)
         failed(error)
       }
     }

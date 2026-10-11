@@ -206,8 +206,15 @@ MUTANTS = {
         "      if (isCurrent()) setDrill(answer)\n",
         "      setDrill(answer)\n"),
     # คะแนนของกิจกรรมที่ครูย้ายไปแล้ว วาดอยู่ใต้ชื่อของกิจกรรมที่กำลังกรอก
+    # #201 put the ref that says which Activity the drawn data is of beside
+    # `setData`, so the guard is a block now. The claim is the same one: a
+    # stale answer must not win. `isCurrent` stays referenced by the `catch`.
     "scoresstalewins": ("scores",
-        "      if (isCurrent()) setData(answer)\n",
+        "      if (isCurrent()) {\n"
+        "        drawn.current = String(activityId)\n"
+        "        setData(answer)\n"
+        "      }\n",
+        "      drawn.current = String(activityId)\n"
         "      setData(answer)\n"),
     # คำตอบของการบันทึกก็เป็นการอ่าน และมันมาถึงหลังจากที่ตัวเลือกย้ายไปแล้วได้เหมือนกัน
     "savedrawsafterthemove": ("scores",

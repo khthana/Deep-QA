@@ -120,12 +120,17 @@ MUTANTS = {
                    "      WHERE cs.section_id = $1 AND $2::text IS NOT NULL`,"),
     # The screen swallows the refusal a failed load carries. Kills row 10 at
     # the banner that never appears.
+    # Re-aimed by #201, which deleted the two blanking lines this anchor was
+    # cut out of (a read that fails keeps what the screen last drew). The claim
+    # is unchanged: the screen says the refusal of a failed read. What makes
+    # the anchor unique is the `return false` below it - `save`'s own `catch`
+    # writes the same sentence one indent out.
     "swallowrefusal": ("screen",
-                       "        setData(null)\n"
-                       "        setDraft([])\n"
-                       "        if (!error.expired) setNotice({ error: true, message: error.message })",
-                       "        setData(null)\n"
-                       "        setDraft([])"),
+                       "        if (!error.expired) setNotice({ error: true, message: error.message })\n"
+                       "      }\n"
+                       "      return false\n",
+                       "      }\n"
+                       "      return false\n"),
     # The screen swallows the refusal a failed save carries. Kills row 4 at
     # the banner with the total in it; row 7 dies with it, being the same
     # swallow around a different sentence.

@@ -8734,3 +8734,103 @@ invisible to a grep for the call** (#68, #133), and `ImportPanel` calls it with
 nothing. The first round's own note had counted three mutants unanchored by the
 fix and not four, for exactly that reason — `onImported={reload}` had not been
 touched that day, so the grep that found the others could not see it.
+
+
+## #201 — the rule that had two halves because the loader had two dependencies
+
+#201 was my own ticket, written on 11 October 2569 while closing #152, and like every
+other ticket its *what is wrong* was a claim with a date on it. Measured before anything
+was changed, it was wrong in two ways, and both were about the shape of the fix rather
+than about whether there was a defect.
+
+The defect was real. #151 had settled that **a read that fails keeps what the screen last
+drew**, and its refusal is the banner above it; it landed on seven card screens by deleting
+`setData(null)` from each `load`'s `catch`. The two screens that hold a *draft* were not
+among them. `GradingWeights.load` said it outright — `setData(null)` **and** `setDraft([])`
+— and `ActivityScores.load` said the rest of it through `recorded` (`if (!data) return {}`)
+and the effect that writes `setDraft(recorded)`. One refusal wiped a whole class of typed
+marks with no line in either file saying it would.
+
+The first thing the ticket had wrong was arithmetic about decisions: it priced the weights
+screen as two deletions, when the screen is drawn inside `{data && (` and every input reads
+`draft`, so blanking either one takes the typed numbers with it. There is no middle shape to
+choose between; it is one decision, which is also why the owner's question could be put as
+one question.
+
+The second was the more interesting one. The ticket said the second screen was *not a
+deletion* — meaning the same fix, applied twice. But `ActivityScores.load` depends on
+`activityId` as well as `sectionId`, and that changes what *keeping what was drawn* means.
+A refused read there is one of two things: the re-read an import fires, which is the same
+question and where keeping the grid keeps the marks typed beside it; and the read a move of
+the picker asks for, which is a different question, where keeping the grid leaves the
+previous Activity's rows under its own heading (`activity` is `data.activity`, not the
+picker's option) while the picker reads the new one — #133's mismatch, arrived at through a
+refusal instead of through a race. So: **a rule about keeping what was drawn is a claim
+about what the drawing was an answer to.** On a loader with one dependency the two
+coincide and the rule has one half. On a loader with two they come apart, and a fix written
+as #151's was written is right in one case and builds #133's defect in the other.
+
+That is a decision and not a measurement, so it went to the owner as two questions, with the
+measurement under each. The answers, on 11 October 2569: the weights screen **keeps the
+table and the numbers**; the marks screen **keeps it when the Activity is the same and
+clears it when the picker moves**. The second is implemented with a ref that holds what
+`data` is *of* rather than what was asked for — written where `setData` is and read in the
+`catch` — and row 3 of `201a` is the net that says *only*, in #155's shape.
+
+### The mutant that was a duplicate of another mutant by accident of a closure
+
+Each data screen's row reads two things: *the rows are still there*, then *the typed value
+is still in the field*. A mutant that blanks the screen dies at the first read, so the second
+would never run — #151's own lesson, where `blanks` died at the visibility read and `blinks`
+was what proved there was anything in the field. So two mutants per screen: one that blanks,
+one that keeps the screen and throws the draft away.
+
+The weights screen's second mutant, as first written, re-seeded the draft from `data`:
+
+```js
+setDraft(data ? data.weights.map(/* ... */) : [])
+```
+
+It reads as the obvious *keeps the table, loses the typed number* — and it is not a
+measurement. `data` is not in `load`'s dependency list, so the `data` that line sees is the
+one captured by the first render, which is `null`. The mutant therefore set the draft to
+`[]`, which blanks the rows, and died at the **first** assertion: a duplicate of
+`weightsblanks`, leaving `what was typed` as unrun as it had been before the mutant existed.
+**A mutant that reads state from outside its function's dependency list measures the
+closure, not the claim.**
+
+Two things said so, and neither of them was the kill count — which read `1 failed, 2 passed`,
+exactly as the table predicted. The first was the webpack lint line sitting in the run's own
+log, naming the missing dependency. The second was that the assertion the row died at was not
+the assertion the table written *before* the sweep had named for it. That is what the table is
+for: a sweep's number answers *did something go red*, and only the assertion's name answers
+*did the claim go red*. The replacement is a functional updater,
+`setDraft(rows => rows.map(row => ({ ...row, weight: '' })))`, which reads the live draft and
+depends on nothing: `1 failed, 2 passed (18.8 s)`, at `what was typed`.
+
+### What the fix moved
+
+The five mutants, swept one at a time against a baseline of `201a` **3 of 3 (18.9 s)**, each
+failed exactly one row at its own named assertion: `weightsblanks` at *the scheme the screen
+last drew* (19.2 s), `weightsforgetsthenumbers` at *what was typed* (18.8 s), `scoresblanks`
+at *the grid the screen last drew* (18.5 s), `scoresforgetsthedraft` at *the mark typed
+before the import* (18.9 s), and `scoreskeepsanyway` — the declined option made to run
+(#48) — at *the grid of the Activity left behind* (18.2 s).
+
+Then `python mutation/anchors.py` reported **problems 2**, which is #140 arriving on
+schedule: the fix had moved two older mutants' anchors. `30:swallowrefusal` was cut out of
+the two blanking lines that #201 deleted (its siblings on `28` `29` `31` `32` had been
+re-aimed by #151 in September, for the same reason, which is why this screen was the one
+left); and `133:scoresstalewins` removed an `isCurrent()` guard that is now a block, because
+the ref is written beside `setData`. Both were re-aimed and **re-swept**, because an anchor
+check says a mutant still applies and only a sweep says it still proves anything (#107,
+#68): `133:scoresstalewins` **1 of 7 (45.9 s)** at `133a:398`, and `30:swallowrefusal`
+**1 of 10 (53.9 s)** at row 10, each matching what its own sheet had recorded.
+
+And one claim of mine in the new mutation file was wrong on the way past. Its docstring said
+the paths do not overlap with `151`'s, which is true, and then used that to say the sweep was
+safe — when what matters is whether *any* other file holds these paths. Nine do: `30` `111`
+`122` `133` `141-superseded` and `152` hold the weights screen, and `34` `133`
+`141-superseded` `141-the-guard` and `179` hold the marks screen, two of them both.
+The rule was never about the ticket next door; it is **compare `FILES`** (#85, #87, #125),
+and the comparison has to be against the whole directory.

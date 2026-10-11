@@ -405,6 +405,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   nothing about state, report your own failure where a later hook can fail the file. (#181)
 - Report the measured number, not the ticket's — and notice when one number is two (killed and
   hardened). (#102, #48)
+- **A mutant that reads state from outside its function's dependency list measures the closure,
+  not the claim** — the `data` it sees is the first render's, so a mutant written to keep the table
+  and lose the typed number blanked the table instead, became a duplicate of the blanking mutant,
+  and left the second assertion as unrun as it was before. The kill count said exactly what the
+  table predicted; what said otherwise were the lint line in the run's own log naming the missing
+  dependency, and the **assertion's name** not matching the table written before the sweep — which
+  is what that table is for. Read the live state with a functional updater. (#201)
 
 ### Tests and fixtures
 
@@ -708,6 +715,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   checks; when a tool skips things by name, adding a file makes it lie; a guard that reads the
   world before it writes has to survive every state the world is in. Ask the catalogue, not a
   list — and write down what the instrument cannot measure. (#123, #126, #132)
+- **A rule about keeping what was drawn is a claim about what the drawing was an answer to** — so
+  the same rule has one half or two depending on what the loader depends on. #151's *a read that
+  fails keeps what the screen last drew* is whole on a `load` keyed on one id, where a refused read
+  is always a re-read of the same question; on a `load` keyed on two it comes apart, and applying
+  the fix as written builds #133's mismatch in the other half — the grid and heading of the thing
+  left behind, under a picker reading the new one. The ref that tells them apart holds what the
+  data **is of**, not what was asked for. (#201)
 - **A check that can fail to run has three answers, not two** — level, behind, and *could not ask*. Folding
   the third into the second tells somebody whose database is stopped to go and run a migration; the state
   that proves the difference is the one the naive check cannot see. (#159)
