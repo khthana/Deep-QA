@@ -65,6 +65,23 @@ export default function SubjectStudents() {
   const [removing, setRemoving] = useState(null)
 
   /**
+   * A sentence waiting for the read that will draw what it is about - #152.
+   *
+   * `reload` can ask for a different page rather than read the one it is on,
+   * and that read is the effect's: the handler has nothing to await and
+   * cannot know whether it drew. Saying the sentence there says a write
+   * succeeded over a refusal the effect is about to write - the one thing
+   * #152's decision says must not be said - and it is on the screen for as
+   * long as the refusal takes to arrive: measured 11 October 2569 on the
+   * page-2 enrolment, one frame of thirty with the refusal answered at once
+   * and nineteen of forty-seven with it 300ms late.
+   *
+   * So the sentence is left here, `load` says it when it has drawn, and a
+   * read that refused or that nobody is looking at any more takes it away.
+   */
+  const waiting = useRef(null)
+
+  /**
    * `loading` swaps the rows of the table and nothing above it — Students.js'
    * shape, and here for a reason worth writing down.
    *
@@ -85,7 +102,10 @@ export default function SubjectStudents() {
     setLoading(true)
     try {
       const answer = await listEnrolled(sectionId, { page })
-      if (isCurrent()) setData(answer)
+      if (isCurrent()) {
+        setData(answer)
+        if (waiting.current) setNotice(waiting.current)
+      }
       return true
     } catch (error) {
       if (isCurrent()) {
@@ -95,6 +115,7 @@ export default function SubjectStudents() {
       return false
     } finally {
       if (isCurrent()) setLoading(false)
+      waiting.current = null
     }
   }, [sectionId, page])
 
@@ -127,15 +148,20 @@ export default function SubjectStudents() {
    * same question the same way: go to the first page, unless that is where we
    * already are, in which case nothing would refetch and the reload has to be
    * asked for directly.
+   *
+   * It answers whether the caller is the one that draws. Moving the page is a
+   * read the effect does, so the sentence goes to `waiting` and the caller is
+   * told to say nothing: #152, and the comment on that ref.
    */
-  const reload = useCallback(async () => {
-    if (page === 1) return load(() => onScreen.current === load)
-    // Stepping back to the first page is a reload the effect runs, and
-    // nothing has refused anything - #152 is about a refusal, so this
-    // counts as a reload that drew.
-    setPage(1)
-    return true
-  }, [page, load])
+  const reload = useCallback(
+    async said => {
+      if (page === 1) return load(() => onScreen.current === load)
+      waiting.current = said
+      setPage(1)
+      return false
+    },
+    [page, load],
+  )
 
   /**
    * Adding one student.
@@ -159,12 +185,11 @@ export default function SubjectStudents() {
     try {
       const { student } = await enrolStudent(sectionId, code.trim())
       setCode('')
-      const reloaded = await reload()
-      if (reloaded)
-        setNotice({
-          error: false,
-          message: `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
-        })
+      const said = {
+        error: false,
+        message: `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
+      }
+      if (await reload(said)) setNotice(said)
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
     } finally {
@@ -179,17 +204,19 @@ export default function SubjectStudents() {
     try {
       await removeEnrolment(sectionId, student.student_id)
       setRemoving(null)
+      const said = {
+        error: false,
+        message: `นำ ${student.student_id} ${student.full_name_th} ออกจากตอนเรียนแล้ว`,
+      }
       // The last student on the last page leaves an empty page behind them,
       // which reads as a list that lost everything. #57's screens step back for
-      // the same reason.
-      let reloaded = true
-      if (data.students.length === 1 && page > 1) setPage(page - 1)
-      else reloaded = await load(() => onScreen.current === load)
-      if (reloaded)
-        setNotice({
-          error: false,
-          message: `นำ ${student.student_id} ${student.full_name_th} ออกจากตอนเรียนแล้ว`,
-        })
+      // the same reason - and stepping back is a read the effect does, so the
+      // sentence is handed over rather than said here (#152), exactly as
+      // `reload` hands over the one for the first page.
+      if (data.students.length === 1 && page > 1) {
+        waiting.current = said
+        setPage(page - 1)
+      } else if (await load(() => onScreen.current === load)) setNotice(said)
     } catch (error) {
       // The dialog closes either way — CourseOutcomes' reason: leaving it open
       // over a refusal puts the banner behind it and offers a button that
@@ -267,7 +294,12 @@ export default function SubjectStudents() {
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importEnrolments(sectionId, csv)}
             onStart={() => setNotice(null)}
-            onImported={reload}
+            /* `ImportPanel` calls this with nothing and draws its own per-row
+               report, so there is no sentence to hand over and nothing for
+               #152's `waiting` to hold. Written out rather than passed by
+               reference, because `reload`'s first parameter is now that
+               sentence. */
+            onImported={() => reload()}
             onError={error => {
               if (!error.expired)
                 setNotice({ error: true, message: error.message })

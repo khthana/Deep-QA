@@ -200,12 +200,12 @@ MUTANTS = {
         '            setViewing(null)\n            load(() => true)\n'),
     # รายชื่อนักศึกษาของรายวิชา: reload (เพิ่มนักศึกษา และการนำเข้า)
     'enrolmentreloadstalewins': ('enrolment',
-        '    if (page === 1) return load(() => onScreen.current === load)\n',
-        '    if (page === 1) return load(() => true)\n'),
+        '      if (page === 1) return load(() => onScreen.current === load)\n',
+        '      if (page === 1) return load(() => true)\n'),
     # รายชื่อนักศึกษาของรายวิชา: นำออก
     'enrolmentremovestalewins': ('enrolment',
-        '      else reloaded = await load(() => onScreen.current === load)\n',
-        '      else reloaded = await load(() => true)\n'),
+        '      } else if (await load(() => onScreen.current === load)) setNotice(said)\n',
+        '      } else if (await load(() => true)) setNotice(said)\n'),
 }
 
 main(FILES, MUTANTS)

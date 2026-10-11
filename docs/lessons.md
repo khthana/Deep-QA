@@ -8609,14 +8609,14 @@ wrong.
 ### What the re-sweep said
 
 An anchor check says a mutant still applies; only a sweep says it still proves
-anything (#107, #68). Twenty-nine of the thirty-three were re-measured, and
-twenty-eight of those landed exactly where their own record says: `27a` rows 4
-and 8, `28a` and `29a` rows 3 · 4 · 5, `30a` rows 3 and 5 — which is the figure
-`30`'s table already carried from its 17 September re-sweep, not the older one
-above it — and twenty-four of `149`'s each **failing 1 and passing 28** at its
-own screen's own row, read from the names in the log rather than from the count.
+anything (#107, #68). All thirty-three were re-measured, and thirty-two of them
+landed exactly where their own record says: `27a` rows 4 and 8, `28a` and `29a`
+rows 3 · 4 · 5, `30a` rows 3 and 5 — which is the figure `30`'s table already
+carried from its 17 September re-sweep, not the older one above it — and all
+twenty-eight of `149`'s each **failing 1 and passing 28** at its own screen's own
+row, read from the names in the log rather than from the count.
 
-The twenty-ninth is the one worth writing down. `31:savenoreload` used to fail
+The thirty-third is the one worth writing down. `31:savenoreload` used to fail
 six rows: row 3, which is its claim, rows 2 and 4, which die at their own
 reloads, and rows 5, 6 and 8, which its own table recorded as contamination —
 the restores of rows 2–4 never reached the screen, so the file cleaned up
@@ -8627,12 +8627,14 @@ contamination was a property of the deletion, not of the claim** — so a mutant
 re-aimed by substitution can be narrower than the one it replaces, and the
 figure to compare it against is the row it was written for and not the total.
 
-The four that are not in the twenty-nine are `ContinuousImprovement.js`'s, and
-neither of their reasons is a measurement: one crashed the browser mid-run
-(`Target crashed`, then the worker exited by itself) and three were cut off when
-the sweep was stopped. A red from a crashed worker is not a red (#171 from the
-failing side), and what was measured beside a stopped run is thrown away
-(#146) — so all four are re-swept rather than read.
+Four of the thirty-three came from a second run. `ContinuousImprovement.js`'s
+four had no measurement on the first pass, for two reasons and neither of them a
+verdict: one crashed the browser mid-run (`Target crashed`, then the worker
+exited by itself) and three were cut off when the sweep was stopped. A red from a
+crashed worker is not a red (#171 from the failing side), and what was measured
+beside a stopped run is thrown away (#146) — so all four were run again the next
+day from a fresh baseline of 29 of 29, and all four fail 1 and pass 28 at their
+own rows.
 
 Stopping the sweep taught one more thing. The harness restored cleanly, the ten
 page files read exactly as the implementation left them, and `anchors.py` said
@@ -8644,3 +8646,91 @@ hand. Something left over from the killed run was still writing the tree.
 **An instrument read just after a sweep is stopped can be reading a straggler's
 write** — the processes the runner leaves behind outlive the runner, so clear the
 ports, ask the machine what is still alive, and read the instrument twice.
+
+### The second half: the two branches that moved the page instead of reading it
+
+Both reviews of the first round pointed at the same six lines. `SubjectStudents`
+has two paths where no `load` is called at all: `reload`, which asks for the
+first page by moving `page`, and the removal of the last student on a page,
+which steps back by moving it the other way. The read that follows is the
+effect's, and nothing in the handler can await it — so the first round wrote
+`return true` with a comment saying *nothing has refused anything in this
+path*.
+
+**That comment was a claim, and the thing it was wrong about was its own
+subject.** What gets refused on that path is the read the path has just asked
+for. The sentence is set synchronously, the move commits with it, and the
+refusal arrives afterwards and replaces it: the person is told the enrolment
+worked and then told the list could not be read, in that order, which is the
+one sentence the owner's decision of 10 October says must not be said.
+
+Measured per frame (#164), because *was it ever on the screen* has no other
+answer: with the refusal answered at once the sentence was painted on **one
+frame of thirty**; with the refusal held 300ms, on **nineteen of forty-seven**.
+The fix hands the sentence over instead of saying it — a `waiting` ref that
+`load` reads when it has drawn and `finally` always clears, so a read that was
+refused, or that the screen has moved past, leaves no sentence behind.
+
+The first probe of all this measured nothing at all, and said so convincingly:
+zero frames of thirty, at every lateness. It was looking for
+*เข้าชั้นเรียนแล้ว* and the screen writes *เข้าตอนเรียนแล้ว*. #171's rule from
+the other side — **a locator for text the screen never writes reads empty on
+the broken screen and on the fixed one**, so ten clean measurements of it mean
+nothing. What saved it was reading the sentence out of the file rather than out
+of my own memory of the file.
+
+### The survivor that meant the row had read at the wrong moment
+
+The three rows went in, passed, and then the sweep refused to agree:
+`enrolmentmovedanyway` and `enrolmentmovedremovalanyway` — each of them the
+pre-fix code exactly — **survived 21 of 21**.
+
+They survived because the rows read at a settle point, which is what every
+other row on this sheet does and what #50 asks for. At the settle point the
+refusal has already **replaced** the success sentence, so the broken screen and
+the fixed one say the same thing: the refusal, once. The claim is about a
+sentence that exists only between two commits, and a read once it has settled
+cannot hold it however carefully it is written.
+
+So: **a survivor can mean the row read at the wrong moment, not that the claim
+was never at risk.** That is a seventh reading, beside *never at risk*, *written
+in two places*, *kills too much*, *a row that does not exist yet*, *the one the
+sheet predicted*, and *a claim the harness cannot put at risk* — and the only
+one of the seven where the row, not the mutant and not the code, is what is
+wrong. The tell is that the mutant is a faithful copy of code a measurement has
+already shown to misbehave: when the thing you measured by hand survives the
+suite, the suite is reading somewhere the defect is not.
+
+Rewritten as frame samplers, the two mutants die at `expect(seen.saying)` with
+**19** and **18** painted frames — at the assertion that holds the claim, and
+not at `onlyTheRefusal` below it, which both of them still pass.
+
+### What the fixture had to build, and what the proof cost
+
+The removal's branch needs a page above the first holding exactly one student,
+and the seeded class list of fifty-odd cannot have one: the branch is in the
+handler, not in the data. So the row trims the real answer — `students` cut to
+one, `total`, `page` and `section` left as the server sent them — which is #96's
+rule again, the fixture being the fix for a claim nothing else can reach.
+
+The population is two sites and not twelve, and the census that says so is
+worth writing down: `setPage(1)` as a way of asking for a read appears on eight
+other screens — `Students`, `Offerings`, `Users`, `Programs`, `Subjects`,
+`ProgramSubjects`, `Rubrics`, `Departments` — and every one of them is one of
+the ten that set their sentence **before** reloading, so the refusal still
+lands on top of it whichever branch runs. The shape is only a defect on the
+screen whose handler consults an answer, which is the screen #152's own fix had
+just created.
+
+Keeping the removal's own `load` call out of `reload` was a decision about the
+proof rather than about the code. Routing both through one call site would have
+read better and would have merged `140:enrolmentreloadstalewins` and
+`140:enrolmentremovestalewins` into one mutant that no row could tell apart —
+#68's cost, paid in a place where nothing in the diff announces it.
+
+And `onImported={reload}` had to be written out as `onImported={() => reload()}`
+the moment `reload` took a parameter: **a caller passed by reference is
+invisible to a grep for the call** (#68, #133), and `ImportPanel` calls it with
+nothing. The first round's own note had counted three mutants unanchored by the
+fix and not four, for exactly that reason — `onImported={reload}` had not been
+touched that day, so the grep that found the others could not see it.

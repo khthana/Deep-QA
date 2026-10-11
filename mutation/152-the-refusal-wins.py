@@ -15,16 +15,28 @@
 
 ## มัตแตนต์
 
-สิบแปดตัว ตัวละหนึ่งจุด - แต่ละตัวเอา `reloaded` ออกจากเงื่อนไข คือโค้ดก่อน #152 เป๊ะ ๆ ควรฆ่าแถว
-ของจุดตัวเองใน `152a` แถวเดียว และไม่แตะแถวอื่น
+ยี่สิบเอ็ดตัว สิบแปดตัวของรอบแรก ตัวละหนึ่งจุด — แต่ละตัวเอา `reloaded` ออกจากเงื่อนไข คือโค้ดก่อน #152
+เป๊ะ ๆ ควรฆ่าแถวของจุดตัวเองใน `152a` แถวเดียว และไม่แตะแถวอื่น
 
 * `<จอ>saveanyway` - ครึ่งบันทึก เจ็ดจอ
 * `<จอ>removalanyway` - ครึ่งลบ เจ็ดจอ
 * `weightssaveanyway` `groupsafteranyway` `enrolmentaddanyway` `enrolmentremovalanyway` - สี่จุด
   ที่ไม่มี `showing.current` คุมอยู่เลย ข้อยกเว้นที่ตั๋วเขียนไว้จึงไม่เคยใช้กับมัน
 
-`return true` ของทางที่ถอยกลับไปหน้าแรกใน `SubjectStudents.js` ไม่มีมัตแตนต์: ไม่มีอะไรถูกปฏิเสธ
-ในทางนั้น มันจึงเป็นการตัดสินใจที่เขียนไว้ในคอมเมนต์ ไม่ใช่ข้ออ้างของ `152a`
+อีกสามตัวเป็นของครึ่งหลัง (11 ต.ค. 2569) ที่ `SubjectStudents.js` ซึ่งมีสองทางที่ไม่ได้เรียก `load`
+เลย แต่ขอให้ effect อ่านด้วยการย้ายหน้า:
+
+* `enrolmentmovedanyway` - `reload` ย้ายไปหน้าแรกแล้ว `return true` คือโค้ดของรอบแรกเป๊ะ ๆ
+* `enrolmentmovedremovalanyway` - การนำออกคนสุดท้ายของหน้า ถอยหน้าแล้วพูดประโยคเอง
+* `enrolmentdrewunsaid` - ลบบรรทัดที่ `load` พูดประโยคที่ฝากไว้ใน `waiting`
+
+สองตัวแรก **อ่านที่จุดสงบไม่เจอ**: คำปฏิเสธที่มาทีหลังทับประโยคสำเร็จ จุดสงบจึงเห็นแต่คำปฏิเสธ
+สองแถวนั้นจึงนับทุกเฟรมที่วาด (#164) และมัตแตนต์ตายที่ `expect(seen.saying)` ไม่ใช่ที่
+`onlyTheRefusal`
+
+`return true` ของทางที่ถอยกลับไปหน้าแรกใน `SubjectStudents.js` ไม่มีมัตแตนต์ในรอบแรก เพราะ
+คอมเมนต์บอกว่าไม่มีอะไรถูกปฏิเสธในทางนั้น — ครึ่งหลังวัดแล้วว่าสิ่งที่ถูกปฏิเสธคือการอ่านที่ทางนั้น
+เพิ่งขอมาเอง และคอมเมนต์นั้นเป็นข้ออ้าง ไม่ใช่การวัด
 
 ## สิ่งที่ไฟล์นี้ชนกับใบอื่น
 
@@ -44,12 +56,22 @@
 และทั้งสิบแปดตัว **ล้ม 1 ผ่าน 17** ตัวละแถวของตัวเองแถวเดียว อ่านจากชื่อแถวในล็อก
 ไม่ใช่จากจำนวน (#52 #146)
 
-สามสิบสามตัวที่เล็งใหม่ถูกกวาดซ้ำวันเดียวกัน ยี่สิบเก้าตัววัดจบ: `savenoreload` ทั้งห้า
+สามสิบสามตัวที่เล็งใหม่ถูกกวาดซ้ำครบทั้งสามสิบสาม (10-11 ต.ค. 2569): `savenoreload` ทั้งห้า
 (`27a` แถว 4 กับ 8 · `28a` และ `29a` แถว 3 · 4 · 5 · `30a` แถว 3 กับ 5 · `31a` แถว 2 · 3 · 4)
-และยี่สิบสี่ตัวของ `149` ที่ **ล้ม 1 ผ่าน 28** ตัวละแถวของจอตัวเอง `31:savenoreload` ล้มน้อยกว่า
+และยี่สิบแปดตัวของ `149` ที่ **ล้ม 1 ผ่าน 28** ตัวละแถวของจอตัวเอง `31:savenoreload` ล้มน้อยกว่า
 ที่ตารางของใบ 31 บันทึก เพราะมัตแตนต์ที่แทนค่ายังเรียกการโหลดอยู่ การเก็บกวาดของแถว 2-4
-จึงครบและแถว 5 · 6 · 8 ไม่ปนเปื้อน ยังเหลือสี่ตัวของ `ContinuousImprovement.js` ที่ต้องกวาดใหม่
-เพราะเบราว์เซอร์ล้มกลางรันตัวหนึ่งและอีกสามตัวถูกตัดกลางคัน
+จึงครบและแถว 5 · 6 · 8 ไม่ปนเปื้อน สี่ตัวของ `ContinuousImprovement.js` ตกไปในรอบแรก
+(เบราว์เซอร์ล้มกลางรันตัวหนึ่ง อีกสามตัวถูกตัดกลางคัน) จึงกวาดใหม่ทั้งชุด 11 ต.ค. จาก
+baseline **29 ผ่านทั้ง 29**
+
+กวาดครึ่งหลัง 11 ต.ค. 2569 ด้วย `152a` ทั้งไฟล์ — baseline **21 ผ่านทั้ง 21** และสามตัว
+**ล้ม 1 ผ่าน 20** ตัวละแถวของตัวเอง (`enrolmentmovedanyway` ตายด้วย 19 เฟรม
+`enrolmentmovedremovalanyway` ด้วย 18 เฟรม) สองตัวแรกรอดในรอบที่แถวยังอ่านที่จุดสงบ (21 ผ่าน
+ทั้ง 21) ซึ่งเป็นผู้รอดชีวิตที่บอกว่า**แถวอ่านผิดเวลา** ไม่ใช่ว่าข้ออ้างไม่เคยถูกเสี่ยง
+
+ครึ่งหลังทำให้สี่ตัวหลุดสมออีก — `140:enrolmentreloadstalewins` `140:enrolmentremovestalewins`
+`25:addstaysonpage` `25:importstaysonpage` — เล็งใหม่และกวาดซ้ำครบทั้งสี่วันเดียวกัน
+(**2 ผ่าน 30** · **1 ผ่าน 31** · **1 ผ่าน 14** · **1 ผ่าน 14**) ตรงกับตัวเลขของตารางเดิมทุกตัว
 
 ## วิธีรัน
 
@@ -107,20 +129,31 @@ GROUPS_ANYWAY = ("    await load(() => onScreen.current === load)\n"
                  "    setWrites(count => count + 1)\n"
                  "    setNotice({ error: false, message })\n")
 
-ADD_READS = ("      const reloaded = await reload()\n"
-             "      if (reloaded)\n"
-             "        setNotice({\n")
-ADD_ANYWAY = ("      await reload()\n"
-              "      setNotice({\n")
+ADD_READS = "      if (await reload(said)) setNotice(said)\n"
+ADD_ANYWAY = "      await reload(said)\n      setNotice(said)\n"
 
-REMOVE_ENROL_READS = ("      let reloaded = true\n"
-                      "      if (data.students.length === 1 && page > 1) setPage(page - 1)\n"
-                      "      else reloaded = await load(() => onScreen.current === load)\n"
-                      "      if (reloaded)\n"
-                      "        setNotice({\n")
-REMOVE_ENROL_ANYWAY = ("      if (data.students.length === 1 && page > 1) setPage(page - 1)\n"
-                       "      else await load(() => onScreen.current === load)\n"
-                       "      setNotice({\n")
+REMOVE_ENROL_READS = "      } else if (await load(() => onScreen.current === load)) setNotice(said)\n"
+REMOVE_ENROL_ANYWAY = ("      } else {\n"
+                       "        await load(() => onScreen.current === load)\n"
+                       "        setNotice(said)\n"
+                       "      }\n")
+
+# สามตัวของครึ่งหลัง (11 ต.ค. 2569) - บนหน้าอื่นที่ไม่ใช่หน้าแรก `reload` ย้ายหน้าแทนที่จะอ่าน
+# ประโยคจึงถูกฝากไว้ที่ `waiting` ให้การอ่านที่วาดสำเร็จเป็นคนพูด
+MOVED_READS = ("      waiting.current = said\n"
+               "      setPage(1)\n"
+               "      return false\n")
+MOVED_ANYWAY = ("      setPage(1)\n"
+                "      return true\n")
+
+MOVED_REMOVAL_READS = ("        waiting.current = said\n"
+                       "        setPage(page - 1)\n")
+MOVED_REMOVAL_ANYWAY = ("        setPage(page - 1)\n"
+                        "        setNotice(said)\n")
+
+DREW_READS = ("        setData(answer)\n"
+              "        if (waiting.current) setNotice(waiting.current)\n")
+DREW_UNSAID = "        setData(answer)\n"
 
 # เขียนเป็น dict ตรง ๆ ไม่ใช่ loop - `anchors.py` อ่าน `MUTANTS` จาก AST
 MUTANTS = {
@@ -142,6 +175,9 @@ MUTANTS = {
     'groupsafteranyway': ('groups', GROUPS_READS, GROUPS_ANYWAY),
     'enrolmentaddanyway': ('enrolment', ADD_READS, ADD_ANYWAY),
     'enrolmentremovalanyway': ('enrolment', REMOVE_ENROL_READS, REMOVE_ENROL_ANYWAY),
+    'enrolmentmovedanyway': ('enrolment', MOVED_READS, MOVED_ANYWAY),
+    'enrolmentmovedremovalanyway': ('enrolment', MOVED_REMOVAL_READS, MOVED_REMOVAL_ANYWAY),
+    'enrolmentdrewunsaid': ('enrolment', DREW_READS, DREW_UNSAID),
 }
 
 main(FILES, MUTANTS)

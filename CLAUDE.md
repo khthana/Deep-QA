@@ -343,6 +343,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   seam removes the situation first: a closed dialog that a hidden tab keeps is unmounted by a focused
   one, so the same code is stale for the person and clean for the suite. Measure it in both browsers,
   take the mutant out, and leave the row as a net that says it is one. (#47)
+- **A survivor can mean the row read at the wrong moment** — the seventh reading, and the only one
+  where the row rather than the mutant or the code is what is wrong. A claim about a sentence that
+  lives between two commits cannot be held at a settle point: the refusal that replaces it has
+  landed by then, so the broken screen and the fixed one say the same thing, and two mutants that
+  were faithful copies of the measured defect survived 21 of 21. The tell is exactly that — a
+  mutant reproducing something a hand measurement has already shown misbehaving. Re-aim the row at
+  the frames (#164), and read *which assertion* it then dies at. (#152)
 - **A mutant that swaps one implementation for another is invisible wherever the two agree** — so
   the fixture is built where they *disagree*, which is not the same as building it big. And a
   fixture named for a property is a claim about a library's answer: ask ICU whether that run is one
@@ -430,7 +437,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A probe placed in front of the read it is measuring changes the answer** — a round trip is a turn
   for the renderer, so the probe goes *behind* the read it is about. (#170)
 - ***Was it ever on the screen* is answered by a sample per frame, not by a longer wait** — and a
-  sample is taken of the thing the row is about, not of the page. (#164)
+  sample is taken of the thing the row is about, not of the page. A sampler is also a locator built
+  out of a source string (#118, #171): one looking for a sentence the screen never writes answers
+  *never* at every lateness, on the broken screen and on the fixed one, so read the sentence out of
+  the file rather than out of your memory of it. (#164, #152)
 - **A sampler that reads what a control holds cannot tell an absent control from an empty one** — so
   a precondition written that way passes on the broken screen and fails on the fixed one. Count the
   controls as well as reading them. (#164)
