@@ -305,6 +305,15 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   keys a mutant inside its own file, so two tickets fixing the same shape write the same name,
   and a criteria sheet that carries both tickets' rows then reads as one mutant cited twice.
   Rename the second before the table is written. (#185)
+- **A guard copied from a closed ticket's guard makes that ticket's anchors ambiguous** —
+  same question, same spelling, same indentation, same file, so a one-line anchor that was
+  unique finds two sites and the harness refuses it. The repair is the line above the
+  question, which says what the handler did before asking; and a fix that adds a line to a
+  block re-aims every anchor that quoted the block whole. Run `python mutation/anchors.py`
+  **while** making such a change, not only at closing time. **And the repair re-aims a tenth**:
+  a constant four mutants share, edited to disambiguate them, moves every mutant that quoted it
+  — including one in a file the ticket never touched, which no instrument reports because the
+  repair precedes the next run. It is in the diff only. (#202)
 - **A mutant outlives its ticket but not its anchor.** Run `python mutation/anchors.py` while
   finishing a ticket, anchor to the code a mutant breaks and never to the comment beside it, and
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
@@ -378,7 +387,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the suite holds. (#115)
 - **A kill count is a claim about the fixtures as much as about the code** — a seed that gains an
   account carrying the property a mutant is about expires the count of a mutant nobody edited, so
-  re-sweep the ones you did not touch. (#48)
+  re-sweep the ones you did not touch. **A spec that gains a row the mutant can reach expires it
+  the same way**, and nothing reports that one: the anchor is still exact and the code untouched,
+  so only re-running it says the mutant proves one claim more than its sheet credits it with — the
+  figure beside it was a figure about a smaller suite. (#48, #202)
 - **What corrupts a sweep is a repeated path — compare `FILES`, not subject matter**, and ask the
   census script rather than your memory; the figure that decides is the group, not the total.
   (#85, #87, #125)
@@ -608,6 +620,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)
+- **A flag that says *nothing refused the read* is not a flag that says *it drew*** — a loader
+  that ends its `try` with `return true` answers the same whether or not `isCurrent()` held, so
+  a sentence behind it is guarded against a refusal and not against a person who has moved. The
+  two questions are asked with two clauses, and the ref is the second one. The control that
+  supersedes such a read need not take anything away or open anything: a pager that is not
+  disabled while a write is out changes what the read is *of*, which is enough. (#202, #199)
 - **A superseded-answer guard goes around the drawing, not around the escalation** — the report
   belongs to what was asked for, but the refusal with no rows in it (an expired session, a role that
   may not) belongs to the person, and the shell says it wherever they have since moved to. One

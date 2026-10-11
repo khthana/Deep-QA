@@ -170,18 +170,23 @@ export default function SubjectStudents() {
    * page being shown is a page of ten sorted by code, and a student whose code
    * sorts before the last one on it does not belong at the bottom.
    *
-   * superseded-answer: what is drawn from the answer is a sentence about the
-   * enrolment that has just finished, and nothing can begin a second one while
-   * this is out - the submit button is `disabled={busy}` and a disabled default
-   * button is what stops Enter in the field submitting too. The reload it calls
-   * is guarded on its own account (#140). Unreachable with a date on it: a
-   * second control that enrols, or one that changes `sectionId` without leaving
-   * the screen. Measured 1 October 2026 (#133, #131, #141)
+   * superseded-answer: guarded. The reason written here on 1 October 2569 - that
+   * nothing can begin a second enrolment while this is out, the submit button
+   * being `disabled={busy}` and a disabled default button being what stops Enter
+   * in the field submitting too - named a way in and not the population (#179).
+   * `Pager` carries no `busy` and ถัดไป is pressable for as long as the write is
+   * out (#199): it begins no second enrolment and changes what the read is *of*,
+   * which is enough. The reload is guarded on its own account (#140); the
+   * sentence was not, because `load` answers *the read was not refused* and never
+   * *it drew* - it returns `true` from inside its `try` whatever `isCurrent()`
+   * says (#152). So the handler asks #146's question itself, with the ref this
+   * screen already has. Measured 11 October 2569 (#202)
    */
   const add = async event => {
     event.preventDefault()
     setBusy(true)
     setNotice(null)
+    const sent = onScreen.current
     try {
       const { student } = await enrolStudent(sectionId, code.trim())
       setCode('')
@@ -189,7 +194,8 @@ export default function SubjectStudents() {
         error: false,
         message: `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
       }
-      if (await reload(said)) setNotice(said)
+      const reloaded = await reload(said)
+      if (reloaded && onScreen.current === sent) setNotice(said)
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
     } finally {
@@ -200,6 +206,7 @@ export default function SubjectStudents() {
   const remove = async () => {
     setBusy(true)
     setNotice(null)
+    const sent = onScreen.current
     const student = removing
     try {
       await removeEnrolment(sectionId, student.student_id)
@@ -216,7 +223,13 @@ export default function SubjectStudents() {
       if (data.students.length === 1 && page > 1) {
         waiting.current = said
         setPage(page - 1)
-      } else if (await load(() => onScreen.current === load)) setNotice(said)
+      } else {
+        // The same question `add` asks, for the same reason: the read is guarded
+        // and its answer is not. ถัดไป is pressable while the removal is out
+        // (#199), and `load` says only that nothing refused it (#202).
+        const reloaded = await load(() => onScreen.current === load)
+        if (reloaded && onScreen.current === sent) setNotice(said)
+      }
     } catch (error) {
       // The dialog closes either way — CourseOutcomes' reason: leaving it open
       // over a refusal puts the banner behind it and offers a button that

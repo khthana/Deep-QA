@@ -229,17 +229,30 @@ export default function Users() {
    */
   const isSelf = user => Boolean(profile) && user.user_id === profile.user_id
 
+  /**
+   * The sentence belongs to the screen that was asked - #202.
+   *
+   * The rule `save` above has followed since #146, and this is the shape of it
+   * that asks nothing first: there is no dialog, so the list stays live and
+   * แก้ไข on another row is an ordinary click while the switch is out. Its
+   * answer then said *ระงับ…เรียบร้อยแล้ว* over that row's form. Only the
+   * sentence is asked about - the list is reloaded whichever way the comparison
+   * goes (#131). `Departments.js` carries the reasons.
+   */
   const toggle = async user => {
+    const sent = showing.current
     const next = user.status === 'active' ? 'inactive' : 'active'
     try {
       await setUserStatus(user.user_id, next)
-      setNotice({
-        error: false,
-        message:
-          next === 'inactive'
-            ? 'ระงับการใช้งานบัญชีเรียบร้อยแล้ว'
-            : 'เปิดใช้งานบัญชีเรียบร้อยแล้ว',
-      })
+      if (showing.current === sent) {
+        setNotice({
+          error: false,
+          message:
+            next === 'inactive'
+              ? 'ระงับการใช้งานบัญชีเรียบร้อยแล้ว'
+              : 'เปิดใช้งานบัญชีเรียบร้อยแล้ว',
+        })
+      }
       await load(() => onScreen.current === load)
     } catch (error) {
       report(error)

@@ -182,18 +182,25 @@ export default function Programs() {
     }
   }
 
+  // The sentence belongs to the screen that was asked - #202, the rule `save`
+  // above has followed since #146. `Departments.js` carries the reasons, and
+  // only the sentence is asked about: the dialog closes, the page steps back and
+  // the list is reloaded whichever way the comparison goes (#131).
   const confirmRemoval = async () => {
+    const sent = showing.current
     setWriting(true)
     try {
       const answer = await deleteProgram(removing.program_id)
       const deactivated = Boolean(answer?.deactivated)
       setRemoving(null)
-      setNotice({
-        error: false,
-        message: deactivated
-          ? 'หลักสูตรนี้มีข้อมูลอื่นอ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
-          : 'ลบหลักสูตรเรียบร้อยแล้ว',
-      })
+      if (showing.current === sent) {
+        setNotice({
+          error: false,
+          message: deactivated
+            ? 'หลักสูตรนี้มีข้อมูลอื่นอ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
+            : 'ลบหลักสูตรเรียบร้อยแล้ว',
+        })
+      }
       // The last row of the last page having gone, staying on that page shows an
       // empty table and reads as "there are none". Stepping back is a change of
       // page and the effect fetches it; calling `load` here as well would race

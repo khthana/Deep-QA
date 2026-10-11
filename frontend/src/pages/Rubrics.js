@@ -134,10 +134,22 @@ export default function Rubrics() {
    */
   const asked = useRef(null)
 
+  /**
+   * The last thing that opened on this screen - #146, arriving here with #202.
+   *
+   * เพิ่ม Rubric and แก้ไข write it, แก้ไข at the press for #139's reason;
+   * ยกเลิก and ลบ do not. What needs it here is `confirmRemoval`: the question
+   * `ConfirmDialog` asks traps no focus (#204), so both of those controls answer
+   * to Enter from under it while the removal is out. `Plos.js` carries why this
+   * screen had no such ref until now, and `Departments.js` the reasons.
+   */
+  const showing = useRef(null)
+
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async rubric => {
     const ask = {}
     asked.current = ask
+    showing.current = ask
     setNotice(null)
     setReading(true)
     try {
@@ -151,6 +163,13 @@ export default function Rubrics() {
     }
   }
 
+  /**
+   * No `showing.current === sent` here, and that is measured rather than
+   * forgotten - #202, 11 October 2569. The form replaces the table and
+   * `RubricForm` gives ยกเลิก `disabled={busy}`, so nothing can take the screen
+   * while a save is out and the guard would be a clause no row could reach
+   * (#97). `Plos.js` carries the note and what would re-date it.
+   */
   const save = async draft => {
     setWriting(true)
     try {
@@ -166,18 +185,25 @@ export default function Rubrics() {
     }
   }
 
+  // The sentence belongs to the screen that was asked - #202. Only the sentence
+  // is asked about: the dialog closes, the page steps back and the list is
+  // reloaded whichever way the comparison goes (#131). `Departments.js` carries
+  // the reasons.
   const confirmRemoval = async () => {
+    const sent = showing.current
     setWriting(true)
     try {
       const answer = await deleteRubric(removing.id)
       const removedCriteria = Number(answer?.criteria_removed ?? 0)
       setRemoving(null)
-      setNotice({
-        error: false,
-        message: removedCriteria
-          ? `ลบ Rubric เรียบร้อยแล้ว พร้อมเกณฑ์การให้คะแนน ${removedCriteria} ข้อที่อยู่ใต้ Rubric นี้`
-          : 'ลบ Rubric เรียบร้อยแล้ว',
-      })
+      if (showing.current === sent) {
+        setNotice({
+          error: false,
+          message: removedCriteria
+            ? `ลบ Rubric เรียบร้อยแล้ว พร้อมเกณฑ์การให้คะแนน ${removedCriteria} ข้อที่อยู่ใต้ Rubric นี้`
+            : 'ลบ Rubric เรียบร้อยแล้ว',
+        })
+      }
       // The last row of the last page having gone, staying on that page shows an
       // empty table and reads as "there are none". Stepping back is a change of
       // page and the effect fetches it; calling `load` here as well would race
@@ -253,6 +279,7 @@ export default function Rubrics() {
                 type="button"
                 onClick={() => {
                   asked.current = null
+                  showing.current = {}
                   setNotice(null)
                   setEditing({})
                 }}

@@ -124,9 +124,20 @@ export default function GradingWeights() {
     return sum + (Number.isFinite(weight) ? weight : 0)
   }, 0)
 
+  /**
+   * superseded-answer: the grid is guarded by `load`'s own flag and the sentence
+   * by the ref, because they are two questions. `load` returns `true` from
+   * inside its `try` whatever `isCurrent()` says, so #152's flag means *the read
+   * was not refused*; what says the screen is still the one that asked is the
+   * comparison below (#146, #202). The way in is the jump the comment above
+   * `onScreen` names, taken while this write is out - which no row walks yet, so
+   * the sheet says ยังไม่ได้ทดสอบ: #199's sibling, measured on the enrolment
+   * screen and not here. 11 October 2569 (#202, #68)
+   */
   const save = async () => {
     setBusy(true)
     setNotice(null)
+    const sent = onScreen.current
     try {
       await saveWeights(
         sectionId,
@@ -140,7 +151,8 @@ export default function GradingWeights() {
         }))
       )
       const reloaded = await load(() => onScreen.current === load)
-      if (reloaded) setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })
+      if (reloaded && onScreen.current === sent)
+        setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
     } finally {

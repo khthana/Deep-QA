@@ -289,12 +289,47 @@ export default function Departments() {
     }
   }
 
+  /**
+   * The same question `save` asks, at the handler that is not a save - #202.
+   *
+   * #146 gave the rule to the write that closes a form and nothing asked it
+   * anywhere else: fifteen success sentences, in fourteen handlers across
+   * twelve screens, were set unconditionally, and this was one. Eleven of them
+   * are this shape; the other four say their sentence behind the flag #152's
+   * loader returns, which answers *the read was not refused* and never *it
+   * drew*, and are guarded with `onScreen` rather than with `showing` (#199). A removal is held at the route for as
+   * long as the server takes, and the table underneath the question is live the
+   * whole time - `ConfirmDialog` draws a `fixed inset-0` overlay and traps
+   * nothing, so เพิ่มภาควิชา and another row's แก้ไข both answer to Enter where
+   * focus already is, which is the `ลบ` that opened the dialog (#204). The
+   * answer then put *ลบภาควิชาเรียบร้อยแล้ว* over the form they had opened, in
+   * the one place on the screen where a sentence reads as being about what is
+   * in front of it.
+   *
+   * Only the sentence is asked about. The dialog closes, the page steps back
+   * and the list is reloaded whichever way the comparison goes: an effect that
+   * must always happen does not go behind one that can fail (#131), and a table
+   * the removal may have changed is out of date for the person wherever they
+   * have moved to. The refusal below is not guarded either, and that is #179's
+   * line rather than an oversight - a 409 saying this department cannot go is
+   * news for the person, not for the screen they asked about.
+   *
+   * `Programs`, `Subjects`, `Plos`, `Rubrics`, `RubricCriteria`,
+   * `ProgramSubjects` and `Offerings` ask it in their own `confirmRemoval`,
+   * `Users` at its status switch and `Offerings` again at the term copy.
+   * `202a-the-sentence-belongs-to-the-screen-asked.spec.js` has the rows - one
+   * per shape, because where the code is shared no mutant can tell the screens
+   * apart (#68).
+   */
   const confirmRemoval = async () => {
+    const sent = showing.current
     setWriting(true)
     try {
       await deleteDepartment(removing.department_id)
       setRemoving(null)
-      setNotice({ error: false, message: 'ลบภาควิชาเรียบร้อยแล้ว' })
+      if (showing.current === sent) {
+        setNotice({ error: false, message: 'ลบภาควิชาเรียบร้อยแล้ว' })
+      }
       // The last row of the last page having gone, staying on that page shows
       // an empty table and reads as "there are none". Stepping back is a change
       // of page and the effect fetches it; calling `load` here as well would

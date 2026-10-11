@@ -167,8 +167,8 @@ MUTANTS = {
     # a different mutant from the one this was. It passes the flag every other
     # caller passes, which is the same reload of the same page it always was.
     "addstaysonpage": ("screen",
-                       "      if (await reload(said)) setNotice(said)",
-                       "      if (await load(() => onScreen.current === load)) setNotice(said)"),
+                       "      const reloaded = await reload(said)",
+                       "      const reloaded = await load(() => onScreen.current === load)"),
     # The same hole on the import path, which reaches the same reload through a
     # different prop. Kills the second row 7 only. Two mutants and not one
     # because the two paths are two edits, and a single mutant covering both

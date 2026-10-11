@@ -95,9 +95,12 @@ MUTANTS = {
         "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
         "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
     # ข้อมูลผู้ใช้งาน: ระงับ
+    # #202 wrapped this handler's sentence in a guard, so the line above the
+    # reload is now the guard's `}` and `save` carries the same pair. The tail
+    # tells them apart: `toggle` has no `finally`.
     'userstogglestalewins': ('users',
-        '      })\n      await load(() => onScreen.current === load)\n',
-        '      })\n      await load(() => true)\n'),
+        '      await load(() => onScreen.current === load)\n    } catch (error) {\n      report(error)\n    }\n  }\n',
+        '      await load(() => true)\n    } catch (error) {\n      report(error)\n    }\n  }\n'),
     # ข้อมูลผู้ใช้งาน: การนำเข้า
     'usersimportstalewins': ('users',
         '              if (page === 1) load(() => onScreen.current === load)\n',
@@ -204,8 +207,8 @@ MUTANTS = {
         '      if (page === 1) return load(() => true)\n'),
     # รายชื่อนักศึกษาของรายวิชา: นำออก
     'enrolmentremovestalewins': ('enrolment',
-        '      } else if (await load(() => onScreen.current === load)) setNotice(said)\n',
-        '      } else if (await load(() => true)) setNotice(said)\n'),
+        '        const reloaded = await load(() => onScreen.current === load)\n',
+        '        const reloaded = await load(() => true)\n'),
 }
 
 main(FILES, MUTANTS)

@@ -136,10 +136,18 @@ export default function StudentGroups() {
    * count on the screen. Reconciling that by hand is four places to forget one,
    * and the read costs one request against a list that is a few dozen rows.
    */
-  const after = async message => {
+  const after = async (message, sent) => {
     const reloaded = await load(() => onScreen.current === load)
+    // The counter is what the history panel reads and must move either way
+    // (#131). The sentence is the one thing here that belongs to the screen
+    // that asked: `load`'s flag says only that nothing refused the read - it
+    // returns `true` from inside its `try` whatever `isCurrent()` says - so
+    // the ref is asked as well (#146, #152, #202). `sent` is read by the
+    // caller before the write leaves, because by the time this runs the jump
+    // has already moved the ref. Untested: the jump the comment above
+    // `onScreen` names, #199's sibling. 11 October 2569 (#68)
     setWrites(count => count + 1)
-    if (reloaded) setNotice({ error: false, message })
+    if (reloaded && onScreen.current === sent) setNotice({ error: false, message })
   }
 
   const failed = error => {
@@ -150,8 +158,9 @@ export default function StudentGroups() {
   const write = async (action, succeeded) => {
     setBusy(true)
     setNotice(null)
+    const sent = onScreen.current
     try {
-      await after(succeeded(await action))
+      await after(succeeded(await action), sent)
     } catch (error) {
       failed(error)
     } finally {
@@ -204,10 +213,11 @@ export default function StudentGroups() {
     const group = removingGroup
     setBusy(true)
     setNotice(null)
+    const sent = onScreen.current
     try {
       await deleteGroup(sectionId, group.group_id)
       setRemovingGroup(null)
-      await after(`ลบ ${group.group_name} แล้ว`)
+      await after(`ลบ ${group.group_name} แล้ว`, sent)
     } catch (error) {
       // The dialog closes either way — `SubjectStudents`' reason: leaving it
       // open over a refusal puts the banner behind it and offers a button that

@@ -8897,3 +8897,228 @@ setter's name is all it reads — so the run prints every other `set…` name in
 looks like a notice and was not read, by name, for a new spelling to show up as a new word.
 Today those are `setAlert` `setError` `setErrorMessage`. 20 fixtures, and `npm run census:test`
 goes from 32 to 52.
+
+## #202 — the question #146 asked in one handler, and the nine anchors that asking it again moved
+
+#146 gave `save` the question *is the screen still where it was when I was sent*, thirteen
+screens ask it there, and nothing asked it anywhere else. #202 is the rest of the file: a
+removal, a status switch and a term copy each ended with a success sentence set
+unconditionally after an `await`, so an answer arriving on a screen the person had moved on
+from put *ลบ…เรียบร้อยแล้ว* over a form about something else — in the one place on the screen
+where a sentence reads as being about what is in front of it.
+
+**The ticket's figures were a claim, and the replacement for them was a claim about the
+counter.** The ticket said 22 sentences did not ask the question and 20 did, in 13 files
+each, counted with a throwaway script it did not commit. A second throwaway counter — every
+`error: false` with an `await` above it in the same crudely cut function, guarded if a ref
+comparison or #152's flag opens a block around it — says **41 sentences, 23 asking and 18
+bare in 10 files** before the fix, and **34 asking and 7 bare** after: eleven sites moved,
+which is the number the ticket's two shapes add up to.
+
+What is left is where the instrument has to be read rather than believed, and reading it is
+what found the second half of the ticket. Four of the bare sentences are the `save` of a
+screen that closes ยกเลิก while saving, so nothing can take the screen while the write is
+out: structurally unreachable today, and they get a dated note naming the condition that
+would re-date them rather than a guard no row and no mutant could reach (#97). One is
+`Offerings.onSection`, decided on 1 October 2569 and documented on itself — its sentence is
+about the write the person asked for and not about the panel they are now looking at.
+
+**And the counter was wrong about four sites, both ways round.** It reads the eight lines
+above a sentence, so `if (await reload(said))`, which sits *below* it, read as bare; and
+`const reloaded = await load(() => onScreen.current === load)`, which sits directly above,
+read as a ref comparison when it is #152's flag. Asked of the code instead — every consumer
+of that flag, and whether it asks the ref as well — the answer is four: `SubjectStudents.add`,
+`SubjectStudents.remove`, `GradingWeights.save` and `StudentGroups.after`. So fifteen
+sentences moved and not eleven.
+
+And the instrument is no better after the fix than before it: it prints **33 asking, 2 on the
+flag and 6 bare**, because the guard this ticket adds sits *below* the sentence at two of the
+four sites and on the sentence's own line at a third — the eight-line window above is the one
+place it cannot be. The figure that means anything is read against the code: **36 of the 41
+decided by a ref comparison, 5 not**. A census is evidence about the property it counted
+(#174), including the census written to replace somebody else's census; what it cannot see is
+published beside what it says (#123), and here the two misreadings point in opposite
+directions, which is why its total looked plausible either way.
+
+### The way in that belongs to another ticket
+
+Nine of the eleven are a `confirmRemoval`, and the obvious objection is that while
+`ConfirmDialog` is open there is no form to press anything from. There is: the table
+underneath is still live. The overlay is `fixed inset-0` and traps nothing — no focus trap,
+no `inert`, no `aria-hidden` — and the dialog does not even take focus when it opens, so
+focus is still on the `ลบ` that opened it and every control of the table is still in the tab
+order. A mouse click is eaten by the overlay; **Enter is not**. The row presses the add
+button with `focus()` and `Enter`, which is the faithful half, and the expectation that the
+control *is* focused before the key is sent is what says so.
+
+That hole is #204, and it is a way in that exists because of a defect — so the two rows that
+use it are written with the sentence #67 asks for: they expire the day #204 closes, and must
+be re-aimed or left as nets that say they are nets. The same screen's second way in, the one
+beside a live list, is `Users.toggle` and `Offerings.runCopy`, and it waits on nobody.
+
+### The screens that had no ref at all
+
+Four of the nine — programme learning outcomes, rubrics, rubric criteria, programme subjects
+— never had `showing`, because #146 counted the screens whose `save` could be superseded and
+those four close ยกเลิก while saving. The ref arrives with #202, for `confirmRemoval` alone,
+and it brings **two claims, not one**: that the ref exists and is read, and that every control
+that opens something writes it. `202:plosnorefatadd` is the second of those — it takes
+`showing.current = {}` out of the add button, leaving the guard to compare `null === null`
+and speak over the form that was just opened. Without it the sheet would be claiming a
+mechanism one of whose halves nothing measures.
+
+### The nine anchors the guard moved, the tenth its repair moved, and the new rule
+
+`python mutation/anchors.py` reported **nine problems** in three closed tickets' files the
+moment the guard landed, and in two different shapes:
+
+* `139:{plos,pairs,rubrics,criteria}addkeepsask` found **0 sites** — the add buttons of those
+  four screens gained a line, and the anchor was the old block. Re-aimed by putting
+  `showing.current = {}` on both sides, which is the shape departments already had.
+* `140:userstogglestalewins` found **0 sites** — `toggle`'s sentence went inside a block, so
+  the line above the reload became `}` rather than `})`. `save` has the same pair; what tells
+  them apart is the tail, `toggle` having no `finally`.
+* `146:{departments,programs,subjects,users}closewins` found **2 sites each** — and this is
+  the one worth writing down. **A guard copied from a closed ticket's guard makes that
+  ticket's anchor ambiguous**: same question, same spelling, same indentation, same file. The
+  harness refuses an anchor that matches twice, which is the design working rather than a
+  problem; the repair is the line *above* the question, the one that says what the handler
+  did before asking — `setEditing(null)` for the save that closes a form, `setRemoving(null)`
+  for the removal that has no form to close. A Thai sentence inside the block is not what made
+  such an anchor unique and comes out rather than being retyped (#152).
+
+And then a **tenth**, which the guard did not move: the repair above was made by appending
+`setEditing(null)` to a constant four mutants share, and `146:studentsclosewins` quotes that
+same constant although `Students.js` was not touched by this ticket at all. It lost its anchor
+to the repair and got a constant of its own, `setAdding(false)`, that screen closing its add
+form rather than an edit. **A repair of a shared anchor constant re-aims every mutant that
+quoted it**, in files the diff does not mention — the same species as #140's rule about a
+signature reaching every mutant that writes a call, one layer in: here what changed was not
+code at all but the quotation of it. Nothing reported this one, because by the time
+`anchors.py` was run next the repair had already been made; it is in the diff and not in the
+instrument's output, which is the only reason it was nearly shipped unswept.
+
+Re-anchoring is not proof: *an anchor check tells you a mutant no longer applies; only a
+sweep tells you it no longer proves anything* (#107, #68). All ten were swept again.
+
+### What the sweep said
+
+Swept on 11 October 2569, one mutant at a time over the whole of `202a` — baseline **6 of
+6**:
+
+- `202:departmentssaysanyway` **failed 2**, both of the departments rows
+- `202:departmentssaysnothing` **failed 1**, the positive row alone
+- `202:plossaysanyway` **failed 2**, both of the outcome rows
+- `202:plosnorefatadd` **failed 1**, the negative row alone — the positive row cannot see
+  it, nothing having taken the screen there for the guard to be wrong about
+- `202:userssaysanyway` **failed 2**, both of the account rows
+
+Each died at its own row's named assertion — *the removal's sentence*, *the suspension's
+sentence*, or the sentence failing to be drawn at all — and not at a timeout.
+
+And the nine re-aimed ones, each against the file it belongs to — baselines `139a` **46
+of 46**, `140a` **32 of 32**, `146a` **49 of 49**:
+
+- `139:plosaddkeepsask` `139:pairsaddkeepsask` `139:rubricsaddkeepsask`
+  `139:criteriaaddkeepsask` **failed 1 each**, the row each was written for (*เพิ่ม… pressed
+  while a … is out stays the add form*)
+- `140:userstogglestalewins` **failed 1**, *the list a … reloads does not land on the page
+  the pager has left*
+- `146:departmentsclosewins` `146:programsclosewins` `146:subjectsclosewins` **failed 3
+  each**, and `146:usersclosewins` **failed 2**
+
+Those last four are the numbers their own sheets recorded on 20 September, row for row,
+which is what re-anchoring was supposed to preserve and the only thing that shows it did.
+
+And one shape of the five is worth keeping. `202:departmentssaysanyway` and its two siblings
+replace `showing.current === sent` with `showing.current !== null` — the guard that remembers
+*is a form open* instead of *which form* — and on a removal that **kills both rows of the
+screen at once**: the row where a form took the screen now hears the sentence, and the row
+where nothing did hears nothing, because `showing.current` is still `null` there. That is two
+reachability claims and not one claim counted twice (#191). `202:departmentssaysnothing`,
+which captures a fresh `{}` instead of reading the ref, is what separates them: it kills the
+positive row alone. One screen carries that separation and the other two do not, which is
+#68's price paid on purpose and said on the sheet.
+
+### The second half — the four sentences that rode on a flag about the read
+
+The first round closed on the eleven sites the counter called bare, and the review of it asked
+one question of the two it had excused: does `if (await reload(said))` ask #146's question?
+It does not. `load` ends its `try` with `return true` whatever `isCurrent()` says, so its
+answer means *the read was not refused* and never *it drew* — which is exactly what #152 built
+it to mean, a refusal being the thing it was written to let win. A sentence put behind it is
+guarded against a refusal and not against a person who has moved.
+
+**The way in needed no second defect.** `Pager` takes no `busy`: it disables its two ends and
+nothing else (`frontend/src/components/Pager.js`), so ถัดไป is pressable for as long as a write
+is out, and pressing it changes `page`, which rebuilds `load`, which makes `isCurrent()` false
+for the reload already in flight. Nothing is drawn — #140's guard holds — and the sentence is
+said anyway, over the rows of a page it is about neither of. #199 had found this by reading the
+code on the same day and filed it as adjacent work; the four rows written here are the
+measurement on the screen, and `await expect(next(page)).toBeEnabled()` inside them is the
+premise rather than a nicety: it is the assertion that would fail first the day #199 is closed
+by disabling the pager, which is what tells a later reader these negatives have expired (#67).
+
+**Which of #199's three options, and what each would have cost.** Disabling the pager during
+`busy` changes what the screen disables, which #142 settled as an owner's question and not a
+defect, and it closes this one way in and no other. Making `load` return `isCurrent()` is the
+shape `docs/lessons.md` §#152 recommends for exactly this collision — *make the awaited loader
+report whether it drew, so both tickets hold* — and here it would have changed what that flag
+means in ten files and put `mutation/152-the-refusal-wins.py`, `140-superseded-handler-reload.py`
+and `25-section-enrolment.py` up for a re-sweep: a rule is read against the case it was written
+for, and that one was written where the two questions had nowhere else to live. The third is
+#146's question asked at the call site with the ref this screen already keeps — `onScreen`,
+which #140 put there — and it costs two lines per site and no change to any flag's meaning.
+
+**What I wrote beside that, that it costs no other file's mutants, was wrong, and
+`anchors.py` said so the moment the guard landed.** The lines option 3 edits are the lines
+those same three closed tickets' mutants quote, so six of them — `140:enrolmentremovestalewins`,
+`152:{weightssaveanyway, groupsafteranyway, enrolmentaddanyway, enrolmentremovalanyway}` and
+`25:addstaysonpage` — found 0 matches and had to be re-aimed and re-swept, their claims
+unchanged. What survives of the distinction between the two options is narrower than the
+sentence I chose on: option 2 changes what a flag **means** in ten files, option 3 changes the
+**text** at four sites. A cost line is a claim about the shape its author pictured (#77), and
+this one was my own, written about my own fix, in the paragraph that decided which option got
+built — which is the half of #77's rule that is hardest to apply to yourself.
+
+The eleven sites of the first half ask the same question with `showing`;
+these four ask it with `onScreen`, because what supersedes them is not a form taking the screen
+but the read being of something else.
+
+`StudentGroups` is the one that needed thought: every write there ends in one `after`, which is
+where the sentence is said, and by the time `after` runs the jump has already moved the ref. So
+`after` takes `sent` as a parameter and its two callers read the ref before the write leaves —
+*assert the precondition where it is used, not where it is set* (#51) read from the other end.
+The counter beside the sentence, which the history panel reads, stays unguarded (#131).
+
+Two of the four are proved, and the sheets say which two. `GradingWeights` and `StudentGroups`
+are superseded by the section jump instead, which no row walks — their own `onScreen` comments
+have said so since #133 — so they carry the guard, a dated sentence saying nothing proves it
+here, and #68's price paid on purpose. **A deferral written into prose and not onto the sheet is
+a decision nobody can find** (#119, #125).
+
+**The sweep, fourteen runs.** Five clean baselines first, one per spec the sweep touches —
+`202a` 10 of 10, `146a` 49 of 49, `140a` 32 of 32, `152a` 21 of 21, `25a` 15 of 15 — then nine
+mutants, each read by the **name** of the row that died and the assertion it died at, never by
+the count:
+
+* `202:enrolmentaddsaysanyway` 1 of 10, at *says nothing over the page the pager moved to while
+  the enrolment was out*, dying at that row's own `the enrolment's sentence` expecting 0; and
+  `202:enrolmentremovesaysanyway` 1 of 10 at its twin, dying at `the removal's sentence`. Both
+  positives passed under both mutants, which is what says the mutant removed a claim rather than
+  stopping the application (#97).
+* `146:studentsclosewins`, the tenth anchor, 1 of 49 at *a save that lands after the form was
+  opened again leaves what was typed where it was* (`Students.js`), dying at `the form opened
+  again` — the figure sheet `17` recorded on 20 September, reproduced after the re-aim.
+* The six the guard moved, each at its own row: `140:enrolmentremovestalewins` 1 of 32,
+  `152:weightssaveanyway` 1 of 21, `152:groupsafteranyway` 1 of 21,
+  `152:enrolmentremovalanyway` 1 of 21, `25:addstaysonpage` 1 of 15.
+* **And one that killed two**: `152:enrolmentaddanyway`, 2 of 21. The second row is *an enrolment
+  from another page says the refusal of the first page and not that it enrolled*, which #152's
+  own second half added in `c67392e` yesterday and never swept this mutant against — so sheet
+  `25`'s **ล้ม 1 ผ่าน 17** was a figure about an eighteen-row spec, and the mutant proves one more
+  claim than the sheet credits it with. *A kill count is a claim about the fixtures as much as
+  about the code* (#48) with the other half added: **a count expires when the spec grows a row the
+  mutant can reach**, and nothing reports that — the anchor was fine, the code was untouched, and
+  only re-running it says so. Recorded as a dated line beside the old one rather than over it
+  (#54).

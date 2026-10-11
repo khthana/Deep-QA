@@ -129,10 +129,22 @@ export default function RubricCriteria() {
    */
   const asked = useRef(null)
 
+  /**
+   * The last thing that opened on this screen - #146, arriving here with #202.
+   *
+   * เพิ่มเกณฑ์ and แก้ไข write it, แก้ไข at the press for #139's reason; ยกเลิก
+   * and ลบ do not. What needs it here is `confirmRemoval`: the question
+   * `ConfirmDialog` asks traps no focus (#204), so both of those controls answer
+   * to Enter from under it while the removal is out. `Plos.js` carries why this
+   * screen had no such ref until now, and `Departments.js` the reasons.
+   */
+  const showing = useRef(null)
+
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async criterion => {
     const ask = {}
     asked.current = ask
+    showing.current = ask
     setNotice(null)
     setReading(true)
     try {
@@ -146,6 +158,13 @@ export default function RubricCriteria() {
     }
   }
 
+  /**
+   * No `showing.current === sent` here, and that is measured rather than
+   * forgotten - #202, 11 October 2569. The form replaces the table and
+   * `CriterionForm` gives ยกเลิก `disabled={busy}`, so nothing can take the
+   * screen while a save is out and the guard would be a clause no row could
+   * reach (#97). `Plos.js` carries the note and what would re-date it.
+   */
   const save = async draft => {
     setWriting(true)
     try {
@@ -161,19 +180,25 @@ export default function RubricCriteria() {
     }
   }
 
+  // The sentence belongs to the screen that was asked - #202. Only the sentence
+  // is asked about: the dialog closes and the list is reloaded whichever way the
+  // comparison goes (#131). `Departments.js` carries the reasons.
   const confirmRemoval = async () => {
+    const sent = showing.current
     setWriting(true)
     try {
       const answer = await deleteCriterion(rubricId, removing.id)
       setRemoving(null)
       // The name comes from the answer and not from the row the table was
       // holding: what went is what the server removed.
-      setNotice({
-        error: false,
-        message: answer?.criteria_name_th
-          ? `ลบเกณฑ์ ${answer.criteria_name_th} เรียบร้อยแล้ว`
-          : 'ลบเกณฑ์เรียบร้อยแล้ว',
-      })
+      if (showing.current === sent) {
+        setNotice({
+          error: false,
+          message: answer?.criteria_name_th
+            ? `ลบเกณฑ์ ${answer.criteria_name_th} เรียบร้อยแล้ว`
+            : 'ลบเกณฑ์เรียบร้อยแล้ว',
+        })
+      }
       await load(() => onScreen.current === load)
     } catch (error) {
       setRemoving(null)
@@ -237,6 +262,7 @@ export default function RubricCriteria() {
                 type="button"
                 onClick={() => {
                   asked.current = null
+                  showing.current = {}
                   setNotice(null)
                   setEditing({})
                 }}

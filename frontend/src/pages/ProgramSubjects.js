@@ -134,10 +134,23 @@ export default function ProgramSubjects() {
    */
   const asked = useRef(null)
 
+  /**
+   * The last thing that opened on this screen - #146, arriving here with #202.
+   *
+   * เพิ่มรายวิชาเข้าหลักสูตร and แก้ไข write it, แก้ไข at the press for #139's
+   * reason; ยกเลิก, นำออก and the import do not. What needs it here is
+   * `confirmRemoval`: the question `ConfirmDialog` asks traps no focus (#204),
+   * so both of those controls answer to Enter from under it while the removal is
+   * out. `Plos.js` carries why this screen had no such ref until now, and
+   * `Departments.js` the reasons.
+   */
+  const showing = useRef(null)
+
   // Read afresh rather than editing the row the table happens to be holding.
   const openEditor = async pair => {
     const ask = {}
     asked.current = ask
+    showing.current = ask
     setNotice(null)
     setReading(true)
     try {
@@ -154,6 +167,13 @@ export default function ProgramSubjects() {
     }
   }
 
+  /**
+   * No `showing.current === sent` here, and that is measured rather than
+   * forgotten - #202, 11 October 2569. The form replaces the table and
+   * `ProgramSubjectForm` gives ยกเลิก `disabled={busy}`, so nothing can take the
+   * screen while a save is out and the guard would be a clause no row could
+   * reach (#97). `Plos.js` carries the note and what would re-date it.
+   */
   const save = async draft => {
     setWriting(true)
     try {
@@ -172,18 +192,25 @@ export default function ProgramSubjects() {
     }
   }
 
+  // The sentence belongs to the screen that was asked - #202. Only the sentence
+  // is asked about: the dialog closes, the page steps back and the list is
+  // reloaded whichever way the comparison goes (#131). `Departments.js` carries
+  // the reasons.
   const confirmRemoval = async () => {
+    const sent = showing.current
     setWriting(true)
     try {
       const answer = await deleteProgramSubject(removing.program_id, removing.subject_id)
       const deactivated = Boolean(answer?.deactivated)
       setRemoving(null)
-      setNotice({
-        error: false,
-        message: deactivated
-          ? 'รายวิชานี้มีการเปิดสอนหรือข้อมูลอื่นอ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
-          : 'นำรายวิชาออกจากหลักสูตรเรียบร้อยแล้ว',
-      })
+      if (showing.current === sent) {
+        setNotice({
+          error: false,
+          message: deactivated
+            ? 'รายวิชานี้มีการเปิดสอนหรือข้อมูลอื่นอ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
+            : 'นำรายวิชาออกจากหลักสูตรเรียบร้อยแล้ว',
+        })
+      }
       // The last row of the last page having gone, staying on that page shows an
       // empty table and reads as "there are none". Stepping back is a change of
       // page and the effect fetches it; calling `load` here as well would race it
@@ -260,6 +287,7 @@ export default function ProgramSubjects() {
                 type="button"
                 onClick={() => {
                   asked.current = null
+                  showing.current = {}
                   setNotice(null)
                   setEditing({})
                 }}

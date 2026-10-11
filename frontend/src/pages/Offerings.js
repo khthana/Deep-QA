@@ -288,7 +288,16 @@ export default function Offerings() {
     }
   }
 
+  /**
+   * The sentence belongs to the screen that was asked - #202. `เปิดรายวิชา`
+   * carries no `disabled`, so the form can be opened while the copy is out and
+   * its answer said *คัดลอกเรียบร้อยแล้ว* over it. The report box is not asked
+   * about: it is the copy's own detail and the person asked for it, where a
+   * sentence over a form reads as being about that form. `Departments.js`
+   * carries the reasons.
+   */
   const runCopy = async terms => {
+    const sent = showing.current
     setNotice(null)
     setWriting(true)
     try {
@@ -303,13 +312,15 @@ export default function Offerings() {
       }
       const answer = await copyTerm({ ...terms, program_id: target })
       setCopied(answer)
-      setNotice({
-        error: false,
-        message:
-          answer.created.length === 0
-            ? 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง'
-            : `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,
-      })
+      if (showing.current === sent) {
+        setNotice({
+          error: false,
+          message:
+            answer.created.length === 0
+              ? 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง'
+              : `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,
+        })
+      }
       // The same rule as the import below: page one is a change the effect
       // fetches, and asking `load` as well would race it from the page being
       // left - #68.
@@ -322,20 +333,31 @@ export default function Offerings() {
     }
   }
 
+  // The sentence belongs to the screen that was asked - #202, at both answers:
+  // the dialog traps no focus (#204), so เปิดรายวิชา is pressable from under it
+  // with the keyboard. Only the sentences are asked about - the dialog closes,
+  // the panel is read back, the page steps back and the list is reloaded
+  // whichever way the comparison goes (#131). `Departments.js` carries the
+  // reasons.
   const confirmRemoval = async () => {
     const ask = asked.current
+    const sent = showing.current
     setWriting(true)
     try {
       if (removing.kind === 'section') {
         await deleteSection(viewing.id, removing.section.section_id)
         setRemoving(null)
-        setNotice({ error: false, message: 'ลบตอนเรียนเรียบร้อยแล้ว' })
+        if (showing.current === sent) {
+          setNotice({ error: false, message: 'ลบตอนเรียนเรียบร้อยแล้ว' })
+        }
         await refresh(viewing.id, ask)
       } else {
         await deleteOffering(removing.offering.id)
         setRemoving(null)
         setViewing(null)
-        setNotice({ error: false, message: 'ยกเลิกการเปิดรายวิชาเรียบร้อยแล้ว' })
+        if (showing.current === sent) {
+          setNotice({ error: false, message: 'ยกเลิกการเปิดรายวิชาเรียบร้อยแล้ว' })
+        }
         // The last row of the last page having gone, staying on that page shows
         // an empty table and reads as "there are none". Stepping back is a
         // change of page and the effect fetches it; calling `load` here as well

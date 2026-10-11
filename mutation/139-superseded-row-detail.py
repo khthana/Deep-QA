@@ -223,8 +223,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # รายวิชาในหลักสูตร: เพิ่ม leaves the last แก้ไข standing
     'pairsaddkeepsask': ('pairs',
-        '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  setNotice(null)\n                  setEditing({})\n'),
+        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
+        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # รายวิชาในหลักสูตร: ลบ leaves the last แก้ไข standing
     'pairsremovekeepsask': ('pairs',
         '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(pair)\n',
@@ -247,8 +247,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # Rubric: เพิ่ม leaves the last แก้ไข standing
     'rubricsaddkeepsask': ('rubrics',
-        '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  setNotice(null)\n                  setEditing({})\n'),
+        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
+        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # Rubric: ลบ leaves the last แก้ไข standing
     'rubricsremovekeepsask': ('rubrics',
         '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(rubric)\n',
@@ -267,8 +267,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # เกณฑ์: เพิ่ม leaves the last แก้ไข standing
     'criteriaaddkeepsask': ('criteria',
-        '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  setNotice(null)\n                  setEditing({})\n'),
+        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
+        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # เกณฑ์: ลบ leaves the last แก้ไข standing
     'criteriaremovekeepsask': ('criteria',
         '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(criterion)\n',
@@ -287,8 +287,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # PLO: เพิ่ม leaves the last แก้ไข standing
     'plosaddkeepsask': ('plos',
-        '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  setNotice(null)\n                  setEditing({})\n'),
+        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
+        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # PLO: ลบ leaves the last แก้ไข standing
     'plosremovekeepsask': ('plos',
         '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(plo)\n',

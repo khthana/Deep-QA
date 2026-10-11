@@ -171,8 +171,16 @@ FILES = {
 }
 
 # จอรายการ: การปิดกับประโยคอยู่ในก้อนเดียว ก่อนการโหลดใหม่
-CLOSED = '      if (showing.current === sent) {\n'
-CLOSED_ANY = '      if (showing.current !== null) {\n'
+#
+# บรรทัดที่สองอยู่ในสมอเพราะ #202 (11 ต.ค. 2569) - `confirmRemoval` ของจอเดียวกันถาม
+# คำถามเดียวกันที่ย่อหน้าเท่ากัน สมอบรรทัดเดียวจึงเจอสองที่ และสิ่งที่แยกมันออกคือ
+# สิ่งที่อยู่ในก้อน: `save` ปิดฟอร์ม การลบไม่มีฟอร์มจะปิด
+CLOSED = '      if (showing.current === sent) {\n        setEditing(null)\n'
+CLOSED_ANY = '      if (showing.current !== null) {\n        setEditing(null)\n'
+
+# ข้อมูลนักศึกษากลาง ถือ `adding` ใบเดียว ไม่ใช่ฟอร์มต่อแถว
+CLOSED_ADDING = '      if (showing.current === sent) {\n        setAdding(false)\n'
+CLOSED_ADDING_ANY = '      if (showing.current !== null) {\n        setAdding(false)\n'
 
 # คำปฏิเสธของจอที่ส่งผ่าน `report`
 REPORTED = '      if (showing.current === sent) report(error)\n'
@@ -226,7 +234,7 @@ MUTANTS = {
     'improvementrefusalwins': ('improvement', NOTICED, NOTICED_ANY),
     # ข้อมูลนักศึกษากลาง: ฟอร์มเดียว ไม่มี แก้ไข ทางเข้าคือ ยกเลิก แล้ว เพิ่มนักศึกษา อีกครั้ง
     # รูปร่างเหมือนจอรายการทุกอย่าง เพราะประโยคอยู่ก่อนการกลับไปหน้าแรก
-    'studentsclosewins': ('students', CLOSED, CLOSED_ANY),
+    'studentsclosewins': ('students', CLOSED_ADDING, CLOSED_ADDING_ANY),
     'studentsrefusalwins': ('students', REPORTED, REPORTED_ANY),
     # แผนพัฒนาต่อเนื่อง: ตัวเลือกผลการเรียนรู้ปิดฟอร์มโดยไม่ได้เป็นตัวควบคุมของฟอร์ม ถ้ามันไม่เขียน
     # ref ประโยคของหัวข้อที่เพิ่งเขียนไป จะมาขึ้นใต้ผลการเรียนรู้ที่ไม่มีใครเขียนถึงเลย

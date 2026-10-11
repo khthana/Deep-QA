@@ -116,27 +116,20 @@ REMOVE_ANYWAY = ("      setRemoving(null)\n"
 
 # สามจอที่เหลือเขียนประโยคของตัวเองคนละรูป และสมอตัดก่อนประโยคภาษาไทยทุกตัว - สิ่งที่สมอต้องการ
 # คือบรรทัดที่เปลี่ยน ไม่ใช่ข้อความที่คนอ่าน
-WEIGHTS_READS = ("      const reloaded = await load(() => onScreen.current === load)\n"
-                 "      if (reloaded) setNotice(")
-WEIGHTS_ANYWAY = ("      await load(() => onScreen.current === load)\n"
-                  "      setNotice(")
+WEIGHTS_READS = "      const reloaded = await load(() => onScreen.current === load)\n"
+WEIGHTS_ANYWAY = "      const reloaded = (await load(() => onScreen.current === load)) || true\n"
 
 # `setWrites` อยู่ที่เดิม: มันไม่ใช่ประโยค และ #152 เป็นเรื่องของประโยค
-GROUPS_READS = ("    const reloaded = await load(() => onScreen.current === load)\n"
-                "    setWrites(count => count + 1)\n"
-                "    if (reloaded) setNotice({ error: false, message })\n")
-GROUPS_ANYWAY = ("    await load(() => onScreen.current === load)\n"
-                 "    setWrites(count => count + 1)\n"
-                 "    setNotice({ error: false, message })\n")
+GROUPS_READS = "    const reloaded = await load(() => onScreen.current === load)\n"
+GROUPS_ANYWAY = "    const reloaded = (await load(() => onScreen.current === load)) || true\n"
 
-ADD_READS = "      if (await reload(said)) setNotice(said)\n"
-ADD_ANYWAY = "      await reload(said)\n      setNotice(said)\n"
+ADD_READS = "      const reloaded = await reload(said)\n"
+ADD_ANYWAY = "      const reloaded = (await reload(said)) || true\n"
 
-REMOVE_ENROL_READS = "      } else if (await load(() => onScreen.current === load)) setNotice(said)\n"
-REMOVE_ENROL_ANYWAY = ("      } else {\n"
-                       "        await load(() => onScreen.current === load)\n"
-                       "        setNotice(said)\n"
-                       "      }\n")
+REMOVE_ENROL_READS = "        const reloaded = await load(() => onScreen.current === load)\n"
+REMOVE_ENROL_ANYWAY = (
+    "        const reloaded = (await load(() => onScreen.current === load)) || true\n"
+)
 
 # สามตัวของครึ่งหลัง (11 ต.ค. 2569) - บนหน้าอื่นที่ไม่ใช่หน้าแรก `reload` ย้ายหน้าแทนที่จะอ่าน
 # ประโยคจึงถูกฝากไว้ที่ `waiting` ให้การอ่านที่วาดสำเร็จเป็นคนพูด
