@@ -223,10 +223,10 @@ MUTANTS = {
     # ผู้เรียกที่สอง: รายการที่การบันทึกสั่งโหลดใหม่ วาดทับหลักสูตรที่ตัวกรองย้ายไปแล้ว
     # ยึดกับบรรทัด setNotice ข้างบนด้วย เพราะ `await load(…)` บรรทัดเดียวกันนี้มีสามที่
     "ploshandlerstalewins": ("plos",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n"
-        "      await load(() => onScreen.current === program)\n",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n"
-        "      await load(() => true)\n"),
+        '      const reloaded = await load(() => onScreen.current === program)\n'
+        '      if (reloaded) setNotice(said)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded) setNotice(said)\n'),
 }
 
 main(FILES, MUTANTS)

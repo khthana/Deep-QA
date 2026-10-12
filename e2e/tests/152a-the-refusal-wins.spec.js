@@ -7,6 +7,7 @@ const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
+const { watchForTheSentence, neverSaid } = require('../support/frame-sampler');
 const { gate, isGet, isWrite } = require('../support/gate');
 const { PDF_BYTES, attach, evidencePath } = require('../support/evidence-screen');
 const improvement = require('../support/improvement-screen');
@@ -130,45 +131,6 @@ async function refuseTheReload(page, { write, reload }, { held = 0 } = {}) {
   reload.open();
   await reload.answered;
   await page.waitForTimeout(SETTLE_MS);
-}
-
-/**
- * How many painted frames said `sentence`, from here until it is read back.
- *
- * #164: *was it ever on the screen* is answered by a sample per frame and not
- * by a longer wait. The two rows that use this are about a sentence the refusal
- * that follows **replaces**, so a read at a settle point sees only the refusal
- * and passes on the very code the row was written to catch - measured, both of
- * them did, which is what sent them here.
- *
- * `document.body.innerText` inside the callback rather than a locator, because
- * a locator read is executed by the renderer and queues behind the drawing it
- * is trying to catch (#170); in here the DOM is whatever the last commit left.
- */
-async function watchForTheSentence(page, sentence) {
-  await page.evaluate(said => {
-    window.__sightings = { frames: 0, saying: 0 };
-    const tick = () => {
-      window.__sightings.frames += 1;
-      if (document.body.innerText.includes(said)) window.__sightings.saying += 1;
-      window.__frameTick = requestAnimationFrame(tick);
-    };
-    window.__frameTick = requestAnimationFrame(tick);
-  }, sentence);
-  return {
-    read: () =>
-      page.evaluate(() => {
-        cancelAnimationFrame(window.__frameTick);
-        return window.__sightings;
-      }),
-  };
-}
-
-/** Reads the sampler and says what it counted. */
-async function neverSaid(watch, what) {
-  const seen = await watch.read();
-  expect(seen.frames, 'frames sampled').toBeGreaterThan(10);
-  expect(seen.saying, what).toBe(0);
 }
 
 /**

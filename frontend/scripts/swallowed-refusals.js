@@ -65,16 +65,20 @@
  *   nor a name bound to one, is reported where it sits in a function that calls
  *   a swallowing loader — so the shape that arrives next cannot arrive unseen.
  *
- * ## Not in `CENSUSES`, and why
+ * ## In `CENSUSES` since #203, and what it was waiting for
  *
- * This one is run by hand — `node scripts/swallowed-refusals.js` — and is
- * deliberately **not** in `census.js`'s `CENSUSES`. Its first run found twenty
- * live sites of this defect in ten admin page files, on the screens #152 scoped
- * out, and `npm run census` is a gate: wiring it in would have turned that gate
- * red for everybody, and marking the twenty would have written twenty claims
- * nobody holds. The owner chose on 11 October 2569 to commit it unwired and
- * open **#203** for the twenty; #203's last step is the wiring and this
- * paragraph.
+ * Its first run found twenty live sites of this defect in ten admin page files,
+ * on the screens #152 scoped out. `npm run census` is a gate, so wiring it in
+ * then would have turned that gate red for everybody, and marking the twenty
+ * would have written twenty claims nobody holds. The owner chose on 11 October
+ * 2569 to commit it unwired and open **#203** for the twenty. #203 fixed them
+ * and this is its last step: the census is in `census.js`'s `CENSUSES` as of
+ * 12 October 2569, green at **37 of 37** answers read, and a twenty-first site
+ * now turns the gate red the day it is written.
+ *
+ * The wiring is the whole of what changed here. What this instrument can and
+ * cannot see is above and unaltered by it — above all that it cannot see the
+ * order the person meets, which is the frames' answer and not the parser's.
  *
  * Its own fixtures: `npm run census:test`, which runs every `.test.js` here —
  * and fixtures pass either way until a real site is broken with the instrument

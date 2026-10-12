@@ -9280,3 +9280,172 @@ Base `36a` 8 of 8, 12 October 2569.
   2 as before and row 8 as well, which is new and true: row 8 says both lines are
   there. The sheet's older table credits it with row 2 alone, which is the sweep
   it was written at and stays as the record, with the re-aiming noted beside it.
+
+## #203 — the twenty rows that passed against the defect, and the screen that had nowhere to say it
+
+#152 settled what the system does when a write succeeds and the list re-read is
+refused: **the refusal wins**, decided by the owner on 10 October 2569. #152
+carried that to eighteen sites in ten ผู้สอน files. `swallowed-refusals.js` —
+the census #200 built out of that walk and committed unwired, because wiring it
+would have turned `npm run census` red for everybody — counted the rest:
+**twenty sites in ten administration files**, still 20 of 37 when re-measured on
+12 October before anything was written, which is the one thing a ticket's own
+list of sites is for (*a ticket's diagnosis is a claim from the day it was
+written*).
+
+The fix is #152's shape letter for letter: `load` answers whether it drew
+(`return true` at the end of its `try`, `false` in its `catch`) and the handler
+reads that answer before saying its own sentence. The flag says *the read was
+not refused* and never *the screen is still the one that asked* — that second
+question is #202's, asked by the caller with its own clause, and the two are two
+clauses on purpose (#202).
+
+### Nineteen of twenty rows passed against the code they were written for
+
+Every one of the twenty sites says its sentence **above** the reload, so the
+refusal that lands next *replaces* it. At any settle point the banner reads the
+refusal and nothing else — on the broken screen exactly as on the fixed one.
+Written as a single read at the settle point the handler ends with, **nineteen
+of the twenty rows passed against the unfixed code**, before a mutant existed.
+
+This is the seventh reading of a survivor (*a survivor can mean the row read at
+the wrong moment*), which #152 paid for with two mutants that were faithful
+copies of a measured defect and survived 21 of 21. #203 got the same finding for
+nothing, because the rows were run against the defect first. That is the cheap
+instrument and it generalises: **a new row is run against the unfixed code
+before any mutant is written, and a row that passes there is measuring
+nothing.** A sweep answers the same question four hours later and one mutant at
+a time.
+
+The rows then read `document.body.innerText` on every
+`requestAnimationFrame` — `watchForTheSentence` and `neverSaid`, moved out of
+`152a` into `e2e/support/frame-sampler.js` so both files share one sampler. That
+move costs the proof nothing: no row's claim lives in the sampler, so it is an
+instrument and not an assertion (#171's note on shared fixtures, and #68's price
+is not paid). And each row asserts the refusal **is** on the screen at the end,
+because a sampler looking for a sentence the screen never writes answers *never*
+at every lateness, broken or fixed (#171).
+
+### The screen that had nowhere to say it
+
+Eighteen mutants, one per site, each `const reloaded = (await load(…)) || true`:
+the reload still happens and is still refused, and what the mutant removes is
+the *reading of its answer*, which is exactly what the ticket added. Eighteen
+killed one row each, and in every case the row of their own site.
+
+Two survived **0 of 22**: `rubriccriteriasaveanyway` and
+`rubriccriteriaremovalanyway`. The mechanism is in the component and not in the
+harness. `RubricCriteria`'s `load` does not put a banner over the table when the
+list is refused — the whole screen is about one Rubric, so a refusal about that
+Rubric is the *state of the screen*: it sets `refusal`, and the component then
+returns a card carrying that sentence and a link back instead of the table and
+its `<Notice>`. The sentence the handler sets after a refused reload has nowhere
+to draw, before the ticket and after it, and the only way off the card unmounts
+the screen.
+
+So this is **the ninth reading of a sweep**: a survivor can mean the defect is
+unreachable because the screen answers a refused read by *replacing the surface
+the sentence would be drawn on*. It is #47's sixth reading one step further —
+#47's state was unreachable at the seam and reachable for a person; this one is
+unreachable for anybody. The two mutants came out, and the two rows stay as nets
+that say they are nets, with the condition that would re-date them written
+beside them: the day that screen starts drawing a banner over its table instead,
+the claim becomes reachable and those two mutants are the ones to write back.
+
+The rows had to change as well, and that is the part worth keeping: a row that
+says only *I never saw the sentence* passes on that screen for the wrong reason.
+Each now also asserts the **mechanism** — that the refusal card and its way back
+are what is in front of the person. *A red is not a measurement until the same
+read has been seen green* (#171) has a twin here: **a green is not a measurement
+until something is known to be able to make it red**, and on a screen where
+nothing can, the row says so on its face.
+
+The code change was kept on that screen anyway. Ten files now read their
+loader's answer the same way, which is one shape to remember rather than nine
+and an exception, and the guard is already there the day the loader changes. The
+sheet carries why no mutant holds it.
+
+### The half the census cannot see
+
+Eight of the twenty handlers have no reload of their own to read: they **move
+the page** instead — six removals that step back off a page they have emptied,
+`Students.save` and `Offerings.runCopy` asking for page one. The read is the
+*effect's*, so the handler has nothing to await and the sentence is handed to a
+`waiting` ref for `load` to say once it has drawn, which is #152's shape on
+`SubjectStudents.js`. The census cannot see any of it: it looks for a sentence
+said after an awaited loader, and on this branch no loader is awaited.
+
+That half is held by a **pair** of rows on the register, where 173 seeded
+students make page two free: one says the handover happens at all, the other
+that a refusal still wins across it. The pair is the point. With only the
+negative row, deleting the line in `load` that says the waiting sentence would
+have broken nothing — *before trusting a new assertion, break the thing it is
+about* (#124), and `studentsdrewunsaid` is that break made permanent. The other
+seven ways in are the same code, so what each would add is only that its own way
+in arrives there (#191); the sheets say *ยังไม่ได้ทดสอบ* with the date and the
+condition rather than borrowing the register's mark.
+
+### Twenty-eight mutants of six closed tickets moved, and none of them says so
+
+Adding a line to a block re-aims every mutant whose anchor quoted that block
+whole (#121, #202). The ticket moved **twenty-eight**: sixteen of #140, five of
+#146, three of #202, one each of #133, #21, #23 and #68. Two needed #152's other
+rule — when a fix puts a value where a call was, a mutant that *deleted* the
+call is re-aimed by **substituting the value**, because deleting the line now
+leaves `reloaded` undefined, which stops the sentence as well as the read and
+proves neither. And #146's four screens share two constants, so both were
+redefined rather than split: *the repair of a shared constant re-aims every
+mutant that quotes it, and the diff reads as whitespace* (#202).
+
+`python mutation/anchors.py` was run while the change was being made rather than
+at the end, and said `problems 0` — on 955 mutants and 976 anchors by the
+close, three of the mutants being ones the re-sweep below made it necessary to
+write. That is all it
+can say: an anchor check tells you a mutant still grips, only a sweep tells you
+it still proves anything (#107, #68), so all twenty-eight were re-swept against
+their own suites — with the spec files named in full, because a test-file
+argument is matched as a substring and `21a` would otherwise run `121a`, `68a`
+`168a` (#154, #158).
+
+The re-sweep paid for itself twice, and both times the thing it caught was
+invisible to every other instrument.
+
+**A guard that is split shrinks every mutant that quoted it whole.** #146's
+`<screen>closewins` deletes the line that closes a form a later edit reopened,
+and that line used to sit inside the block that also carried the save's
+sentence, so one mutant failed **three** rows on Departments, Programs and
+Subjects: two about the form and a third — `a save that lands while the next row
+is being read says nothing` — about the sentence. #203 gave the sentence its own
+`if`. The mutant still grips, still means what its sheet says it means, and now
+fails **two**: the third row has no mutant under it at all. `anchors.py` cannot
+see this, because the anchor is exact and the code it quotes is untouched; the
+diff cannot, because the shrink is in a block the diff only adds a line to; and
+nothing goes red, because the row still passes. Only re-running the mutant says
+it. The repair is a mutant per screen aimed at the line that now carries the
+claim — `146:<screen>savesaysanyway`, each
+of which fails **3 of 49** — which is the same move as *a mutant that survives
+where its own file predicted a kill has found a row that does not exist yet*
+(#118), read from the other end: a row that exists and has quietly stopped being
+proved. Three rows and not one, because the two form rows end with an assertion
+that the earlier save's banner is not on the screen: what the new mutant proves
+is read off **which assertion** died, not off the count (#201) — `closewins`
+kills those two at the form, this one at the banner, and the third row at the
+only claim it makes.
+
+**A re-aim is faithful when it preserves the mistake, not when it finds the
+line.** The first re-aim of #202's three `<screen>saysanyway` mutants moved them
+onto the line #203 had written and dropped the whole clause, which reads like
+the convention the same file already uses for its post-#152 mutants
+(`enrolmentaddsaysanyway`). It is a different mutant. `showing.current !== null`
+is a guard that remembers *is a form open* instead of *which form*, so it speaks
+over the form that took the screen **and** stays silent where nothing did, and
+it fails both of each screen's rows. No clause at all speaks always, so the
+positive row — `says what it did when nothing took the screen` — passes, and on
+sheets `19` and `11` that positive row cites this very mutant. Two more ⚙ rows
+would have been left with nothing under them, by the fix for the problem one
+paragraph up. What caught it was the drop from two kills to one read against the
+sheet's own **description** of the mutant, which is a claim about what the mutant
+means and not only about where it points. Mutating the comparison instead of the
+line keeps that sentence true and kills both rows: **2 of 10** on each of the
+three screens, against the 2 of 6 their sheets record from 11 October, which is
+the same two rows measured with that day's suite.

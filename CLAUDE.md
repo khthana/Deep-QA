@@ -319,6 +319,19 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
 - **A change to a function's signature reaches every mutant that writes a call to it**, not only
   those anchored on one — grep the replacement strings too; `anchors.py` reads anchors. (#140)
+- **A fix that splits a guard shrinks every mutant that quoted the block whole** — the anchor is
+  still exact, the code it quotes is untouched, the diff only *adds* a line and nothing goes red,
+  so no instrument says that a row the mutant used to kill is now proved by nothing. Only re-running
+  it says so, which is why the re-aim is followed by a sweep and not by an anchor check (#107, #68):
+  one of #146's mutants went from three kills to two, and the third row needed a mutant of its own
+  aimed at the line that now carries the claim. (#203)
+- **A re-aim is faithful when it preserves the mistake, not when it finds the line** — moving a
+  mutant onto the line a fix wrote and dropping the whole clause is a *different* mutant, however
+  well it matches the file's convention: no guard at all speaks always, where the guard the sheet
+  describes speaks over the wrong screen and stays silent on the right one. What it stops killing
+  is then the **positive** row, which on another sheet cites it. The sheet's description of a mutant
+  is a claim about what it means; read the new kill count against that sentence, not only against
+  the total. (#203)
 - **When a fix puts a value where a call was, a mutant that deleted the call cannot be re-aimed by
   insertion — substitute the value.** #140's rule one layer along: a change to what a call
   *returns* reaches every mutant that removed one, and five of the thirty-six #152 moved were
@@ -366,6 +379,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   faithful copy of the thing you mean to catch, ask which element carries the claim before
   asking whether the claim was at risk — and read the component, because the two halves of
   one drawing can be computed from two different lengths. (#112)
+- **And a survivor can mean the screen had nowhere to say it** — the ninth, and #47's sixth one
+  step further: a refused read that answers by *replacing the screen* removes the surface the
+  sentence would have been drawn on, so the defect is unreachable for the person and not only at
+  the seam. Take the mutant out, have the row assert the **mechanism** rather than the absence
+  (a row that says only *I saw nothing* passes there for the wrong reason), and write beside it
+  the condition that would make the claim reachable again. (#203)
 - **A mutant that swaps one implementation for another is invisible wherever the two agree** — so
   the fixture is built where they *disagree*, which is not the same as building it big. And a
   fixture named for a property is a claim about a library's answer: ask ICU whether that run is one
@@ -478,6 +497,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   code passes through untrue combinations too. (#188)
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
+- **Run a new row against the unfixed code before writing its mutant** — a row that passes there
+  is measuring nothing, and that is the seventh reading of a survivor (the row read at the wrong
+  moment) bought for free: #152 paid for it with two faithful mutants surviving 21 of 21, where
+  #203 got it from nineteen of twenty rows passing on the broken screens. A sweep answers the same
+  question hours later, one mutant at a time. (#203)
 - **A red is not a measurement until the same read has been seen green** — the same rule from the
   failing side. A locator scoped to a heading the screen never draws reads empty drawn and undrawn
   alike, so ten reds of ten can mean nothing, and a fix built on them is wrong the same way. (#171)
@@ -805,7 +829,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
-| `frontend/scripts/` | Four censuses, as instruments. `npm run census` runs the three wired into it and goes red when a screen draws an answer with no guard and no written reason (#133's family), draws a label with a code in front of the name and no written reason (#93's), or says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family, `sentences-after-a-move.js`, which asks about **enclosure** and not about a window of lines). The fourth, `swallowed-refusals.js` (#152's family, built by #200), is run by hand and **not** in `CENSUSES`: it is red on twenty real sites that #203 is open for, and #203 wires it in. Their own fixtures are `npm run census:test`. |
+| `frontend/scripts/` | Four censuses, as instruments. `npm run census` runs all four and goes red when a screen draws an answer with no guard and no written reason (#133's family), draws a label with a code in front of the name and no written reason (#93's), or says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family, `sentences-after-a-move.js`, which asks about **enclosure** and not about a window of lines), or redraws from a loader without reading whether it drew (#152's family, `swallowed-refusals.js`, built by #200 and left unwired while the twenty administration sites it found were still red — #203 fixed those and wired it in on 12 October 2569). Their own fixtures are `npm run census:test`. |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the

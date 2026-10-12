@@ -105,13 +105,24 @@ export default function Plos() {
     // Nothing is asked for until a curriculum is chosen. The effect below
     // chooses one as soon as the reach is known; an account that reaches none
     // never gets here, and is told so rather than left loading.
-    if (!program) return
+    //
+    // `false` here is *it did not draw*, which is what the caller below reads
+    // it as, and not *the read was refused* - the read was never made. No
+    // handler can arrive with no curriculum chosen, every one of them acting on
+    // a PLO of one, so the two readings cannot be told apart from inside this
+    // screen as it stands on 12 October 2569 (#203).
+    if (!program) return false
     setLoading(true)
     try {
       const { plos: rows } = await listPlos({ program_id: program })
       if (isCurrent()) setPlos(rows)
+      // Whether it drew, for a handler that has a sentence to say - #203. It
+      // answers *the read was not refused* and not *the screen is still the one
+      // that asked*, which is the caller's own second clause (#202).
+      return true
     } catch (error) {
       if (isCurrent()) report(error)
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -287,8 +298,11 @@ export default function Plos() {
       // control `disabled={busy}`, so nothing can take the screen while this
       // save is out and the guard would be a clause no row could reach (#97).
       // Measured 11 October 2569 (#202)
-      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      await load(() => onScreen.current === program)
+      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #203 - the sentence waits for the reload to draw. `Departments.js`
+      // carries the reasons.
+      const reloaded = await load(() => onScreen.current === program)
+      if (reloaded) setNotice(said)
     } catch (error) {
       report(error)
     } finally {
@@ -306,15 +320,16 @@ export default function Plos() {
       const answer = await deletePlo(removing.outcome_id)
       const deactivated = Boolean(answer?.deactivated)
       setRemoving(null)
-      if (showing.current === sent) {
-        setNotice({
-          error: false,
-          message: deactivated
-            ? 'ผลการเรียนรู้ข้อนี้มีรายวิชาหรือ CLO อ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
-            : 'ลบผลการเรียนรู้เรียบร้อยแล้ว',
-        })
+      const said = {
+        error: false,
+        message: deactivated
+          ? 'ผลการเรียนรู้ข้อนี้มีรายวิชาหรือ CLO อ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
+          : 'ลบผลการเรียนรู้เรียบร้อยแล้ว',
       }
-      await load(() => onScreen.current === program)
+      // #203 - the sentence waits for the reload to draw. `Departments.js`
+      // carries the reasons.
+      const reloaded = await load(() => onScreen.current === program)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       // A ข้อหลัก that still has ข้อย่อย is refused outright, and the sentence
       // the server sends says what to do about it. The dialog closes either

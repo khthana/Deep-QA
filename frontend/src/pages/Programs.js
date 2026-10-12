@@ -64,6 +64,12 @@ export default function Programs() {
   }, [])
 
   /**
+   * A sentence waiting for the read that will draw what it is about - #152.
+   * `Departments.js` carries the reasons.
+   */
+  const waiting = useRef(null)
+
+  /**
    * #68 - the answer that is drawn is the answer to the request the screen is
    * still on; without the flag the answer that **arrives** last wins rather
    * than the one asked for last. The rule, the three rows that prove it, and
@@ -74,11 +80,20 @@ export default function Programs() {
     setLoading(true)
     try {
       const answer = await listPrograms({ page, per_page: PAGE_SIZE })
-      if (isCurrent()) setData(answer)
+      if (isCurrent()) {
+        setData(answer)
+        if (waiting.current) setNotice(waiting.current)
+      }
+      // Whether it drew, for a handler that has a sentence to say - #203. It
+      // answers *the read was not refused* and not *the screen is still the one
+      // that asked*, which is the caller's own second clause (#202).
+      return true
     } catch (error) {
       if (isCurrent()) report(error)
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
+      waiting.current = null
     }
   }, [page, report])
 
@@ -170,11 +185,12 @@ export default function Programs() {
       } else {
         await createProgram(draft)
       }
-      if (showing.current === sent) {
-        setEditing(null)
-        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      }
-      await load(() => onScreen.current === load)
+      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      if (showing.current === sent) setEditing(null)
+      // #203 - the sentence waits for the reload to draw. `Departments.js`
+      // carries the reasons.
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       if (showing.current === sent) report(error)
     } finally {
@@ -193,13 +209,11 @@ export default function Programs() {
       const answer = await deleteProgram(removing.program_id)
       const deactivated = Boolean(answer?.deactivated)
       setRemoving(null)
-      if (showing.current === sent) {
-        setNotice({
-          error: false,
-          message: deactivated
-            ? 'หลักสูตรนี้มีข้อมูลอื่นอ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
-            : 'ลบหลักสูตรเรียบร้อยแล้ว',
-        })
+      const said = {
+        error: false,
+        message: deactivated
+          ? 'หลักสูตรนี้มีข้อมูลอื่นอ้างอิงอยู่ ระบบจึงปิดการใช้งานแทนการลบ ข้อมูลเดิมยังเรียกดูได้'
+          : 'ลบหลักสูตรเรียบร้อยแล้ว',
       }
       // The last row of the last page having gone, staying on that page shows an
       // empty table and reads as "there are none". Stepping back is a change of
@@ -207,8 +221,16 @@ export default function Programs() {
       // it with a second request for the page just left. A deactivation removes
       // nothing from the list, so it never steps back.
       const stepBack = !deactivated && page > 1 && data.programs.length === 1
-      if (stepBack) setPage(current => current - 1)
-      else await load(() => onScreen.current === load)
+      // #203 - a page move is a read the effect does, so the sentence is handed
+      // over for `load` to say when it has drawn. `Departments.js` carries the
+      // reasons.
+      if (stepBack) {
+        if (showing.current === sent) waiting.current = said
+        setPage(current => current - 1)
+      } else {
+        const reloaded = await load(() => onScreen.current === load)
+        if (reloaded && showing.current === sent) setNotice(said)
+      }
     } catch (error) {
       setRemoving(null)
       report(error)

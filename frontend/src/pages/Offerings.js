@@ -100,6 +100,12 @@ export default function Offerings() {
   }, [])
 
   /**
+   * A sentence waiting for the read that will draw what it is about - #152.
+   * `Departments.js` carries the reasons.
+   */
+  const waiting = useRef(null)
+
+  /**
    * #68 - the answer that is drawn is the answer to the request the screen is
    * still on; without the flag the answer that **arrives** last wins rather
    * than the one asked for last. The rule, the three rows that prove it, and
@@ -116,11 +122,20 @@ export default function Offerings() {
         academic_year: year,
         semester,
       })
-      if (isCurrent()) setData(answer)
+      if (isCurrent()) {
+        setData(answer)
+        if (waiting.current) setNotice(waiting.current)
+      }
+      // Whether it drew, for a handler that has a sentence to say - #203. It
+      // answers *the read was not refused* and not *the screen is still the one
+      // that asked*, which is the caller's own second clause (#202).
+      return true
     } catch (error) {
       if (isCurrent()) report(error)
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
+      waiting.current = null
     }
   }, [page, program, year, semester, report])
 
@@ -272,17 +287,20 @@ export default function Offerings() {
       const { offering } = await createOffering(draft)
       const mine = showing.current === sent
       const ask = {}
+      const said = {
+        error: false,
+        // label-code: the notice says what was just created, and the next thing the person
+        // does is find that offering by its code in the registrar's list (#93)
+        message: `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
+      }
       if (mine) {
         setOpening(false)
         asked.current = ask
-        setNotice({
-          error: false,
-          // label-code: the notice says what was just created, and the next thing the person
-          // does is find that offering by its code in the registrar's list (#93)
-          message: `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
-        })
       }
-      await load(() => onScreen.current === load)
+      // #203 - the sentence waits for the reload to draw. `Departments.js`
+      // carries the reasons.
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent) setNotice(said)
       if (mine) await refresh(offering.id, ask)
     } catch (error) {
       if (showing.current === sent) report(error)
@@ -315,20 +333,26 @@ export default function Offerings() {
       }
       const answer = await copyTerm({ ...terms, program_id: target })
       setCopied(answer)
-      if (showing.current === sent) {
-        setNotice({
-          error: false,
-          message:
-            answer.created.length === 0
-              ? 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง'
-              : `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,
-        })
+      const said = {
+        error: false,
+        message:
+          answer.created.length === 0
+            ? 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง'
+            : `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,
       }
       // The same rule as the import below: page one is a change the effect
       // fetches, and asking `load` as well would race it from the page being
       // left - #68.
-      if (page === 1) await load(() => onScreen.current === load)
-      else setPage(1)
+      // #203 - a page move is a read the effect does, so the sentence is handed
+      // over for `load` to say when it has drawn. `Departments.js` carries the
+      // reasons.
+      if (page === 1) {
+        const reloaded = await load(() => onScreen.current === load)
+        if (reloaded && showing.current === sent) setNotice(said)
+      } else {
+        if (showing.current === sent) waiting.current = said
+        setPage(1)
+      }
     } catch (error) {
       report(error)
     } finally {
@@ -358,15 +382,21 @@ export default function Offerings() {
         await deleteOffering(removing.offering.id)
         setRemoving(null)
         setViewing(null)
-        if (showing.current === sent) {
-          setNotice({ error: false, message: 'ยกเลิกการเปิดรายวิชาเรียบร้อยแล้ว' })
-        }
+        const said = { error: false, message: 'ยกเลิกการเปิดรายวิชาเรียบร้อยแล้ว' }
         // The last row of the last page having gone, staying on that page shows
         // an empty table and reads as "there are none". Stepping back is a
         // change of page and the effect fetches it; calling `load` here as well
         // would race it with a second request for the page just left.
-        if (page > 1 && data.offerings.length === 1) setPage(current => current - 1)
-        else await load(() => onScreen.current === load)
+        // #203 - a page move is a read the effect does, so the sentence is handed
+        // over for `load` to say when it has drawn. `Departments.js` carries the
+        // reasons.
+        if (page > 1 && data.offerings.length === 1) {
+          if (showing.current === sent) waiting.current = said
+          setPage(current => current - 1)
+        } else {
+          const reloaded = await load(() => onScreen.current === load)
+          if (reloaded && showing.current === sent) setNotice(said)
+        }
       }
     } catch (error) {
       const wasSection = removing.kind === 'section'

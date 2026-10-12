@@ -175,12 +175,12 @@ FILES = {
 # บรรทัดที่สองอยู่ในสมอเพราะ #202 (11 ต.ค. 2569) - `confirmRemoval` ของจอเดียวกันถาม
 # คำถามเดียวกันที่ย่อหน้าเท่ากัน สมอบรรทัดเดียวจึงเจอสองที่ และสิ่งที่แยกมันออกคือ
 # สิ่งที่อยู่ในก้อน: `save` ปิดฟอร์ม การลบไม่มีฟอร์มจะปิด
-CLOSED = '      if (showing.current === sent) {\n        setEditing(null)\n'
-CLOSED_ANY = '      if (showing.current !== null) {\n        setEditing(null)\n'
+CLOSED = '      if (showing.current === sent) setEditing(null)\n'
+CLOSED_ANY = '      if (showing.current !== null) setEditing(null)\n'
 
 # ข้อมูลนักศึกษากลาง ถือ `adding` ใบเดียว ไม่ใช่ฟอร์มต่อแถว
-CLOSED_ADDING = '      if (showing.current === sent) {\n        setAdding(false)\n'
-CLOSED_ADDING_ANY = '      if (showing.current !== null) {\n        setAdding(false)\n'
+CLOSED_ADDING = '      if (showing.current === sent) setAdding(false)\n'
+CLOSED_ADDING_ANY = '      if (showing.current !== null) setAdding(false)\n'
 
 # คำปฏิเสธของจอที่ส่งผ่าน `report`
 REPORTED = '      if (showing.current === sent) report(error)\n'
@@ -194,17 +194,33 @@ MINE_ANY = '      const mine = showing.current !== null\n'
 NOTICED = '      if (showing.current === sent && !error.expired)\n'
 NOTICED_ANY = '      if (showing.current !== null && !error.expired)\n'
 
+# ประโยคของการบันทึก ซึ่งแยกออกมาจาก `CLOSED` ตอน #203 (12 ต.ค. 2569)
+#
+# ก่อนนั้นการปิดฟอร์มกับการพูดประโยคอยู่ใน guard ก้อนเดียวกัน `*closewins` จึงฆ่าสามแถวบนสามจอ
+# ที่มีแถว *a save that lands while the next row is being read says nothing* (#139) — แถวนั้นอ่าน
+# แต่ว่าประโยคไม่ขึ้น #203 ให้ประโยคมี guard ของตัวเอง `*closewins` จึงเหลือสองแถว และแถวที่สาม
+# ไม่มีมัตแตนต์ค้ำอีก ซึ่งการกวาดซ้ำเป็นตัวบอก ไม่ใช่การตรวจสมอ (#107 #68) สามตัวข้างล่างคือแถวนั้น
+# รูปของมันเป็นรูปเดียวกับ `enrolment*saysanyway` ของ `202`: ลืม clause ที่สอง ไม่ใช่ถอดเงื่อนไขทิ้ง
+SAID = ('\n      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n')
+SAID_ANY = ('\n      const reloaded = await load(() => onScreen.current === load)\n'
+            '      if (reloaded) setNotice(said)\n')
+
 MUTANTS = {
     # ภาควิชา: ฟอร์มที่เปิดทีหลังถูกปิดโดยคำตอบของการบันทึกครั้งก่อน
     'departmentsclosewins': ('departments', CLOSED, CLOSED_ANY),
     # ภาควิชา: คำปฏิเสธของการบันทึกที่ถูกแซง มาขึ้นเหนือฟอร์มใหม่
     'departmentsrefusalwins': ('departments', REPORTED, REPORTED_ANY),
+    # ภาควิชา: ประโยคของการบันทึกขึ้นทับฟอร์มที่แถวถัดไปกำลังถูกอ่านเพื่อเปิด
+    'departmentssavesaysanyway': ('departments', SAID, SAID_ANY),
     # หลักสูตร
     'programsclosewins': ('programs', CLOSED, CLOSED_ANY),
     'programsrefusalwins': ('programs', REPORTED, REPORTED_ANY),
+    'programssavesaysanyway': ('programs', SAID, SAID_ANY),
     # รายวิชา
     'subjectsclosewins': ('subjects', CLOSED, CLOSED_ANY),
     'subjectsrefusalwins': ('subjects', REPORTED, REPORTED_ANY),
+    'subjectssavesaysanyway': ('subjects', SAID, SAID_ANY),
     # ผู้ใช้งาน
     'usersclosewins': ('users', CLOSED, CLOSED_ANY),
     'usersrefusalwins': ('users', REPORTED, REPORTED_ANY),

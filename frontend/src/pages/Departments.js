@@ -79,6 +79,34 @@ export default function Departments() {
   const busy = writing || reading
 
   /**
+   * A sentence waiting for the read that will draw what it is about - #152.
+   *
+   * A removal can step the page back rather than reload the page it is on, and
+   * that read is the effect's: the handler has nothing to await and cannot know
+   * whether it drew. Saying the sentence there says a row went over a refusal
+   * the effect is about to write - the one thing the owner's decision of
+   * 10 October 2569 says must not be said - and it is on the screen for as long
+   * as the refusal takes to arrive.
+   *
+   * So the sentence is left here, `load` says it when it has drawn, and a read
+   * that refused takes it away. `Programs`, `Subjects`, `ProgramSubjects`,
+   * `Rubrics`, `Students` and `Offerings` keep one for the same reason, and
+   * `SubjectStudents.js` carries #152's own, which is where the shape comes
+   * from.
+   *
+   * `load` clears it in `finally` whether or not it was still the read the
+   * screen wanted - #152's shape, kept letter for letter. A superseded read
+   * landing between the handover and the effect's own read would therefore
+   * throw the sentence away, and nothing can arrange that today: every control
+   * that hands one over is `disabled={busy}`, and `busy` is `writing ||
+   * reading`, so no sentence can be handed over while a read is out. That is a
+   * clause no row can reach (#97), measured 12 October 2569, and the day it
+   * stops holding is the day a page move can be started while another read is
+   * in flight.
+   */
+  const waiting = useRef(null)
+
+  /**
    * #68 - the answer that is drawn is the answer to the request the screen is
    * still on; without the flag the answer that **arrives** last wins rather
    * than the one asked for last. The rule, the three rows that prove it, and
@@ -89,13 +117,22 @@ export default function Departments() {
     setLoading(true)
     try {
       const answer = await listDepartments({ page, per_page: PAGE_SIZE })
-      if (isCurrent()) setData(answer)
+      if (isCurrent()) {
+        setData(answer)
+        if (waiting.current) setNotice(waiting.current)
+      }
+      // Whether it drew, for a handler that has a sentence to say - #203. It
+      // answers *the read was not refused* and not *the screen is still the one
+      // that asked*, which is the caller's own second clause (#202).
+      return true
     } catch (error) {
       // A 401 already raises the shell's dialog; saying it again here would
       // put a banner behind that dialog.
       if (isCurrent() && !error.expired) setNotice({ error: true, message: error.message })
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
+      waiting.current = null
     }
   }, [page])
 
@@ -277,11 +314,20 @@ export default function Departments() {
       } else {
         await createDepartment(draft)
       }
-      if (showing.current === sent) {
-        setEditing(null)
-        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      }
-      await load(() => onScreen.current === load)
+      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      if (showing.current === sent) setEditing(null)
+      // #203 - the refusal wins.
+      //
+      // `load` reports its own failure and returns normally, so a sentence said
+      // before it is a sentence said over a refusal the reload is about to
+      // write: the person is told the write worked and hears nothing about the
+      // list in front of them. The owner settled it on 10 October 2569 - the
+      // refusal wins - and #152 carried that to the ten teacher screens. This
+      // is the same shape, on the ten administration screens #152 scoped out:
+      // `load` answers whether it drew, and the sentence is said only if it did
+      // and only if the screen is still the one that asked.
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       if (showing.current === sent) report(error)
     } finally {
@@ -327,17 +373,22 @@ export default function Departments() {
     try {
       await deleteDepartment(removing.department_id)
       setRemoving(null)
-      if (showing.current === sent) {
-        setNotice({ error: false, message: 'ลบภาควิชาเรียบร้อยแล้ว' })
-      }
+      const said = { error: false, message: 'ลบภาควิชาเรียบร้อยแล้ว' }
       // The last row of the last page having gone, staying on that page shows
       // an empty table and reads as "there are none". Stepping back is a change
       // of page and the effect fetches it; calling `load` here as well would
       // race it with a second request for the page just left, and whichever
       // answered last would win.
       const stepBack = page > 1 && data.departments.length === 1
-      if (stepBack) setPage(current => current - 1)
-      else await load(() => onScreen.current === load)
+      // #203 - a page move is a read the effect does, so the sentence is handed
+      // over for `load` to say when it has drawn: the `waiting` ref above.
+      if (stepBack) {
+        if (showing.current === sent) waiting.current = said
+        setPage(current => current - 1)
+      } else {
+        const reloaded = await load(() => onScreen.current === load)
+        if (reloaded && showing.current === sent) setNotice(said)
+      }
     } catch (error) {
       // Including the refusal for a department something still points at,
       // which is a real answer and is shown in the server's own words.

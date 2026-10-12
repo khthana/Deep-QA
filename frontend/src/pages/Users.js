@@ -154,10 +154,15 @@ export default function Users() {
     try {
       const answer = await listUsers({ ...filters, page, per_page: PAGE_SIZE })
       if (isCurrent()) setData(answer)
+      // Whether it drew, for a handler that has a sentence to say - #203. It
+      // answers *the read was not refused* and not *the screen is still the one
+      // that asked*, which is the caller's own second clause (#202).
+      return true
     } catch (error) {
       // A 401 already raises the shell's dialog; saying it again here would
       // put a banner behind that dialog.
       if (isCurrent() && !error.expired) setNotice({ error: true, message: error.message })
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -204,11 +209,12 @@ export default function Users() {
     try {
       if (editing?.user_id) await updateUser(editing.user_id, draft)
       else await createUser(draft)
-      if (showing.current === sent) {
-        setEditing(null)
-        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      }
-      await load(() => onScreen.current === load)
+      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      if (showing.current === sent) setEditing(null)
+      // #203 - the sentence waits for the reload to draw. `Departments.js`
+      // carries the reasons.
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       if (showing.current === sent) report(error)
     } finally {
@@ -244,16 +250,17 @@ export default function Users() {
     const next = user.status === 'active' ? 'inactive' : 'active'
     try {
       await setUserStatus(user.user_id, next)
-      if (showing.current === sent) {
-        setNotice({
-          error: false,
-          message:
-            next === 'inactive'
-              ? 'ระงับการใช้งานบัญชีเรียบร้อยแล้ว'
-              : 'เปิดใช้งานบัญชีเรียบร้อยแล้ว',
-        })
+      const said = {
+        error: false,
+        message:
+          next === 'inactive'
+            ? 'ระงับการใช้งานบัญชีเรียบร้อยแล้ว'
+            : 'เปิดใช้งานบัญชีเรียบร้อยแล้ว',
       }
-      await load(() => onScreen.current === load)
+      // #203 - the sentence waits for the reload to draw. `Departments.js`
+      // carries the reasons.
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       report(error)
     }

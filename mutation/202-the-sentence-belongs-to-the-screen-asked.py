@@ -105,20 +105,23 @@ FILES = {
     'enrolment': 'frontend/src/pages/SubjectStudents.js',
 }
 
-# `setRemoving(null)` ข้างบนคือสิ่งที่แยกการลบออกจาก `save` ซึ่งถามคำถามเดียวกัน
-# ที่ย่อหน้าเท่ากัน - ประโยคภาษาไทยในก้อนไม่ใช่สิ่งที่ทำให้สมอไม่ซ้ำ
-REMOVAL = '      setRemoving(null)\n      if (showing.current === sent) {\n'
-REMOVAL_ANY = '      setRemoving(null)\n      if (showing.current !== null) {\n'
-
 MUTANTS = {
     # ภาควิชา: การลบพูดประโยคของตัวเองเหนือฟอร์มที่เปิดขึ้นมาแทน
-    'departmentssaysanyway': ('departments', REMOVAL, REMOVAL_ANY),
+    'departmentssaysanyway': ('departments',
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n',
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current !== null) setNotice(said)\n'),
     # ภาควิชา: guard ที่จับ `{}` ใหม่แทน ref - เป็นเท็จตลอด การลบจึงไม่เคยพูดอะไร
     'departmentssaysnothing': ('departments',
         '  const confirmRemoval = async () => {\n    const sent = showing.current\n',
         '  const confirmRemoval = async () => {\n    const sent = {}\n'),
     # ผลการเรียนรู้ระดับหลักสูตร: จอที่ ref มาถึงพร้อมตั๋วนี้
-    'plossaysanyway': ('plos', REMOVAL, REMOVAL_ANY),
+    'plossaysanyway': ('plos',
+        '      const reloaded = await load(() => onScreen.current === program)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n',
+        '      const reloaded = await load(() => onScreen.current === program)\n'
+        '      if (reloaded && showing.current !== null) setNotice(said)\n'),
     # ผลการเรียนรู้ระดับหลักสูตร: ref มีอยู่ แต่ปุ่มเพิ่มไม่เขียนมัน guard จึงเทียบ
     # `null === null` แล้วพูดทับฟอร์มที่เพิ่งเปิด
     'plosnorefatadd': ('plos',
@@ -126,8 +129,14 @@ MUTANTS = {
         '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n'),
     # ผู้ใช้งาน: สวิตช์สถานะ ซึ่งไม่ถามอะไรก่อน รายการจึงยังมีชีวิตอยู่ทั้งเวลา
     'userssaysanyway': ('users',
-        '      await setUserStatus(user.user_id, next)\n      if (showing.current === sent) {\n',
-        '      await setUserStatus(user.user_id, next)\n      if (showing.current !== null) {\n'),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '    } catch (error) {\n'
+        '      report(error)\n',
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current !== null) setNotice(said)\n'
+        '    } catch (error) {\n'
+        '      report(error)\n'),
     # รายชื่อนักศึกษาของรายวิชา: การเพิ่ม - โค้ดก่อนครึ่งหลังของตั๋วนี้เป๊ะ ๆ
     # ธงของ #152 อย่างเดียว ซึ่งแปลว่า *ไม่ถูกปฏิเสธ* ไม่ใช่ *วาดแล้ว*
     'enrolmentaddsaysanyway': ('enrolment',

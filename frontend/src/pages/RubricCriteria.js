@@ -86,13 +86,18 @@ export default function RubricCriteria() {
         setData(answer)
         setRefusal(null)
       }
+      // Whether it drew, for a handler that has a sentence to say - #203. It
+      // answers *the read was not refused* and not *the screen is still the one
+      // that asked*, which is the caller's own second clause (#202).
+      return true
     } catch (error) {
       // The whole screen is about one rubric, so a refusal about that rubric is
       // the state of the screen rather than a banner over a table that would
       // otherwise be there.
-      if (error.expired || !isCurrent()) return
+      if (error.expired || !isCurrent()) return false
       setRefusal(error.message)
       setData({ rubric: null, criteria: [], total: 0 })
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
     }
@@ -175,8 +180,11 @@ export default function RubricCriteria() {
       // control `disabled={busy}`, so nothing can take the screen while this
       // save is out and the guard would be a clause no row could reach (#97).
       // Measured 11 October 2569 (#202)
-      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
-      await load(() => onScreen.current === load)
+      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #203 - the sentence waits for the reload to draw. `Departments.js`
+      // carries the reasons.
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded) setNotice(said)
     } catch (error) {
       report(error)
     } finally {
@@ -195,15 +203,16 @@ export default function RubricCriteria() {
       setRemoving(null)
       // The name comes from the answer and not from the row the table was
       // holding: what went is what the server removed.
-      if (showing.current === sent) {
-        setNotice({
-          error: false,
-          message: answer?.criteria_name_th
-            ? `ลบเกณฑ์ ${answer.criteria_name_th} เรียบร้อยแล้ว`
-            : 'ลบเกณฑ์เรียบร้อยแล้ว',
-        })
+      const said = {
+        error: false,
+        message: answer?.criteria_name_th
+          ? `ลบเกณฑ์ ${answer.criteria_name_th} เรียบร้อยแล้ว`
+          : 'ลบเกณฑ์เรียบร้อยแล้ว',
       }
-      await load(() => onScreen.current === load)
+      // #203 - the sentence waits for the reload to draw. `Departments.js`
+      // carries the reasons.
+      const reloaded = await load(() => onScreen.current === load)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       setRemoving(null)
       report(error)

@@ -87,8 +87,10 @@ FILES = {"register": "frontend/src/pages/Students.js"}
 MUTANTS = {
     # ตัวข้อบกพร่องเอง: คำตอบที่มาถึงทีหลังชนะ ไม่ว่าจะขอไว้เมื่อไหร่
     "staleanswerwins": ("register",
-        "      if (isCurrent()) setData(answer)\n",
-        "      setData(answer)\n"),
+        '      if (isCurrent()) {\n'
+        '        setData(answer)\n',
+        '      if (isCurrent() || true) {\n'
+        '        setData(answer)\n'),
     # ด้านที่อยู่ถัดไปหนึ่งสถานะ: จอบอกว่าโหลดเสร็จ ทั้งที่ใบที่มันรออยู่ยังไม่กลับ
     "staleclearsloading": ("register",
         "      if (isCurrent()) setLoading(false)\n",

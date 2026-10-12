@@ -84,23 +84,37 @@ FILES = {
 MUTANTS = {
     # ข้อมูลนักศึกษา: บันทึก
     'studentssavestalewins': ('students',
-        '      if (page === 1) await load(() => onScreen.current === load)\n',
-        '      if (page === 1) await load(() => true)\n'),
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n',
+        '        const reloaded = await load(() => true)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลนักศึกษา: การนำเข้า
     'studentsimportstalewins': ('students',
         '              if (page === 1) load(() => onScreen.current === load)\n',
         '              if (page === 1) load(() => true)\n'),
     # ข้อมูลผู้ใช้งาน: บันทึก
     'userssavestalewins': ('users',
-        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
-        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '    } catch (error) {\n'
+        '      if (showing.current === sent) report(error)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '    } catch (error) {\n'
+        '      if (showing.current === sent) report(error)\n'),
     # ข้อมูลผู้ใช้งาน: ระงับ
     # #202 wrapped this handler's sentence in a guard, so the line above the
     # reload is now the guard's `}` and `save` carries the same pair. The tail
     # tells them apart: `toggle` has no `finally`.
     'userstogglestalewins': ('users',
-        '      await load(() => onScreen.current === load)\n    } catch (error) {\n      report(error)\n    }\n  }\n',
-        '      await load(() => true)\n    } catch (error) {\n      report(error)\n    }\n  }\n'),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '    } catch (error) {\n'
+        '      report(error)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '    } catch (error) {\n'
+        '      report(error)\n'),
     # ข้อมูลผู้ใช้งาน: การนำเข้า
     'usersimportstalewins': ('users',
         '              if (page === 1) load(() => onScreen.current === load)\n',
@@ -111,12 +125,16 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # ข้อมูลภาควิชา: บันทึก
     'departmentssavestalewins': ('departments',
-        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
-        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลภาควิชา: ลบ / นำออก
     'departmentsremovestalewins': ('departments',
-        '      else await load(() => onScreen.current === load)\n',
-        '      else await load(() => true)\n'),
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n',
+        '        const reloaded = await load(() => true)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลภาควิชา: การนำเข้า
     'departmentsimportstalewins': ('departments',
         '              if (page === 1) load(() => onScreen.current === load)\n',
@@ -127,12 +145,16 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # ข้อมูลหลักสูตร: บันทึก
     'programssavestalewins': ('programs',
-        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
-        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลหลักสูตร: ลบ / นำออก
     'programsremovestalewins': ('programs',
-        '      else await load(() => onScreen.current === load)\n',
-        '      else await load(() => true)\n'),
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n',
+        '        const reloaded = await load(() => true)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลหลักสูตร: การนำเข้า
     'programsimportstalewins': ('programs',
         '              if (page === 1) load(() => onScreen.current === load)\n',
@@ -143,12 +165,16 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # ข้อมูลรายวิชา: บันทึก
     'subjectssavestalewins': ('subjects',
-        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => onScreen.current === load)\n",
-        "        setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      }\n      await load(() => true)\n"),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลรายวิชา: ลบ / นำออก
     'subjectsremovestalewins': ('subjects',
-        '      else await load(() => onScreen.current === load)\n',
-        '      else await load(() => true)\n'),
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n',
+        '        const reloaded = await load(() => true)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลรายวิชา: การนำเข้า
     'subjectsimportstalewins': ('subjects',
         '              if (page === 1) load(() => onScreen.current === load)\n',
@@ -159,12 +185,16 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # รายวิชาในหลักสูตร: บันทึก
     'pairssavestalewins': ('pairs',
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => onScreen.current === load)\n",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => true)\n"),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded) setNotice(said)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded) setNotice(said)\n'),
     # รายวิชาในหลักสูตร: ลบ / นำออก
     'pairsremovestalewins': ('pairs',
-        '      else await load(() => onScreen.current === load)\n',
-        '      else await load(() => true)\n'),
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n',
+        '        const reloaded = await load(() => true)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # รายวิชาในหลักสูตร: การนำเข้า
     'pairsimportstalewins': ('pairs',
         '              if (page === 1) load(() => onScreen.current === load)\n',
@@ -175,28 +205,40 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # Rubric: บันทึก
     'rubricssavestalewins': ('rubrics',
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => onScreen.current === load)\n",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => true)\n"),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded) setNotice(said)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded) setNotice(said)\n'),
     # Rubric: ลบ / นำออก
     'rubricsremovestalewins': ('rubrics',
-        '      else await load(() => onScreen.current === load)\n',
-        '      else await load(() => true)\n'),
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n',
+        '        const reloaded = await load(() => true)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลการเปิดรายวิชา: ตอนเรียนและผู้สอน ที่ถูกปฏิเสธ
     'offeringsrefusalstalewins': ('offerings',
         '      if (asked.current === ask) report(error)\n      await load(() => onScreen.current === load)\n',
         '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: เปิดรายวิชา
     'offeringssavestalewins': ('offerings',
-        '      await load(() => onScreen.current === load)\n      if (mine) await refresh(offering.id, ask)\n',
-        '      await load(() => true)\n      if (mine) await refresh(offering.id, ask)\n'),
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (mine) await refresh(offering.id, ask)\n',
+        '      const reloaded = await load(() => true)\n'
+        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (mine) await refresh(offering.id, ask)\n'),
     # ข้อมูลการเปิดรายวิชา: คัดลอก
     'offeringscopystalewins': ('offerings',
-        '      if (page === 1) await load(() => onScreen.current === load)\n',
-        '      if (page === 1) await load(() => true)\n'),
+        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n',
+        '        const reloaded = await load(() => true)\n'
+        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลการเปิดรายวิชา: ยกเลิกการเปิด
     'offeringsremovestalewins': ('offerings',
-        '        else await load(() => onScreen.current === load)\n',
-        '        else await load(() => true)\n'),
+        '          const reloaded = await load(() => onScreen.current === load)\n'
+        '          if (reloaded && showing.current === sent) setNotice(said)\n',
+        '          const reloaded = await load(() => true)\n'
+        '          if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลการเปิดรายวิชา: กลับไปหน้ารายการ
     'offeringsbackstalewins': ('offerings',
         '            setViewing(null)\n            load(() => onScreen.current === load)\n',

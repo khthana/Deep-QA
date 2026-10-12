@@ -103,11 +103,11 @@ MUTANTS = {
     # Row 6, first half — the rubric that was added is there afterwards. The
     # POST still happens and still answers 201; what stops is the list being
     # read again, so the screen keeps showing the page it drew before the save.
-    "staleafterasave": (
-        "page",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })\n      await load(() => onScreen.current === load)",
-        "      setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })",
-    ),
+    "staleafterasave": ("page",
+        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      if (reloaded) setNotice(said)\n',
+        '      const reloaded = true\n'
+        '      if (reloaded) setNotice(said)\n'),
     # Row 6, second half — the edit is saved. Creation still writes the name, so
     # every row up to this one is untouched, and the add half of the row above
     # still passes; the edit is the first thing that notices.

@@ -68,6 +68,12 @@ export default function Students() {
   }, [])
 
   /**
+   * A sentence waiting for the read that will draw what it is about - #152.
+   * `Departments.js` carries the reasons.
+   */
+  const waiting = useRef(null)
+
+  /**
    * The list for the page the pager is on now - #68.
    *
    * Every paged panel in this codebase read its answer the same way: `setData`
@@ -122,11 +128,20 @@ export default function Students() {
     setLoading(true)
     try {
       const answer = await listStudents({ page, per_page: PAGE_SIZE, program_id: program })
-      if (isCurrent()) setData(answer)
+      if (isCurrent()) {
+        setData(answer)
+        if (waiting.current) setNotice(waiting.current)
+      }
+      // Whether it drew, for a handler that has a sentence to say - #203. It
+      // answers *the read was not refused* and not *the screen is still the one
+      // that asked*, which is the caller's own second clause (#202).
+      return true
     } catch (error) {
       if (isCurrent()) report(error)
+      return false
     } finally {
       if (isCurrent()) setLoading(false)
+      waiting.current = null
     }
   }, [page, program, report])
 
@@ -230,16 +245,22 @@ export default function Students() {
     setBusy(true)
     try {
       await createStudent(draft)
-      if (showing.current === sent) {
-        setAdding(false)
-        setNotice({ error: false, message: 'บันทึกข้อมูลนักศึกษาเรียบร้อยแล้ว' })
-      }
+      const said = { error: false, message: 'บันทึกข้อมูลนักศึกษาเรียบร้อยแล้ว' }
+      if (showing.current === sent) setAdding(false)
       // Back to the first page, where the list's newest-first order puts a
       // student who has just been added. Setting the page is a change the
       // effect fetches; calling `load` as well would race it, so only the
       // branch that is already on page one reloads by hand.
-      if (page === 1) await load(() => onScreen.current === load)
-      else setPage(1)
+      // #203 - a page move is a read the effect does, so the sentence is handed
+      // over for `load` to say when it has drawn. `Departments.js` carries the
+      // reasons.
+      if (page === 1) {
+        const reloaded = await load(() => onScreen.current === load)
+        if (reloaded && showing.current === sent) setNotice(said)
+      } else {
+        if (showing.current === sent) waiting.current = said
+        setPage(1)
+      }
     } catch (error) {
       if (showing.current === sent) report(error)
     } finally {
