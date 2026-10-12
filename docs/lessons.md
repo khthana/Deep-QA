@@ -8934,11 +8934,21 @@ sentences moved and not eleven.
 And the instrument is no better after the fix than before it: it prints **33 asking, 2 on the
 flag and 6 bare**, because the guard this ticket adds sits *below* the sentence at two of the
 four sites and on the sentence's own line at a third — the eight-line window above is the one
-place it cannot be. The figure that means anything is read against the code: **36 of the 41
-decided by a ref comparison, 5 not**. A census is evidence about the property it counted
+place it cannot be. The figure that means anything is read against the code: **35 of the 41
+decided by a ref comparison, 6 not**. A census is evidence about the property it counted
 (#174), including the census written to replace somebody else's census; what it cannot see is
-published beside what it says (#123), and here the two misreadings point in opposite
-directions, which is why its total looked plausible either way.
+published beside what it says (#123), and here the misreadings point in opposite directions,
+which is why its total looked plausible either way.
+
+**There is a third misreading, and it is the one that decides a site's fate.** At
+`ActivityScores.save` the line above the sentence is
+`if (onScreen.current === asked) setData(answer)` - a one-line `if` that encloses nothing but
+itself - so the counter filed the site under *asking* while the sentence has no guard at all.
+That site is the sixth exception, and its written reason is `Offerings.onSection`'s with
+#133's date on it rather than this ticket's. The instrument written to audit the instrument
+read it the same way round for one run: `.*\)$` matches any line ending in a close paren, so
+the patch meant to keep flagging a one-liner swallowed it instead. A census is evidence about
+the pattern it typed, whoever typed it (#174).
 
 ### The way in that belongs to another ticket
 

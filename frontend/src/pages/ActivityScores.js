@@ -353,6 +353,14 @@ export default function ActivityScores() {
       // The grid only if the picker is still on what was saved (#133). The
       // notice is said either way and names the กิจกรรม it saved, because it
       // is about what the teacher did rather than about what is on screen.
+      //
+      // #202 silenced eleven such sentences on nine screens and read this one
+      // too: it is the same decision `Offerings.onSection` carries, and it is
+      // kept. The `if` below is one line and encloses nothing but itself, which
+      // is how that ticket's counter filed this site under *asking* - the third
+      // way it misread the code. What would re-date this: the owner deciding
+      // that here, as on the eleven, the sentence belongs to the screen that
+      // asked. Measured 12 October 2569 (#202)
       if (onScreen.current === asked) setData(answer)
       setNotice({ error: false, message: `บันทึกคะแนน ${activity.activity_name} แล้ว` })
     } catch (error) {
