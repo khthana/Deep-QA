@@ -147,12 +147,14 @@ MUTANTS = {
         "  const neverMarked = silent.filter(student => !hasAnyScore(student, data.clos))",
         "  const neverMarked = []",
     ),
-    # Every outcome goes round the circle. With eleven the labels start meeting
-    # one another at the top and bottom, where the angle between two axes is
-    # narrowest; with fifteen the chart is a grey smear with a polygon in it.
-    # Nothing throws, and on the seeded nine outcomes nothing changes at all -
-    # which is why row 5 builds the situation rather than waiting for one.
-    # Kills row 5.
+    # Every outcome goes round the circle. Nothing throws, nothing collides -
+    # this comment used to say the labels start meeting one another past ten and
+    # #112 measured that: 0 overlapping pairs at every axis count from 8 to 24,
+    # the tightest clearance 3.7px at twenty-four axes. What ten is about is the
+    # density of the polygons laid over one another, which is a decision and not
+    # a measurement, and `MAX_AXES` now says so. On the seeded nine outcomes
+    # this changes nothing at all - which is why row 5 builds the situation
+    # rather than waiting for one. Kills row 5.
     "nocaponhowmanyaxes": (
         "screen",
         "  const drawnClos = data.clos.slice(0, MAX_AXES)",

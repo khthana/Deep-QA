@@ -97,13 +97,24 @@ export const AVERAGE_STYLE = {
 /**
  * How many outcomes this chart can carry round the circle and stay readable —
  * #37's fourth criterion, which asks for the cap *and* for the screen to say so
- * when it bites.
+ * when it bites. Both screens that draw this chart enforce it; #36 did not
+ * until #112, which is how one component came to answer ten outcomes on one
+ * screen and all of them on the other.
  *
- * Ten is the ticket's number rather than a taste. What decides it in the
- * drawing is the labels: they sit on a ring of 154 and grow outwards, and past
- * ten they start meeting one another at the top and bottom of the circle where
- * the angle between two axes is narrowest. A screen that drew fifteen would be
- * legible only in the table underneath it.
+ * **Ten is the ticket's number, and the reason written here was wrong.** This
+ * said the labels start meeting one another past ten, at the top and bottom of
+ * the circle where the angle between two axes is narrowest. #112 measured it,
+ * because a rule about layout is checked with numbers: `getBBox()` in Chromium,
+ * over this component's own geometry and font stack, gives **0 overlapping
+ * pairs at every axis count from 8 to 24**. The tightest clearance is 23.6px at
+ * fifteen axes, 9.4px at twenty and 3.7px at twenty-four; the widest label is
+ * 33.5px across and 14.0px tall on a ring of 154. Nothing collides.
+ *
+ * What is left of the reason is the density of the polygons laid over one
+ * another rather than the labels: #36 draws up to four years on one frame, and
+ * #37 a Section average plus four students. Ten is where that was settled, and
+ * it stays ten — but it stays ten as a decision, not as a measurement.
+ * Measured 12 October 2569 (#112).
  *
  * The cap is the *chart's* and not the data's. Every outcome stays in the
  * table, which is where the numbers were always going to be read from — see

@@ -9152,3 +9152,131 @@ the count:
   mutant can reach**, and nothing reports that — the anchor was fine, the code was untouched, and
   only re-running it says so. Recorded as a dated line beside the old one rather than over it
   (#54).
+
+## #112 — the cap one of two screens enforced, and the reason beside it that was false
+
+`RadarChart` exports `MAX_AXES = 10`. `StudentResults.js` sliced to it and
+`SectionResults.js` did not, so one component answered ten outcomes on #37 and
+every outcome on #36. The seed holds nine, so nothing on either screen reached
+it; #37's own review found it and the ticket was filed rather than fixed,
+because capping #36 makes row 1 of its sheet — *the axes are every CLO of the
+Offering* — false, and `36a` row 1 asserted exactly that. **Changing the
+criteria of a closed ticket from inside an open one is the wrong shape**, which
+is `docs/06` §Out of Scope and is why #112 states three questions instead of a
+task.
+
+### One of the three questions had already been answered
+
+Question 2 was *if it caps, which ten?* — the first ten in the endpoint's order,
+which the ticket says is `clo_number` sorted as text, so any cap inherits #96's
+ordering defect and the two should be decided together. #96 closed on 9
+September: `backend/lib/cloOrder.js` is the fragment ten sites in eight route
+files now share, and the eleven read `CLO-1..CLO-11`. So the question expired
+before the ticket was taken, and what expired it is written in a file the
+ticket does not mention. *A ticket's diagnosis is a claim from the day it was
+written* (#66, #111, #55, #155), and here one third of the decision the ticket
+asked for was no longer anybody's to make.
+
+### The reason written beside the constant, measured
+
+`MAX_AXES`'s own docstring said what decides ten: *they sit on a ring of 154 and
+grow outwards, and past ten they start meeting one another at the top and bottom
+of the circle where the angle between two axes is narrowest.* That is a rule
+about layout, and a rule about layout is checked with numbers (#111, #122,
+#103). Asked of Chromium's `getBBox()` over the component's own geometry and its
+own font stack: **0 overlapping pairs at every axis count from 8 to 24.** The
+tightest clearance is 23.6px at fifteen axes, 9.4px at twenty, 3.7px at
+twenty-four; the widest label is 33.5px across and 14.0px tall.
+
+A first pass estimated the widths in Python and said the same thing, which is
+why it was then asked of the browser: *a fallback that reimplements a library is
+a claim about that library's answer* (#165), and a character's width is the
+library's answer.
+
+So the cap is right and its stated mechanism is false — *a conclusion that is
+right for the wrong reason expires on the wrong day* (#141), met a second time
+and from the other side: nothing the docstring predicted was ever going to fail,
+because the number it defends is defensible for a different reason. What is left
+of the reason is the density of the polygons laid over one another: four years on
+#36, a Section average and four students on #37. The owner chose to keep ten and
+correct the sentence, so `MAX_AXES` now carries the measurement with its date and
+says in as many words that ten is a decision and not a measurement.
+`mutation/37-student-results.py` repeated the refuted claim beside
+`nocaponhowmanyaxes` and sheet 37's note repeated it as *a Subject with fifteen
+would be a smear* — **the sentence to grep is the sentence, not only the figure**
+(#130), and this one had three copies.
+
+### The first cut of the fix took the whole screen away
+
+#37's shape is a slice at the call site: `drawnClos`, axes and values from it,
+and a sentence under the chart when `data.clos.length > MAX_AXES`. Copied to #36
+— the Thai sentence moved as bytes rather than being retyped, which is the only
+way to be sure two screens say the same thing — the screen drew **nothing at
+all**: eleven `tbody tr` expected, zero resolved.
+
+`series` is what the **table** reads its cells out of. Eleven rows against ten
+values is `one.values[10]`, which is `undefined` and not `null`, so the
+blank-or-score ternary takes the score branch and `undefined.toFixed(2)` throws
+during render. *A guard written for one caller is a claim about every caller*
+(#68, #133) one step along: **a value narrowed for one consumer is narrowed for
+every consumer, and the one you did not think about is the one named after
+something else.** The repair is to name the two things apart — `columns`, one per
+year with a value per outcome of the Offering, which the table takes whole, and
+`series`, the same list capped to ten, which the chart takes. One list, two
+readers, the cap applied on the way into the drawing.
+
+### The survivor that meant the row had read the wrong element
+
+Three mutants went in. `nocaponsectionaxes` and `sectioncapnotsaid` killed what
+they were written for. `seriesnotcappedtotheaxes` — the values uncapped while
+the axes stay at ten — **survived 8 of 8**, and the row written for it had been
+built on a reader made for exactly that mutant.
+
+The reader asked every marker how far it was from the axis its own title names.
+But `RadarChart` draws a marker at `pointAt(index, count, value)` with `count`
+from `axes.length`, and draws the **line** through
+`pointAt(index, values.length, ...)`. A marker is on its axis whatever length
+the series is; only `pathOf` reads `values.length`. So eleven values on ten axes
+leaves every marker, every radius, every title and every table cell right, and
+draws the line at eleven-fold angles through none of them — and the instrument
+written to catch it was measuring the half of the drawing the defect cannot
+reach.
+
+**That is an eighth reading of a survivor: the row read the wrong element.** It
+is the twin of #152's *the row read at the wrong moment* — both are the row's
+fault rather than the mutant's or the code's — and the tell is the same shape
+from the other direction: there the hand measurement had already shown the
+defect and the suite read where it was not; here the mutant is the defect
+exactly and the reader was pointed at the element that cannot carry it. When a
+survivor is a faithful copy of the thing you mean to catch, ask **which element
+the claim lives on** before asking whether the claim was at risk.
+
+`pathErrorsOf` replaces it: the `d` of each series' path, each vertex against
+the nearest marker of the same series, the whole of it one sentence — *the line
+passes through its own markers*. `pathOf` writes its vertices to one decimal
+place, so a coordinate can be out by 0.05 and a vertex by `hypot(0.05, 0.05)`
+= 0.071 with the drawing exactly right; the row asserts 0.2, and the stray an
+uncapped series draws is whole pixels. The mutant then dies at that assertion,
+named for the series it moved, and row 7 stands under it: *a row that pins today's value and a row that says
+the screen reads the rule are two claims* (#145), and here the two rows are the
+axis count and the line's own geometry, which no one mutant can fail together.
+
+### What the sweep said
+
+Base `36a` 8 of 8, 12 October 2569.
+
+* `nocaponsectionaxes` 2 of 8, at row 7's and row 8's `axes.length` - the two new
+  ones, *a Subject with more than ten outcomes* and *a previous year ticked onto a
+  capped chart*, which is what their numbers mean and all a number can lose. One mutant,
+  two rows, and no narrower mutant exists: both rows count the axes, so what
+  each adds is that its own way in arrives there (#191).
+* `seriesnotcappedtotheaxes` 1 of 8, at row 8's *the line should pass through its
+  own markers*, naming the comparison year's label in the failure.
+* `sectioncapnotsaid` 1 of 8, at row 7's `toBeVisible()` on the sentence.
+* `tickedyearneverreachesthechart` 2 of 8 — **re-aimed by #112**. It quoted the
+  whole `const series = […]` literal, which the fix rewrote into two lists, so
+  it now takes the one the chart reads: `columns.slice(0, 1)`. *A change to what
+  a call returns reaches every mutant that quoted it* (#140, #152). It kills row
+  2 as before and row 8 as well, which is new and true: row 8 says both lines are
+  there. The sheet's older table credits it with row 2 alone, which is the sweep
+  it was written at and stays as the record, with the re-aiming noted beside it.

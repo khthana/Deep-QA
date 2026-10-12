@@ -2,7 +2,9 @@
 """
 #36 ผลลัพธ์การเรียนรู้รายวิชา - the shape of a Section's year, and the years before it.
 
-Four mutants, one per claim `36a` makes.
+Seven mutants, one per claim `36a` makes - four for the drawing, and three
+that #112 added when the cap `RadarChart` exports began to be enforced here
+as well as on #37.
 
 None of them is about the arithmetic or about which years may be compared.
 Every rule this ticket carries - the scale of five, BR-17's sixty per cent and
@@ -16,6 +18,15 @@ What is left is what only exists in front of a screen, and it is all about the
 ticked in the picker becomes a second line rather than only a second column,
 that an unmeasured outcome is a gap and not a point at the centre, and that a
 refusal is not served under a screen that says it is still loading.
+
+#112 added a fourth thing of the same kind: that the chart draws ten axes of
+an Offering that has more, that it says so, and that a year laid over those
+ten is drawn **on** them. The last of those is the only claim on either
+screen that a marker's distance to the centre cannot carry - a series longer
+than its axes has its **line** drawn at the wrong angles while its markers
+stay on the axes - so it has a reader of its own in
+`e2e/support/radar-chart.js`, which asks whether each line passes through its
+own markers.
 
     python mutation/36-section-results.py save
     python mutation/36-section-results.py <mutant>
@@ -56,12 +67,8 @@ MUTANTS = {
     # for here. Kills row 2.
     "tickedyearneverreachesthechart": (
         "screen",
-        "  const series = [\n    {\n      label: `ปีการศึกษา ${data.section.academic_year}`,\n"
-        "      values: data.clos.map(clo => clo.mean),\n    },\n"
-        "    ...data.comparison.map(year => ({\n      label: `ปีการศึกษา ${year.academic_year}`,\n"
-        "      values: year.clos.map(clo => clo.mean),\n    })),\n  ]",
-        "  const series = [\n    {\n      label: `ปีการศึกษา ${data.section.academic_year}`,\n"
-        "      values: data.clos.map(clo => clo.mean),\n    },\n  ]",
+        "  const series = columns.map(one => ({",
+        "  const series = columns.slice(0, 1).map(one => ({",
     ),
     # A blank becomes a nought on the chart: the ring closes through the centre
     # and a marker is planted on an axis nobody was measured on. This is the one
@@ -95,6 +102,53 @@ MUTANTS = {
         "      // *กำลังโหลดข้อมูล…* underneath it, for ever.\n"
         "      if (ticket === latest.current) setLoading(false)\n    }",
         "    }",
+    ),
+    # #112. The cap `RadarChart` exports was enforced by #37 and not here, so
+    # one component answered ten outcomes on that screen and every outcome on
+    # this one. The owner decided both screens cap, which reworded row 1: the
+    # axes are the outcomes the chart draws, and the table carries the rest.
+    #
+    # The axes stop being capped. Fifteen outcomes draw fifteen labels on a
+    # ring of 154 - which is legible, measured, and not the point: the point
+    # is that the two screens sharing the component answer the same. Kills
+    # row 7 (*a Subject with more than ten outcomes*) and row 8 (*a previous
+    # year ticked onto a capped chart*), both of which count the axes.
+    "nocaponsectionaxes": (
+        "screen",
+        "  const axes = data.clos.slice(0, MAX_AXES).map(clo => clo.clo_number)",
+        "  const axes = data.clos.map(clo => clo.clo_number)",
+    ),
+    # The other half of the cap, and the half with nothing to see. The axes
+    # are still ten; every series is handed eleven values, and `RadarChart`
+    # takes a point's angle from `values.length`. So each line is drawn at
+    # eleven-fold angles on a ten-fold frame: every radius still right, every
+    # title still right, every table cell still right, and the shape a lie
+    # about which outcome each point belongs to.
+    #
+    # And it is the **line** that moves, not the markers: `RadarChart` draws a
+    # marker at `pointAt(index, count, value)` with `count` from `axes.length`,
+    # and draws the line through `pointAt(index, values.length, ...)`. The
+    # first row written for this mutant read the markers' angles and the mutant
+    # survived 8 of 8 - a survivor meaning the row was reading the wrong
+    # element. What holds it is `pathErrorsOf` and *the line passes through its
+    # own markers*. Kills row 8 (*a previous year ticked onto a capped chart*)
+    # alone: row 7 counts the axes and reads the table, and both are untouched
+    # here.
+    "seriesnotcappedtotheaxes": (
+        "screen",
+        "    values: one.values.slice(0, MAX_AXES),",
+        "    values: one.values,",
+    ),
+    # The cap bites and says nothing: ten axes of eleven outcomes, with the
+    # eleventh in the table and nothing on the page to say the chart left it
+    # off. A reader counting nine points and nine rows learns nothing; a
+    # reader counting ten points against eleven rows has to guess. Kills the
+    # sentence half of row 7 (*a Subject with more than ten outcomes*) and
+    # nothing else.
+    "sectioncapnotsaid": (
+        "screen",
+        "          {data.clos.length > MAX_AXES && (",
+        "          {false && (",
     ),
 }
 

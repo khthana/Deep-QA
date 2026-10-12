@@ -8,7 +8,13 @@ const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { mySectionIds } = require('../support/enrolment-screen');
-const { axesOf, pointsOf, tableCell } = require('../support/radar-chart');
+const {
+  axesOf,
+  offeringOf,
+  pastTheCap,
+  pointsOf,
+  tableCell,
+} = require('../support/radar-chart');
 const {
   AVERAGE,
   choose,
@@ -51,66 +57,14 @@ test.afterEach(async () => {
   for (const undo of restore.reverse()) await undo();
 });
 
-/** Which Offering this ตอนเรียน belongs to — ADR-0003's grain, not the Section's. */
-async function offeringOf() {
-  const { rows } = await db.query(
-    `SELECT sc.program_id, sc.subject_id, sc.academic_year
-       FROM course_sections cs
-       JOIN semester_courses sc ON sc.id = cs.semester_course_id
-      WHERE cs.section_id = $1`,
-    [section],
-  );
-  expect(rows.length, 'the ตอนเรียน should belong to one Offering').toBe(1);
-  return rows[0];
-}
-
 /**
- * Two more outcomes on the Offering, taking it past the chart's ten.
- *
- * Added to the Offering rather than to the ตอนเรียน because that is the grain a
- * CLO has - ADR-0003 - and removed again afterwards. They carry no marks, which
- * is beside the point: the cap is about how many labels fit round a circle.
- *
- * Which outcome falls off the chart is worth knowing and is not asserted
- * anywhere. It used to be CLO-9, because `clo_number` ordered as text and
- * CLO-10 and CLO-11 sorted between CLO-1 and CLO-2 - and the row below leaned
- * on that deliberately, needing an outcome that was off the chart and still
- * marked. [#96](https://github.com/khthana/Deep-QA/issues/96) closed that, so
- * the eleven now read CLO-1..CLO-11 and **the one past the tenth axis is
- * CLO-11**, which this fixture creates with no marks on it.
- *
- * The row therefore builds its situation rather than inheriting it: it moves
- * one student's marks onto CLO-11 with `moveMarks`. That is longer, and it is
- * the honest shape - **a row that needs a defect to be reachable is a row that
- * has to be rewritten the day the defect is fixed**, which is exactly what
- * happened here.
+ * `offeringOf` and `pastTheCap` were written here and are now shared with
+ * `36a` - #112 asked the same question of the other screen that draws this
+ * chart, and a fixture a second file needs is shared, because no row's claim
+ * lives in it (#171). Why the eleven read `CLO-1..CLO-11`, and why the one
+ * past the tenth axis is CLO-11 rather than CLO-9, is written where they now
+ * live: `e2e/support/radar-chart.js`.
  */
-async function pastTheCap() {
-  const offering = await offeringOf();
-  const added = ['CLO-10', 'CLO-11'];
-  restore.push(() =>
-    db.query(
-      `DELETE FROM subject_clo
-        WHERE program_id = $1 AND subject_id = $2 AND academic_year = $3
-          AND clo_number = ANY($4)`,
-      [offering.program_id, offering.subject_id, offering.academic_year, added],
-    ),
-  );
-  for (const number of added) {
-    await db.query(
-      `INSERT INTO subject_clo (program_id, subject_id, academic_year, clo_number, clo_detail)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [
-        offering.program_id,
-        offering.subject_id,
-        offering.academic_year,
-        number,
-        'ผลการเรียนรู้ที่เพิ่มเพื่อทดสอบเพดานของกราฟ',
-      ],
-    );
-  }
-  return offering;
-}
 
 /**
  * Moves one student's marks from one outcome to another, remembering how to put
@@ -380,7 +334,7 @@ test('a student marked only past the tenth axis is told that, not left with an u
   // CLO-9 marks are moved onto CLO-11, and everything else is taken away.
   const first = await openStudentResults(page, section);
   const [victim] = (await first.json()).students;
-  await pastTheCap();
+  await pastTheCap(db, restore, await offeringOf(db, section));
   await moveMarks(victim.student_id, { from: 'CLO-9', to: 'CLO-11' });
   await unmark(victim.student_id, { except: 'CLO-11' });
 
@@ -421,7 +375,7 @@ test('a Subject with more than ten outcomes draws ten of them and says how many 
   // Offering rather than to the ตอนเรียน because that is the grain a CLO has —
   // ADR-0003 — and they carry no marks, which is beside the point here: the cap
   // is about how many labels fit round a circle, not about what is on them.
-  await pastTheCap();
+  await pastTheCap(db, restore, await offeringOf(db, section));
 
   const answer = await openStudentResults(page, section);
   const body = await answer.json();

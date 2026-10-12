@@ -352,13 +352,20 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   seam removes the situation first: a closed dialog that a hidden tab keeps is unmounted by a focused
   one, so the same code is stale for the person and clean for the suite. Measure it in both browsers,
   take the mutant out, and leave the row as a net that says it is one. (#47)
-- **A survivor can mean the row read at the wrong moment** — the seventh reading, and the only one
-  where the row rather than the mutant or the code is what is wrong. A claim about a sentence that
+- **A survivor can mean the row read at the wrong moment** — the seventh reading, and the first of
+  two where the row rather than the mutant or the code is what is wrong (#112 is the other). A claim about a sentence that
   lives between two commits cannot be held at a settle point: the refusal that replaces it has
   landed by then, so the broken screen and the fixed one say the same thing, and two mutants that
   were faithful copies of the measured defect survived 21 of 21. The tell is exactly that — a
   mutant reproducing something a hand measurement has already shown misbehaving. Re-aim the row at
   the frames (#164), and read *which assertion* it then dies at. (#152)
+- **And a survivor can mean the row read the wrong element** — the eighth, and #152's
+  twin: the claim lives on one element and the reader was pointed at another. A marker takes
+  its angle from the axes and only the line takes it from `values.length`, so a series longer
+  than its axes leaves every marker, radius, title and table cell right. When a survivor is a
+  faithful copy of the thing you mean to catch, ask which element carries the claim before
+  asking whether the claim was at risk — and read the component, because the two halves of
+  one drawing can be computed from two different lengths. (#112)
 - **A mutant that swaps one implementation for another is invisible wherever the two agree** — so
   the fixture is built where they *disagree*, which is not the same as building it big. And a
   fixture named for a property is a claim about a library's answer: ask ICU whether that run is one

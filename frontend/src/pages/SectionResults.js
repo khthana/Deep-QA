@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import RadarChart, {
+  MAX_AXES,
   MAX_COMPARISONS,
   seriesStyle,
 } from '../components/RadarChart'
@@ -144,8 +145,10 @@ export default function SectionResults() {
     )
   }
 
-  const axes = data.clos.map(clo => clo.clo_number)
-  const series = [
+  // One year per column, each carrying one value per outcome **of the
+  // Offering** - which is what the table draws, and the table is where
+  // nothing is lost.
+  const columns = [
     {
       label: `ปีการศึกษา ${data.section.academic_year}`,
       values: data.clos.map(clo => clo.mean),
@@ -155,6 +158,27 @@ export default function SectionResults() {
       values: year.clos.map(clo => clo.mean),
     })),
   ]
+
+  // And ten of them on the chart, as #37 draws them. The cap is
+  // `RadarChart`'s, and until #112 only one of the two screens that share
+  // the component enforced it. It is the **chart's** cap and not the data's,
+  // so it is applied here, on the way into the drawing, and the columns above
+  // stay whole.
+  //
+  // Both halves of it are needed and they break differently. Capping the axes
+  // without capping the values hands `RadarChart` a series longer than its
+  // own axes, and it takes a point's angle from `values.length`: the line is
+  // then drawn at the wrong angles, with every radius and every label still
+  // right. Nothing that reads a marker's distance to the centre can see that.
+  //
+  // Slicing a year by position is sound because the server offers a year for
+  // comparison only when the two years' CLO numbers match exactly - position
+  // `i` is the same outcome in every column.
+  const axes = data.clos.slice(0, MAX_AXES).map(clo => clo.clo_number)
+  const series = columns.map(one => ({
+    ...one,
+    values: one.values.slice(0, MAX_AXES),
+  }))
 
   return (
     <ContentMotionDIV className="space-y-4 px-6 py-6">
@@ -262,6 +286,19 @@ export default function SectionResults() {
             </p>
           )}
 
+          {data.clos.length > MAX_AXES && (
+            // The cap said out loud, with both numbers in it. Copied from #37
+            // rather than written again: #112 was one component answering ten
+            // outcomes on that screen and all of them on this one, and the
+            // owner decided both screens cap. Two screens saying the cap in
+            // two sentences would be the same defect in the reader's words.
+            <p className="mt-2 text-xs text-amber-700">
+              กราฟแสดงผลการเรียนรู้ {MAX_AXES} ข้อแรก จากทั้งหมด{' '}
+              {data.clos.length} ข้อ
+              คะแนนของทุกข้ออยู่ในตารางด้านล่างครบถ้วน
+            </p>
+          )}
+
           <div className="mt-6 flex flex-col items-center gap-6 lg:flex-row lg:items-start">
             {/* The chart says so itself when there are too few axes to draw a
                 polygon. It was written here first and copied to #37, which is
@@ -314,7 +351,7 @@ export default function SectionResults() {
               <thead className="border-b border-gray-200 text-xs text-slate-500">
                 <tr>
                   <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
-                  {series.map(one => (
+                  {columns.map(one => (
                     <th
                       key={one.label}
                       className="px-4 py-3 text-center font-medium"
@@ -341,7 +378,7 @@ export default function SectionResults() {
                         {clo.clo_detail}
                       </span>
                     </td>
-                    {series.map(one => (
+                    {columns.map(one => (
                       <td
                         key={one.label}
                         aria-label={`${clo.clo_number} ${one.label} ${

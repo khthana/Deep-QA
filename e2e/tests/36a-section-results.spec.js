@@ -8,7 +8,15 @@ const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { mySectionIds } = require('../support/enrolment-screen');
-const { axesOf, pointsOf, tableCell } = require('../support/radar-chart');
+const {
+  MAX_AXES,
+  axesOf,
+  offeringOf,
+  pastTheCap,
+  pathErrorsOf,
+  pointsOf,
+  tableCell,
+} = require('../support/radar-chart');
 const { addYear, openResults, path, yearBox } = require('../support/section-results-screen');
 
 /**
@@ -37,6 +45,15 @@ const { addYear, openResults, path, yearBox } = require('../support/section-resu
 const db = createPool({ schema: E2E_SCHEMA });
 
 let section;
+/**
+ * Undone in `afterEach`, whatever the row did.
+ *
+ * A queue of **functions** since #112, where it was a queue of score rows and
+ * one `UPDATE` that knew their shape. `pastTheCap` is shared with `37a` and
+ * writes `subject_clo`, which that loop could not have put back; each row's
+ * undoing now travels with the thing that did it, and the queue is drained in
+ * reverse so a write that depends on an earlier one comes out first.
+ */
 let restore;
 
 test.beforeEach(async ({ page }) => {
@@ -46,13 +63,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.afterEach(async () => {
-  for (const row of restore) {
-    await db.query(
-      `UPDATE activity_scores SET score = $1
-        WHERE student_id = $2 AND activity_id = $3 AND clo_id = $4`,
-      [row.score, row.student_id, row.activity_id, row.clo_id],
-    );
-  }
+  for (const undo of restore.reverse()) await undo();
 });
 
 /** The prior year the seed offers for comparison, read rather than written here. */
@@ -88,7 +99,15 @@ async function blankOut(cloNumber) {
     [section, cloNumber],
   );
   expect(rows.length, 'nothing to blank out for ' + cloNumber).toBeGreaterThan(0);
-  restore.push(...rows);
+  restore.push(async () => {
+    for (const row of rows) {
+      await db.query(
+        `UPDATE activity_scores SET score = $1
+          WHERE student_id = $2 AND activity_id = $3 AND clo_id = $4`,
+        [row.score, row.student_id, row.activity_id, row.clo_id],
+      );
+    }
+  });
   await db.query(
     `UPDATE activity_scores SET score = NULL
       WHERE student_id = ANY($1) AND clo_id = ANY($2) AND activity_id = ANY($3)`,
@@ -107,8 +126,14 @@ test('the chart draws one point per outcome, and the table under it says the sam
   expect(answer.status()).toBe(200);
   const body = await answer.json();
 
+  // The outcomes the chart draws, in the Offering's order. This read `body.clos`
+  // whole until #112, which is the sentence the sheet's first row used to carry
+  // too - and at the nine the seed holds the two are the same list. The cap is
+  // what made them different claims, and which outcomes fall off it is the row
+  // below's, not this one's: here the point is that every axis the chart draws
+  // is an outcome, named and in order.
   const axes = await axesOf(page);
-  expect(axes).toEqual(body.clos.map((clo) => clo.clo_number));
+  expect(axes).toEqual(body.clos.slice(0, MAX_AXES).map((clo) => clo.clo_number));
 
   const drawn = await pointsOf(page);
   const thisYear = `ปีการศึกษา ${body.section.academic_year}`;
@@ -258,4 +283,80 @@ test('the note under the table states the rule it was handed, not one of its own
   await expect(note).toContainText(`มากกว่าร้อยละ ${body.pass_percent}`);
   await expect(note).toContainText(`ร้อยละ ${body.pass_percent} พอดียังไม่ผ่าน`);
   await expect(note).toContainText(`${body.band_floors[1].toFixed(1)} คะแนนขึ้นไป`);
+});
+
+test('a Subject with more than ten outcomes draws ten of them and says how many it left off', async ({
+  page,
+}) => {
+  // #112. The cap `RadarChart` exports was enforced by #37 and not here, so one
+  // component answered ten on one screen and every outcome on the other. The
+  // owner's decision is that both screens cap, which is what reworded row 1 of
+  // the sheet: the axes are the outcomes the chart draws, and the table carries
+  // the rest.
+  //
+  // The seed holds nine outcomes, so the situation is built. With #96 closed the
+  // eleven read CLO-1..CLO-11, so the one past the tenth axis is CLO-11.
+  await pastTheCap(db, restore, await offeringOf(db, section));
+
+  const answer = await openResults(page, section);
+  const body = await answer.json();
+  expect(body.clos.length).toBe(11);
+
+  const axes = await axesOf(page);
+  expect(axes.length).toBe(MAX_AXES);
+  expect(axes, 'CLO-11 should be the outcome the cap left off').not.toContain('CLO-11');
+
+  // Said out loud, with both numbers in it - the same sentence #37 says, which
+  // is the whole of the decision: one chart, one answer.
+  await expect(page.getByText(/กราฟแสดงผลการเรียนรู้ 10 ข้อแรก จากทั้งหมด 11 ข้อ/)).toBeVisible();
+
+  // And nothing is lost: every outcome still has its row in the table, the one
+  // past the cap included.
+  const thisYear = `ปีการศึกษา ${body.section.academic_year}`;
+  for (const clo of body.clos) {
+    await expect(tableCell(page, clo.clo_number, thisYear)).toHaveCount(1);
+  }
+});
+
+test('a previous year ticked onto a capped chart is drawn on the same ten axes', async ({
+  page,
+}) => {
+  // The other half of the cap, and the half with nothing to see: a comparison
+  // year is a second `values` array, and `RadarChart` draws the **line** through
+  // `pointAt(index, values.length, ...)` while it draws a **marker** through
+  // `pointAt(index, axes.length, ...)`. Eleven values on ten axes therefore
+  // leaves every marker, every radius and every title right, and draws the line
+  // at eleven-fold angles through none of them. `pointsOf` reads the markers
+  // and cannot see it; the first version of this row read the markers' angles
+  // and the mutant survived 8 of 8. What holds it is the line's own claim:
+  // `pathErrorsOf`, below, and *the line passes through its own markers*.
+  //
+  // The outcomes go on **both** years: the server offers a year for comparison
+  // only when the two years' CLO numbers match exactly, so adding them to this
+  // year alone would take the picker away instead of capping what it draws.
+  const offering = await offeringOf(db, section);
+  const year = await priorYear();
+  await pastTheCap(db, restore, offering, { years: [offering.academic_year, year] });
+
+  await openResults(page, section);
+  const answer = await addYear(page, section, year);
+  expect(answer.status()).toBe(200);
+  const body = await answer.json();
+  expect(body.clos.length).toBe(11);
+  expect(body.comparison[0].clos.length, 'the prior year should be comparable still').toBe(11);
+
+  const axes = await axesOf(page);
+  expect(axes.length).toBe(MAX_AXES);
+
+  // Both lines are there, and each is drawn through its own markers. The mutant
+  // this row is written for caps neither series, so both lines leave their
+  // markers at once; they are read by the same loop because the reader does not
+  // know which series it is looking at.
+  const thisYear = `ปีการศึกษา ${body.section.academic_year}`;
+  const thatYear = `ปีการศึกษา ${year}`;
+  const strayed = await pathErrorsOf(page);
+  expect(Object.keys(strayed).sort()).toEqual([thatYear, thisYear].sort());
+  for (const [label, off] of Object.entries(strayed)) {
+    expect(off, `${label}: the line should pass through its own markers`).toBeLessThan(0.2);
+  }
 });
