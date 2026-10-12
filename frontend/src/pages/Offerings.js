@@ -234,6 +234,9 @@ export default function Offerings() {
     try {
       const message = await work()
       await refresh(viewing.id, ask)
+      // sentence-after-a-move: decided 1 October 2026 - the banner is about
+      // the write the person ordered and not about the panel they are now
+      // looking at, so it is drawn whichever panel that is. (#139, #141)
       if (message) setNotice({ error: false, message })
       return true
     } catch (error) {

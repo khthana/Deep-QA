@@ -361,6 +361,9 @@ export default function ActivityScores() {
       // way it misread the code. What would re-date this: the owner deciding
       // that here, as on the eleven, the sentence belongs to the screen that
       // asked. Measured 12 October 2569 (#202)
+      // sentence-after-a-move: the notice is about the save the teacher made
+      // and names the activity it saved, not the one the picker now shows.
+      // Kept on 12 October 2569 (#133, re-read by #202)
       if (onScreen.current === asked) setData(answer)
       setNotice({ error: false, message: `บันทึกคะแนน ${activity.activity_name} แล้ว` })
     } catch (error) {

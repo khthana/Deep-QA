@@ -8950,6 +8950,26 @@ read it the same way round for one run: `.*\)$` matches any line ending in a clo
 the patch meant to keep flagging a one-liner swallowed it instead. A census is evidence about
 the pattern it typed, whoever typed it (#174).
 
+**And the instrument found two sites the hand counts could not have found.** Committed with
+this ticket as `frontend/scripts/sentences-after-a-move.js` - the population is every success
+sentence after an `await` in `src`, and the question is asked of the **enclosure** rather than
+of a window of lines - it answers **43 sentences, 35 enclosed, 8 marked**. The two beyond the
+hand count's 41 are `GrantsPanel.add` and `GrantsPanel.remove`, which no window could have
+reached either: both hand counters read `pages/` only. A census written to replace a hand walk
+measures the walk's scope as well as the code (#200), and the scope is the half nobody
+publishes. `GrantsPanel` is also the pair #141 found for the same reason one family along.
+
+The eight marked sites are the four `save` handlers whose form replaces the table, plus
+`Offerings.onSection`, `ActivityScores.save` and the two `GrantsPanel` handlers - the last
+three carrying #133's decision, that the notice is about the write the person ordered rather
+than about the panel in front of them. That is the doctrine the owner reversed for the eleven,
+which is a question and not a task: the reasons are written down with their dates, and the
+marker is what makes each one a claim an instrument counts (#93).
+
+Its own fixtures pass either way, so the run that matters is the one against the tree with a
+real guard taken out (#124, #141): removing `SubjectStudents.add`'s guard moved the report to
+**enclosed 34, problems 1**, naming that line.
+
 ### The way in that belongs to another ticket
 
 Nine of the eleven are a `confirmRemoval`, and the obvious objection is that while

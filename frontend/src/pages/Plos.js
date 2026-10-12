@@ -283,6 +283,10 @@ export default function Plos() {
       else await createPlo(draft)
       setEditing(null)
       setFormProgram('')
+      // sentence-after-a-move: the form replaces the table and gives every
+      // control `disabled={busy}`, so nothing can take the screen while this
+      // save is out and the guard would be a clause no row could reach (#97).
+      // Measured 11 October 2569 (#202)
       setNotice({ error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' })
       await load(() => onScreen.current === program)
     } catch (error) {

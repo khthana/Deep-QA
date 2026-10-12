@@ -130,6 +130,9 @@ export default function GrantsPanel({ user, onError }) {
       // about the same account (#133) - clearing somebody else's form is #146's
       // rule at the far end of a write. The notice is said either way, because
       // it is about what the reader did rather than about what is on screen.
+      // sentence-after-a-move: the notice is about the grant the reader just
+      // made and not about the account in front of them, which is the decision
+      // the `if` above is documented with. (#133, re-read by #202)
       if (onScreen.current === asked) {
         setGrants(roles)
         setDraft(EMPTY)
@@ -168,6 +171,8 @@ export default function GrantsPanel({ user, onError }) {
         grant.scope_id
       )
       // The same question as `add`, for the same reason (#133).
+      // sentence-after-a-move: `add`'s decision, for `add`'s reason - the
+      // notice is about the grant the reader revoked. (#133, re-read by #202)
       if (onScreen.current === asked) setGrants(roles)
       setNotice({ error: false, message: 'ยกเลิกบทบาทเรียบร้อยแล้ว' })
     } catch (error) {

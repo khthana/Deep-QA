@@ -10,7 +10,11 @@
 const { spawnSync } = require('child_process')
 const path = require('path')
 
-const CENSUSES = ['superseded-answers.js', 'label-codes.js']
+const CENSUSES = [
+  'superseded-answers.js',
+  'label-codes.js',
+  'sentences-after-a-move.js',
+]
 
 let worst = 0
 for (const name of CENSUSES) {
