@@ -92,9 +92,11 @@ MUTANTS = {
         '      if (isCurrent() || true) {\n'
         '        setData(answer)\n'),
     # ด้านที่อยู่ถัดไปหนึ่งสถานะ: จอบอกว่าโหลดเสร็จ ทั้งที่ใบที่มันรออยู่ยังไม่กลับ
+    # #205 put the clearing of `waiting` inside the same question, so the
+    # mistake is written by moving the call above it.
     "staleclearsloading": ("register",
-        "      if (isCurrent()) setLoading(false)\n",
-        "      setLoading(false)\n"),
+        "      if (isCurrent()) {\n        setLoading(false)\n",
+        "      setLoading(false)\n      if (isCurrent()) {\n"),
     # คำขอที่ถูกแทนที่ไปแล้วล้มเหลว ขึ้นแบนเนอร์ทับรายการที่มาถึงเรียบร้อยดี
     "staleerrorwins": ("register",
         "      if (isCurrent()) report(error)\n",

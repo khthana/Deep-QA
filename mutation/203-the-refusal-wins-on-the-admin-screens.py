@@ -144,18 +144,34 @@ OFFERING_REMOVAL_ANYWAY = (
 )
 
 # สาขาที่ย้ายหน้า: ประโยคถูกส่งต่อให้ `waiting` และ `load` เป็นคนพูดเมื่อวาดได้
+# #205 - the handover is written with the key of the read it is for.
 MOVED_READS = (
-    "        if (showing.current === sent) waiting.current = said\n"
+    "        if (showing.current === sent) {\n"
+    "          const target = readOf(1, program)\n"
+    "          waiting.current = { of: target, said }\n"
+    "        }\n"
     "        setPage(1)\n"
 )
+# #205 - the branch that reloads by hand hands its sentence over as well, so
+# saying it here is saying it whatever the read answered.
+STUDENTS_BY_HAND_READS = "        await drawing(() => onScreen.current === drawing)\n"
+STUDENTS_BY_HAND_ANYWAY = (
+    "        await drawing(() => onScreen.current === drawing)\n"
+    "        setNotice(said)\n"
+)
+OFFERINGS_BY_HAND_READS = STUDENTS_BY_HAND_READS
+OFFERINGS_BY_HAND_ANYWAY = STUDENTS_BY_HAND_ANYWAY
 MOVED_ANYWAY = (
     "        setNotice(said)\n"
     "        setPage(1)\n"
 )
 
+# #205 - the sentence is said only by the read it is of.
 DREW_READS = (
     "        setData(answer)\n"
-    "        if (waiting.current) setNotice(waiting.current)\n"
+    "        if (waiting.current && waiting.current.of === key) {\n"
+    "          setNotice(waiting.current.said)\n"
+    "        }\n"
 )
 DREW_UNSAID = "        setData(answer)\n"
 
@@ -174,11 +190,11 @@ MUTANTS = {
     'plosremovalanyway': ('plos', PLOS_REMOVAL_READS, PLOS_REMOVAL_ANYWAY),
     'userssaveanyway': ('users', USERS_SAVE_READS, USERS_SAVE_ANYWAY),
     'userstoggleanyway': ('users', USERS_TOGGLE_READS, USERS_TOGGLE_ANYWAY),
-    'studentssaveanyway': ('students', REMOVAL_READS, REMOVAL_ANYWAY),
+    'studentssaveanyway': ('students', STUDENTS_BY_HAND_READS, STUDENTS_BY_HAND_ANYWAY),
     'studentsmovedanyway': ('students', MOVED_READS, MOVED_ANYWAY),
     'studentsdrewunsaid': ('students', DREW_READS, DREW_UNSAID),
     'offeringssaveanyway': ('offerings', SAVE_READS, SAVE_ANYWAY),
-    'offeringscopyanyway': ('offerings', COPY_READS, COPY_ANYWAY),
+    'offeringscopyanyway': ('offerings', OFFERINGS_BY_HAND_READS, OFFERINGS_BY_HAND_ANYWAY),
     'offeringsremovalanyway': ('offerings', OFFERING_REMOVAL_READS, OFFERING_REMOVAL_ANYWAY),
 }
 

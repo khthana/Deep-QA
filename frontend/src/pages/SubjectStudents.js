@@ -54,6 +54,12 @@ import {
  * ตอนเรียน card on the dashboard shows the same number, and two places showing
  * one number is how somebody notices when a list has silently lost a row.
  */
+/**
+ * What a read of this list is *of*, which is what a sentence handed to
+ * `waiting` names - #205. `Departments.js` carries the reasons.
+ */
+const readOf = (sectionId, page) => `${sectionId}:${page}`
+
 export default function SubjectStudents() {
   const { sectionId } = useParams()
   const [data, setData] = useState(null)
@@ -76,8 +82,12 @@ export default function SubjectStudents() {
    * page-2 enrolment, one frame of thirty with the refusal answered at once
    * and nineteen of forty-seven with it 300ms late.
    *
-   * So the sentence is left here, `load` says it when it has drawn, and a
-   * read that refused or that nobody is looking at any more takes it away.
+   * So the sentence is left here with the key of the read it is for - `readOf`
+   * above - and that read is the one that says it. A read that refused, and a
+   * read of another list that the screen does still want, take it away without
+   * saying it; a read that was superseded before it landed takes nothing away
+   * at all. Until #205 measured it on 13 October 2569 the clearing was outside
+   * that question and the superseded read threw the sentence out.
    */
   const waiting = useRef(null)
 
@@ -99,12 +109,16 @@ export default function SubjectStudents() {
    * `frontend/src/pages/Students.js`.
    */
   const load = useCallback(async isCurrent => {
+    // Which read this is, for the sentence that may be waiting for it - #205.
+    const key = readOf(sectionId, page)
     setLoading(true)
     try {
       const answer = await listEnrolled(sectionId, { page })
       if (isCurrent()) {
         setData(answer)
-        if (waiting.current) setNotice(waiting.current)
+        if (waiting.current && waiting.current.of === key) {
+          setNotice(waiting.current.said)
+        }
       }
       return true
     } catch (error) {
@@ -114,8 +128,15 @@ export default function SubjectStudents() {
       }
       return false
     } finally {
-      if (isCurrent()) setLoading(false)
-      waiting.current = null
+      if (isCurrent()) {
+        setLoading(false)
+        // A read the screen still wants has landed, so whatever was waiting
+        // has either just been said above or is about a list that is no
+        // longer on the screen. A read that was superseded takes nothing
+        // away: the sentence it would have thrown out belongs to the read
+        // that replaced it - #205.
+        waiting.current = null
+      }
     }
   }, [sectionId, page])
 
@@ -139,6 +160,16 @@ export default function SubjectStudents() {
   }, [load])
 
   /**
+   * The page the pager is on now, for a handler that has to know whether the
+   * move it is about to make would cause a read at all - #205. `onScreen`
+   * above answers *which* read; this answers *where from*.
+   */
+  const onPage = useRef(page)
+  useEffect(() => {
+    onPage.current = page
+  }, [page])
+
+  /**
    * The read a write asks for, which is not always the read `load` would do.
    *
    * A student who has just been enrolled is somewhere in a list sorted by code,
@@ -149,18 +180,33 @@ export default function SubjectStudents() {
    * already are, in which case nothing would refetch and the reload has to be
    * asked for directly.
    *
-   * It answers whether the caller is the one that draws. Moving the page is a
-   * read the effect does, so the sentence goes to `waiting` and the caller is
-   * told to say nothing: #152, and the comment on that ref.
+   * It answers whether the caller is the one that draws. Either way the
+   * sentence goes to `waiting` keyed on the read of the first page, because
+   * that read is what says it and `load` is the one place the keys are
+   * compared: #152 for the shape, #205 for the key and for asking which page
+   * the pager is on now rather than the one this render closed over.
    */
   const reload = useCallback(
     async said => {
-      if (page === 1) return load(() => onScreen.current === load)
-      waiting.current = said
+      // The sentence is handed over whichever way this goes, because what
+      // says it is the read of the first page, and `load` is where the two
+      // are compared - #205.
+      const target = readOf(sectionId, 1)
+      waiting.current = { of: target, said }
+      // The page the pager is on now, not the one this render closed over: a
+      // pager pressed while the write was out has moved it, and `setPage(1)`
+      // on a screen already showing page one asks for no read at all, so a
+      // sentence left for that read would wait for one nobody is going to
+      // make. Here the read is done by hand instead, and `onScreen.current`
+      // is the loader for the page the person is on.
+      if (onPage.current === 1) {
+        const drawing = onScreen.current
+        return drawing(() => onScreen.current === drawing)
+      }
       setPage(1)
       return false
     },
-    [page, load],
+    [sectionId],
   )
 
   /**
@@ -221,7 +267,8 @@ export default function SubjectStudents() {
       // sentence is handed over rather than said here (#152), exactly as
       // `reload` hands over the one for the first page.
       if (data.students.length === 1 && page > 1) {
-        waiting.current = said
+        const target = readOf(sectionId, page - 1)
+        waiting.current = { of: target, said }
         setPage(page - 1)
       } else {
         // The same question `add` asks, for the same reason: the read is guarded

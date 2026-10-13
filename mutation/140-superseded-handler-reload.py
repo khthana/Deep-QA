@@ -83,11 +83,11 @@ FILES = {
 
 MUTANTS = {
     # ข้อมูลนักศึกษา: บันทึก
+    # #205 - the branch now reads through `onScreen.current` and hands its
+    # sentence over, so the guard this drops is the one on that read.
     'studentssavestalewins': ('students',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const reloaded = await load(() => true)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '        await drawing(() => onScreen.current === drawing)\n',
+        '        await drawing(() => true)\n'),
     # ข้อมูลนักศึกษา: การนำเข้า
     'studentsimportstalewins': ('students',
         '              if (page === 1) load(() => onScreen.current === load)\n',
@@ -228,11 +228,10 @@ MUTANTS = {
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '      if (mine) await refresh(offering.id, ask)\n'),
     # ข้อมูลการเปิดรายวิชา: คัดลอก
+    # #205 - as `studentssavestalewins`, the same branch one screen along.
     'offeringscopystalewins': ('offerings',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const reloaded = await load(() => true)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '        await drawing(() => onScreen.current === drawing)\n',
+        '        await drawing(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: ยกเลิกการเปิด
     'offeringsremovestalewins': ('offerings',
         '          const reloaded = await load(() => onScreen.current === load)\n'
@@ -244,9 +243,10 @@ MUTANTS = {
         '            setViewing(null)\n            load(() => onScreen.current === load)\n',
         '            setViewing(null)\n            load(() => true)\n'),
     # รายชื่อนักศึกษาของรายวิชา: reload (เพิ่มนักศึกษา และการนำเข้า)
+    # #205 - `reload` asks the live page and reads through `onScreen.current`.
     'enrolmentreloadstalewins': ('enrolment',
-        '      if (page === 1) return load(() => onScreen.current === load)\n',
-        '      if (page === 1) return load(() => true)\n'),
+        '        return drawing(() => onScreen.current === drawing)\n',
+        '        return drawing(() => true)\n'),
     # รายชื่อนักศึกษาของรายวิชา: นำออก
     'enrolmentremovestalewins': ('enrolment',
         '        const reloaded = await load(() => onScreen.current === load)\n',

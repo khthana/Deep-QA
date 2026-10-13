@@ -41,6 +41,12 @@ import {
 
 const PAGE_SIZE = 10
 
+/**
+ * What a read of this list is *of*, which is what a sentence handed to
+ * `waiting` names - #205. `Departments.js` carries the reasons.
+ */
+const readOf = page => `${page}`
+
 export default function Programs() {
   const [page, setPage] = useState(1)
   const [data, setData] = useState({ programs: [], total: 0 })
@@ -77,12 +83,16 @@ export default function Programs() {
    * `frontend/src/pages/Students.js`.
    */
   const load = useCallback(async isCurrent => {
+    // Which read this is, for the sentence that may be waiting for it - #205.
+    const key = readOf(page)
     setLoading(true)
     try {
       const answer = await listPrograms({ page, per_page: PAGE_SIZE })
       if (isCurrent()) {
         setData(answer)
-        if (waiting.current) setNotice(waiting.current)
+        if (waiting.current && waiting.current.of === key) {
+          setNotice(waiting.current.said)
+        }
       }
       // Whether it drew, for a handler that has a sentence to say - #203. It
       // answers *the read was not refused* and not *the screen is still the one
@@ -92,8 +102,15 @@ export default function Programs() {
       if (isCurrent()) report(error)
       return false
     } finally {
-      if (isCurrent()) setLoading(false)
-      waiting.current = null
+      if (isCurrent()) {
+        setLoading(false)
+        // A read the screen still wants has landed, so whatever was waiting
+        // has either just been said above or is about a list that is no
+        // longer on the screen. A read that was superseded takes nothing
+        // away: the sentence it would have thrown out belongs to the read
+        // that replaced it - #205.
+        waiting.current = null
+      }
     }
   }, [page, report])
 
@@ -225,7 +242,10 @@ export default function Programs() {
       // over for `load` to say when it has drawn. `Departments.js` carries the
       // reasons.
       if (stepBack) {
-        if (showing.current === sent) waiting.current = said
+        if (showing.current === sent) {
+          const target = readOf(page - 1)
+          waiting.current = { of: target, said }
+        }
         setPage(current => current - 1)
       } else {
         const reloaded = await load(() => onScreen.current === load)

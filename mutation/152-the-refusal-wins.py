@@ -133,19 +133,26 @@ REMOVE_ENROL_ANYWAY = (
 
 # สามตัวของครึ่งหลัง (11 ต.ค. 2569) - บนหน้าอื่นที่ไม่ใช่หน้าแรก `reload` ย้ายหน้าแทนที่จะอ่าน
 # ประโยคจึงถูกฝากไว้ที่ `waiting` ให้การอ่านที่วาดสำเร็จเป็นคนพูด
-MOVED_READS = ("      waiting.current = said\n"
-               "      setPage(1)\n"
+# #205 - the handover is written with the key of the read it is for, and the
+# page move is the last thing `reload` does. What this still does is claim the
+# move drew, so the caller says its sentence over the refusal on its way.
+MOVED_READS = ("      setPage(1)\n"
                "      return false\n")
 MOVED_ANYWAY = ("      setPage(1)\n"
                 "      return true\n")
 
-MOVED_REMOVAL_READS = ("        waiting.current = said\n"
+# #205 - the handover carries the key of the page being stepped back to.
+MOVED_REMOVAL_READS = ("        const target = readOf(sectionId, page - 1)\n"
+                       "        waiting.current = { of: target, said }\n"
                        "        setPage(page - 1)\n")
 MOVED_REMOVAL_ANYWAY = ("        setPage(page - 1)\n"
                         "        setNotice(said)\n")
 
+# #205 - the sentence is said only by the read it is of.
 DREW_READS = ("        setData(answer)\n"
-              "        if (waiting.current) setNotice(waiting.current)\n")
+              "        if (waiting.current && waiting.current.of === key) {\n"
+              "          setNotice(waiting.current.said)\n"
+              "        }\n")
 DREW_UNSAID = "        setData(answer)\n"
 
 # เขียนเป็น dict ตรง ๆ ไม่ใช่ loop - `anchors.py` อ่าน `MUTANTS` จาก AST

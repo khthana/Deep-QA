@@ -43,6 +43,31 @@ import {
 
 const PAGE_SIZE = 10
 
+/**
+ * What a read of this list is *of* - #205.
+ *
+ * A sentence handed to the `waiting` ref below is about one list: the one the
+ * read it was handed to will draw. Until 13 October 2569 the ref held the
+ * sentence alone, so `load` said it when *any* read drew and threw it away in a
+ * `finally` that ran whether or not the read was still the one the screen
+ * wanted. Measured at the browser seam on the enrolment screen, which carries
+ * the same shape, both halves were wrong: a read superseded before it landed
+ * cleared a sentence handed over after it left, and a sentence whose own read
+ * never came was said later over a page it was not about.
+ *
+ * So the ref holds `{ of, said }` and this is what `of` is written with - the
+ * loader's own dependency list in one comparable value. `load` says the
+ * sentence only when its own read is that read, and clears it only when a read
+ * the screen still wants has landed: by then the sentence has either just been
+ * said or is about a list that is no longer on the screen.
+ *
+ * `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`, `Students`, `Offerings`
+ * and `SubjectStudents` carry the same two clauses, each with its own
+ * parameters - the id of the thing a list hangs from counts (#185), and so does
+ * a filter, because the same page of a different filter is a different list.
+ */
+const readOf = page => `${page}`
+
 export default function Departments() {
   const [page, setPage] = useState(1)
   const [data, setData] = useState({ departments: [], total: 0 })
@@ -88,21 +113,34 @@ export default function Departments() {
    * 10 October 2569 says must not be said - and it is on the screen for as long
    * as the refusal takes to arrive.
    *
-   * So the sentence is left here, `load` says it when it has drawn, and a read
-   * that refused takes it away. `Programs`, `Subjects`, `ProgramSubjects`,
-   * `Rubrics`, `Students` and `Offerings` keep one for the same reason, and
-   * `SubjectStudents.js` carries #152's own, which is where the shape comes
-   * from.
+   * So the sentence is left here and the read that draws what it is about says
+   * it. `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`, `Students` and
+   * `Offerings` keep one for the same reason, and `SubjectStudents.js` carries
+   * #152's own, which is where the shape comes from.
    *
-   * `load` clears it in `finally` whether or not it was still the read the
-   * screen wanted - #152's shape, kept letter for letter. A superseded read
-   * landing between the handover and the effect's own read would therefore
-   * throw the sentence away, and nothing can arrange that today: every control
-   * that hands one over is `disabled={busy}`, and `busy` is `writing ||
-   * reading`, so no sentence can be handed over while a read is out. That is a
-   * clause no row can reach (#97), measured 12 October 2569, and the day it
-   * stops holding is the day a page move can be started while another read is
-   * in flight.
+   * It holds `{ of, said }`, and which read it is of is `readOf` above. `load`
+   * says the sentence only when its own key is that one, and clears it only
+   * when a read the screen still wants has landed - the two clauses #205 put
+   * there on 13 October 2569.
+   *
+   * The paragraph this replaces said the clearing could stay outside that
+   * question because every control that hands a sentence over is
+   * `disabled={busy}`, so no sentence could be handed over while a read was
+   * out. That named a way in, not the population (#179): no `Pager` on any of
+   * these eight screens carries `busy`, which `SubjectStudents.js`'s own `add`
+   * had measured on 11 October 2569 (#199), so ถัดไป is pressable for as long as
+   * a write is out and the read it starts is superseded by the handover's own.
+   * Three rows in
+   * `e2e/tests/205a-the-handed-over-sentence-and-a-superseded-read.spec.js`
+   * measure what that lost, on the screen that carries the same shape.
+   *
+   * What the key cannot tell apart: a removal that steps the page back writes
+   * its key out of the `page` this render closed over, so a person who moves
+   * while the write is out leaves a sentence for a read nobody is going to
+   * make. It is then never said - not said over another list, which is the
+   * half this closed - and the way in is the keyboard from under the
+   * confirmation dialog (#204), whose ยืนยัน is `disabled={busy}`. Measured
+   * 13 October 2569; the day #204 closes is the day to measure it again.
    */
   const waiting = useRef(null)
 
@@ -114,12 +152,16 @@ export default function Departments() {
    * `frontend/src/pages/Students.js`.
    */
   const load = useCallback(async isCurrent => {
+    // Which read this is, for the sentence that may be waiting for it - #205.
+    const key = readOf(page)
     setLoading(true)
     try {
       const answer = await listDepartments({ page, per_page: PAGE_SIZE })
       if (isCurrent()) {
         setData(answer)
-        if (waiting.current) setNotice(waiting.current)
+        if (waiting.current && waiting.current.of === key) {
+          setNotice(waiting.current.said)
+        }
       }
       // Whether it drew, for a handler that has a sentence to say - #203. It
       // answers *the read was not refused* and not *the screen is still the one
@@ -131,8 +173,15 @@ export default function Departments() {
       if (isCurrent() && !error.expired) setNotice({ error: true, message: error.message })
       return false
     } finally {
-      if (isCurrent()) setLoading(false)
-      waiting.current = null
+      if (isCurrent()) {
+        setLoading(false)
+        // A read the screen still wants has landed, so whatever was waiting
+        // has either just been said above or is about a list that is no
+        // longer on the screen. A read that was superseded takes nothing
+        // away: the sentence it would have thrown out belongs to the read
+        // that replaced it - #205.
+        waiting.current = null
+      }
     }
   }, [page])
 
@@ -383,7 +432,10 @@ export default function Departments() {
       // #203 - a page move is a read the effect does, so the sentence is handed
       // over for `load` to say when it has drawn: the `waiting` ref above.
       if (stepBack) {
-        if (showing.current === sent) waiting.current = said
+        if (showing.current === sent) {
+          const target = readOf(page - 1)
+          waiting.current = { of: target, said }
+        }
         setPage(current => current - 1)
       } else {
         const reloaded = await load(() => onScreen.current === load)

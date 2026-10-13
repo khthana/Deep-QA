@@ -72,6 +72,13 @@ import {
 
 const PAGE_SIZE = 10
 
+/**
+ * What a read of this list is *of*, which is what a sentence handed to
+ * `waiting` names - #205. `Departments.js` carries the reasons.
+ */
+const readOf = (page, program, year, semester) =>
+  `${page}:${program}:${year}:${semester}`
+
 export default function Offerings() {
   const [page, setPage] = useState(1)
   const [program, setProgram] = useState('')
@@ -113,6 +120,8 @@ export default function Offerings() {
    * `frontend/src/pages/Students.js`.
    */
   const load = useCallback(async isCurrent => {
+    // Which read this is, for the sentence that may be waiting for it - #205.
+    const key = readOf(page, program, year, semester)
     setLoading(true)
     try {
       const answer = await listOfferings({
@@ -124,7 +133,9 @@ export default function Offerings() {
       })
       if (isCurrent()) {
         setData(answer)
-        if (waiting.current) setNotice(waiting.current)
+        if (waiting.current && waiting.current.of === key) {
+          setNotice(waiting.current.said)
+        }
       }
       // Whether it drew, for a handler that has a sentence to say - #203. It
       // answers *the read was not refused* and not *the screen is still the one
@@ -134,8 +145,15 @@ export default function Offerings() {
       if (isCurrent()) report(error)
       return false
     } finally {
-      if (isCurrent()) setLoading(false)
-      waiting.current = null
+      if (isCurrent()) {
+        setLoading(false)
+        // A read the screen still wants has landed, so whatever was waiting
+        // has either just been said above or is about a list that is no
+        // longer on the screen. A read that was superseded takes nothing
+        // away: the sentence it would have thrown out belongs to the read
+        // that replaced it - #205.
+        waiting.current = null
+      }
     }
   }, [page, program, year, semester, report])
 
@@ -157,6 +175,16 @@ export default function Offerings() {
   useEffect(() => {
     onScreen.current = load
   }, [load])
+
+  /**
+   * The page the pager is on now, for a handler that has to know whether the
+   * move it is about to make would cause a read at all - #205. `onScreen`
+   * above answers *which* read; this answers *where from*.
+   */
+  const onPage = useRef(page)
+  useEffect(() => {
+    onPage.current = page
+  }, [page])
 
   // The programmes in reach, fetched once: what this account covers is a
   // property of the grant and does not change with the page being looked at.
@@ -346,11 +374,27 @@ export default function Offerings() {
       // #203 - a page move is a read the effect does, so the sentence is handed
       // over for `load` to say when it has drawn. `Departments.js` carries the
       // reasons.
-      if (page === 1) {
-        const reloaded = await load(() => onScreen.current === load)
-        if (reloaded && showing.current === sent) setNotice(said)
+      // #205 - the page the pager is on now, not the one this handler was sent
+      // from: a pager pressed while the write was out has moved it, and
+      // `setPage(1)` on a screen already showing page one asks for no read at
+      // all, so a sentence handed over there would wait for a read nobody is
+      // going to make. The read is done by hand instead, and the sentence is
+      // still handed over: the read of the first page is what says it, and
+      // `load` is where its key and the sentence's are compared.
+      if (onPage.current === 1) {
+        // The loader for that page, which is not the one this render closed
+        // over any more.
+        const drawing = onScreen.current
+        if (showing.current === sent) {
+          const target = readOf(1, program, year, semester)
+          waiting.current = { of: target, said }
+        }
+        await drawing(() => onScreen.current === drawing)
       } else {
-        if (showing.current === sent) waiting.current = said
+        if (showing.current === sent) {
+          const target = readOf(1, program, year, semester)
+          waiting.current = { of: target, said }
+        }
         setPage(1)
       }
     } catch (error) {
@@ -391,7 +435,10 @@ export default function Offerings() {
         // over for `load` to say when it has drawn. `Departments.js` carries the
         // reasons.
         if (page > 1 && data.offerings.length === 1) {
-          if (showing.current === sent) waiting.current = said
+          if (showing.current === sent) {
+            const target = readOf(page - 1, program, year, semester)
+            waiting.current = { of: target, said }
+          }
           setPage(current => current - 1)
         } else {
           const reloaded = await load(() => onScreen.current === load)

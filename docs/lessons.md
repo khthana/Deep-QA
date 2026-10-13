@@ -9449,3 +9449,207 @@ means and not only about where it points. Mutating the comparison instead of the
 line keeps that sentence true and kills both rows: **2 of 10** on each of the
 three screens, against the 2 of 6 their sheets record from 11 October, which is
 the same two rows measured with that day's suite.
+
+## #205 — the sentence that was handed over, and the two guards that were asking about different things
+
+#152 gave the ผู้สอน screens a ref: a handler that moves the page instead of
+re-reading it cannot await the read, so it writes its sentence into
+`waiting.current` and `load` says it once it has drawn. #203 carried the same
+shape to ten administration files. #205 is about the shape itself, and both
+halves of it were wrong.
+
+The ticket named one of them. Measuring found two, which is #148/#149's rule —
+**two mechanisms for one symptom are measured as a grid, not argued as a
+choice** — and the second was the one that decided what the fix had to be.
+
+### Mechanism A: the read that was superseded threw away a sentence handed over after it left
+
+`load`'s `finally` read
+
+```js
+} finally {
+  if (isCurrent()) {
+    setLoading(false)
+  }
+  waiting.current = null
+}
+```
+
+The clearing sat **outside** `isCurrent()`. A read the screen had already
+replaced still landed, and on its way out it emptied the ref — including of a
+sentence written into it *after* that read was sent. The person added a student
+successfully and heard nothing at all.
+
+That is #202's family read from the other end. #202 asked *is the screen still
+the one that asked* around the **saying**; nothing asked it around the
+**clearing**, and a clearing is a write about the same state.
+
+### Mechanism B: a move that causes no read, and a sentence that is said later over another list
+
+`reload` was `useCallback(async said => { … }, [page, load])`, so the `page` it
+compared against was the one its render closed over. A handler that leaves page
+2 while the write is out, meets a person who has walked back to page 1, and then
+calls `setPage(1)`, sets the page to the value it already has: **React causes no
+read.** The sentence stays in the ref.
+
+My written prediction for that row was that the sentence is never said. The row
+measured **1**, not 0: the ref outlives the handler, so the sentence is said by
+the person's **next** read — over a list it is not about. This is #137 one layer
+along (*what nothing measures, nothing cleans*): **a stranded sentence is not a
+lost sentence; somebody else says it.** It was the assertion that said so, not
+the reasoning, which is the argument for writing a prediction down as an
+`expect` rather than keeping it in your head.
+
+### The ticket's own reason for it not hurting yet was #179's shape, written by me
+
+On 12 October I had written beside this ref that no row could reach the clause,
+because the confirm button is `disabled={busy}`. That is **#179 exactly** — *a
+reason that names a way in has named a way in, not the population* — and the
+population here is eight screens whose `Pager` is **not** disabled while a write
+is out, which this screen's own `add` had measured eleven days earlier as #199's
+open owner question. The person who wrote the reason was the person who had just
+measured the thing beside it (#113's twin).
+
+### The fix, and the round of it that failed
+
+The owner chose two layers of four: the ref holds what the sentence is **of**,
+and the handler reads the live page rather than the one its render closed over.
+
+```js
+const readOf = (sectionId, page) => `${sectionId}:${page}`
+```
+
+one per screen, at module level, its parameters being that loader's own
+dependency list minus the callbacks — which is #185's key rule (*a guard that
+pairs an answer with what it was asked for has to name what identifies the
+request*) applied to a sentence instead of to an answer. `load` computes its own
+`key` first, says the sentence only when `waiting.current.of === key`, and clears
+the ref **inside** `if (isCurrent())`.
+
+The first round gave the by-hand branch the sentence to say itself, and row 2
+stayed red at exactly the assertion it had been red at before. The reason is the
+finding of this ticket: **two guards that both ask *is this still current* can be
+asking about different things.** #202's `sent` is a *loader*, and a loader
+belongs to a page; the sentence belongs to an *enrolment*, which does not. The
+person had moved, so `onScreen.current === sent` was false and #202's guard
+refused the sentence correctly — refusing a sentence that was about something
+still on the screen. Ask what the claim is **of** before choosing who says it.
+So both branches hand over, and `load`'s key decides. The three "back to page
+one" sites (`25`, `17`, `23`) then carry one rule instead of two.
+
+### What was not rebuilt, and why
+
+The cleaner shape — *the handler never says anything; `load` says everything* —
+would have deleted the lines five of #202's and #203's mutants quote. That is
+#152's lesson from the other side (*the cheapest implementation of an owner's
+decision can break a closed ticket*), so the minimum faithful change was built
+instead: eleven mutants re-aimed, none deleted, and the six-screen shared
+constants in `203-…py` left untouched by giving the two screens that changed
+their own constants (#202's tenth re-aim lesson — a constant several mutants
+share, edited to disambiguate them, moves every mutant that quoted it).
+
+### Instruments
+
+`npx prettier --check` fails on **all eight** of these files at HEAD, so it is
+not a gate here; #189 recorded two such files and the number is eight. The
+question it can still answer is whether prettier disagrees with the lines the
+diff **adds**, which is answered by diffing prettier's own output before and
+after. It did not.
+
+The run of the three new rows, and of every suite afterwards, was watched with a
+`grep -qE "passed|failed"` which matched the **test title**
+`151a-failed-reload-keeps-the-list` and announced a 778-row suite finished at
+row 308. A filter for a summary line is anchored at the start of it:
+`^  [0-9]+ (passed|failed)`.
+
+And the two new Thai rows shipped mojibaked through a heredoc, which ate the
+backslash of `ร` so the Thai was already Thai before `unicode_escape` saw
+it and was encoded twice. The memory rule for that is written down (*write edit
+scripts to a file, not a heredoc*); what caught it was the codepoint scan, not
+reading it.
+
+### The three rows, and the one that needed the other two to exist
+
+`205a` holds three rows, each built where the mechanisms are visible and each
+run against the unfixed code before its mutant was written (#203). Rows 1 and 2
+were red there — mechanism A and mechanism B. Row 3, the one that says *a read
+of another list clears the sentence without saying it over that list*, was
+**green** on the broken code, because the half it holds did not exist yet: the
+sentence was indeed said over the wrong list that day, by mechanism B, and not
+by a read the screen still wanted. Its mutant (`saysanyread`, which drops the
+key comparison) is what puts it at risk, and it kills that row and no other.
+
+Each of the three kills exactly one row, each a different one, each at its own
+row's own assertion and not at a precondition or a timeout. The numbers are on
+`docs/acceptance/25-section-enrolment.md`.
+
+### Eleven mutants re-aimed, and the one sheet that needed no note
+
+The fix changes code five sheets' mutants quote, so eleven were re-aimed and
+each re-swept against its own file, whole, with that file's own clean baseline
+first: `140a` 32 of 32, `152a` 21 of 21, `203a` 22 of 22, `68a` 3 of 3, `144a`
+10 of 10. All eleven kill what their sheets say they kill — `140:…reloadstalewins`
+its **two** rows, because `reload` is the one call site with two callers, and the
+other ten one row each, every one at its own row's own assertion.
+
+Two of them changed what they *mean*, which is the thing a kill count cannot
+say. `203:studentssaveanyway` and `203:offeringscopyanyway` were
+`(await load(...)) || true`: the branch read the answer and the mutant deleted
+the reading. That branch no longer reads the answer at all — it hands the
+sentence over — so the shape that preserves the mistake is *say the sentence
+here, after the await*, which says it whatever the read answered. The sheets'
+12 October paragraphs describe the old shape and stay as the dated records they
+are (#54); the new meaning is written beside them with today's date.
+
+One figure looked like a shrink and was not. Sheet `57` records
+`140:studentssavestalewins` killing **2**, because a `144a` filter row presses
+the same call site; swept against `140a` alone it kills 1. Measured against
+`144a` as well it kills one there too — two rows across two files, which is what
+the sentence meant. **A kill count carries the set it was measured on**, and a
+re-measurement with a smaller set is not a finding (#154/#158).
+
+And sheet `44` needed no note at all, though a grep for the eleven names put it
+on the list. Its `staleclearsloading` is **#129's** mutant in
+`mutation/129-stale-report.py`, aimed at `ProgramLevelCompare.js`; the one this
+ticket re-aimed is #68's, aimed at `Students.js`. Same name, two files, and the
+harness keys a mutant inside its own file — #185's collision, met from the
+reading end: **a grep for a mutant's name finds the sheets of every ticket that
+chose that name.** Ask the mutation file which target it carries before writing
+on a sheet.
+
+### The coordinate the fix had, and the row it did not have
+
+Both review axes, separately, pointed at the same hunk: the by-hand branch asks
+`onPage.current` for the page and then writes the key out of the render's
+closure — `readOf(1, program)` — while the filter `<select>` carries no
+`disabled` and does `setPage(1); setProgram(…)`. Move the filter while the save
+is out and the handover names a read nobody is going to make.
+
+My first reading of that was *a regression I introduced*, and measuring it says
+both reviews and that reading were right about the behaviour and wrong about
+what it is. At `HEAD` the sentence **is** said there — `load`'s
+`return true` answers *not refused* whether or not `isCurrent()` held, and the
+form ref the guard compares is untouched by a filter — so the banner reads 1 over
+the moved filter's list. With the fix it reads 0. The row that measures it was
+red before and green after, which is the only thing that separates the two
+readings.
+
+And the new behaviour is **the decision, not a defect**: the sentence belongs to
+the read it was handed to, which is row 3's claim in the other half of the key.
+*A read of this list is of a page and of a filter* — the same page of a
+different programme is a different list — so what the owner settled for the page
+coordinate settles the filter coordinate by the same sentence. What was missing
+was not a fix but a **row**: nothing in the suite said so, and a behaviour no row
+holds is an accident waiting to be refactored away. `205a` row 4 holds it, with
+`205:keyforgetsthefilter` — `readOf` dropping its second parameter — to put it at
+risk.
+
+Two rules come out of that, and the first is about reviews. **A review finding
+can be right about the behaviour and wrong about its name**: *regression*,
+*intended consequence* and *untested claim* are three different things about one
+diff, and only a row run on both sides of the change tells them apart. The
+second is the repo's own, met from a new side: the question *is this still what
+was asked for* has as many coordinates as the loader has dependencies (#140),
+so a key written from one of them answers for one of them. `readOf`'s parameter
+list is that census, which is why it is the loader's dependency list minus the
+callbacks — and why the row that proves it has to move a **filter**, not a page.

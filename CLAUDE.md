@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 12 October 2569 that is
-`2026-10-12-the-fix-that-shrank-every-mutant-that-quoted-the-block.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 13 October 2569 that is
+`2026-10-13-the-two-guards-that-were-asking-about-different-things.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -450,6 +450,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   table predicted; what said otherwise were the lint line in the run's own log naming the missing
   dependency, and the **assertion's name** not matching the table written before the sweep — which
   is what that table is for. Read the live state with a functional updater. (#201)
+- **A mutant that restores a read of a stale value has to restore the staleness, which the fix
+  may have changed the shape of** — #152's rule one layer along. The fix moved `reload` off
+  `[page, load]`, so the `page` in its closure is not one render behind any more but **frozen at
+  the first**: substituting it back for the live ref is a different mutant, and it killed the row
+  about the superseded read instead of the row about the move that causes no read, which is the
+  row it was written for. Read a re-aimed mutant's kill against the row it is *for*. (#205)
 
 ### Tests and fixtures
 
@@ -619,6 +625,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - When two tests sit either side of a line, check whether anything runs the line; a reason why
   one half of a thing cannot be tested is not a statement about the other half; draw a stub's
   boundary at the machine's edge. (#119)
+- **A review finding can be right about the behaviour and wrong about its name** —
+  *a regression*, *an intended consequence of the decision* and *a behaviour no row holds*
+  are three different things to say about one hunk, and only a row run on **both** sides of
+  the change tells them apart. #205's filter coordinate was named the first by both review
+  axes and by me, and measured: the sentence is said at `HEAD` and silent after, which makes
+  it the second — so what was owed was a row, not a fix. (#205)
 
 ### Guards and code
 
@@ -780,6 +792,20 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A check that can fail to run has three answers, not two** — level, behind, and *could not ask*. Folding
   the third into the second tells somebody whose database is stopped to go and run a migration; the state
   that proves the difference is the one the naive check cannot see. (#159)
+- **Two guards that both ask *is this still current* can be asking about different things** —
+  so satisfying one is not satisfying the other, and one of them can refuse correctly while the
+  person is owed the sentence. #202's `sent` is a *loader*, which belongs to a page; the sentence
+  belongs to the *enrolment*, which does not, so on a handler that moved the page the guard
+  refused a sentence about something still on the screen. Ask what the claim is **of** before
+  choosing who says it — and then the answer is to hand it to whoever can compare the two (#185's
+  key, written for a sentence instead of for an answer). (#205)
+- **A clearing is a write about the same state the guard protects** — a `finally` that empties a
+  ref outside `isCurrent()` lets a read the screen has already replaced throw away a sentence
+  handed over *after* that read was sent, and nobody hears it. And **a sentence nothing clears is
+  not a sentence that is lost: the next read says it, over a list it is not about** — #137's *what
+  nothing measures, nothing cleans*, one layer along. The prediction written into that row said
+  *never said* and the row measured one, which is the argument for writing a prediction down as an
+  assertion rather than keeping it in your head. (#205)
 
 ### Walks
 
