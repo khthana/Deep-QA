@@ -434,12 +434,28 @@ export default function Offerings() {
         // #203 - a page move is a read the effect does, so the sentence is handed
         // over for `load` to say when it has drawn. `Departments.js` carries the
         // reasons.
-        if (page > 1 && data.offerings.length === 1) {
+        // #206 - the step back is made only while the pager is still on the
+        // page that lost its last row; otherwise the person keeps the page
+        // they moved to and the sentence is keyed for the read of that list.
+        // `Departments.js` carries the reasons.
+        const stepBack = page > 1 && data.offerings.length === 1
+        if (stepBack && onPage.current === page) {
           if (showing.current === sent) {
             const target = readOf(page - 1, program, year, semester)
             waiting.current = { of: target, said }
           }
           setPage(current => current - 1)
+        } else if (stepBack) {
+          if (showing.current === sent) {
+            const target = readOf(onPage.current, program, year, semester)
+            waiting.current = { of: target, said }
+          }
+          // `reader` and not `drawing`, which is what the term copy above
+          // calls the same thing: a one-line anchor is matched as a substring
+          // (#154), so eight spaces of indentation are found inside ten and
+          // two mutants of #140 and #203 would each have had two sites.
+          const reader = onScreen.current
+          await reader(() => onScreen.current === reader)
         } else {
           const reloaded = await load(() => onScreen.current === load)
           if (reloaded && showing.current === sent) setNotice(said)

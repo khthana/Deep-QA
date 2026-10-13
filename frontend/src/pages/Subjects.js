@@ -144,6 +144,18 @@ export default function Subjects() {
     onScreen.current = load
   }, [load])
 
+  /**
+   * The page the pager is on now - #206. A removal steps the page back only
+   * while the pager is still on the page that lost its last row; `onScreen`
+   * above answers which read, this answers where from.
+   * `frontend/src/pages/Departments.js` carries the reasons and the
+   * measurement.
+   */
+  const onPage = useRef(page)
+  useEffect(() => {
+    onPage.current = page
+  }, [page])
+
   // The departments in reach, fetched once: what this account covers is a
   // property of the grant and does not change with the page being looked at.
   // Used three times — to name the department each row sits in, as the pool the
@@ -250,14 +262,26 @@ export default function Subjects() {
       // nothing from the list, so it never steps back.
       const stepBack = !deactivated && page > 1 && data.subjects.length === 1
       // #203 - a page move is a read the effect does, so the sentence is handed
-      // over for `load` to say when it has drawn. `Departments.js` carries the
-      // reasons.
-      if (stepBack) {
+      // over for `load` to say when it has drawn. #206 - and the step back is
+      // made only while the pager is still on the page that lost its last row:
+      // a person who moved while the removal was out keeps the page they moved
+      // to, and is told there. `Departments.js` carries the reasons.
+      if (stepBack && onPage.current === page) {
         if (showing.current === sent) {
           const target = readOf(page - 1, department)
           waiting.current = { of: target, said }
         }
         setPage(current => current - 1)
+      } else if (stepBack) {
+        if (showing.current === sent) {
+          const target = readOf(onPage.current, department)
+          waiting.current = { of: target, said }
+        }
+        // Nothing moves, so no read is coming: the list the person is on is
+        // read here by the loader that belongs to it, and that read is what
+        // says the sentence.
+        const drawing = onScreen.current
+        await drawing(() => onScreen.current === drawing)
       } else {
         const reloaded = await load(() => onScreen.current === load)
         if (reloaded && showing.current === sent) setNotice(said)

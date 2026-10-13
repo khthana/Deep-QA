@@ -9748,3 +9748,124 @@ is 17.00 and all 57 marks are above it, so *every mark* and *every mark above th
 share* are the same number there and the sentence is identical. A mutant that
 swaps one implementation for another is invisible wherever the two agree — and
 the place they disagreed was the row whose new share was 32.00.
+
+## #206 — the step back that was made from a page nobody was on, and the row whose arithmetic hid half the fix
+
+#205 gave the handed-over sentence a key, so that the read which draws the list
+says it and a read of anything else does not. Seven removals wrote that key as
+`readOf(page - 1, …)` out of the `page` their render closed over, while the move
+itself was `setPage(current => current - 1)`, made from the page the pager is on.
+For somebody standing still the two are one number. For anybody who moved while
+the removal was out they are two, and the sentence is then keyed for a read
+nobody is going to make — so it is **never said**, which is a different failure
+from #205's *said over another list*, and the person is carried off the page they
+moved to as well.
+
+### The claim was measured before the code was touched
+
+The ticket's *what is wrong* is a claim from the day it was written, so the
+measurement came first, at the browser seam on the real screen with a throwaway
+spec that was deleted afterwards. The pager under the dialog's overlay is
+**enabled and focusable** while the removal is out; after the answer landed the
+pages asked for were **2 then 1**, the success banner was said **zero** times,
+and the person was carried from page 2 to page 1. A second press of *ก่อนหน้า*
+asked the server for `page=0`, which `backend/lib/paging.js` floors to one — so
+nothing is wrong on that side, and the whole defect is in front of it.
+
+The way in needs no race at all. `ConfirmDialog` draws a `fixed inset-0` overlay
+and traps no focus (#204), and `Pager` takes no `busy` (#199), so the pager's own
+buttons are reachable by keyboard for as long as the write is out. That is #179's
+rule being useful rather than cautionary: the ticket named a window, and the
+population of ways in was larger than the window. The expiry condition is written
+down beside the rows — the day either of those tickets closes is the day to
+measure this way in again — because a blocker's own expiry condition is a claim
+about which way in its author had in mind (#81, #141).
+
+### The fix is #205's ref one layer along
+
+`onScreen` answers *which read*; `onPage` answers *from which page*, and is
+written by an effect keyed on `page`. The step back then happens only while
+`onPage.current === page`, which is only while the pager is still on the page
+that lost its last row. When the person has moved, nothing moves: the sentence is
+keyed for the read of the list in front of them, and that list's own loader reads
+and says it — the shape #205 arrived at for the branch whose move would cause no
+read.
+
+Three things were deliberately left byte-identical so that other tickets' anchors
+stayed exact: the three handover lines in `SubjectStudents.js`, which
+`152:enrolmentmovedremovalanyway` quotes whole; the `const stepBack = …` lines on
+the departments and programmes screens, which `57:deptstay` and `57:progstay`
+quote; and, on `Offerings.js`, the new loader was named `reader` rather than
+`drawing`, because a one-line anchor is matched as a substring (#154) and eight
+spaces of indentation are found inside ten — `anchors.py` reported exactly that,
+two sites each for a mutant of #140 and one of #203, the first time the obvious
+name was used.
+
+### The survivor that found the row's arithmetic
+
+The first draft of the row pressed *ก่อนหน้า* once. Two of the three mutants
+killed what they were aimed at; `206:sentenceofthepagetheyleft` — the key written
+from the closure page, which is a faithful copy of exactly half the defect —
+**survived 1 of 1**. At one press the page the handler closed over is the last
+one, so `readOf(page - 1)` names the page the person moved to: the key is right
+by accident, and the half of the fix it is about is invisible.
+
+That is #117's rule and #154's from the other side. Both are written about the
+mutant — a substitution is invisible wherever the two values agree, so build the
+fixture where they disagree — and here what made them agree was the **row's own
+step count**, not the data. Two presses put the destination at `pages - 2` and
+the stale key at `pages - 1`, which is the point where the two differ; the mutant
+then dies at *the banner of the removal* with `element(s) not found`, which is
+the ticket's sentence in the harness's words. Where a fix has two halves, the
+number of steps a row takes is part of its claim.
+
+The other two mutants say which half each row holds. `movecanbeofanypage` is the
+pre-#206 behaviour exactly and kills row 1 at *the page the handler read*;
+`nostepbackatall` is the guard made too strict and kills row 2, which is #48's
+row the fix must not touch — a guard of the shape *only while X* is wrong in two
+directions, and `57a` row 3 had asserted the step back for a year without ever
+reading the sentence.
+
+### The re-sweep found nothing, which is also a measurement
+
+Wrapping three unchanged lines in a narrower branch changes no anchor and no
+character, and `anchors.py` said `problems 0` over 966 mutants. But an anchor
+check cannot say what a mutant still proves (#107, #68, #203), so the three
+mutants whose code now sits inside the narrower branch were swept again against
+their own whole files: `57:deptstay` still kills row 3 after 5 passes,
+`57:progstay` still kills row 4 after 7, and `152:enrolmentmovedremovalanyway`
+still kills its one row of 21. The branch narrowed around them, but their rows
+are rows about somebody standing still, which is the branch that was kept.
+
+Sheet 25's dated note *สิ่งที่กุญแจแยกไม่ออก (13 ต.ค. 2569)*, written the day
+before, is closed by the ticket and says so beside itself rather than being
+deleted. Its own site is fixed and has no row: a step back needs a last page
+holding one **removable** row, and the seed's three sections hold 57, 56 and 60
+enrolments whose highest codes all carry marks, which `enrolmentHasScores`
+refuses. That is a seed change, so it is the owner's to decide (`docs/06`
+§Out of Scope), and the condition that would expire the line is a seed with such
+a section in it.
+
+### What the review found that the sweep could not
+
+Two axes read the change against the ticket and against the repo's own rules,
+and four of their findings were real. The one that cost a mutant: a ⚙ means the
+cited mutants cover the row **whole**, and row 2's banner assertion — the half
+`57a` row 3 had never read, which is the entire reason that row exists — was put
+at risk by nothing, because `nostepbackatall` dies at the page assertion above
+it and the other two mutants leave row 2 standing. `206:stationarysentencelost`
+is aimed at the line that holds that claim today, which is #203's and #205's code
+and not this ticket's (#193), and it kills row 2 at the banner while `57a`,
+`203a` and `202a` stay green at 41 of 41.
+
+The other three are written on sheet 14 rather than fixed, because they are not
+mine to settle. The ticket asked for the key and this fix also suppresses the
+page move, which is a change to what the person reads and therefore a question
+under `docs/06` §Out of Scope — priced both ways beside the rows. The ticket's
+own table lists `SubjectStudents.js` as a key defect, and that site's key already
+agreed with its own move, so there the change is the behaviour half alone (#54:
+a ticket's supporting identifiers are a claim like its numbers). And the new
+branch carries the same mechanism one layer along — a second move while its
+awaited read is out leaves the sentence keyed for nobody — which is the direction
+#205 chose rather than a new defect, dated with the condition that would expire
+it: a sentence keyed by *what it is of* instead of by a page.

@@ -266,10 +266,20 @@ export default function SubjectStudents() {
       // the same reason - and stepping back is a read the effect does, so the
       // sentence is handed over rather than said here (#152), exactly as
       // `reload` hands over the one for the first page.
-      if (data.students.length === 1 && page > 1) {
+      // #206 - and from the page the pager is on, not the one this render
+      // closed over. `Departments.js` carries the reasons.
+      const stepBack = data.students.length === 1 && page > 1
+      if (stepBack && onPage.current === page) {
         const target = readOf(sectionId, page - 1)
         waiting.current = { of: target, said }
         setPage(page - 1)
+      } else if (stepBack) {
+        // The person moved while the removal was out, so nothing steps back:
+        // the list they are on is read here and that read says the sentence.
+        const target = readOf(sectionId, onPage.current)
+        waiting.current = { of: target, said }
+        const drawing = onScreen.current
+        await drawing(() => onScreen.current === drawing)
       } else {
         // The same question `add` asks, for the same reason: the read is guarded
         // and its answer is not. ถัดไป is pressable while the removal is out

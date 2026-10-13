@@ -134,13 +134,14 @@ export default function Departments() {
    * `e2e/tests/205a-the-handed-over-sentence-and-a-superseded-read.spec.js`
    * measure what that lost, on the screen that carries the same shape.
    *
-   * What the key cannot tell apart: a removal that steps the page back writes
-   * its key out of the `page` this render closed over, so a person who moves
-   * while the write is out leaves a sentence for a read nobody is going to
-   * make. It is then never said - not said over another list, which is the
-   * half this closed - and the way in is the keyboard from under the
-   * confirmation dialog (#204), whose ยืนยัน is `disabled={busy}`. Measured
-   * 13 October 2569; the day #204 closes is the day to measure it again.
+   * What the key could not tell apart until #206, measured on this screen the
+   * same day: a removal that steps the page back wrote its key out of the
+   * `page` this render closed over, while the move itself was made from the
+   * page the pager was on. The two are the same number only for somebody who
+   * stood still, so a person who moved left a sentence for a read nobody was
+   * going to make - never said, rather than said over another list, which is
+   * the half #205 closed. `onPage` below is the ref that tells them apart, and
+   * `confirmRemoval` carries what each branch then does.
    */
   const waiting = useRef(null)
 
@@ -203,6 +204,34 @@ export default function Departments() {
   useEffect(() => {
     onScreen.current = load
   }, [load])
+
+  /**
+   * The page the pager is on now - #206.
+   *
+   * `onScreen` above answers *which* read a handler's answer belongs to; this
+   * answers *where from*, which is the question a removal that steps the page
+   * back has to ask before it moves anybody.
+   *
+   * A removal steps back because the page it was sent from has lost its last
+   * row. That is a fact about the page this render closed over and says nothing
+   * about where the person is standing when the answer arrives: `Pager` carries
+   * no `busy` (#199) and the confirmation traps no focus (#204), so the pager's
+   * own buttons are reachable and pressable for as long as the removal is out.
+   * Measured on this screen on 13 October 2569, with the removal held at the
+   * route: the step back asked for one page while the sentence was keyed for
+   * another, so the sentence was said by nothing at all, and the person was
+   * carried off the page they had just moved to. Pressed twice it asked the
+   * server for `page=0`, which `backend/lib/paging.js` floors to one.
+   *
+   * `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`, `Offerings`,
+   * `Students` and `SubjectStudents` keep the same ref - the last three have
+   * had it since #205, for the branch that goes back to the first page, which
+   * is the same question one step earlier.
+   */
+  const onPage = useRef(page)
+  useEffect(() => {
+    onPage.current = page
+  }, [page])
 
   const report = useCallback(error => {
     if (!error.expired) setNotice({ error: true, message: error.message })
@@ -431,12 +460,31 @@ export default function Departments() {
       const stepBack = page > 1 && data.departments.length === 1
       // #203 - a page move is a read the effect does, so the sentence is handed
       // over for `load` to say when it has drawn: the `waiting` ref above.
-      if (stepBack) {
+      //
+      // #206 - and the step back belongs to the page that lost its last row, so
+      // it happens only while the pager is still on it. A person who moved
+      // while the removal was out keeps the page they moved to: the move they
+      // did not ask for is the worse answer, and the sentence is keyed for the
+      // read of the list in front of them rather than for a read nobody is
+      // going to make.
+      if (stepBack && onPage.current === page) {
         if (showing.current === sent) {
           const target = readOf(page - 1)
           waiting.current = { of: target, said }
         }
         setPage(current => current - 1)
+      } else if (stepBack) {
+        if (showing.current === sent) {
+          const target = readOf(onPage.current)
+          waiting.current = { of: target, said }
+        }
+        // Nothing moves, so no read is coming: the list the person is on is
+        // read here by the loader that belongs to it, and that read is what
+        // says the sentence. Handed over rather than said by this handler
+        // because the key is the one place the two are compared - the shape
+        // #205 arrived at for the branch whose move would cause no read.
+        const drawing = onScreen.current
+        await drawing(() => onScreen.current === drawing)
       } else {
         const reloaded = await load(() => onScreen.current === load)
         if (reloaded && showing.current === sent) setNotice(said)

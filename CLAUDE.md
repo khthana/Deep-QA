@@ -385,6 +385,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the seam. Take the mutant out, have the row assert the **mechanism** rather than the absence
   (a row that says only *I saw nothing* passes there for the wrong reason), and write beside it
   the condition that would make the claim reachable again. (#203)
+- **And a survivor can mean the row's own arithmetic made the mutant's value the true one** — the
+  tenth, and the line below it read from the row's side: where a fix has two halves, a fixture that
+  moves one step can make them one number, so a faithful copy of half the defect passes. Ask what
+  the row's step count makes equal before believing *never at risk* — two presses where one had
+  been is the whole repair. (#206)
 - **A mutant that swaps one implementation for another is invisible wherever the two agree** — so
   the fixture is built where they *disagree*, which is not the same as building it big. And a
   fixture named for a property is a claim about a library's answer: ask ICU whether that run is one
