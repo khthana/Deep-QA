@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 13 October 2569 that is
-`2026-10-13-the-two-guards-that-were-asking-about-different-things.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-13-the-step-back-is-from-the-page-the-pager-is-on.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
