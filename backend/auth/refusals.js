@@ -716,6 +716,24 @@ const REFUSALS = {
   activityCloHasMarks: (cloNumber) =>
     `ผลการเรียนรู้ ${cloNumber} มีคะแนนบันทึกไว้ในกิจกรรมนี้แล้ว จึงนำออกจากกิจกรรมไม่ได้`,
 
+  // `activityCloMarksOverNewShare` is that guard one step along, and the
+  // owner's answer to [#108] (13 ตุลาคม 2569): a save may move the base its
+  // marks were entered against without removing anything. Lowering the full
+  // mark, or a row's weight, rewrites `activity_clo_mapping.score` — the
+  // per-CLO denominator #38 reads — and the answer chosen is to refuse
+  // *only* where a recorded mark would be left above its new share. An edit
+  // that invalidates no mark saves as before.
+  //
+  // It is `markOverClo` said from the other side: that sentence refuses a
+  // mark for being above the share, this one refuses the share for being
+  // below the marks. So it names the same two things and the count besides,
+  // because the person is being sent to a grid to correct cells rather than
+  // to one field. Nothing says `markOverActivity` from this side, and
+  // nothing needs to: a share cannot exceed the full mark, so a mark inside
+  // its share is inside the whole by construction.
+  activityCloMarksOverNewShare: (cloNumber, ceiling, marks) =>
+    `คะแนนของผลการเรียนรู้ ${cloNumber} ที่บันทึกไว้แล้ว ${marks} รายการ สูงกว่า ${ceiling} ซึ่งเป็นคะแนนที่กิจกรรมนี้จะแบ่งให้ข้อนั้นหลังการแก้ไข จึงบันทึกไม่ได้ ให้แก้คะแนนที่หน้าคะแนนกิจกรรมการเรียนรู้ก่อน`,
+
   // Marks — #34. คะแนนกิจกรรมการเรียนรู้, where a grid meets two toggles.
   //
   // Most of these are functions, and they are functions for one reason: a

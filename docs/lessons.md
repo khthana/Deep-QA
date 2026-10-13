@@ -9653,3 +9653,98 @@ was asked for* has as many coordinates as the loader has dependencies (#140),
 so a key written from one of them answers for one of them. `readOf`'s parameter
 list is that census, which is why it is the loader's dependency list minus the
 callbacks — and why the row that proves it has to move a **filter**, not a page.
+
+## #108 — the ceiling one screen enforced, and the number the other screen could move
+
+`activity_clo_mapping.score` is `ROUND(score_number * weight / 100, 2)`, written
+by the Activity editor (#33) and read by the marks grid (#34) as the ceiling a
+cell may not exceed, and by the attainment report (#38) as the denominator it
+divides by. #34 guards it twice — `markOverClo` per outcome, `markOverActivity`
+for the whole — and #33 could move it under marks already entered, because its
+own guard stops at *removal*: `markedCloLeaving` refuses a CLO row leaving an
+Activity people have been marked under, and says nothing about the row that
+stays while the base beneath it changes. The editor's header had said so since
+the ticket was written, and deferred the decision.
+
+### Measured before anything was proposed
+
+The ticket's *what is wrong* is a claim from the day it was written, so both of
+its halves were measured at the seam first, with a throwaway test file that was
+deleted afterwards. Both were true, and worse than the ticket's wording: `PUT
+score_number: 1` was answered **200** and left **114** of the seeded marks above
+their own share; `PUT weight: 1` on one row was answered **200** and left **57**;
+and `cloAssessment.earnedOf` then read `earned 49.02 / available 1` for one
+student on one outcome — 4,902% of an outcome, on a screen whose whole job is to
+report attainment. So the state #34's two guards exist to prevent was reachable
+from a screen two menu items away, which is what made this a defect rather than
+an asymmetry.
+
+That measurement also handed over the fixture (#117). The seeded `สอบกลางภาค`
+carries three outcomes whose top mark sits within a hair of its share — 33.82 of
+34.00, 32.95 and 32.91 of 33.00 — so one step either way separates a save that
+must be refused from one that must go through. A fixture built big would have
+proved much less.
+
+### The decision was not mine, and it had three answers
+
+`docs/06` §Out of Scope settles who answers a question a ticket contains, and
+this one says so itself: *deciding what a changed denominator should do is a
+product decision about marks*. So the three options were priced and put to the
+owner — refuse every edit once marks exist, like `markedCloLeaving`; refuse only
+where a recorded mark would be left above its new share; or rescale the recorded
+marks. The owner chose the middle one on 13 October 2569.
+
+The order of the gates then followed from #60: the new guard goes **last** in the
+handler, after `refuseSave` and `markedCloLeaving`, because that is where it is
+reached by exactly the saves that used to succeed silently. And the share is
+computed in the same statement shape `save` writes, so the ceiling a person is
+refused against cannot drift from the ceiling they would have been given by a
+rounding step taken in another language. One comparison serves both of #34's
+ceilings: a share cannot exceed the full mark, so a mark inside its share is
+inside the whole by construction.
+
+### The row that makes the other two rows mean anything
+
+A guard of the shape *refuse only where X* is wrong in two directions — it can
+let through a save that should be refused, and it can refuse a save that should
+go through — and the two refusal rows cannot fail in the second direction at all.
+The third row is the one that can: *an edit that leaves every recorded mark
+inside its share still saves*. That is #48's rule met again (a criterion answered
+*no* needs a row as much as one answered *yes*), and the mutant that holds it is
+#48's other rule: the **declined** option made to run. `refuseseverymarkedrow`
+is option one of the ticket, implemented as `WHERE s.score IS NOT NULL`, and it
+is the only thing that turns *we chose otherwise* from a sentence on a sheet into
+a claim the suite holds.
+
+All three rows were run against the unfixed route before any mutant was written
+(#203). The two refusal rows went red; the third passed on its own and failed in
+the full file, because on the unfixed code the first two rows' saves **succeed**
+and move the seed — the contamination being the defect itself. The restore
+therefore went into the `finally` of all three rows and was written in SQL below
+the seam, not as a second `PUT`: a cleanup that goes through the code under test
+cannot land while a mutant is applied (#181). The first draft of that restore
+used one parameter as both `int` and `numeric`, which Postgres refuses as
+`inconsistent types deduced for parameter $3` — and because it threw in a
+`finally`, the sweep's first run reported the *restore* rather than the row,
+which is #181's other half arriving uninvited.
+
+### What the sweep said that I did not know before running it
+
+Three mutants, each against the whole backend suite rather than the one file,
+since the code is in a route other files call — so *does it kill too much* is
+asked in the same run (#45). Baseline **820 of 820** (25.4s).
+
+`basecanmove` (`WHERE false`, which is the pre-#108 behaviour exactly) killed
+**2 of 820** — the two refusal rows and nothing else. `namestheotherend` (order
+from the far end) killed **1**, the full-mark row only, which is the half of that
+row claiming *which* outcome the sentence names.
+
+`refuseseverymarkedrow` killed **2**, and only one of them was the row it was
+written for. It also killed the *weight* row, through the count in the sentence
+rather than through the refusal: refusing every marked row counts all 57 marks
+where the real guard counts only those above the new share. And it **survived**
+the full-mark row, for the reason #117 gives: at half the full mark the new share
+is 17.00 and all 57 marks are above it, so *every mark* and *every mark above the
+share* are the same number there and the sentence is identical. A mutant that
+swaps one implementation for another is invisible wherever the two agree — and
+the place they disagreed was the row whose new share was 32.00.

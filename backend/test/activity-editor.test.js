@@ -749,3 +749,273 @@ test('a day followed by anything but a time of day is refused, not handed to the
     assert.ok(made.deadline_date, 'the timestamp was written');
   });
 });
+
+/**
+ * #108 — the base a recorded mark was entered against.
+ *
+ * `markedCloLeaving` refuses a CLO row *leaving* an Activity people have been
+ * marked under. The same argument reaches the row that stays: the full mark and
+ * the row's weight are the two numbers `activity_clo_mapping.score` is computed
+ * from, that share is the ceiling #34 caps a cell at, and #38 divides by it.
+ * Moving it under marks already entered leaves a mark above the share it is a
+ * share of — measured at the seam on 13 ตุลาคม 2569, before any of this was
+ * written: both edits were answered **200**, a full mark of 1 on the seeded
+ * Activity with two marked rows left all 114 of its marks above their share, a
+ * weight of 1 on one of those rows left 57, and the attainment read for one
+ * student came back `earned 49.02 / available 1`.
+ *
+ * The owner's answer (13 ตุลาคม 2569) is the middle of the ticket's three: refuse
+ * **only** where a recorded mark would be left above its new share. So two of
+ * these rows are about the refusal and the third is about the saves it must not
+ * touch — a guard this shape is wrong in two directions, and only the third
+ * row can fail the other way.
+ *
+ * All three run against the seeded `สอบกลางภาค`, whose three rows each carry a
+ * mark within a hair of their share (33.82 of 34.00, 32.95 and 32.91 of 33.00).
+ * That closeness is the fixture, and it is what the measurement handed over
+ * (#117): one step either way separates refusing from saving, so each row
+ * asserts the shape it needs rather than trusting the seed for it (#129).
+ */
+
+/** The seeded Activity these rows move the base of, with its marks measured. */
+async function markedMidterm(cookie, section) {
+  const midterm = activityIn(await screenOf(cookie, section), 'สอบกลางภาค');
+  assert.ok(midterm, 'the seed should carry a สอบกลางภาค on this section');
+  assert.ok(
+    midterm.clo_rows.length >= 2,
+    'these rows need an Activity attributed to at least two outcomes',
+  );
+
+  const { rows: tops } = await api.pool.query(
+    `SELECT s.clo_id, max(s.score) AS top, count(*)::int AS marks
+       FROM activity_scores s
+      WHERE s.activity_id = $1
+      GROUP BY s.clo_id`,
+    [midterm.id],
+  );
+  const topOf = new Map(tops.map((row) => [row.clo_id, row]));
+
+  // Every row marked, and every mark inside its share: the state the screen
+  // enforces at entry, asserted where it is used rather than where it was set
+  // (#51). Without it the first two rows would pass on an Activity nobody has
+  // been marked on, which is the direction a guard cannot be caught in.
+  const ordered = [...midterm.clo_rows].sort((one, two) =>
+    one.clo_number < two.clo_number ? -1 : 1,
+  );
+  for (const row of ordered) {
+    const measured = topOf.get(row.clo_id);
+    assert.ok(measured && measured.marks > 0, 'outcome ' + row.clo_number + ' should carry marks');
+    assert.ok(
+      Number(measured.top) <= Number(row.score),
+      'outcome ' + row.clo_number + ' should start inside its share',
+    );
+  }
+  return { midterm, ordered, topOf };
+}
+
+/** The whole Activity as the editor sends it back, with one thing changed. */
+const bodyOf = (activity, overrides = {}) => ({
+  activity_name: activity.activity_name,
+  activity_type: activity.activity_type,
+  score_number: Number(activity.score_number),
+  announcement_date: null,
+  deadline_date: null,
+  course_syllabus_id: activity.course_syllabus_id,
+  score_ratio_id: activity.score_ratio_id,
+  clo_rows: activity.clo_rows.map((row) => ({ clo_id: row.clo_id, weight: row.weight })),
+  ...overrides,
+});
+
+/** The share `save` would write, restated here rather than read back (#96). */
+const shareOf = (scoreNumber, weight) => Number(((scoreNumber * weight) / 100).toFixed(2));
+
+/** Every share this Activity currently gives, by outcome number. */
+const sharesOf = async (activityId) => {
+  const { rows } = await api.pool.query(
+    `SELECT c.clo_number, m.score
+       FROM activity_clo_mapping m
+       JOIN subject_clo c ON c.clo_id = m.clo_id
+      WHERE m.activity_id = $1
+      ORDER BY c.clo_number`,
+    [activityId],
+  );
+  return rows.map((row) => row.clo_number + '=' + row.score);
+};
+
+/** How many of an outcome's recorded marks sit above a given share. */
+const aboveShare = (activityId, cloId, share) =>
+  countOf(
+    `SELECT count(*) AS count FROM activity_scores
+      WHERE activity_id = $1 AND clo_id = $2 AND score > $3`,
+    [activityId, cloId, share],
+  );
+
+/**
+ * The seeded base, put back below the seam.
+ *
+ * Every one of these rows runs in the `finally`, including the two whose save
+ * is supposed to be refused: a save refused by the route writes nothing and
+ * this restores nothing, but a *mutant* that lets one through would leave the
+ * base moved for every row after it, and a fixture that only tidies up when its
+ * row passes inflates the next mutant's kill count (#181). It writes with SQL
+ * rather than with a second PUT for the same reason the row below says: a
+ * cleanup that went through the code under test could not land while a mutant
+ * was applied.
+ */
+async function restoreMidterm(midterm) {
+  const scoreNumber = Number(midterm.score_number);
+  await api.pool.query('UPDATE activities SET score_number = $2 WHERE id = $1', [
+    midterm.id,
+    scoreNumber,
+  ]);
+  for (const row of midterm.clo_rows) {
+    await api.pool.query(
+      `UPDATE activity_clo_mapping
+          SET weight = $3::int, score = ROUND($4::numeric * $3::int / 100, 2)
+        WHERE activity_id = $1 AND clo_id = $2`,
+      [midterm.id, row.clo_id, row.weight, scoreNumber],
+    );
+  }
+}
+
+test('lowering the full mark under a recorded mark is refused, about the first outcome', async () => {
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const { midterm, ordered, topOf } = await markedMidterm(cookie, section);
+
+  // Half the full mark halves every share with it, so every row is left
+  // holding marks above it. The sentence must name the lowest outcome number
+  // every time, `markedCloLeaving`'s reason: a refusal that named a different
+  // row on each press would read as though the screen were guessing.
+  const halved = Number(midterm.score_number) / 2;
+  const first = ordered[0];
+  for (const row of ordered) {
+    assert.ok(
+      Number(topOf.get(row.clo_id).top) > shareOf(halved, row.weight),
+      'outcome ' + row.clo_number + ' should be left above its new share',
+    );
+  }
+
+  const shares = await sharesOf(midterm.id);
+  try {
+    const refused = await update(
+      cookie,
+      section,
+      midterm.id,
+      bodyOf(midterm, { score_number: halved }),
+    );
+
+    const share = shareOf(halved, first.weight);
+    assert.equal(refused.status, 400);
+    assert.equal(
+      refused.body.message,
+      REFUSALS.activityCloMarksOverNewShare(
+        first.clo_number,
+        share,
+        await aboveShare(midterm.id, first.clo_id, share),
+      ),
+    );
+
+    // A refused save writes nothing — neither the full mark nor the shares.
+    const after = activityIn(await screenOf(cookie, section), 'สอบกลางภาค');
+    assert.equal(Number(after.score_number), Number(midterm.score_number));
+    assert.deepEqual(await sharesOf(midterm.id), shares);
+  } finally {
+    await restoreMidterm(midterm);
+  }
+});
+
+test("lowering one row's weight under its recorded marks is refused, about that row", async () => {
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const { midterm, ordered, topOf } = await markedMidterm(cookie, section);
+
+  // The other half of the same claim, and the half a guard that read only the
+  // full mark would answer `null` to: the full mark does not move, one row's
+  // share does. The row moved is the *last* by outcome number, so a guard that
+  // compared every mark against every proposed weight would name the first row
+  // instead of this one, and a guard ordered by anything but the number could
+  // name either.
+  const moved = ordered[ordered.length - 1];
+  const scoreNumber = Number(midterm.score_number);
+  const weight = Math.floor((Number(topOf.get(moved.clo_id).top) * 100) / scoreNumber);
+  assert.ok(weight < moved.weight, 'the new weight has to be a reduction');
+  assert.ok(
+    Number(topOf.get(moved.clo_id).top) > shareOf(scoreNumber, weight),
+    "the moved row's marks should be left above its new share",
+  );
+  for (const row of ordered.slice(0, -1)) {
+    assert.ok(
+      Number(topOf.get(row.clo_id).top) <= shareOf(scoreNumber, row.weight),
+      'outcome ' + row.clo_number + ' should be left inside its share, so it is not refused',
+    );
+  }
+
+  const shares = await sharesOf(midterm.id);
+  try {
+    const refused = await update(
+      cookie,
+      section,
+      midterm.id,
+      bodyOf(midterm, {
+        clo_rows: midterm.clo_rows.map((row) => ({
+          clo_id: row.clo_id,
+          weight: row.clo_id === moved.clo_id ? weight : row.weight,
+        })),
+      }),
+    );
+
+    const share = shareOf(scoreNumber, weight);
+    assert.equal(refused.status, 400);
+    assert.equal(
+      refused.body.message,
+      REFUSALS.activityCloMarksOverNewShare(
+        moved.clo_number,
+        share,
+        await aboveShare(midterm.id, moved.clo_id, share),
+      ),
+    );
+    assert.deepEqual(await sharesOf(midterm.id), shares, 'a refused save writes nothing');
+  } finally {
+    await restoreMidterm(midterm);
+  }
+});
+
+test('an edit that leaves every recorded mark inside its share still saves', async () => {
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const { midterm, ordered } = await markedMidterm(cookie, section);
+
+  // The direction the two rows above cannot fail in. The answer the owner gave
+  // is *refuse only where a mark would be invalidated*, so a guard that refused
+  // every edit to a marked Activity would pass both of them and be wrong; this
+  // row is the one that says so. Raising the full mark raises every share with
+  // it, which cannot invalidate anything.
+  const scoreNumber = Number(midterm.score_number);
+  const raised = scoreNumber * 2;
+  try {
+    const saved = await update(
+      cookie,
+      section,
+      midterm.id,
+      bodyOf(midterm, { score_number: raised }),
+    );
+    assert.equal(saved.status, 200, saved.body.message);
+    assert.equal(Number(saved.body.activity.score_number), raised);
+    assert.deepEqual(
+      await sharesOf(midterm.id),
+      ordered.map((row) => row.clo_number + '=' + shareOf(raised, row.weight).toFixed(2)),
+    );
+  } finally {
+    // Put the seed back below the seam, not through the route: a cleanup that
+    // went through the code under test could not land while a mutant was
+    // applied, and the next row would then die on its own precondition (#181).
+    await restoreMidterm(midterm);
+  }
+
+  assert.deepEqual(
+    await sharesOf(midterm.id),
+    ordered.map((row) => row.clo_number + '=' + Number(row.score).toFixed(2)),
+    'the seed is back',
+  );
+});

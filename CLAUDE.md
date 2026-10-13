@@ -684,6 +684,15 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   polymorphic column carries no constraint to raise, so there the hand-written *is anything pointing
   at this* check is the right one, and its licence is bounded by the column having no constraint
   rather than by anybody's list of tables. (#60)
+- **A ceiling enforced where a value is entered is a claim about the number it is a share of, and
+  the screen that writes that number is the other half of the guard** — nothing in the schema
+  connects the two. #34 caps a mark at `activity_clo_mapping.score` twice over; #33 could move
+  `score` under marks already entered, so the state the marks grid refuses was reachable from a
+  screen two menu items away, and the report then read `earned 49.02 / available 1`. Ask which
+  screen writes the base before believing an entry-time check — and once a guard is *refuse only
+  where X*, it is wrong in two directions, so the row for the saves it must **not** touch is what
+  makes the refusal rows measure anything, with the declined option made to run as its mutant
+  (#48). (#108)
 - **When two refusals are both true, the order of the gates decides which sentence the caller
   gets** — a new gate put first rewrites the answer a closed ticket's criteria already fixed, so it
   goes last, where it is reached by exactly the case that used to succeed. It binds only where the

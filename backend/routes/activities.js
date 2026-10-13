@@ -76,12 +76,24 @@
  * cohort has been marked under leaves those marks attributed to an outcome
  * this Activity no longer assesses — silently, exactly like #32's CASCADE.
  *
- * That guard stops at *removal*, and deliberately. Changing the full mark or a
- * row's weight moves the base those same marks were entered against, just as
- * quietly, and what should happen then — refuse, refuse only where a recorded
- * mark would be invalidated, or rescale — is a decision about marks rather
- * than about attribution. It belongs with #34, and is
- * [#108](https://github.com/khthana/Deep-QA/issues/108).
+ * That guard stopped at *removal*, and the base can be moved without removing
+ * anything: changing the full mark or a row's weight rewrites
+ * `activity_clo_mapping.score`, which is the per-CLO denominator those same
+ * marks were entered against and the one #38 divides by. What should happen
+ * then was a decision about marks rather than about attribution, and the owner
+ * made it on 13 ตุลาคม 2569
+ * ([#108](https://github.com/khthana/Deep-QA/issues/108)): **refuse only where a
+ * recorded mark would be left above its new share**. An edit that invalidates
+ * no mark saves exactly as it did before, which is why the guard is the last
+ * one in the handler — it is reached by precisely the saves that used to go
+ * through silently (#60).
+ *
+ * `marksOverNewShare` therefore computes the share the way `save` computes it,
+ * in the database and from the same two numbers, so the ceiling a person is
+ * refused against is the ceiling they would have been given. It is #34's
+ * `markOverClo` asked of the base instead of of the mark, and one comparison
+ * is enough for both of that screen's ceilings: a share cannot exceed the full
+ * mark, so a mark inside its share is inside the whole by construction.
  *
  * *What is deliberately not enforced is a total of exactly 100.* BR-11 reads
  * two ways in the sources (docs/01 has it as one CLO per row, docs/02 as a
@@ -547,6 +559,44 @@ function activityRoutes(pool) {
   }
 
   /**
+   * A kept CLO whose recorded marks this save would leave above the share it
+   * gives that CLO, if there is one — #108, and `markedCloLeaving`'s argument
+   * one step along: the row stays, and the base under it moves.
+   *
+   * The ceiling is `ROUND(score_number * weight / 100, 2)` because that is what
+   * `save` is about to write into `activity_clo_mapping.score`, computed here in
+   * the same place by the same statement shape so that the number a person is
+   * refused against cannot drift from the number they would have been given.
+   *
+   * A blank cell is `NULL` and no comparison with it is true, so an unmarked
+   * student is not one of these. Ordered by CLO number for `markedCloLeaving`'s
+   * reason: a save that moves the base under several rows is refused about the
+   * first of them every time, rather than about whichever the planner reached.
+   */
+  async function marksOverNewShare(activityId, rows, scoreNumber) {
+    if (rows.length === 0) return null;
+    const { rows: found } = await pool.query(
+      `SELECT c.clo_number,
+              ROUND($3::numeric * p.weight / 100, 2) AS ceiling,
+              count(*)::int AS marks
+         FROM unnest($2::int[], $4::int[]) AS p(clo_id, weight)
+         JOIN activity_scores s ON s.activity_id = $1 AND s.clo_id = p.clo_id
+         JOIN subject_clo c ON c.clo_id = p.clo_id
+        WHERE s.score > ROUND($3::numeric * p.weight / 100, 2)
+        GROUP BY c.clo_number, p.weight
+        ORDER BY ${cloOrder('c')}
+        LIMIT 1`,
+      [
+        activityId,
+        rows.map((row) => row.clo_id),
+        scoreNumber,
+        rows.map((row) => row.weight),
+      ],
+    );
+    return found[0] ?? null;
+  }
+
+  /**
    * The write, whole: the Activity and the rows that attribute it, in one
    * transaction, with the rows replaced rather than reconciled.
    *
@@ -677,6 +727,23 @@ function activityRoutes(pool) {
         );
         if (leaving) {
           return res.status(400).json({ message: REFUSALS.activityCloHasMarks(leaving.clo_number) });
+        }
+
+        // Last of the three, and last on purpose: every save this one refuses
+        // is a save that succeeded silently before #108 was answered.
+        const over = await marksOverNewShare(
+          activity.id,
+          read.values.clo_rows,
+          read.values.score_number,
+        );
+        if (over) {
+          return res.status(400).json({
+            message: REFUSALS.activityCloMarksOverNewShare(
+              over.clo_number,
+              Number(over.ceiling),
+              over.marks,
+            ),
+          });
         }
 
         // The pairing is in the UPDATE's own WHERE as well as in `activityOf`,
