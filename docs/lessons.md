@@ -9869,3 +9869,80 @@ branch carries the same mechanism one layer along — a second move while its
 awaited read is out leaves the sentence keyed for nobody — which is the direction
 #205 chose rather than a new defect, dated with the condition that would expire
 it: a sentence keyed by *what it is of* instead of by a page.
+
+
+## #88 — the rule the field states while it is being chosen, and the two claims that sat behind another assertion
+
+The validity window was walked on 21 August 2569 and the row *a window the wrong
+way round* passed: a start of 29/08 with an end of 28/08 is refused by
+`validateUser`, and if that comparison were ever flipped the table's own CHECK
+constraint is behind it, which `mutation/125-validity-era.py` records. What
+nothing did was say the rule while the dates were being chosen. Measured before
+anything was changed, as a ticket's *what is wrong* always is: the two
+`type="date"` inputs carried `className`, `value` and `onChange` and no bound at
+all, so the browser's picker offered every day in both fields.
+
+The fix is two attributes - `min={draft.valid_from || undefined}` on the later
+field, `max={draft.valid_until || undefined}` on the earlier - and the ticket's
+own sentence about them is the important one: **an addition and not a
+replacement**. Neither server-side guard moves, because a rule a form enforces
+alone is a rule with a way around it (ADR-0002).
+
+`|| undefined` rather than `''` is the second claim and not a detail. The
+server's rule is `from && until && from > until`, so an end with no start is an
+open window the system accepts, and a field that bounded itself anyway would
+refuse it - the other direction of a *refuse only where X* guard (#48, #108).
+
+### The rule does not generalise to the other pair of date fields
+
+`frontend/src` holds exactly four `type="date"` inputs, in two pairs: this one
+and `components/activity/ActivityForm.js`'s `announcement_date` and
+`deadline_date`. The second pair looks like the same shape and is not.
+`readActivity` in `backend/routes/activities.js` never compares the two, so
+there is **no rule to mirror** there: binding them would be a rule the screen
+invented, which is the opposite of what this ticket did. A ticket that
+generalises across screens has usually generalised the symptom (#122), and the
+question that tells the two apart is whether the server has an ordering rule at
+all - not whether the fields look alike.
+
+### A claim written below another claim is proved by nothing
+
+The five mutants were written for five claims, and the first sweep put three of
+them behind a red row that was red for another reason. A row reports the
+**first** assertion that fails and stops, so with `nolowerbound` applied row 1
+died at *the min equals the start* and never reached the two `validity` reads
+below it; with `lowerboundwhenthereisnone` it died at *there is nothing to bound*
+and never reached *clearing the start takes the bound away*. Those three claims
+would have been marked ⚙ on the strength of a kill that happened above them.
+
+This is the `mode: 'serial'` rule one layer down - a serial file reports the
+first dying row and skips the rest (#67) - and the repair is the same: measure
+each claim on its own. Rows 4 and 5 were split out during the sweep, and the
+sixth mutant (`theupperboundexcludesit`) was written because the first
+off-by-one leaves `max` alone, so the one-day window asserted on the *start*
+field still had nothing to be read against. Where the mutants die is what
+decides how a spec's claims are divided into rows.
+
+### A bound on the field changes who answers the person
+
+Measured on 14 October 2569, after the fix: the form has no `noValidate` and
+`required` fields of its own, so Chromium's constraint validation is live. With
+the start at 29/08/2026 and 28/08/2026 typed into the end field, that field's
+`checkValidity()` is false and its `validationMessage` reads *Value must be
+29/08/2026 or later.* - so **the form is never submitted**, and the server's own
+sentence, *ช่วงเวลาใช้งานไม่ถูกต้อง วันสิ้นสุดต้องไม่มาก่อนวันเริ่มต้น*, is no
+longer reachable from this screen. It is still reached at the API and through
+the import, and both guards are untouched; what changed is the path a person
+takes to it.
+
+Two things follow. The walked row that recorded that sentence **expires the day
+the fix lands** - a survey of the store has a date on it, and a successful fix is
+what expires one (#50, #85). And the wording a person now reads is the browser's,
+in the browser's language rather than the screen's Thai, which is a question for
+the owner and not a diff to choose: *the UI is reproduced as-is; any proposal to
+change it is raised as a question* (`docs/06` §Out of Scope). The three options
+are priced on sheet `11` beside the measurement - keep it, add `noValidate` and
+give the Thai sentence back at the cost of the browser's `required` checks for
+the whole form, or write a third copy of the rule on the screen - and the ticket
+asked for `min`/`max` in as many words, so the attributes went in and the
+consequence was written down rather than traded away.

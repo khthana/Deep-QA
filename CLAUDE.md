@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 13 October 2569 that is
-`2026-10-13-the-step-back-is-from-the-page-the-pager-is-on.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 14 October 2569 that is
+`2026-10-14-the-claim-that-sat-below-another-claim.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -436,6 +436,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   then three missing anchors in one file, then *problems 0* again, over a tree that was clean
   by `git diff` every time. Clear the ports, ask the machine what is still alive, read it
   twice. (#152)
+- **A row reports the first assertion a mutant kills, so a claim written below another claim is
+  proved by nothing** — the `serial` rule one layer down, and it is invisible in a kill count:
+  the row is red, the mutant is credited, and the claims under the red line were never read. Let
+  where the mutants die decide how a spec's claims are split into rows. (#88)
 - A `mode: 'serial'` spec reports the first dying row and skips the rest, so measure each row on
   its own; a top-level `node --test` test reads like a suite header in `not ok` lines, so read
   the names — including in a ticket's evidence, where it read as a second red row. (#67, #48, #187)
@@ -704,6 +708,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   two answers differ: the same fix on the sibling route asks first, because both of its answers are
   the same answer. (#60)
 - A guard that is strict about a format cannot see a mistake about meaning. (#124)
+- **A bound put on a field changes who answers the person** — an input with `min` inside a form
+  with no `noValidate` is refused by the browser, in the browser's own language, so the server's
+  sentence stays correct and stops being reachable from that screen. The walked row that recorded
+  that sentence expires the day the bound lands, and which wording the person should read is the
+  owner's (`docs/06` §Out of Scope). (#88)
 - **A ticket about the value at today's input is answered by measuring the parameter across its
   range** — the one #103 pointed at as a cost of its fix was already wrong before it: at 9mm per
   column the page grew slower than a code needs, so every code wrapped at twenty outcomes, hidden

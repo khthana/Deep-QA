@@ -188,6 +188,18 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
           R005's time-boxed account. Both ends are optional and an empty one is
           open: an ordinary staff account leaves both blank, and an external
           assessor is the case the columns exist for.
+
+          Since #88 each end bounds the other - `min` on the later field, `max`
+          on the earlier - so the browser's own picker states the rule while the
+          dates are being chosen, rather than the window being refused after a
+          round trip. `|| undefined` and not `''`, because an empty counterpart
+          is an open end: that is the server's own rule (`from && until && from >
+          until`), and a field that bounded itself anyway would refuse a window
+          the system accepts.
+
+          An addition and not a replacement. `validateUser` and the table's own
+          CHECK constraint still decide; a rule a form enforced alone would be a
+          rule with a way around it (ADR-0002).
         */}
         <fieldset className="rounded-lg border border-gray-200 p-4">
           <legend className="px-2 text-sm text-gray-500">
@@ -200,6 +212,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
                 type="date"
                 value={draft.valid_from}
                 onChange={set('valid_from')}
+                max={draft.valid_until || undefined}
               />
             </Field>
             <Field label="ใช้งานได้ถึง">
@@ -208,6 +221,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
                 type="date"
                 value={draft.valid_until}
                 onChange={set('valid_until')}
+                min={draft.valid_from || undefined}
               />
             </Field>
           </div>
