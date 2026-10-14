@@ -170,6 +170,28 @@ export default function SubjectStudents() {
   }, [page])
 
   /**
+   * How many rows the list on the screen is showing, and which read that list
+   * is the answer to - #207. The step back asks this rather than counting the
+   * `data` its handler closed over, and compares the key before believing the
+   * count; `frontend/src/pages/Departments.js` carries the reasons and names
+   * the rows.
+   *
+   * `data` is `null` here before the first read and after a refused one, which
+   * is no rows: a page with nothing on it has no row to remove, so no handler
+   * can read the ref in that state.
+   *
+   * The coordinates of the read are deliberately not dependencies of the
+   * effect below: what is stamped is the count of the list that is **drawn**
+   * and the key of the read that drew it, so it is written when the list
+   * changes and never when the pager moves.
+   */
+  const onRows = useRef({ of: readOf(sectionId, page), rows: data ? data.students.length : 0 })
+  useEffect(() => {
+    onRows.current = { of: readOf(sectionId, page), rows: data ? data.students.length : 0 }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
+
+  /**
    * The read a write asks for, which is not always the read `load` would do.
    *
    * A student who has just been enrolled is somewhere in a list sorted by code,
@@ -268,12 +290,20 @@ export default function SubjectStudents() {
       // `reload` hands over the one for the first page.
       // #206 - and from the page the pager is on, not the one this render
       // closed over. `Departments.js` carries the reasons.
-      const stepBack = data.students.length === 1 && page > 1
+      // #207 - how many rows the page this removal was sent from was showing. The
+      // live ref answers that only while the pager is still on it; once the
+      // person has moved, the list in front of them is another page's and the
+      // render's own count is the only reading of the page they left there is.
+      // `Departments.js` carries the reasons.
+      const liveCountIsOfThisPage = onRows.current.of === readOf(sectionId, page)
+      const lostItsLastRow =
+        (liveCountIsOfThisPage ? onRows.current.rows : data.students.length) === 1 && page > 1
+      const stepBack = lostItsLastRow && liveCountIsOfThisPage
       if (stepBack && onPage.current === page) {
         const target = readOf(sectionId, page - 1)
         waiting.current = { of: target, said }
         setPage(page - 1)
-      } else if (stepBack) {
+      } else if (lostItsLastRow) {
         // The person moved while the removal was out, so nothing steps back:
         // the list they are on is read here and that read says the sentence.
         const target = readOf(sectionId, onPage.current)

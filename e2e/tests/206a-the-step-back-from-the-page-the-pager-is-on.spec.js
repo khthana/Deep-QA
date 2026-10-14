@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { gate, isWrite } = require('../support/gate');
+const { gate, isGet, isWrite } = require('../support/gate');
 const { panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv } = require('../support/import-panel');
@@ -213,6 +213,60 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     expect((await reading(page, table)).shown, 'the page the pager stepped back to').toBe(
       pages - 1,
     );
+    await expect(page.getByRole('status'), 'the banner of the removal').toHaveText(REMOVED);
+  });
+
+  /**
+   * The same claim as the first row, measured inside the window #207 opened.
+   *
+   * #207 reads the live count only while its key says the drawn list is this
+   * page's, and in the first row's situation that key does not match either -
+   * both presses have landed, so the list in front of the person is another
+   * page's. Two clauses are false there and no mutant of one of them can fail
+   * the row, which the re-sweep of 14 October 2569 said out loud:
+   * `206:movecanbeofanypage` survived 14 of 14 where it had killed the first
+   * row, and a fix that splits a guard shrinks every mutant that quoted the
+   * block whole (#203).
+   *
+   * Here the press is **held at the route**, so the list drawn is still the
+   * page the removal was sent from: #207's key matches, and the only thing left
+   * saying the move may not be made is that the pager has asked for somewhere
+   * else. That is this file's claim, with nothing else holding it up.
+   */
+  test('a removal moves nobody while the page the pager asked for has not landed', async ({
+    page,
+  }) => {
+    const table = departments.listTable(page);
+    const pages = await toLastPage(page, table, departments.waitForList);
+    const last = await keysOn(table);
+    expect(last, 'one row on the last page, which is what a step back needs').toHaveLength(1);
+
+    const write = await askToRemove(page, last[0]);
+    // One press back, with that page's list held: the pager has asked for
+    // another page and the rows in front of the person are still this one's.
+    const heldList = await gate(page, new RegExp(`^${departments.API}$`), isGet);
+    await previous(page).focus();
+    await previous(page).press('Enter');
+    await heldList.sent;
+    expect(pageOf(heldList.request), 'the page the press asked for').toBe(String(pages - 1));
+
+    // The removal lands inside that window. Nothing moves: the read is of the
+    // page the person has asked for, and the sentence is keyed for it.
+    const follow = page.waitForResponse(
+      answer =>
+        new URL(answer.url()).pathname === departments.API &&
+        answer.request().method() === 'GET' &&
+        answer.request() !== heldList.request,
+    );
+    write.open();
+    await write.answered;
+    const answer = await follow;
+    expect(pageOf(answer.request()), 'the page the handler read').toBe(String(pages - 1));
+    heldList.open();
+    await untilDrawn(page, answer);
+
+    expect(await keysOn(table), 'the full page the press asked for').toHaveLength(10);
+    expect((await reading(page, table)).shown, 'the page the pager reads now').toBe(pages - 1);
     await expect(page.getByRole('status'), 'the banner of the removal').toHaveText(REMOVED);
   });
 });

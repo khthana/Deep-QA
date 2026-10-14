@@ -9946,3 +9946,242 @@ give the Thai sentence back at the cost of the browser's `required` checks for
 the whole form, or write a third copy of the rule on the screen - and the ticket
 asked for `min`/`max` in as many words, so the attributes went in and the
 consequence was written down rather than traded away.
+
+## #207 — the rows the step back counted, and the probe that dated the defect beside it
+
+#206 gave the step back the page the pager is on and wrote its second half into
+prose. #207 is that half, filed as a ticket for the reason #206 itself existed:
+a deferral written into prose and not into the tracker is a decision nobody can
+find. The line it is about sits directly above #206's: `const stepBack = page >
+1 && data.departments.length === 1`, where the count comes from the `data` the
+render closed over. Two claims on neighbouring lines in one handler — which page
+the person is standing on, and how many rows are in front of them — and the
+second had nothing under it.
+
+The ticket said so itself: **this claim has not been measured**, measure before
+fixing, and if it cannot be reached say *structurally unreachable, with the
+number*. So the first work was a measurement, and the ticket's own guess about
+where to take it was wrong.
+
+### A ticket's population of ways in is a claim like its numbers
+
+The ticket proposed filters, because a filter changes the list without changing
+the page. Every filter on all four filtered screens calls `setPage(1)`, so a
+filter change *is* a page move and takes the branch #206 wrote — the one that
+moves nobody. The import panel's `onImported` is the same, and where it does not
+move (`page === 1`) the `page > 1` above the count is false. A second removal and
+a save are both shut by `disabled={busy}` (#142). What is left is the shape the
+ticket had not named: a read that lands while the removal is out **and leaves the
+pager where it started**, which is the pager's own two presses — *ก่อนหน้า* then
+*ถัดไป* — reachable because `Pager` takes no `busy` (#199) and `ConfirmDialog`
+traps no focus (#204). The same way in as #206, with the same expiry date, and a
+way in that *changes nothing about what was asked for* while changing what the
+answer is of: the rule #199's story already wrote, met from the other side.
+
+The row count also has to change meanwhile, which no control on the screen can
+do, so the rows use a second actor on the browser's own cookie (`12a`): one
+`page.request.delete` for the first row, two `page.request.post`s for the second.
+
+Measured that way on 14 October 2569, against the unfixed code and before any
+mutant was written (#203), the ticket's claim is **true in both directions**: the
+handler that counted two rows asked for page 3 where the live list wanted 2, and
+the handler that counted one asked for page 2 where the live list wanted 3. Not
+aged, and not unreachable.
+
+### The ticket's identifiers were two-thirds right
+
+Its table named `data.subjects.length` for `ProgramSubjects`, which counts
+`data.program_subjects`, and left the leading `!deactivated` off three of the
+seven sites. The `deactivated` flag comes from the DELETE's **answer**, not from
+a filter, so it is not a stale read and the fix leaves it alone — but the list
+name is what a patch script matches on, and a ticket's supporting identifiers are
+a claim like its numbers (#54).
+
+### The fix, and why not a functional updater
+
+A ref beside #206's `onPage`, written by an effect keyed on `data` and read where
+the count was: `onPage` answers *where the person is standing*, `onRows` answers
+*what is in front of them*. `setData(current => …)` does see the live value, which
+is how #201 read live state — but it sees it in a later task, and this decision is
+made here, in the handler, before anything is set. All seven screens take the
+ref; `Departments.js` carries the reasons and the other six point at it, which is
+this tree's convention for a ref many panels repeat. `SubjectStudents.js` reads
+`data ? data.students.length : 0`, because that screen's `data` is `null` before
+the first read and after a refused one — no rows, a state in which no handler can
+read the ref at all, since a page with nothing on it has no row to remove.
+
+### A live read is not the fix, and only the clean suite said so
+
+The first round read `onRows.current` unconditionally. Its own two rows went
+green, its three mutants each killed what they were aimed at, `57a` passed whole
+— and in the full suite **`206a` row 1 was red**: *a removal says its sentence on
+the page the person moved to, and leaves them there*, `Expected "1" Received
+"3"`. A person who has moved two pages back leaves the live list a full page of
+ten, so `stepBack` became false, the removal stopped stepping back at all, and
+fell into the third branch. The sweep could not see it, because a sweep measures
+the rows the mutant breaks and this was a row **the fix** broke (#83); 44.9
+minutes of suite bought the one line that mattered, and the second round threw
+the whole measurement away and ran it again.
+
+What the count has to be is not *the live count* but **the count of the page the
+removal was sent from**, which the live ref answers only while the pager is still
+on that page. Once the person has moved, the render's own count is the only
+reading of the page they left that exists. So the line is a **choice** and not a
+read:
+
+```js
+const stepBack =
+  page > 1 && (onPage.current === page ? onRows.current : data.departments.length) === 1
+```
+
+Which is #185's key one step along again: having asked *which answer is this of*,
+the question here is *which page is this count of*. The guard #206 wrote on the
+line below is untouched, so its anchors do not move — and the two halves of this
+line get a mutant each, in opposite directions, so they are not two places
+holding one opinion (#97).
+
+### The third round: a key, not a position
+
+The review's Spec axis and its Standards axis both landed on the same hunk, and
+measured, they were right: `onPage.current === page` asks *is the pager where
+this handler was sent from*, which is not the question the count needs answering.
+Between the pager's press and the answer landing, `onPage.current` has already
+moved to the new page while `onRows.current` still holds the **old** page's rows,
+so for one window the condition is false and the line falls back to the closure
+count — but it is also false in the window where the ref is the right reading and
+the closure's is stale. One position cannot tell those two apart. A throwaway row
+written to the window showed the second case live: the ref was of the page the
+removal was sent from, the comparison said no, and the stale closure count
+decided the move.
+
+What identifies a count is not where the pager is but **what the count is of**,
+which is #185's key written for a reading instead of for an answer. So the ref
+carries the read's own coordinates and the line splits in two:
+
+```js
+const liveCountIsOfThisPage = onRows.current.of === readOf(page)
+const lostItsLastRow =
+  page > 1 &&
+  (liveCountIsOfThisPage ? onRows.current.rows : data.departments.length) === 1
+const stepBack = lostItsLastRow && liveCountIsOfThisPage
+```
+
+Two questions, two readings. *Did this page lose its last row* may be answered by
+the stale closure count, because all it decides is which loader reads — the worst
+it can do is read the same page twice. *May anybody be moved on this* may not:
+moving on a count that belongs to another page carries a person off a page that
+has filled up again, which is exactly the answer #206 calls the worse one. So the
+`else if` below reads `lostItsLastRow` and the move reads `stepBack`, and #206's
+own `if (stepBack && onPage.current === page)` is untouched for the third round
+running — which is what chose this shape over putting a third clause inside it.
+
+Each screen's key is the read's whole coordinate set and not the page alone:
+`readOf(page, department)` on `Subjects`, `readOf(page, program, year, semester)`
+on `Offerings`, `readOf(sectionId, page)` on `SubjectStudents`. A key that named
+only the page would answer *this page's count* about a different department's
+page 2.
+
+The three row-3 failures that followed were each a measurement rather than an
+argument, and each a premise of the row rather than a defect: `Pager` draws
+`shown ?? page`, the page the **answer** describes, so inside the window the line
+reads the page before and the premise has to come from the held request; `load`
+raises `loading` before it asks, so what is in the table inside the window is the
+placeholder and not the previous page's rows; and the two codes a row imported to
+sit above the others sorted below everything the file already had. A row's own
+premises are claims like a ticket's.
+
+### The mutant that separates two rows written for one line
+
+Five mutants, all on `Departments`. `closurerowcount` is the diagnosed code made
+to run (#115) and kills all three rows, each at its own assertion and in its own
+direction; `alwaysthelivecount` is **this ticket's own first round** made to run,
+and it kills `206a` row 1 and nothing else — the only thing that turns *we got
+this wrong once* from a sentence into a claim the suite holds, which is #48's
+rule about a declined option with the ticket's author in the dock.
+`trustthestalecount` is the **second** round made to run — `const stepBack =
+lostItsLastRow`, which is the shape the review refuted — and it kills row 3 and
+nothing else of the fourteen, which is the row written for that window saying so
+on its own. Two rounds of this ticket are therefore mutants rather than
+paragraphs. The other two are what make the pair of rows worth having:
+`refnevermoves` freezes the ref at the first render's count, so nothing ever steps
+back, and kills row 1 while row 2 passes; `refalwaysone` has the ref say *one row*
+whatever is drawn, the other direction a *refuse only where X* guard is wrong in
+(#48), and kills row 2 while row 1 and all nine rows of `57a` pass. The control
+is the one that says the two rows are two claims rather than one claim read twice.
+
+`refnevermoves` also kills `57a` row 3 after 5 passes — the same row, the same
+line, as `57:deptstay` — and `206a` row 2, which it could not have reached before
+this ticket: that row is the person who did not move, so only once the line reads
+the ref at all does freezing the ref break it. One mutant, three rows, three
+specs: three reachability claims and not one counted three times (#191). Which is
+the other half of the sweep: `deptstay` and
+`progstay` quote the `const stepBack` line whole, so this ticket re-aimed both by
+substituting the new text and keeping the mistake they make (`const stepBack =
+false`), ran `anchors.py` while changing rather than at closing time (#202), and
+re-swept. Their figures on `57a` are unchanged — and `deptstay`'s figure expired
+anyway, because `207a` is a spec that did not exist when it was counted and
+`const stepBack = false` reaches its first row. Nothing reports that: the anchor
+is exact, the code untouched, the diff only adds a file. Only running it says so.
+Swept against `206a` as well this round, it kills that file's first row too —
+which was already true the day #206 closed, `const stepBack = false` killing
+every row about a step back however the count is reached; no round before this
+one had swept it against that file. The sheet's cited line numbers had aged too — 202 and 264 read 215 and 277 today,
+`57a` having grown thirteen lines elsewhere (#173).
+
+### The probe that dated the defect the rows walked into
+
+Row 2 would not settle. Its read is made with the `load` the handler closed over,
+which the pager's two presses replaced, so #140's guard throws the answer away —
+and `load` raises `loading` before it asks and lowers it only `if (isCurrent())`,
+so a read that is superseded from the start leaves the table on its placeholder
+until something else reads. The row was repaired by taking the sentence as its
+settle point and reading the page off the pager's line, with the mechanism, the
+date and *this is not this row's claim* written beside it.
+
+That is branch three of `confirmRemoval` reloading with the closure's `load` where
+branch two already uses `onScreen.current`, and it had nothing to do with the
+count. **A defect this change caused and one it walked into are different
+sentences** (#103), and the way to tell them apart is a probe built where the two
+codes agree: a last page of three rows with one removed takes branch three before
+and after the fix, because the count does not change. Green at `HEAD` and green
+with the fix — so it is the second sentence, it has a ticket of its own, and the
+probe was deleted, being an instrument and not a claim of this sheet.
+
+The probe's first version measured nothing. It asked whether the removed row was
+*still drawn*, and read 0 — because a screen stuck on its loading placeholder has
+no rows on it at all, so the count answers the same whether the screen redrew
+correctly or drew nothing ever again. A count of rows cannot tell a stale list
+from no list, which is #164's blind sampler one species along, and the repair was
+to ask the placeholder by name and then ask it again two seconds later.
+
+### The split that left a neighbour's mutant with nothing to kill
+
+`206:movecanbeofanypage` removes #206's comparison, and until this ticket it
+killed `206a` row 1. Swept again after the third round it **survived 14 of 14**.
+Nothing was wrong with it: in that row's situation the person has come down two
+pages, so the list in front of them is of another page and `liveCountIsOfThisPage`
+is false as well. Two conditions false at once, and a mutant that removes one of
+them cannot make the move happen — which is #97 read from the other side, and
+#203's rule exactly: a fix that splits a guard shrinks every mutant that quoted
+the block whole, the anchor stays exact, the diff only adds a line, and no
+instrument says a word. Only re-running it says so.
+
+The repair is a row, not a mutant. `206a` gained a third row — *a removal moves
+nobody while the page the pager asked for has not landed* — which measures #206's
+claim **inside** the window this ticket opened: one press of *ก่อนหน้า* with that
+page's list held at the route, so the list on the screen is still of the page the
+removal was sent from, this ticket's key matches, and the only thing left
+forbidding the move is #206's own comparison. `movecanbeofanypage` kills it
+(`Expected "2" Received "1"`) and every one of this ticket's five mutants passes
+it, which is what makes it #206's claim and not this one's.
+
+### The direction the client cannot read at all
+
+In the forward window — the rows arriving while the removal is out — the count of
+the page the removal was sent from is available to no reading on the client. The
+live ref is of another page by then, and the closure's count predates the second
+actor's writes. So the step back does not happen where it should, and no
+rearrangement of these two readings fixes it: it needs a read of a page nobody is
+looking at. Written down as a draft ticket rather than argued, because a
+deferral written into prose and not into the tracker is a decision nobody can
+find (#119) — which is the sentence this whole ticket came from.

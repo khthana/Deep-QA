@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 14 October 2569 that is
-`2026-10-14-the-claim-that-sat-below-another-claim.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-14-the-count-of-the-page-the-removal-was-sent-from.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -517,6 +517,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   moment) bought for free: #152 paid for it with two faithful mutants surviving 21 of 21, where
   #203 got it from nineteen of twenty rows passing on the broken screens. A sweep answers the same
   question hours later, one mutant at a time. (#203)
+- **A probe that dates a defect beside your own is built where the two codes agree, run on both
+  sides, and then deleted** — *a defect this change caused* and *one it walked into* (#103) are
+  settled by a situation the fix and `HEAD` take the same branch in, not by argument, and the probe
+  is an instrument rather than a claim of any sheet. Its own first version is a claim too: a count
+  of rows cannot tell a stale list from a screen with no list on it, which is #164's blind sampler
+  one species along, so ask the placeholder by name. (#207)
 - **A red is not a measurement until the same read has been seen green** — the same rule from the
   failing side. A locator scoped to a heading the screen never draws reads empty drawn and undrawn
   alike, so ten reds of ten can mean nothing, and a fix built on them is wrong the same way. (#171)
@@ -669,6 +675,22 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   first can be read second, so keying on departure drops the newer reading and keeps the older,
   which is the one direction that matters. Have the server say when it read, and write down what
   the key cannot tell apart. (#77)
+- **A live reading is a reading of wherever the person now is, so a handler that needs a count of
+  what it was sent from has to ask which page the live value is of** — #185's key one layer in,
+  from *which request is this answer of* to *which page is this count of*. Swapping a stale read
+  for a ref is half a fix: where the subject has moved, the stale render's own count is the only
+  reading of the page that was left, so the line becomes a choice between the two and each half
+  needs its own mutant (#97). The tell that the first half alone is wrong is a row in **another**
+  ticket's spec, which no sweep of yours can reach (#83). **And the choice is made by a key the
+  ref carries, not by where a neighbour's position ref points** — a position moves when the
+  request leaves and the value moves when the answer lands, so one comparison answers *no* in the
+  window where the live value is the right reading and *no* in the window where it is the wrong
+  one, and cannot be read either way. Have the ref say what its value is **of**, keyed on the
+  read's whole coordinate set. Then the two questions come apart and are owed different readings:
+  *did this page lose its last row* may be answered by a stale count, because it only picks which
+  loader reads; ***may anybody be moved on it* may not**, because moving on another page's count
+  carries a person off a page that has filled up again. One direction of such a window can be
+  readable on the client and the other not at all — say which, with a ticket (#119). (#207)
 - **A save’s answer is a read.** Anything that redraws from a response needs the same guard as a
   fetch — and a handler, which nothing tears down, asks *is the screen still where it was when I
   was sent* with a ref rather than with an effect’s flag. (#133)

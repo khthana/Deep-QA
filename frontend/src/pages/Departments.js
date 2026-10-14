@@ -233,6 +233,60 @@ export default function Departments() {
     onPage.current = page
   }, [page])
 
+  /**
+   * How many rows the list on the screen is showing, and which read that
+   * list is the answer to - #207.
+   *
+   * `onPage` above answers *where* the person is standing; this answers *what
+   * is in front of them*. A step back is a decision about both - the page that
+   * lost its last row, and whether the row it lost was the last one - and the
+   * second half was read from `data.departments.length`, the `data` of the
+   * render the handler closed over. That is #201's claim and not #205's: two
+   * claims on neighbouring lines in one handler, and the one about the count
+   * had nothing under it.
+   *
+   * Measured on this screen on 14 October 2569. After #206 a page move alone
+   * cannot reach it, because somebody who moved takes the branch that moves
+   * nobody. What reaches it is a read that lands while the removal is out and
+   * leaves the pager where it started, which the pager's own two presses do -
+   * no `Pager` carries `busy` (#199) and the confirmation traps no focus
+   * (#204). The handler then counts a list that is no longer on the screen: it
+   * counted two rows and stayed on a page whose one remaining row it was about
+   * to remove, and the other way round it carried somebody off a page that had
+   * filled up again. Both are in
+   * `e2e/tests/207a-the-rows-the-step-back-counts.spec.js`.
+   *
+   * The count on its own is not enough, which both axes of this ticket's
+   * review said and a throwaway row measured the same day: `onPage` is written
+   * by an effect on `[page]`, at the press, and this one by an effect on
+   * `[data]`, at the answer. So between the press that brings the pager back
+   * and that page's list landing, `onPage.current === page` holds while the
+   * count is still the previous page's - and with the returning list held at
+   * the route, that window asked for page 3 where it owed page 2, which is
+   * this ticket's own defect in a narrower one. What the ref carries is
+   * therefore the key of the read it is the answer to (#201 - the ref holds
+   * what the data is *of*; #185 - a key is what identifies a request), and the
+   * coordinates of the read are deliberately not dependencies of the effect.
+   *
+   * A ref rather than a functional updater: `setData(current => ...)` does see
+   * the live value, but it sees it in a later task, and this decision is made
+   * here - #201 could read the live state that way because it was writing at
+   * the time.
+   *
+   * `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`, `Offerings` and
+   * `SubjectStudents` keep the same ref, each counting its own list.
+   *
+   * The coordinates of the read are deliberately not dependencies of the
+   * effect below: what is stamped is the count of the list that is **drawn**
+   * and the key of the read that drew it, so it is written when the list
+   * changes and never when the pager moves.
+   */
+  const onRows = useRef({ of: readOf(page), rows: data.departments.length })
+  useEffect(() => {
+    onRows.current = { of: readOf(page), rows: data.departments.length }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
+
   const report = useCallback(error => {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
@@ -457,7 +511,42 @@ export default function Departments() {
       // of page and the effect fetches it; calling `load` here as well would
       // race it with a second request for the page just left, and whichever
       // answered last would win.
-      const stepBack = page > 1 && data.departments.length === 1
+      // #207 - how many rows the page this removal was sent from was showing.
+      //
+      // Two readings of that count are here and neither is both fresh and of
+      // the right page. The live ref is the count of the list that is drawn and
+      // its key says which read drew it, so while that key is this page's it is
+      // the count, and that is the reading this ticket is about. Once the list
+      // on the screen is another page's, what is left is the render's own
+      // `data`: the right page read at the wrong time. Reading the live ref
+      // unconditionally instead - the first round of this fix - took `206a`
+      // row 1 red, a person two pages back leaving ten rows live, so the
+      // removal stopped stepping back at all and fell into the branch below
+      // that reloads with a loader the screen has replaced. A sweep cannot see
+      // the row your own fix breaks (#83); the clean suite can.
+      //
+      // So the two readings answer two questions. *Did the page lose its last
+      // row* decides which loader reads, and the stale reading may answer it,
+      // which is the branch below that a person who moved takes. *May anybody
+      // be moved on it* needs the live count, and nothing else: between the
+      // press that brings the pager back and that page's list landing,
+      // `onPage.current === page` holds while the count is still the previous
+      // page's, and moving on that count carries somebody off a page that has
+      // filled up again - what #206 calls the worse answer. Both axes of this
+      // ticket's review asked for the key; the window it opens was measured on
+      // 14 October 2569 by a throwaway row, which is now `207a` row 3.
+      //
+      // What no reading here can give is the count of the page the removal was
+      // sent from *now*, once the screen is showing another page's list. The
+      // step back then does not happen even where it should, and the person is
+      // left on a page whose rows are gone with the sentence over it. That half
+      // needs a read of a page nobody is looking at; it is written down as a
+      // draft ticket and is not this one's claim.
+      const liveCountIsOfThisPage = onRows.current.of === readOf(page)
+      const lostItsLastRow =
+        page > 1 &&
+        (liveCountIsOfThisPage ? onRows.current.rows : data.departments.length) === 1
+      const stepBack = lostItsLastRow && liveCountIsOfThisPage
       // #203 - a page move is a read the effect does, so the sentence is handed
       // over for `load` to say when it has drawn: the `waiting` ref above.
       //
@@ -473,7 +562,7 @@ export default function Departments() {
           waiting.current = { of: target, said }
         }
         setPage(current => current - 1)
-      } else if (stepBack) {
+      } else if (lostItsLastRow) {
         if (showing.current === sent) {
           const target = readOf(onPage.current)
           waiting.current = { of: target, said }

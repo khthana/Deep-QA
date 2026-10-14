@@ -151,6 +151,24 @@ export default function ProgramSubjects() {
     onPage.current = page
   }, [page])
 
+  /**
+   * How many rows the list on the screen is showing, and which read that list
+   * is the answer to - #207. The step back asks this rather than counting the
+   * `data` its handler closed over, and compares the key before believing the
+   * count; `frontend/src/pages/Departments.js` carries the reasons and names
+   * the rows.
+   *
+   * The coordinates of the read are deliberately not dependencies of the
+   * effect below: what is stamped is the count of the list that is **drawn**
+   * and the key of the read that drew it, so it is written when the list
+   * changes and never when the pager moves.
+   */
+  const onRows = useRef({ of: readOf(page, program), rows: data.program_subjects.length })
+  useEffect(() => {
+    onRows.current = { of: readOf(page, program), rows: data.program_subjects.length }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
+
   // The programmes in reach, fetched once: what this account covers is a
   // property of the grant and does not change with the page being looked at.
   // Used three times — to name the programme each row sits in, as the pool the
@@ -265,7 +283,17 @@ export default function ProgramSubjects() {
       // page and the effect fetches it; calling `load` here as well would race it
       // with a second request for the page just left. A deactivation removes
       // nothing from the list, so it never steps back.
-      const stepBack = !deactivated && page > 1 && data.program_subjects.length === 1
+      // #207 - how many rows the page this removal was sent from was showing. The
+      // live ref answers that only while the pager is still on it; once the
+      // person has moved, the list in front of them is another page's and the
+      // render's own count is the only reading of the page they left there is.
+      // `Departments.js` carries the reasons.
+      const liveCountIsOfThisPage = onRows.current.of === readOf(page, program)
+      const lostItsLastRow =
+        !deactivated &&
+        page > 1 &&
+        (liveCountIsOfThisPage ? onRows.current.rows : data.program_subjects.length) === 1
+      const stepBack = lostItsLastRow && liveCountIsOfThisPage
       // #203 - a page move is a read the effect does, so the sentence is handed
       // over for `load` to say when it has drawn. #206 - and the step back is
       // made only while the pager is still on the page that lost its last row:
@@ -277,7 +305,7 @@ export default function ProgramSubjects() {
           waiting.current = { of: target, said }
         }
         setPage(current => current - 1)
-      } else if (stepBack) {
+      } else if (lostItsLastRow) {
         if (showing.current === sent) {
           const target = readOf(onPage.current, program)
           waiting.current = { of: target, said }
