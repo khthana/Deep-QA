@@ -10204,3 +10204,13 @@ The summary is also two numbers rather than one: `blocked_by` counts the **open*
 blockers, which is the frontier's gate, while `total_blocked_by` counts the edges.
 A retrospective edge between two closed tickets therefore reads `0` and `1`, and a
 frontier query that read the second would never offer anything.
+
+And both of those live under `issue_dependencies_summary`, not at the top of the
+issue payload, so a `--jq` asked one level too high answers `null` in every field —
+which reads exactly like *there is no edge* rather than like *you asked the wrong
+question*. The answer that cannot be mistaken is the collection itself:
+`issues/206/dependencies/blocked_by` returned `[{205, closed}]` and
+`issues/205/dependencies/blocking` returned `[{206, closed}]` from the one `POST`,
+which is also the measurement that says an edge is wired from the blocked side only
+and never from both. The chain is #205 → #206 → #207, which is the order the three
+tickets' own bodies describe.
