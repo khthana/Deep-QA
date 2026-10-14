@@ -10185,3 +10185,22 @@ rearrangement of these two readings fixes it: it needs a read of a page nobody i
 looking at. Written down as a draft ticket rather than argued, because a
 deferral written into prose and not into the tracker is a decision nobody can
 find (#119) — which is the sentence this whole ticket came from.
+
+### And the handoff's own claim about the tracker was one too
+
+Three handoffs in a row carried *the blockers for #206 and #207 are not wired,
+and `gh` cannot wire them — it has to be done from the issue's web page*. Asked
+rather than argued, the API answered on the first call: one `POST` to
+`issues/<child>/dependencies/blocked_by` with the blocker's **database id**, which
+is what `docs/agents/issue-tracker.md` had documented all along. The edge went in
+and the summary confirmed it. A handoff's statement about what a tool cannot do is
+a claim with a date on it exactly like a ticket's numbers (#66, #111) — and this
+one had been copied forward twice without being measured once, which is the same
+species as a hand-kept figure in a file that grows every ticket. The copy to fix
+is the live one; the two superseded handoffs are dated records and keep their
+wording (#54).
+
+The summary is also two numbers rather than one: `blocked_by` counts the **open**
+blockers, which is the frontier's gate, while `total_blocked_by` counts the edges.
+A retrospective edge between two closed tickets therefore reads `0` and `1`, and a
+frontier query that read the second would never offer anything.
