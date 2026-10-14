@@ -10182,9 +10182,12 @@ the page the removal was sent from is available to no reading on the client. The
 live ref is of another page by then, and the closure's count predates the second
 actor's writes. So the step back does not happen where it should, and no
 rearrangement of these two readings fixes it: it needs a read of a page nobody is
-looking at. Written down as a draft ticket rather than argued, because a
+looking at. Written down as a ticket rather than argued, because a
 deferral written into prose and not into the tracker is a decision nobody can
-find (#119) — which is the sentence this whole ticket came from.
+find (#119) — which is the sentence this whole ticket came from. It is **#209**,
+filed on 14 October 2569 and wired `#209 ← #207`; the branch-three defect this
+ticket walked into is **#208**, wired to nobody, because a defect walked into is
+not the half another ticket left behind.
 
 ### And the handoff's own claim about the tracker was one too
 
