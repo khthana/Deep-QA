@@ -25,15 +25,19 @@ MUTANTS = {
                 "const pages = Math.max(1, Math.ceil(total / perPage))",
                 "const pages = Math.ceil(total / perPage)"),
 
-    # ก่อนหน้า pressable on the first page.
+    # ก่อนหน้า pressable on the first page. Re-aimed on 15 October 2569 when
+    # #199 put `busy` in front of the end rule: the mistake these two are about
+    # is the **end** rule speaking never, so each drops its own half and leaves
+    # `busy` standing. Substituting `false` here would be a different mutant —
+    # one with no rule at all, which 199a's rows would kill as well (#203).
     "prevalive": ("pager",
-                  "          disabled={page <= 1}",
-                  "          disabled={false}"),
+                  "          disabled={busy || page <= 1}",
+                  "          disabled={busy}"),
 
     # ถัดไป pressable on the last page.
     "nextalive": ("pager",
-                  "          disabled={page >= pages}",
-                  "          disabled={false}"),
+                  "          disabled={busy || page >= pages}",
+                  "          disabled={busy}"),
 
     # ก่อนหน้า walks forward. Chosen over "does nothing" on purpose: a button
     # wired to nothing is caught by a timeout, which is a weak death and reads

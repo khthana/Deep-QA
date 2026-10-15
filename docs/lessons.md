@@ -10217,3 +10217,119 @@ question*. The answer that cannot be mistaken is the collection itself:
 which is also the measurement that says an edge is wired from the blocked side only
 and never from both. The chain is #205 → #206 → #207, which is the order the three
 tickets' own bodies describe.
+
+## #199 — the pager that stayed live while the write was out, and the two windows a press could land in
+
+[#199](https://github.com/khthana/Deep-QA/issues/199) says the enrolment screen's
+`Pager` is clickable while that screen's own write is out, so a person can move
+the page under a read that is already on its way, and asks for `busy` to reach
+the control. Its *What is wrong* was read first (`CLAUDE.md`), and most of it had
+expired.
+
+### The diagnosis was aged by five hours
+
+The ticket was opened on 11 October 2569 at 11:35 Bangkok and says this screen has
+no superseded-answer guard at all, citing lines 107, 192 and 219. `0a884b0` — #202,
+option 3 — landed the same evening and put
+`if (reloaded && onScreen.current === sent) setNotice(said)` into both handlers.
+By the morning the ticket was taken the guard was at lines 266 and 318, proved by
+four rows of `202a` and two mutants. So the sentence the ticket wanted protected
+was already protected, and what was left of the ticket was the control: the guard
+decides whether to *speak*, and the pager decides what the screen is *of*.
+
+### The probe, and the prediction it refuted
+
+Four orderings, pressed by hand through a throwaway spec and then deleted (#207's
+rule: a probe is an instrument, not a claim of any sheet):
+
+| what was out | press | what the person got |
+|---|---|---|
+| the enrolment `POST` | *ถัดไป* | pulled back to page 1 **and told** |
+| the enrolment's reload | *ถัดไป* | pulled back to page 1, **silent** |
+| a removal, dialog open | *ถัดไป* with the mouse | the press never lands — the overlay eats it |
+| a removal, dialog closed | *ถัดไป* | **silent** |
+
+Two things came out of it that reading the code had not given. The first is that
+the way in under the dialog is a **keyboard** way in and not a mouse one: the
+overlay's `bg-black/50` intercepts pointer events, so that half of the population
+lives entirely on #204's untrapped focus, which is the condition to write beside
+it. The second is that my own prediction was wrong — I had read the two loaders
+and expected a stuck `กำลังโหลด…`, and the measurement says never, in all four
+orderings, because the superseded read raises `loading` before the current read
+lowers it. A prediction from reading code is a claim with the same standing as the
+ticket's.
+
+### What makes it a defect rather than a preference
+
+One handler, one person, one action, and whether they are told depends on which of
+two invisible windows their press landed in. That is #52 — *anything written for
+timing must not be able to decide anything* — met in the product rather than in a
+fixture: both of the two behaviours are defensible, and the thing that is wrong is
+that the system holds both and the clock picks. So the question for the owner is
+not *which sentence* but *which single behaviour*, and every option that removes
+the fork is an answer.
+
+Three were priced. **A**: make the silent window speak, which inverts `202a`'s two
+negative rows and strands #202's two mutants. **B**: give this screen's `Pager`
+`disabled` while `busy`, which closes both windows by removing the press. **C**:
+leave it, which leaves #52 breached. B is the only one that makes no closed ticket
+wrong, and the owner took it on 15 October 2569.
+
+### A fix that disables a control is a change to every row that presses it
+
+The price was measured before building, over the seven files that touch the
+enrolment screen or the pager: **4 failed / 91 passed**. `202a:389` and `202a:414`
+were predicted — by `202a` itself, whose own comment says the two negatives use the
+pager to move the screen. The other two, `205a:76` and `205a:146`, were not: my hand
+estimate had been *two rows*, and it was counting the rows that are **about** the
+pager. `205a` presses *ถัดไป* to arrange a superseded read — the control as an
+**instrument**, not as a claim — and a row like that is invisible to an estimate
+made by asking what the fix is about. The census to run before such a fix is the
+**press**: grep the specs for the control, not for the claim.
+
+### Where the four rows went
+
+`202a`'s two negatives needed a way in that survives B. The handler speaks only
+after `reload` returns `true`, which happens only on the page-one branch, so what
+is left is a move that is not a page move: the **section jump**, which #141 had
+already built a walk for. That walk came out into `e2e/support/section-jump.js`
+(#171: a fixture a second file needs is shared, because no row's claim lives in
+it), gained an `intoTheListedSectionScreen`, and both rows now say *says nothing
+over the Section the jump moved to while the enrolment was out*. Ten of ten.
+
+`205a` row 1 moved its superseding press to **before** the write, which is where
+the claim always was — a read superseded when it *lands*. Row 2 had nowhere left
+to stand at all, and became a net: it asserts both buttons enabled before the
+write and disabled while it is out, then that the handover from page two still
+says its sentence on page one. The mutant that row used to hold,
+`205:alwaysmoves`, came out of `mutation/205-the-sentence-names-its-read.py` with a
+dated section saying why. It needs a page move while a write of that screen's is
+out, and the census of the ten sentence-handover sites says this was the only one
+drawing a live pager beside a submittable form — the other two forms replace their
+list, and the seven removals put a dialog over it. So after B it is unreachable
+**for a person**, not merely at the seam: #47's sixth reading of a survivor one
+step on, which is where #203's ninth already stands. What would put it back is
+written beside it: #204's keyboard hole closed the other way, or any screen that
+draws a live pager beside an open form.
+
+### The re-aim that preserves the mistake
+
+`57:prevalive` and `57:nextalive` quoted `disabled={page <= 1}` and
+`disabled={page >= pages}`, which B rewrote. Each was re-aimed to drop **its own
+half** and leave `busy` standing, because the mistake those two are about is the
+**end rule** speaking never. Substituting `false` would have matched the file's
+convention and been a different mutant — no rule at all — which 199a's rows would
+also kill, and the sheet's sentence about what `prevalive` means would have stopped
+being true of it (#203). `busy` is written first in both `||`s for exactly that
+reason: so each half can be dropped on its own.
+
+### What is still open
+
+`Pager` is drawn at eleven call sites and B reached one; the prop defaults to
+`false`, so the other ten are unchanged by construction. Whether each of them has
+a sentence behind a read is the same question again, ten times, and it is its own
+ticket rather than a deferral in prose (#119, #125). Two of the ten are already
+known not to need it: `Students.js` draws `adding ? <StudentForm/> : <list +
+Pager>`, so its pager is not on the screen while its write is out, and the
+administration screens' pagers sit under the confirmation overlay — which is the
+mouse half of the probe's third row, and expires with #204.

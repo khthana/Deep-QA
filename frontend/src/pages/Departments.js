@@ -130,6 +130,9 @@ export default function Departments() {
    * these eight screens carries `busy`, which `SubjectStudents.js`'s own `add`
    * had measured on 11 October 2569 (#199), so ถัดไป is pressable for as long as
    * a write is out and the read it starts is superseded by the handover's own.
+   * The owner's answer to #199 on 15 October 2569 gave the enrolment screen's
+   * pager a `busy` and left these eight alone, so the sentence above is still
+   * true of them and is no longer true of every screen.
    * Three rows in
    * `e2e/tests/205a-the-handed-over-sentence-and-a-superseded-read.spec.js`
    * measure what that lost, on the screen that carries the same shape.
@@ -214,9 +217,11 @@ export default function Departments() {
    *
    * A removal steps back because the page it was sent from has lost its last
    * row. That is a fact about the page this render closed over and says nothing
-   * about where the person is standing when the answer arrives: `Pager` carries
-   * no `busy` (#199) and the confirmation traps no focus (#204), so the pager's
-   * own buttons are reachable and pressable for as long as the removal is out.
+   * about where the person is standing when the answer arrives: this screen's
+   * `Pager` is given no `busy` — #199 gave one to the enrolment screen's on 15
+   * October 2569 and to no other — and the confirmation traps no focus (#204),
+   * so the pager's own buttons are reachable and pressable for as long as the
+   * removal is out.
    * Measured on this screen on 13 October 2569, with the removal held at the
    * route: the step back asked for one page while the sentence was keyed for
    * another, so the sentence was said by nothing at all, and the person was
@@ -249,11 +254,12 @@ export default function Departments() {
    * cannot reach it, because somebody who moved takes the branch that moves
    * nobody. What reaches it is a read that lands while the removal is out and
    * leaves the pager where it started, which the pager's own two presses do -
-   * no `Pager` carries `busy` (#199) and the confirmation traps no focus
-   * (#204). The handler then counts a list that is no longer on the screen: it
-   * counted two rows and stayed on a page whose one remaining row it was about
-   * to remove, and the other way round it carried somebody off a page that had
-   * filled up again. Both are in
+   * this screen's `Pager` is given no `busy` (#199 gave one to the enrolment
+   * screen's on 15 October 2569 and to no other) and the confirmation traps no
+   * focus (#204). The handler then counts a list that is no longer on the
+   * screen: it counted two rows and stayed on a page whose one remaining row it
+   * was about to remove, and the other way round it carried somebody off a page
+   * that had filled up again. Both are in
    * `e2e/tests/207a-the-rows-the-step-back-counts.spec.js`.
    *
    * The count on its own is not enough, which both axes of this ticket's

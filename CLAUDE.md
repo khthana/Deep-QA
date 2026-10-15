@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 14 October 2569 that is
-`2026-10-14-the-count-of-the-page-the-removal-was-sent-from.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 15 October 2569 that is
+`2026-10-15-the-two-windows-a-press-could-land-in.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -580,6 +580,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   `<span>`, so the text has no space in it. **A fix that puts words on a screen is a change to every
   locator that matched any of them loosely** — census one query per word it adds, not
   one for the word the first red named; the clean baseline is where that shows. (#93, #116)
+- **A fix that disables a control is a change to every row that presses it, including the rows
+  that press it as an instrument** — the line above one layer along, from a word a fix adds to a
+  control a fix takes away. A hand estimate counts the rows that are *about* the control and
+  misses the rows that use it to arrange something: two of the four reds were `205a` pressing the
+  pager to supersede a read. Census the press, not the claim. (#199)
 - **A criterion answered *no* needs a row as much as one answered *yes*** — and the row has to
   assert what is still there, or it is measuring the other refusal that reaches the same status
   code. Between two fixture shapes, take the one the code already draws and nothing has ever made
@@ -810,6 +815,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   closed tickets the cheap reading touches is a measurement: run their suites against it before
   building it, and if it breaks one, implement the decision the other way up — here by making the
   awaited loader report whether it drew, so both tickets hold. (#152)
+- **A behaviour that depends on which of two invisible windows a press landed in is a defect,
+  not a preference** — #52 met in the product rather than in a fixture. Both behaviours can be
+  defensible, so what is wrong is that the system holds both and the clock picks: the owner's
+  question is then *which single behaviour*, and every option that removes the fork is an answer
+  to it. (#199)
 - **A number that justifies a change is not permission to make it.** A measurement answers what a
   change costs; whether it may be made is `docs/06` §Out of Scope, and the tell is that nothing in
   the diff can be broken to make the changed line fail. Publish both numbers and ask. (#105)

@@ -24,9 +24,31 @@
  * `total` and `perPage` and nothing else, and every screen was deriving it
  * identically. The floor of one is what keeps an empty list reading
  * "หน้า 1 จาก 1" rather than "หน้า 1 จาก 0".
+ *
+ * `busy` is a screen saying *a write of mine is out* — #199, and the owner's
+ * answer on 15 October 2569. Moving the page while one is out changes what the
+ * read the handler is about to make is *of*, and the screens that hold a
+ * sentence behind that read then either say it over a list it is not about or
+ * lose it, depending on which of two windows the press lands in. Timing may not
+ * decide what a person reads (#52), so the control that opens both windows is
+ * the one that closes: the guards stay, because the section jump supersedes a
+ * read with no pager at all.
+ *
+ * It defaults to `false`, so the ten other callers are unchanged: a screen that
+ * has not been measured is not claiming its pager is safe. Written first in the
+ * `disabled` expressions, which is what keeps #57's two end-rule mutants able to
+ * drop the end rule and leave this one standing.
  */
 
-export default function Pager({ page, shown, total, perPage = 10, onPage, className = '' }) {
+export default function Pager({
+  page,
+  shown,
+  total,
+  perPage = 10,
+  onPage,
+  busy = false,
+  className = '',
+}) {
   const pages = Math.max(1, Math.ceil(total / perPage))
 
   return (
@@ -38,7 +60,7 @@ export default function Pager({ page, shown, total, perPage = 10, onPage, classN
         <button
           type="button"
           onClick={() => onPage(Math.max(1, page - 1))}
-          disabled={page <= 1}
+          disabled={busy || page <= 1}
           className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-40"
         >
           ก่อนหน้า
@@ -46,7 +68,7 @@ export default function Pager({ page, shown, total, perPage = 10, onPage, classN
         <button
           type="button"
           onClick={() => onPage(Math.min(pages, page + 1))}
-          disabled={page >= pages}
+          disabled={busy || page >= pages}
           className="rounded-lg border border-gray-300 px-4 py-2 disabled:opacity-40"
         >
           ถัดไป

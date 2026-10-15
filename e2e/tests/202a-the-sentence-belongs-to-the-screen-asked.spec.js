@@ -6,8 +6,15 @@ const { ACCOUNTS } = require('../support/accounts');
 const { DEPARTMENTS } = require('../../db/seed');
 const { signIn } = require('../support/auth');
 const { gate, isGet, isWrite } = require('../support/gate');
-const { keysOn, next, reading, untilDrawn } = require('../support/pager');
+const { keysOn, reading, untilDrawn } = require('../support/pager');
 const enrolment = require('../support/enrolment-screen');
+const {
+  DOCUMENT,
+  LAST_YEAR,
+  intoTheListedSectionScreen,
+  markDocument,
+} = require('../support/section-jump');
+const { DASHBOARD } = require('../support/teaching-screen');
 const {
   openDepartments,
   departmentRow,
@@ -300,17 +307,30 @@ test.describe('รายชื่อนักศึกษาของราย�
    * `add` and `remove` say their sentence behind `load`'s answer, and that
    * answer is `true` from inside its `try` whatever `isCurrent()` says: it means
    * *the read was not refused* and never *it drew* (#152). So a person who
-   * presses ถัดไป while the write is out is moved to page two and then told
-   * that somebody was enrolled — the rows of page two under a sentence about
-   * neither of them. #199 found it by reading the code; these rows are the
+   * leaves the list while the write is out is told, over whatever is in front of
+   * them, that somebody was enrolled — a sentence about neither of the rows they
+   * are looking at. #199 found it by reading the code; these rows are the
    * measurement, and the fix is the question #146 asks, with `onScreen`, the
    * ref this screen already keeps.
    *
-   * The pager is the control because it is the one the screen leaves live, and
-   * `toBeEnabled()` is asserted before it is pressed: that assertion is the
-   * whole premise, and the day #199 closes by disabling it these two negatives
-   * stop being reachable here and must be re-aimed at the section jump or left
-   * as nets that say they are nets (#67).
+   * ## The way in, and why it is no longer the pager
+   *
+   * It was ถัดไป until 15 October 2569, the pager being the one control this
+   * screen left live while a write was out, and the day this block predicted —
+   * the owner's answer to #199 disabled it, and the two negatives had to be
+   * re-aimed at the section jump or left as nets that say they are nets (#67).
+   * They are re-aimed, because the jump reaches the same code with nothing
+   * weakened: `load` is keyed on `sectionId` as well as on `page`, so a move to
+   * another Section of the same route shape replaces the loader exactly as a
+   * page move did, and `onScreen.current === sent` is false for the same reason.
+   * What it costs is the walk — two addresses of one route shape inside one
+   * document, which `support/section-jump.js` carries and `141b` measured.
+   *
+   * It is also the only way in left: the handler says its sentence after
+   * `reload` has answered `true`, and `reload` answers `true` only on the branch
+   * that reads by hand, which is the one taken when the pager is on page one. A
+   * move the person makes on page one is a move to another Section or nothing at
+   * all.
    *
    * The write is answered by `gate` with a crafted 200, so no enrolment is made
    * and none is removed; the **reload** is what is held, which is the request
@@ -322,7 +342,8 @@ test.describe('รายชื่อนักศึกษาของราย�
   const SAID_ENROLLED = `เพิ่ม ${CODE} ${NAME} เข้าตอนเรียนแล้ว`;
   const REMOVAL = /^\/api\/teaching\/sections\/\d+\/students\/\d+$/;
 
-  /** Opens the screen on page one, and says so — the premise of every row here. */
+  /** Opens the screen on page one, and says so — the premise of the two rows
+   * that stay on it; the two that jump have `openWhereTheJumpIsPossible` below. */
   async function openOnPageOne(page) {
     await signIn(page, ACCOUNTS.teacherOne);
     const [section] = await enrolment.mySectionIds(page);
@@ -346,18 +367,60 @@ test.describe('รายชื่อนักศึกษาของราย�
    */
   const heldReload = (page) => gate(page, enrolment.API, isGet);
 
-  /** Presses ถัดไป while the held reload is out, and waits for page two to be drawn. */
-  async function moveToPageTwo(page) {
-    await expect(next(page), 'ถัดไป while a write is out — #199').toBeEnabled();
-    const moved = page.waitForResponse(
-      (answer) =>
-        enrolment.API.test(new URL(answer.url()).pathname) &&
-        answer.request().method() === 'GET' &&
-        new URL(answer.url()).searchParams.get('page') === '2',
+  /** The address the jump lands on, which is where the sentence must not be. */
+  const LAST_YEARS_LIST = `${DASHBOARD}/${LAST_YEAR}/subjectStudents`;
+
+  /**
+   * This year's class list, with last year's Section underneath it in the
+   * history list of the same document — the premise of the two rows that jump.
+   *
+   * Asserts page one, because that is the branch where the handler reads by hand
+   * and so has an answer of its own to say a sentence behind (`reload` returns
+   * `false` from every other page).
+   */
+  async function openWhereTheJumpIsPossible(page) {
+    await signIn(page, ACCOUNTS.teacherOne);
+    const [section] = await enrolment.mySectionIds(page);
+    await enrolment.openEnrolment(page, LAST_YEAR);
+    await markDocument(page);
+
+    const drawn = await intoTheListedSectionScreen(
+      page,
+      section,
+      '/subjectStudents',
+      enrolment.waitForList,
     );
-    await next(page).click();
-    await untilDrawn(page, await moved);
+    await untilDrawn(page, drawn);
+    const table = enrolment.listTable(page);
+    expect((await reading(page, table)).shown, "page one of this year's list").toBe(1);
+    return table;
   }
+
+  /**
+   * Back to last year's Section in one move of the history list, while the held
+   * reload is out, and settled on what that Section's own answer carried (#132).
+   *
+   * One move and not three: a walk through the dashboard would unmount the
+   * screen the row is about, and the history list travels any distance in one
+   * move — which is #141's correction, and what makes two addresses of one route
+   * shape siblings rather than strangers.
+   */
+  async function jumpToLastYearsSection(page) {
+    const landed = enrolment.waitForList(page);
+    await page.evaluate(() => window.history.go(-3));
+    await untilDrawn(page, await landed);
+  }
+
+  /** The three clauses every jumping row reads, in one object (#141b's shape). */
+  async function whereTheyAre(page) {
+    return {
+      document: await page.evaluate(() => window.__document),
+      address: new URL(page.url()).pathname,
+      rows: (await page.getByRole('button', { name: /^นำ / }).count()) > 0,
+    };
+  }
+
+  const LANDED = { document: DOCUMENT, address: LAST_YEARS_LIST, rows: true };
 
   async function enrolmentHeldAtTheReload(page) {
     const write = await gate(page, enrolment.API, isWrite, { success: ENROLLED });
@@ -386,19 +449,22 @@ test.describe('รายชื่อนักศึกษาของราย�
     return { code, read };
   }
 
-  test('says nothing over the page the pager moved to while the enrolment was out', async ({
+  test('says nothing over the Section the jump moved to while the enrolment was out', async ({
     page,
   }) => {
-    const table = await openOnPageOne(page);
+    await openWhereTheJumpIsPossible(page);
     const read = await enrolmentHeldAtTheReload(page);
 
-    await moveToPageTwo(page);
+    await jumpToLastYearsSection(page);
     read.open();
     await read.answered;
     await page.waitForTimeout(SETTLE_MS);
 
     expect(await page.getByText(SAID_ENROLLED).count(), "the enrolment's sentence").toBe(0);
-    expect((await reading(page, table)).shown, 'the page the person moved to').toBe(2);
+    // Where the absence was read: the same document, last year's address, and a
+    // list with rows in it — a row that only says *I saw nothing* passes on a
+    // screen that drew nothing (#203, #171).
+    expect(await whereTheyAre(page), 'the screen the sentence was not said on').toEqual(LANDED);
   });
 
   test('says what it enrolled when the pager stayed where it was', async ({ page }) => {
@@ -411,20 +477,20 @@ test.describe('รายชื่อนักศึกษาของราย�
     await expect(page.getByText(SAID_ENROLLED)).toBeVisible();
   });
 
-  test('says nothing over the page the pager moved to while the removal was out', async ({
+  test('says nothing over the Section the jump moved to while the removal was out', async ({
     page,
   }) => {
-    const table = await openOnPageOne(page);
+    const table = await openWhereTheJumpIsPossible(page);
     const { code, read } = await removalHeldAtTheReload(page, table);
 
-    await moveToPageTwo(page);
+    await jumpToLastYearsSection(page);
     read.open();
     await read.answered;
     await page.waitForTimeout(SETTLE_MS);
 
     const said = new RegExp(`นำ ${code} .+ ออกจากตอนเรียนแล้ว`);
     expect(await page.getByText(said).count(), "the removal's sentence").toBe(0);
-    expect((await reading(page, table)).shown, 'the page the person moved to').toBe(2);
+    expect(await whereTheyAre(page), 'the screen the sentence was not said on').toEqual(LANDED);
   });
 
   test('says what it removed when the pager stayed where it was', async ({ page }) => {

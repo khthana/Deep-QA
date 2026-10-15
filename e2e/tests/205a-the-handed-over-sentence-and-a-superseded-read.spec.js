@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { gate, isGet, isWrite } = require('../support/gate');
-const { step } = require('../support/pager');
+const { next, previous, reading, step } = require('../support/pager');
 const enrolment = require('../support/enrolment-screen');
 const students = require('../support/students-screen');
 const { PROGRAM } = require('../../db/seed');
@@ -95,12 +95,20 @@ test.describe('SubjectStudents.js', () => {
     });
     const reads = await gateTwoReads(page);
 
-    await button(page, 'เพิ่มนักศึกษา').click();
-    await write.sent;
     // The page move that supersedes nothing yet: its read is the one that will
     // be stale by the time it lands.
+    //
+    // Pressed **before** the write rather than while it is out, which is where
+    // it was until #199 closed this screen's pager for the length of one. What
+    // the row is about is a read that is already superseded when it **lands**,
+    // and holding it is what arranges that: the move is still in flight when
+    // the handover is made, whichever side of the write it was pressed on. The
+    // page numbers asserted below are what say so.
     await button(page, 'ถัดไป').click();
     await reads.first.sent;
+
+    await button(page, 'เพิ่มนักศึกษา').click();
+    await write.sent;
 
     // The write answers, and the handler hands its sentence over and asks for
     // the first page.
@@ -132,23 +140,49 @@ test.describe('SubjectStudents.js', () => {
   });
 
   /**
-   * The other half of the same defect, and the one the ref alone cannot fix:
+   * The other half of the same defect, and the half #199 took off the screen.
+   *
    * `reload` was built over the page its render closed on, so a handler sent
-   * from page two that finds the person back on page one asks for page one by
+   * from page two that found the person back on page one asked for page one by
    * `setPage(1)` - which changes nothing there and causes no read at all. The
    * sentence was then left in the ref with nobody coming to say it, and the
    * measurement of 13 October 2569 found it said by the person's *next* move,
-   * over a list it was not about.
+   * over a list it was not about. The fix reads the page the pager is on now,
+   * and the row that held it pressed ก่อนหน้า while the write was out.
    *
-   * The fix reads the page the pager is on now, so this handler awaits the
-   * read itself and says its own sentence.
+   * ## Why this row is now a net
+   *
+   * That press is the situation, and the owner's answer to #199 on 15 October
+   * 2569 closed the control that makes it: this screen's `Pager` is `disabled`
+   * for as long as one of its own writes is out. Of the ten sites that hand a
+   * sentence over, this was the one where a pager was drawn beside a form that
+   * could be submitted - the other two forms replace their list
+   * (`Students.js`) and the seven removals put a dialog over it - so what is
+   * left is unreachable **for a person**, and not merely at this seam (#47's
+   * sixth reading one step further, #203's ninth). `alwaysmoves` has therefore
+   * come out of `mutation/205-the-sentence-names-its-read.py` rather than being
+   * left to survive, and its own docstring says what would put it back.
+   *
+   * So this row asserts the **mechanism** rather than an absence, which is what
+   * stops a net passing for the wrong reason (#203): the control the old row
+   * pressed is dead while the write is out, so nothing can move `onPage` off
+   * the page the handler was sent from - and the handover from page two, which
+   * is the half still reachable, says its sentence when the read it is for
+   * lands. It becomes a claim again if #204's keyboard hole is closed the other
+   * way round, or if any screen comes to draw a live pager beside an open form.
+   * #205's own mutants no longer reach this row, and what holds it instead is
+   * #199's pair: `199:prevstayslive` and `199:nextstayslive` each fail this row
+   * and pass the other three, which is the control being dead stated as a
+   * claim. The half of #205 that its own mutants still prove is row 1's
+   * `finally`.
    */
-  test('a handler whose move would cause no read says the sentence itself', async ({
+  test('nothing can move the page the handler was sent from, and the handover still says it', async ({
     page,
   }) => {
     await signIn(page, ACCOUNTS.teacherOne);
     const [sectionId] = await enrolment.mySectionIds(page);
     await enrolment.openEnrolment(page, sectionId);
+    const table = enrolment.listTable(page);
     expect((await step(page, 'forward', enrolment.waitForList)).status()).toBe(200);
 
     await page
@@ -160,20 +194,31 @@ test.describe('SubjectStudents.js', () => {
       },
     });
 
+    // The premise of the net, read before the write so that the reads below are
+    // measurements and not the end rule answering for them (#171).
+    await expect(previous(page), 'ก่อนหน้า with nothing out').toBeEnabled();
+    await expect(next(page), 'ถัดไป with nothing out').toBeEnabled();
+
     await button(page, 'เพิ่มนักศึกษา').click();
     await write.sent;
-    // Back to the page the handler is about to ask for, while the write is out.
-    expect((await step(page, 'back', enrolment.waitForList)).status()).toBe(200);
 
+    // The net: both ways off this page are shut while the write is out - #199.
+    await expect(previous(page), 'ก่อนหน้า while the enrolment is out').toBeDisabled();
+    await expect(next(page), 'ถัดไป while the enrolment is out').toBeDisabled();
+
+    // The handover is made for the first page and the effect's read is what
+    // says it, which is the half of this row that is still a claim.
+    const drawn = enrolment.waitForList(page);
     write.open();
     await write.answered;
-    // The read the handler does by hand, which is the one that says it.
+    expect(pageOf((await drawn).request()), 'the page the handover asked for').toBe('1');
     await page.waitForTimeout(SETTLE_MS);
 
+    expect((await reading(page, table)).shown, 'the page the handover drew').toBe(1);
     expect(await page.getByRole('button', { name: /^นำ / }).count()).toBeGreaterThan(0);
     expect(
       await page.getByText('เข้าตอนเรียนแล้ว').count(),
-      'the banner of the enrolment, on the page the person came back to',
+      'the banner of the enrolment, said by the read it was handed to',
     ).toBe(1);
   });
 

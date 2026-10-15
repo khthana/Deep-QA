@@ -36,9 +36,10 @@ const departments = require('../support/departments-screen');
  * branch that moves nobody. What is left is a read that lands **while the
  * removal is out and the pager ends up where it started**, and the only such
  * read on this screen comes from the pager itself: the list is re-read on every
- * press, `Pager` carries no `busy` (#199), and the confirmation traps no focus
- * (#204), so going back one page and forward again replaces `data` without
- * moving anybody. Anything that changed the page's rows meanwhile is then on
+ * press, this screen's `Pager` is given no `busy` (#199 gave one to the
+ * enrolment screen's on 15 October 2569 and to no other, the prop defaulting to
+ * `false`), and the confirmation traps no focus (#204), so going back one page
+ * and forward again replaces `data` without moving anybody. Anything that changed the page's rows meanwhile is then on
  * the screen and absent from the handler.
  *
  * The rows below build that with a second actor on the same account -
@@ -201,8 +202,9 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
 
     const write = await askToRemove(page, last[0]);
     // The premise of both rows: the pager under the overlay is enabled and
-    // takes focus, which is #199's missing `busy` and #204's missing focus trap
-    // (#51 - a premise a row rests on is asserted, not assumed).
+    // takes focus, which is this screen's missing `busy` (#199, which did not
+    // reach it) and #204's missing focus trap (#51 - a premise a row rests on
+    // is asserted, not assumed).
     await expect(previous(page), 'the pager while the removal is out').toBeEnabled();
     // The other row goes while the removal is out, on this browser's own
     // cookie: the second actor the situation needs, and the only part of it

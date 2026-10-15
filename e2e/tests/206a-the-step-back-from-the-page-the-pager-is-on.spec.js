@@ -27,12 +27,20 @@ const departments = require('../support/departments-screen');
  * ## The way in, and why it needs no race
  *
  * `ConfirmDialog` draws a `fixed inset-0` overlay and traps no focus (#204),
- * and `Pager` carries no `busy` (#199): the pager's own buttons are therefore
- * reachable by keyboard and enabled for as long as the removal is out. Both
- * rows below take that way in - focus the control and press Enter - and the
- * first asserts that it is open, because that is the premise of the whole file
- * (#51). The day either of those tickets closes is the day to measure this way
- * in again; the claim the rows make about the key does not depend on it.
+ * and this screen's `Pager` is given no `busy`: the pager's own buttons are
+ * therefore reachable by keyboard and enabled for as long as the removal is
+ * out. Both rows below take that way in - focus the control and press Enter -
+ * and the first asserts that it is open, because that is the premise of the
+ * whole file (#51). The day either of those tickets closes is the day to
+ * measure this way in again; the claim the rows make about the key does not
+ * depend on it.
+ *
+ * #199 closed on 15 October 2569 and this way in survived it: what the owner
+ * decided is that **the enrolment screen's** pager goes dead while one of its
+ * own writes is out, and `Pager`'s new prop defaults to `false`, so the ten
+ * other callers - these screens among them - are unchanged. The premise is
+ * asserted at the control below either way, which is what makes the survival a
+ * measurement rather than a reading of the diff.
  *
  * ## Why the first row moves two pages
  *
@@ -154,7 +162,8 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
 
     const write = await askToRemove(page, last[0]);
     // The premise: the pager under the overlay is enabled and takes focus,
-    // which is #199's missing `busy` and #204's missing focus trap.
+    // which is this screen's missing `busy` (#199, which did not reach it) and
+    // #204's missing focus trap.
     await expect(previous(page), 'the pager while the removal is out').toBeEnabled();
     const first = await stepBackByKeyboard(page);
     expect(pageOf(first.request()), 'the page the first press asked for').toBe(String(pages - 1));

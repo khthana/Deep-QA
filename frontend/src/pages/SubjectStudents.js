@@ -242,9 +242,11 @@ export default function SubjectStudents() {
    * nothing can begin a second enrolment while this is out, the submit button
    * being `disabled={busy}` and a disabled default button being what stops Enter
    * in the field submitting too - named a way in and not the population (#179).
-   * `Pager` carries no `busy` and ถัดไป is pressable for as long as the write is
-   * out (#199): it begins no second enrolment and changes what the read is *of*,
-   * which is enough. The reload is guarded on its own account (#140); the
+   * ถัดไป was pressable for as long as the write was out, and it begins no
+   * second enrolment while changing what the read is *of*, which was enough.
+   * The owner's answer to #199 on 15 October 2569 closed that way in: this
+   * screen's `Pager` is `disabled` for as long as one of its own writes is out.
+   * The reload is guarded on its own account (#140); the
    * sentence was not, because `load` answers *the read was not refused* and never
    * *it drew* - it returns `true` from inside its `try` whatever `isCurrent()`
    * says (#152). So the handler asks #146's question itself, with the ref this
@@ -312,8 +314,10 @@ export default function SubjectStudents() {
         await drawing(() => onScreen.current === drawing)
       } else {
         // The same question `add` asks, for the same reason: the read is guarded
-        // and its answer is not. ถัดไป is pressable while the removal is out
-        // (#199), and `load` says only that nothing refused it (#202).
+        // and its answer is not. `load` says only that nothing refused it
+        // (#202), and what moves the person now that #199 has closed the pager
+        // is the jump to another Section of the same route shape, which 202a's
+        // two negatives come in through.
         const reloaded = await load(() => onScreen.current === load)
         if (reloaded && onScreen.current === sent) setNotice(said)
       }
@@ -483,6 +487,7 @@ export default function SubjectStudents() {
               total={data.total}
               perPage={data.per_page}
               onPage={setPage}
+              busy={busy}
               className="border-t border-gray-200 px-4 py-3"
             />
           </div>

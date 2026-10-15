@@ -6,14 +6,15 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
 const { mySectionIds } = require('../support/enrolment-screen');
-const { menu } = require('../support/shell');
 const { openAt } = require('../support/navigation');
 const {
-  DASHBOARD,
-  waitForSection,
-  waitForSections,
-  sectionCard,
-} = require('../support/teaching-screen');
+  DOCUMENT,
+  LAST_YEAR,
+  intoTheListedSection,
+  markDocument,
+  menuPathLink,
+} = require('../support/section-jump');
+const { DASHBOARD, waitForSection } = require('../support/teaching-screen');
 
 /**
  * #141 — the eleven sites whose second address is not in the list.
@@ -110,13 +111,9 @@ const HELD_MS = 2_000;
  */
 const SETTLE_MS = 250;
 
-/** The Section nothing lists, because its term has passed. */
-const LAST_YEAR = 3;
-
-/** The subject both Sections teach, which is what makes them one route shape. */
-const SUBJECT = '01076105';
-
-const DOCUMENT = 'the one the router has been moving inside';
+// The two Sections, the marker and the walk up to the listed one are
+// `support/section-jump.js`, which carries the sequence and what was measured
+// of it; `202a` is the second caller.
 
 const sleep = ms => new Promise(done => setTimeout(done, ms));
 
@@ -170,32 +167,6 @@ async function yearOf(page, sectionId) {
 }
 
 /**
- * The link the side menu draws for an address, which is the control a person
- * presses. It is found by `href` because the breadcrumb draws links of the same
- * name and the same address, and because an `href` is an identifier where a
- * label is a sentence — `shell.js` says the first half of that and #118 the
- * second.
- */
-const menuPathLink = (page, path) => menu(page).locator(`a[href="${path}"]`);
-
-/**
- * Up to the dashboard and into the Section its list draws, by the controls the
- * shell gives a person. It stops at the click, so a caller whose held answer
- * *is* the Section's own can wait for its request instead of for its arrival.
- */
-async function intoTheListedSection(page) {
-  const listed = waitForSections(page);
-  await menuPathLink(page, DASHBOARD).click();
-  await listed;
-
-  // The card is the claim that this Section is the one the list offers: the
-  // term filter is what makes the sequence asymmetric, so a seed that listed
-  // both Sections would be a different fixture and should say so here.
-  await expect(sectionCard(page, SUBJECT)).toHaveCount(1);
-  await sectionCard(page, SUBJECT).click();
-}
-
-/**
  * The jump, written once for the eleven rows that differ only in an address.
  *
  * This is an instrument and not an assertion — it ends with the screen in the
@@ -216,9 +187,7 @@ async function heldSectionAnswerLosesTheJump(page, { screen, landed, held }) {
   const isRead = answer => answer.request().method() === 'GET';
   const eitherSection = url => url.pathname === api(landed) || url.pathname === api(held);
 
-  await page.evaluate(mark => {
-    window.__document = mark;
-  }, DOCUMENT);
+  await markDocument(page);
 
   await page.route(eitherSection, async (route, request) => {
     if (isFor(request.url(), held)) await sleep(HELD_MS);
