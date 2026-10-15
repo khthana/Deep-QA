@@ -10510,3 +10510,163 @@ One finding came free with it: `203a` has **22 rows** today, so its sheet's
 *kills 1 of 21* is a figure about a smaller suite. The row that grew passes on
 both sides, so the kill count never moved and the denominator did, and nothing
 reports that (#202).
+
+## #211 — the loader a coordinate ref cannot hold, and the question one line down
+
+#208 gave nineteen page files one shape: a handler reads the loader **live** out
+of the ref it is kept in, so what it reads again is a read of the page and the
+filters the screen is on now. Its population was therefore *calls that reach the
+loader through a ref*, and the screens that guard with a **coordinate** held no
+loader anywhere — invisible to the ticket, and invisible to the census it left
+behind (#141's species: a census whose population is *the things that carry X*
+cannot find the thing that carries no X). #208 read those screens from the code
+on the day it closed rather than leaving the sentence general, and filed what it
+found as this ticket.
+
+### A comparison and a choice are two uses of one ref
+
+`onScreen.current === program` answers *is the filter still where it was when I
+was sent* exactly, and it answers it for ever: `load` is rebuilt if and only if
+`program` changes, `report` being stable. So every row resting on that
+comparison — `133a`'s row 2 and row 7 — kept its claim word for word through
+this fix, and the sweep says so (`133:ploshandlerstalewins`, re-aimed with its
+`() => true` intact, still fails exactly its own row).
+
+What a coordinate cannot do is **hand the handler a loader**. The question one
+line down from *is this still current* is *which reader should do the reading*,
+and a value cannot answer it, so the three handlers went on calling the `load`
+they closed over. The guard was right and the caller was wrong, which is the
+hardest pair to see on one line: the handler asked the correct question of the
+wrong reader. That reader then refused itself — which is what #133 asks of a
+superseded answer — and the placeholder it had raised stayed up, because
+`load` raises `setLoading(true)` before asking and the only code that lowers it
+is its own `finally`, inside `if (isCurrent())`. A success sentence over a table
+reading *กำลังโหลด…* for ever.
+
+### The stale loader has to be the *last* reader, which is what the row is for
+
+The first draft of the mechanism was wrong in a way no reasoning caught and one
+fixture did: *move the filter while the handler's request is out* is not enough.
+Moving it replaces `load`, and the effect keyed on `load` reads the new
+curriculum immediately and lowers the placeholder when that answer lands. The
+stale read arriving afterwards is refused and takes nothing down — exactly what
+#133 asks for.
+
+The defect needs the stale loader to be **called** after the live read has
+settled, and that is what a handler does: it reads again when its own request
+comes back. So both rows hold the handler's request at the route, move the
+filter while it is out, wait for the new list to be *drawn*, and only then let
+the handler's answer go. The order is the claim.
+
+### The way in a full-screen overlay leaves
+
+`Plos.js`'s own docblock said *the dialog behind ลบ never covers the filter at
+all*. #199 had measured the opposite four tickets earlier: `ConfirmDialog` is
+`fixed inset-0 bg-black/50`, and it eats the click. The way in survives the
+correction, which is why the row exists at all — #204 has measured that the same
+dialog traps no focus, so a focused `<select>` answers ArrowDown, and the row
+says in its own comment that this half expires the day #204 lands. The other
+half needs nothing: a refused แก้ไข draws no form, so while that read is out the
+filter is an ordinary mouse click, and `save` is unreachable for this mechanism
+altogether — not because the form covers the filter, which the review of this
+ticket caught the same day as false (`setEditing(null)` runs *before* the awaited
+reload, which is what `133a`'s row 7 comment measured), but because the clearing
+and the call are one tick: there is no moment in which the filter is on screen
+with that loader not yet called. A conclusion right for the wrong reason expires
+on the wrong day, and this one had the right reason written beside it. A
+ticket that names an overlay has named a *pointer*, not the population of ways
+in (#179's shape, met at the keyboard).
+
+### The third kill nobody asked for
+
+The four mutants the fix re-aimed were swept against the seven files that reach
+`Plos.js` rather than against one each, and `202:plossaysanyway` — untouched in
+substance, `showing.current !== null` where the code says `=== sent` — came back
+**3 failed, 120 passed, 8 did not run** where its sheet recorded *2 of 10*. The
+third is `19a:232`, the ordinary path: nothing takes the screen, so
+`showing.current` and `sent` are both `null`, the real guard passes by
+`null === null` and the mutant's `!== null` does not, and the sentence *ปิดการ
+ใช้งานแทนการลบ* is never said. One mutant, wrong in both directions — speaking
+over another screen, and silent on its own. The old figure was never wrong: it
+was a figure about `202a` alone, and a wider set expires a count for a mutant
+nobody edited (#202's rule, from the other end — there a spec gained a row, here
+a sweep gained a file). `19a` runs `serial`, so the eight rows behind the red
+did not run and are not passes (#67).
+
+### The figure that was right and the sentence that was short
+
+#208's blind-spot note said *4 call sites, and 3 of them are a real gap*, naming
+two coordinate-ref screens. The figure is right — it counts call sites — and the
+sentence is short by one: a third file holds a coordinate ref,
+`components/users/GrantsPanel.js`, whose ref holds the `user.user_id` the panel
+is of. It contributes **no call site at all**: its `add` and `remove` draw the
+write's own answer under that coordinate, and its three guards are already a ☐
+row of `docs/acceptance/12-role-grants.md` with a date and #141 on them. Count
+by the mechanism and the census is right; read its sentence as a count of
+screens and it is wrong. That is #174 from the reader's side.
+
+### The census as the fix's own witness
+
+Criterion 4 asked whether `dead-loaders.js` should grow a second population for
+a ref that holds a coordinate. The answer is **no**, written into its docstring
+with the date and with what would re-date it — a screen whose ref holds a
+coordinate *and* whose loader raises `loading` without asking. The reason is
+that the two remaining members are measured (`ActivityScores.js:555`, whose
+`load` never touches `setLoading`; `GrantsPanel.js`, with nothing to count), so
+the rule could only fire on a screen that does not exist yet, and it would have
+to ask a different question to fire at all: not *which loader does this call
+reach* but *is the coordinate this ref holds the loader's dependency set*, which
+means re-deriving the `useCallback` deps and comparing.
+
+What the answer rests on is a reading the instrument itself publishes. Before
+the fix it counted **19 loaders · 19 own-effect reads · 59 live off the ref**;
+after it, **20 · 20 · 62 · marked 0 · problems 0**. The three sites did not have
+to be excused with a marker: they joined the population. An instrument that
+counts the thing rather than the rows is also the cheapest proof that a fix
+landed where it said it would (#58's rule, used forwards).
+
+### What the review found, and the mutant the mechanism's two halves need
+
+Three of the review's findings were real, and the one that mattered is #88's
+rule arriving from a direction it had not come from before. Both ⚙ rows named
+the stuck placeholder in *what must be seen* — it is the mechanism this ticket
+exists to fix — and both mutants die at the row's **first** assertion, the
+curriculum the handler read again. So the placeholder claim sat under another
+claim and was proved by nothing, with the row red, the mutant credited and the
+sheet reading modestly.
+
+What makes that fixable rather than a split is that the defect has two halves
+and a mutant can carry one each. The two first mutants are the whole mistake:
+a stale **reader**, which asks for the curriculum the screen has left, so the
+first assertion goes red and nothing below it is read. The claim the sheet
+needed proved is the other half: a live reader with the **guard** still written
+against the loader it closed over — `await drawing(() => onScreen.current ===
+load)`. That one asks for the right curriculum (the first assertion passes),
+refuses its own drawing (the list on the screen is still the filter's own, so
+that assertion passes too) and never reaches `setLoading(false)`, so it dies in
+`settled` on *กำลังโหลด…* — which is the placeholder claim itself, said by the
+helper that reads it. One line of difference, and the claim that had nothing
+under it has a mutant whose first dying assertion is exactly it.
+
+That is #97's *one crafted value per link of a guard*, read at the level of a
+mechanism rather than a clause: a fix that closes two mechanisms at one site
+needs a mutant per mechanism, and a mutant per **site** is what a criterion
+asking for *a mutant per fixed site* will get you if you read it as arithmetic.
+
+The second finding is `docs/lessons.md`'s own rule about a conclusion right for
+the wrong reason, in three copies written the same hour — this file, the sheet
+and the census's docstring all said `save` cannot reach the second mechanism
+*because the form replaces the table for the whole of the write*. It does not:
+`setEditing(null)` runs before the awaited reload, which is the sentence
+`133a`'s row 7 comment has carried since #133, and which this ticket quoted as
+its own reachability evidence five paragraphs earlier. The true reason was
+sitting beside the false one in two of the three copies, which is why nothing
+it predicted was wrong yet.
+
+The third is smaller and the same species as #119's: option 2 of the ticket was
+declined in my head and nowhere in the tree. A declined option that is not
+written down is a decision nobody can find, and the mutant it would deserve
+(#48) cannot be written for a decision that does not exist on paper. It is now
+a dated section of the sheet, with what would expire it: a caller that sends a
+loader out with no live read following it, where nobody raises a second
+placeholder and the asymmetry inside `load` is a gap by itself.

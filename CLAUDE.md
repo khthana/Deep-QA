@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 15 October 2569 that is
-`2026-10-15-the-census-that-went-blind-while-staying-green.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-15-the-loader-a-coordinate-ref-cannot-hold.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -875,6 +875,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   nothing measures, nothing cleans*, one layer along. The prediction written into that row said
   *never said* and the row measured one, which is the argument for writing a prediction down as an
   assertion rather than keeping it in your head. (#205)
+- **A ref is read twice — once to compare and once to choose — and a value that answers the
+  comparison cannot answer the choice.** A coordinate answers *is the filter still where it was
+  when I was sent* exactly and permanently, so every row resting on that comparison survives being
+  moved off it; what it cannot do is hand the handler a loader, so the handler goes on calling the
+  one it closed over — the right question asked of the wrong reader. That reader then refuses
+  itself, which is correct, and the placeholder it raised is left standing for ever, the only code
+  that lowers it being inside the refusal. The fix is to hold in the ref the thing the caller has
+  to **pick**, not the thing it has to compare. (#211)
 
 ### Walks
 

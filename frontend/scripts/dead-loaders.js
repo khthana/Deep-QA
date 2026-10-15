@@ -38,9 +38,9 @@
  * 3. Otherwise: is the loader read **through the ref**? The callee must be a
  *    name bound in the same function to `<ref>.current`, where `<ref>` is one
  *    the file assigns a loader into — the shape #208 carried to fifty-nine
- *    sites in nineteen page files (fifty-eight of them spelling the local
- *    `drawing`, and `Offerings.js` spelling one `reader` so a mutation anchor
- *    stays unambiguous — #154):
+ *    sites in nineteen page files, and #211 to sixty-two in twenty (all but one
+ *    spelling the local `drawing`, and `Offerings.js` spelling one `reader` so a
+ *    mutation anchor stays unambiguous — #154):
  *
  *        const drawing = onScreen.current
  *        const reloaded = await drawing(() => onScreen.current === drawing)
@@ -60,25 +60,48 @@
  * ## What it cannot measure, said here rather than found out later
  *
  * - **It finds loaders by the ref.** A screen that guards by the *coordinate*
- *   instead — `onScreen.current = program` in `Plos.js`, `= activityId` in
- *   `ActivityScores.js` — holds no loader anywhere, so its calls are invisible
- *   here. Whether such a screen has this defect depends on its loader's
- *   dependency list, and #208 read the two of them rather than leaving the
- *   sentence general — **4 call sites, and 3 of them are a real gap**:
- *   `Plos.js:271,304,331` call the closed-over `load`, whose `useCallback` is
- *   keyed `[program, report]` and which raises `setLoading(true)` before asking
- *   but lowers it only `if (isCurrent())`, so a curriculum filter moved while a
- *   write is out leaves the placeholder up with nothing to take it down — the
- *   very mechanism #208 calls structurally unreachable *through a ref*, alive
- *   here, and the file's own docblock says the filter is reachable while the
- *   dialog is open. `ActivityScores.js:555` is not: that `load` never touches
- *   `setLoading`, so only the superseded answer is at stake, and there not
- *   drawing the old activity's scores over the new one is the right behaviour.
- *   Read on 15 October 2569 **from the code, not from a row** — which is a
- *   claim with the same standing as a ticket's (#199), and so it is a ticket
- *   and not a sentence here: #211, which also asks whether this instrument
- *   should grow a second population for a ref that holds a coordinate. `superseded-answers.js` is the one that asks
- *   whether the drawing is guarded at all.
+ *   instead — `onScreen.current = activityId` in `ActivityScores.js` — holds no
+ *   loader anywhere, so its calls are invisible here. Whether such a screen has
+ *   this defect depends on its loader's dependency list, and #208 read them
+ *   rather than leaving the sentence general — **4 call sites, and 3 of them a
+ *   real gap**: `Plos.js` called the closed-over `load` at three of them, whose
+ *   `useCallback` was keyed `[program, report]` and which raises
+ *   `setLoading(true)` before asking but lowers it only `if (isCurrent())`, so a
+ *   curriculum filter moved while a write was out left the placeholder up with
+ *   nothing to take it down — the very mechanism #208 calls structurally
+ *   unreachable *through a ref*, alive there. That was read on 15 October 2569
+ *   **from the code, not from a row**, which is a claim with the same standing
+ *   as a ticket's (#199), so it went out as one: #211, which fixed it the same
+ *   day by moving that ref onto the loader. `Plos.js` is therefore inside this
+ *   script's population now, and two of its three sites carry rows
+ *   (`211a`); the third, `save`, is structurally unreachable for the second
+ *   mechanism, and the reason is the **order** rather than the form: it clears
+ *   `editing` and calls the loader in one tick, so there is no moment with the
+ *   filter on screen and that loader not yet called. *The form replaces the
+ *   table for the whole of the write* is true of the write and false of the
+ *   reload — `setEditing(null)` runs before the awaited reload, which is what
+ *   `133a`'s row 7 comment measured — and this file said it the wrong way round
+ *   until #211's own review caught it on 15 October 2569.
+ *   `ActivityScores.js:555` is the one call site left outside: that `load` never
+ *   touches `setLoading`, so only the superseded answer is at stake, and there
+ *   not drawing the old activity's scores over the new one is the right
+ *   behaviour. `superseded-answers.js` is the one that asks whether the drawing
+ *   is guarded at all.
+ * - **It does not grow a second population for a ref that holds a coordinate,
+ *   and that is #211's answer rather than an omission (15 October 2569).** Three
+ *   files hold one: `ActivityScores.js` above, and
+ *   `components/users/GrantsPanel.js`, whose ref holds the `user.user_id` the
+ *   panel is of — which has **no call site at all**, its `add` and `remove`
+ *   drawing the write's own answer under that coordinate, and whose three guards
+ *   are already a ☐ row of `docs/acceptance/12-role-grants.md` with a date and
+ *   #141 on them. So a second population would carry a rule that can only fire
+ *   on a screen that does not exist yet, and it would have to answer a different
+ *   question to do it — not *which loader does this call reach* but *is the
+ *   coordinate this ref holds the loader's dependency set*, which means
+ *   re-deriving the `useCallback` deps and comparing. What would re-date this:
+ *   a screen whose ref holds a coordinate **and** whose loader raises `loading`
+ *   without asking. Until then the two members are measured, and the measurement
+ *   is in #211's section of `docs/acceptance/19-programme-learning-outcomes.md`.
  * - **It says nothing about reachability.** Whether anybody can actually move
  *   the screen while a given handler's answer is out is a claim with a date on
  *   it — a pager that #199 disabled, a dialog that traps focus, a filter that

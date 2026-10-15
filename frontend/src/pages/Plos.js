@@ -137,19 +137,34 @@ export default function Plos() {
   }, [load])
 
   /**
-   * Which หลักสูตร the filter is on, readable after an await - #133.
+   * The loader the screen is on, readable after an await - #133, and the loader
+   * rather than the หลักสูตร since #211.
    *
    * บันทึก, ลบ and a refused แก้ไข each reload the list, and nothing tears a
    * handler down, so the effect's flag cannot serve them: what they have to ask
-   * is *is the filter still where it was when I was sent*, which is a question
-   * about now. The form replaces the filter while it is open, but `save` clears
-   * it before it reloads, and the dialog behind ลบ never covers the filter at
-   * all - so this is reachable from the screen rather than only in principle.
+   * is *is this read still the read the screen is waiting for*, which is a
+   * question about now. The form replaces the filter while it is open, but
+   * `save` clears it before it reloads, and the dialog behind ลบ leaves it
+   * drawn - under a full-screen `bg-black/50` that eats a click (#199) and that
+   * the keyboard goes straight past, `ConfirmDialog` trapping no focus (#204) -
+   * so this is reachable from the screen rather than only in principle.
+   *
+   * It held the chosen หลักสูตร until #211. For the answer that comes back the
+   * two comparisons agree, `load` being rebuilt by exactly the thing the ref
+   * used to hold; what a coordinate cannot answer is the question one line
+   * down, *which loader should do the reading*. A handler that read with the
+   * one it closed over raised `loading` for a curriculum nobody is looking at
+   * and then refused itself, so nothing lowered it and the table stayed at
+   * กำลังโหลด… under the sentence the handler had just said. Reading the loader
+   * live out of this ref is what the other nineteen page files do (#208), what
+   * `211a-the-loader-a-coordinate-ref-cannot-hold.spec.js` holds here, and what
+   * `frontend/scripts/dead-loaders.js` counts - this file joining its
+   * population the day this landed.
    */
-  const onScreen = useRef(program)
+  const onScreen = useRef(load)
   useEffect(() => {
-    onScreen.current = program
-  }, [program])
+    onScreen.current = load
+  }, [load])
 
   // The curricula in reach, fetched once: what this account covers is a
   // property of the grant and does not change with what is being looked at.
@@ -268,7 +283,8 @@ export default function Plos() {
       if (asked.current === ask) setEditing(current)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load(() => onScreen.current === program)
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
     } finally {
       setReading(false)
     }
@@ -301,7 +317,8 @@ export default function Plos() {
       const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
-      const reloaded = await load(() => onScreen.current === program)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded) setNotice(said)
     } catch (error) {
       report(error)
@@ -328,7 +345,8 @@ export default function Plos() {
       }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
-      const reloaded = await load(() => onScreen.current === program)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       // A ข้อหลัก that still has ข้อย่อย is refused outright, and the sentence

@@ -118,9 +118,11 @@ MUTANTS = {
         '  const confirmRemoval = async () => {\n    const sent = {}\n'),
     # ผลการเรียนรู้ระดับหลักสูตร: จอที่ ref มาถึงพร้อมตั๋วนี้
     'plossaysanyway': ('plos',
-        '      const reloaded = await load(() => onScreen.current === program)\n'
+        '      const drawing = onScreen.current\n'
+        '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n',
-        '      const reloaded = await load(() => onScreen.current === program)\n'
+        '      const drawing = onScreen.current\n'
+        '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current !== null) setNotice(said)\n'),
     # ผลการเรียนรู้ระดับหลักสูตร: ref มีอยู่ แต่ปุ่มเพิ่มไม่เขียนมัน guard จึงเทียบ
     # `null === null` แล้วพูดทับฟอร์มที่เพิ่งเปิด

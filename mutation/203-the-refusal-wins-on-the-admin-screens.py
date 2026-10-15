@@ -106,21 +106,22 @@ MODAL_ANYWAY = (
     "      if (reloaded) setNotice(said)\n"
 )
 
-# `Plos.js` ถาม `onScreen` ด้วยหลักสูตร ไม่ใช่ด้วย `load`
+# `Plos.js` ถาม `onScreen` ด้วยหลักสูตรอยู่จน #211 ย้าย ref ไปถือตัว loader
+# รูปข้างล่างจึงตรงกับ `Users.js` แล้ว ความผิดของมัตแตนต์คงเดิม: `|| true`
 PLOS_MODAL_READS = (
-    "      const reloaded = await load(() => onScreen.current === program)\n"
+    "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
     "      if (reloaded) setNotice(said)\n"
 )
 PLOS_MODAL_ANYWAY = (
-    "      const reloaded = (await load(() => onScreen.current === program)) || true\n"
+    "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
     "      if (reloaded) setNotice(said)\n"
 )
 PLOS_REMOVAL_READS = (
-    "      const reloaded = await load(() => onScreen.current === program)\n"
+    "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
     "      if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 PLOS_REMOVAL_ANYWAY = (
-    "      const reloaded = (await load(() => onScreen.current === program)) || true\n"
+    "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
     "      if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 

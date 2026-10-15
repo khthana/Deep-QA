@@ -221,11 +221,15 @@ MUTANTS = {
         "      if (onScreen.current === asked) setData(answer)\n",
         "      setData(answer)\n"),
     # ผู้เรียกที่สอง: รายการที่การบันทึกสั่งโหลดใหม่ วาดทับหลักสูตรที่ตัวกรองย้ายไปแล้ว
-    # ยึดกับบรรทัด setNotice ข้างบนด้วย เพราะ `await load(…)` บรรทัดเดียวกันนี้มีสามที่
+    # ยึดกับบรรทัด setNotice ข้างบนด้วย เพราะ `await drawing(…)` บรรทัดเดียวกันนี้มีสามที่
+    # #211 ย้าย ref ไปถือตัว loader แทนหลักสูตร มัตแตนต์จึงเขียนด้วยรูปใหม่
+    # ความผิดเดิมคงไว้ทั้งก้อน: `isCurrent` ตอบจริงทุกครั้ง คำตอบเก่าจึงชนะ
     "ploshandlerstalewins": ("plos",
-        '      const reloaded = await load(() => onScreen.current === program)\n'
+        '      const drawing = onScreen.current\n'
+        '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded) setNotice(said)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n'
+        '      const reloaded = await drawing(() => true)\n'
         '      if (reloaded) setNotice(said)\n'),
 }
 

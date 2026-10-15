@@ -289,6 +289,7 @@ module.exports = {
   waitForList,
   waitForReach,
   openPlos,
+  untilListed,
   ploRow,
   programPicker,
   programFilter,
