@@ -66,7 +66,7 @@ guard จึงเป็นเท็จตลอด ฆ่าแถวบวก�
 
 ตัวนับที่รายงานไว้ข้างบนอ่านแปดบรรทัดเหนือประโยค จึงอ่านสี่จุดผิดทั้งสองทาง:
 `if (await reload(said))` อยู่ *ใต้* ประโยคจึงอ่านว่าไม่มีด่าน และ
-`const reloaded = await load(() => onScreen.current === load)` บรรทัดเหนือประโยค
+`const reloaded = await drawing(() => onScreen.current === drawing)` บรรทัดเหนือประโยค
 อ่านว่าเป็นการเทียบ ref ทั้งที่มันเป็นธงของ #152 ถามจากโค้ดแทน — ผู้บริโภคธงนั้นทุกตัว
 และถามว่ามันถาม ref ด้วยไหม — ได้สี่จุด: `SubjectStudents.add` `SubjectStudents.remove`
 `GradingWeights.save` และ `StudentGroups.after`
@@ -108,9 +108,9 @@ FILES = {
 MUTANTS = {
     # ภาควิชา: การลบพูดประโยคของตัวเองเหนือฟอร์มที่เปิดขึ้นมาแทน
     'departmentssaysanyway': ('departments',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '        if (reloaded && showing.current !== null) setNotice(said)\n'),
     # ภาควิชา: guard ที่จับ `{}` ใหม่แทน ref - เป็นเท็จตลอด การลบจึงไม่เคยพูดอะไร
     'departmentssaysnothing': ('departments',
@@ -129,11 +129,11 @@ MUTANTS = {
         '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n'),
     # ผู้ใช้งาน: สวิตช์สถานะ ซึ่งไม่ถามอะไรก่อน รายการจึงยังมีชีวิตอยู่ทั้งเวลา
     'userssaysanyway': ('users',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      report(error)\n',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current !== null) setNotice(said)\n'
         '    } catch (error) {\n'
         '      report(error)\n'),

@@ -306,8 +306,11 @@ export default function SubjectStudents() {
         waiting.current = { of: target, said }
         setPage(page - 1)
       } else if (lostItsLastRow) {
-        // The person moved while the removal was out, so nothing steps back:
-        // the list they are on is read here and that read says the sentence.
+        // swallowed-refusal: the person moved while the removal was out, so
+        // nothing steps back: the list they are on is read here and that read
+        // says the sentence, handed to `waiting` by key rather than said by
+        // this handler - which leaves it with no sentence of its own on this
+        // branch and so no answer to read (#205, #208)
         const target = readOf(sectionId, onPage.current)
         waiting.current = { of: target, said }
         const drawing = onScreen.current
@@ -318,7 +321,8 @@ export default function SubjectStudents() {
         // (#202), and what moves the person now that #199 has closed the pager
         // is the jump to another Section of the same route shape, which 202a's
         // two negatives come in through.
-        const reloaded = await load(() => onScreen.current === load)
+        const drawing = onScreen.current
+        const reloaded = await drawing(() => onScreen.current === drawing)
         if (reloaded && onScreen.current === sent) setNotice(said)
       }
     } catch (error) {

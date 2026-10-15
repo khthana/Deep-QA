@@ -11,7 +11,7 @@
 
 **ราคาคือแถวต่อจุด ไม่ใช่บรรทัดต่อจุด** เก้าจอมีตัวควบคุมอยู่ข้าง handler รวมสามสิบเอ็ดจุด
 แต่ละจุดมีแถวของตัวเองใน `e2e/tests/140a-superseded-handler-reload.spec.js` และมัตแตนต์
-ของตัวเองที่นี่ ซึ่งเปลี่ยนธงของจุดนั้นจุดเดียวเป็น `load(() => true)` - รูปเดียวกับ
+ของตัวเองที่นี่ ซึ่งเปลี่ยนธงของจุดนั้นจุดเดียวเป็น `drawing(() => true)` - รูปเดียวกับ
 `ploshandlerstalewins` ของ #133 `enrolmentreloadstalewins` เป็นจุดเดียวที่มีผู้เรียกสองทาง
 (เพิ่มนักศึกษา และการนำเข้าซึ่งส่ง `reload` ไปทั้งตัว) จึงต้องล้มสองแถว
 
@@ -90,15 +90,15 @@ MUTANTS = {
         '        await drawing(() => true)\n'),
     # ข้อมูลนักศึกษา: การนำเข้า
     'studentsimportstalewins': ('students',
-        '              if (page === 1) load(() => onScreen.current === load)\n',
-        '              if (page === 1) load(() => true)\n'),
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => true)\n'),
     # ข้อมูลผู้ใช้งาน: บันทึก
     'userssavestalewins': ('users',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      if (showing.current === sent) report(error)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      if (showing.current === sent) report(error)\n'),
@@ -107,124 +107,124 @@ MUTANTS = {
     # reload is now the guard's `}` and `save` carries the same pair. The tail
     # tells them apart: `toggle` has no `finally`.
     'userstogglestalewins': ('users',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      report(error)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      report(error)\n'),
     # ข้อมูลผู้ใช้งาน: การนำเข้า
     'usersimportstalewins': ('users',
-        '              if (page === 1) load(() => onScreen.current === load)\n',
-        '              if (page === 1) load(() => true)\n'),
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => true)\n'),
     # ข้อมูลภาควิชา: แก้ไข ที่ถูกปฏิเสธ
     'departmentsrefusalstalewins': ('departments',
-        '      if (asked.current === ask) report(error)\n      await load(() => onScreen.current === load)\n',
-        '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # ข้อมูลภาควิชา: บันทึก
     'departmentssavestalewins': ('departments',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลภาควิชา: ลบ / นำออก
     'departmentsremovestalewins': ('departments',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const reloaded = await load(() => true)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลภาควิชา: การนำเข้า
     'departmentsimportstalewins': ('departments',
-        '              if (page === 1) load(() => onScreen.current === load)\n',
-        '              if (page === 1) load(() => true)\n'),
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => true)\n'),
     # ข้อมูลหลักสูตร: แก้ไข ที่ถูกปฏิเสธ
     'programsrefusalstalewins': ('programs',
-        '      if (asked.current === ask) report(error)\n      await load(() => onScreen.current === load)\n',
-        '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # ข้อมูลหลักสูตร: บันทึก
     'programssavestalewins': ('programs',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลหลักสูตร: ลบ / นำออก
     'programsremovestalewins': ('programs',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const reloaded = await load(() => true)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลหลักสูตร: การนำเข้า
     'programsimportstalewins': ('programs',
-        '              if (page === 1) load(() => onScreen.current === load)\n',
-        '              if (page === 1) load(() => true)\n'),
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => true)\n'),
     # ข้อมูลรายวิชา: แก้ไข ที่ถูกปฏิเสธ
     'subjectsrefusalstalewins': ('subjects',
-        '      if (asked.current === ask) report(error)\n      await load(() => onScreen.current === load)\n',
-        '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # ข้อมูลรายวิชา: บันทึก
     'subjectssavestalewins': ('subjects',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลรายวิชา: ลบ / นำออก
     'subjectsremovestalewins': ('subjects',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const reloaded = await load(() => true)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลรายวิชา: การนำเข้า
     'subjectsimportstalewins': ('subjects',
-        '              if (page === 1) load(() => onScreen.current === load)\n',
-        '              if (page === 1) load(() => true)\n'),
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => true)\n'),
     # รายวิชาในหลักสูตร: แก้ไข ที่ถูกปฏิเสธ
     'pairsrefusalstalewins': ('pairs',
-        '      if (asked.current === ask) report(error)\n      await load(() => onScreen.current === load)\n',
-        '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # รายวิชาในหลักสูตร: บันทึก
     'pairssavestalewins': ('pairs',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded) setNotice(said)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded) setNotice(said)\n'),
     # รายวิชาในหลักสูตร: ลบ / นำออก
     'pairsremovestalewins': ('pairs',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const reloaded = await load(() => true)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # รายวิชาในหลักสูตร: การนำเข้า
     'pairsimportstalewins': ('pairs',
-        '              if (page === 1) load(() => onScreen.current === load)\n',
-        '              if (page === 1) load(() => true)\n'),
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
+        '              const drawing = onScreen.current\n              if (page === 1) drawing(() => true)\n'),
     # Rubric: แก้ไข ที่ถูกปฏิเสธ
     'rubricsrefusalstalewins': ('rubrics',
-        '      if (asked.current === ask) report(error)\n      await load(() => onScreen.current === load)\n',
-        '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # Rubric: บันทึก
     'rubricssavestalewins': ('rubrics',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded) setNotice(said)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded) setNotice(said)\n'),
     # Rubric: ลบ / นำออก
     'rubricsremovestalewins': ('rubrics',
-        '        const reloaded = await load(() => onScreen.current === load)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const reloaded = await load(() => true)\n'
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลการเปิดรายวิชา: ตอนเรียนและผู้สอน ที่ถูกปฏิเสธ
     'offeringsrefusalstalewins': ('offerings',
-        '      if (asked.current === ask) report(error)\n      await load(() => onScreen.current === load)\n',
-        '      if (asked.current === ask) report(error)\n      await load(() => true)\n'),
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
+        '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: เปิดรายวิชา
     'offeringssavestalewins': ('offerings',
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '      if (mine) await refresh(offering.id, ask)\n',
-        '      const reloaded = await load(() => true)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '      if (mine) await refresh(offering.id, ask)\n'),
     # ข้อมูลการเปิดรายวิชา: คัดลอก
@@ -234,14 +234,14 @@ MUTANTS = {
         '        await drawing(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: ยกเลิกการเปิด
     'offeringsremovestalewins': ('offerings',
-        '          const reloaded = await load(() => onScreen.current === load)\n'
+        '          const drawing = onScreen.current\n          const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '          if (reloaded && showing.current === sent) setNotice(said)\n',
-        '          const reloaded = await load(() => true)\n'
+        '          const drawing = onScreen.current\n          const reloaded = await drawing(() => true)\n'
         '          if (reloaded && showing.current === sent) setNotice(said)\n'),
     # ข้อมูลการเปิดรายวิชา: กลับไปหน้ารายการ
     'offeringsbackstalewins': ('offerings',
-        '            setViewing(null)\n            load(() => onScreen.current === load)\n',
-        '            setViewing(null)\n            load(() => true)\n'),
+        '            setViewing(null)\n            const drawing = onScreen.current\n            drawing(() => onScreen.current === drawing)\n',
+        '            setViewing(null)\n            const drawing = onScreen.current\n            drawing(() => true)\n'),
     # รายชื่อนักศึกษาของรายวิชา: reload (เพิ่มนักศึกษา และการนำเข้า)
     # #205 - `reload` asks the live page and reads through `onScreen.current`.
     'enrolmentreloadstalewins': ('enrolment',
@@ -249,8 +249,8 @@ MUTANTS = {
         '        return drawing(() => true)\n'),
     # รายชื่อนักศึกษาของรายวิชา: นำออก
     'enrolmentremovestalewins': ('enrolment',
-        '        const reloaded = await load(() => onScreen.current === load)\n',
-        '        const reloaded = await load(() => true)\n'),
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n',
+        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'),
 }
 
 main(FILES, MUTANTS)

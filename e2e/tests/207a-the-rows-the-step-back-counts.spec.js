@@ -8,7 +8,6 @@ const { BACKEND_URL } = require('../support/env');
 const { gate, isGet, isWrite } = require('../support/gate');
 const { panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
-const { downloadTemplate, headerOf, csv } = require('../support/import-panel');
 const {
   keysOn,
   next,
@@ -50,11 +49,14 @@ const departments = require('../support/departments-screen');
  *
  * The handler counted two rows, so it does not step back; the list in front of
  * the person holds one, and that one is what the removal takes. They are left
- * on a page whose rows are gone, reading the row that has just been removed,
- * because the read the handler then makes belongs to a `load` the pager
- * replaced (#140) and is thrown away. The mirror - a handler that counted one
- * row stepping back off a page that has since filled - is the same staleness
- * and is read in the second row.
+ * on a page whose rows are gone, reading the row that has just been removed -
+ * until something reads that page again, which until #208 was *nothing*,
+ * because the read the handler then made belonged to a `load` the pager had
+ * replaced and #140's guard threw it away. Since 15 October 2569 the handler
+ * reads with the loader the screen is on, so the stale count is still the whole
+ * of the defect and the screen is no longer stuck as well. The mirror - a
+ * handler that counted one row stepping back off a page that has since filled -
+ * is the same staleness and is read in the second row.
  *
  * ## Why this screen
  *
@@ -73,15 +75,6 @@ test.beforeAll(async () => {
   release = await hold();
 });
 test.afterAll(() => release());
-
-/**
- * `Y<tag><letter>` sorts after the seeded departments and after `206a`'s `X...`,
- * and the tag keeps one row's import from being another's duplicate - the codes
- * outlive the rows that made them (`hold` puts the schema back when the file
- * ends, not between its rows), so the third row carries its own tag rather than
- * the count it shares with the second.
- */
-const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 /** What the rows press, and what the screen says when the removal lands. */
 const REMOVE = 'ลบ';
@@ -109,44 +102,17 @@ const pageOf = request => new URL(request.url()).searchParams.get('page');
 /**
  * Which page the line reads out, without waiting for the table to settle.
  *
- * `reading()` waits for rows, and the second row cannot have them: the read its
- * handler makes is thrown away by #140's guard - it is made with the `load` the
- * pager replaced - and `load` raises `loading` before it asks and lowers it
- * only for a read the screen still wants, so the table keeps the placeholder
- * until something else reads. What that row is about is the page, and the page
- * is written on the line.
+ * Written because the second row could not have rows: its handler's read was
+ * made with the `load` the pager replaced, #140's guard threw it away, and
+ * `load` raises `loading` before it asks and lowers it only for a read the
+ * screen still wants - so the table kept the placeholder until something else
+ * read. #208 fixed that on 15 October 2569 and the row's list now draws, so
+ * `reading()` would answer too. It is kept: what the row is about is the page,
+ * the page is written on the line whether or not any rows arrive, and a reader
+ * that cannot be held up by the drawing is the weaker premise of the two.
  */
 const pageTheLineReads = async page =>
   Number((await pagerLine(page).innerText()).match(/\d+/g)[1]);
-
-/**
- * Enough departments for a third page holding exactly `rows` of them.
- *
- * Counted from what is in the table rather than written down, because what the
- * files before this one left there decides it (#132), and idempotent in the
- * same way `206a`'s is - the second row finds the first row's import. The rows
- * go in through the screen's own panel, the only way this account writes
- * departments.
- */
-async function threePagesEndingIn(page, rows, tag = `${rows}`) {
-  const { total: before, pages } = await reading(page, departments.listTable(page));
-  if (before % 10 === rows % 10 && pages >= 3) return before;
-
-  const header = headerOf(await downloadTemplate(page));
-  let add = ((rows - before) % 10 + 10) % 10;
-  if (add === 0) add = 10;
-  while (before + add < 20 + rows) add += 10;
-  const codes = Array.from({ length: add }, (unused, i) => `Y${tag}${ALPHABET[i]}`);
-
-  await departments.importDepartments(
-    page,
-    csv(header, ...codes.map((code, i) => `${code},ภาควิชาทดสอบแบ่งหน้า ${i},Row 207 ${i}`)),
-  );
-  await expect
-    .poll(async () => (await reading(page, departments.listTable(page))).total)
-    .toBe(before + add);
-  return before + add;
-}
 
 /**
  * Asks to remove one row, with the answer held at the route until the row lets
@@ -193,7 +159,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
 
   test('a removal steps back from a page the rows left while it was out', async ({ page }) => {
     const table = departments.listTable(page);
-    await threePagesEndingIn(page, 2);
+    await departments.threePagesEndingIn(page, { rows: 2, prefix: 'Y2', note: 'Row 207' });
     const pages = await toLastPage(page, table, departments.waitForList);
     const last = await keysOn(table);
     expect(last, 'two rows on the last page, which is what makes the handler count two').toHaveLength(
@@ -242,7 +208,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
    */
   test('a removal stays on a page the rows arrived at while it was out', async ({ page }) => {
     const table = departments.listTable(page);
-    await threePagesEndingIn(page, 1);
+    await departments.threePagesEndingIn(page, { rows: 1, prefix: 'Y1', note: 'Row 207' });
     const pages = await toLastPage(page, table, departments.waitForList);
     const last = await keysOn(table);
     expect(last, 'one row on the last page, which is what makes the handler count one').toHaveLength(
@@ -271,17 +237,19 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     expect(pageOf(answer.request()), 'the page the handler read').toBe(String(pages));
 
     // Nobody moved, and the sentence is said where they are standing. The
-    // sentence is the settle point here, because `untilDrawn` cannot be: this
-    // read is made with the `load` the handler closed over, which the pager's
-    // two presses replaced, so #140's guard throws the answer away and the
-    // table keeps the placeholder it drew while asking, which is a screen with
-    // no rows on it at all. Measured on 14 October 2569 by a throwaway row at a
-    // count that does not change (three rows, one removed), and measured that
-    // way **at `HEAD` as well as with this fix**, both green: so it is a defect
-    // this ticket walked into and not one it caused (#103), it has a draft
-    // ticket of its own, and it is not this row's claim - the count the decision reads
-    // is. Which is why the sentence is the settle point here and the page is
-    // read off the line.
+    // sentence is the settle point, which on 14 October 2569 was the only one
+    // available: the read was made with the `load` the handler closed over,
+    // which the pager's two presses had replaced, so #140's guard threw the
+    // answer away and the table kept the placeholder it drew while asking -
+    // a screen with no rows on it at all. That was measured by a throwaway row
+    // at a count that does not change (three rows, one removed), **at `HEAD` as
+    // well as with this fix**, both green: a defect this ticket walked into and
+    // not one it caused (#103). It became #208 and was fixed on 15 October
+    // 2569, so the read now draws and the sentence is said over the two rows
+    // the page is down to. The row is unchanged: what it claims is the count
+    // the decision reads, the sentence is still said by this handler and so
+    // still settles it, and the page is still read off the line rather than
+    // from a settled table - `208a` is where the drawing is the claim.
     await expect(page.getByRole('status'), 'the banner of the removal').toHaveText(REMOVED);
     expect(await pageTheLineReads(page), 'the page the pager is still on').toBe(pages);
   });
@@ -310,7 +278,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
    */
   test('a removal moves nobody on a count that belongs to another page', async ({ page }) => {
     const table = departments.listTable(page);
-    await threePagesEndingIn(page, 1, 'W');
+    await departments.threePagesEndingIn(page, { rows: 1, prefix: 'YW', note: 'Row 207' });
     const pages = await toLastPage(page, table, departments.waitForList);
     const last = await keysOn(table);
     expect(last, 'one row on the last page, which is what makes the handler count one').toHaveLength(

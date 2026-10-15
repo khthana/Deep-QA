@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 15 October 2569 that is
-`2026-10-15-the-two-windows-a-press-could-land-in.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-15-the-census-that-went-blind-while-staying-green.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -319,6 +319,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)
 - **A change to a function's signature reaches every mutant that writes a call to it**, not only
   those anchored on one — grep the replacement strings too; `anchors.py` reads anchors. (#140)
+- **When a change re-aims mutants by the hundred, two instruments over the catalogue say which of
+  them need the sweep** — an **equivalence proof** that undoes the re-aim on both halves of every
+  mutant and compares with `HEAD` byte for byte (101 moved, 100 certified identical, 1 not), and a
+  question asked of every replacement about the locals it uses and does not declare, which is
+  where the one broken mutant was: a one-line replacement left naming a local the fix moved inside
+  a block, invisible to `anchors.py` because its anchor is still exact (#140, #152). Neither is a
+  sweep (#107, #68) — price the proof by sweeping two of the certified ones and reading the kills
+  against their sheets, which is minutes against hours. (#208)
 - **A fix that splits a guard shrinks every mutant that quoted the block whole** — the anchor is
   still exact, the code it quotes is untouched, the diff only *adds* a line and nothing goes red,
   so no instrument says that a row the mutant used to kill is now proved by nothing. Only re-running
@@ -537,6 +545,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   same hole, because the species is *is there a settle point between the request and the read*. The
   line that looks like it belongs to another helper may be the settle point, or may only share its
   name. (#174)
+- **A census can be blinded by another ticket's fix and go on reporting green** — an instrument
+  that classifies by a spelling stops seeing its population the day that spelling changes, and
+  then reports a clean sweep of whatever is left: `problems 0`, exit 0, the gate green, while *35
+  of 35* has quietly become *2 of 2*. **The count is the tell, not the exit code.** Then the
+  repaired instrument finds sites nobody has ever seen (#141's species), and which of its own
+  dated figures were right is settled by running it at each figure's commit in a worktree. (#208)
 - **A census built around a cause is read against its control group, not on its own** — the
   population *where the cause is absent* has a rate too, and when that rate is the lower one the
   cause was not the cause: ⚙ rows naming a drawn property were **commoner** on the sheets whose
@@ -910,7 +924,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
-| `frontend/scripts/` | Four censuses, as instruments. `npm run census` runs all four and goes red when a screen draws an answer with no guard and no written reason (#133's family), draws a label with a code in front of the name and no written reason (#93's), or says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family, `sentences-after-a-move.js`, which asks about **enclosure** and not about a window of lines), or redraws from a loader without reading whether it drew (#152's family, `swallowed-refusals.js`, built by #200 and left unwired while the twenty administration sites it found were still red — #203 fixed those and wired it in on 12 October 2569). Their own fixtures are `npm run census:test`. |
+| `frontend/scripts/` | Five censuses, as instruments. `npm run census` runs all five and goes red when a screen draws an answer with no guard and no written reason (#133's family), draws a label with a code in front of the name and no written reason (#93's), or says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family, `sentences-after-a-move.js`, which asks about **enclosure** and not about a window of lines), or redraws from a loader without reading whether it drew (#152's family, `swallowed-refusals.js`, built by #200 and left unwired while the twenty administration sites it found were still red — #203 fixed those and wired it in on 12 October 2569), or reads a list again with the loader a handler closed over instead of the one the ref holds (#208's family, `dead-loaders.js`, which finds its loaders **by the ref** and so cannot see a ref holding a coordinate). Their own fixtures are `npm run census:test`. |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the

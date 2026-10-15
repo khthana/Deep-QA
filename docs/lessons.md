@@ -10333,3 +10333,180 @@ known not to need it: `Students.js` draws `adding ? <StudentForm/> : <list +
 Pager>`, so its pager is not on the screen while its write is out, and the
 administration screens' pagers sit under the confirmation overlay — which is the
 mouse half of the probe's third row, and expires with #204.
+
+## #208 — the third branch's dead loader, and the census that went blind while staying green
+
+#207's own record had written this one down as a draft: the third branch of
+`confirmRemoval` read the list again with the `load` the handler closed over,
+where the second branch had used `onScreen.current` since #205. When the pager
+has moved and come back while the `DELETE` is out, that `load` is not the
+screen's loader any more, so its `isCurrent()` is false **before the request
+leaves** — the answer is thrown away by #140's guard and the removed row stays
+drawn, and `load`, which raises `setLoading(true)` before asking but lowers it
+only when `isCurrent()`, leaves the placeholder up with nothing to take it down.
+
+### The ticket's numbers, and what the measurement made of them
+
+The ticket counted **33 sites in 18 files** on 14 October and said so as the
+scope of the *shape*. Measured on the day of the fix the shape has **59 call
+sites in 19 files**, because the ticket had counted one spelling
+(`const reloaded = await load(...)`) and the population is *calls of the loader
+that read the list again* — which includes the calls whose answer nobody reads
+and the ones inside a `try`. Underneath them are **64** declarations of
+`const <name> = onScreen.current`: 59 that are called (`drawing` 58, `reader` 1,
+renamed so a mutant's anchor stays unambiguous — #154) and **5 named `sent` that
+are never called at all**, because `sent` is #202's key, which holds the loader
+to *compare* with and not to call. Two shapes, one ref, counted apart.
+
+### The reachability table, measured by who writes the dependency
+
+The ticket's first criterion asked which sites a way in reaches, with a number
+for the unreachable. The thing that decides it is not what the screen draws
+(#174) but **who writes `load`'s dependency list**, since the loader in the ref
+is replaced exactly when one of those changes, and there are two kinds of
+writer:
+
+- a setter the screen itself calls — `setPage`, `setProgram`, `setYear`,
+  `setSemester`, `setDepartment`, `setFilters`: **38 sites in 9 files**, and
+  those nine are exactly the nine that draw a `<Pager>`
+- the route, through `useParams`: **21 sites in 10 files**
+
+**Structurally unreachable: 0.** That number is not an argument either. #141
+measured that the browser's own history list travels any number of entries in
+one move, so two addresses of one route shape are always one move apart however
+many screens sit between them — including two `rubricId` addresses with the
+`Rubrics` list in the middle, which is the one case that looked exempt.
+
+`report` appears in five of those dependency lists and is **not** a way in: it is
+the error-reporting `useCallback`, not state any control writes. A dependency
+list is a list of names, so reading it as a list of ways in is the same mistake
+as reading a ticket's identifiers as a schema (#54).
+
+The site a person meets without doing anything strange is `toggle` on `Users.js`:
+the status switch asks nothing first (#86), so there is no dialog and no overlay,
+and the pager, three filters and search box are ordinary mouse clicks while
+`PUT /api/users/:id/status` is out. Neither #204 nor #210 reaches it. That is
+also what lets its row claim something the departments screen cannot: `load`
+there is keyed on `[filters, page]` and the search box writes `filters` on every
+keystroke, so the stale loader asks a **question** the screen has replaced, and
+the request says which outright (`?q=`), where on the departments screen both
+loaders ask for the same page and only the drawing tells them apart.
+
+### The two mechanisms as a grid
+
+Measured rather than chosen between (#148, #149): fixing the read alone removes
+both, because no caller can then hand `load` a guard that is already false — **0
+of 59** — which makes the stuck placeholder structurally unreachable rather than
+guarded, and so it has no mutant. Fixing the placeholder alone removes the
+placeholder and leaves the table drawing the old list, which still holds the
+removed row. The third row of the grid is what was measured on the screen on 14
+October: both.
+
+**And the grid's own population is a claim, which the spec review found over-
+stated.** *Structurally unreachable* here means *through the nineteen loaders a
+ref holds* — the 0 of 59 is a count of those callers. A screen whose ref holds a
+**coordinate** instead holds no loader anywhere, so it is outside the population
+and outside the instrument (#141, from the instrument's side this time: a census
+whose population is *the calls that read a ref-held loader* cannot find the call
+whose ref holds something else). Read on 15 October 2569: **4 such sites, 3 of
+them a real gap** — `Plos.js:271,304,331`, whose `load` is keyed
+`[program, report]` and raises `setLoading(true)` before asking but lowers it
+only `if (isCurrent())`, so the curriculum filter moved while a write is out
+leaves the placeholder up, which is this ticket's mechanism 2 alive;
+`ActivityScores.js:555` is not, that `load` never touching `setLoading`. That
+reading is **from the code and not from a row**, so it has the standing of a
+ticket's own diagnosis (#199) and is owed a ticket rather than a sentence here
+(#119, #125). The lesson is the shape: a number quoted as *structurally
+unreachable* carries the population it was counted over, and the sentence has to
+carry it too.
+
+### A census can be blinded by somebody else's fix, and stay green
+
+This census, `swallowed-refusals.js`, classifies a loader by its **declaration**.
+A name bound to a ref is no declaration, so the moment every handler called
+`drawing(...)` instead of `load(...)` the script answered *2 sites, 2 read* over
+a tree it had answered **35 of 35** about the day before — **and `problems 0`,
+exit 0, the gate green**. What said so was the count. Nothing else could: an
+instrument that has stopped seeing its population reports a clean sweep of what
+is left, and a gate is read for its exit code.
+
+Following the ref did not restore 35. It found **42 loaders awaited, 35 read and
+7 nobody had ever seen** — the `lostItsLastRow` branch of the removal on seven
+screens, which hands its sentence to `waiting` by key and says nothing itself,
+written by #205 and #207 and invisible to this script from the day they landed
+(#141: a census whose population is *the calls that name a declaration* cannot
+find the call that names none). The reason was in each of their comments all
+along, in prose rather than in the syntax the instrument reads (#93), so all
+seven were marked rather than changed.
+
+**And the two figures in that docstring were settled with a worktree rather than
+an argument** (#141): the script as it stood answers **37 of 37** at `89b66f6`,
+its own commit of 12 October, and **35 of 35** at `607fa9f`, the last commit
+before this ticket — both right for their day, two sites having stopped saying a
+sentence of their own in between. Run at that same 14 October commit, the
+ref-following version answers *sentences 35 · awaiting 42 · read 35 · problems
+7*, which is the measurement that the seven were there and unseen for two days.
+
+### The instrument the fix is worth, and what it cannot measure
+
+`frontend/scripts/dead-loaders.js` is the fifth census. Its population is the
+names a file declares as a function **and** assigns into some `<ref>.current`,
+and it reads every call of one: inside a hook whose dependency array names it is
+its own effect and not a site; a callee bound to `<ref>.current` is fresh, and
+the guard is checked to name the **same** local, both ways round; a callee that
+is the declaration is **stale** and needs `// dead-loader: <why> (#NNN)`. Clean:
+*files read 137 · loaders 19 · own effect 19 · live off the ref 59 · marked 0 ·
+problems 0*.
+
+Proved by breaking real sites and not by its own fixtures (#141, #200):
+`confirmRemoval` on `Departments` and `toggle` on `Users` put back to `load` give
+`problems 2` with file and line, exit 1; a guard made to name a different local
+in `Programs` gives the mismatch message, exit 1. Its sixteen fixtures take
+`npm run census:test` from 71 to **87**.
+
+What it cannot measure is written in it: it finds loaders **by the ref**, so a
+guard whose ref holds a *coordinate* rather than the loader is invisible —
+`Plos.js` writes `onScreen.current = program` and `ActivityScores.js` writes
+`= activityId`, and whether that matters there depends on what those loaders
+depend on; it says nothing about whether a site is reachable; it cannot see
+frames; it does not ask whether the answer is read or the drawing guarded, which
+are the other two censuses' questions; a loader passed in as a parameter has no
+declaration to read; and a ref assignment it cannot classify is a problem rather
+than a pass (#123 — a tool that cannot say what it did not look at).
+
+### A hundred and one re-aimed mutants, and the two instruments that triaged them
+
+The fix changes what callers write, so it reaches **101 mutants in 14 files** —
+140 (28 of 31), 149 (28 of 43), 152 (17 of 21), 203 (14 of 20), 146 (3 of 45),
+25 (2), 202 (2), 16, 21, and 27/28/29/30/31 one each, all `savenoreload`.
+Sweeping all 101 was estimated at about seven hours, which is not proportionate
+to the question they raise, and an anchor check cannot answer it (#107, #68). So
+two instruments over the catalogue, neither of them a sweep:
+
+- **an equivalence proof**: undo the re-aim on both halves of every mutant —
+  delete each `const <name> = onScreen.current` line from the replacement,
+  rename the callee back — and compare byte for byte with `HEAD`. **101 moved,
+  100 certified identical, 1 not certified.** Its job is to say which mutants
+  need the sweep, not to replace it.
+- **a question asked of all 1,003 edits**: which replacements use `drawing` or
+  `reader` without declaring it. Six flagged, five of them false positives whose
+  declaration sits above the anchor, and one real.
+
+The real one was `25:importstaysonpage`, whose replacement is the one-liner
+`onImported={() => drawing(…)}` while the line declaring `drawing` is *inside*
+the block the fix wrote — a mutant that stops the application and proves nothing
+(#152 one step along), and invisible to `anchors.py`, whose anchor is still
+exact. Repaired to a block and swept: `25a` **1 red, 14 passed, 59.1s**, the red
+being row 7 alone, exactly what #25's file claims.
+
+**Then two of the certified ones were swept anyway, to price the proof.**
+`140:departmentsremovestalewins` → 1 red, 31 passed, 2.9m, matching #140's claim
+of 1 of 31. `203:userstoggleanyway` → 1 red, 21 passed, 1.4m, the red being the
+`Users.js` row its sheet names. Both exact — which is the only thing that makes
+the equivalence proof worth anything, and it cost eight minutes against seven
+hours.
+
+One finding came free with it: `203a` has **22 rows** today, so its sheet's
+*kills 1 of 21* is a figure about a smaller suite. The row that grew passes on
+both sides, so the kill count never moved and the denominator did, and nothing
+reports that (#202).

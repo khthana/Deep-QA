@@ -126,7 +126,8 @@ export default function TeachingPlan() {
       if (mine) {
         setEditing(null)
       }
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกแผนการสอนแล้ว' })
     } catch (error) {
@@ -144,7 +145,8 @@ export default function TeachingPlan() {
     try {
       await deleteWeek(sectionId, removing.id)
       setRemoving(null)
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบหัวข้อออกจากแผนการสอนแล้ว' })
     } catch (error) {

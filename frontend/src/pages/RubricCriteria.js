@@ -157,7 +157,8 @@ export default function RubricCriteria() {
       if (asked.current === ask) setEditing(current)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
     } finally {
       setReading(false)
     }
@@ -183,7 +184,8 @@ export default function RubricCriteria() {
       const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded) setNotice(said)
     } catch (error) {
       report(error)
@@ -211,7 +213,8 @@ export default function RubricCriteria() {
       }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       setRemoving(null)

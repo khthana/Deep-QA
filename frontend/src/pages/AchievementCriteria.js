@@ -136,7 +136,8 @@ export default function AchievementCriteria() {
       if (mine) {
         setEditing(null)
       }
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกเกณฑ์การบรรลุผลแล้ว' })
     } catch (error) {
@@ -154,7 +155,8 @@ export default function AchievementCriteria() {
     try {
       await deleteCriterion(sectionId, cloId, removing.id)
       setRemoving(null)
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบเกณฑ์การบรรลุผลแล้ว' })
     } catch (error) {

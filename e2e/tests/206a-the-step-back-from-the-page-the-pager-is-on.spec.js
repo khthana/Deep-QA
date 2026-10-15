@@ -7,7 +7,6 @@ const { signIn } = require('../support/auth');
 const { gate, isGet, isWrite } = require('../support/gate');
 const { panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
-const { downloadTemplate, headerOf, csv } = require('../support/import-panel');
 const { keysOn, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
 const departments = require('../support/departments-screen');
 
@@ -78,45 +77,12 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** `X…` sorts after the seeded departments and after `57a`'s own `Z…`. */
-const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
 /** What the row presses, and what the screen says when the removal lands. */
 const REMOVE = 'ลบ';
 const CONFIRM = 'ลบภาควิชา';
 const REMOVED = 'ลบภาควิชาเรียบร้อยแล้ว';
 
 const pageOf = request => new URL(request.url()).searchParams.get('page');
-
-/**
- * Enough departments for a third page holding exactly one row.
- *
- * Computed from what is in the table rather than written down, because what the
- * files before this one left there decides it (#132) - and idempotent, so the
- * second row finds the first row's import rather than adding to it. The rows
- * are imported through the screen's own panel, which is the only way this
- * account writes departments.
- */
-async function threePagesWithOneOnTheLast(page) {
-  const { total: before, pages } = await reading(page, departments.listTable(page));
-  if (before % 10 === 1 && pages >= 3) return;
-
-  const header = headerOf(await downloadTemplate(page));
-  let add = (1 - (before % 10) + 10) % 10;
-  if (add === 0) add = 10;
-  while (before + add < 21) add += 10;
-  const codes = Array.from({ length: add }, (unused, i) => `X${ALPHABET[i]}`);
-
-  await departments.importDepartments(
-    page,
-    csv(header, ...codes.map((code, i) => `${code},ภาควิชาทดสอบแบ่งหน้า ${i},Row 206 ${i}`)),
-  );
-  // The total the pager reads out is the evidence the import landed; `14b` is
-  // the file that asserts the panel's own sentence.
-  await expect
-    .poll(async () => (await reading(page, departments.listTable(page))).total)
-    .toBe(before + add);
-}
 
 /**
  * Asks to remove the one row of the last page, with the answer held at the
@@ -148,7 +114,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
   test.beforeEach(async ({ page }) => {
     await signIn(page, ACCOUNTS.facultyAdmin);
     await departments.openDepartments(page);
-    await threePagesWithOneOnTheLast(page);
+    await departments.threePagesEndingIn(page, { rows: 1, prefix: 'X', note: 'Row 206' });
   });
 
   test('a removal says its sentence on the page the person moved to, and leaves them there', async ({

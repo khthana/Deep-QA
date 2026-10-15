@@ -272,7 +272,8 @@ export default function Offerings() {
       await refresh(offering.id, ask)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
     } finally {
       setReading(false)
     }
@@ -351,7 +352,8 @@ export default function Offerings() {
       }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent) setNotice(said)
       if (mine) await refresh(offering.id, ask)
     } catch (error) {
@@ -487,10 +489,17 @@ export default function Offerings() {
           // calls the same thing: a one-line anchor is matched as a substring
           // (#154), so eight spaces of indentation are found inside ten and
           // two mutants of #140 and #203 would each have had two sites.
+          // swallowed-refusal: nothing moves, so no read is coming: the list
+          // the person is on is read here by the loader that belongs to it, and
+          // that read is what says the sentence - handed to `waiting` by key,
+          // which is the one place the two are compared, so this handler says
+          // nothing on this branch and has nothing to read an answer for
+          // (#205, #208)
           const reader = onScreen.current
           await reader(() => onScreen.current === reader)
         } else {
-          const reloaded = await load(() => onScreen.current === load)
+          const drawing = onScreen.current
+          const reloaded = await drawing(() => onScreen.current === drawing)
           if (reloaded && showing.current === sent) setNotice(said)
         }
       }
@@ -515,7 +524,8 @@ export default function Offerings() {
             asked.current = null
             setNotice(null)
             setViewing(null)
-            load(() => onScreen.current === load)
+            const drawing = onScreen.current
+            drawing(() => onScreen.current === drawing)
           }}
           onAddSection={number =>
             onSection(async () => {

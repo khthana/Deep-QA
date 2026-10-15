@@ -139,7 +139,8 @@ export default function ActivityEvidence() {
       if (mine) {
         setEditing(null)
       }
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกหลักฐานการประเมินแล้ว' })
     } catch (error) {
@@ -157,7 +158,8 @@ export default function ActivityEvidence() {
     try {
       await deleteEvidence(sectionId, removing.evidence_id)
       setRemoving(null)
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบหลักฐานการประเมินแล้ว' })
     } catch (error) {

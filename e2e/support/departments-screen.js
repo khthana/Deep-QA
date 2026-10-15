@@ -1,8 +1,8 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
-const { importCsv } = require('./import-panel');
-const { untilDrawn } = require('./pager');
+const { importCsv, downloadTemplate, headerOf, csv } = require('./import-panel');
+const { untilDrawn, reading } = require('./pager');
 const { openAt } = require('./navigation');
 
 const DEPARTMENTS = '/main/departments';
@@ -110,6 +110,54 @@ async function removeDepartment(page, departmentId) {
   return answer;
 }
 
+/**
+ * The letters the imported codes are built from, in the order they sort in.
+ */
+const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+/**
+ * Imports enough departments for a third page holding exactly `rows` of them,
+ * and answers how many there are afterwards.
+ *
+ * Counted from what is in the table rather than written down, because what the
+ * files before this one left there decides it (#132) - and idempotent, so a
+ * second row of the same file finds the first row's import rather than adding
+ * to it. The rows go in through the screen's own panel, the only way the
+ * administrator accounts write departments, and the total the pager reads out
+ * is the evidence the import landed (`14b` is the file that asserts the panel's
+ * own sentence).
+ *
+ * Here rather than in a spec because three files need it - `206a`, `207a` and
+ * `208a` - and a fixture built inside one test file is one no other file has
+ * (#96). It is an instrument and not an assertion, so #68's rule about shared
+ * code does not bite: no row's claim lives here, only the situation (#171).
+ *
+ * `prefix` is the caller's, and it is what keeps one file's imported codes from
+ * being another's duplicate: the codes outlive the rows that made them, `hold`
+ * putting the schema back when a file ends rather than between its rows. Every
+ * prefix in use sorts after the two seeded departments, so the imported rows
+ * are the ones on the later pages.
+ */
+async function threePagesEndingIn(page, { rows, prefix, note }) {
+  const { total: before, pages } = await reading(page, listTable(page));
+  if (before % 10 === rows % 10 && pages >= 3) return before;
+
+  const header = headerOf(await downloadTemplate(page));
+  let add = (((rows - before) % 10) + 10) % 10;
+  if (add === 0) add = 10;
+  while (before + add < 20 + rows) add += 10;
+  const codes = Array.from({ length: add }, (unused, i) => `${prefix}${ALPHABET[i]}`);
+
+  await importDepartments(
+    page,
+    csv(header, ...codes.map((code, i) => `${code},ภาควิชาทดสอบแบ่งหน้า ${i},${note} ${i}`)),
+  );
+  await expect
+    .poll(async () => (await reading(page, listTable(page))).total)
+    .toBe(before + add);
+  return before + add;
+}
+
 module.exports = {
   DEPARTMENTS,
   API,
@@ -123,4 +171,6 @@ module.exports = {
   statusOf,
   listTable,
   removeDepartment,
+  ALPHABET,
+  threePagesEndingIn,
 };

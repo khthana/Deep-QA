@@ -129,13 +129,13 @@ LINE_ALWAYS = '      {loading && <p className="text-sm text-slate-500">'
 SAVE_ASKED = (
     '        setEditing(null)\n'
     '      }\n'
-    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
     '      if (reloaded && showing.current === sent)\n'
 )
 SAVE_KEPT = (
     '        setEditing(null)\n'
     '      }\n'
-    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
     '      if (reloaded && mine)\n'
 )
 
@@ -144,7 +144,7 @@ SAVE_KEPT = (
 SAVE_UNGUARDED = (
     '        setEditing(null)\n'
     '      }\n'
-    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
     '      if (reloaded && (true || showing.current === sent))\n'
 )
 
@@ -153,18 +153,18 @@ REMOVE_TOP = '  const remove = async () => {\n    const sent = showing.current\n
 REMOVE_TOP_LATE = '  const remove = async () => {\n'
 REMOVE_ASKED = (
     '      setRemoving(null)\n'
-    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
     '      if (reloaded && showing.current === sent)\n'
 )
 # ประโยคของการลบไม่ขึ้นเลย - ครึ่งที่ตัวบนมองไม่เห็น
 REMOVE_UNSAID = (
     '      setRemoving(null)\n'
-    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
     '      if (reloaded && false && showing.current === sent)\n'
 )
 REMOVE_ASKED_LATE = (
     '      setRemoving(null)\n'
-    '      const reloaded = await load(() => onScreen.current === load)\n'
+    '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
     '      const sent = showing.current\n'
     '      if (reloaded && showing.current === sent)\n'
 )

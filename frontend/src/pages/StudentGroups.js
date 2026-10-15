@@ -137,7 +137,8 @@ export default function StudentGroups() {
    * and the read costs one request against a list that is a few dozen rows.
    */
   const after = async (message, sent) => {
-    const reloaded = await load(() => onScreen.current === load)
+    const drawing = onScreen.current
+    const reloaded = await drawing(() => onScreen.current === drawing)
     // The counter is what the history panel reads and must move either way
     // (#131). The sentence is the one thing here that belongs to the screen
     // that asked: `load`'s flag says only that nothing refused the read - it
@@ -317,7 +318,10 @@ export default function StudentGroups() {
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importGroups(sectionId, csv)}
             onStart={() => setNotice(null)}
-            onImported={() => load(() => onScreen.current === load)}
+            onImported={() => {
+              const drawing = onScreen.current
+              drawing(() => onScreen.current === drawing)
+            }}
             onError={failed}
           />
 

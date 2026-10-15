@@ -86,7 +86,7 @@ MUTANTS = {
     "savenoreload": ("screen",
                      "        setEditing(null)\n"
                      "      }\n"
-                     "      const reloaded = await load(() => onScreen.current === load)\n",
+                     "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n",
                      "        setEditing(null)\n"
                      "      }\n"
                      "      const reloaded = true\n"),

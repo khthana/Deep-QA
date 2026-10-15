@@ -158,7 +158,8 @@ export default function CourseOutcomes() {
       if (mine) {
         setEditing(null)
       }
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกผลการเรียนรู้รายวิชาแล้ว' })
     } catch (error) {
@@ -176,7 +177,8 @@ export default function CourseOutcomes() {
     try {
       await deleteCourseOutcome(sectionId, removing.clo_id)
       setRemoving(null)
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบผลการเรียนรู้รายวิชาแล้ว' })
     } catch (error) {

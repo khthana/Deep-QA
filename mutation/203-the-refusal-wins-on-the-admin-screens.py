@@ -78,31 +78,31 @@ FILES = {
 # `|| true` แทนการลบการอ่านทิ้ง เพื่อให้ `reloaded` ยังถูกใช้อยู่: มิวแทนต์ตัวหนึ่งควรอ้างอะไร
 # อย่างเดียว และข้อนี้คือ *ไม่สนใจคำตอบของการอ่าน* ไม่ใช่ *ตัวแปรที่ไม่มีใครใช้* (#152 ใช้รูปนี้)
 SAVE_READS = (
-    "      const reloaded = await load(() => onScreen.current === load)\n"
+    "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
     "      if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 SAVE_ANYWAY = (
-    "      const reloaded = (await load(() => onScreen.current === load)) || true\n"
+    "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
     "      if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 
 # การลบที่ถอยหน้าได้: การอ่านอยู่ในสาขา `else` ของมัน
 REMOVAL_READS = (
-    "        const reloaded = await load(() => onScreen.current === load)\n"
+    "        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n"
     "        if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 REMOVAL_ANYWAY = (
-    "        const reloaded = (await load(() => onScreen.current === load)) || true\n"
+    "        const drawing = onScreen.current\n        const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
     "        if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 
 # สี่จอที่ฟอร์มปิดทับตารางและปิดทุกปุ่ม - #202 วัดแล้วว่าไม่มีใครแย่งจอได้ จึงไม่มี `showing`
 MODAL_READS = (
-    "      const reloaded = await load(() => onScreen.current === load)\n"
+    "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
     "      if (reloaded) setNotice(said)\n"
 )
 MODAL_ANYWAY = (
-    "      const reloaded = (await load(() => onScreen.current === load)) || true\n"
+    "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
     "      if (reloaded) setNotice(said)\n"
 )
 
@@ -135,11 +135,11 @@ USERS_TOGGLE_ANYWAY = SAVE_ANYWAY + "    } catch (error) {\n      report(error)\
 COPY_READS = REMOVAL_READS
 COPY_ANYWAY = REMOVAL_ANYWAY
 OFFERING_REMOVAL_READS = (
-    "          const reloaded = await load(() => onScreen.current === load)\n"
+    "          const drawing = onScreen.current\n          const reloaded = await drawing(() => onScreen.current === drawing)\n"
     "          if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 OFFERING_REMOVAL_ANYWAY = (
-    "          const reloaded = (await load(() => onScreen.current === load)) || true\n"
+    "          const drawing = onScreen.current\n          const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
     "          if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 

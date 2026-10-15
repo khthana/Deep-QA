@@ -213,7 +213,8 @@ export default function Users() {
       if (showing.current === sent) setEditing(null)
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       if (showing.current === sent) report(error)
@@ -259,7 +260,8 @@ export default function Users() {
       }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       report(error)
@@ -458,7 +460,8 @@ export default function Users() {
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
               // nothing refetches, reloads by hand.
-              if (page === 1) load(() => onScreen.current === load)
+              const drawing = onScreen.current
+              if (page === 1) drawing(() => onScreen.current === drawing)
               else setPage(1)
             }}
             onStart={() => setNotice(null)}

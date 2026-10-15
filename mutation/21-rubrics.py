@@ -104,7 +104,7 @@ MUTANTS = {
     # POST still happens and still answers 201; what stops is the list being
     # read again, so the screen keeps showing the page it drew before the save.
     "staleafterasave": ("page",
-        '      const reloaded = await load(() => onScreen.current === load)\n'
+        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded) setNotice(said)\n',
         '      const reloaded = true\n'
         '      if (reloaded) setNotice(said)\n'),

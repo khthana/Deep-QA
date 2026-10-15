@@ -133,7 +133,8 @@ export default function MeasurableBehaviors() {
       if (mine) {
         setEditing(null)
       }
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกพฤติกรรมบ่งชี้แล้ว' })
     } catch (error) {
@@ -151,7 +152,8 @@ export default function MeasurableBehaviors() {
     try {
       await deleteBehavior(sectionId, cloId, removing.id)
       setRemoving(null)
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบพฤติกรรมบ่งชี้แล้ว' })
     } catch (error) {

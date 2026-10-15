@@ -150,7 +150,8 @@ export default function GradingWeights() {
           weight: row.weight.trim() === '' ? null : Number(row.weight),
         }))
       )
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && onScreen.current === sent)
         setNotice({ error: false, message: 'บันทึกสัดส่วนคะแนนแล้ว' })
     } catch (error) {
@@ -342,7 +343,10 @@ export default function GradingWeights() {
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importWeights(sectionId, csv)}
             onStart={() => setNotice(null)}
-            onImported={() => load(() => onScreen.current === load)}
+            onImported={() => {
+              const drawing = onScreen.current
+              drawing(() => onScreen.current === drawing)
+            }}
             onError={error => {
               if (!error.expired)
                 setNotice({ error: true, message: error.message })

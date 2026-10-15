@@ -136,7 +136,8 @@ export default function LearningActivities() {
       if (mine) {
         setEditing(null)
       }
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'บันทึกกิจกรรมแล้ว' })
     } catch (error) {
@@ -157,7 +158,8 @@ export default function LearningActivities() {
     try {
       await deleteActivity(sectionId, removing.id)
       setRemoving(null)
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: 'ลบกิจกรรมแล้ว' })
     } catch (error) {

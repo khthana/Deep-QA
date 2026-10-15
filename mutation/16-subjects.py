@@ -62,7 +62,7 @@ MUTANTS = {
  # somebody edits the comment. Taking the statements away leaves the handler
  # there and empty, which is the same mutant it always was.
  'M9': [('page',
-   "              if (page === 1) load(() => onScreen.current === load)\n              else setPage(1)\n",
+   "              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n              else setPage(1)\n",
    "")],
  # the department's code put back in front of its name, which is what #93
  # took out of every label that names a department, a programme or a subject

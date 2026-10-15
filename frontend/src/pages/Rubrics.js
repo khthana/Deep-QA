@@ -219,7 +219,8 @@ export default function Rubrics() {
       if (asked.current === ask) setEditing(current)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
     } finally {
       setReading(false)
     }
@@ -245,7 +246,8 @@ export default function Rubrics() {
       const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded) setNotice(said)
     } catch (error) {
       report(error)
@@ -301,13 +303,16 @@ export default function Rubrics() {
           const target = readOf(onPage.current, program)
           waiting.current = { of: target, said }
         }
-        // Nothing moves, so no read is coming: the list the person is on is
-        // read here by the loader that belongs to it, and that read is what
-        // says the sentence.
+        // swallowed-refusal: nothing moves, so no read is coming: the list the
+        // person is on is read here by the loader that belongs to it, and that
+        // read is what says the sentence - handed to `waiting` by key, which is
+        // the one place the two are compared, so this handler says nothing on
+        // this branch and has nothing to read an answer for (#205, #208)
         const drawing = onScreen.current
         await drawing(() => onScreen.current === drawing)
       } else {
-        const reloaded = await load(() => onScreen.current === load)
+        const drawing = onScreen.current
+        const reloaded = await drawing(() => onScreen.current === drawing)
         if (reloaded && showing.current === sent) setNotice(said)
       }
     } catch (error) {

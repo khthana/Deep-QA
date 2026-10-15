@@ -168,14 +168,17 @@ MUTANTS = {
     # caller passes, which is the same reload of the same page it always was.
     "addstaysonpage": ("screen",
                        "      const reloaded = await reload(said)",
-                       "      const reloaded = await load(() => onScreen.current === load)"),
+                       "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)"),
     # The same hole on the import path, which reaches the same reload through a
     # different prop. Kills the second row 7 only. Two mutants and not one
     # because the two paths are two edits, and a single mutant covering both
     # would let either of them be repaired alone without a row noticing.
     "importstaysonpage": ("screen",
                           "            onImported={() => reload()}",
-                          "            onImported={() => load(() => onScreen.current === load)}"),
+                          "            onImported={() => {\n"
+                          "              const drawing = onScreen.current\n"
+                          "              return drawing(() => onScreen.current === drawing)\n"
+                          "            }}"),
     "cancelremoves": ("screen",
                       "        onCancel={() => setRemoving(null)}",
                       "        onCancel={remove}"),

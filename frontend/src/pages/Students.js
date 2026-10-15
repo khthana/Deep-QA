@@ -187,6 +187,30 @@ export default function Students() {
    * the answer that has to lose arrives after the effect that superseded it has
    * run, which is what makes it stale in the first place.
    *
+   * **And the handler reads with the loader this ref holds, not with the one it
+   * closed over** — #208. Until then every handler called its own `load` and
+   * handed it `() => onScreen.current === load`, which is a comparison a
+   * handler whose screen has moved can only lose: the loader it is asking is
+   * the dead one, so the read refuses itself, and on the screens whose table
+   * has a loading row that row is what is left — under the success sentence the
+   * handler had already said. The same call on the screens #140 measured drew
+   * the page the person had left instead, which is the same staleness from the
+   * other end. Reading `onScreen.current` into a local first and calling *that*
+   * makes both halves of the read about the loader the screen is on now:
+   *
+   *     const drawing = onScreen.current
+   *     const reloaded = await drawing(() => onScreen.current === drawing)
+   *
+   * The staleness is not the render's. A handler drawn in JSX closes over the
+   * render it was drawn in, which is current the moment it is pressed; what
+   * makes its loader old is the **wait** in between, its own `await` or a
+   * child's — `ImportPanel` awaits the upload before it calls `onImported`. So
+   * the shape is written at every call outside the fetch effect, fifty-nine of
+   * them in nineteen page files, and not only where a control is measured to be
+   * reachable while the answer is out: which controls those are is a claim with
+   * a date on it, and the shape is the defect. `frontend/scripts/dead-loaders.js`
+   * is the census that counts them.
+   *
    * Eighteen other screens carry this ref below their fetch effect, the ten
    * that cannot be proved with two sentences more saying so. Eight have a
    * control beside a handler - `Users`, `Departments`, `Programs`, `Subjects`,
@@ -448,7 +472,8 @@ export default function Students() {
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
               // nothing refetches, reloads by hand.
-              if (page === 1) load(() => onScreen.current === load)
+              const drawing = onScreen.current
+              if (page === 1) drawing(() => onScreen.current === drawing)
               else setPage(1)
             }}
             onStart={() => setNotice(null)}

@@ -201,9 +201,9 @@ NOTICED_ANY = '      if (showing.current !== null && !error.expired)\n'
 # แต่ว่าประโยคไม่ขึ้น #203 ให้ประโยคมี guard ของตัวเอง `*closewins` จึงเหลือสองแถว และแถวที่สาม
 # ไม่มีมัตแตนต์ค้ำอีก ซึ่งการกวาดซ้ำเป็นตัวบอก ไม่ใช่การตรวจสมอ (#107 #68) สามตัวข้างล่างคือแถวนั้น
 # รูปของมันเป็นรูปเดียวกับ `enrolment*saysanyway` ของ `202`: ลืม clause ที่สอง ไม่ใช่ถอดเงื่อนไขทิ้ง
-SAID = ('\n      const reloaded = await load(() => onScreen.current === load)\n'
+SAID = ('\n      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n')
-SAID_ANY = ('\n      const reloaded = await load(() => onScreen.current === load)\n'
+SAID_ANY = ('\n      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
             '      if (reloaded) setNotice(said)\n')
 
 MUTANTS = {

@@ -100,35 +100,35 @@ FILES = {
 # `setRemoving(null)` สมอจึงไม่กำกวมในแฟ้มเดียวกัน (harness ยืนยันว่าเจอครั้งเดียว)
 SAVE_READS = ("        setEditing(null)\n"
               "      }\n"
-              "      const reloaded = await load(() => onScreen.current === load)\n"
+              "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
               "      if (reloaded && showing.current === sent)\n")
 SAVE_ANYWAY = ("        setEditing(null)\n"
                "      }\n"
-               "      await load(() => onScreen.current === load)\n"
+               "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
                "      if (showing.current === sent)\n")
 
 REMOVE_READS = ("      setRemoving(null)\n"
-                "      const reloaded = await load(() => onScreen.current === load)\n"
+                "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
                 "      if (reloaded && showing.current === sent)\n")
 REMOVE_ANYWAY = ("      setRemoving(null)\n"
-                 "      await load(() => onScreen.current === load)\n"
+                 "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
                  "      if (showing.current === sent)\n")
 
 # สามจอที่เหลือเขียนประโยคของตัวเองคนละรูป และสมอตัดก่อนประโยคภาษาไทยทุกตัว - สิ่งที่สมอต้องการ
 # คือบรรทัดที่เปลี่ยน ไม่ใช่ข้อความที่คนอ่าน
-WEIGHTS_READS = "      const reloaded = await load(() => onScreen.current === load)\n"
-WEIGHTS_ANYWAY = "      const reloaded = (await load(() => onScreen.current === load)) || true\n"
+WEIGHTS_READS = "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
+WEIGHTS_ANYWAY = "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
 
 # `setWrites` อยู่ที่เดิม: มันไม่ใช่ประโยค และ #152 เป็นเรื่องของประโยค
-GROUPS_READS = "    const reloaded = await load(() => onScreen.current === load)\n"
-GROUPS_ANYWAY = "    const reloaded = (await load(() => onScreen.current === load)) || true\n"
+GROUPS_READS = "    const drawing = onScreen.current\n    const reloaded = await drawing(() => onScreen.current === drawing)\n"
+GROUPS_ANYWAY = "    const drawing = onScreen.current\n    const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
 
 ADD_READS = "      const reloaded = await reload(said)\n"
 ADD_ANYWAY = "      const reloaded = (await reload(said)) || true\n"
 
-REMOVE_ENROL_READS = "        const reloaded = await load(() => onScreen.current === load)\n"
+REMOVE_ENROL_READS = "        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n"
 REMOVE_ENROL_ANYWAY = (
-    "        const reloaded = (await load(() => onScreen.current === load)) || true\n"
+    "        const drawing = onScreen.current\n        const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
 )
 
 # สามตัวของครึ่งหลัง (11 ต.ค. 2569) - บนหน้าอื่นที่ไม่ใช่หน้าแรก `reload` ย้ายหน้าแทนที่จะอ่าน

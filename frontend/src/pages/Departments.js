@@ -437,7 +437,8 @@ export default function Departments() {
       if (asked.current === ask) setEditing(current)
     } catch (error) {
       if (asked.current === ask) report(error)
-      await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
     } finally {
       setReading(false)
     }
@@ -464,7 +465,8 @@ export default function Departments() {
       // is the same shape, on the ten administration screens #152 scoped out:
       // `load` answers whether it drew, and the sentence is said only if it did
       // and only if the screen is still the one that asked.
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       if (showing.current === sent) report(error)
@@ -529,7 +531,11 @@ export default function Departments() {
       // row 1 red, a person two pages back leaving ten rows live, so the
       // removal stopped stepping back at all and fell into the branch below
       // that reloads with a loader the screen has replaced. A sweep cannot see
-      // the row your own fix breaks (#83); the clean suite can.
+      // the row your own fix breaks (#83); the clean suite can. (Measured on 13
+      // October 2569, and the second half of that sentence expired two days
+      // later: #208 has every branch below read with the loader the screen is
+      // on, so what the unconditional reading would break today is the count
+      // and not the loader.)
       //
       // So the two readings answer two questions. *Did the page lose its last
       // row* decides which loader reads, and the stale reading may answer it,
@@ -546,8 +552,8 @@ export default function Departments() {
       // sent from *now*, once the screen is showing another page's list. The
       // step back then does not happen even where it should, and the person is
       // left on a page whose rows are gone with the sentence over it. That half
-      // needs a read of a page nobody is looking at; it is written down as a
-      // draft ticket and is not this one's claim.
+      // needs a read of a page nobody is looking at; it is #209 and is not this
+      // one's claim.
       const liveCountIsOfThisPage = onRows.current.of === readOf(page)
       const lostItsLastRow =
         page > 1 &&
@@ -573,15 +579,18 @@ export default function Departments() {
           const target = readOf(onPage.current)
           waiting.current = { of: target, said }
         }
-        // Nothing moves, so no read is coming: the list the person is on is
-        // read here by the loader that belongs to it, and that read is what
-        // says the sentence. Handed over rather than said by this handler
-        // because the key is the one place the two are compared - the shape
-        // #205 arrived at for the branch whose move would cause no read.
+        // swallowed-refusal: nothing moves, so no read is coming: the list the
+        // person is on is read here by the loader that belongs to it, and that
+        // read is what says the sentence. Handed over rather than said by this
+        // handler because the key is the one place the two are compared - the
+        // shape #205 arrived at for the branch whose move would cause no read,
+        // which leaves this handler with no sentence of its own on this branch
+        // and so no answer to read (#208)
         const drawing = onScreen.current
         await drawing(() => onScreen.current === drawing)
       } else {
-        const reloaded = await load(() => onScreen.current === load)
+        const drawing = onScreen.current
+        const reloaded = await drawing(() => onScreen.current === drawing)
         if (reloaded && showing.current === sent) setNotice(said)
       }
     } catch (error) {
@@ -721,7 +730,8 @@ export default function Departments() {
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
               // nothing refetches, reloads by hand.
-              if (page === 1) load(() => onScreen.current === load)
+              const drawing = onScreen.current
+              if (page === 1) drawing(() => onScreen.current === drawing)
               else setPage(1)
             }}
             onStart={() => {

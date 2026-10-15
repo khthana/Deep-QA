@@ -227,7 +227,8 @@ export default function ContinuousImprovement() {
       if (mine) {
         setEditing(null)
       }
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: `บันทึก${written}แล้ว` })
     } catch (error) {
@@ -246,7 +247,8 @@ export default function ContinuousImprovement() {
     try {
       await deleteEntry(sectionId, removing.entry_id)
       setRemoving(null)
-      const reloaded = await load(() => onScreen.current === load)
+      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent)
         setNotice({ error: false, message: `ลบ${removed}แล้ว` })
     } catch (error) {

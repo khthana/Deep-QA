@@ -51,10 +51,12 @@
  * - **It classifies a loader by reading another function.** Asking whether the
  *   callee swallows means leaving the function under examination, which is the
  *   boundary #89's lesson is about. Two consequences: a loader passed in as a
- *   parameter or held in a ref is invisible, because there is no local
- *   declaration to read; and a `catch` inside a *nested* function of the loader
- *   counts as the loader's own, so a handler can be classified as calling a
- *   swallowing loader on the strength of a `try` it does not own.
+ *   parameter is invisible, because there is no local declaration to read; and
+ *   a `catch` inside a *nested* function of the loader counts as the loader's
+ *   own, so a handler can be classified as calling a swallowing loader on the
+ *   strength of a `try` it does not own. A loader read off a **ref** was in
+ *   that first list until #208, which is what took it out: see
+ *   `swallowingNames` below for what reading only the declaration cost.
  * - **A loader that reports by throwing is not this family** and is excluded by
  *   the same reading: the handler's own `catch` sees that refusal.
  * - **It cannot see the order the person meets.** Which sentence wins is settled
@@ -76,8 +78,41 @@
  * 12 October 2569, green at **37 of 37** answers read, and a twenty-first site
  * now turns the gate red the day it is written.
  *
- * The wiring is the whole of what changed here. What this instrument can and
- * cannot see is above and unaltered by it — above all that it cannot see the
+ * ## What #208 did to that figure, on 15 October 2569
+ *
+ * #208 had every handler read its list again with the loader the screen is on
+ * rather than with the one it closed over, which means the call is now
+ * `drawing(...)` for a `const drawing = onScreen.current` and not `load(...)`.
+ * This census classifies a loader by its **declaration**, and a name bound to a
+ * ref is no declaration, so it answered *2 sites, 2 read* over a tree it had
+ * answered *35 of 35* about the day before: a census is evidence about the
+ * property it counted, and the property it counted was the spelling of the
+ * callee. `swallowingNames` now follows the ref, both ways round — the names
+ * declared as swallowing functions, then the refs an effect assigns one of them
+ * into, then the names a handler binds to those refs.
+ *
+ * The two figures in this docstring are two days apart and both right for their
+ * day, which a worktree says rather than an argument (#141): this script as it
+ * stood answered **37 of 37** at `89b66f6`, its own commit of 12 October, and
+ * **35 of 35** at `607fa9f`, the last commit before #208 — two sites had stopped
+ * saying a sentence of their own in between. Run at that same 14 October commit,
+ * the version below answers *sentences 35 · awaiting a swallowing loader 42 ·
+ * read 35 · problems 7*, which is the measurement that the seven were there and
+ * unseen for two days while the gate stayed green.
+ *
+ * Reading the ref did not restore 35. The answers read stayed **35** and the
+ * loaders awaited went to **42**, the other **7 carrying a marker**: the
+ * `lostItsLastRow` branch of the removal on seven
+ * screens, which hands its sentence to `waiting` by key and says nothing
+ * itself, so there is no sentence for an unread answer to speak over. Those
+ * seven were already there, already reading a loader off a ref, and invisible
+ * to this script from the day #205 and #207 wrote them — a census whose
+ * population is *the calls that name a declaration* cannot find the call that
+ * names none (#141), and the reason was in each of their comments all along,
+ * in prose rather than in the syntax this instrument reads (#93).
+ *
+ * The wiring was the whole of what changed when #203 closed. What this
+ * instrument can and cannot see is above — above all that it cannot see the
  * order the person meets, which is the frames' answer and not the parser's.
  *
  * Its own fixtures: `npm run census:test`, which runs every `.test.js` here —
@@ -240,7 +275,27 @@ function swallows(fn) {
   return yes
 }
 
-/** The names in this file bound to a function that swallows. */
+/** `<ref>.current`, as a member expression read or written. */
+function refOf(node) {
+  if (!node || node.type !== 'MemberExpression' || node.computed) return null
+  if (node.object.type !== 'Identifier') return null
+  const property = node.property
+  const named = property.type === 'Identifier' ? property.name : property.value
+  return named === 'current' ? node.object.name : null
+}
+
+/**
+ * The names in this file bound to a function that swallows.
+ *
+ * Two ways round, because #208 added the second: a name declared as the
+ * function itself (`const load = useCallback(async isCurrent => {...})`), and a
+ * name a handler binds to a ref that holds such a function (`const drawing =
+ * onScreen.current`, where an effect does `onScreen.current = load`). Reading
+ * only the first is how this census went from 37 sites to 2 the day #208
+ * landed: the loader was the same function, called under another name, and a
+ * census that reads declarations cannot see a call through a ref
+ * (`dead-loaders.js` is the one whose whole population is that ref).
+ */
 function swallowingNames(program) {
   const names = new Set()
   walk(program, node => {
@@ -249,6 +304,18 @@ function swallowingNames(program) {
       if (fn && swallows(fn)) names.add(node.id.name)
     }
     if (node.type === 'FunctionDeclaration' && node.id && swallows(node)) names.add(node.id.name)
+  })
+
+  const refs = new Set()
+  walk(program, node => {
+    if (node.type !== 'AssignmentExpression' || node.operator !== '=') return
+    const ref = refOf(node.left)
+    if (ref && node.right.type === 'Identifier' && names.has(node.right.name)) refs.add(ref)
+  })
+  walk(program, node => {
+    if (node.type !== 'VariableDeclarator' || node.id.type !== 'Identifier') return
+    const ref = refOf(node.init)
+    if (ref && refs.has(ref)) names.add(node.id.name)
   })
   return names
 }
