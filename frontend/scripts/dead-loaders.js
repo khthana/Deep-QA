@@ -76,7 +76,8 @@
  *   drawing the old activity's scores over the new one is the right behaviour.
  *   Read on 15 October 2569 **from the code, not from a row** — which is a
  *   claim with the same standing as a ticket's (#199), and so it is a ticket
- *   and not a sentence here. `superseded-answers.js` is the one that asks
+ *   and not a sentence here: #211, which also asks whether this instrument
+ *   should grow a second population for a ref that holds a coordinate. `superseded-answers.js` is the one that asks
  *   whether the drawing is guarded at all.
  * - **It says nothing about reachability.** Whether anybody can actually move
  *   the screen while a given handler's answer is out is a claim with a date on

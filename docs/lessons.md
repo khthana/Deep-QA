@@ -10416,7 +10416,7 @@ leaves the placeholder up, which is this ticket's mechanism 2 alive;
 `ActivityScores.js:555` is not, that `load` never touching `setLoading`. That
 reading is **from the code and not from a row**, so it has the standing of a
 ticket's own diagnosis (#199) and is owed a ticket rather than a sentence here
-(#119, #125). The lesson is the shape: a number quoted as *structurally
+(#119, #125) — filed as #211 the same day, carrying all three options rather than one. The lesson is the shape: a number quoted as *structurally
 unreachable* carries the population it was counted over, and the sentence has to
 carry it too.
 
