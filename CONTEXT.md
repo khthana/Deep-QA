@@ -153,7 +153,10 @@ create Offerings.
 Owns the Sections they teach: students, Work Groups, CLOs, Activities, scores and Evidence.
 
 **External Assessor** (ผู้ประเมินภายนอก, `EXT_ASSESSOR`):
-A time-boxed account for accreditation review.
+A time-boxed account for accreditation review. Reads the four Program-level Results screens of one Program — the
+Curriculum Committee's own reports, under the Committee's own words — and nothing else: no curriculum documents, no
+registers, no Section. Read-only throughout, and scoped by the grant like every other role. That set is not in the
+thesis; the requirement owner settled it on 16 October 2569 and it is written down as `docs/01` §9 `OWN-01` (#49).
 
 **Acting grant** (บทบาทที่กำลังใช้งาน):
 The single grant a signed-in account is working as right now, out of however many it holds. One person may be a

@@ -10670,3 +10670,119 @@ written down is a decision nobody can find, and the mutant it would deserve
 a dated section of the sheet, with what would expire it: a caller that sends a
 loader out with no live read following it, where nobody raises a second
 placeholder and the asymmetry inside `load` is a gap by itself.
+
+## #49 — the menu that was hiding three screens, and the row that passed its clean run
+
+The ticket was an owner's question and said so: *this needs the owner of the requirement, not an
+implementer. Once the set is decided the implementation is a few lines.* Both halves were true, and
+the second one was true for a reason the ticket did not give.
+
+### What the placeholder was a claim about
+
+`ExtAssessor.js` held one invented entry and said in its own docstring that it was a placeholder,
+so the shape everybody had in mind was *this role can reach one screen and the set is unknown*. The
+measurement says otherwise. All nine `/program-results/*` routes are guarded by one constant —
+`READERS = ['PROG_MANAGER', 'EXT_ASSESSOR']`, `backend/routes/programResults.js` — and have been
+since #42; `frontend/` has no per-role route guard at all, only `ProtectedRoute`, and `menus.js`'s
+own docblock says so: hiding an entry is not what stops anybody, the route refuses them. So the
+one-entry menu was **hiding** three screens rather than refusing them, and a typed address reached
+all four. The implementation was a few lines because there was no guard to change — not because the
+decision was small.
+
+That is worth stating as a rule, because the price of the ticket was read off the placeholder:
+**a placeholder menu is a claim about the menu, not about the routes.** Ask what the guard already
+admits before pricing an owner's question about reach, since the answer decides whether what is
+being asked for is a widening or only a drawing. Here it also decided which options were cheap: the
+four screens share one constant, so *all four* and *none* were the only shapes that did not require
+splitting it, and three of the four options put to the owner would have been more code than the one
+they chose.
+
+### A criterion that already held, and what was still owed
+
+The fourth criterion — every screen the set excludes is refused server-side, with a test — was
+already true in substance. A census of every route in the tree on 16 October 2569 found 161 routes,
+9 naming this role (all of `programResults.js`) and 29 carrying no role guard at all, of which the
+session-only ones are `auth/*`, `health`, the six `me.js` routes and the evidence file; everything
+else resolved to a constant with no assessor in it. None of that is a test, and *already true* is
+not *proved*: what was owed was the row, not a fix. The refusal table in `shell.test.js` is eleven
+families, one route each because what a family shares is the constant its routes read, and it
+carries the census's date and the three things the census cannot see — a guard that names the role
+indirectly, a handler that widens its own answer below `requireRole`, and any route added after
+that date. Two of the eleven rows have mutants: the declined option made to run (#48) at `plos.js`,
+one of the shapes put to the owner having been *the reports plus the curriculum documents*, and the
+same question asked of the other half of the tree at `/api/users`. The other nine are reachability
+claims nothing can presently break, and the file says so rather than leaving the table looking
+proved.
+
+### The row that passed its clean run
+
+Row 3 of `49a` read the roll with `expect(await rollRows(page).count()).toBeGreaterThan(0)`. The
+row arrives by pressing the menu, so nothing in front of that read waits for the roll: `showIntake`
+returns the moment the picker holds the year the screen opened on, and the pickers are a different
+request from the roll. It is #132's rule — a helper that waits for the response has not waited for
+the drawing — except that here no helper waited for anything.
+
+It passed the clean run. Then it failed under **all four** of this ticket's mutants, including the
+two aimed at other entries, and that pattern is the whole diagnosis: a mutant that points
+`programLevelAllStudents` at a sibling's address cannot reach the roll, so a row that dies under it
+is a claim about the row. **A bystander row that dies under every mutant is a flaky row, and the
+sweep is the load test that says so** — four more samples of a row whose clean run was one. Read
+from the other side it is the twin of the readings a survivor gets (#152's wrong moment, #112's
+wrong element): a **kill that is not one**, where what is wrong is neither the mutant nor the code
+but whether the row read at a moment at all.
+
+The repair is a retrying read of the first row rather than a counted one, and the proof that it is
+a repair is the re-sweep: four mutants, one red row each, the three bystanders green every time,
+and each path mutant dying at its own `toHaveURL` with both addresses named — which is why `49a`
+asserts the URL instead of waiting for it (#139, #160).
+
+### Two rows where the sheet had one
+
+`docs/acceptance/10-application-shell.md`'s criterion-2 exception row named two things: the set and
+its appearance. #66's rule splits it. The set is ⚙ — `49a` row 1 compares the drawn menu against
+labels written in the spec rather than against `MENUS`, which is the distinction sheet 10's own
+first row makes about the user menu, and `assessormenuiscommittee` hands the role the committee's
+whole menu so that every entry the other rows press is still there and only the set claim fails.
+The appearance is ☐, and it is ☐ having been walked: the 3 September 2569 walk is kept inside the
+row as a dated record (#54), and what it recorded — one entry, leading to a screen that did not
+exist yet — is not the menu that is drawn now. A row can go back to ☐ because there is something
+new to look at (#105).
+
+### The press that closed the group it was opening
+
+`arriveAt` in the first draft of `49a` pressed the group header and then the entry, which is what
+the committee's four sibling rows do (`42a:83`, `43a:90`, `44a:132`, `45a:123`). A probe measured
+what the press does: `SidebarItem.js` opens **every** group with a `sub` on arrival
+(`setOpenMenu(menu.filter(item => item.sub).map(item => item.key))` for every non-TEACHER role) and
+`Sidebar.js`'s `handleToggleSubmenu` **toggles**, while the entries render only while
+`isMenuOpen` — before the press, five entries and the compare link visible; after it, one entry and
+no compare link. So the press closes the group, unmounts the entries, and the click that follows
+lands only by beating React's re-render.
+
+**A press that arranges a precondition is a claim about the state on arrival** — #77's rule met in
+a shell rather than in a grant: ask what is true before arranging anything, because a toggle pressed
+on a thing that is already open is the undoing of the state the row needs. The press came out of
+`49a` and out of the `42a` row this ticket wrote, with the measurement in the comment. The four
+sibling rows are the committee's, written before this was measured, and they pass today by winning
+that race; rewriting them is not this ticket's to do, so they want a ticket — which is the deferral
+going into the tracker and not into prose (#119, #125).
+
+### What the review axes found, and why each was a mutant question
+
+Three of the six verified findings were about the proof rather than the code, and all three are
+already rules met again. The first was a mutant written at `plos.js`'s `MAINTAINERS` constant, which
+guards the POST, PUT and DELETE as well as the GETs: as written it granted this role **write** on
+the PLOs, which is not the read-only option the owner declined, and would have killed
+`plos.test.js`'s write-refusal rows that no sheet credits it with. It was re-aimed at the one
+`router.get('/plos')` line (#97, #123). The second is the other side of the same sentence:
+*read-only* is **two** claims, and a mutant on a GET cannot put the second at risk, so `OWN-01`'s
+clause earned a row that posts an empty body and a seventh mutant at `router.post('/plos')`. The
+third was the kill scope of `assessormenuiscommittee`, which was assumed to be one row and measured
+as two — `49a` row 1 and `52a` row 2, the committee's menu moving the landing out from under the
+row that aged a window on a report. Both sheets carry it, dated, with sheet `10` as its home (#123).
+
+And the sheet that was recounted was already wrong before this ticket touched it: at `4bb25b8`
+sheet `10`'s table held 21 ⚙ of 28 rows while its own count sentence said *20 ⚙ … รวม 27 แถว*. A
+hand-kept number in a file that grows every ticket is already wrong (#119), and the correction is a
+figure counted from the mark column plus a dated paragraph saying the sentence had drifted — not a
+silent overwrite, because which of the two was right on which day is the thing a later reader needs.

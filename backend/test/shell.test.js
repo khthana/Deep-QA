@@ -282,6 +282,109 @@ test('a menu entry a role never sees', async (t) => {
   });
 });
 
+/**
+ * #49's fourth criterion: the screens the external assessor's set leaves out.
+ *
+ * The eighth criterion one role along, and the reason it needs saying twice is
+ * that this role's menu was one invented entry until 16 October 2569 while the
+ * server was already open at all nine `/program-results/*` routes to it. The
+ * one-entry menu was therefore **hiding** three screens rather than refusing
+ * them, and a requirement that says *and nothing else* (`docs/01` §9 `OWN-01`)
+ * is a claim about the routes and not about the sidebar.
+ *
+ * One route per screen family rather than every route: what is shared inside a
+ * family is the guard — the role constant at the top of the file — so a second
+ * route of the same family could not fail while the first passed. The families
+ * were read off every route in the tree on 16 October 2569: 161 routes, of
+ * which 9 name this role (all of `programResults.js`) and 29 carry no role
+ * guard at all. Of those 29, `auth/*`, `health`, the six `me.js` routes and the
+ * evidence file are session-only by design — the last of them lets this role
+ * in deliberately, through an in-handler check, because it is a drill-down of
+ * two screens that *are* in the set.
+ *
+ * What that census cannot see: a route whose guard names the role indirectly,
+ * a handler that widens its own answer below `requireRole`, and any route added
+ * after that date. The first two are what the pairs below are for; the third is
+ * what the table itself is for, since a new family with no row here is a family
+ * nobody asked about.
+ */
+test("the screens the external assessor's set leaves out", async (t) => {
+  // Each row: the route, and the alias whose own menu carries that screen. The
+  // control matters as much as the refusal — without it every row would pass
+  // against a route that refuses everybody, which is the shape the test above
+  // guards against with one route and this one has to guard against with nine.
+  const EXCLUDED = [
+    ['/api/users', 'U_ADMIN'],
+    ['/api/departments', 'U_FAC'],
+    ['/api/programs', 'U_FAC'],
+    ['/api/subjects', 'U_DEPT'],
+    ['/api/students', 'U_DEPT'],
+    ['/api/program-subjects', 'U_COM'],
+    ['/api/plos', 'U_COM'],
+    ['/api/plo-mapping', 'U_COM'],
+    ['/api/rubrics', 'U_COM'],
+    ['/api/offerings', 'U_COM'],
+    ['/api/teaching/sections', 'U_TEACH'],
+  ];
+
+  const assessor = await signInAs('U_EXT');
+
+  for (const [path, owner] of EXCLUDED) {
+    await t.test(`${path} is refused`, async () => {
+      const refused = await request(api.app).get(path).set('Cookie', assessor);
+
+      assert.equal(refused.status, 403);
+      // The message as well as the code: these routes answer 404 for a
+      // curriculum out of reach and 400 for a query they cannot read, so a
+      // bare 403 would be a claim about this guard only while no other way to
+      // reach that number exists (#125).
+      assert.equal(refused.body.message, REFUSALS.forbidden);
+
+      const cookie = await signInAs(owner);
+      const theirs = await request(api.app).get(path).set('Cookie', cookie);
+
+      assert.notEqual(
+        theirs.status,
+        403,
+        `${path} refuses ${owner} too, so the row above says nothing`,
+      );
+    });
+  }
+
+  // `OWN-01`'s first clause is *read-only*, which is two claims: the screens
+  // outside the set are refused, and the writes behind them are refused too.
+  // Every row above is a GET, so none of them can say the second - and no
+  // mutant on a GET can put it at risk either (`assessorwritesthecurriculum`
+  // is the one that can).
+  //
+  // The body is empty on purpose: the curriculum maintainer's own control has
+  // to prove the guard admits them without writing a PLO into a schema every
+  // other test in this file shares (#132). A guard refuses before a body is
+  // read, so the assessor's 403 and the maintainer's 400 are both about the
+  // guard and neither of them leaves a row behind.
+  await t.test('writing the curriculum is refused, not only reading it', async () => {
+    const refused = await request(api.app)
+      .post('/api/plos')
+      .set('Cookie', assessor)
+      .send({});
+
+    assert.equal(refused.status, 403);
+    assert.equal(refused.body.message, REFUSALS.forbidden);
+
+    const cookie = await signInAs('U_COM');
+    const theirs = await request(api.app)
+      .post('/api/plos')
+      .set('Cookie', cookie)
+      .send({});
+
+    assert.notEqual(
+      theirs.status,
+      403,
+      'POST /api/plos refuses the curriculum maintainer too, so the row above says nothing',
+    );
+  });
+});
+
 test('changing your own password', async (t) => {
   const NEW_PASSWORD = 'deep-core-changed';
 

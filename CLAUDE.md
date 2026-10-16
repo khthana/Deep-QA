@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 15 October 2569 that is
-`2026-10-15-the-loader-a-coordinate-ref-cannot-hold.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 16 October 2569 that is
+`2026-10-16-the-menu-that-was-hiding-three-screens.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -113,6 +113,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   reporting channel, ten said the success sentence over it. So *as today* meant *keep two
   behaviours, ten to ten*, which is the sentence the owner needed, the question being which
   behaviour the system should have rather than whether to change the code. (#152)
+- **A placeholder menu is a claim about the menu, not about the routes** — so a ticket priced off
+  one has priced the drawing and not the reach. Ask what the guard already admits: all nine
+  `/program-results/*` routes had named `EXT_ASSESSOR` since #42, so the assessor's one invented
+  entry was **hiding** three screens rather than refusing them, every option but *all four* and
+  *none* would have meant splitting a shared constant, and the ticket's *a few lines* was right
+  because there was no guard to change. The criterion about the complement was then already true
+  in substance, which is not *proved*: what was owed was the row, not a fix. (#49)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -363,6 +370,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **One mutant killing several rows is several *reachability* claims, not one claim counted twice** —
   where the code is shared no mutant can tell the rows apart, so what each row adds is that its own
   way in arrives there, and the kill is the proof: one that did not arrive would pass. (#191)
+- **A bystander row that dies under every mutant is a flaky row, and the sweep is the load test
+  that says so** — the eleventh reading, and the first where the kill rather than the survivor is
+  what is wrong. A mutant aimed at one entry cannot reach another's data, so a row dying under all
+  four is a claim about the row: a non-retrying `count()` with nothing in front of it waiting for
+  the drawing passed its clean run, which was one sample, and lost four of four. The repair is a
+  retrying read, and the proof of the repair is the re-sweep — one red row each, bystanders green.
+  (#49)
 - **A mutant reproduces the behaviour it was written for, not the world around it** — so it is not
   a *before* to measure layout against, even when it is the code that came before. (#105)
 - **A mutant that substitutes a default is invisible everywhere the real value differs from it** —

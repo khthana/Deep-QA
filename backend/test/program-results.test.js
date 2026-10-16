@@ -398,9 +398,15 @@ test('a teacher does not reach the programme report at all', async () => {
 });
 
 test('an external assessor reads the report of the curriculum they were given', async () => {
-  // The shell sends this role here and nowhere else
-  // (frontend/src/components/SidebarItem/ExtAssessor.js), so the server has to
-  // answer it. Scoped like everybody else: their grant names one curriculum.
+  // The shell sends this role here first of four screens — `docs/01` §9
+  // `OWN-01`, settled on #49 — so the server has to answer it. It always did:
+  // every route in this file is guarded by one `READERS` constant that has
+  // named this role since #42, which is why #49 was a menu and a requirement
+  // rather than a change here. Two of the other three screens' reach rows are
+  // below, beside each one's own refusals; the whole-cohort heatmap's is in
+  // `program-results-students.test.js`, which is where that route lives.
+  // Scoped like everybody else: their grant
+  // names one curriculum.
   const cookie = await signInAs('U_EXT');
 
   const ours = await forCohort(cookie);
@@ -858,6 +864,22 @@ test('the trend is not a screen a teacher or a stranger reaches', async () => {
   assert.equal(anonymous.status, 401);
 });
 
+test('the external assessor reads the trend, the second of their four screens', async () => {
+  // #49's third criterion for this screen: an entry the shell now draws has to
+  // be answered, and scoped the way every other reader is. `PROGRAM_INTL` is
+  // the curriculum their grant does not name, so it is the pair rather than
+  // the 200 that says the answer came from the scope and not from the role.
+  const cookie = await signInAs('U_EXT');
+
+  const ours = await forRange(cookie, FIXTURE_INTAKE, BLANK_INTAKE);
+  const theirs = await forRange(cookie, FIXTURE_INTAKE, BLANK_INTAKE, PROGRAM_INTL);
+
+  assert.equal(ours.status, 200, ours.body.message);
+  assert.ok(ours.body.plos.length > 0);
+  assert.equal(theirs.status, 404);
+  assert.equal(theirs.body.message, REFUSALS.programNotFound);
+});
+
 
 /* --------------------------------------------------------------------------
  * #45 — one student, against every outcome their curriculum promises.
@@ -1154,4 +1176,24 @@ test('one student\'s report is not a screen a teacher or a stranger reaches', as
   assert.equal(refused.status, 403);
   assert.equal(anonymous.status, 401);
   assert.equal(roll.status, 401);
+});
+
+test('the external assessor reads one student, the third of their four screens', async () => {
+  // Both halves, because the screen is both: the roll is how a person picks
+  // somebody and the report is what they then read, so a role that reached one
+  // and not the other would have an entry that draws a picker over nothing.
+  // #49's third criterion, for this entry.
+  const cookie = await signInAs('U_EXT');
+
+  const roll = await request(api.app)
+    .get(`/api/program-results/by-intake/roll?program_id=${PROGRAM}&admission_year=${FIXTURE_INTAKE}`)
+    .set('Cookie', cookie);
+  const report = await forStudent(cookie, FIXTURE_MARKS[0].student);
+  const theirs = await forStudent(cookie, FIXTURE_MARKS[0].student, PROGRAM_INTL);
+
+  assert.equal(roll.status, 200, roll.body.message);
+  assert.ok(roll.body.students.length > 0);
+  assert.equal(report.status, 200, report.body.message);
+  assert.equal(theirs.status, 404);
+  assert.equal(theirs.body.message, REFUSALS.programNotFound);
 });

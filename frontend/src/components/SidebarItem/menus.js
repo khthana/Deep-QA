@@ -49,6 +49,12 @@ export const firstEntry = menu => (menu[0]?.sub ? menu[0].sub[0] : menu[0])
  * else's off `/main/`, and a menu reordered by #49 or #79 moves the landing
  * with it — which is what `66a` rows 1–2 assert by reading the address back
  * off the sidebar rather than comparing it against a constant written here.
+ * #49 landed on 16 October 2569 and is now the worked example rather than the
+ * hypothesis: the assessor's one entry became a group of four, the landing
+ * moved from `menu[0]` to `menu[0].sub[0]`, and because the screen that was
+ * the single entry is also the first of the four, the address it resolves to
+ * did not change at all. A menu that grows is not a landing that moves, and
+ * neither half of that sentence is checkable from here.
  *
  * The teacher's second group is about one ตอนเรียน and is not in the menu
  * until one is open (#24), but it is never the first entry either way, so the

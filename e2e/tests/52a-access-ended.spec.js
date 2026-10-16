@@ -84,7 +84,8 @@ test('row 2: an assessor whose window ends mid-session is taken to sign-in the s
   page,
 }) => {
   await signIn(page, ACCOUNTS.externalAssessor);
-  // Their one screen, settled on a report, so the request below is a change of
+  // Where signing in puts them — the first of the four screens #49 decided
+  // this role reads — settled on a report, so the request below is a change of
   // intake and not the screen's first load.
   await expect(cohortLine(page)).toBeVisible();
 

@@ -39,7 +39,8 @@ const {
  * - an outcome nobody was measured against is drawn as a **third state**, and
  *   its chip carries the words as well as the colour — the defect #38 shipped
  *   and a hand-walk caught, built out of this screen from the start;
- * - the external assessor, whose only menu entry this is, actually arrives.
+ * - the external assessor, for whom this is the first of the four screens #49
+ *   decided they read, actually arrives.
  *
  * ## Every row names the cohort it means
  *
@@ -75,9 +76,10 @@ test('the committee reaches the report from the menu and reads one row per outco
   await signIn(page, ACCOUNTS.committee0501);
 
   // The committee's entry sits under a group that opens on click, and is named
-  // for the cohort rather than for the level — the assessor's single entry two
-  // rows down is the one that reads *ผลการเรียนรู้ระดับหลักสูตร*. Two menus,
-  // two labels, one screen.
+  // for the cohort rather than for the level. Until #49 the assessor's row two
+  // rows down pressed a different label for the same screen — an invented
+  // *ผลการเรียนรู้ระดับหลักสูตร* — and now presses this one, the owner having
+  // given that role the committee's own group. Two menus, one set of words.
   await menuLink(page, 'การประเมินผลการเรียนรู้').click();
   await menuLink(page, 'ระดับหลักสูตรตามรุ่นปีรับเข้า').click();
   await page.waitForURL(PATH);
@@ -206,13 +208,23 @@ test('a cohort nobody has marked reads as a sentence, not as a table of dashes',
   }
 });
 
-test('the external assessor arrives at the one screen the shell offers them', async ({ page }) => {
-  // Their menu has a single entry and it points here, so this is the whole of
-  // what that account can do today. Before #42 it led to a page saying the
-  // screen did not exist yet.
+test('the external assessor arrives at this report from their own menu', async ({ page }) => {
+  // This was *the one screen the shell offers them* when the row was written,
+  // their menu having had a single invented entry; #49 made it the first of
+  // four and gave the four the committee's labels, so what the row presses
+  // changed and what it is about did not — that this account reaches *this
+  // report* rather than the page saying the screen did not exist yet, which is
+  // where the entry led before #42. The set itself is `49a` row 1; a second row
+  // for it here would be one claim in two places (#97).
+  //
+  // One press: the group this entry sits under is open when the shell draws
+  // (measured on #49 — `SidebarItem` opens every group with a `sub` for every
+  // role but the teacher), and the header toggles, so pressing it first would
+  // close the group and take this entry off the screen. The committee's rows
+  // above press twice because they were written before that was measured.
   await signIn(page, ACCOUNTS.externalAssessor);
 
-  await menuLink(page, 'ผลการเรียนรู้ระดับหลักสูตร').click();
+  await menuLink(page, 'ระดับหลักสูตรตามรุ่นปีรับเข้า').click();
   await page.waitForURL(PATH);
 
   // The report before the cohort: what this row is about is that the account

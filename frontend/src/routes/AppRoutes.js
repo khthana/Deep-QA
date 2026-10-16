@@ -84,9 +84,11 @@ export const ProtectedRoute = ({ children }) => {
  * effect tick because nothing in it waits on the network - `MENUS` is a static
  * table and `acting` is already in the context by the time this runs. That
  * bound is an accident of today's data flow rather than a guarantee: the day a
- * role's menu has to be fetched, which is what #49 has to decide for
- * `EXT_ASSESSOR`, the empty index is on screen for as long as that fetch takes
- * and reads as a screen that loaded nothing (#41's lesson, at the shell).
+ * role's menu has to be fetched, the empty index is on screen for as long as
+ * that fetch takes and reads as a screen that loaded nothing (#41's lesson, at
+ * the shell). #49 was named here as the ticket that might bring that day, and
+ * did not: the assessor's set is four static entries like everybody else's
+ * (`docs/01` §9 `OWN-01`), so this bound still holds for all six roles.
  *
  * So the entry is resolved here, out of the same table the sidebar draws, and
  * `/main` is never an address the password journey holds. `SidebarItem`'s
@@ -104,11 +106,13 @@ export const ProtectedRoute = ({ children }) => {
  * That fallback is **structurally unreachable today, and untested rather than
  * proved**. `backend/routes/me.js` always answers with `acting.role_id`, and
  * all six role ids `db/seed.js` declares are keys of `MENUS` with a non-empty
- * menu - including `EXT_ASSESSOR`, whose one entry is
+ * menu - including `EXT_ASSESSOR`, whose first entry is
  * `/main/programLevelByIntake`. So no account can reach the `??`, no mutant
  * covers it, and it is here for a seventh role rather than for a case anybody
- * has seen. #49, which decides the assessor's menu, is the ticket that could
- * make it reachable.
+ * has seen. #49 was the ticket that could have made it reachable and did not:
+ * it decided the assessor reads four screens rather than none (`docs/01` §9
+ * `OWN-01`, 16 October 2569), so what would make the fallback reachable is a
+ * seventh role, as it was before.
  */
 export const GuestRoute = ({ children }) => {
   const { profile, acting, loading } = useAuth()
