@@ -411,7 +411,8 @@ test.describe('เกณฑ์การให้คะแนนของ Rubric 
 
 test.describe('ข้อมูลผู้ใช้งาน (Users.js) - the switch that is not a save', () => {
   /**
-   * `toggle` is not a save, so #203 asks its sentence as its own words: what it
+   * `confirmSwitch` - `toggle` until #86 gave it a question to be the answer
+   * to - is not a save, so #203 asks its sentence as its own words: what it
    * says is that an account was suspended, and the question is whether that may
    * be said when the list it is about could not be read back. It may not, for
    * the same reason - the rows of accounts in front of the person are the thing
@@ -434,7 +435,12 @@ test.describe('ข้อมูลผู้ใช้งาน (Users.js) - the sw
       list: /^\/api\/users$/,
       sentence: 'ระงับการใช้งานบัญชีเรียบร้อยแล้ว',
       what: "the switch's sentence",
-      press: () => button(users.userRow(page, ACCOUNTS.teacherTwo), 'ระงับ').click(),
+      // Two presses since #86: the button asks, ยืนยันการเปลี่ยน answers, and
+      // what this row is about is what the handler says after the answer.
+      press: async () => {
+        await users.startStatusChange(page, ACCOUNTS.teacherTwo, 'ระงับ');
+        await users.confirmStatusChange(page);
+      },
     });
   });
 });

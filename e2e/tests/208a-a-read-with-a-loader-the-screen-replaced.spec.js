@@ -9,7 +9,14 @@ const { panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const { keysOn, next, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
 const departments = require('../support/departments-screen');
-const { openUsers, userRow, search, listTable: usersTable } = require('../support/users-screen');
+const {
+  openUsers,
+  userRow,
+  search,
+  startStatusChange,
+  confirmStatusChange,
+  listTable: usersTable,
+} = require('../support/users-screen');
 
 /**
  * #208 - a handler that reads the list again reads it with the loader it was
@@ -51,12 +58,18 @@ const { openUsers, userRow, search, listTable: usersTable } = require('../suppor
  *   overlay: keyboard only, because `bg-black/50` eats the click (#199's own
  *   measurement), so it expires the day #204 traps focus - unless the six
  *   screens of #210 are given `busy` first, which closes it one screen sooner.
- * - **The accounts screen** asks nothing before it switches a status, so there
- *   is no overlay and no dialog: the search box and the pager are ordinary
- *   clicks while the `PUT` is out. That way in is reachable with a mouse,
- *   today, and waits on nothing - #204 does not reach it and neither does
- *   #210. It is the row that says this ticket is not an accessibility
- *   footnote.
+ * - **The accounts screen** asked nothing before it switched a status when this
+ *   was written: no overlay, no dialog, and the search box and the pager were
+ *   ordinary clicks while the `PUT` was out - a way in reachable with a bare
+ *   mouse, waiting on nothing, and the row that said this ticket was not an
+ *   accessibility footnote. #86 restored that screen's question on
+ *   16 ตุลาคม 2569 and the overlay is now over this row too. What is left of
+ *   the claim is that the way in needs no second defect **of the dialog's**:
+ *   `fill()` focuses the search box rather than clicking it, so the search box
+ *   is still reachable while the box is open where a click would be eaten, and
+ *   the row runs unchanged. But a person reaches that field with the mouse, so
+ *   the sentence above is no longer true of anybody and this ticket's two rows
+ *   now expire together, with #204.
  *
  * Measured against the unfixed code before either mutant was written (#203):
  * both rows red, each at the moment the handler's answer should have been
@@ -183,7 +196,7 @@ test.describe('ภาควิชา — the removal that moves nobody (Departme
   });
 });
 
-test.describe('บัญชีผู้ใช้ — the switch that asks nothing first (Users.js)', () => {
+test.describe('บัญชีผู้ใช้ — the switch, read through its own search box (Users.js)', () => {
   test('a status switch draws the list the search box put on the screen', async ({ page }) => {
     await signIn(page, ACCOUNTS.facultyAdmin);
     await openUsers(page);
@@ -201,10 +214,14 @@ test.describe('บัญชีผู้ใช้ — the switch that asks nothin
     ).toBeVisible();
 
     const write = await gate(page, /^\/api\/users\/[^/]+\/status$/, isWrite);
-    await row.getByRole('button', { name: SUSPEND }).click();
+    await startStatusChange(page, ACCOUNTS.teacherTwo, SUSPEND);
+    await confirmStatusChange(page);
     await write.sent;
 
-    // The way in, and no overlay anywhere near it: `load` here is keyed on
+    // The way in. There is an overlay over it since #86 - the question the
+    // switch now asks is still open, the write being held - and `fill()`
+    // reaches the box through focus rather than through a click, which is what
+    // the overlay would take. `load` here is keyed on
     // `[filters, page]`, and the search box writes `filters` on every
     // keystroke. One term narrows the list to the account being suspended, so
     // what the handler's read is of and what the person is looking at are the

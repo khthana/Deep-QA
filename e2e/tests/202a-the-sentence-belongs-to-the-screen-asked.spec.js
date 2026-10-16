@@ -20,7 +20,14 @@ const {
   departmentRow,
   API: DEPARTMENTS_API,
 } = require('../support/departments-screen');
-const { openUsers, userRow, search, API: USERS_API } = require('../support/users-screen');
+const {
+  openUsers,
+  userRow,
+  search,
+  startStatusChange,
+  confirmStatusChange,
+  API: USERS_API,
+} = require('../support/users-screen');
 const plos = require('../support/plos-screen');
 
 /**
@@ -68,20 +75,28 @@ const plos = require('../support/plos-screen');
  *
  * ## The two ways in, and why one of them has a ticket
  *
- * **Behind the question.** Nine of the eleven are a `confirmRemoval`, and while
- * `ConfirmDialog` is open there is no form to press anything from — the table
- * is still there underneath it. The overlay is `fixed inset-0` and traps
- * nothing: no focus trap, no `inert`, no `aria-hidden`, and the dialog does not
- * even take focus when it opens, so focus is still on the `ลบ` that opened it
- * and every control of the table is still in the tab order. A mouse click is
- * eaten by the overlay; Enter is not. That is #204, and the day it closes these
- * two rows stop being reachable and must be re-aimed or left as nets.
+ * **Behind the question.** Nine of the eleven are a `confirmRemoval`, and since
+ * 16 ตุลาคม 2569 a tenth asks the same question before a status change: #86
+ * restored the box the accounts screen had dropped, so the paragraph below
+ * about that screen's ordinary click is a record of what was true until then,
+ * and its two rows are here as well. While a `ConfirmDialog` is open there is no form to
+ * press anything from — the table is still there underneath it, and the
+ * overlay is `fixed inset-0` and traps nothing: no focus trap, no `inert`, no
+ * `aria-hidden`, and the dialog does not even take focus when it opens, so
+ * focus is still on the ลบ or the ระงับ that opened it and every control of
+ * the table is still in the tab order. A mouse click is eaten by the overlay;
+ * Enter is not. That is #204, and the day it closes the six rows resting on it
+ * — two here, two on the outcomes screen and two on the accounts screen — stop
+ * being reachable and must be re-aimed or left as nets.
  *
- * **Beside the list.** The other two are `Users.toggle` and
- * `Offerings.runCopy`, which ask no question at all: the list stays live, so
- * แก้ไข on another row is an ordinary click. `Users.toggle` is the row;
- * `Offerings.runCopy` shares its shape and its code is its own, so it is
- * guarded and said on the sheet to be unproved.
+ * **Beside the list.** The other two were `Users.toggle` and
+ * `Offerings.runCopy`, which asked no question at all: the list stayed live, so
+ * แก้ไข on another row was an ordinary click, and `Users.toggle` was the
+ * row. Since #86 only `Offerings.runCopy` is this shape, and it has no row of
+ * its own — it shares the shape and its code is its own, so it is guarded and
+ * said on the sheet to be unproved. What that costs this file is written on the
+ * accounts row below: the way in it was the only one here to have, a bare
+ * mouse, is gone, and both of its rows now expire with #204 (16 ตุลาคม 2569).
  *
  * **Through the pager.** The four sites that rode on #152's flag are superseded
  * by a control that takes nothing away and opens nothing: ถัดไป, which changes
@@ -241,7 +256,7 @@ test.describe('ผลการเรียนรู้ระดับหลั�
   });
 });
 
-test.describe('ข้อมูลผู้ใช้งาน — the switch that asks nothing first', () => {
+test.describe('ข้อมูลผู้ใช้งาน — the switch that asks first since #86', () => {
   /**
    * Two rows the faculty administrator reaches, found through the screen's own
    * search box: ten seeded accounts and a page of ten mean neither is certain to
@@ -258,7 +273,8 @@ test.describe('ข้อมูลผู้ใช้งาน — the switch that
 
   async function suspensionHeldAtTheRoute(page) {
     const write = await gate(page, /^\/api\/users\/[^/]+\/status$/, isWrite, { success: DONE });
-    await button(userRow(page, ACCOUNTS.teacherTwo), 'ระงับ').click();
+    await startStatusChange(page, ACCOUNTS.teacherTwo, 'ระงับ');
+    await confirmStatusChange(page);
     await write.sent;
     return write;
   }
@@ -267,9 +283,13 @@ test.describe('ข้อมูลผู้ใช้งาน — the switch that
     await twoTeachers(page);
     const write = await suspensionHeldAtTheRoute(page);
 
-    // No dialog here, so this is a click: the list stays live while the status
-    // switch is out, and แก้ไข on another row opens its form in the same task.
-    await button(userRow(page, ACCOUNTS.teacherOne), 'แก้ไข').click();
+    // Behind the question since #86 (16 ตุลาคม 2569), where this was an
+    // ordinary click: the switch asks first now, so this row's way in is the
+    // keyboard one the nine removals have and it expires with them the day #204
+    // traps focus. แก้ไข rather than เพิ่มผู้ใช้งาน all the same - on this
+    // screen แก้ไข opens its form from the row already in hand, with no read of
+    // its own, so the form is on the screen before the answer can land.
+    await pressBehindTheDialog(button(userRow(page, ACCOUNTS.teacherOne), 'แก้ไข'));
     await expect(heading(page, 'แก้ไขข้อมูลผู้ใช้งาน')).toBeVisible();
 
     const reloaded = waitForReload(page, USERS_API);

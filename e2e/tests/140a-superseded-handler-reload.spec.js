@@ -252,8 +252,11 @@ async function saveUnchanged(page, row, pathname) {
   await page.getByRole('button', { name: 'บันทึก', exact: true }).click();
 }
 
-/** Presses a row's delete and the confirmation's own button. */
-async function removeRow(page, row, label, confirm) {
+/**
+ * Presses a control on one row and then the confirmation's own button.
+ * Three removals and, since #86, the accounts screen's status switch.
+ */
+async function pressAndConfirm(page, row, label, confirm) {
   await row.getByRole('button', { name: label, exact: true }).first().click();
   await page.getByRole('button', { name: confirm, exact: true }).click();
 }
@@ -290,15 +293,20 @@ test('ข้อมูลผู้ใช้งาน (Users.js): the list บั�
 test('ข้อมูลผู้ใช้งาน (Users.js): the list ระงับ reloads does not land on the page the pager has left', async ({
   page,
 }) => {
-  // `Users.toggle` has no form and no confirmation: the pager never leaves.
+  // `Users.confirmSwitch` closes its question after the write, as the nine
+  // removals do: since #86 the switch asks first, so the press is two - and the
+  // box is gone before the reload this row holds is answered, which is why
+  // ถัดไป below is an ordinary click rather than #204's keyboard way in.
   const screen = await openUsersScreen(page);
   await supersede(page, {
     ...screen,
     press: () =>
-      users
-        .userRow(page, 'past.assessor@tabee-review.org')
-        .getByRole('button', { name: 'ระงับ', exact: true })
-        .click(),
+      pressAndConfirm(
+        page,
+        users.userRow(page, 'past.assessor@tabee-review.org'),
+        'ระงับ',
+        'ยืนยันการเปลี่ยน',
+      ),
   });
 });
 
@@ -438,7 +446,7 @@ for (const screen of MASTER) {
     const opened = await openMaster(page, screen);
     await supersede(page, {
       ...opened,
-      press: () => removeRow(page, screen.removed(page), screen.remove, screen.confirm),
+      press: () => pressAndConfirm(page, screen.removed(page), screen.remove, screen.confirm),
     });
   });
 
@@ -490,7 +498,7 @@ test('Rubric (Rubrics.js): the list ลบ reloads does not land on the page the
   const { opened } = await openRubricsScreen(page);
   await supersede(page, {
     ...opened,
-    press: () => removeRow(page, rubrics.rubricRow(page, RUBRICS[0]), 'ลบ', 'ลบ Rubric'),
+    press: () => pressAndConfirm(page, rubrics.rubricRow(page, RUBRICS[0]), 'ลบ', 'ลบ Rubric'),
   });
 });
 
@@ -590,7 +598,7 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   await supersede(page, {
     ...opened,
     press: () =>
-      removeRow(page, offerings.offeringRow(page, PLACED[4]), 'ยกเลิกการเปิด', 'ยกเลิกการเปิดรายวิชา'),
+      pressAndConfirm(page, offerings.offeringRow(page, PLACED[4]), 'ยกเลิกการเปิด', 'ยกเลิกการเปิดรายวิชา'),
   });
 });
 

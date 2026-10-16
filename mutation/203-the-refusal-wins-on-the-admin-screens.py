@@ -129,8 +129,8 @@ PLOS_REMOVAL_ANYWAY = (
 # คือ `catch` ของมันเอง (#202: ของ `toggle` ไม่ได้ถาม `showing`)
 USERS_SAVE_READS = SAVE_READS + "    } catch (error) {\n      if (showing.current === sent) report(error)\n"
 USERS_SAVE_ANYWAY = SAVE_ANYWAY + "    } catch (error) {\n      if (showing.current === sent) report(error)\n"
-USERS_TOGGLE_READS = SAVE_READS + "    } catch (error) {\n      report(error)\n"
-USERS_TOGGLE_ANYWAY = SAVE_ANYWAY + "    } catch (error) {\n      report(error)\n"
+USERS_TOGGLE_READS = SAVE_READS + "    } catch (error) {\n      setSwitching(null)\n      report(error)\n"
+USERS_TOGGLE_ANYWAY = SAVE_ANYWAY + "    } catch (error) {\n      setSwitching(null)\n      report(error)\n"
 
 # `Offerings.js` มีสามจุดและอยู่คนละชั้นของย่อหน้า: `save` ที่ 6, การคัดลอกที่ 8, การยกเลิกที่ 10
 COPY_READS = REMOVAL_READS

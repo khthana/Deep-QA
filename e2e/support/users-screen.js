@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 const { importCsv } = require('./import-panel');
+const { panel } = require('./confirm-dialog');
 const { untilDrawn } = require('./pager');
 const { openAt } = require('./navigation');
 
@@ -82,13 +83,79 @@ const userRow = (page, email) =>
  */
 const listTable = page => page.locator('table').first();
 
+/** The route one row's switch writes to, which is also where it is held. */
+const statusPath = userId => `${API}/${userId}/status`;
+
+/**
+ * The button that answers the question the switch asks since #86.
+ *
+ * It is the delivered screen's own word - `StatusConfirmModal` in
+ * `DEEP-QA-FRONTEND` confirmed with `ยืนยันการเปลี่ยน`, and #86 restored a
+ * control the rebuild had dropped rather than inventing one. It is an
+ * instrument here, for the six files that only need to get *through* the box;
+ * what the box *says* is `86a`'s own claim and is written out there as
+ * literals, because a row that read its expected text from the helper the
+ * screen is driven by would assert nothing (#104).
+ */
+const CONFIRM_STATUS = 'ยืนยันการเปลี่ยน';
+
+/** One row's suspend / reactivate control, by the verb it is showing. */
+const statusButton = (page, email, label) =>
+  userRow(page, email).getByRole('button', { name: label, exact: true });
+
+/**
+ * Presses it, which since #86 asks rather than writes.
+ *
+ * The row is found by the caller's address and not again here: the screen
+ * reloads the list on the same search term after a status change, so the row is
+ * still on screen with the other verb on its button - and typing the term a
+ * second time would set the box to what it already holds, fire no change event
+ * and wait for a request that is never sent.
+ */
+const startStatusChange = (page, email, label) => statusButton(page, email, label).click();
+
+/**
+ * Answers the question. Scoped to the dialog's own box rather than to the page,
+ * because the table underneath it is live the whole time (#204).
+ */
+const confirmStatusChange = page =>
+  panel(page).getByRole('button', { name: CONFIRM_STATUS, exact: true }).click();
+
+/**
+ * The whole change as a person performs it - ask, confirm, and wait for the
+ * answer to the one write it makes.
+ *
+ * The `PUT` is waited for from behind the confirming press rather than before
+ * it, because nothing is sent until the question is answered: that is #86's
+ * first claim, and a helper that waited for the write around the *first* press
+ * would hang on the fixed code and pass on the broken one.
+ */
+async function setStatusByHand(page, email, userId, label) {
+  await startStatusChange(page, email, label);
+  const [answer] = await Promise.all([
+    page.waitForResponse(
+      response =>
+        new URL(response.url()).pathname === statusPath(userId) &&
+        response.request().method() === 'PUT',
+    ),
+    confirmStatusChange(page),
+  ]);
+  return answer;
+}
+
 module.exports = {
   USERS,
   API,
+  CONFIRM_STATUS,
   waitForList,
   openUsers,
   search,
   importUsers,
   userRow,
   listTable,
+  statusPath,
+  statusButton,
+  startStatusChange,
+  confirmStatusChange,
+  setStatusByHand,
 };

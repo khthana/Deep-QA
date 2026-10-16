@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import HistoryPanel from '../components/users/HistoryPanel'
 import GrantsPanel from '../components/users/GrantsPanel'
+import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
@@ -125,6 +126,39 @@ const CANNOT_SUSPEND_SELF = 'ระงับบัญชีของตัวเ
  * Both open ends change together: leaving the other as `… ถึง Y` would put two
  * spellings of one idea in one column.
  */
+/**
+ * Which way this row's switch is pointing - the one place that reads it.
+ *
+ * Three things ask: the button's own verb, the question #86 restored, and the
+ * write that answers it. They were the same expression written out three times
+ * until review asked, and two copies of one opinion is a claim neither of them
+ * can be shown to hold (#97).
+ */
+const suspends = user => user.status === 'active'
+
+/**
+ * What the question asks, in the direction the press is going - #86.
+ *
+ * The account is named by its code and then by its name, which is what the
+ * press was aimed at: the table's first column is รหัสผู้ใช้, two people can
+ * share a Thai name, and #86's whole point is that the box is what catches a
+ * press on the wrong row of ten. That is the first of the five kinds #93 left
+ * the code in - the sentence of a confirmation dialog - and
+ * `frontend/scripts/label-codes.js` cannot see this one to say so, the name
+ * arriving through `personName` rather than from a `user_name_th` column.
+ *
+ * The suspending direction says what it costs, because that is the asymmetry
+ * the question exists for: a suspension is refused at the *next request* of a
+ * session already open, not at the next sign-in - `sessionAdmission` in
+ * `backend/auth/accounts.js`, and `11c` row 3 is the measurement. Reactivation
+ * takes nothing away, so its sentence says nothing about consequences it does
+ * not have.
+ */
+const asks = user =>
+  suspends(user)
+    ? `ต้องการระงับการใช้งานบัญชีของ ${user.user_id} ${personName(user)} ใช่หรือไม่ บัญชีที่ถูกระงับจะถูกปฏิเสธทุกคำขอตั้งแต่คำขอถัดไป แม้ผู้ใช้งานจะยังเปิดหน้าจอค้างอยู่`
+    : `ต้องการเปิดใช้งานบัญชีของ ${user.user_id} ${personName(user)} ใช่หรือไม่`
+
 const windowOf = user => {
   if (!user.valid_from && !user.valid_until) return '—'
   if (!user.valid_until) return `ตั้งแต่ ${user.valid_from}`
@@ -140,6 +174,24 @@ export default function Users() {
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
   const [editing, setEditing] = useState(null)
+  const [switching, setSwitching] = useState(null)
+  /**
+   * One flag for both writes, and that is a measurement rather than an
+   * oversight - #142 asks every screen which holders can start while it is up.
+   *
+   * Here they cannot overlap: the form and the table are the two halves of one
+   * ternary, so the row whose switch raises this flag is not on the screen at
+   * all while a form is open, and the dialog is only ever opened from the table.
+   * The one way the two meet is #204's - แก้ไข pressed with the keyboard from
+   * under the open dialog - and that opens a form whose own บันทึก is behind
+   * `busy`, which is this flag, already raised by the write the dialog is
+   * waiting for - which is the state #142 asks for: every control that starts a
+   * write is disabled while one is out. `Departments.js` holds two flags and
+   * derives this one from them, because its แก้ไข reads the row it opens and a
+   * read landing late must not put a write's flag down; this screen's แก้ไข
+   * reads nothing - the row it opens is already in `data`. (Measured 16 October
+   * 2569.)
+   */
   const [busy, setBusy] = useState(false)
 
   /**
@@ -237,20 +289,65 @@ export default function Users() {
   const isSelf = user => Boolean(profile) && user.user_id === profile.user_id
 
   /**
+   * What a status change is going to do, and to whom - #86.
+   *
+   * The control was a `Switch` in the สถานะ column of the delivered screen and
+   * it asked this question through a `StatusConfirmModal` of its own; the
+   * rebuild drew a text button beside แก้ไข and dropped the question, which the
+   * walk of 21 สิงหาคม 2569 recorded and #86 asked the specification owner
+   * about. The answer was to ask in both directions, from the button where it
+   * now is. So what is restored is the question and not the switch: the button
+   * stays, because that is what every other row of this table's จัดการ column
+   * looks like and the walked rows of sheet `11` are written about it.
+   *
+   * The question is the shared `ConfirmDialog` - #14's, which eighteen other
+   * screens ask through - so three things about the delivered box cannot come
+   * back with it, and each is a decision rather than an inheritance (#45). Its
+   * heading and its confirming button are the delivered words,
+   * *ยืนยันการเปลี่ยนสถานะ* and *ยืนยันการเปลี่ยน*. Its sentence is not: the
+   * delivered one read *ต้องการ ปิดการใช้งาน การใช้งานบัญชีของ …*, with the
+   * verb drawn in red or green inside it and *การใช้งาน* written twice, and
+   * this dialog takes one string and colours nothing. The sentence below says
+   * the same thing in the words this screen's own button and its own banner
+   * already use. And the confirming button is red in both directions, where the
+   * delivered box coloured the verb by direction - one dialog, one palette.
+   */
+  const startSwitch = user => {
+    // As ลบ does on the nine screens that ask before a removal: a sentence
+    // about what just happened does not stand over a question about what is
+    // going to.
+    setNotice(null)
+    setSwitching(user)
+  }
+
+  /**
    * The sentence belongs to the screen that was asked - #202.
    *
-   * The rule `save` above has followed since #146, and this is the shape of it
-   * that asks nothing first: there is no dialog, so the list stays live and
-   * แก้ไข on another row is an ordinary click while the switch is out. Its
-   * answer then said *ระงับ…เรียบร้อยแล้ว* over that row's form. Only the
-   * sentence is asked about - the list is reloaded whichever way the comparison
-   * goes (#131). `Departments.js` carries the reasons.
+   * The rule `save` above has followed since #146. Until #86 this was the shape
+   * of it that asks nothing first, and the way in was an ordinary click: the
+   * list stayed live while the switch was out, so แก้ไข on another row put
+   * *ระงับ…เรียบร้อยแล้ว* over that row's form. The question has not closed that
+   * way in, because `ConfirmDialog` traps nothing - it is now the keyboard one
+   * the nine removals have (#204), and `202a`'s own rows say so with the date.
+   * Only the sentence is asked about - the list is reloaded whichever way the
+   * comparison goes (#131). `Departments.js` carries the reasons.
+   *
+   * The box goes whatever the answer was, and a refusal is said wherever the
+   * person has moved to: a 403 about this account is news for them and not for
+   * the screen they asked about (#179). That is said here rather than in the
+   * `catch` below because four mutants from four closed tickets are anchored on
+   * that `catch` - it is what tells this handler apart from `save` above - and a
+   * mutant is anchored on the code it breaks, never on the comment beside it
+   * (#121).
    */
-  const toggle = async user => {
+  const confirmSwitch = async () => {
+    const user = switching
     const sent = showing.current
-    const next = user.status === 'active' ? 'inactive' : 'active'
+    const next = suspends(user) ? 'inactive' : 'active'
+    setBusy(true)
     try {
       await setUserStatus(user.user_id, next)
+      setSwitching(null)
       const said = {
         error: false,
         message:
@@ -264,7 +361,10 @@ export default function Users() {
       const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
+      setSwitching(null)
       report(error)
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -425,12 +525,12 @@ export default function Users() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => toggle(user)}
+                          onClick={() => startSwitch(user)}
                           disabled={isSelf(user)}
                           title={isSelf(user) ? CANNOT_SUSPEND_SELF : undefined}
                           className="rounded-lg px-3 py-1.5 text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-transparent"
                         >
-                          {user.status === 'active' ? 'ระงับ' : 'เปิดใช้งาน'}
+                          {suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}
                         </button>
                       </td>
                     </tr>
@@ -469,6 +569,24 @@ export default function Users() {
           />
         </>
       )}
+
+      {/*
+        Outside the ternary, like the nine removals: a form opened from under
+        the open box (#204) must not take the question away with it, because the
+        write it is waiting for is still out.
+      */}
+      <ConfirmDialog
+        open={Boolean(switching)}
+        title="ยืนยันการเปลี่ยนสถานะ"
+        message={switching ? asks(switching) : ''}
+        confirmLabel="ยืนยันการเปลี่ยน"
+        busy={busy}
+        onConfirm={confirmSwitch}
+        onCancel={() => {
+          setNotice(null)
+          setSwitching(null)
+        }}
+      />
     </div>
   )
 }

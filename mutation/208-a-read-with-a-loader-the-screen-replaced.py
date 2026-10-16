@@ -33,7 +33,7 @@ loader ที่อยู่ใน ref** ไม่มีผู้เรียก
 | ชื่อ | สิ่งที่มันทำ | ใบที่มันฆ่า |
 |---|---|---|
 | `departmentsstaleloader` | โค้ดที่ตั๋ววินิจฉัยไว้ เขียนให้รันได้ (#115) — สาขาที่ไม่ถอยหน้าของ `confirmRemoval` อ่านซ้ำด้วย `load` ที่ handler ปิดทับไว้ | `208a` แถวแรก ที่ `untilDrawn` — คำตอบบอกยี่สิบสองแถว บรรทัดของตัวแบ่งหน้ายังอ่านยี่สิบสาม |
-| `usersstaleloader` | อย่างเดียวกันที่ `toggle` ของจอบัญชีผู้ใช้ ซึ่งเป็นทางเข้าที่ไปถึงได้ด้วยเมาส์เปล่า ๆ วันนี้ ไม่มีอะไรกั้น (#86 ทำให้ปุ่มนั้นไม่เปิดกล่อง) | `208a` แถวสอง ที่คำถามที่ handler ถามซ้ำ — `q=teacher` ของตัวกรองเก่า แทน `q=teacher.two@kmitl.ac.th` |
+| `usersstaleloader` | อย่างเดียวกันที่ `toggle` ของจอบัญชีผู้ใช้ ซึ่งเคยเป็นทางเข้าที่ไปถึงได้ด้วยเมาส์เปล่า ๆ เพราะปุ่มนั้นไม่เปิดกล่อง — ประโยคนั้นเป็นของก่อน 16 ต.ค. 2569 ตั้งแต่ #86 สวิตช์ถามก่อน ฉากคลุมจึงอยู่บนจอ และทางเข้าขึ้นกับ #204 เหมือนจอผู้ดูแลอื่น ส่วนแถวยังผ่านเพราะ `fill()` โฟกัสช่องค้นหา ไม่ได้คลิกมัน | `208a` แถวสอง ที่คำถามที่ handler ถามซ้ำ — `q=teacher` ของตัวกรองเก่า แทน `q=teacher.two@kmitl.ac.th` |
 
 สองตัวนี้ไม่ใช่ตัวเดียวกับตัวของ #140 ที่สองจุดนั้น: ของ #140 ถอด **ยาม** ออก (`drawing(() => true)`) และถามว่าคำตอบที่
 ถูกแทนที่แล้วถูกโยนทิ้งไหม ของที่นี่คืนยามไว้ครบ แต่ถามด้วย loader ที่ตายแล้ว จึงเป็นสองข้ออ้างที่คนละแถวถือ
@@ -68,8 +68,8 @@ USERS_TOGGLE = (
     '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
     '      if (reloaded && showing.current === sent) setNotice(said)\n'
     '    } catch (error) {\n'
+    '      setSwitching(null)\n'
     '      report(error)\n'
-    '    }\n'
 )
 
 MUTANTS = {
@@ -79,13 +79,13 @@ MUTANTS = {
         '        const reloaded = await load(() => onScreen.current === load)\n'
         '        if (reloaded && showing.current === sent) setNotice(said)\n'
         '      }\n'),
-    # อย่างเดียวกันที่จอบัญชีผู้ใช้ ซึ่งทางเข้าเป็นเมาส์เปล่า ๆ ไม่ใช่การแข่งกันของสองช่วงเวลา
+    # อย่างเดียวกันที่จอบัญชีผู้ใช้ ซึ่งทางเข้าไม่ใช่การแข่งกันของสองช่วงเวลา (ดูหมายเหตุ #86 ข้างบน)
     'usersstaleloader': ('users', USERS_TOGGLE,
         '      const reloaded = await load(() => onScreen.current === load)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
-        '      report(error)\n'
-        '    }\n'),
+        '      setSwitching(null)\n'
+        '      report(error)\n'),
 }
 
 main(FILES, MUTANTS)

@@ -10392,6 +10392,14 @@ keystroke, so the stale loader asks a **question** the screen has replaced, and
 the request says which outright (`?q=`), where on the departments screen both
 loaders ask for the same page and only the drawing tells them apart.
 
+**That paragraph is dated 15 October 2569 and #86 expired it the next day** —
+the switch asks first now, so the overlay is on the screen while the write is
+out and this screen's way in is the same shape as the other administration
+screens: the keyboard, from under the overlay, resting on #204 after all. The
+row still passes because `fill()` focuses the search box rather than clicking
+it, which is a way in the tool has and a person does not (#47); what the row
+claims is unchanged, and only the sentence about who can reach it is not.
+
 ### The two mechanisms as a grid
 
 Measured rather than chosen between (#148, #149): fixing the read alone removes
@@ -10793,3 +10801,120 @@ reads a recipe's **arguments**, so the backslash read as a test file. A recipe w
 an instrument walks is a marker written for an instrument, and it has to be in a syntax the
 instrument reads (#93) — one line, however long. Unwrapped, the check reads 86 arguments and
 `problems 0`.
+
+## #86 — the box the delivered screen had, and the way in it moved
+
+The ticket was filed on 21 August 2569 while walking criterion 3 of #11, *suspend without
+deleting*: one press and the account was suspended, with nothing asked. Criterion 3 never asked for
+a dialog, so the walk did not fail, and the ticket was opened as a question for the owner of the
+requirement rather than as a defect — correctly, by `docs/06` §Out of Scope. It offered two options:
+use the existing `ConfirmDialog`, naming the account, or do nothing and rely on the change being
+reversible.
+
+### What changed the question into a job
+
+`DEEP-QA-FRONTEND/src/pages/UserMangement/UserTable.js` already had the box. It holds
+`statusModal`, a `Switch` in the *สถานะ* column, a `confirmStatus` that awaits the write and *then*
+closes the modal — the same order the rebuild's nine other confirmations use — and a
+`StatusConfirmModal` whose heading is *ยืนยันการเปลี่ยนสถานะ* and whose buttons are
+*ยืนยันการเปลี่ยน* and *ยกเลิก*. The rebuild drew a text button beside *แก้ไข* and dropped the
+question.
+
+So the ticket was a regression wearing an `enhancement` label, and the question the owner was being
+asked had already narrowed: not *shall we add a confirmation* but *which of the delivered words can
+the shared component still say*. That is the rule worth keeping — **an owner's question about a
+missing control is answered by the delivered UI before it is answered by the owner.** The pricing in
+the ticket, and in my own first reading of it, came from the rebuilt screen alone.
+
+Two of the delivered words survive verbatim: the heading and the confirm label. The message does
+not. It read *ต้องการ* + *เปิด/ปิดการใช้งาน* + *การใช้งานบัญชีของ* + the name, which says
+*การใช้งาน* twice and colours the verb — one is a duplication and the other is a **drawing**, and a
+shared `ConfirmDialog` that takes a string can do neither. The repair is to say so out loud rather
+than to approximate it: the message is this screen's own sentence, naming the account by code then
+name like the nine siblings, and the suspend direction carries the consequence clause
+*…จะถูกปฏิเสธทุกคำขอตั้งแต่คำขอถัดไป…*, which is not advertising — `11c` row 3 measured it at
+`sessionAdmission` in August. The reactivating direction has no such clause, because there is
+nothing to warn about.
+
+The direction itself lives in one place, `suspends(user)`, read by the button's verb, the question
+and the write (#97), and the dialog is rendered outside the form/table ternary so that closing the
+form cannot unmount the question. One `busy` serves both halves, which is a measurement and not a
+guess (#142): the form and the table are the two sides of one ternary, and *แก้ไข* on this screen
+reads nothing from the server.
+
+### What a restored control reaches
+
+Seventeen presses in six closed tickets' spec files went through the switch. Converting them is
+ordinary work; what is not ordinary is the second rule the ticket taught. **A fix that puts a dialog
+in front of a control re-dates every other ticket's claim about how that control is reached.** The
+rows keep their claims and their marks — `fill()` focuses the search box rather than clicking it,
+which is a way in the tool has and a person does not (#47) — but four places had written, in prose,
+that this switch asks nothing, that there is no overlay, and that its way in therefore does not wait
+on #204: §#202 and §#208 of `docs/acceptance/11-user-accounts.md`, the mutant table of
+`mutation/208-a-read-with-a-loader-the-screen-replaced.py`, and the #208 story in this file. Each is
+dated rather than deleted (#54). Grep the sentences, not only the presses.
+
+### The brace below the `catch`
+
+Four mutants of closed tickets anchor on this handler's `catch`, which is what tells it apart from
+the `save` above it. The fix adds `setSwitching(null)` as the first line of that `catch`, so all four
+were re-aimed by insertion — the mutated line unchanged, the meaning unchanged (#140, #152, #203).
+
+`anchors.py`, run **while** making the change (#202), found the one that was wrong: the fix also
+turned the handler's closing `}` into `} finally {`, and `208:usersstaleloader`'s anchor quoted that
+brace. An anchor that ends one line too low matches nothing, which the instrument says in seconds —
+and the *replacement* half of that mutant had the same stale line, which no instrument asks about at
+all; only the sweep does. The repair ends both halves at `report(error)`.
+
+The patch script that re-aimed the four was written as a heredoc the first time, and the shell ate
+the backslashes in its `\n`s, so it matched nothing and said nothing. The repair for that is older
+than this ticket and is in the memory file: write edit scripts to a file.
+
+### The sweep, and the assertion's name
+
+Nine mutants, one at a time against `tests/86a` — baseline 5 of 5, at 28.9 s for the
+first seven and 22.0 s for the two the review asked for:
+`presswriteswithoutasking` (the diagnosed pre-#86 code made to run, #115) failed 3 and passed 2;
+`wrongtitle` 3 and 2; `namesnobody` 2 and 3; `cancelwrites`, `alwayssuspends`, `alwaysrestores` and
+`asksthewrongdirection` 1 and 4 each. The two direction mutants are built where the two values
+disagree and not where they coincide (#154), and a mutant that closes the box altogether
+(`open={false}`) was deliberately not written: it reddens all five rows and two of them would die at
+a **wait** rather than at an assertion (#139).
+
+The last two came from the review reading that table with #88 in hand. `alwaysrestores` and
+`alwayssuspends` kill rows 3 and 5 at their **first** assertion, the sentence, so the claims
+written under it — the box closed, the status cell, the button’s other verb — were never read
+on those runs: the row is red, the mutant is credited, and three claims are proved by nothing.
+`doesnotclose` (the success path keeps the box open; the `catch` still closes it) failed 2 and
+passed 3, both rows at *the question, closed by its own answer*, and `togglenoreload` failed 2
+and passed 3, both at *the row’s own status cell*. The second is #152’s rule read forwards:
+deleting the reload leaves `reloaded` undefined, which kills the row at the **sentence** — a
+duplicate of a mutant already there — so the value is substituted (`Boolean(drawing)`) rather
+than the call removed.
+
+What is left is the button’s verb on rows 1, 3 and 5. It is read off `suspends(user)` over the
+same reloaded list as the status cell, so no mutant at that site can tell the two apart (#191),
+and the honest move is the one #119 asks for: write down which claims the mutants reach and
+date it, rather than letting three ⚙ marks read as whole.
+
+One number was right and one sentence was wrong. `presswriteswithoutasking` kills row 1 at *writes
+made before anybody answered*, not at the stored status on the line below, and the mutant file's
+table — written before the sweep — had named the stored status. #201's rule arrived from the other
+side here: the table written before the sweep is what the dying assertion's **name** is read
+against, and it is worth correcting even when the kill count is exactly what was predicted.
+
+### The re-sweep
+
+The four re-aimed mutants were run again, each against its own spec file, because an anchor check
+says a mutant still bites and only a sweep says what it still proves (#107, #68). All four kill
+exactly the row they were written for, and nothing else:
+
+- `140:userstogglestalewins` — failed 1, passed 31 of `140a`, at *the list ... reloads does not
+  land on the page the pager has left*
+- `202:userssaysanyway` — failed 2, passed 8 of `202a`, at both of the switch's rows
+- `203:userstoggleanyway` — failed 1, passed 21 of `203a`, at *a suspension whose reload is refused
+  says the refusal and not that it suspended*
+- `208:usersstaleloader` — failed 1, passed 1 of `208a`, at *the question the handler asked again*
+
+The denominators are today's, not the ones recorded beside those mutants in their own sheets: a
+test-file argument is matched as a substring and every spec file has grown since (#154, #158).

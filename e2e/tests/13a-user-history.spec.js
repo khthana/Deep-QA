@@ -5,7 +5,7 @@ const { BACKEND_URL } = require('../support/env');
 const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
-const { openUsers, search, userRow } = require('../support/users-screen');
+const { openUsers, search, setStatusByHand } = require('../support/users-screen');
 const {
   ACTIONS,
   openHistory,
@@ -84,11 +84,13 @@ test('rows 1, 2 and 4: the status change is filed under whoever pressed the butt
   await search(page, ACCOUNTS.teacherOne);
 
   // Suspended and let back in, so the account is left as the seed had it and
-  // the row below can still sign in as it.
-  const row = userRow(page, ACCOUNTS.teacherOne);
-  await row.getByRole('button', { name: 'ระงับ' }).click();
+  // the row below can still sign in as it. Two presses each way since #86 -
+  // the button asks and ยืนยันการเปลี่ยน answers - which is why this goes
+  // through `setStatusByHand` rather than pressing the row's button itself;
+  // what this row is about is the lines the two changes leave behind.
+  await setStatusByHand(page, ACCOUNTS.teacherOne, IDS.teacherOne, 'ระงับ');
   await expect(page.getByText('ระงับการใช้งานบัญชีเรียบร้อยแล้ว')).toBeVisible();
-  await row.getByRole('button', { name: 'เปิดใช้งาน' }).click();
+  await setStatusByHand(page, ACCOUNTS.teacherOne, IDS.teacherOne, 'เปิดใช้งาน');
   await expect(page.getByText('เปิดใช้งานบัญชีเรียบร้อยแล้ว')).toBeVisible();
 
   await openHistory(page);

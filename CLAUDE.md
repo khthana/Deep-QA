@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 16 October 2569 that is
-`2026-10-16-the-menu-that-was-hiding-three-screens.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-16-the-box-the-delivered-screen-had.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -120,6 +120,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   *none* would have meant splitting a shared constant, and the ticket's *a few lines* was right
   because there was no guard to change. The criterion about the complement was then already true
   in substance, which is not *proved*: what was owed was the row, not a fix. (#49)
+- **An owner's question about a missing control is answered by the delivered UI before it is
+  answered by the owner** — if the control was there and the rebuild dropped it, the ticket is a
+  regression and its wording is already decided, which turns *shall we add this* into *which of
+  the delivered words can the shared component still say*. #86 was filed as an enhancement and
+  priced as one for eight weeks; `UserTable.js` had the box, its heading and its two buttons all
+  along. The half that does not survive the shared component is the half to say out loud: a
+  message that says one word twice and colours a verb is a drawing, not a wording. (#86)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -613,6 +620,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   control a fix takes away. A hand estimate counts the rows that are *about* the control and
   misses the rows that use it to arrange something: two of the four reds were `205a` pressing the
   pager to supersede a read. Census the press, not the claim. (#199)
+- **And a fix that puts a dialog in front of a control re-dates every other ticket's claim about
+  how that control is reached** — the same family one layer out: the rows keep their claims and
+  their marks, because `fill()` focuses a field rather than clicking it, which is a way in the
+  tool has and a person does not (#47). What expires is the prose — four places had written
+  *bare mouse, no overlay, does not wait on #204* about a switch that asks first since #86, and
+  each of those paragraphs is dated rather than deleted (#54) — two in one sheet, one in a mutation
+  file's own table and one in a lessons story. Grep the sentences, not only the presses. (#86)
 - **A criterion answered *no* needs a row as much as one answered *yes*** — and the row has to
   assert what is still there, or it is measuring the other refusal that reaches the same status
   code. Between two fixture shapes, take the one the code already draws and nothing has ever made

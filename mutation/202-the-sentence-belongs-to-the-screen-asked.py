@@ -134,10 +134,12 @@ MUTANTS = {
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
+        '      setSwitching(null)\n'
         '      report(error)\n',
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current !== null) setNotice(said)\n'
         '    } catch (error) {\n'
+        '      setSwitching(null)\n'
         '      report(error)\n'),
     # รายชื่อนักศึกษาของรายวิชา: การเพิ่ม - โค้ดก่อนครึ่งหลังของตั๋วนี้เป๊ะ ๆ
     # ธงของ #152 อย่างเดียว ซึ่งแปลว่า *ไม่ถูกปฏิเสธ* ไม่ใช่ *วาดแล้ว*

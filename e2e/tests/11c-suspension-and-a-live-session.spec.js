@@ -7,7 +7,7 @@ const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { BACKEND_URL } = require('../support/env');
 const { openChangePassword, submitPasswordChange } = require('../support/shell');
-const { openUsers, search, userRow } = require('../support/users-screen');
+const { openUsers, search, setStatusByHand } = require('../support/users-screen');
 
 /**
  * docs/acceptance/11-user-accounts.md, row 3 - a suspension reaching the
@@ -53,28 +53,13 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-const statusPath = userId => `/api/users/${userId}/status`;
-
-/**
- * The screen's own suspend / reactivate control, in one row of the table.
- *
- * The row is found once by the caller and not again here: the screen reloads
- * the list on the same search term after a status change, so the row is still
- * on screen with the other verb on its button - and typing the term a second
- * time would set the box to what it already holds, fire no change event and
- * wait for a request that is never sent.
+/*
+ * The suspension is made the way a person makes it, which since #86 is two
+ * presses: the button asks, and ยืนยันการเปลี่ยน answers. That is
+ * `setStatusByHand` in `support/users-screen.js`, which this file's own helper
+ * became when six files needed the same two presses - what it knows about the
+ * row being still on screen afterwards is written there.
  */
-async function setStatus(page, email, userId, label) {
-  const [answer] = await Promise.all([
-    page.waitForResponse(
-      response =>
-        new URL(response.url()).pathname === statusPath(userId) &&
-        response.request().method() === 'PUT',
-    ),
-    userRow(page, email).getByRole('button', { name: label }).click(),
-  ]);
-  return answer;
-}
 
 /** A request on the cookie this browser is already holding. */
 const onHeldSession = (page, path) => page.request.get(`${BACKEND_URL}${path}`);
@@ -99,7 +84,7 @@ test('row 3: a suspension refuses the session the account was already holding', 
   await openUsers(page);
   await search(page, ACCOUNTS.teacherTwo);
   expect(
-    (await setStatus(page, ACCOUNTS.teacherTwo, IDS.teacherTwo, 'ระงับ')).status(),
+    (await setStatusByHand(page, ACCOUNTS.teacherTwo, IDS.teacherTwo, 'ระงับ')).status(),
   ).toBe(200);
 
   // Three routes rather than one, on the cookie that was issued before any of
@@ -130,7 +115,7 @@ test('row 3: a suspension refuses the session the account was already holding', 
   // to. The reactivation is the same control, which is the other half of the
   // screen's answer to this criterion.
   expect(
-    (await setStatus(page, ACCOUNTS.teacherTwo, IDS.teacherTwo, 'เปิดใช้งาน')).status(),
+    (await setStatusByHand(page, ACCOUNTS.teacherTwo, IDS.teacherTwo, 'เปิดใช้งาน')).status(),
   ).toBe(200);
 
   // And it reaches the account: the person can come back in. Signed in afresh

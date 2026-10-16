@@ -110,10 +110,12 @@ MUTANTS = {
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
+        '      setSwitching(null)\n'
         '      report(error)\n',
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
         '      if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
+        '      setSwitching(null)\n'
         '      report(error)\n'),
     # ข้อมูลผู้ใช้งาน: การนำเข้า
     'usersimportstalewins': ('users',
