@@ -10786,3 +10786,10 @@ sheet `10`'s table held 21 ⚙ of 28 rows while its own count sentence said *20 
 hand-kept number in a file that grows every ticket is already wrong (#119), and the correction is a
 figure counted from the mark column plus a dated paragraph saying the sentence had drifted — not a
 silent overwrite, because which of the two was right on which day is the thing a later reader needs.
+
+And one instrument answered back. The run recipe in the mutation file was wrapped across two lines
+with a shell continuation, and `anchors.py`'s command check reported `NOT A REGEX ... -> '\'`: it
+reads a recipe's **arguments**, so the backslash read as a test file. A recipe written inside a file
+an instrument walks is a marker written for an instrument, and it has to be in a syntax the
+instrument reads (#93) — one line, however long. Unwrapped, the check reads 86 arguments and
+`problems 0`.
