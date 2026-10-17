@@ -10999,5 +10999,9 @@ spec files:
 The group header's own behaviour — that pressing it closes a group and pressing it again reopens
 it — is still proved by nothing. No row presses it on purpose, and the four that pressed it by
 accident have stopped. That is a claim about the menu rather than about these four reports, so it
-belongs to whichever sheet owns the shell, and it is written down here rather than left as a
-sentence in a commit message.
+belongs to whichever sheet owns the shell — `docs/acceptance/10-application-shell.md` — and it
+is [#214](https://github.com/khthana/Deep-QA/issues/214), opened the same day with the eight-frame
+measurement and three options in it. Written in a story and not in the tracker it would have been
+a decision nobody can find (#119, #89, #125), which is the half of this ticket that was owed after
+the code was right: both review axes named it, and the answer to both was a number rather than a
+paragraph.
