@@ -98,9 +98,10 @@ async function arriveAt(page, entry, path) {
   // beating React's re-render, which is a read racing a drawing in the other
   // direction and the shape row 3 lost to under all four mutants.
   //
-  // The four sibling rows that press twice (`42a`, `43a`, `44a`, `45a`) are
-  // the committee's, written before that was measured, and are not this
-  // ticket's to rewrite.
+  // The four sibling rows that pressed twice (`42a`, `43a`, `44a`, `45a`) are
+  // the committee's, written before that was measured, and were not this
+  // ticket's to rewrite: #212 took the press out of all four and counted
+  // the race at eight frames, the exit animation's rather than a render's.
   await menuLink(page, entry).click();
 
   await expect(page).toHaveURL(path);

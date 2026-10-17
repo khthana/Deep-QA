@@ -5101,7 +5101,7 @@ for a reason that has nothing to do with the fix.
 #171 counted screens that draw cards and grids, which is a property of the markup. What decides the
 risk is the line between the opener and the raw read: `all-students-screen.js` was in the count and
 is **not** a hole, because in every spec that calls `openHeatmap` a `showIntake` stands **between**
-the open and the read — `43a:125` then `:128`, `43a:155` then `:167`, `45a:189` then `:203` — and
+the open and the read — `43a:131` then `:134`, `43a:161` then `:173`, `45a:195` then `:209` — and
 that helper waits for the cohort line the screen draws from the answer (#132). The first draft of
 this paragraph said *in front of `openHeatmap`*, which is the opposite of where it sits and would
 have sent the next reader looking for something that is not there; the review greped it. Its same-named twin in
@@ -10759,21 +10759,25 @@ new to look at (#105).
 ### The press that closed the group it was opening
 
 `arriveAt` in the first draft of `49a` pressed the group header and then the entry, which is what
-the committee's four sibling rows do (`42a:83`, `43a:90`, `44a:132`, `45a:123`). A probe measured
+the committee's four sibling rows did until #212 (`42a:83`, `43a:90`, `44a:132`, `45a:123` — the
+four still resolve to the arrival, which is now the paragraph saying why there is one press).
+A probe measured
 what the press does: `SidebarItem.js` opens **every** group with a `sub` on arrival
 (`setOpenMenu(menu.filter(item => item.sub).map(item => item.key))` for every non-TEACHER role) and
 `Sidebar.js`'s `handleToggleSubmenu` **toggles**, while the entries render only while
 `isMenuOpen` — before the press, five entries and the compare link visible; after it, one entry and
 no compare link. So the press closes the group, unmounts the entries, and the click that follows
-lands only by beating React's re-render.
+lands only by beating React's re-render — eight frames of it, counted on #212, which
+also says what happens to a press that arrives after them.
 
 **A press that arranges a precondition is a claim about the state on arrival** — #77's rule met in
 a shell rather than in a grant: ask what is true before arranging anything, because a toggle pressed
 on a thing that is already open is the undoing of the state the row needs. The press came out of
 `49a` and out of the `42a` row this ticket wrote, with the measurement in the comment. The four
-sibling rows are the committee's, written before this was measured, and they pass today by winning
-that race; rewriting them is not this ticket's to do, so they want a ticket — which is the deferral
-going into the tracker and not into prose (#119, #125).
+sibling rows are the committee's, written before this was measured, and they passed by winning
+that race; rewriting them was not this ticket's to do, so they got a ticket — which is the deferral
+going into the tracker and not into prose (#119, #125). That ticket is #212, and it counted the
+race at eight frames before taking the press out (17 October 2569).
 
 ### What the review axes found, and why each was a mutant question
 
@@ -10918,3 +10922,82 @@ exactly the row they were written for, and nothing else:
 
 The denominators are today's, not the ones recorded beside those mutants in their own sheets: a
 test-file argument is matched as a substring and every spec file has grown since (#154, #158).
+
+## #212 — the eight frames the four rows were winning
+
+### What the ticket got right, and the two things it had wrong
+
+The claim was that four committee rows (`42a` `43a` `44a` `45a`) arrange their arrival by pressing
+the **group header** in the menu and then the entry, that the press *closes* a group which is
+already open, and that the rows therefore pass by winning a race rather than by arranging
+anything. All of that held. Two supporting details did not, which is the ordinary reading of
+*a ticket's supporting identifiers are a claim like its numbers* (#54):
+
+- the mechanism's files are `frontend/src/components/SidebarItem.js` and `Sidebar.js`, not
+  `components/SidebarItem/SidebarItem.js` — that directory exists and holds the menu **config**
+  (`ProgManager.js` and its five siblings), which is a different thing from the component;
+- the race is not against React's re-render alone. The sub-list leaves inside an
+  `AnimatePresence` exit, so the entry stays in the document, visible and clickable, for a
+  window the exit's duration decides.
+
+### The probe, and what the margin was
+
+#49's probe measured the **assessor's** shell. These four rows are the committee's, and the two
+roles reach the same branch of the arrival effect by **reading** the code — which is not the same
+as by measurement (#111's species: a claim nobody has put a number on). So the probe was built
+again for `PROG_MANAGER`, run on `HEAD`, and deleted (#207):
+
+```
+PROBE arrival   {"links":12,"entry":1,"visible":true}
+PROBE frames    {"samples":40,"firstFrameWithNoEntry":9, ...}
+PROBE second    {"landed":"locator.click: Timeout 3000ms exceeded.","url":".../main/rubrics"}
+```
+
+Eight frames. Sampled per frame rather than after a wait, because *was it still there* is a
+question about frames (#164). After the ninth the same press cannot land at all — it times out on
+the locator, and the shell is still on the menu's first screen. So the four rows were not passing
+*in spite of* the press; they were passing inside a window of about eight frames that nothing in
+the suite, the sheets or the mutants mentions, and a slower machine or a longer exit would have
+turned four green rows red for a reason none of their names would have explained.
+
+**An arrangement that destroys what it arranged can still pass, and then it is measuring the
+animation.** #77's rule from the other side — there, arranging a state the system had already
+reached made a row *hang*; here it makes the row *pass*, which is worse, because a hang is a
+report and a pass is a silence.
+
+### The fix, and what it cost
+
+Six lines out, seven in: each arrival keeps the entry's press and gains the paragraph saying what
+the group header does and when it was measured, so the next row written here does not put the
+press back (#96 — write it on the row). Then the ordinary price of touching four closed tickets'
+spec files:
+
+- the four mutants that hold those arrival rows were re-run, one at a time against their own spec
+  file, because an anchor check says a mutant still bites and only a sweep says what it still
+  proves (#107, #68). `42:committeemenumisleads` failed 1 passed 5, `43:menumisleads` failed 1
+  passed 4, `44:comparemenumisleads` failed 1 passed 8, `45:individualmenumisleads` failed 1
+  passed 6 — each killing its own sheet's row 1 at `waitForURL`, exactly as its sheet records, so
+  no figure in the four tables moved;
+- every line number cited **below** one of those arrivals moved by +6, in two files that say the
+  same thing (`docs/lessons.md` §#174 and `e2e/README.md`): `43a:125`/`:128` → `:131`/`:134`,
+  `43a:155`/`:167` → `:161`/`:173`, `45a:189`/`:203` → `:195`/`:209`. *A citation by line number
+  ages the day anything above it grows* (#173), and this is the cheap half of that rule — the
+  expensive half is that nothing reports it, since `anchors.py` reads citations **by name**. Two
+  files, not three: `docs/handoff/2026-09-29-…` cites `43a:125` and `44a:240` and keeps them,
+  being a dated record of what one measurement returned (#54);
+- `42a`'s own comment beside the assessor's single press said *the committee's rows above press
+  twice because they were written before that was measured*. True when #49 wrote it and false
+  twenty minutes into this ticket: a claim written in prose expires like a number (#130).
+  **And the copy that was missed is in the file this ticket was not changing** — `49a`'s
+  `arriveAt` carries the same sentence about *the four sibling rows that press twice*, found by
+  the review's spec axis and not by the grep that found the first one, because that grep was
+  for the press and this is a sentence about the press. Its twin is in §#49 of this file, two
+  lines below a sentence that had already been dated: a diff proofreads what it touches (#154).
+
+### What is left
+
+The group header's own behaviour — that pressing it closes a group and pressing it again reopens
+it — is still proved by nothing. No row presses it on purpose, and the four that pressed it by
+accident have stopped. That is a claim about the menu rather than about these four reports, so it
+belongs to whichever sheet owns the shell, and it is written down here rather than left as a
+sentence in a commit message.

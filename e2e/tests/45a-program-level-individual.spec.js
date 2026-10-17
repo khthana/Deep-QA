@@ -120,7 +120,13 @@ test('the committee reaches the screen from the menu, and the roll is the regist
   const [current] = COHORTS;
 
   await withUnmarkedStudent(current.admission, async () => {
-    await menuLink(page, 'การประเมินผลการเรียนรู้').click();
+    // One press. The committee's groups are all open when the shell draws —
+    // `SidebarItem`'s arrival effect opens every group with a `sub` for every role
+    // but the teacher — and the header toggles, so pressing it first closes this
+    // one. Measured as the committee on 17 October 2569 (#212): the entry stays in
+    // the document for eight frames while the `AnimatePresence` exit runs and is
+    // gone by the ninth, after which the press cannot land at all. Until then this
+    // row arrived by winning those eight frames rather than by arranging anything.
     await menuLink(page, 'ระดับหลักสูตรรายคน').click();
     await page.waitForURL(PATH);
     await showIntake(page, current.admission);

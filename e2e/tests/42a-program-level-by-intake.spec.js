@@ -80,7 +80,13 @@ test('the committee reaches the report from the menu and reads one row per outco
   // rows down pressed a different label for the same screen — an invented
   // *ผลการเรียนรู้ระดับหลักสูตร* — and now presses this one, the owner having
   // given that role the committee's own group. Two menus, one set of words.
-  await menuLink(page, 'การประเมินผลการเรียนรู้').click();
+  // One press. The committee's groups are all open when the shell draws —
+  // `SidebarItem`'s arrival effect opens every group with a `sub` for every role
+  // but the teacher — and the header toggles, so pressing it first closes this
+  // one. Measured as the committee on 17 October 2569 (#212): the entry stays in
+  // the document for eight frames while the `AnimatePresence` exit runs and is
+  // gone by the ninth, after which the press cannot land at all. Until then this
+  // row arrived by winning those eight frames rather than by arranging anything.
   await menuLink(page, 'ระดับหลักสูตรตามรุ่นปีรับเข้า').click();
   await page.waitForURL(PATH);
   await showIntake(page, COHORTS[0].admission);
@@ -221,7 +227,8 @@ test('the external assessor arrives at this report from their own menu', async (
   // (measured on #49 — `SidebarItem` opens every group with a `sub` for every
   // role but the teacher), and the header toggles, so pressing it first would
   // close the group and take this entry off the screen. The committee's rows
-  // above press twice because they were written before that was measured.
+  // above pressed twice until #212, having been written before that was
+  // measured; the frames that let them get away with it are counted there.
   await signIn(page, ACCOUNTS.externalAssessor);
 
   await menuLink(page, 'ระดับหลักสูตรตามรุ่นปีรับเข้า').click();

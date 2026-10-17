@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 16 October 2569 that is
-`2026-10-16-the-box-the-delivered-screen-had.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 17 October 2569 that is
+`2026-10-17-the-eight-frames-the-four-rows-were-winning.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -679,6 +679,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   at the timeout. Its twin is the order that makes the state unreachable: where a rule picks for
   the person (the most senior grant held), arranging the precondition too early puts them in a
   shell the row cannot use. Ask what is true on arrival before arranging anything. (#77)
+- **An arrangement that destroys what it arranged can still pass, and then it is measuring
+  an animation** — #77's line from the other side, where arranging a reached state makes a row
+  *pass* rather than hang, which is worse: a hang is a report and a pass is a silence. Four
+  committee rows pressed a menu group that was already open, which closes it, and the entry
+  stayed clickable for **eight frames** while the `AnimatePresence` exit ran — after the ninth
+  the same press times out on the locator. A probe for the role in question says the number
+  (#207); a probe for a sibling role does not, the two being the same by reading rather than
+  by measurement. (#212)
 - **A row that catches a defect on some runs is not the row that holds it** — the row that holds it
   builds the situation itself, rather than waiting for another spec to leave one behind. But a row
   that builds its own situation is still handed a world it did not build: assert the shape it needs,
