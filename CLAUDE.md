@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 17 October 2569 that is
-`2026-10-17-the-word-the-delivered-screen-never-said.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-17-the-toggle-nothing-had-pressed-on-purpose.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -512,7 +512,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 ### Tests and fixtures
 
 - **A retrying negative against an element that removes itself is an assertion that cannot
-  fail.** Read the count once, at a named settle point. (#50)
+  fail.** Read the count once, at a named settle point. **But the same read can fail where the
+  code under test is the only thing that removes the element** — so the question is *who else
+  removes this*, not *is it retrying*, and the mutant that leaves the element in the document
+  for ever is what answers it. (#50, #214)
 - **A renderer that normalises what you are counting is a third assertion that cannot fail** — GFM
   truncates a row to its header width, so a count of the drawn cells is right whether the row is
   broken or fixed, and the first verification script called both *2 cells of 2*. Count the

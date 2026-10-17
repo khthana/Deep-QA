@@ -11121,3 +11121,98 @@ brackets. They are [#215](https://github.com/khthana/Deep-QA/issues/215) and
 radius is an order of magnitude apart from one `<option>` list: those are places a person
 **reads**, not places a person **decides**, and a deferral written in a story and not in the
 tracker is a decision nobody can find (#119, #89, #125).
+
+## #214 — the toggle nothing had ever pressed on purpose, and the negative read that can fail
+
+#212 took a press out of four rows and left a hole behind it. The four committee arrivals had been
+pressing the menu's group header believing the group arrived shut; it arrives **open** for every
+role but the teacher, so the press was closing it, and what carried them to the entry underneath
+was the eight frames `AnimatePresence` leaves the list in the document for. Taking the press out
+was right, and it left `handleToggleSubmenu` proved by nothing at all: not one row in the suite
+pressed a group header any more. #212 wrote that down as a ticket rather than as a paragraph
+(#119, #89, #125), and this is that ticket.
+
+The proof is a grid of three mutants against two rows, so that each row dies at **its own**
+assertion (#88). `alwaysopen` makes the toggle add the key and never remove it — a menu that
+opens and cannot close — and kills both rows: row 1 at its own claim, row 2 at the same line used
+as its *precondition*. Two rows dying under one mutant in shared code is two **reachability**
+claims and not one claim counted twice (#191), and row 2's own claim has its own mutant:
+`neverreopens` removes the key and never adds it, kills row 2 alone, and **leaves row 1
+standing**, which is what makes row 2 something other than a copy of row 1. The third,
+`arrivesclosed`, empties the arrival effect, and it is the premise both rows rest on: without it
+a shell that arrived shut would pass both, and row 1 — named for a press that closes — would be
+measuring a press that opens.
+
+### A retrying negative that can fail
+
+Row 1 reads `toHaveCount(0)`, which in this suite is usually the assertion that cannot fail: a
+retrying negative against an element that removes itself passes however broken the screen is
+(#50). It can fail here, and the condition is worth writing down, because #50 is written as a
+flat prohibition and this is the case outside it: **nothing removes this entry by itself.** The
+only thing that takes the sub-list out of the document is the press under test, so the wait has
+something to wait out, and `alwaysopen` is the evidence rather than the argument — it leaves the
+entry in the document for ever and the read spends its whole timeout saying so. The question to
+ask of a retrying negative is not *is it retrying* but *who else removes this element*.
+
+The same eight frames then decide how row 2 is written. Its claim is that a second press brings
+the group back, and pressed at a settle point straight after the first press it would read an
+entry the exit animation had not finished removing — passing on a shell that never reopened
+anything. So the close is read to completion first, which is #164's rule met from the other side:
+there the question was *was it ever on the screen* and the answer was a sample per frame; here the
+question is *has it gone yet* and the answer is to read the thing the row is about at the moment
+it is about, not at the first convenient one.
+
+### The window itself has no mutant, and the chevron has no seam
+
+The eight frames belong to `AnimatePresence`, not to `handleToggleSubmenu`: all three mutants
+leave the window exactly as it is, and `alwaysopen` never starts an exit at all. So the measured
+window is a dated paragraph on `docs/acceptance/10` carrying #212's own probe figures — lifted,
+not re-measured, because the frame count is a property of this machine — and not a row nothing can
+fail (#47, #203).
+
+The chevron is the other half of the same reckoning. It rotates when the group opens, which is
+appearance, and no seam speaks for it; #214 did not touch the code that draws it. That is a ☐ row
+on criterion 2 waiting on a **person** and on no ticket (#157), written rather than left unsaid,
+because a sheet that records only what its ticket proved is a sheet whose silences are
+indistinguishable from coverage.
+
+`arrivesclosed` lives in `SidebarItem.js`, which four tickets now hold, so its reach outside this
+sheet was measured rather than guessed (#123): five rows red over `49a` and `105a` — all four of
+`49a`, whose arrivals click a sub-entry, and row 2 of `105a` — with **row 1 of `105a` standing**,
+which names the teacher branch as a different line the mutant never touches. The mechanism is
+*any row that reads or presses a sub-entry on a non-teacher menu*, which is not a list of files.
+And the census that says which tickets share that file answered four where `mutation/README.md`'s
+own bullet still said two: that bullet had been two tickets stale since #105, found by running the
+script instead of reading the list (#85, #87, #125).
+
+### What the review round found, and both of its findings were about the sheet
+
+Neither axis found anything wrong with the spec or the mutants; both found the **documentation**
+overclaiming, in two different ways, and both were right.
+
+The spec axis read the two ⚙ cells and noticed each states **two** claims where only the first is
+behind a mutant. Row 1's cell ends *and the header is still there to press again*; row 2's ends
+*and the entry reaches its screen*. Both of those assertions exist and run — and both sit *below*
+the line every mutant kills, so during a sweep they are never read: the row is red, the mutant is
+credited, and the claim under the red line is proved by nothing. That is #88 exactly, met from the
+sheet's side rather than the spec's, and the thing worth keeping is **how** it happens: a cell is
+written in one breath, as a sentence about what the row does, while a mutant kills one assertion.
+The repair was to say in each cell which half the mark covers and which half is a net, and to write
+down what a mutant for the other half would have to break — for the header, nothing in
+`handleToggleSubmenu` can take it away, which is nearer *structurally unreachable* than *untested*
+(#102); for the navigation, a mutant on `to={subPath}` would disable every menu-driven move in the
+suite, which is a mutant that kills too much (#45). Not moving the mark was deliberate: each row's
+**first** claim is killed by its own mutant, which is what ⚙ says.
+
+The standards axis counted the mark column and found the sheet's own summary sentence stale for
+the **fifth** time: *22 ⚙ · 6 ☑ · 1 ◐ · 1 ☐, 30 rows* against a table now holding 24 ⚙ · 6 ☑ ·
+1 ◐ · 2 ☐ and 33 rows. The figures were the smaller harm. The sentence also said *the one
+remaining ☐ is the appearance of the four-entry menu*, and prose like that steers the walk queue —
+it hid the ☐ row this very ticket had just added. #154's rule is that correcting one hand-kept
+figure finds the one you are looking at, and this round proved its other half too: twenty lines
+below the summary, *the seam has taken twenty-two rows* was stale in the same breath, and I had
+re-read the summary without re-reading that. The paragraph above both of them has been recording
+its own staleness since #111; what it still has no instrument for is the count itself — `anchors.py`
+reads every sheet's mark column already (and is what counted this one, via `_cells` and
+`_mark_column` rather than a second reader — #141, #174), but nothing asks a sheet whether its own
+summary sentence matches its own table.
