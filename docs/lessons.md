@@ -11355,3 +11355,97 @@ letter, and citing it by its story rather than by its line number is #173. The l
 already written (proofread Thai by rendering the diff) is not a lesson about new prose: it is a lesson about **every** line a script rewrites, and the mark
 characters are the ones to read first, being the only characters on these sheets that a Thai
 codepage has no room for.
+
+## #114 — the option the ticket said to look at first, which could not change anything
+
+#114 was opened on 4 September 2569 during #37's own hand walk and waited six weeks. The symptom
+was still true on the day it was taken: at `innerWidth` 1396 with the left menu open — the state
+anybody opening the screen meets — every legend row beside the radar chart ran to three lines,
+five rows drawn as fifteen. Nothing was lost, nothing overflowed, the page did not scroll
+sideways; the ticket's own word for what was wrong was **รุงรัง**, which is why it was filed
+rather than fixed in place. It offered three options and left the choice open, which `docs/06`
+§Out of Scope makes the owner's. What it also left open, without saying so, was whether any of
+the three works.
+
+**A ticket's proposed options are claims like its numbers, and the cheapest one to check is the
+option against the ticket's own acceptance condition.** Option 3 was *`xl` instead of `lg`*,
+annotated as the one to look at by eye first because it changes the layout most people see. The
+served CSS has `xl` = 1280px and criterion 1 is written at `innerWidth` 1396, which is past it:
+at the width the ticket judges by, option 3 changes nothing at all. The option the ticket pointed
+at first was the option that could not pass its own first criterion — and finding that out took
+one grep of the served stylesheet, not a measurement session. It is #152's *as today* one layer
+out: there the claim is about today, here about a proposed fix, and both are settled by reading
+the ticket's own criterion back against them.
+
+**Then the stated cause was not the cause, and the real symptom was the one the ticket did not
+mention.** The ticket said *the chart reserves 448px and the legend gets the remainder*. Measured,
+the chart never had 448 with the menu open: the card is the narrow half of
+`lg:grid-cols-[20rem_minmax(0,1fr)]`, whose other column is the 320px picker, so chart and legend
+shared 578px and the `<ul>` sat at its min-content **188px, identically at 1024 and at 1396**. The
+side that could shrink was therefore the chart, not the legend: **366px at 1396, 122px at 1152,
+0px at 1024**. *Nothing is lost* was true of the text and false of the picture — and the ticket's
+options 1 (`whitespace-nowrap`) and 2 (`min-w-[18rem]`) both make that worse, to 84 and 22 at
+1152, because both buy room for the words out of the chart. Only dropping the side-by-side layout
+gives the space back, which is how a fourth option came to be the one on the table.
+
+**And the delivered screen had already answered the half the owner was being asked.** #86's rule
+again: `DEEP-QA-FRONTEND`'s version of this screen drew the legend **above** the chart at full
+width, Chart.js's own `legend: { position: 'top' }`, so stacking it is a restoration and not an
+invention. What was genuinely the owner's was *above* or *below* — asked with four screenshots
+(today, option 1, below, above) and answered *below* on 17 October 2569.
+
+**The ticket's reason for being unprovable was a claim too, and wrong in the ordinary way
+(#141).** Criterion 4 said the row is walked by eye because the matter is purely one of
+appearance and no seam can prove it instead. But what criterion 1 asks is *how many lines does a
+row run to at this width*, which is a number a browser reads: a row's height over its
+`line-height`. `114a` is the first spec in the suite to set a viewport **wider** than the project
+default, which `98a` had already done from the narrow end. What stayed with the hand was the word
+รุงรัง, and only that.
+
+**The row claims one line where the criterion says at most two, on purpose.** Option 1 also gets
+two lines, so a row asserting *at most two* would survive the mutant that makes the declined
+option run, and the owner's decision would have nothing holding it (#48). The sweep is what shows
+the stricter claim is the real one rather than a flourish: `beside` (the code before the fix,
+#115) kills row 1 at `[2,2,2,3,2]` and `nowrapbeside` kills the same row at `[1,2,2,2,2]`, and
+two different arrays are the evidence that the row is about *one* and not about *two*.
+`minwidthbeside` leaves row 1 standing, because option 2 really does give one line — which is
+what makes the row about the legend's **position** the one carrying the decision whole, rather
+than a second copy of row 1.
+
+**The layout is copied into two screens and not shared between them, so criterion 3 is a claim
+and not a by-product.** `besidesection` puts the old layout back in `SectionResults.js` alone and
+kills exactly one row. What it then measured was something the sheet had only been inferring from
+the length of the words: it dies at the **position** assertion *after* that row's line-count
+assertion has passed, so #36's legend was one line even beside the chart. The ticket's symptom was
+never reachable on that screen, and what the fix buys it is the chart's own width instead. A
+sentence about a sibling screen that reads like an inference is often one mutant away from being
+a measurement — and the row holding it belongs on that screen's own sheet, not in this one's
+prose (#50, #97).
+
+**The review round found three things, and two of them are this file's own rules.** First, the JSX
+comment: the fix is one class per file, so the comment explaining it was pasted into both — and
+in `SectionResults.js` every figure in it (the picker grid, 578, 366, 0) belongs to a grid that
+file does not have. #83's *a rule borrowed whole borrows its defect too*, in the shape a copied
+layout invites, except that here the copy is prose, which is what a later ticket quotes. The
+repair is a comment that says only what is true of its own file and points at #37's sheet for the
+numbers. Second, the mutation file's docstring said `beside` killed row 1 at `[2,2,3,3,3]` where
+the sheet said `[2,2,2,3,2]` — two documents written the same hour contradicting each other
+(#154) on the very figure that carries the row-1-versus-option-1 argument. No sweep log had been
+kept, so it was settled by running the mutant again and reading it rather than by picking: the
+sheet was right. Third, `mutation/README.md` had the catalogue row and the corrected total but not
+the shared-files collision bullet its own rule asks for, and #145's bullet — which had claimed
+no file beside those three touches `SectionResults.js` — had been expired by this very ticket.
+The census answers 71 → 72.
+
+**One review finding was wrong, and what told them apart was the precedent rather than the
+argument.** The spec axis read criterion 2's ☑ as claiming a person had looked on 17 October;
+the standards axis read the same cell as correctly marked with its reason written in it.
+`docs/acceptance/47-profile-photo.md`'s net row settles it — a row whose mutant survives is ☑
+with the reason in the cell — so what was owed was the seam and the dates, not a changed mark.
+About one finding a round being wrong is the rate this repo has measured before, which is the
+argument for grepping a finding before editing on it.
+
+**And a row added in review expires a mutant nobody edited.** Row 4 gained a row-count
+precondition and a width assertion, which is #202's shape from the spec's side: the anchor is
+still exact, the code untouched, nothing goes red, and only re-running says what the mutant now
+proves. Hence two sweeps in one day — and the figures on the sheet are the second one's.

@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 17 October 2569 that is
-`2026-10-17-the-toggle-nothing-had-pressed-on-purpose.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-17-the-option-the-ticket-said-to-look-at-first.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -135,6 +135,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   makes the ticket the price of a divergence already taken and the wording the owner's. Restoring
   that mechanism would then be a **new rule** and not a restoration — the UI holding an opinion
   the server's own grant list does not (#97, ADR-0002). (#90)
+- **A ticket's proposed options are claims like its numbers, and the cheapest one to check is the
+  option against the ticket's own acceptance condition** - #114 annotated option 3 (`xl` instead
+  of `lg`) as the one to look at by eye first, and `xl` is 1280 where criterion 1 is written at
+  1396, so the option the ticket pointed at first could not change anything at the width the
+  ticket judges by. #152's *as today* one layer out: that claim is about today, this one about a
+  proposed fix, and both are settled by reading the ticket's own criterion back against them.
+  (#114)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
