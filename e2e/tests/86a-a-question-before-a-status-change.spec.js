@@ -125,6 +125,18 @@ async function arrive(page, status) {
   await expect(userRow(page, ACCOUNTS.teacherTwo), 'the row the switch is pressed on').toHaveCount(
     1,
   );
+  // The verb this row is about to press, read before pressing it - #213.
+  //
+  // `startStatusChange` finds the control *by* the verb, so a screen showing
+  // the wrong one leaves these rows with nothing to click and they die in the
+  // locator at the timeout rather than at a claim (#139). Asserted here, the
+  // rule the verb follows is a claim in both directions instead of an
+  // arrangement: `86:alwaysoffersuspend` fails the rows that arrive suspended
+  // and `86:alwaysofferrestore` the rows that arrive live, each on this line.
+  await expect(
+    statusButton(page, ACCOUNTS.teacherTwo, status === 'active' ? 'ระงับ' : 'เปิดใช้งาน'),
+    'the change the row arrives offering',
+  ).toBeVisible();
 }
 
 /** Every `PUT` to this account's status route, in the order it was sent. */

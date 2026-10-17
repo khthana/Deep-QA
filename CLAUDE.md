@@ -320,6 +320,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **An attribute a locator is built on stops being provable by mutation** — it is the premise of
   those rows; an attribute read off a located element is a claim. The trap is using it in the
   locator every other row shares. (#85, #111)
+- **But a text that is both the locator and the claim is proved by a mutant wrong on one side
+  only** — the line above read as a condition rather than a verdict. Where the press finds the
+  control *by* the word the row then reads, a mutant that changes both sides leaves every row
+  with nothing to click and they die at the timeout instead of at a claim (#139), which is what
+  a sheet writes down as *unprovable*. Be right on the side the row presses and wrong on the side
+  it reads; then the rows arriving on the wrong side need the **arrival** read as a claim of their
+  own, or those kills land on a wait as well. (#213)
 - **Two mutants that vary the same property cannot see a third property.** One crafted value
   proves one link of a guard; craft one per link, before the sweep. Say which of three a clause
   is: proved, structurally unreachable, or untested. (#96, #107, #102)

@@ -11216,3 +11216,110 @@ its own staleness since #111; what it still has no instrument for is the count i
 reads every sheet's mark column already (and is what counted this one, via `_cells` and
 `_mark_column` rather than a second reader — #141, #174), but nothing asks a sheet whether its own
 summary sentence matches its own table.
+
+## #213 — the claim that was also the locator, and the mutant that had to be wrong on one side
+
+#86 closed on 16 October 2569 with two debts written into its own sheet, which is the shape #119
+asks for: a deferral written into prose and not into the tracker is a decision nobody can find.
+The first debt was three ⚙ rows whose last assertion no mutant reached — the verb on the row's own
+button, in rows 1, 3 and 5. The second was the dialog's appearance, which the browser seam cannot
+answer at all. #213 is both, and it asked a real question about the first: *is this provable, and
+if it is not, say why and downgrade the three marks.* It offered three unmeasured possibilities, of
+which only the third lowered the marks: separate the two reads first and then place the mutant,
+build a moment where the verb and the status cell genuinely disagree, or measure, find it cannot be
+done, write why, and bring the three marks down to what is actually proved. The first round of this
+write-up said *all three ended in the mark coming down*, which is the ticket's own failure mode
+repeated in the file that diagnoses it — a claim copied until each copy looks checked.
+
+**The ticket's reason was measured first, and it was false.** The sheet and the mutation file both
+said the verb reads `suspends(user)` *on the same row the status cell reads*, so no mutant at that
+site could separate the two claims (#191). The status cell reads `STATUS[user.status]?.label ??
+user.status`; the button reads `{suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}`. Two expressions, two
+sites, one field between them — and a mutant at either one separates them by construction. This is
+`CLAUDE.md`'s first rule met again: a ticket's *What is wrong* is a claim from the day it was
+written. What makes this one worth the telling is that the claim had been written three times — in
+the issue, in the sheet and in the mutation file's own debt paragraph — and each copy made the next
+one look checked.
+
+**What was actually in the way is a different sentence, and it names the fix.** The press finds the
+control *by the verb the claim is about*: `statusButton` in `e2e/support/users-screen.js` is
+`getByRole('button', { name: label, exact: true })`, and `startStatusChange` passes the verb the
+row expects. So a mutant that swaps the verb on both sides leaves every row with nothing to click,
+and all five die in the locator at the timeout rather than at a claim (#139) — which is the same
+reason #86 never wrote `open={false}`. The mutant that proves the claim therefore has to be **wrong
+on one side only**: right on the side the row presses, wrong on the side the row reads. That is the
+fourth option, and it is the answer — *yes, provable, at the button's own site, and without
+separating the two reads first*. A ticket that asks *is this provable* is answered by a
+measurement, and the measurement here was three mutants and a clean run.
+
+- `pressflipstherow` — the press flips the row's control in the screen's own state with nothing
+  written (an optimistic draw, written with a functional updater so the mutant measures the live
+  state and not the first render's closure, #201). Row 1 dies at *the row, still offering the same
+  change*, its own last assertion; 1 failed, 4 passed, and 44 of 44 outside the sheet.
+  (The two verb mutants report 39 against that same population of 44, not a smaller one: a
+  `mode: 'serial'` file skips its remaining rows after a red, and both runs print *5 did not run* —
+  #67, read beside #154's rule about reading two figures side by side.)
+- `alwaysoffersuspend` — the button offers *ระงับ* in both states. Row 3 dies at *the control, now
+  offering the way back*, its own last assertion; 3 failed, 2 passed.
+- `alwaysofferrestore` — its mirror. Row 5 dies at *the control, back to the change it offered
+  before*; 4 failed, 1 passed.
+
+**The eight other deaths are what the ticket paid for.** Under a one-sided mutant the rows that
+arrive on the wrong side have nothing to press, so they die at a timeout: eight of them across the
+two sweeps. A death at a wait is not a claim (#139), so `arrive()` gained one line — *the change
+the row arrives offering* — read **before** the press. After it, every one of those eight deaths is
+at a named assertion, and the rule the verb follows is a claim of all five rows in both directions
+rather than an arrangement none of them states. The row that could not be proved and the deaths
+that could not be read were the same mechanism seen from two ends.
+
+**And once it is a claim, every row owes the citation** — which is what the standards review caught
+in the first round of the sheet. If the arrival read is an assertion of each row, then the mutant
+that kills a row *there* holds a claim of that row, so rows 1, 2 and 3 cite `alwaysofferrestore`
+beside whatever else holds them and rows 4 and 5 cite `alwaysoffersuspend`: one mutant, several
+reachability claims, not one claim counted twice (#191). Citing it only on the row whose *last*
+assertion it kills would have left the mutation file's own kill column naming rows the sheet does
+not — the second of the four ways to read a kills column, found in the file written the same day.
+
+**The nine older mutants were not re-swept, and the argument is written down rather than assumed.**
+A spec that gains a row a mutant can reach expires that mutant's count and nothing reports it
+(#202) — but the new line runs *before* the press, and all nine act at the press or after it:
+`presswriteswithoutasking` at the press, `wrongtitle` `namesnobody` `asksthewrongdirection` with
+the box open, `cancelwrites` at *ยกเลิก*, `alwayssuspends` `alwaysrestores` `doesnotclose`
+`togglenoreload` inside `confirmSwitch`. None of them changes what the new line can see, and the
+clean 5 of 5 says the line is not red by itself. The condition that expires this reasoning is a
+mutant of this sheet that touches how a row is drawn before the press.
+
+**The out-of-sheet sweep found the claim already held one sheet over, as an instrument.** The
+mutants live in `Users.js`, one screen, but the button is pressed from six files, so the sweep went
+outside the sheet as well (#123 — a mutant's sheet is one of the places it kills, not the list).
+`alwaysoffersuspend` failed 3 of 39, `alwaysofferrestore` 6 of 39; most of those deaths are at a
+**press** in `11c` `13a` `202a` `203a`, which is an arrangement, but two are assertions and both
+are in `208a`: *the row the answer carried, drawn* and *the account is live before the press*. That
+is #83 from the other side — the tell that a claim has an owner you have not found can be a row in
+another ticket's spec. The verb was not unheld before today; it was held as `208a`'s instrument,
+which is exactly why the claim still belongs on this sheet and not there. `84a` is immune, its
+locator being `/ระงับ|เปิดใช้งาน/`: it asks whether the button is dead, not what it says.
+
+**Auditing the whole table against the definition found two more claims nobody had read.** ⚙ means
+a mutant killed that row's own assertion *and* the cited assertions cover the row whole, so the
+audit was the whole table and not the three rows the ticket named. Row 2 has `cancelwrites` dying
+**above** one uncovered claim and **below** another — *the question, dismissed* above, *a sentence
+about something that did not happen* below. That is #88's rule twice in one row, and both halves
+got a mutant of their own in this ticket rather than a line of prose, because leaving them is the
+species of debt #213 exists to close. Fourteen mutants now, where the ticket's scope was three.
+
+**Part 2 is four ☐ rows, and the ticket asked for ◐ or ☑ *as far as can be walked*.** What landed is
+the rows, written so they can be walked; what is owed is the walk, which needs a person in front of
+the screen, so #213 does not close on this half yet and the four ☐ rows are the queue the walk comes
+off. Saying *four ☐ rows is the whole of what it asked for* — as the first round of this section
+did — is the same overclaim as a ⚙ that was never earned, one mark along. The appearance of a shared
+`ConfirmDialog` — the red confirm in both directions, the box's size and position over the row it
+names, where the consequence sentence breaks, and whether one sentence is enough to tell the two
+directions apart — is hand-walked by definition, and each row is written in `ConfirmDialog`'s own
+tokens rather than in eye-words, so a walker can check what they see against what the code says.
+#105's line from the other side: a row can gain a walkable half the day a ticket lands, and here
+the ticket's product *is* the walkable half. The rows carry the condition that #204 lands first, in
+which case the focus half walks in the same pass.
+
+**No application code changed in this ticket.** A proof gap is not a defect, and the fix for a mark
+that overclaims is the mutant it was missing or the mark coming down — not an edit to the screen.
