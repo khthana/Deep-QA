@@ -267,7 +267,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   Count the cells, not only the marks — then read the numbers before raising the alarm: all seven
   hid a ☑, so the walk queue was never wrong. Measured against GitHub's own renderer, the cells
   past the header's width are **dropped** rather than moved along, so the mark is gone and not
-  merely misplaced. (#79, #175)
+  merely misplaced. **And a mark can come back as a letter** — a patch script whose text has been
+  through a Thai codepage writes `ส หรือ ส` where `◐ หรือ ☑` was meant, which still reads as Thai
+  prose and so survives a review and a commit: the marks are the characters to read first in a
+  rendered diff, being the only ones on these sheets a Thai codepage has no room for. (#79, #175,
+  #213)
 - **A rename reaches a sheet's criteria and not its record** — the criteria rows and the open
   questions say what the system *is*, so a later walker needs the new identifier in them; a dated
   walk table says what one measurement returned, and #54's sheet says so itself in bold. Change the

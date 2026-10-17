@@ -11323,3 +11323,31 @@ which case the focus half walks in the same pass.
 
 **No application code changed in this ticket.** A proof gap is not a defect, and the fix for a mark
 that overclaims is the mutant it was missing or the mark coming down — not an edit to the screen.
+
+**Then the walk happened the same evening, and the two questions turned out to be one question.**
+Two rows came back ☑ from the DOM of the real screen: the box is 384px of `max-w-sm` centred on the
+viewport at 569–953, which lands over the middle of the `teach02` row it names (353–1474 × 303–359),
+leaving the code and the name to its left and the status and buttons to its right, both unreadable
+under a measured `blur(4px)` — so what tells the walker which row this is about is the sentence
+inside the box, which names the account, and the criterion's *can a person confirm without
+remembering which row they pressed* is answered yes by the wording and not by the geometry. The
+consequence sentence takes four lines with no newline character in it, breaking after
+*ภัทรา* · *ใช่หรือไม่* · *ถัดไป*, all three the author's own spaces, with `glued`'s 131 word
+joiners holding every other boundary shut and `break-words` never firing. The other two rows are ◐, and reading them side by
+side is what the walk added to the ticket: the title, both labels and both class strings are
+identical to the letter in the two directions, so **the red button says *careful* and does not say
+*which way*, and the only thing that says which way is one sentence**. Rows 1 and 4 are therefore
+not two preferences to settle but one question with two halves, and it is the owner's
+(`docs/06` §Out of Scope) — so it was asked rather than answered, and the two rows hold ◐ until
+there is an answer.
+
+**And proofreading the rendered diff caught two marks that had come back as a Thai letter — in my
+own committed prose.** `◐ หรือ ☑` had been written to the sheet as `ส หรือ ส`, and `ครึ่ง` as `ครี่ง`,
+by a patch script in the review round whose text had been through a cp874 round trip; the sentence
+still read as Thai prose, which is why it survived a round of review and a commit. A scan of every
+file the commit touched for a lone `ส` between spaces and for that one misspelling found exactly
+one line, and §#165's own lone `ส` as the true positive it should — that line is *about* the
+letter, and citing it by its story rather than by its line number is #173. The lesson that was
+already written (proofread Thai by rendering the diff) is not a lesson about new prose: it is a lesson about **every** line a script rewrites, and the mark
+characters are the ones to read first, being the only characters on these sheets that a Thai
+codepage has no room for.
