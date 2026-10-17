@@ -327,7 +327,17 @@ export default function StudentResults() {
               </p>
             )}
 
-            <div className="mt-4 flex flex-col items-center gap-6 lg:flex-row lg:items-start">
+            {/* #114: the legend sits under the chart at every width. Beside it
+                (`lg:flex-row`, until 17 October 2569) this card is the narrow
+                half of a grid whose other column is the 20rem picker, so the
+                chart and the legend shared 578px at an `innerWidth` of 1396:
+                the legend fell to its min-content 188px and its rows ran to
+                three lines, while the chart shrank to 366 - and to 0 at 1024.
+                Stacked, the chart keeps its whole `max-w-md` and every row is
+                one line from 1152 up. The delivered screen put this legend
+                above the chart rather than under it; the owner chose under on
+                17 October 2569. */}
+            <div className="mt-4 flex flex-col items-center gap-6">
               {/* The chart says so itself when there are too few axes to draw
                   a polygon — it is the one that knows. */}
               <RadarChart

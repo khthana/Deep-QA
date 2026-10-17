@@ -299,7 +299,21 @@ export default function SectionResults() {
             </p>
           )}
 
-          <div className="mt-6 flex flex-col items-center gap-6 lg:flex-row lg:items-start">
+          {/* #114: the legend sits under the chart at every width. The layout
+              is #37's, **copied** into this file rather than shared with it,
+              and the ticket was filed against that screen: there the card is
+              the narrow half of a picker grid and the rows carry a code and
+              a Thai name, so they ran to three lines. This screen has no
+              picker column and its rows read *ปีการศึกษา 2569 (เส้นทึบ)*,
+              so beside the chart (`lg:flex-row`, until 17 October 2569) the
+              legend had room and never showed that defect - the figures are
+              #37's and are recorded on
+              `docs/acceptance/37-individual-student-results.md` §#114, not
+              here. What the fix buys this screen is the chart at its whole
+              `max-w-md` instead of sharing the row. The delivered screen put
+              this legend above the chart rather than under it; the owner
+              chose under on 17 October 2569. */}
+          <div className="mt-6 flex flex-col items-center gap-6">
             {/* The chart says so itself when there are too few axes to draw a
                 polygon. It was written here first and copied to #37, which is
                 the second use `lib/attainment.js` names as the point to
