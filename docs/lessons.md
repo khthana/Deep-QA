@@ -11338,8 +11338,12 @@ side is what the walk added to the ticket: the title, both labels and both class
 identical to the letter in the two directions, so **the red button says *careful* and does not say
 *which way*, and the only thing that says which way is one sentence**. Rows 1 and 4 are therefore
 not two preferences to settle but one question with two halves, and it is the owner's
-(`docs/06` §Out of Scope) — so it was asked rather than answered, and the two rows hold ◐ until
-there is an answer.
+(`docs/06` §Out of Scope) — so it was asked rather than answered. The owner answered both the
+same evening: **keep it as it is**, the red button in both directions and one sentence to tell
+them apart, which takes the two rows to ☑ and finishes part 2. The declined-proposal rule
+(#48) does not follow here, because what was decided is an **appearance** — a colour and a
+wording — which this repo walks by hand rather than asserting at the browser seam, so what
+guards the decision against an accidental change is the walked row itself and not a mutant.
 
 **And proofreading the rendered diff caught two marks that had come back as a Thai letter — in my
 own committed prose.** `◐ หรือ ☑` had been written to the sheet as `ส หรือ ส`, and `ครึ่ง` as `ครี่ง`,
