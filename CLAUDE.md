@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 17 October 2569 that is
-`2026-10-17-the-eight-frames-the-four-rows-were-winning.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-17-the-word-the-delivered-screen-never-said.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -127,6 +127,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   priced as one for eight weeks; `UserTable.js` had the box, its heading and its two buttons all
   along. The half that does not survive the shared component is the half to say out loud: a
   message that says one word twice and colours a verb is a drawing, not a wording. (#86)
+- **A delivered screen that never had the words can still have had the protection** — #86's line
+  from the other side: *the control was never there* does not make a ticket cosmetic, because what
+  the delivered screen used instead may be a **mechanism** the rebuild dropped on purpose. #90's
+  scope field has no kind word in either tree, but the delivered lists were keyed by role, so
+  nobody was ever offered two kinds of thing at once; the rebuild offers one mixed list, which
+  makes the ticket the price of a divergence already taken and the wording the owner's. Restoring
+  that mechanism would then be a **new rule** and not a restoration — the UI holding an opinion
+  the server's own grant list does not (#97, ADR-0002). (#90)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -328,6 +336,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   a constant four mutants share, edited to disambiguate them, moves every mutant that quoted it
   — including one in a file the ticket never touched, which no instrument reports because the
   repair precedes the next run. It is in the diff only. (#202)
+- **The text an anchor is built from is read out of the code the mutant edits, not out of a file
+  that quotes it** — #118's rule with the file wrong: a copy inside a string literal carries its
+  quoting, so #90's map line came back ending `}\n",` and four anchors answered MISS. The
+  assertion that it occurred three times passed, every occurrence being the same wrong text, which
+  is #83 from the other side; assert what the built string must **say**, not how often it appears.
+  (#90)
 - **A mutant outlives its ticket but not its anchor.** Run `python mutation/anchors.py` while
   finishing a ticket, anchor to the code a mutant breaks and never to the comment beside it, and
   when a constant is arbitrary mutate the operator beside it. (#121, #123, #101, #125)

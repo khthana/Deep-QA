@@ -11005,3 +11005,119 @@ measurement and three options in it. Written in a story and not in the tracker i
 a decision nobody can find (#119, #89, #125), which is the half of this ticket that was owed after
 the code was right: both review axes named it, and the answer to both was a number rather than a
 paragraph.
+
+## #90 — the word the delivered screen never said, and the rule it would have been
+
+The ticket was filed against the scope field of the account screens: it offers
+*name (code)* and nothing else, so which **kind** of thing a grant is confined to — a faculty,
+a department or a programme — has to be inferred from how many digits the code has. Three of
+its claims were measured before any of them was used. The endpoint did not need teaching:
+`GET /api/users/grantable` has answered `kind` beside every entry all along, so the half the
+ticket priced first had expired (#77). The seed holds **two** pairs of a department and a
+programme under the same Thai name, not the one the ticket named. And the rule the ticket wrote
+down — two digits is a department, four is a programme — cannot cover the faculty at all:
+`CONTEXT.md` §Scope codes it `ENG` precisely so that it cannot collide with a numbered
+department, and a field that is sometimes digits and sometimes letters is not a field a reader
+counts.
+
+### What the delivered screen answered, and what it did not
+
+#86's rule says to ask the delivered UI before asking the owner, and the answer here is that
+`DEEP-QA-FRONTEND` draws `{scope.nameTH}` bare — no kind word, and no code either. So the
+wording is not a control the rebuild dropped, and nothing about it was already decided.
+
+What the delivered screen *did* have was a different mechanism: its lists were keyed by role, so
+the person choosing a scope was never offered two kinds of thing at once. The protection was
+structural, and the ambiguity could not arise. The rebuild offers one mixed list, fed by the
+server's own `assignable`, which is a divergence taken on purpose — and #90 is the price of it.
+That reframes the ticket: it is not a cosmetic request, and it is not a regression either.
+
+It also rules out the cheapest-looking fix. Filtering the list by the role being granted would
+restore the delivered *mechanism*, but as a rule living in the UI that the server's grant list
+does not hold — two places holding one opinion, which is a claim neither of them can be shown
+to hold (#97), against a decision that says authority is derived server-side and nowhere else
+(ADR-0002). Restoring a delivered mechanism can be a **new rule** rather than a restoration.
+
+### The owner's answer, and the condition that was one case short
+
+Four options were priced and the owner chose the word: the entry reads
+*kind · name (code)*. Not `<optgroup>`, not role-filtering, not leaving it. The grant confined
+to nothing carries **no** kind word, because its own label already names the whole of the
+organisation and a word in front would say that twice; and a kind the map has never heard of reads
+exactly the way every entry read before #90, rather than drawing `undefined`.
+
+That condition was drawn from one case while a sibling was already outside it, which is #113 met
+in my own code rather than in a ticket's. This organisation's faculty is named
+`คณะวิศวกรรมศาสตร์`, so the screen drew *คณะ · คณะวิศวกรรมศาสตร์ (ENG)* — the very defect the
+unconfined grant had been spared. Dating the condition protects it against the future and says
+nothing about a sibling already outside it. Both wordings are defensible (every entry prefixed
+scans down one column; dropping the duplicate means no entry says a word twice), so it went to
+the owner, who answered *คณะวิศวกรรมศาสตร์* — drop it. The rule in the code then stopped being *the
+unconfined grant has no word* and became **no word in front of a label that already says it**,
+which covers both cases in one sentence. The sheet's row 3 had meanwhile written an expected
+string the screen never writes, which a hand-walker would have hunted for (#118).
+
+The wording of the unconfined entry — it still shows its sentinel in brackets — was raised
+separately rather than changed on the way past (`docs/06` §Out of Scope).
+
+### The rows, the row #88 made, and the row a blind mutant made
+
+Every row was run against the unfixed code before its mutant was written, which is the cheap half
+of #203: on the first round three went red at the assertion they were written for, and the fourth
+would have passed, because what it claims is an **absence** that the broken screen also has. That
+is the row to be most careful with, and it is the one the control mutant exists for.
+
+The fourth row exists at all because of #88. A single row reading the central administrator's
+list would have asserted the faculty's word and the unconfined entry's silence one below the
+other, and a mutant reports the first assertion it kills — so the claim underneath would have
+been proved by nothing while the row went red and the mutant was credited. Splitting it cost one
+`openAt` and bought two claims that can fail apart.
+
+The fifth row exists because the owner's second answer made a mutant blind. With the no-duplicate
+rule, `nofaculty` — which drops `faculty` from the map — produces, for the seeded faculty, the
+same string as suppressing the word deliberately: the two implementations agree there, so the
+mutant proves nothing at row 3 (#117). The fix is the **row**, not deleting the mutant (#118), and
+the fixture is built where the two disagree: a faculty whose name does *not* begin with its kind
+word. A claim that no fixture can build that is a claim about the seed (#155) — this one is built
+by writing to the database, as `133a` and `139a` read from it, and putting the name back in
+`finally`, below the seam the row measures (#181, #134); the run's own `leftovers` report confirms
+the `faculty` table did not move (#132). The map keeps its `faculty` entry because the entry is
+the rule and the seed is one instance of it.
+
+### The mutants, and the survivor I wrote myself
+
+`nokind` is the diagnosed code made to run (#115): the label as it read before this ticket. It
+kills rows 1, 2 and 5 and **leaves rows 3 and 4 standing**, on purpose — both of those claim an
+**absence** of a kind word, which is true of the pre-#90 label too. They are its controls, and
+that is what tells a row pinning today's value apart from a row reading the rule (#145). It
+carries two edits, because the pre-#90 label had no map at all and leaving `KINDS` declared and
+unreferenced is a warning react-scripts turns into a failed compile under `CI=true` — a mutant
+that stops the application rather than failing a row (#101). `swapsthewords` gives the two
+colliding kinds each other's word and kills rows 1 and 2. `nofaculty` kills row 5 alone.
+`saysthekindtwice` drops the `startsWith` condition, which is the wording the owner declined made
+to run (#48), and kills row 3 alone; row 5 passes under it, the renamed faculty being owed its
+word either way. `namestheunconfined` gives the unconfined grant a word and kills row 4 alone.
+
+`swapsthewords` **survived 5 of 5** on the first sweep, which is the survivor to distrust most,
+because the sheet had predicted the kill (#51). It was not the code and not the row: the script I
+used to regenerate the mutants swapped the two key-value *pairs* instead of the two words, which
+only reorders the map. Two instruments said nothing. `anchors.py` answered problems 0 before and
+after, correctly — the anchor had not moved, and an anchor check never says a mutant has stopped
+proving anything (#107, #68). And my own assertion that the map's line occurred three times
+passed, because all three occurrences were the same wrong text: a count is evidence about the
+pattern typed, not about the claim wanted (#83), and the way to have caught it was to assert what
+the built string must *say* — that the words had moved and the keys had not — which is what the
+repair asserts now.
+
+The reason the text was wrong at all is worth its own line. I read the map's line out of the
+mutation file rather than out of `GrantPicker.js`, and in the mutation file that line lives inside
+a Python string literal, so what came back ended `}\n",` — a quoted copy carries its quoting.
+Reading rather than retyping is right (#118); the file to read from is the one the mutant edits.
+
+Three other sites draw a scope with no kind word — the grants panel's own list of held grants,
+the accounts table, and the role dropdown — and the unconfined entry still shows its sentinel in
+brackets. They are [#215](https://github.com/khthana/Deep-QA/issues/215) and
+[#216](https://github.com/khthana/Deep-QA/issues/216), opened the same day, because the blast
+radius is an order of magnitude apart from one `<option>` list: those are places a person
+**reads**, not places a person **decides**, and a deferral written in a story and not in the
+tracker is a decision nobody can find (#119, #89, #125).
