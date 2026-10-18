@@ -85,8 +85,12 @@ Killing them:
 
     cd e2e && npx playwright test 50a-sign-in
 
-**Never sweep this file with `50-sign-in-screens.py` or `66-*.py`.** All three
-hold `frontend/src/pages/Login.js`.
+**Never sweep this file with `50-sign-in-screens.py`, `52-access-ended.py`,
+`66-*.py`, `89-two-ends-of-a-window.py` or `128-a-way-to-ask.py`.** All six
+hold `frontend/src/pages/Login.js`. The last three arrived after this paragraph
+was written, which is how a list like this expires - by a file somewhere else,
+not by anything in the sheet that carries it (#154). Re-derived from `FILES` by
+AST on 18 October 2569, not from what each sheet is about (#85, #125).
 
 `97-*.py` is safe to sweep beside this one, which is worth stating because the
 first version of this paragraph said the opposite. Both tickets landed on the

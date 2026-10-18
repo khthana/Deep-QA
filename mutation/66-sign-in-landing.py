@@ -62,7 +62,13 @@ same goes for `24-teacher-dashboard.py` **and `105-sidebar-icons.py`**. The
 first shares `frontend/src/pages/Login.js` and
 `frontend/src/routes/AppRoutes.js` - the sign-in screen and the router that
 declares it are one pair of files, and two tickets landing on them a day apart
-is the reason. The other two share
+is the reason - and `frontend/src/pages/Login.js` is held by six files now,
+not two: **`52-access-ended.py`, `85-refusal-that-waits.py`,
+`89-two-ends-of-a-window.py` and `128-a-way-to-ask.py` came to it after this
+paragraph was written, and belong in the same sentence.** Re-derived from
+`FILES` by AST on 18 October 2569, not from reading what each sheet is about
+(#85, #125); such a list is dated by the day it was written and expires by a
+file somewhere else (#154). The other two share
 `frontend/src/components/SidebarItem.js`, which three files hold:
 `105`, `24` and `66`. `save` in one would snapshot what the other has already
 mutated. `SidebarItem/menus.js` is new with #120 and is held by this file alone.

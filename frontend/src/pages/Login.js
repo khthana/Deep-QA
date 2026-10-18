@@ -28,6 +28,12 @@ import ContentMotionDIV from '../components/ContentMotionDIV'
  * That key is two keys below — #89 split it into the end that is waited
  * out and the end that has to be asked about — so the name in the
  * paragraph above is #50’s history and not a key to look for here.
+ *
+ * *The only person who meets it* was measured again on 18 October 2569 for
+ * #128 and is a claim about the seed, not about the rules: nothing in
+ * backend/routes/users.js restricts a validity window to the assessor role, so
+ * any account given one reads these two sentences — and an account that signs
+ * in with Google only reads them here, where no date could have travelled.
  */
 const GOOGLE_REFUSALS = {
   domain: 'กรุณาใช้เมล @kmitl.ac.th ในการเข้าใช้งาน',
@@ -37,7 +43,7 @@ const GOOGLE_REFUSALS = {
   inactive: 'บัญชีนี้ถูกระงับการใช้งาน',
   unverified: 'บัญชีนี้ยังไม่ได้ผ่านการยืนยันตัวตน',
   validityNotStarted:
-    'บัญชีนี้ยังไม่ถึงวันเริ่มใช้งาน กรุณาเข้าใช้งานอีกครั้งเมื่อถึงวันที่กำหนด',
+    'บัญชีนี้ยังไม่ถึงวันเริ่มใช้งาน กรุณาเข้าใช้งานอีกครั้งเมื่อถึงวันที่กำหนด หรือติดต่อเจ้าหน้าที่เพื่อสอบถามวันเริ่มใช้งาน',
   validityEnded:
     'บัญชีนี้พ้นช่วงเวลาที่กำหนดให้ใช้งานแล้ว กรุณาติดต่อเจ้าหน้าที่เพื่อขอต่ออายุ',
   googleUnavailable:

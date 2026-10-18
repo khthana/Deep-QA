@@ -423,6 +423,19 @@ test('an external assessor with a validity period', async (t) => {
     // Waiting is what this one wants, and it is the whole difference from the
     // row above - #89.
     assert.match(response.body.message, /\u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07/);
+    // #128's owner's decision: no door names the start date, so what makes
+    // waiting actionable is the wording - the sentence names whom to ask for
+    // the date instead of carrying it. Not a restatement of the line above:
+    // the sentence #89 shipped says to wait and names nobody to ask. The whole
+    // clause is read, not its first words: a sentence that said only *contact
+    // the staff* would pass a shorter match while naming nothing to ask about,
+    // and the half the owner's decision turns on is the date it asks for - the
+    // name of the assertion is the claim, so the claim is what it reads (#96).
+    assert.match(
+      response.body.message,
+      /\u0e15\u0e34\u0e14\u0e15\u0e48\u0e2d\u0e40\u0e08\u0e49\u0e32\u0e2b\u0e19\u0e49\u0e32\u0e17\u0e35\u0e48\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e2a\u0e2d\u0e1a\u0e16\u0e32\u0e21\u0e27\u0e31\u0e19\u0e40\u0e23\u0e34\u0e48\u0e21\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19/,
+      'the not-started refusal names a way to ask for the start date',
+    );
   });
 
   /**

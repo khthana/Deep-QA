@@ -142,6 +142,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   ticket judges by. #152's *as today* one layer out: that claim is about today, this one about a
   proposed fix, and both are settled by reading the ticket's own criterion back against them.
   (#114)
+- **A ticket that asks whether to carry a value its own mechanism cannot carry has a fourth
+  option its three do not list: carry the way to get the value.** #128 offered the date in the
+  URL, closing with no diff, or telling only at the doors with a body — and the measurement that
+  refuted the third (three doors, two with a body, not one against one) is what made the fourth
+  visible: a sentence that cannot name a date can name whom to ask for it. Measure the ticket's
+  own asymmetry before writing its options down for the owner, because what the measurement
+  changes may be the question rather than the answer. (#128)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —

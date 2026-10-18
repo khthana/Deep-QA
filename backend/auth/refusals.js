@@ -39,7 +39,13 @@ const REFUSALS = {
   // on that path, and one door telling a person more than another about the
   // same account is worse than neither door telling them. #125's lesson, one
   // ticket later, in a place where the value genuinely cannot cross.
-  validityNotStarted: 'บัญชีนี้ยังไม่ถึงวันเริ่มใช้งาน กรุณาเข้าใช้งานอีกครั้งเมื่อถึงวันที่กำหนด',
+  //
+  // #89 left that as a question and #128 asked it. The answer, on 18 October
+  // 2569, was to name no date at any door and to make the waiting actionable
+  // by wording instead: the not-started sentence now says whom to ask for the
+  // date. Every line above still holds - what changed is that the sentence has
+  // a second clause, and the way to ask is the half a person can act on.
+  validityNotStarted: 'บัญชีนี้ยังไม่ถึงวันเริ่มใช้งาน กรุณาเข้าใช้งานอีกครั้งเมื่อถึงวันที่กำหนด หรือติดต่อเจ้าหน้าที่เพื่อสอบถามวันเริ่มใช้งาน',
   validityEnded: 'บัญชีนี้พ้นช่วงเวลาที่กำหนดให้ใช้งานแล้ว กรุณาติดต่อเจ้าหน้าที่เพื่อขอต่ออายุ',
   credentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
   passwordNotAllowed: 'บัญชีนี้ต้องเข้าสู่ระบบด้วยบัญชี Google ของ KMITL',

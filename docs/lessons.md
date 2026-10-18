@@ -11449,3 +11449,101 @@ argument for grepping a finding before editing on it.
 precondition and a width assertion, which is #202's shape from the spec's side: the anchor is
 still exact, the code untouched, nothing goes red, and only re-running says what the mutant now
 proves. Hence two sweeps in one day — and the figures on the sheet are the second one's.
+
+## #128 — the value that could not travel, and the fourth option
+
+#128 was the question #89 wrote down and did not answer: should the refusal an account meets
+before its window opens name the start date? The ticket said so itself — *item 1 is a question,
+not work* — and listed three things that could be done about it: let the URL carry the date,
+close with no diff, or tell the person at the doors that have a body and not at the one that
+does not. The answer the owner gave was none of the three.
+
+**The measurement did not change the answer; it changed the question.** All three of the ticket's
+mechanical claims held: both keys are in `GOOGLE_REFUSAL_REASONS`, the Google refusal travels as
+`/login?error=<reason>` with no body, `Login.js` keeps its own copy of the words keyed by the
+reason alone, and `refuse()` hands `REFUSALS[reason]` to `JSON.stringify`, which is #125's shape
+exactly. One figure had aged the way a ticket's figures do — the function-valued refusals the
+ticket counted at 22 on 9 September were 24 — and that one decided nothing. The claim that did
+decide something was the ticket's own asymmetry: *the doors that have a body* against *the door
+that does not*, written as though it were one against one. There are **three** doors. The
+password door answers with a body, `endAccess` in `backend/auth/authorise.js` answers `403` with
+a body, and the Google door redirects. Two against one, and the option the ticket priced as the
+cheap compromise was the one that would have left the same state of the same account saying
+different things at two doors out of three — which is #66 in the shape of a refusal.
+
+Measuring that is what made a fourth option visible, and it is not in the ticket: **where the
+value cannot travel, what can travel is the way to get the value.** The date cannot cross a
+redirect without going into a query string, into the browser's history and into every proxy log
+on the way; the *sentence naming whom to ask* crosses as part of the words, at every door, with
+no parameter and no composition on the screen — which is also what keeps `50a`'s sixth row
+(*the screen does not invent a sentence*) true. The owner was asked with four options and took
+that one, then chose the wording: the #89 sentence whole, with a clause appended.
+
+The state was measured as reachable before any of that, because an unreachable state makes the
+question hypothetical. Nothing in `backend/routes/users.js` restricts a validity window to the
+external assessor role, and `admit` is the same function on both paths, so a `@kmitl` account
+that signs in with Google only and carries a future `valid_from` reads this sentence at the door
+with no body. The comment in `Login.js` that called the assessor *the only person who meets it*
+is therefore a claim about the seed and not about the rules, and it was dated rather than
+deleted (#130, #54). So was the paragraph in `refusals.js` explaining why neither sentence names
+the date: every line of it still holds, and what changed is that one of the two sentences grew a
+second clause.
+
+**The fixture was already there.** `users.test.js` had a row building the not-started end by
+creating an account with `valid_from: day(10)`, asserting the whole value and then the word
+*อีกครั้ง* — waiting, which is #89's whole axis. The new claim went under it as a
+third assertion with a name, and the ordering is the point: run against the unfixed code (#203)
+it was the only thing that went red, and under the mutant that puts #89's sentence back it is
+the assertion that dies, the two above it passing. A claim written below another claim is proved
+by nothing when the one above dies first (#88); here the one above cannot, because the mutant
+edits the same table the equality reads.
+
+Two places hold the sentence, so there are two mutants (#97). `serversaysonlywait` is the
+diagnosed code made to run (#115) and the declined options' own world (#48): it still refuses,
+still says to wait, and says nothing about whom to ask. It killed one test in the whole backend
+suite, at the named assertion. `screenkeepstheoldsentence` is the server fixed and the copy
+forgotten — #111's shape — and it killed exactly row 1 of `50a`, the row that loops every key
+against the backend's own `REFUSALS`. Nothing new was owed to `50`'s sheet but a mutant: the
+claim *both doors say the same words* was already there, and a mutant is what makes it fail.
+
+**The wording reached a mutant's anchor.** `89:screenmissesthenewend` is anchored on the
+sentence itself in `Login.js`, so appending a clause re-aimed it (#140). The anchor was read out
+of the file rather than retyped (#90), `anchors.py` said exact — and that is not a sweep (#107,
+#68), so it was swept again: one row, the same row, 13 green. Reading `FILES` across the
+catalogue to write this sheet's do-not-sweep-together list then found that #89's own list had
+been missing `52-access-ended.py` since #52 took `Login.js`, which is the species of expiry
+`mutation/README.md` keeps a section for: a list is dated by the day it was written and expires
+by a file somewhere else (#154, #85).
+
+Finally, a ticket's own appendix is a claim too. #128's §รูปแบบวันที่ asked for the date in
+**พ.ศ.** if it were shown. The only place this pair of values is shown to anybody is the
+*ช่วงเวลาใช้งาน* column in `Users.js`, which is ISO **ค.ศ.**, and `frontend/src` has no
+Buddhist-era formatter at all — no `543` anywhere. The two readers are different people, so that
+would have been a question for the owner rather than a defect; the answer made it moot, and it
+is written down because it was the ticket's argument, not because it was decided.
+
+**Both review axes found something no sweep could have.** The new assertion read only the first
+words of the clause — *whom to ask* — under a name that claims the whole of it, and
+`serversaysonlywait` could never say so, because it deletes the clause entire: a sentence that
+appended only *or contact the staff* would have passed a row called *the not-started refusal
+names a way to ask for the start date*. Check what an assertion says, not that one exists (#96,
+#40); the name is the claim to hold it to, and the clause is now read whole.
+
+The second finding was the ticket's **first** option, *let the URL carry the date*. The owner
+declined all three and #48 says the declined option is the mutant to write; this one cannot be
+written, and the reason is a measurement rather than a preference. `refuseToBrowser` builds one
+URL for every reason, and the only row that reads a `location` exactly is driven by
+`googleUnavailable` — so a mutant appending a date for *every* reason dies on a row about a
+different refusal, which is a kill at the wrong claim (#125). A mutant faithful to the option,
+appending only for `validityNotStarted`, survives everything, because that refusal is asserted at
+the function seam, where no URL exists. #101's third category, not its second: untested, with the
+condition that would change it written beside it.
+
+And the census written to produce the do-not-sweep list answered a third question nobody asked
+it. The figure the file carried from the day before — 71 shared paths, 9 threes — disagrees with
+the instrument **at that same commit**, which says 72 and 10: #114's own sheet holds two shared
+paths, and the hand count was taken before its sheet existed. A hand-kept figure in a file that
+grows every ticket is already wrong (#119), and which of the two numbers is wrong is settled by
+running the instrument at the commit the figure was written at (#141), not by argument. The same
+read found the lists in `66`'s and `85`'s own headers short by three sheets each, the same species
+as #89's missing `52` and for the same reason — a list expires by a file somewhere else.
