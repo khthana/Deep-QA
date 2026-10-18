@@ -51,10 +51,14 @@ const {
  * and now go through the box as well, and two of those files' rows change what
  * they are reachable *through*: with a dialog open the table underneath it is
  * covered by `fixed inset-0`, so a mouse click is eaten and Enter is not
- * (#204). `202a`'s two Users rows join the nine that are already keyboard-only;
+ * (#204). `202a`'s two Users rows joined the nine that were then keyboard-only;
  * `208a`'s row keeps its way in - `fill()` focuses the search box rather than
  * clicking it - but it is no longer the row that says that ticket is reachable
  * with a bare mouse. Both are written down on their own files with the date.
+ * **Since #217 contained the focus on 18 ตุลาคม 2569** the keyboard way in
+ * is gone as well, and those files reach their controls by dismissing the
+ * question first (#203). This file's own rows are unchanged: they press the
+ * box's own buttons, and `fill()` needs no way through the cover.
  *
  * `hold()`, because this file really suspends an account (#134).
  */

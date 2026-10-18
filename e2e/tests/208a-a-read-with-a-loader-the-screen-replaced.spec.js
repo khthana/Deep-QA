@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { gate, isWrite } = require('../support/gate');
-const { panel } = require('../support/confirm-dialog');
+const { dismiss, panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const { keysOn, next, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
 const departments = require('../support/departments-screen');
@@ -56,10 +56,13 @@ const {
  * - **Departments** is where the defect was measured, on 14 October 2569 while
  *   #207 was being built, and the way in is the pager under the confirmation's
  *   overlay: keyboard only, because `bg-black/50` eats the click (#199's own
- *   measurement), so it expires the day a focus trap lands - #204 itself
- *   closed on 18 ตุลาคม 2569 with the announcing half, which traps nothing,
- *   and the trap is #217 - unless the six
- *   screens of #210 are given `busy` first, which closes it one screen sooner.
+ *   measurement), so it expired the day a focus trap landed: #204 closed on
+ *   18 ตุลาคม 2569 with the announcing half, which traps nothing, and #217
+ *   contained the focus the same day. **The row was re-aimed rather than left
+ *   as a net** - it dismisses the question with ยกเลิก and clicks the pager,
+ *   which is the situation unchanged and the way in moved (#203). #210's `busy`
+ *   would have closed it one screen sooner, and would now take the control
+ *   away rather than the keyboard.
  * - **The accounts screen** asked nothing before it switched a status when this
  *   was written: no overlay, no dialog, and the search box and the pager were
  *   ordinary clicks while the `PUT` was out - a way in reachable with a bare
@@ -70,10 +73,10 @@ const {
  *   `fill()` focuses the search box rather than clicking it, so the search box
  *   is still reachable while the box is open where a click would be eaten, and
  *   the row runs unchanged. But a person reaches that field with the mouse, so
- *   the sentence above is no longer true of anybody and this ticket's two rows
- *   now expire together, with the containment half of #204, now #217 (re-dated
- *   18 ตุลาคม 2569: #204 closed with the announcing half and the box still
- *   contains nothing).
+ *   the sentence above is no longer true of anybody. **What #217 changed for
+ *   this row, on 18 ตุลาคม 2569, is nothing**: `fill()` focuses the field
+ *   itself rather than tabbing or clicking into it, so the tool's way in is
+ *   where it was (#47), and only the Departments row above was re-aimed.
  *
  * Measured against the unfixed code before either mutant was written (#203):
  * both rows red, each at the moment the handler's answer should have been
@@ -119,15 +122,16 @@ async function askToRemove(page, code) {
 }
 
 /**
- * One press of the pager, from under the dialog's overlay.
+ * One press of the pager, with the removal still out.
  *
- * Focus and Enter rather than a click, which the overlay would take: the way in
- * `206a` and `207a` measured, and the premise the row asserts (#51).
+ * Focus and Enter from under the dialog's overlay until 18 ตุลาคม 2569, the cover
+ * having taken a click and contained nothing (#204); an ordinary click since
+ * #217 contained it and the row dismisses the question first. The way in `206a`
+ * and `207a` measured, moved the same way (#203).
  */
 async function pressPager(page, button) {
   const moved = departments.waitForList(page);
-  await button.focus();
-  await button.press('Enter');
+  await button.click();
   const answer = await moved;
   expect(answer.status()).toBe(200);
   return untilDrawn(page, answer);
@@ -167,9 +171,11 @@ test.describe('ภาควิชา — the removal that moves nobody (Departme
     const write = await askToRemove(page, last[0]);
     // The premise of the way in, asserted rather than assumed (#51): this
     // screen's `Pager` is given no `busy` - #199 gave one to the enrolment
-    // screen and to no other, the prop defaulting to `false` - and the
-    // confirmation traps no focus (#204), so the pager answers Enter from
-    // under the overlay.
+    // screen and to no other, the prop defaulting to `false` - so the pager is
+    // pressable for as long as the removal is out. Since #217 the question has
+    // to be got out of the way rather than reached through, which is a press of
+    // its own and leaves the write where it was.
+    await dismiss(page);
     await expect(previous(page), 'the pager while the removal is out').toBeEnabled();
 
     await awayAndBack(page);

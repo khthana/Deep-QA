@@ -48,4 +48,31 @@ async function saidBy(page) {
   return ((await message.textContent()) || '').split(JOINER).join('');
 }
 
-module.exports = { panel, messageOf, saidBy };
+/**
+ * Dismisses the open question while the answer it confirmed is still out.
+ *
+ * ยกเลิก and not Escape, because it is the way with no keyboard in it at all: the
+ * button is inside the box, where the cover cannot eat the click, and it is not
+ * disabled while the box is `busy` - the component's own rule is that its two
+ * ways out answer alike.
+ *
+ * Dismissing cancels nothing that has left. The write is in flight and its
+ * handler goes on to say its sentence and read the list again, so this is how a
+ * person moves the screen on while a write is out - and since #217 contained the
+ * focus (18 ตุลาคม 2569) it is the only way they have. The rows that need that
+ * situation used to reach straight through the cover with the keyboard, which is
+ * the hole #204 described and #217 closed; what they measure is unchanged, and
+ * only the way in moved (#203).
+ *
+ * An instrument and not an assertion, which is why it is shared by the five
+ * files that need it (#171): no row's claim lives in getting out of the box.
+ * The box is waited for by `panel` and not by `getByRole('dialog')` for the
+ * reason `204a` gives: the role is a claim of that file's own rows, and a
+ * locator five files share would make it their premise instead (#85, #111).
+ */
+async function dismiss(page) {
+  await panel(page).getByRole('button', { name: 'ยกเลิก', exact: true }).click();
+  await panel(page).waitFor({ state: 'detached' });
+}
+
+module.exports = { panel, messageOf, saidBy, dismiss };

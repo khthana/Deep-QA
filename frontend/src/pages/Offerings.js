@@ -431,8 +431,10 @@ export default function Offerings() {
   }
 
   // The sentence belongs to the screen that was asked - #202, at both answers:
-  // the dialog traps no focus (#204), so เปิดรายวิชา is pressable from under it
-  // with the keyboard. Only the sentences are asked about - the dialog closes,
+  // the dialog trapped no focus until 18 ตุลาคม 2569 (#204), so เปิดรายวิชา was
+  // pressable from under it with the keyboard; since #217 contained the focus
+  // the way in is ยกเลิก and then a click (`Departments.js` carries it).
+  // Only the sentences are asked about - the dialog closes,
   // the panel is read back, the page steps back and the list is reloaded
   // whichever way the comparison goes (#131). `Departments.js` carries the
   // reasons.

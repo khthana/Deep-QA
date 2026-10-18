@@ -11632,3 +11632,96 @@ What #204 leaves open is written down in three places rather than in one: the co
 #217, `SessionExpiredDialog` is the same shape with one call site in `App.js` and is
 outside what #204 asked, and `focus:outline-none` on the box is an appearance claim that no row at
 this seam can read — so it is a ☐ on the sheet and a question for a person, not a ⚙.
+
+## #217 — the ten rows a trap was going to cost, and the way in that was left
+
+#217 is the half #204 deferred: a focus trap, or `inert` on the rest of the screen. Its first
+closing criterion was not a fix but a sentence — *the owner answers, and the answer is recorded on
+the sheet with a date* — and its third option, the trap with the rest of the screen marked, said in
+the ticket itself that it could not be chosen without a number that did not exist.
+
+**So both halves were priced before the question was put**, with a probe built where it and `HEAD`
+take the same branch, run on both sides and then deleted (#207), and against the whole suite rather
+than against one sweep (#67). The trap alone reddens **11 rows** — the ten in five files and `204a`'s
+own net — and **nothing else of the 823 rows the suite then held** (824 once row 7 below was
+written, which is the denominator the figure was measured against and not a correction of it). The
+trap with `inert` and `aria-hidden` reddens **14**, and
+the three it adds are a different species: one row of `199a` reads `toBeDisabled()` on ถัดไป, one of
+`86a` reads `toBeVisible()` on a row's ระงับ, one of `208a` reads its search box. Their claims stay
+true; `getByRole` simply stops seeing what is `aria-hidden`, so they would need **rescoping**, which
+is a different repair from a re-aim. The owner took the cheaper half: contain the focus, leave the
+rest of the screen in the accessibility tree, and let `aria-modal` go on saying the same thing to
+anybody listening.
+
+**The ten rows were not the price of the fix; they were the price of one way in, and another way in
+was standing there.** Every one of them needs the same situation — a write out, and the screen moved
+on while it is out — and every one of them had arranged it by reaching *through* the cover with the
+keyboard, which is the hole the ticket closes. What a person has instead is the box's own ยกเลิก: it
+is inside the box where the cover cannot eat the click, it is not disabled while `busy` — the
+component's rule is that its two ways out answer alike — and dismissing the question cancels nothing
+that has already left the browser. The `DELETE` is still in flight, and its handler still says its
+sentence and reads the list again. So the repair was ten one-line re-aims and not ten nets: dismiss
+the question, then press the control with an ordinary mouse click, which is the way in needing no
+second defect at all.
+
+That is the rule the ticket pays for: **the price of closing a way in is the rows that arrange their
+situation through it, and that price is paid in re-aims wherever a person has another way to the same
+situation.** A row left as a net is what it costs when they do not (#47's sixth reading, #203's
+ninth), and the two are told apart by asking what the person can still do, not by asking what the row
+used to press.
+
+**A mistake preserved, not a line found.** Each re-aim keeps the defect exactly as the sheet
+describes it (#203): the write is out, the screen is somewhere else, the sentence lands on what the
+person moved to. `211a`'s filter went from `focus()` and ArrowDown to `selectOption`, which is what
+its own sibling row — the refused `แก้ไข`, with no overlay anywhere near it — had been doing all
+along, so the file now says the same thing twice in one voice.
+
+**The dismissal is an instrument, so it is shared and it is built on nothing any row claims.** Five
+files need it, and no row's claim lives in getting out of a box, which is what makes it shared rather
+than copied (#171). It waits for the box with `panel()` — the class — and not with
+`getByRole('dialog')`: the role is a claim of `204a`'s own rows, and a locator five files share
+would have turned it into their premise instead (#85, #111). The first draft did use the role, which
+would have made `204:norole` redden five files it has nothing to do with.
+
+**And the mutant changed sides.** `trapsfocus` was the deferred proposal made to run (#48), the only
+mutant in its file that killed other files' rows, and that was the point of it: while it ran, *we
+deferred the containment* was a claim the suite held rather than a sentence on a sheet. The day the
+proposal was accepted it became `notrap` — the diagnosed code made to run (#115) — and its kills
+moved home: *2 failed, 25 passed* over the six files, the two being `204a`'s own rows 6 and 7. That
+the five files are green on **both** sides is the claim the sweep was for; it does not follow from
+their passing once (#48 read from the kill-count side).
+
+**`204a` row 6 turned round and brought a seventh with it.** The net became the containment, and it
+is two rows because a trap fails two ways and a claim written below another claim is proved by
+nothing (#88): the control outside may keep the focus, or it may lose it and still receive the keys.
+Row 6 reads the focus after `focus()` — with the control read first, so that it cannot pass on an
+empty screen (#164) — and row 7 presses Enter on it and reads the question, behind one round trip so
+that the renderer has had its turn (#170). Both were run against the code before the fix and both
+were red.
+
+**A spec that gains rows expires the figures of mutants nobody touched** (#202), so the four
+`204` mutants that were not re-aimed were swept again: `norole`, `notmodal`, `noname` and
+`nodescription` each still kill their own row, and *1 failed, 5 passed* is now *1 failed, 6 passed* —
+the kill count unmoved, the denominator moved. `nofocusonopen` and `noescape` likewise, which also
+says the two new rows are outside both mutants' reach: neither the focus moved in on open nor the
+Escape handler is what holds the containment up.
+
+**The ticket's second closing criterion was the 22 mutants those five files hold, and re-swept one
+at a time they all still kill the rows their records name** — nothing survived, nothing else
+reddened. Four readings came out of running them rather than out of the totals. A single-file run's
+denominator is not the figure a record published (`211a` alone is 4 of 4 where its sheet says
+129/130), so the comparison is *which rows died*, not *how many passed*. A `serial` file's
+*ไม่ได้รัน* is a skip and not a survivor (#67). `207:alwaysthelivecount` failing all three `207a`
+rows is what its own record predicts, the code being shared (#123, #191). And the one record whose
+row name matches no row in its spec — `208:usersstaleloader` — is a **citation** defect and not a
+measurement defect: the mutant still kills that spec's second row, which the same sheet says
+elsewhere in words, and `anchors.py` cannot ask the question because it reads the `` `file:needle` ``
+shape only and an italic name in prose is documented as what it does not look at (#173).
+
+**And the trigger fired undated in 313 lines across 58 files.** Every sheet, spec docblock and page
+comment that said *nothing contains the focus* or *Enter from under the cover* was a claim with
+today's date on it (#130, #86), and the census found a larger population than either review axis
+listed: nine page comments in `frontend/src/pages/`, six spec docblocks, a support helper, two
+mutation files and three sheets. They are **dated, not deleted** (#54) — and what dates them is the
+sentence beside the one you came for, because the same paragraph usually carries the way in *and*
+the expiry condition it was written under.

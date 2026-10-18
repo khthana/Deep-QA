@@ -182,8 +182,9 @@ export default function Users() {
    * Here they cannot overlap: the form and the table are the two halves of one
    * ternary, so the row whose switch raises this flag is not on the screen at
    * all while a form is open, and the dialog is only ever opened from the table.
-   * The one way the two meet is #204's - แก้ไข pressed with the keyboard from
-   * under the open dialog - and that opens a form whose own บันทึก is behind
+   * The one way the two meet is #204's - แก้ไข pressed from under the open
+   * dialog, with the keyboard until 18 ตุลาคม 2569 and after ยกเลิก since #217 contained
+   * the focus - and that opens a form whose own บันทึก is behind
    * `busy`, which is this flag, already raised by the write the dialog is
    * waiting for - which is the state #142 asks for: every control that starts a
    * write is disabled while one is out. `Departments.js` holds two flags and
@@ -327,8 +328,9 @@ export default function Users() {
    * of it that asks nothing first, and the way in was an ordinary click: the
    * list stayed live while the switch was out, so แก้ไข on another row put
    * *ระงับ…เรียบร้อยแล้ว* over that row's form. The question has not closed that
-   * way in, because `ConfirmDialog` traps nothing - it is now the keyboard one
-   * the nine removals have (#204), and `202a`'s own rows say so with the date.
+   * way in: it became the keyboard one the nine removals had (#204), and
+   * `202a`'s own rows say so with the date. Since #217 contained the focus on
+   * 18 ตุลาคม 2569 it is ยกเลิก and then a click, which `202a`'s rows now take.
    * Only the sentence is asked about - the list is reloaded whichever way the
    * comparison goes (#131). `Departments.js` carries the reasons.
    *
@@ -572,8 +574,9 @@ export default function Users() {
 
       {/*
         Outside the ternary, like the nine removals: a form opened from under
-        the open box (#204) must not take the question away with it, because the
-        write it is waiting for is still out.
+        the open box (#204; reached by dismissing it since #217, 18 ตุลาคม 2569) must not
+        take the question away with it, because the write it is waiting for is
+        still out.
       */}
       <ConfirmDialog
         open={Boolean(switching)}

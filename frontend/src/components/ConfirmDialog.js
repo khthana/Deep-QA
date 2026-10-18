@@ -94,16 +94,33 @@ const glued = message =>
  *   leave eight, not ten: it also missed two rows that reach the cover inline
  *   rather than through a helper it had found, one in `206a` and one in `211a`.
  *   Changing what a keyboard can reach is a change to what a person does with
- *   the screen, so it is the owner's (`docs/06` §Out of Scope) and it waits on a
- *   ticket of its own, #217. `204a` row 6 is the net that says it is still
- *   open, and
- *   its mutant is that proposal made to run (#48).
+ *   the screen, so it was the owner's (`docs/06` §Out of Scope) and it went to a
+ *   ticket of its own, #217.
  *
  * `aria-modal="true"` is worth stating precisely rather than as *it announces*:
  * it asks a screen reader to read nothing outside this box, so for somebody
- * listening the way in is already closed; for a sighted keyboard user the tab
- * order is untouched. The deferred half is therefore *containment for the
- * second kind of reader*, not containment as such.
+ * listening the way in was already closed by #204; for a sighted keyboard user
+ * the tab order was untouched. The deferred half was therefore *containment for
+ * the second kind of reader*, not containment as such.
+ *
+ * ## What #217 added (18 ตุลาคม 2569)
+ *
+ * The owner chose the trap, without `inert` or `aria-hidden`, after both halves
+ * were priced against the whole suite rather than against one sweep: the trap
+ * alone reddens the ten rows above and `204a`'s own net - 11 - and **no other
+ * row of the 823 the suite then held** (824 once `204a` gained its seventh row
+ * below, which is the denominator the figure was measured against, not a
+ * correction of it), where the trap with the rest of the screen marked reddens
+ * three more, 14.
+ * Those three are a different species - they only *read* something outside the
+ * box, so their claims stay true and `getByRole` stops seeing them - and
+ * rescoping them was a price the cheaper half does not ask for.
+ *
+ * So the rest of the screen stays in the accessibility tree, and the two kinds
+ * of reader are now contained by two different mechanisms saying the same
+ * thing: `aria-modal` for anybody listening, the `focusin` guard for anybody
+ * tabbing. `204a` row 6 asserts the containment and `204:notrap` is what proves
+ * it.
  *
  * `SessionExpiredDialog` is the same shape and the same gap, one call site in
  * `App.js`, and is outside what #204 asked about.
@@ -129,10 +146,38 @@ export default function ConfirmDialog({
     if (open) box.current.focus()
   }, [open])
 
+  // The focus stays in the box while it is open: anything outside that takes
+  // the focus has it taken back. This is #217, the containment half #204
+  // deferred and the owner chose the same day (18 ตุลาคม 2569), after both halves
+  // were priced against the whole suite - the trap at 10 rows in 5 files (11
+  // with `204a`'s own net), and the trap with `inert`/`aria-hidden` outside the
+  // box at three more, 14, of which those three only *read* something outside
+  // and would have had to be rescoped. The
+  // cheaper half was taken, so the rest of the screen stays in the
+  // accessibility tree and `aria-modal` is what tells a screen reader to
+  // ignore it.
+  //
+  // A `focusin` listener rather than a tab-order wrap: `focusin` is what the
+  // claim is about (*the list underneath cannot take the focus out of the
+  // question*) and it holds however the focus got out - Tab, Shift+Tab, a
+  // click the cover did not intercept, or a script. What it does not do is put
+  // the focus on the first control inside instead of on the box; the box has
+  // `tabIndex={-1}` and a name and description, so what a screen reader reads
+  // on arrival is the question rather than a button.
+  useEffect(() => {
+    if (!open) return undefined
+    const keep = event => {
+      if (!box.current.contains(event.target)) box.current.focus()
+    }
+    document.addEventListener('focusin', keep)
+    return () => document.removeEventListener('focusin', keep)
+  }, [open])
+
   // Escape is the ยกเลิก, including while `busy` - the ยกเลิก button is not
   // disabled then either, so the two ways out answer alike. On `window` rather
-  // than on the box, because nothing contains the focus yet: a person who has
-  // tabbed back into the table still gets the way out.
+  // than on the box: the listener is not reached by a key pressed outside the
+  // box, but the box is where the focus is since #217, and leaving it on
+  // `window` costs nothing and keeps the way out independent of the trap.
   useEffect(() => {
     if (!open) return undefined
     const onKeyDown = event => {

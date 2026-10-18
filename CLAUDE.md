@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 18 October 2569 that is
-`2026-10-18-the-sentence-that-names-whom-to-ask.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-18-the-price-of-closing-a-way-in.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -592,6 +592,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   code passes through untrue combinations too. (#188)
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
+- **The price of closing a way in is the rows that arrange their situation through it, and that
+  price is paid in re-aims wherever a person has another way to the same situation** - so ask what
+  they can still do before writing those rows off as nets. A trap priced at ten rows in five files
+  cost ten one-line re-aims, because the question's own ยกเลิก puts the box away while the write it
+  confirmed is still in flight, which is the same situation reached with no second defect. A row
+  left as a net is what it costs when there is no other way (#47, #203); and the instrument that
+  takes the new way in is shared (#171) and built on nothing another file's rows claim (#85, #111).
+  (#217)
 - **Run a new row against the unfixed code before writing its mutant** — a row that passes there
   is measuring nothing, and that is the seventh reading of a survivor (the row read at the wrong
   moment) bought for free: #152 paid for it with two faithful mutants surviving 21 of 21, where

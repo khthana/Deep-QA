@@ -201,8 +201,9 @@ export default function Rubrics() {
    *
    * เพิ่ม Rubric and แก้ไข write it, แก้ไข at the press for #139's reason;
    * ยกเลิก and ลบ do not. What needs it here is `confirmRemoval`: the question
-   * `ConfirmDialog` asks traps no focus (#204), so both of those controls answer
-   * to Enter from under it while the removal is out. `Plos.js` carries why this
+   * `ConfirmDialog` asks trapped no focus until 18 ตุลาคม 2569 (#204, contained by #217
+   * that day), so both of those controls answered to Enter from under it while
+   * the removal was out, and are an ordinary click after ยกเลิก since. `Plos.js` carries why this
    * screen had no such ref until now, and `Departments.js` the reasons.
    */
   const showing = useRef(null)

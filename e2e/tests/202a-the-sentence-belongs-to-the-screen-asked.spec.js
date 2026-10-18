@@ -5,6 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { DEPARTMENTS } = require('../../db/seed');
 const { signIn } = require('../support/auth');
+const { dismiss } = require('../support/confirm-dialog');
 const { gate, isGet, isWrite } = require('../support/gate');
 const { keysOn, reading, untilDrawn } = require('../support/pager');
 const enrolment = require('../support/enrolment-screen');
@@ -89,12 +90,17 @@ const plos = require('../support/plos-screen');
  * takes focus when it opens, says `role="dialog"`, `aria-modal="true"`, and has
  * a name and a description - and the **containment** half, a trap or `inert`,
  * was deferred to a ticket of its own (#217). So the sentence above about focus being
- * left on the ลบ is a record of what was true until that date, and the way in
- * is still here: `pressBehindTheDialog` moves focus with `focus()`, which works
- * from wherever focus is. What expires with the containment ticket, and not
- * with #204, are **three** rows here and not six - one of the removals and the
- * two accounts rows below. The other three of the six were counted by the ticket
- * and are the paired positives of #171, which press nothing under the cover.
+ * left on the ลบ is a record of what was true until that date.
+ *
+ * **#217 landed the same day and closed that way in.** The box takes the focus
+ * back whenever it leaves, so nothing under the cover answers a key any more.
+ * The three rows that reached through it - one of the removals and the two
+ * accounts rows below - were **re-aimed, not left as nets**:
+ * `moveOnWhileTheWriteIsOut` puts the question away with ยกเลิก and then clicks
+ * the control, which is the way a person has to the same situation (#203; the
+ * price of closing a way in is on `14-departments.md` §#217). The other three
+ * of the six were counted by the ticket and are the paired positives of #171,
+ * which press nothing under the cover.
  *
  * **Beside the list.** The other two were `Users.toggle` and
  * `Offerings.runCopy`, which asked no question at all: the list stayed live, so
@@ -158,20 +164,24 @@ function waitForReload(page, path) {
 }
 
 /**
- * Presses a control the open dialog is covering, the way a person can — #204.
+ * Moves the screen on while the write is out, the way a person can — #217.
  *
- * `focus()` rather than a click, and that is the faithful half: a click would be
- * refused by the overlay, which is the whole reason this way in is the one
- * nobody noticed, while the keyboard reaches these controls because nothing
- * contains it. Until #204 (18 ตุลาคม 2569) the dialog took no focus either, so
- * `focus()` was also where focus already was; since then the box takes it on
- * open and `focus()` is what brings it back out - which is why the announcing
- * half of that ticket cost this file no row.
+ * Until 18 ตุลาคม 2569 this reached the control *through* the open question: the
+ * overlay ate a mouse click, but Enter went to wherever the keyboard was,
+ * because nothing contained it. That is what #204 described, and #217 contained
+ * it on the same day, so the question is dismissed first and the control is then
+ * pressed with an ordinary click.
+ *
+ * The mistake is preserved, which is what makes this a re-aim and not a
+ * different row (#203): a write is out, the person moves the screen on, and the
+ * sentence lands where they moved to. What changed is only how they got there -
+ * and this way needs no second defect to be a way in, where the old one needed
+ * the missing trap.
  */
-async function pressBehindTheDialog(control) {
-  await control.focus();
-  await expect(control).toBeFocused();
-  await control.page().keyboard.press('Enter');
+async function moveOnWhileTheWriteIsOut(control) {
+  const page = control.page();
+  await dismiss(page);
+  await control.click();
 }
 
 test.describe('ข้อมูลภาควิชา — a removal answered after the screen moved on', () => {
@@ -192,7 +202,7 @@ test.describe('ข้อมูลภาควิชา — a removal answered af
     // เพิ่มภาควิชา rather than another row's แก้ไข: it opens its form in the
     // same task, so the form is on the screen before the answer can land, and
     // it is the form a person has typed into.
-    await pressBehindTheDialog(button(page, 'เพิ่มภาควิชา'));
+    await moveOnWhileTheWriteIsOut(button(page, 'เพิ่มภาควิชา'));
     await expect(heading(page, 'เพิ่มภาควิชา')).toBeVisible();
 
     const reloaded = waitForReload(page, DEPARTMENTS_API);
@@ -237,7 +247,7 @@ test.describe('ผลการเรียนรู้ระดับหลั�
     // This screen had no `showing` before #202, so the add button had nothing to
     // write: the ref and this way in arrive together, and the mutant that takes
     // the write out leaves the guard reading `null === null`.
-    await pressBehindTheDialog(button(page, 'เพิ่มผลการเรียนรู้'));
+    await moveOnWhileTheWriteIsOut(button(page, 'เพิ่มผลการเรียนรู้'));
     await expect(heading(page, 'เพิ่มผลการเรียนรู้ของหลักสูตร')).toBeVisible();
 
     const reloaded = waitForReload(page, plos.API);
@@ -301,7 +311,7 @@ test.describe('ข้อมูลผู้ใช้งาน — the switch that
     // the announcing half, which left this way in standing). แก้ไข rather than เพิ่มผู้ใช้งาน all the same - on this
     // screen แก้ไข opens its form from the row already in hand, with no read of
     // its own, so the form is on the screen before the answer can land.
-    await pressBehindTheDialog(button(userRow(page, ACCOUNTS.teacherOne), 'แก้ไข'));
+    await moveOnWhileTheWriteIsOut(button(userRow(page, ACCOUNTS.teacherOne), 'แก้ไข'));
     await expect(heading(page, 'แก้ไขข้อมูลผู้ใช้งาน')).toBeVisible();
 
     const reloaded = waitForReload(page, USERS_API);

@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { gate, isGet, isWrite } = require('../support/gate');
-const { panel } = require('../support/confirm-dialog');
+const { dismiss, panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const { keysOn, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
 const departments = require('../support/departments-screen');
@@ -25,12 +25,14 @@ const departments = require('../support/departments-screen');
  *
  * ## The way in, and why it needs no race
  *
- * `ConfirmDialog` draws a `fixed inset-0` overlay and traps no focus (#204),
- * and this screen's `Pager` is given no `busy`: the pager's own buttons are
- * therefore reachable by keyboard and enabled for as long as the removal is
- * out. Both rows below take that way in - focus the control and press Enter -
- * and the first asserts that it is open, because that is the premise of the
- * whole file (#51). The day either of those tickets closes is the day to
+ * `ConfirmDialog` draws a `fixed inset-0` overlay, and until 18 ตุลาคม 2569 it
+ * trapped no focus (#204, contained by #217 that same day), and this screen's
+ * `Pager` is given no `busy`: the pager's own buttons are therefore enabled for
+ * as long as the removal is out, and were reachable by keyboard from under the
+ * cover until that date. Both rows below now put the question away with ยกเลิก
+ * and click the control - the same situation, reached the way a person has
+ * (#203) - and the first asserts that the pager is enabled before dismissing,
+ * because that is the premise of the whole file (#51). The day either of those tickets closes is the day to
  * measure this way in again; the claim the rows make about the key does not
  * depend on it.
  *
@@ -100,11 +102,18 @@ async function askToRemove(page, code) {
   return write;
 }
 
-/** The pager's own way back, from under the dialog's overlay. */
-async function stepBackByKeyboard(page) {
+/**
+ * The pager's own way back, pressed while the removal is still out.
+ *
+ * From under the dialog's overlay with the keyboard until 18 ตุลาคม 2569,
+ * because the cover ate a click and contained nothing (#204); an ordinary click
+ * since #217 contained the focus and the rows put the question away first. The
+ * situation is the same one and only the way in moved (#203) - dismissing the
+ * question cancels nothing that has already left the browser.
+ */
+async function stepBack(page) {
   const moved = departments.waitForList(page);
-  await previous(page).focus();
-  await previous(page).press('Enter');
+  await previous(page).click();
   const answer = await moved;
   expect(answer.status()).toBe(200);
   return answer;
@@ -127,18 +136,20 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     expect(last, 'one row on the last page, which is what a step back needs').toHaveLength(1);
 
     const write = await askToRemove(page, last[0]);
-    // The premise: the pager under the overlay is enabled and takes focus,
-    // which is this screen's missing `busy` (#199, which did not reach it) and
-    // #204's missing focus trap.
+    // The premise: the pager is enabled while the removal is out, which is this
+    // screen's missing `busy` (#199, which did not reach it). Reaching it is the
+    // half #217 moved - the question is put away rather than reached through,
+    // and putting it away leaves the answer held where it was - so the two
+    // presses below are ordinary clicks. The assertion that the pager held the
+    // focus went with that move: it stated how the keyboard got there, and
+    // there is no keyboard in this way in.
     await expect(previous(page), 'the pager while the removal is out').toBeEnabled();
-    const first = await stepBackByKeyboard(page);
+    await dismiss(page);
+
+    const first = await stepBack(page);
     expect(pageOf(first.request()), 'the page the first press asked for').toBe(String(pages - 1));
-    expect(
-      await previous(page).evaluate(node => node === document.activeElement),
-      'the focus the keyboard reached the pager with',
-    ).toBe(true);
     await untilDrawn(page, first);
-    const moved = await stepBackByKeyboard(page);
+    const moved = await stepBack(page);
     expect(pageOf(moved.request()), 'the page the person moved to').toBe(String(pages - 2));
 
     // The removal lands. Nothing steps back, because the page that lost its
@@ -219,9 +230,9 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     const write = await askToRemove(page, last[0]);
     // One press back, with that page's list held: the pager has asked for
     // another page and the rows in front of the person are still this one's.
+    await dismiss(page);
     const heldList = await gate(page, new RegExp(`^${departments.API}$`), isGet);
-    await previous(page).focus();
-    await previous(page).press('Enter');
+    await previous(page).click();
     await heldList.sent;
     expect(pageOf(heldList.request), 'the page the press asked for').toBe(String(pages - 1));
 

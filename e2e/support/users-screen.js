@@ -117,7 +117,9 @@ const startStatusChange = (page, email, label) => statusButton(page, email, labe
 /**
  * Answers the question. Scoped to the dialog's own box rather than to the page,
  * because the table underneath it is live the whole time (#204, whose
- * announcing half landed on 18 ตุลาคม 2569 and contains nothing).
+ * announcing half landed on 18 ตุลาคม 2569; #217 contained the focus the
+ * same day, which stops the keyboard reaching that table but leaves it drawn,
+ * so the scoping is still what tells the two ยืนยัน buttons apart).
  */
 const confirmStatusChange = page =>
   panel(page).getByRole('button', { name: CONFIRM_STATUS, exact: true }).click();

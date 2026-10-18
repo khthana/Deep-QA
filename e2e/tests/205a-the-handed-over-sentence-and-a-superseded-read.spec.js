@@ -34,9 +34,11 @@ const { PROGRAM } = require('../../db/seed');
  * dialog, whose ยืนยัน really is `disabled={busy}`. The three need no second
  * defect to reach: no `Pager` on any of the eight screens carries `busy`, which
  * `SubjectStudents.add`'s own comment measured on 11 October 2569 (#199), so
- * ถัดไป is pressable for as long as the write is out. The seven need the
- * keyboard hole of #204 to reach the pager under the dialog, and this file says
- * so rather than claiming the shape is unreachable there.
+ * ถัดไป is pressable for as long as the write is out. The seven needed the
+ * keyboard hole of #204 to reach the pager under the dialog - closed by #217 on
+ * 18 ตุลาคม 2569, after which what reaches them is ยกเลิก and then an
+ * ordinary click (#203) - and this file says so rather than claiming the shape
+ * is unreachable there.
  *
  * ## What the row has to arrange, and why both reads are gated
  *
@@ -168,8 +170,11 @@ test.describe('SubjectStudents.js', () => {
    * pressed is dead while the write is out, so nothing can move `onPage` off
    * the page the handler was sent from - and the handover from page two, which
    * is the half still reachable, says its sentence when the read it is for
-   * lands. It becomes a claim again if #204's keyboard hole is closed the other
-   * way round, or if any screen comes to draw a live pager beside an open form.
+   * lands. It becomes a claim again if any screen comes to draw a live pager
+   * beside an open form. #204's keyboard hole was closed by #217 on
+   * 18 ตุลาคม 2569, which is not the other way round: the control this row
+   * is about is dead because of **this** screen's `busy`, and the dismissal the
+   * other files now use reaches a dead button just the same.
    * #205's own mutants no longer reach this row, and what holds it instead is
    * #199's pair: `199:prevstayslive` and `199:nextstayslive` each fail this row
    * and pass the other three, which is the control being dead stated as a

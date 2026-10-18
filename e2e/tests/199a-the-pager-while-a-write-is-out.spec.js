@@ -34,10 +34,12 @@ const enrolment = require('../support/enrolment-screen');
  *
  * The removal's own window was never reachable with a mouse: the dialog's
  * overlay takes the click, which the probe read as *intercepts pointer events*
- * and `205a` had already written down — the pager under the dialog needs #204's
- * keyboard hole. A disabled button is not in the tab order either, so the third
- * row below is that hole closed for this control, and not a claim about the
- * dialog.
+ * and `205a` had already written down — the pager under the dialog needed
+ * #204's keyboard hole, which #217 closed on 18 ตุลาคม 2569 for every
+ * screen. A disabled button is not in the tab order either, so the third row
+ * below is that hole closed for this control by **this** screen's `busy`, and
+ * not a claim about the dialog; it reads an attribute rather than pressing
+ * anything, so the trap left it where it was.
  *
  * ## Why each row asserts the control twice
  *
@@ -121,7 +123,9 @@ test.describe('รายชื่อนักศึกษาของราย�
     await write.sent;
 
     // The claim is about the pager, not about the overlay: a mouse was never
-    // getting through, and this says a keyboard would not either (#204).
+    // getting through, and this says a keyboard would not either (#204; since
+    // #217 contained the focus on 18 ตุลาคม 2569 the keyboard does not
+    // arrive at all, which leaves this row's own claim where it was).
     await expect(next(page), 'ถัดไป under the dialog, with the removal out — #199').toBeDisabled();
 
     write.open();

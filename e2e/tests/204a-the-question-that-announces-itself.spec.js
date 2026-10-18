@@ -34,8 +34,7 @@ const departments = require('../support/departments-screen');
  *   in 5 files**: `202a` (3), `206a` (2), `207a` (3), `208a` (1), `211a` (1),
  *   plus a sweep of the 22 mutants those files hold. That is a change to what a
  *   person can do with the screen, so it is the owner's (`docs/06` §Out of
- *   Scope) and it is deferred to #217 rather than to prose
- *   (#119, #125). Row 6 is its net.
+ *   Scope) and it went to #217 rather than to prose (#119, #125).
  *
  * The ten are a measurement and not a census, and the difference is the whole
  * value of running the mutant: a census by mechanism - `focus()` or `fill()` on
@@ -63,6 +62,23 @@ const departments = require('../support/departments-screen');
  * person - they are *containment for one kind of reader* and *containment for
  * the other*, and the second is the deferred one.
  *
+ * ## What #217 decided (18 ตุลาคม 2569)
+ *
+ * The trap, without `inert` or `aria-hidden`. Both halves were priced against
+ * the whole suite before the question was put, which is what made the choice
+ * cheap to answer: the trap alone reddens the ten rows above and rows 6 and 7
+ * below, and **nothing else of 823**. The trap with the rest of the screen
+ * marked reddens three more - one row of `199a`, one of `86a` and one of
+ * `208a` - and those three are a different species: they only *read* something
+ * outside the box, so their claims stay true and `getByRole` stops seeing
+ * them. They would have needed rescoping, which the cheaper half does not ask
+ * for.
+ *
+ * Rows 6 and 7 are therefore no longer the net for a deferral. They are the
+ * containment itself, one reading the focus and one reading the keys, and
+ * `204:notrap` is the trap taken away - the code #204 shipped, which is the
+ * diagnosed code made to run (#115).
+ *
  * ## Why this screen, and why the box is found by its class
  *
  * All 20 call sites render this one component, so one screen proves it and the
@@ -79,10 +95,10 @@ const departments = require('../support/departments-screen');
  *
  * ## What this file writes
  *
- * Nothing. Four of the six rows only open the question and read it; row 5
- * presses Escape, which is the cancel; row 6 opens the question about the other
- * seeded department and leaves it open. No confirmation is ever pressed, so no
- * `DELETE` is ever sent, and there is nothing to put back.
+ * Nothing. Four of the seven rows only open the question and read it; row 5
+ * presses Escape, which is the cancel; rows 6 and 7 reach for the other seeded
+ * row's ลบ and are refused. No confirmation is ever pressed, so no `DELETE` is
+ * ever sent, and there is nothing to put back.
  */
 
 const DEPARTMENT = DEPARTMENTS[0].id;
@@ -168,27 +184,42 @@ test('Escape closes the question, and answers nothing', async ({ page }) => {
   expect(writes, 'Escape is the cancel, not the answer').toEqual([]);
 });
 
-test('the list underneath can still take the focus out of the question', async ({ page }) => {
-  // The net for the half that was **not** built, which is the only thing that
-  // turns *we deferred the trap* into a claim the suite holds (#48). Its mutant
-  // is the deferred proposal made to run: a trap that puts focus back, which
-  // fails this row - and the 10 rows of `202a` `206a` `207a` `208a` `211a` that
-  // come in the same way, which is the price written on this file's docblock
-  // and on the sheet.
+test('the list underneath cannot keep the focus while the question is open', async ({
+  page,
+}) => {
+  // #217's containment, read as the focus. Two rows and not one, because a
+  // trap can fail two ways and a claim written below another claim is proved by
+  // nothing (#88): the control outside may keep the focus, or it may lose it
+  // and still receive the keys. Row 7 is the second.
   //
-  // Measured 18 ตุลาคม 2569. The condition that would re-date it is the
-  // containment ticket landing; until then this is what the screen does.
-  const asked = await saidBy(page);
+  // The control is read before it is focused, so that this cannot pass by the
+  // ลบ being absent - a row that only reads where the focus is cannot tell an
+  // empty screen from a contained one (#164).
   const other = removeOn(page, OTHER.id);
+  await expect(other, 'a control the cover is over, there to take the focus').toBeVisible();
 
   await other.focus();
-  await expect(other, 'a control the cover is over has the focus').toBeFocused();
+
+  await expect(panel(page), 'the focus the control took is back in the question').toBeFocused();
+});
+
+test('and the keyboard does not reach it either', async ({ page }) => {
+  // The half a person would notice: the ลบ of the other row, pressed, used to
+  // replace the question with its own. `press` focuses the control before it
+  // sends the key, so this is the same way in as row 6 and the key is what is
+  // read - if the trap puts the focus back first, the Enter arrives at the box,
+  // which has nothing listening for it.
+  const asked = await saidBy(page);
+  const other = removeOn(page, OTHER.id);
+  expect(asked, 'the question is about the first department before the press').not.toContain(
+    OTHER.th,
+  );
 
   await other.press('Enter');
-  await expect
-    .poll(() => saidBy(page), {
-      message: 'the control under the cover answered the keyboard',
-    })
-    .toContain(OTHER.th);
-  expect(asked, 'and it was a different question before the press').not.toContain(OTHER.th);
+
+  // A round trip before the read and not after it, so that the renderer has
+  // had its turn: a read placed first would be answered before any re-render
+  // the press caused could reach the screen (#170).
+  await expect(panel(page), 'the question is still open to be read').toBeVisible();
+  expect(await saidBy(page), 'and still asking what it was asking').toBe(asked);
 });

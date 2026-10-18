@@ -6,7 +6,7 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
 const { gate, isGet, isWrite } = require('../support/gate');
-const { panel } = require('../support/confirm-dialog');
+const { dismiss, panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const {
   keysOn,
@@ -37,13 +37,16 @@ const departments = require('../support/departments-screen');
  * read on this screen comes from the pager itself: the list is re-read on every
  * press, this screen's `Pager` is given no `busy` (#199 gave one to the
  * enrolment screen's on 15 October 2569 and to no other, the prop defaulting to
- * `false`), and the confirmation traps no focus (#204), so going back one page
- * and forward again replaces `data` without moving anybody. Anything that changed the page's rows meanwhile is then on
+ * `false`), so going back one page and forward again replaces `data` without
+ * moving anybody - under the cover with the keyboard until 18 ตุลาคม 2569,
+ * when #217 contained the focus, and by dismissing the question first since
+ * (#203, the same situation and only the way in moved). Anything that changed the page's rows meanwhile is then on
  * the screen and absent from the handler.
  *
  * The rows below build that with a second actor on the same account -
- * `page.request` is the browser's own cookie (`12a`), and the two presses are
- * the keyboard's, because the overlay is over the pager (`206a`).
+ * `page.request` is the browser's own cookie (`12a`), and the two presses were
+ * the keyboard's while the overlay was over the pager and contained nothing
+ * (`206a`); since #217 they are ordinary clicks taken after ยกเลิก.
  *
  * ## What it costs to be wrong
  *
@@ -127,19 +130,26 @@ async function askToRemove(page, code) {
   const write = await gate(page, new RegExp(`^${departments.API}/${code}$`), isWrite);
   await panel(page).getByRole('button', { name: CONFIRM }).click();
   await write.sent;
+  // The question is put away with the answer still held at the route, which is
+  // what every row here needs and none of them is about: all three move the
+  // screen on afterwards, and since #217 contained the focus that is the way a
+  // person has (#203). Dismissing cancels nothing that has left - the `DELETE`
+  // is in flight and its handler will still say its sentence and read again.
+  await dismiss(page);
   return write;
 }
 
 /**
- * One press of the pager, from under the dialog's overlay.
+ * One press of the pager, with the removal still out.
  *
- * Focus and Enter rather than a click, which the overlay would take: the same
- * way in `206a` measured, and the premise the first row asserts (#51).
+ * Focus and Enter from under the dialog's overlay until 18 ตุลาคม 2569 - the cover
+ * took a click and contained nothing (#204) - and an ordinary click since #217
+ * contained it, the question being dismissed first by the rows below. The same
+ * way in `206a` measured, moved the same way (#203).
  */
 async function pressPager(page, button) {
   const moved = departments.waitForList(page);
-  await button.focus();
-  await button.press('Enter');
+  await button.click();
   const answer = await moved;
   expect(answer.status()).toBe(200);
   return untilDrawn(page, answer);
@@ -167,10 +177,12 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     );
 
     const write = await askToRemove(page, last[0]);
-    // The premise of both rows: the pager under the overlay is enabled and
-    // takes focus, which is this screen's missing `busy` (#199, which did not
-    // reach it) and #204's missing focus trap (#51 - a premise a row rests on
-    // is asserted, not assumed).
+    // The premise of both rows: the pager is enabled while the removal is out,
+    // which is this screen's missing `busy` (#199, which did not reach it) - and
+    // it is asserted rather than assumed (#51). Reaching it no longer means
+    // reaching *through* the question, which #217 contained: the question is
+    // dismissed by `askToRemove`, which leaves the write out and the screen a
+    // person's.
     await expect(previous(page), 'the pager while the removal is out').toBeEnabled();
     // The other row goes while the removal is out, on this browser's own
     // cookie: the second actor the situation needs, and the only part of it
@@ -304,8 +316,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     // where it started and the list in front of the person is not. This is the
     // window, and it is the premise of the row (#51).
     const heldList = await gate(page, new RegExp(`^${departments.API}$`), isGet);
-    await next(page).focus();
-    await next(page).press('Enter');
+    await next(page).click();
     await heldList.sent;
     expect(pageOf(heldList.request), 'the page the returning press asked for').toBe(String(pages));
     // The line reads the page the **answer** describes (`shown ?? page`), which

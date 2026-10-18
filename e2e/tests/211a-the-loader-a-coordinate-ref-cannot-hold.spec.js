@@ -7,7 +7,7 @@ const { PROGRAM } = require('../../db/seed');
 const { OTHER_PROGRAM } = require('../support/plo-mapping-screen');
 const { signIn } = require('../support/auth');
 const { gate, isGet, isWrite } = require('../support/gate');
-const { panel } = require('../support/confirm-dialog');
+const { dismiss, panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const {
   API,
@@ -61,12 +61,14 @@ const {
  * - **ลบ** (`confirmRemoval`) — the `DELETE` is out while the table and the
  *   filter are still drawn, the dialog being a full-screen `bg-black/50`
  *   overlay with the question in the middle of it. The overlay eats a click
- *   (#199's measurement), so this way in is the keyboard: `ConfirmDialog` traps
- *   no focus (#204), and a focused `<select>` answers ArrowDown. It expires the
- *   day a focus trap lands, and the first row says so - #204 closed on
- *   18 ตุลาคม 2569 with the half that announces (role, modality, a name, a
- *   description, focus moved in, Escape) and not with the half that contains,
- *   which is #217.
+ *   (#199's measurement), so this way in was the keyboard until
+ *   18 ตุลาคม 2569: `ConfirmDialog` trapped no focus (#204) and a focused
+ *   `<select>` answers ArrowDown. #204 closed that day with the half that
+ *   announces (role, modality, a name, a description, focus moved in, Escape)
+ *   and #217 added the half that contains, which closed it. **The row was
+ *   re-aimed and not left as a net**: it dismisses the question with ยกเลิก
+ *   and moves the filter with `selectOption`, which is what the sibling row
+ *   below had been doing all along (#203).
  * - **แก้ไข refused** (`openEditor`'s `catch`) — nothing is drawn over anything
  *   here: the form appears only when the answer lands, so while the read is out
  *   the filter is an ordinary mouse click. That way in waits on nothing and is
@@ -178,18 +180,15 @@ test('a removal reads the list of the หลักสูตร the filter has mo
   await write.sent;
 
   // The premise of the way in, asserted rather than assumed (#51): the question
-  // is still up with its answer held, and the filter behind it takes the
-  // keyboard. ArrowDown and not `selectOption`, because what a person can reach
-  // through that overlay is what this row is about.
-  //
-  // This half expires the day a focus trap lands (#204 closed on
-  // 18 ตุลาคม 2569 without one): the dialog traps no focus today, so
-  // a focused `<select>` answers ArrowDown, and a dialog that trapped it would
-  // leave this way in with nothing to press (measured 15 October 2569 — the
-  // condition beside the thing it conditions, rather than only in the
-  // docblock).
+  // is up with its answer held at the route, and it is dismissed rather than
+  // reached through. ArrowDown and `focus()` until 18 ตุลาคม 2569, because what a
+  // person could reach through that overlay was what the row was about; #217
+  // contained the focus that day, so the way a person has is to put the question
+  // away - which cancels nothing that has left - and then move the filter with
+  // the mouse, exactly as the sibling row below does (#203).
   await expect(panel(page), 'the confirmation, its answer held at the route').toBeVisible();
-  const there = await moveFilter(page, filter => filter.focus().then(() => filter.press('ArrowDown')));
+  await dismiss(page);
+  const there = await moveFilter(page, filter => filter.selectOption(OTHER_PROGRAM));
   expect(there, 'two curricula, two different lists — the premise of every assertion below')
     .not.toEqual(here);
 

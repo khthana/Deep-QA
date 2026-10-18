@@ -219,9 +219,11 @@ export default function Departments() {
    * row. That is a fact about the page this render closed over and says nothing
    * about where the person is standing when the answer arrives: this screen's
    * `Pager` is given no `busy` — #199 gave one to the enrolment screen's on 15
-   * October 2569 and to no other — and the confirmation traps no focus (#204),
-   * so the pager's own buttons are reachable and pressable for as long as the
-   * removal is out.
+   * October 2569 and to no other — so the pager's own buttons are pressable for
+   * as long as the removal is out. They were reachable from under the
+   * confirmation with the keyboard until 18 ตุลาคม 2569, the box trapping no focus
+   * (#204); since #217 contained it the way in is ยกเลิก and then an ordinary
+   * click, which is the same situation (#203).
    * Measured on this screen on 13 October 2569, with the removal held at the
    * route: the step back asked for one page while the sentence was keyed for
    * another, so the sentence was said by nothing at all, and the person was
@@ -255,8 +257,9 @@ export default function Departments() {
    * nobody. What reaches it is a read that lands while the removal is out and
    * leaves the pager where it started, which the pager's own two presses do -
    * this screen's `Pager` is given no `busy` (#199 gave one to the enrolment
-   * screen's on 15 October 2569 and to no other) and the confirmation traps no
-   * focus (#204). The handler then counts a list that is no longer on the
+   * screen's on 15 October 2569 and to no other); the confirmation trapped no
+   * focus until 18 ตุลาคม 2569 (#204, contained by #217 that day), and what reaches the
+   * pager since is ยกเลิก and then a click. The handler then counts a list that is no longer on the
    * screen: it counted two rows and stayed on a page whose one remaining row it
    * was about to remove, and the other way round it carried somebody off a page
    * that had filled up again. Both are in
@@ -485,9 +488,15 @@ export default function Departments() {
    * loader returns, which answers *the read was not refused* and never *it
    * drew*, and are guarded with `onScreen` rather than with `showing` (#199). A removal is held at the route for as
    * long as the server takes, and the table underneath the question is live the
-   * whole time - `ConfirmDialog` draws a `fixed inset-0` overlay and traps
-   * nothing, so เพิ่มภาควิชา and another row's แก้ไข both answer to Enter where
-   * focus already is, which is the `ลบ` that opened the dialog (#204). The
+   * whole time. `ConfirmDialog` draws a `fixed inset-0` overlay, and until
+   * 18 ตุลาคม 2569 it trapped nothing, so เพิ่มภาควิชา and another row's แก้ไข both
+   * answered to Enter where focus already was, which is the `ลบ` that opened
+   * the dialog (#204). **#217 contained the focus that day, and the way in a
+   * person has is the box's own ยกเลิก**: it is inside the box where the cover
+   * cannot eat the click, it is not disabled while the write is out, and
+   * putting the question away cancels nothing that has already left the
+   * browser - so the situation below is reached by dismissing and then
+   * clicking, unchanged in everything but the way in (#203). The
    * answer then put *ลบภาควิชาเรียบร้อยแล้ว* over the form they had opened, in
    * the one place on the screen where a sentence reads as being about what is
    * in front of it.

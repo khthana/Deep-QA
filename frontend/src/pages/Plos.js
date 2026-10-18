@@ -146,8 +146,10 @@ export default function Plos() {
    * question about now. The form replaces the filter while it is open, but
    * `save` clears it before it reloads, and the dialog behind ลบ leaves it
    * drawn - under a full-screen `bg-black/50` that eats a click (#199) and that
-   * the keyboard goes straight past, `ConfirmDialog` trapping no focus (#204) -
-   * so this is reachable from the screen rather than only in principle.
+   * the keyboard went straight past until 18 ตุลาคม 2569, `ConfirmDialog` trapping no
+   * focus (#204), and that ยกเลิก puts away while the write stays out since #217
+   * contained it - so this is reachable from the screen rather than only in
+   * principle, either way.
    *
    * It held the chosen หลักสูตร until #211. For the answer that comes back the
    * two comparisons agree, `load` being rebuilt by exactly the thing the ref
@@ -260,9 +262,11 @@ export default function Plos() {
    * form, and the thirteen screens that ask it are the thirteen that draw a
    * form beside a list and have a `save` that can be overtaken. Here the
    * handler that can be is `confirmRemoval`, because the question
-   * `ConfirmDialog` asks traps no focus (#204) and the table underneath it is
-   * live: เพิ่มผลการเรียนรู้ and another row's แก้ไข both answer to Enter where
-   * focus already is.
+   * `ConfirmDialog` asks trapped no focus until 18 ตุลาคม 2569 (#204, contained by #217
+   * that day) and the table underneath it is live either way:
+   * เพิ่มผลการเรียนรู้ and another row's แก้ไข answered to Enter where focus
+   * already was, and are an ordinary click once ยกเลิก has put the question
+   * away.
    *
    * So the two controls that open a form write it, แก้ไข at the press for
    * #139's reason, and ยกเลิก and ลบ do not. The curriculum filter does not
