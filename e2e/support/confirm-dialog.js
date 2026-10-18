@@ -22,8 +22,10 @@ const { JOINER } = require('./line-breaks');
  *
  * Only the message is glued - the title is not - so this reads the message.
  *
- * That the title is left alone is a measurement and not an oversight. All 19
- * titles were drawn into the dialog's own `h2` on 24 September 2569: the longest
+ * That the title is left alone is a measurement and not an oversight. The 19
+ * titles that existed then were drawn into the dialog's own `h2` on 24 September
+ * 2569 - counted again by AST on 18 ตุลาคม 2569 the component has 20 call sites
+ * in 19 files, the twentieth being the status switch #86 added - : the longest
  * is 32 characters and the eight longest all come back one line, in a 336px box
  * at 18px/600. A title that does not wrap cannot break inside a word, so there
  * is nothing there to fix - and gluing it anyway would have a price, because a

@@ -116,7 +116,8 @@ const startStatusChange = (page, email, label) => statusButton(page, email, labe
 
 /**
  * Answers the question. Scoped to the dialog's own box rather than to the page,
- * because the table underneath it is live the whole time (#204).
+ * because the table underneath it is live the whole time (#204, whose
+ * announcing half landed on 18 ตุลาคม 2569 and contains nothing).
  */
 const confirmStatusChange = page =>
   panel(page).getByRole('button', { name: CONFIRM_STATUS, exact: true }).click();

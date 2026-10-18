@@ -149,6 +149,15 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   visible: a sentence that cannot name a date can name whom to ask for it. Measure the ticket's
   own asymmetry before writing its options down for the owner, because what the measurement
   changes may be the question rather than the answer. (#128)
+- **A ticket that proposes one fix can be proposing two, and the split is the fourth option** —
+  #128's shape for a *fix* instead of for a value. #204's option 1 held a half that **announces**
+  (`role`, `aria-modal`, a name, a description, focus moved in, Escape) costing **no row**, because
+  every row that reaches a control under the cover gets there with `focus()` or `fill()`, which
+  move focus from wherever it was; and a half that **contains** (a trap, `inert`) costing ten rows
+  in five files plus a 22-mutant sweep. Price the halves before writing the owner's question, and
+  say which reader each half is for: `aria-modal` already closes the way in for anybody listening,
+  which makes the deferred half *containment for the sighted keyboard user* and not containment as
+  such. (#204)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —

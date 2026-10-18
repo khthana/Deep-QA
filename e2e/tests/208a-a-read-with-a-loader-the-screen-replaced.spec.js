@@ -56,7 +56,9 @@ const {
  * - **Departments** is where the defect was measured, on 14 October 2569 while
  *   #207 was being built, and the way in is the pager under the confirmation's
  *   overlay: keyboard only, because `bg-black/50` eats the click (#199's own
- *   measurement), so it expires the day #204 traps focus - unless the six
+ *   measurement), so it expires the day a focus trap lands - #204 itself
+ *   closed on 18 ตุลาคม 2569 with the announcing half, which traps nothing,
+ *   and the trap is #217 - unless the six
  *   screens of #210 are given `busy` first, which closes it one screen sooner.
  * - **The accounts screen** asked nothing before it switched a status when this
  *   was written: no overlay, no dialog, and the search box and the pager were
@@ -69,7 +71,9 @@ const {
  *   is still reachable while the box is open where a click would be eaten, and
  *   the row runs unchanged. But a person reaches that field with the mouse, so
  *   the sentence above is no longer true of anybody and this ticket's two rows
- *   now expire together, with #204.
+ *   now expire together, with the containment half of #204, now #217 (re-dated
+ *   18 ตุลาคม 2569: #204 closed with the announcing half and the box still
+ *   contains nothing).
  *
  * Measured against the unfixed code before either mutant was written (#203):
  * both rows red, each at the moment the handler's answer should have been

@@ -81,13 +81,20 @@ const plos = require('../support/plos-screen');
  * about that screen's ordinary click is a record of what was true until then,
  * and its two rows are here as well. While a `ConfirmDialog` is open there is no form to
  * press anything from — the table is still there underneath it, and the
- * overlay is `fixed inset-0` and traps nothing: no focus trap, no `inert`, no
- * `aria-hidden`, and the dialog does not even take focus when it opens, so
- * focus is still on the ลบ or the ระงับ that opened it and every control of
- * the table is still in the tab order. A mouse click is eaten by the overlay;
- * Enter is not. That is #204, and the day it closes the six rows resting on it
- * — two here, two on the outcomes screen and two on the accounts screen — stop
- * being reachable and must be re-aimed or left as nets.
+ * overlay is `fixed inset-0` and traps nothing: no focus trap, no `inert` and
+ * no `aria-hidden`, so every control of the table is still in the tab order. A
+ * mouse click is eaten by the overlay; Enter is not. That is #204.
+ *
+ * #204 closed on 18 ตุลาคม 2569 with the **announcing** half only - the box now
+ * takes focus when it opens, says `role="dialog"`, `aria-modal="true"`, and has
+ * a name and a description - and the **containment** half, a trap or `inert`,
+ * was deferred to a ticket of its own (#217). So the sentence above about focus being
+ * left on the ลบ is a record of what was true until that date, and the way in
+ * is still here: `pressBehindTheDialog` moves focus with `focus()`, which works
+ * from wherever focus is. What expires with the containment ticket, and not
+ * with #204, are **three** rows here and not six - one of the removals and the
+ * two accounts rows below. The other three of the six were counted by the ticket
+ * and are the paired positives of #171, which press nothing under the cover.
  *
  * **Beside the list.** The other two were `Users.toggle` and
  * `Offerings.runCopy`, which asked no question at all: the list stayed live, so
@@ -96,7 +103,8 @@ const plos = require('../support/plos-screen');
  * its own — it shares the shape and its code is its own, so it is guarded and
  * said on the sheet to be unproved. What that costs this file is written on the
  * accounts row below: the way in it was the only one here to have, a bare
- * mouse, is gone, and both of its rows now expire with #204 (16 ตุลาคม 2569).
+ * mouse, is gone, and both of its rows now expire with the containment half of
+ * #204 (16 ตุลาคม 2569, re-dated 18 ตุลาคม 2569).
  *
  * **Through the pager.** The four sites that rode on #152's flag are superseded
  * by a control that takes nothing away and opens nothing: ถัดไป, which changes
@@ -152,10 +160,13 @@ function waitForReload(page, path) {
 /**
  * Presses a control the open dialog is covering, the way a person can — #204.
  *
- * `focus()` rather than a click, and that is the faithful half: the dialog never
- * took focus, so the table's controls are where focus already is. A click would
- * be refused by the overlay, which is the whole reason this way in is the one
- * nobody noticed.
+ * `focus()` rather than a click, and that is the faithful half: a click would be
+ * refused by the overlay, which is the whole reason this way in is the one
+ * nobody noticed, while the keyboard reaches these controls because nothing
+ * contains it. Until #204 (18 ตุลาคม 2569) the dialog took no focus either, so
+ * `focus()` was also where focus already was; since then the box takes it on
+ * open and `focus()` is what brings it back out - which is why the announcing
+ * half of that ticket cost this file no row.
  */
 async function pressBehindTheDialog(control) {
   await control.focus();
@@ -285,8 +296,9 @@ test.describe('ข้อมูลผู้ใช้งาน — the switch that
 
     // Behind the question since #86 (16 ตุลาคม 2569), where this was an
     // ordinary click: the switch asks first now, so this row's way in is the
-    // keyboard one the nine removals have and it expires with them the day #204
-    // traps focus. แก้ไข rather than เพิ่มผู้ใช้งาน all the same - on this
+    // keyboard one the nine removals have and it expires with them the day the
+    // containment half of #204 lands as #217 (#204 itself closed on 18 ตุลาคม 2569 with
+    // the announcing half, which left this way in standing). แก้ไข rather than เพิ่มผู้ใช้งาน all the same - on this
     // screen แก้ไข opens its form from the row already in hand, with no read of
     // its own, so the form is on the screen before the answer can land.
     await pressBehindTheDialog(button(userRow(page, ACCOUNTS.teacherOne), 'แก้ไข'));

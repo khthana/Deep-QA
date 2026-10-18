@@ -88,8 +88,13 @@ FILES = {
 GLUED = '          {glued(message)}'
 RAW = '          {message}'
 
-PARAGRAPH = '<p className="text-md mt-4 break-words leading-relaxed text-gray-600">'
-NO_BREAK_WORDS = '<p className="text-md mt-4 leading-relaxed text-gray-600">'
+# Re-aimed on 18 ต.ค. 2569 by #204, which gave the paragraph an
+# `aria-describedby` id and so wrapped its attributes onto their own lines: the
+# anchor used to quote the whole `<p ...>` tag as one line and answered MISS.
+# The class attribute alone is unique in the file, and the mistake is preserved
+# rather than widened - `break-words` and nothing else comes off (#203).
+PARAGRAPH = '          className="text-md mt-4 break-words leading-relaxed text-gray-600"'
+NO_BREAK_WORDS = '          className="text-md mt-4 leading-relaxed text-gray-600"'
 
 # The design that was measured and not taken: every space-delimited token made
 # unbreakable. It needs `glued` to hand back elements rather than a string, so

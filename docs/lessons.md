@@ -11547,3 +11547,88 @@ grows every ticket is already wrong (#119), and which of the two numbers is wron
 running the instrument at the commit the figure was written at (#141), not by argument. The same
 read found the lists in `66`'s and `85`'s own headers short by three sheets each, the same species
 as #89's missing `52` and for the same reason — a list expires by a file somewhere else.
+
+## #204 — the question that announces itself, and the half that costs eleven rows
+
+#204 was an accessibility ticket with a question inside it. `ConfirmDialog` has drawn a
+`fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm` cover since #14 and contains nothing: no
+`role="dialog"`, no `aria-modal`, no accessible name or description, no focus moved into the box,
+no trap, no `inert`, no `aria-hidden` and no Escape. A mouse cannot reach the table underneath,
+because the cover takes the click; a keyboard can, because nothing stops it. The ticket said the
+decision was not the rebuild's (`docs/06` §Out of Scope) and offered three ways: trap and announce
+in the component, all twenty sites at once; leave it as today with a dated reason; or disable the
+table's controls while the box is open, which #142 had already answered.
+
+**Three of the ticket's own claims were answered by measuring them.** The count was *19 call sites
+in 18 files* and is **20 in 19**: #86 added the accounts screen's status switch on 16 ตุลาคม 2569,
+which asks `switching ? asks(switching) : ''`, and `Offerings.js` has held two sites — in two
+mutually exclusive returns — since `8fe0b6d`. The ticket's instruction to measure *which screens
+have live controls underneath, because some replace the table with a form* rests on two states
+being one state, and they are never the same state: no screen's dialog flag (`removing`,
+`removingGroup`, `switching`, `opening`) is the flag that swaps the list for a form (`editing`,
+`opening`), and `{removing ? (` choosing JSX occurs **0 times** in the tree. So the exemption the
+ticket expected exempts nothing, and the work it asked for did not reduce the population by one.
+And the delivered UI — which decides whether *leave it as today* means a regression or a
+divergence (#86, #90) — contains nothing either: 25 hand-rolled `fixed inset-0` covers, no
+`<Dialog>` or `<Modal>`, no trap, no Escape, and four `autoFocus` attributes, all on form fields
+rather than on a box. Option 2 is therefore *as delivered*, and #204 is an enhancement.
+
+**The measurement made a fourth option visible, and it was about the fix rather than about the
+value** — #128's move one family along. Option 1 is two fixes with very different prices:
+
+- The half that **announces** — `role`, `aria-modal`, `aria-labelledby`, `aria-describedby`, the
+  focus moved into the box on open, Escape as a way out — costs **no row**. Every row in the suite
+  that reaches a control under the cover gets there with `focus()` or `fill()`, and both move focus
+  from wherever it was, so moving it into the box leaves all of them standing. Ten files, 71 rows,
+  all green after the fix.
+- The half that **contains** — a focus trap, `inert` or `aria-hidden` on the rest of the screen —
+  is the one that removes reach, and it costs **10 rows in 5 files** plus a sweep of the 22 mutants
+  those files hold.
+
+`aria-modal="true"` is what makes that split worth stating precisely rather than as *announcement
+against containment*: it asks a screen reader to read nothing outside the box, so for somebody
+listening the way in is **already closed**, while a sighted keyboard user's tab order is untouched.
+The deferred half is containment for the second kind of reader, not containment as such. The owner
+was asked with four options and took the split, so `204a` holds five rows for the half that landed
+and one row — a net — for the half that did not, with the deferred proposal made to run as its
+mutant (#48), and the deferral written into the tracker rather than into prose (#119, #125).
+
+**A sweep over serial specs cannot price a change that lands on several rows of one group.** The
+`trapsfocus` mutant was run over the six files the price names and came back *8 failed, 12 passed* —
+which looks like a census of eleven being wrong by three, and is not that either. Six rows never
+ran: four of the five files configure `mode: 'serial'`, which stops a group at its first red (#67),
+and the skipped rows are exactly the later rows of the groups whose first row the mutant killed. So
+a one-sweep kill count is a **lower bound** on a price, and what turns it into a price is running
+each skipped row on its own under the same mutant — #67 read as a statement about a price rather
+than about a kill count.
+
+Run that way the six split **three red, three green**, and the price is **ten rows in five files**,
+not eleven: `202a` 3, `206a` 2, `207a` 3, `208a` 1, `211a` 1. The three the census was wrong about
+are wrong in two different ways, and both are #174 from the losing side — a census is evidence
+about the property it counted. `208a`'s accounts row reaches its search box with `fill()` and its
+own comment says the way in is this ticket's; a trap does not close it, because `fill()` sets the
+value and does not need focus to stay where it put it, so *presses a control under the cover* and
+*writes into a control under the cover* are two mechanisms and only the first one is priced here.
+`206a`'s second row and `211a`'s second row press nothing under the cover at all: one shares a
+helper with a row that does, the other shares only the file, and reachability through a helper is
+not the property the price is about.
+
+Three wrong out of eleven leaves eight, and the measurement found ten, so the same census missed
+two rows as well — and that is the other side of one mistake rather than a second one. A census
+that finds the rows reaching a mechanism *through a helper it has identified* is blind to the rows
+that reach it inline, which is where both the false positives and the misses come from: by its own
+per-file counts (`206a` 2 named, 1 of them red; `211a` 1 named, green) the two it never named are
+one row of `206a` and one of `211a`. The census found the population to measure; only the mutant
+found the price, and a census figure is not even wrong in one direction.
+
+**The fix moved an anchor nobody was looking at.** `aria-describedby={messageId}` made the
+paragraph's attributes wrap onto their own lines, and `118:nobreakwords` had quoted the whole
+`<p ...>` tag as a single line, so `anchors.py` answered `0 matches` — the fix adds an attribute,
+the class it is about is untouched, and nothing else in the file notices. Re-aimed on the class
+attribute alone, which is unique in the file, and preserving the mistake rather than widening it
+(#203): `break-words` comes off and nothing else does.
+
+What #204 leaves open is written down in three places rather than in one: the containment half is
+#217, `SessionExpiredDialog` is the same shape with one call site in `App.js` and is
+outside what #204 asked, and `focus:outline-none` on the box is an appearance claim that no row at
+this seam can read — so it is a ☐ on the sheet and a question for a person, not a ⚙.

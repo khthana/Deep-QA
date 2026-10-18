@@ -63,7 +63,10 @@ const {
  *   overlay with the question in the middle of it. The overlay eats a click
  *   (#199's measurement), so this way in is the keyboard: `ConfirmDialog` traps
  *   no focus (#204), and a focused `<select>` answers ArrowDown. It expires the
- *   day #204 lands, and the first row says so.
+ *   day a focus trap lands, and the first row says so - #204 closed on
+ *   18 ตุลาคม 2569 with the half that announces (role, modality, a name, a
+ *   description, focus moved in, Escape) and not with the half that contains,
+ *   which is #217.
  * - **แก้ไข refused** (`openEditor`'s `catch`) — nothing is drawn over anything
  *   here: the form appears only when the answer lands, so while the read is out
  *   the filter is an ordinary mouse click. That way in waits on nothing and is
@@ -179,7 +182,8 @@ test('a removal reads the list of the หลักสูตร the filter has mo
   // keyboard. ArrowDown and not `selectOption`, because what a person can reach
   // through that overlay is what this row is about.
   //
-  // This half expires the day #204 lands: the dialog traps no focus today, so
+  // This half expires the day a focus trap lands (#204 closed on
+  // 18 ตุลาคม 2569 without one): the dialog traps no focus today, so
   // a focused `<select>` answers ArrowDown, and a dialog that trapped it would
   // leave this way in with nothing to press (measured 15 October 2569 — the
   // condition beside the thing it conditions, rather than only in the
