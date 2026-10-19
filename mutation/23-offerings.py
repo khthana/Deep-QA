@@ -199,9 +199,17 @@ MUTANTS = {
     # row 1 dies at `openSubject`'s wait for that read, not at its assertion.
     # `139:offeringscreatedasksnothing` reads and does not draw, and dies at it.
     "nolanding": ("page",
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
-        '      if (mine) await refresh(offering.id, ask)\n',
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
+        "      if (showing.current === sent) {\n"
+        "        waiting.current = { of: readOf(onPage.current, program, year, semester), said }\n"
+        "      }\n"
+        "      const drawing = onScreen.current\n"
+        "      await drawing(() => onScreen.current === drawing)\n"
+        "      if (mine) await refresh(offering.id, ask)\n",
+        "      if (showing.current === sent) {\n"
+        "        waiting.current = { of: readOf(onPage.current, program, year, semester), said }\n"
+        "      }\n"
+        "      const drawing = onScreen.current\n"
+        "      await drawing(() => onScreen.current === drawing)\n"),
     # The confirmation dropped from the section removal: the button on the card
     # deletes. This is the mutant for the half of the eighth criterion that is
     # about being asked - a screen that removes on the first press passes every

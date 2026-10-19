@@ -174,9 +174,25 @@ MUTANTS = {
     'weightssaveanyway': ('weights', WEIGHTS_READS, WEIGHTS_ANYWAY),
     'groupsafteranyway': ('groups', GROUPS_READS, GROUPS_ANYWAY),
     'enrolmentaddanyway': ('enrolment', ADD_READS, ADD_ANYWAY),
-    'enrolmentremovalanyway': ('enrolment', REMOVE_ENROL_READS, REMOVE_ENROL_ANYWAY),
+    'enrolmentremovalanyway': ('enrolment',
+        '      if (onScreen.current === sent) {\n'
+        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
+        '      if (onScreen.current === sent) setNotice(said)\n'),
     'enrolmentmovedanyway': ('enrolment', MOVED_READS, MOVED_ANYWAY),
-    'enrolmentmovedremovalanyway': ('enrolment', MOVED_REMOVAL_READS, MOVED_REMOVAL_ANYWAY),
+    'enrolmentmovedremovalanyway': ('enrolment',
+        '      if (onScreen.current === sent) {\n'
+        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      setNotice(said)\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'),
     'enrolmentdrewunsaid': ('enrolment', DREW_READS, DREW_UNSAID),
 }
 

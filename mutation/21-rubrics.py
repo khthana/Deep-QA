@@ -104,10 +104,10 @@ MUTANTS = {
     # POST still happens and still answers 201; what stops is the list being
     # read again, so the screen keeps showing the page it drew before the save.
     "staleafterasave": ("page",
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded) setNotice(said)\n',
-        '      const reloaded = true\n'
-        '      if (reloaded) setNotice(said)\n'),
+        "      waiting.current = { of: readOf(onPage.current, program), said }\n"
+        "      const drawing = onScreen.current\n"
+        "      await drawing(() => onScreen.current === drawing)\n",
+        "      setNotice(said)\n"),
     # Row 6, second half — the edit is saved. Creation still writes the name, so
     # every row up to this one is untouched, and the add half of the row above
     # still passes; the edit is the first thing that notices.

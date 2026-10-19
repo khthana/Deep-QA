@@ -111,10 +111,16 @@ FILES = {
 MUTANTS = {
     # ภาควิชา: การลบพูดประโยคของตัวเองเหนือฟอร์มที่เปิดขึ้นมาแทน
     'departmentssaysanyway': ('departments',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '        if (reloaded && showing.current !== null) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      if (showing.current !== null) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n'),
     # ภาควิชา: guard ที่จับ `{}` ใหม่แทน ref - เป็นเท็จตลอด การลบจึงไม่เคยพูดอะไร
     'departmentssaysnothing': ('departments',
         '  const confirmRemoval = async () => {\n    const sent = showing.current\n',
@@ -151,9 +157,27 @@ MUTANTS = {
         '      const reloaded = await reload(said)\n      if (reloaded) setNotice(said)\n'),
     # รายชื่อนักศึกษาของรายวิชา: การนำออกที่ไม่ใช่คนสุดท้ายของหน้า - ย่อหน้าแปด
     # ช่องคือสิ่งที่แยกมันออกจากการเพิ่ม ไม่ใช่คอมเมนต์ข้างบน
+    # ถอนเป็นบันทึกเมื่อ 19 ต.ค. 2569 (`SUPERSEDED`) ข้อความข้างล่างคือข้อความก่อน #209
+    # เป๊ะ ๆ สมอของมันจึงไม่ตรงกับโค้ดวันนี้ ความผิดที่มันถืออยู่ — พูดประโยคทับจอที่คนย้ายไป —
+    # เขียนที่นี่ไม่ได้อีก เพราะตั้งแต่ #209 ฟังก์ชันนี้ไม่พูดอะไรเลย มันส่งประโยคต่อโดยติดกุญแจ
+    # `readOf(sectionId, onPage.current)` ไว้ และคนที่พูดคือการอ่านที่วาด ถ้ากุญแจตรง การตัด
+    # `onScreen.current === sent` ออกจึงไม่เปลี่ยนอะไร: หลังการกระโดด การอ่านที่ลงจอเป็นของ
+    # ตอนเรียนอื่น กุญแจไม่ตรง ประโยคก็ไม่ถูกพูดอยู่แล้ว — ยามที่กุญแจครอบไว้แล้วพิสูจน์อะไรไม่ได้
+    # ความผิดนั้นเขียนได้อีกชั้นเดียว คือที่การเทียบกุญแจ ซึ่งเป็นที่ที่ `205:saysanyread` อยู่
+    # และวัดเมื่อ 19 ต.ค. 2569 ว่ามันฆ่าสองแถวลบของ `202a` (บรรทัด 497 กับ 525)
     'enrolmentremovesaysanyway': ('enrolment',
         '        if (reloaded && onScreen.current === sent) setNotice(said)\n',
         '        if (reloaded) setNotice(said)\n'),
+    # แถวบวกของจุดเดียวกัน: *การนำออกที่ไม่มีใครย้ายหน้า ยังบอกว่ามันนำใครออก* เคยถูกค้ำด้วย
+    # ตัวข้างบน และ 19 ต.ค. 2569 ก็ไม่มีอะไรค้ำ จึงเขียนตัวนี้ขึ้นมา: ประโยคถูกส่งต่อโดยติดกุญแจ
+    # ของหน้าที่ไม่มีใครจะอ่าน ซึ่งเป็นความผิดของ #206 เขียนที่จุดนี้ ประโยคจึงไม่เคยถูกพูด
+    # และแถวลบ (ที่ขอให้เงียบ) ยังเขียว
+    'enrolmentremovekeyedelsewhere': ('enrolment',
+        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n',
+        '        waiting.current = { of: readOf(sectionId, onPage.current + 1), said }\n'),
 }
+
+# ถอนเป็นบันทึก ไม่ใช่ลบ: ข้อความของมันคือโค้ดก่อน #209 และบรรทัดนั้นไม่มีในต้นไม้วันนี้
+SUPERSEDED = {'enrolmentremovesaysanyway'}
 
 main(FILES, MUTANTS)

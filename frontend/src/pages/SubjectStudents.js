@@ -60,6 +60,14 @@ import {
  */
 const readOf = (sectionId, page) => `${sectionId}:${page}`
 
+/**
+ * `load`'s third answer - #209. `Departments.js` carries the reasons: a read
+ * that is told the page it asked for no longer exists has neither drawn nor
+ * been refused, and a caller with a sentence hands it over rather than saying
+ * it over a page about to be replaced.
+ */
+const HANDED_ON = 'handed-on'
+
 export default function SubjectStudents() {
   const { sectionId } = useParams()
   const [data, setData] = useState(null)
@@ -112,9 +120,32 @@ export default function SubjectStudents() {
     // Which read this is, for the sentence that may be waiting for it - #205.
     const key = readOf(sectionId, page)
     setLoading(true)
+    // Whether this read handed the page on rather than drawing it - #209. The
+    // sentence that was waiting for it belongs to the read that follows, so the
+    // `finally` below must not clear it.
+    let handedOn = false
     try {
       const answer = await listEnrolled(sectionId, { page })
       if (isCurrent()) {
+        // #209 - the owner's answer of 19 ตุลาคม 2569: whether the page the
+        // person is on still exists is the server's to say, not this screen's,
+        // and the answer carries `total`. This screen asks for no `per_page`,
+        // so the size it was paged by is only knowable from the answer - and an
+        // answer that does not say stands as drawn rather than being measured
+        // against a number this file made up. Nothing is drawn when the page
+        // has gone: drawing it would paint an empty page, and the sentence over
+        // it, before the correction lands. `Departments.js` carries the
+        // measurement.
+        const size = answer.per_page
+        const lastPage = size ? Math.max(1, Math.ceil(answer.total / size)) : answer.page
+        if (answer.page > lastPage) {
+          handedOn = true
+          if (waiting.current && waiting.current.of === key) {
+            waiting.current = { of: readOf(sectionId, lastPage), said: waiting.current.said }
+          }
+          setPage(lastPage)
+          return HANDED_ON
+        }
         setData(answer)
         if (waiting.current && waiting.current.of === key) {
           setNotice(waiting.current.said)
@@ -135,7 +166,12 @@ export default function SubjectStudents() {
         // longer on the screen. A read that was superseded takes nothing
         // away: the sentence it would have thrown out belongs to the read
         // that replaced it - #205.
-        waiting.current = null
+        //
+        // A read that handed the page on is the same case one step along: the
+        // sentence it was given has just been re-keyed for the read it handed
+        // to, so clearing here would throw away a sentence nothing else will
+        // say - #209.
+        if (!handedOn) waiting.current = null
       }
     }
   }, [sectionId, page])
@@ -170,26 +206,22 @@ export default function SubjectStudents() {
   }, [page])
 
   /**
-   * How many rows the list on the screen is showing, and which read that list
-   * is the answer to - #207. The step back asks this rather than counting the
-   * `data` its handler closed over, and compares the key before believing the
-   * count; `frontend/src/pages/Departments.js` carries the reasons and names
-   * the rows.
+   * The ref that counted the list in front of the person - removed on
+   * 19 ตุลาคม 2569 by the owner's answer to #209.
    *
-   * `data` is `null` here before the first read and after a refused one, which
-   * is no rows: a page with nothing on it has no row to remove, so no handler
-   * can read the ref in that state.
+   * It held the count of the list that was **drawn** and the key of the read
+   * that drew it, and `confirmRemoval` decided the step back from it. A count
+   * of a drawing is stale against the database the moment a second writer
+   * commits, with nothing on this screen moving, so no reading here could
+   * answer *how many rows has that page now*. The question went to the server,
+   * which answers every read with `total`.
    *
-   * The coordinates of the read are deliberately not dependencies of the
-   * effect below: what is stamped is the count of the list that is **drawn**
-   * and the key of the read that drew it, so it is written when the list
-   * changes and never when the pager moves.
+   * `docs/lessons.md` §#207 and §#209, `docs/acceptance/14-departments.md`
+   * §#207 and §#209 and `mutation/207-the-rows-the-step-back-counts.py`
+   * carry the reasoning and which mutants went. `onPage` above stays: the
+   * sentence a removal hands over is still keyed for wherever the person now
+   * is (#206).
    */
-  const onRows = useRef({ of: readOf(sectionId, page), rows: data ? data.students.length : 0 })
-  useEffect(() => {
-    onRows.current = { of: readOf(sectionId, page), rows: data ? data.students.length : 0 }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
 
   /**
    * The read a write asks for, which is not always the read `load` would do.
@@ -285,46 +317,29 @@ export default function SubjectStudents() {
         error: false,
         message: `นำ ${student.student_id} ${student.full_name_th} ออกจากตอนเรียนแล้ว`,
       }
-      // The last student on the last page leaves an empty page behind them,
-      // which reads as a list that lost everything. #57's screens step back for
-      // the same reason - and stepping back is a read the effect does, so the
-      // sentence is handed over rather than said here (#152), exactly as
-      // `reload` hands over the one for the first page.
-      // #206 - and from the page the pager is on, not the one this render
-      // closed over. `Departments.js` carries the reasons.
-      // #207 - how many rows the page this removal was sent from was showing. The
-      // live ref answers that only while the pager is still on it; once the
-      // person has moved, the list in front of them is another page's and the
-      // render's own count is the only reading of the page they left there is.
-      // `Departments.js` carries the reasons.
-      const liveCountIsOfThisPage = onRows.current.of === readOf(sectionId, page)
-      const lostItsLastRow =
-        (liveCountIsOfThisPage ? onRows.current.rows : data.students.length) === 1 && page > 1
-      const stepBack = lostItsLastRow && liveCountIsOfThisPage
-      if (stepBack && onPage.current === page) {
-        const target = readOf(sectionId, page - 1)
-        waiting.current = { of: target, said }
-        setPage(page - 1)
-      } else if (lostItsLastRow) {
-        // swallowed-refusal: the person moved while the removal was out, so
-        // nothing steps back: the list they are on is read here and that read
-        // says the sentence, handed to `waiting` by key rather than said by
-        // this handler - which leaves it with no sentence of its own on this
-        // branch and so no answer to read (#205, #208)
-        const target = readOf(sectionId, onPage.current)
-        waiting.current = { of: target, said }
-        const drawing = onScreen.current
-        await drawing(() => onScreen.current === drawing)
-      } else {
-        // The same question `add` asks, for the same reason: the read is guarded
-        // and its answer is not. `load` says only that nothing refused it
-        // (#202), and what moves the person now that #199 has closed the pager
-        // is the jump to another Section of the same route shape, which 202a's
-        // two negatives come in through.
-        const drawing = onScreen.current
-        const reloaded = await drawing(() => onScreen.current === drawing)
-        if (reloaded && onScreen.current === sent) setNotice(said)
+      // **The owner's answer, 19 ตุลาคม 2569 (#209): this handler no longer
+      // decides anything about the page.** The last student on the last page
+      // leaves an empty page behind them, which reads as a list that lost
+      // everything, and #57's screens step back for that reason - but which
+      // page still exists is the server's to say, from the `total` of the read
+      // that follows, and not this screen's from a count of what is drawn.
+      // `load` asks it and hands the page on when the answer says it has gone.
+      // `Departments.js` carries the measurement and what went with `onRows`.
+      //
+      // The sentence is handed over whichever way that goes, keyed for where
+      // the person now is (#206) rather than for the page this render closed
+      // over, exactly as `reload` hands over the one for the first page: the
+      // read that draws says it, and a refused read says nothing over its own
+      // refusal (#152, the owner's decision of 10 October 2569).
+      // No marker for `swallowed-refusals.js` any more: since #209 this function
+      // says no sentence for that census to ask about, and a marker that
+      // outlives the gap it documented is an exemption (#141). The read that
+      // draws says the sentence, keyed on itself (#205, #208).
+      if (onScreen.current === sent) {
+        waiting.current = { of: readOf(sectionId, onPage.current), said }
       }
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
     } catch (error) {
       // The dialog closes either way — CourseOutcomes' reason: leaving it open
       // over a refusal puts the banner behind it and offers a button that

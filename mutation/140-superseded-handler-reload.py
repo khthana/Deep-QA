@@ -66,6 +66,26 @@ Playwright จับ `111a` (5 แถว) กับ `121a` (1 แถว) ด้�
     python mutation/140-superseded-handler-reload.py save
     python mutation/140-superseded-handler-reload.py <mutant>
     python mutation/140-superseded-handler-reload.py restore
+
+## สิบสองตัวของแฟ้มนี้รอดการกวาดเมื่อ 19 ต.ค. 2569 และหนี้เป็นของ #210
+
+กวาดซ้ำทั้งสิบสามตัวตอนปิด #209 (สมอของสิบสองตัวถูกเล็งใหม่วันนั้น): **สิบสองตัวรอด 32 ผ่าน 32**
+มีแต่ `offeringssavestalewins` ที่ยัง **ล้ม 1 ผ่าน 31** กลไกไม่ได้อยู่ที่ตัวมัตแตนต์และไม่ได้อยู่ที่ #209:
+`busy` ของจอเหล่านี้คือ `writing || reading` และการบันทึกกับการลบถือ `writing` ไว้จนกว่าการอ่านใหม่ที่มัน
+`await` จะตอบ #210 ให้ตัวแบ่งหน้าของหกจอฝ่ายบริหาร `disabled={busy}` เมื่อ 19 ต.ค. 2569 ปุ่ม *ถัดไป*
+จึงกดไม่ได้อยู่ตลอดช่วงที่แถวของ `140a` กักการอ่านไว้ และ `supersede` ของไฟล์นั้นกดปุ่มหลัง
+`await expect(next(page)).toBeEnabled()` ซึ่งเป็นการ**รอ**ที่ลองใหม่เรื่อย ๆ ไม่ใช่การยืนยัน — มันจึงไม่แดง
+มันเลื่อนการกดไปอยู่หลังคำตอบที่ถูกกักลงจอแล้ว การแซงที่แถวสร้างขึ้นมาเพื่อวัดจึงไม่เกิดขึ้นเลย
+
+ตัวที่ยังฆ่าได้คือตัวยืนยันเรื่องนี้: แถวของ `offeringssavestalewins` เป็นแถวเดียวที่ #210 ให้ทางแซงที่ไม่ติด
+`busy` (ตัวกรองปีการศึกษา) สำมะโนของ #210 ถามว่า*แถวไหนที่ `busy` ยังขึ้นอยู่ตอนกดตัวแซง* และตอบว่า
+แถวเดียว คำถามที่ตัดสินคือ *แถวไหนที่รอให้ตัวแซงกดได้* เพราะการรอที่ลองใหม่เลื่อนการกด ไม่ทำให้แถวล้ม
+ไม่มีเครื่องมือไหนรายงาน เพราะแถวไม่แดง มันผ่านด้วยเหตุผลที่ผิด มีแต่การกวาดที่พูด (#107, #68)
+
+สิบสองตัวจึงอยู่ที่เดิมและไม่ถูกถอน: มันยังทำซ้ำข้อบกพร่องจริงได้ ที่หายไปคือความสามารถของแถวที่จะเห็นมัน
+ทางแก้คือให้สิบสองแถวนั้นมีตัวแซงที่ไม่ติด `busy` อย่างที่แถวของ `Offerings.js` ได้ไป ซึ่งเป็นงานของตั๋ว
+ไม่ใช่ของแฟ้มนี้ และเป็นราคาของการปิดทางเข้าที่ #217 ว่าไว้ จนกว่าตั๋วนั้นจะมีขึ้น ช่องของสิบสองตัวนี้
+บนใบเกณฑ์เป็นตัวเลขของวันที่วัด ไม่ใช่ของวันนี้
 """
 from harness import main
 
@@ -127,16 +147,28 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # ข้อมูลภาควิชา: บันทึก
     'departmentssavestalewins': ('departments',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => true)\n'),
     # ข้อมูลภาควิชา: ลบ / นำออก
     'departmentsremovestalewins': ('departments',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => true)\n'),
     # ข้อมูลภาควิชา: การนำเข้า
     'departmentsimportstalewins': ('departments',
         '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
@@ -147,16 +179,28 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # ข้อมูลหลักสูตร: บันทึก
     'programssavestalewins': ('programs',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => true)\n'),
     # ข้อมูลหลักสูตร: ลบ / นำออก
     'programsremovestalewins': ('programs',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => true)\n'),
     # ข้อมูลหลักสูตร: การนำเข้า
     'programsimportstalewins': ('programs',
         '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
@@ -167,16 +211,28 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # ข้อมูลรายวิชา: บันทึก
     'subjectssavestalewins': ('subjects',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => true)\n'),
     # ข้อมูลรายวิชา: ลบ / นำออก
     'subjectsremovestalewins': ('subjects',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => true)\n'),
     # ข้อมูลรายวิชา: การนำเข้า
     'subjectsimportstalewins': ('subjects',
         '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
@@ -187,16 +243,24 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # รายวิชาในหลักสูตร: บันทึก
     'pairssavestalewins': ('pairs',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded) setNotice(said)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded) setNotice(said)\n'),
+        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => true)\n'),
     # รายวิชาในหลักสูตร: ลบ / นำออก
     'pairsremovestalewins': ('pairs',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => true)\n'),
     # รายวิชาในหลักสูตร: การนำเข้า
     'pairsimportstalewins': ('pairs',
         '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
@@ -207,27 +271,41 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # Rubric: บันทึก
     'rubricssavestalewins': ('rubrics',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded) setNotice(said)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded) setNotice(said)\n'),
+        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => true)\n'),
     # Rubric: ลบ / นำออก
     'rubricsremovestalewins': ('rubrics',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: ตอนเรียนและผู้สอน ที่ถูกปฏิเสธ
     'offeringsrefusalstalewins': ('offerings',
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: เปิดรายวิชา
     'offeringssavestalewins': ('offerings',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program, year, semester), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
         '      if (mine) await refresh(offering.id, ask)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program, year, semester), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => true)\n'
         '      if (mine) await refresh(offering.id, ask)\n'),
     # ข้อมูลการเปิดรายวิชา: คัดลอก
     # #205 - as `studentssavestalewins`, the same branch one screen along.
@@ -236,10 +314,16 @@ MUTANTS = {
         '        await drawing(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: ยกเลิกการเปิด
     'offeringsremovestalewins': ('offerings',
-        '          const drawing = onScreen.current\n          const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '          if (reloaded && showing.current === sent) setNotice(said)\n',
-        '          const drawing = onScreen.current\n          const reloaded = await drawing(() => true)\n'
-        '          if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '        if (showing.current === sent) {\n'
+        '          waiting.current = { of: readOf(onPage.current, program, year, semester), said }\n'
+        '        }\n'
+        '        const reader = onScreen.current\n'
+        '        await reader(() => onScreen.current === reader)\n',
+        '        if (showing.current === sent) {\n'
+        '          waiting.current = { of: readOf(onPage.current, program, year, semester), said }\n'
+        '        }\n'
+        '        const reader = onScreen.current\n'
+        '        await reader(() => true)\n'),
     # ข้อมูลการเปิดรายวิชา: กลับไปหน้ารายการ
     'offeringsbackstalewins': ('offerings',
         '            setViewing(null)\n            const drawing = onScreen.current\n            drawing(() => onScreen.current === drawing)\n',
@@ -251,8 +335,16 @@ MUTANTS = {
         '        return drawing(() => true)\n'),
     # รายชื่อนักศึกษาของรายวิชา: นำออก
     'enrolmentremovestalewins': ('enrolment',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => onScreen.current === drawing)\n',
-        '        const drawing = onScreen.current\n        const reloaded = await drawing(() => true)\n'),
+        '      if (onScreen.current === sent) {\n'
+        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      if (onScreen.current === sent) {\n'
+        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => true)\n'),
 }
 
 main(FILES, MUTANTS)

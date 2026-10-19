@@ -61,13 +61,15 @@ MUTANTS = {
     # ล้างประโยคไม่ว่าการอ่านนี้จะยังเป็นการอ่านที่จอต้องการหรือไม่ — รูปของ #152
     # ที่ #205 วัดว่าผิด
     'clearsoutside': ('enrolment',
-        '        waiting.current = null\n'
+        '        if (!handedOn) waiting.current = null\n'
         '      }\n',
         '      }\n'
-        '      waiting.current = null\n'),
+        '      if (!handedOn) waiting.current = null\n'),
     # พูดประโยคกับการอ่านตัวไหนก็ได้ที่วาด ซึ่งพาประโยคขึ้นบนรายการที่มันไม่ได้พูดถึง
     'saysanyread': ('enrolment',
+        '        setData(answer)\n'
         '        if (waiting.current && waiting.current.of === key) {\n',
+        '        setData(answer)\n'
         '        if (waiting.current) {\n'),
     # กุญแจที่ลืมตัวกรอง: การอ่านของตัวกรองอื่นจึงคิดว่าประโยคเป็นของมัน
     # ทิ้งพารามิเตอร์ตัวที่สองไปเลย เพราะพารามิเตอร์ที่ไม่ถูกอ้างถึงทำให้ lint แดง

@@ -177,16 +177,92 @@ DREW_READS = (
 DREW_UNSAID = "        setData(answer)\n"
 
 MUTANTS = {
-    'departmentssaveanyway': ('departments', SAVE_READS, SAVE_ANYWAY),
-    'departmentsremovalanyway': ('departments', REMOVAL_READS, REMOVAL_ANYWAY),
-    'programssaveanyway': ('programs', SAVE_READS, SAVE_ANYWAY),
-    'programsremovalanyway': ('programs', REMOVAL_READS, REMOVAL_ANYWAY),
-    'subjectssaveanyway': ('subjects', SAVE_READS, SAVE_ANYWAY),
-    'subjectsremovalanyway': ('subjects', REMOVAL_READS, REMOVAL_ANYWAY),
-    'pairssaveanyway': ('pairs', MODAL_READS, MODAL_ANYWAY),
-    'pairsremovalanyway': ('pairs', REMOVAL_READS, REMOVAL_ANYWAY),
-    'rubricssaveanyway': ('rubrics', MODAL_READS, MODAL_ANYWAY),
-    'rubricsremovalanyway': ('rubrics', REMOVAL_READS, REMOVAL_ANYWAY),
+    'departmentssaveanyway': ('departments',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
+    'departmentsremovalanyway': ('departments',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
+    'programssaveanyway': ('programs',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
+    'programsremovalanyway': ('programs',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
+    'subjectssaveanyway': ('subjects',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
+    'subjectsremovalanyway': ('subjects',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
+    'pairssaveanyway': ('pairs',
+        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
+        '      setNotice(said)\n'),
+    'pairsremovalanyway': ('pairs',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
+    'rubricssaveanyway': ('rubrics',
+        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
+        '      setNotice(said)\n'),
+    'rubricsremovalanyway': ('rubrics',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
     'plossaveanyway': ('plos', PLOS_MODAL_READS, PLOS_MODAL_ANYWAY),
     'plosremovalanyway': ('plos', PLOS_REMOVAL_READS, PLOS_REMOVAL_ANYWAY),
     'userssaveanyway': ('users', USERS_SAVE_READS, USERS_SAVE_ANYWAY),
@@ -194,9 +270,25 @@ MUTANTS = {
     'studentssaveanyway': ('students', STUDENTS_BY_HAND_READS, STUDENTS_BY_HAND_ANYWAY),
     'studentsmovedanyway': ('students', MOVED_READS, MOVED_ANYWAY),
     'studentsdrewunsaid': ('students', DREW_READS, DREW_UNSAID),
-    'offeringssaveanyway': ('offerings', SAVE_READS, SAVE_ANYWAY),
+    'offeringssaveanyway': ('offerings',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program, year, semester), said }\n'
+        '      }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
+        '      if (showing.current === sent) setNotice(said)\n'),
     'offeringscopyanyway': ('offerings', OFFERINGS_BY_HAND_READS, OFFERINGS_BY_HAND_ANYWAY),
-    'offeringsremovalanyway': ('offerings', OFFERING_REMOVAL_READS, OFFERING_REMOVAL_ANYWAY),
+    'offeringsremovalanyway': ('offerings',
+        '        if (showing.current === sent) {\n'
+        '          waiting.current = { of: readOf(onPage.current, program, year, semester), said }\n'
+        '        }\n'
+        '        const reader = onScreen.current\n'
+        '        await reader(() => onScreen.current === reader)\n',
+        '        const reader = onScreen.current\n'
+        '        await reader(() => onScreen.current === reader)\n'
+        '        if (showing.current === sent) setNotice(said)\n'),
 }
 
 main(FILES, MUTANTS)

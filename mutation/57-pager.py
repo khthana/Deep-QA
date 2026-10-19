@@ -86,20 +86,11 @@ MUTANTS = {
     # has eleven. Two copies of the same three-line rule, which is what #57 was
     # about; each one gets its own mutant.
     "deptstay": ("departments",
-                 "const liveCountIsOfThisPage = onRows.current.of === readOf(page)\n"
-                 "      const lostItsLastRow =\n"
-                 "        page > 1 &&\n"
-                 "        (liveCountIsOfThisPage ? onRows.current.rows : data.departments.length) === 1\n"
-                 "      const stepBack = lostItsLastRow && liveCountIsOfThisPage",
-                 "const lostItsLastRow = false\n      const stepBack = false"),
+        "        if (answer.page > lastPage) {\n",
+        "        if (answer.page > lastPage + 1) {\n"),
     "progstay": ("programs",
-                 "const liveCountIsOfThisPage = onRows.current.of === readOf(page)\n"
-                 "      const lostItsLastRow =\n"
-                 "        !deactivated &&\n"
-                 "        page > 1 &&\n"
-                 "        (liveCountIsOfThisPage ? onRows.current.rows : data.programs.length) === 1\n"
-                 "      const stepBack = lostItsLastRow && liveCountIsOfThisPage",
-                 "const lostItsLastRow = false\n      const stepBack = false"),
+        "        if (answer.page > lastPage) {\n",
+        "        if (answer.page > lastPage + 1) {\n"),
 }
 
 main(FILES, MUTANTS)

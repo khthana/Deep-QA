@@ -68,6 +68,20 @@ const PAGE_SIZE = 10
  */
 const readOf = page => `${page}`
 
+/**
+ * `load`'s third answer - #209.
+ *
+ * A check that can fail to run has three answers and not two (#159), and so has
+ * a read that can be told the page it asked for no longer exists: it drew, it
+ * was refused, or **it handed the page on** and another read is coming. A caller
+ * with a sentence of its own must hand that sentence over in the third case
+ * rather than say it, because what is on the screen is still the list the read
+ * it has just awaited was not about. Folding it into either of the other two
+ * says the wrong thing: `true` draws the sentence over a page about to be
+ * replaced, `false` reads as a refusal and the sentence is lost.
+ */
+const HANDED_ON = 'handed-on'
+
 export default function Departments() {
   const [page, setPage] = useState(1)
   const [data, setData] = useState({ departments: [], total: 0 })
@@ -165,9 +179,35 @@ export default function Departments() {
     // Which read this is, for the sentence that may be waiting for it - #205.
     const key = readOf(page)
     setLoading(true)
+    // Whether this read handed the page on rather than drawing it - #209. The
+    // sentence that was waiting for it belongs to the read that follows, so the
+    // `finally` below must not clear it.
+    let handedOn = false
     try {
       const answer = await listDepartments({ page, per_page: PAGE_SIZE })
       if (isCurrent()) {
+        // #209 - the owner's answer of 19 ตุลาคม 2569: whether the page the
+        // person is on still exists is the server's to say, not this screen's.
+        // The answer carries `total`, so the last page that exists is known
+        // here with no second request, and the page asked for can be past it
+        // because `backend/lib/paging.js` floors `page` at 1 and sets no
+        // ceiling. Nothing is drawn in that case: drawing it would paint an
+        // empty page and the sentence over it before the correction lands.
+        // Paged by the size the server says it used and not by `PAGE_SIZE`:
+        // the two agree today, and a mutant that swaps one for the other is
+        // invisible wherever they do (#117). `backend/lib/paging.js` is what
+        // decides it, from a query string this screen is not the only writer
+        // of.
+        const size = answer.per_page || PAGE_SIZE
+        const lastPage = Math.max(1, Math.ceil(answer.total / size))
+        if (answer.page > lastPage) {
+          handedOn = true
+          if (waiting.current && waiting.current.of === key) {
+            waiting.current = { of: readOf(lastPage), said: waiting.current.said }
+          }
+          setPage(lastPage)
+          return HANDED_ON
+        }
         setData(answer)
         if (waiting.current && waiting.current.of === key) {
           setNotice(waiting.current.said)
@@ -190,7 +230,12 @@ export default function Departments() {
         // longer on the screen. A read that was superseded takes nothing
         // away: the sentence it would have thrown out belongs to the read
         // that replaced it - #205.
-        waiting.current = null
+        //
+        // A read that handed the page on is the same case one step along: the
+        // sentence it was given has just been re-keyed for the read it handed
+        // to, so clearing here would throw away a sentence nothing else will
+        // say - #209.
+        if (!handedOn) waiting.current = null
       }
     }
   }, [page])
@@ -251,87 +296,27 @@ export default function Departments() {
   }, [page])
 
   /**
-   * How many rows the list on the screen is showing, and which read that
-   * list is the answer to - #207.
+   * The ref that counted the list in front of the person - removed on
+   * 19 ตุลาคม 2569 by the owner's answer to #209.
    *
-   * `onPage` above answers *where* the person is standing; this answers *what
-   * is in front of them*. A step back is a decision about both - the page that
-   * lost its last row, and whether the row it lost was the last one - and the
-   * second half was read from `data.departments.length`, the `data` of the
-   * render the handler closed over. That is #201's claim and not #205's: two
-   * claims on neighbouring lines in one handler, and the one about the count
-   * had nothing under it.
+   * It held `{ of, rows }`: the count of the list that was **drawn** and the
+   * key of the read that drew it, and `confirmRemoval` decided the step back
+   * from it. #207 put the key there, because a count without one is the count
+   * of whatever page is in front rather than of the page a removal was sent
+   * from. What the key could not fix is that the count is of a *drawing*: a
+   * second writer makes it stale against the database with nothing on this
+   * screen moving, measured both ways on 19 ตุลาคม 2569, and no reading on this
+   * client can answer *how many rows has that page now*. The owner's answer
+   * moved the question to the server, which answers every read with `total`,
+   * so `load` asks whether the page it asked for still exists and this ref has
+   * no reader left.
    *
-   * Measured on this screen on 14 October 2569. After #206 a page move alone
-   * cannot reach it, because somebody who moved takes the branch that moves
-   * nobody. What reached it was a read that lands while the removal is out and
-   * leaves the pager where it started, which the pager's own two presses did -
-   * this screen's `Pager` was given no `busy` until 19 ตุลาคม 2569 (#199 gave one
-   * to the enrolment screen's on 15 October 2569 and to no other); the
-   * confirmation trapped no focus until 18 ตุลาคม 2569 (#204, contained by #217
-   * that day), and what reached the pager after that was ยกเลิก and then a
-   * click. The handler then counted a list that was no longer on the screen: it
-   * counted two rows and stayed on a page whose one remaining row it was about
-   * to remove, and the other way round it carried somebody off a page that had
-   * filled up again.
-   *
-   * **Since 19 ตุลาคม 2569 nothing on this screen reaches that window**, which
-   * is the owner's answer to #210: the pager is `disabled={busy}` here, and the
-   * one control that still reads the list while a write is out - the import
-   * panel, which keeps its own flag - asks for page one, so it *moves* the
-   * person and the branch above runs instead. The clause stays, both halves of
-   * it keep their comment, and
-   * `e2e/tests/207a-the-rows-the-step-back-counts.spec.js` is one net row
-   * rather than the three that read the two directions; it names the three
-   * claims it withdrew and the condition that would bring them back, and
-   * `mutation/207-the-rows-the-step-back-counts.py` says which four mutants
-   * went with them.
-   *
-   * **19 ตุลาคม 2569, measured by a probe the same day rather than read off
-   * this code: that window is closed and the species is not.** #209's own
-   * situation needs no race at all. A second actor writing this page before
-   * the person presses ยืนยัน leaves the key matching, so what is read here is
-   * the live count - and the live count is the count of the list that is
-   * *drawn*, which is older than the database from the moment the other actor
-   * wrote. Two readings on this screen: a page that had lost every row was
-   * kept (หน้า 3 จาก 2 over *ยังไม่มีภาควิชาในระบบ*), and a page that had
-   * filled up again was left. So the sentence above is true of *that window*
-   * and says nothing about the step back being right. The readings, the
-   * re-priced options and the owner's question are on
-   * `docs/acceptance/14-departments.md` §#209; the four withdrawn mutants stay
-   * withdrawn, because where the key matches the ref and the closure hold the
-   * same number and a mutant swapping one for the other is invisible (#117).
-   *
-   * The count on its own is not enough, which both axes of this ticket's
-   * review said and a throwaway row measured the same day: `onPage` is written
-   * by an effect on `[page]`, at the press, and this one by an effect on
-   * `[data]`, at the answer. So between the press that brings the pager back
-   * and that page's list landing, `onPage.current === page` holds while the
-   * count is still the previous page's - and with the returning list held at
-   * the route, that window asked for page 3 where it owed page 2, which is
-   * this ticket's own defect in a narrower one. What the ref carries is
-   * therefore the key of the read it is the answer to (#201 - the ref holds
-   * what the data is *of*; #185 - a key is what identifies a request), and the
-   * coordinates of the read are deliberately not dependencies of the effect.
-   *
-   * A ref rather than a functional updater: `setData(current => ...)` does see
-   * the live value, but it sees it in a later task, and this decision is made
-   * here - #201 could read the live state that way because it was writing at
-   * the time.
-   *
-   * `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`, `Offerings` and
-   * `SubjectStudents` keep the same ref, each counting its own list.
-   *
-   * The coordinates of the read are deliberately not dependencies of the
-   * effect below: what is stamped is the count of the list that is **drawn**
-   * and the key of the read that drew it, so it is written when the list
-   * changes and never when the pager moves.
+   * The reasoning it carried is not deleted with it: `docs/lessons.md` §#207
+   * and §#209 hold it, `docs/acceptance/14-departments.md` §#207 the rows and
+   * §#209 the two readings, and `mutation/207-the-rows-the-step-back-counts.py`
+   * which of its mutants went. `onPage` above stays: the sentence a removal
+   * hands over is still keyed for wherever the person now is (#206).
    */
-  const onRows = useRef({ of: readOf(page), rows: data.departments.length })
-  useEffect(() => {
-    onRows.current = { of: readOf(page), rows: data.departments.length }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
 
   const report = useCallback(error => {
     if (!error.expired) setNotice({ error: true, message: error.message })
@@ -503,11 +488,25 @@ export default function Departments() {
       // list in front of them. The owner settled it on 10 October 2569 - the
       // refusal wins - and #152 carried that to the ten teacher screens. This
       // is the same shape, on the ten administration screens #152 scoped out:
-      // `load` answers whether it drew, and the sentence is said only if it did
-      // and only if the screen is still the one that asked.
+      // the sentence is said by the read that draws it, and not at all if that
+      // read is refused.
+      //
+      // 19 ตุลาคม 2569, #209 - handed over here rather than said below. A save
+      // adds no rows, but a second actor's removals can leave the page this
+      // one is on past the end, and then this read draws nothing and hands the
+      // page on (`HANDED_ON`). Only `load` learns that, and only `load` can
+      // re-key the sentence for the read it hands to, so the hand-over has to
+      // be written before the await; saying it afterwards on a truthy answer
+      // would put *บันทึกข้อมูลเรียบร้อยแล้ว* over a page about to be replaced.
+      // The clause this replaces asked, after the await, whether the screen was
+      // still the one that asked; the key the sentence carries answers that for
+      // the page it is about (#205), and the press that takes the screen is
+      // read here, where it was read before.
+      if (showing.current === sent) {
+        waiting.current = { of: readOf(onPage.current), said }
+      }
       const drawing = onScreen.current
-      const reloaded = await drawing(() => onScreen.current === drawing)
-      if (reloaded && showing.current === sent) setNotice(said)
+      await drawing(() => onScreen.current === drawing)
     } catch (error) {
       if (showing.current === sent) report(error)
     } finally {
@@ -561,94 +560,42 @@ export default function Departments() {
       setRemoving(null)
       const said = { error: false, message: 'ลบภาควิชาเรียบร้อยแล้ว' }
       // The last row of the last page having gone, staying on that page shows
-      // an empty table and reads as "there are none". Stepping back is a change
-      // of page and the effect fetches it; calling `load` here as well would
-      // race it with a second request for the page just left, and whichever
-      // answered last would win.
-      // #207 - how many rows the page this removal was sent from was showing.
+      // an empty table and reads as "there are none". Until 19 ตุลาคม 2569 this
+      // handler decided the step back itself, from a count of the list in
+      // front of the person: #207 keyed that count to the read that drew it,
+      // and the two readings it then had - the live ref and the render's own
+      // `data` - are written up in `docs/lessons.md` §#207 and §#209, in
+      // `docs/acceptance/14-departments.md` §#207 and §#209, and in
+      // `mutation/207-the-rows-the-step-back-counts.py`. Neither was both
+      // fresh and of the right page, and the clause that said so named the
+      // screen having moved, which the measurement of 19 ตุลาคม 2569 refuted:
+      // a second writer makes a drawn count stale with nothing here moving.
+      // **The owner's answer, 19 ตุลาคม 2569 (#209): this handler no longer
+      // decides anything about the page.** Both readings above are readings of
+      // a count, and a count read here cannot be both fresh and of the right
+      // page - the ref is the count of the list that is *drawn*, which a second
+      // writer makes stale with nothing on this screen moving, and the render's
+      // `data` is the right page read at the wrong time. What does know is the
+      // server, which answers every read with `total`. So the removal reloads
+      // the page the person is on, and `load` asks the one question that is
+      // answerable there: *does the page I asked for still exist* - handing the
+      // page on when it does not. `onRows` and the two comparisons it fed are
+      // gone; `onPage` stays, because the sentence still has to be keyed for
+      // wherever the person now is.
       //
-      // Two readings of that count are here and neither is both fresh and of
-      // the right page. The live ref is the count of the list that is drawn and
-      // its key says which read drew it, so while that key is this page's it is
-      // the count, and that is the reading this ticket is about. Once the list
-      // on the screen is another page's, what is left is the render's own
-      // `data`: the right page read at the wrong time. Reading the live ref
-      // unconditionally instead - the first round of this fix - took `206a`
-      // row 1 red, a person two pages back leaving ten rows live, so the
-      // removal stopped stepping back at all and fell into the branch below
-      // that reloads with a loader the screen has replaced. A sweep cannot see
-      // the row your own fix breaks (#83); the clean suite can. (Measured on 13
-      // October 2569, and the second half of that sentence expired two days
-      // later: #208 has every branch below read with the loader the screen is
-      // on, so what the unconditional reading would break today is the count
-      // and not the loader.)
-      //
-      // So the two readings answer two questions. *Did the page lose its last
-      // row* decides which loader reads, and the stale reading may answer it,
-      // which is the branch below that a person who moved takes. *May anybody
-      // be moved on it* needs the live count, and nothing else: between the
-      // press that brings the pager back and that page's list landing,
-      // `onPage.current === page` holds while the count is still the previous
-      // page's, and moving on that count carries somebody off a page that has
-      // filled up again - what #206 calls the worse answer. Both axes of this
-      // ticket's review asked for the key; the window it opens was measured on
-      // 14 October 2569 by a throwaway row, which is now `207a` row 3.
-      //
-      // What no reading here can give is the count of the page the removal was
-      // sent from *now*, once the screen is showing another page's list. The
-      // step back then does not happen even where it should, and the person is
-      // left on a page whose rows are gone with the sentence over it. That half
-      // needs a read of a page nobody is looking at; it is #209 and is not this
-      // one's claim.
-      //
-      // 19 ตุลาคม 2569 - the clause *once the screen is showing another page's
-      // list* is too narrow, measured. #209's defect does not need the screen
-      // to have moved at all: a second actor writing this page before the
-      // person confirms leaves the key matching, and the live count is the
-      // count of the list that is **drawn**, which is already stale against
-      // the database. The read of a page nobody is looking at is still what
-      // answers it, and it is still #209 - what changed is that no race and no
-      // move are needed to get there. `docs/acceptance/14-departments.md`
-      // §#209 carries the two readings.
-      const liveCountIsOfThisPage = onRows.current.of === readOf(page)
-      const lostItsLastRow =
-        page > 1 &&
-        (liveCountIsOfThisPage ? onRows.current.rows : data.departments.length) === 1
-      const stepBack = lostItsLastRow && liveCountIsOfThisPage
-      // #203 - a page move is a read the effect does, so the sentence is handed
-      // over for `load` to say when it has drawn: the `waiting` ref above.
-      //
-      // #206 - and the step back belongs to the page that lost its last row, so
-      // it happens only while the pager is still on it. A person who moved
-      // while the removal was out keeps the page they moved to: the move they
-      // did not ask for is the worse answer, and the sentence is keyed for the
-      // read of the list in front of them rather than for a read nobody is
-      // going to make.
-      if (stepBack && onPage.current === page) {
-        if (showing.current === sent) {
-          const target = readOf(page - 1)
-          waiting.current = { of: target, said }
-        }
-        setPage(current => current - 1)
-      } else if (lostItsLastRow) {
-        if (showing.current === sent) {
-          const target = readOf(onPage.current)
-          waiting.current = { of: target, said }
-        }
-        // swallowed-refusal: nothing moves, so no read is coming: the list the
-        // person is on is read here by the loader that belongs to it, and that
-        // read is what says the sentence. Handed over rather than said by this
-        // handler because the key is the one place the two are compared - the
-        // shape #205 arrived at for the branch whose move would cause no read,
-        // which leaves this handler with no sentence of its own on this branch
-        // and so no answer to read (#208)
-        const drawing = onScreen.current
-        await drawing(() => onScreen.current === drawing)
-      } else {
-        const drawing = onScreen.current
-        const reloaded = await drawing(() => onScreen.current === drawing)
-        if (reloaded && showing.current === sent) setNotice(said)
+      // The sentence is therefore always handed over rather than said here,
+      // which is the shape the branch for *nothing moves* already had (#205,
+      // #208): the read that draws the list says it, keyed on that read. Three
+      // cases and one line each - the read draws and says it; the read hands
+      // the page on and `load` re-keys the sentence for the read it handed to;
+      // the read is refused and the refusal wins, the `finally` in `load`
+      // clearing a sentence nobody is going to say (the owner's decision of
+      // 10 October 2569, #152).
+      if (showing.current === sent) {
+        waiting.current = { of: readOf(onPage.current), said }
       }
+      const reader = onScreen.current
+      await reader(() => onScreen.current === reader)
     } catch (error) {
       // Including the refusal for a department something still points at,
       // which is a real answer and is shown in the server's own words.

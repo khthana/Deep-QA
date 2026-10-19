@@ -74,11 +74,16 @@ USERS_TOGGLE = (
 
 MUTANTS = {
     # โค้ดที่ตั๋ววินิจฉัยไว้ เขียนให้รันได้ (#115) — อ่านซ้ำด้วย loader ที่ handler ปิดทับไว้ ไม่ใช่ตัวที่จออยู่
-    'departmentsstaleloader': ('departments', DEPARTMENTS_ELSE,
-        '      } else {\n'
-        '        const reloaded = await load(() => onScreen.current === load)\n'
-        '        if (reloaded && showing.current === sent) setNotice(said)\n'
-        '      }\n'),
+    'departmentsstaleloader': ('departments',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      const reader = onScreen.current\n'
+        '      await reader(() => onScreen.current === reader)\n',
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '      }\n'
+        '      await load(() => onScreen.current === load)\n'),
     # อย่างเดียวกันที่จอบัญชีผู้ใช้ ซึ่งทางเข้าไม่ใช่การแข่งกันของสองช่วงเวลา (ดูหมายเหตุ #86 ข้างบน)
     'usersstaleloader': ('users', USERS_TOGGLE,
         '      const reloaded = await load(() => onScreen.current === load)\n'

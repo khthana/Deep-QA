@@ -99,9 +99,34 @@ test.afterAll(() => release());
  * would make it write twice.
  */
 const IMPORTED = ['XZZ', 'XZY'];
+
+/**
+ * The one fixture row a removal takes for real - #209, 19 ตุลาคม 2569.
+ *
+ * `threePagesEndingIn` is idempotent against a table nobody has deleted from:
+ * it counts the total, works out how many to add and writes the codes it has
+ * written before, so an import of `add` rows after a deletion adds nothing and
+ * its own poll fails (measured - *Expected 21, Received 20*). The row that now
+ * lets the write through therefore says which code went, and it is put back
+ * here, below the seam and in this file's own idiom (#181). Nothing asserts its
+ * names: the fixture reads the pager's total.
+ */
+let removed = null;
 test.afterEach(async ({ page }) => {
   for (const code of IMPORTED) {
     await page.request.delete(`${BACKEND_URL}${departments.API}/${code}`);
+  }
+  if (removed) {
+    const code = removed;
+    removed = null;
+    const put = await page.request.post(`${BACKEND_URL}${departments.API}`, {
+      data: {
+        department_id: code,
+        department_name_th: 'ภาควิชาทดสอบแบ่งหน้า คืนค่า',
+        department_name_en: 'Restored by 206a',
+      },
+    });
+    expect(put.status(), `the fixture row ${code} put back`).toBe(201);
   }
 });
 
@@ -117,15 +142,29 @@ const pageOf = request => new URL(request.url()).searchParams.get('page');
  * route so it reaches no database - what the rows are about is what the screen
  * does when a removal succeeds, not what it removed (#146), and nothing has to
  * be put back.
+ *
+ * 19 ตุลาคม 2569, #209 - `writes` is the exception that sentence cannot
+ * cover. Since the owner's answer the step back is the server's to decide, from
+ * the `total` of the read that follows, so a removal answered by this file
+ * leaves the page exactly as full as it was and the screen is right not to move
+ * anybody. That is #209's own second reading met in this fixture: the behaviour
+ * the old code gave here came from the count of the list *drawn*. The row whose
+ * claim is the step back therefore lets the write through - `gate` with neither
+ * `success` nor `refusal` fulfils with the server's own answer - and puts
+ * nothing back, because `threePagesEndingIn` counts what is in the table and
+ * tops it up with the codes it has written before (#132).
  */
-async function askToRemove(page, code) {
+async function askToRemove(page, code, { writes = false } = {}) {
   await departments.departmentRow(page, code).getByRole('button', { name: REMOVE }).click();
   // The hold names the one id: `^.../[^/]+$` would take the import panel's own
   // `POST .../import` as well, and the way in both rows use is an import
   // (measured on 19 ตุลาคม 2569, the read it starts never arriving).
-  const write = await gate(page, new RegExp(`^${departments.API}/${code}$`), isWrite, {
-    success: {},
-  });
+  const write = await gate(
+    page,
+    new RegExp(`^${departments.API}/${code}$`),
+    isWrite,
+    writes ? {} : { success: {} },
+  );
   await panel(page).getByRole('button', { name: CONFIRM }).click();
   await write.sent;
   return write;
@@ -221,13 +260,35 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     const last = await keysOn(table);
     expect(last).toHaveLength(1);
 
-    const write = await askToRemove(page, last[0]);
+    removed = last[0];
+    const write = await askToRemove(page, last[0], { writes: true });
+    // 19 ตุลาคม 2569, #209 - two reads where this row used to see one, and the
+    // claim below is untouched. The owner's answer took the step back off this
+    // client: the removal re-reads the page the person is standing on, and the
+    // server's `total` is what says that page is past the end, so the first
+    // read asks for the page that has just gone and the second for the page it
+    // is handed. Nothing is drawn from the first (`HANDED_ON` in
+    // `frontend/src/pages/Departments.js`), which is why the ten rows, the page
+    // the pager reads and the sentence are all read after the second.
+    //
+    // Both waiters are registered before the press, because the second read is
+    // sent from the first one's own answer: one registered after it could be
+    // registered after the response it is waiting for. The second is matched by
+    // the page its request asks for, which is what identifies it, and nothing
+    // below asserts that number back (#116) - that the person is on it is
+    // `reading(...).shown` further down.
     const drawn = departments.waitForList(page);
+    const handed = page.waitForResponse(
+      answer =>
+        new URL(answer.url()).pathname === departments.API &&
+        answer.request().method() === 'GET' &&
+        pageOf(answer.request()) === String(pages - 1),
+    );
     write.open();
     await write.answered;
-    const answer = await drawn;
-    expect(pageOf(answer.request()), 'the page the step back asked for').toBe(String(pages - 1));
-    await untilDrawn(page, answer);
+    const asked = await drawn;
+    expect(pageOf(asked.request()), 'the page the removal re-read').toBe(String(pages));
+    await untilDrawn(page, await handed);
 
     expect(await keysOn(table)).toHaveLength(10);
     expect((await reading(page, table)).shown, 'the page the pager stepped back to').toBe(

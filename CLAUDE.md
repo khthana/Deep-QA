@@ -579,6 +579,16 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A helper that waits for the response has not waited for the drawing** — the first read after it
   can see the empty state, and no amount of retrying saves a wrong *expected* value. Wait for what
   the answer carried to be what the screen shows. (#132)
+- **A retrying wait in front of a superseding press moves the press instead of failing the row** —
+  so a row built on a race keeps passing with the race gone, its mutants survive, and nothing is red
+  to say so: the anchors are exact and the code untouched. The census that decides is *which rows
+  wait for that control*, not which rows have it disabled at the moment they press it. (#209, found
+  in #210's `busy`)
+- **A settle point is chosen by how the row will fail** — waiting for the pager to read out what
+  *this* answer carried is right on the screen that behaves and a timeout on every screen that does
+  not, because the ways of getting it wrong are all ways of removing the drawing being waited for.
+  #139 asked one step later; ask whether the thing you wait for is the thing the defect takes away,
+  and read the screen's own line instead, which fails with the numbers it is showing. (#209)
 - **But a wait *added* to a shared helper turns one row's claim into every caller's premise** — the
   tell is a mutant that would kill the whole suite instead of the two rows written to catch it.
   Before adding one, ask whether the callers are racing anything: a caller that opens a screen

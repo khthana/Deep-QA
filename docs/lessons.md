@@ -12120,3 +12120,97 @@ can draw *หน้า 3 จาก 2* because `backend/lib/paging.js` floors `pa
 the route echoes the page as asked; no open issue names it. Under option ก it becomes undrawable, and
 under the other two it stays — so it is a ticket, and until it is one, the paragraph on the sheet is
 exactly the deferral in prose that #119 is about and that #209 itself was opened to correct.
+
+### Phase B — the owner answered ก, and four mutants took four tries to be worth anything
+
+The answer moved the decision off the client entirely: `load` reads the page the person is on, takes
+`total` out of the answer, and hands the page on when the answer says the page it just asked for is
+past the end. `onRows` and both of its readings are gone from all seven paged screens; `onPage`
+stays, because a sentence still has to be keyed for wherever the person now is. The hand-on draws
+nothing (drawing an empty page would paint it, and the sentence over it, for a frame before the
+correction lands), returns a third answer rather than `true` or `false` (#159), and re-keys the
+waiting sentence for the read it hands to — which is what the `finally`'s new `if (!handedOn)` is
+for. Nothing in a handler decides anything about the page any more.
+
+**A fixture whose candidate values collapse makes a faithful mutant invisible, and that is #206's
+tenth reading of a survivor met *before* the sweep rather than in it.** The first draft of the
+landing row stood the person on page 3 and left page 1 as the last page that still existed — so of
+the three answers a reader of this code might give (*the last page the server names*, *one page
+back*, *page one*), two were the same number, and a mutant swapping one for another would have
+passed. The rebuilt fixture is four pages and nineteen rows left: the person is on 4, the answer is
+2, one page back is 3. The cost of noticing it late would have been a survivor to explain; the cost
+of noticing it early was ten lines of fixture.
+
+**A settle point is chosen by how the row will fail.** Row 2 — *a page that filled up again moves
+nobody* — first used `untilDrawn`, which waits for the pager to read out what *this* answer carried.
+That is the right settle point on a screen that behaves, and a timeout on every screen that does
+not: every way of getting this wrong **moves** the person, so the drawing the helper waits for never
+happens at all, and the row dies at a timeout, which is what a mutant that stopped the application
+prints too (#139). Polling the pager's own line fails instead with the page and the total the screen
+is showing. The rule is #139 read one step earlier: not *is this assertion a wait* but *is the thing
+I am waiting for the thing the defect removes*.
+
+**The obvious other side of a comparison was a mutant that killed too much — and the boundary it was
+wrong at was the one every fixture stands on.** `>` to `>=` reads as *hand on even when the page
+asked for is exactly the last one*, and it killed all three rows at a `toContainText` inside a
+fixture helper, which is a line no row of the sheet ever wrote: under it no screen can land on its
+own last page, and landing on the last page is how every row here builds its situation. #97's
+reading, with a place to look added — when a guard's boundary is *the last page*, *the first page*
+or *the only page*, the fixtures are standing on it.
+
+**Then the narrowed mutant measured the closure instead of the claim.** The choice the ticket took
+away is the count of the list drawn, so the replacement grafted that count back on to the new
+decision — written inside `load`, where it survived all three rows. `data` is not in that
+`useCallback`'s dependency list: it closes over the render where the page changed, and that render's
+`data` is the list of the page *before*. #201's rule, met in a mutant of my own instead of in the
+code under test. The site is decided by where the code being reproduced did its deciding (#193), and
+that is the handler — drawn in JSX, closing over the render it was drawn in (#208), where the count
+really is live. There it kills row 2 alone, **with the same values row 2 showed against `HEAD`**:
+carried to page 2 of 3 while the page held twenty-two rows.
+
+**A fix that deletes a reading deletes the mutants that could have expressed it.** The old rule
+cannot be restored anywhere but the handler, because the ref it read no longer exists and no single
+edit can declare a ref and its three writers. That is the same shape as #210's four withdrawals read
+from the other end: there a closed way in left mutants with nothing to kill, here a deleted reading
+leaves a defect with nothing to write it with.
+
+**And two small ones, both found by instruments rather than by reading.** A `|` inside a code span
+still ends a table cell, so `answer.per_page || PAGE_SIZE` in a catalogue row made it *5 cells in a
+3-column table* — the same family as #79's stray pipe, caught by `anchors.py` this time instead of
+by a renderer. And row 1's first green run was a red: nineteen rows make page two hold **nine**, not
+ten, which is the row's own arithmetic corrected by the pager's line it had just asserted.
+
+### Phase B's sweep — a retrying wait can move a press instead of failing, and twelve mutants went quiet
+
+The fix re-aimed 41 mutants in 11 files, so they were swept one at a time, read against the row each
+was written for (#152, #203). Thirty-nine still kill at their own rows. The two that stopped are the
+two lessons, and neither of them is about this fix's code.
+
+**Twelve of #140's thirteen survived 32 of 32, and the debt is #210's.** `140a`'s rows hold back a
+read of page one, press a handler, then press ถัดไป to supersede that read; the mutant lets the
+superseded read draw. #210 — landed the same morning — gave the six administration pagers
+`disabled={busy}`, and `busy` is up for the whole window those rows hold the read in, because the
+handler awaits the reload inside its own `writing`. `supersede` presses the control after
+`await expect(next(page)).toBeEnabled()`, which is a **retrying wait and not an assertion**: it does
+not fail, it postpones the press until after the held answer has landed and drawn. The race the rows
+were built on stops happening, and they pass with the mutant applied exactly as they pass without
+it — green for the wrong reason (#171), which is why no instrument said anything: the anchors are
+exact, the code is untouched, nothing is red. The confirmation is which mutant still kills:
+`offeringssavestalewins`, whose row is the one #210 gave a busy-free superseding control. **#210's
+census asked which rows have `busy` up at the moment the superseding control is pressed and answered
+one; the question that decides is which rows *wait* for that control**, because a retrying wait moves
+the press rather than failing the row. The repair belongs to the rows, not to the mutants, which
+still reproduce a real defect — so it is a ticket, and the twelve stay where they are meanwhile.
+
+**And a guard a key already covers one layer along cannot be put at risk where it stands.**
+`202:enrolmentremovesaysanyway` removed the `onScreen.current === sent` half of the enrolment
+removal's own sentence, which before #209 was said by the handler. Since #209 the handler says
+nothing: it hands the sentence over keyed on `readOf(sectionId, onPage.current)`, and the read that
+draws says it only when the key matches — so after a jump to another Section the key refuses it
+whatever that half does, and the mutant survived 10 of 10. The mistake is still writable, one layer
+along at the key comparison, which is where `205:saysanyread` lives: measured, it kills both of
+`202a`'s negatives, so the negative row keeps its ⚙ with a new citation. The **positive** row had
+been propped up by the withdrawn mutant and by nothing else (`205:clearsoutside` survives that file),
+which is the shape of a mark that outlives its proof — so it got a mutant of its own the same day,
+keyed for a page nobody will read, #206's mistake written at this site. A withdrawal is only
+finished when every row that cited it has been read again.
