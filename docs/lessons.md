@@ -12074,18 +12074,29 @@ change to seven routes' contracts. Both prices are of a shape nobody checked (#7
 the handler already re-reads the page the person is on, and that answer already carries `total`:
 reading 1 is the proof, the screen holding `total 20` in hand while drawing *หน้า 3 จาก 2*. So the
 server already says how many pages there are, and the option the ticket called an extra request adds
-none in the common case. The other option is not seven contracts either — `rubrics` answers 200 with
-a body every time, and `programs`, `subjects` and `program-subjects` answer 200 with
-`deactivated: true` when they switch a row off instead of deleting it, which their three screens
-already read, and read in the step-back condition itself.
+none in the common case. The other option reads cheaper than it is, and the branch is where the
+difference lives: `rubrics` answers 200 with a body every time, and `programs`, `subjects` and
+`program-subjects` answer 200 with `deactivated: true` — but only on the branch that switches a row
+off instead of deleting it, and the count this option needs has to travel on the branch that deletes,
+which still answers 204 on six of the seven. What the four buy is the **shape**: a delete that
+answers with a body has standing, and four screens already read one (the three above, plus `Plos`
+outside this population). The client has a precedent; the server does not have the field. **A price
+quoted per route is a price quoted for the wrong unit when the two branches answer differently.**
 
-**The census that priced the rest got the right answer the second time.** Asking for a `204` within
-six lines of the deleted path answered 0 for six of the seven families: the backend tests spell the
-path once in a helper and assert the status at the call sites, so the number and the path are nowhere
-near each other (#141 — a census whose population is *the things that carry X* cannot find the thing
-that carries no X). Counted by file instead, the upper bound is 46 rows, and the one zero that
-survived the rewrite was the informative one: `rubrics` carries no `204` because it never answers
-one.
+**The census that priced the rest was blind twice, a layer apart.** Asking for a `204` within six
+lines of the deleted path answered 0 for six of the seven families: the backend tests spell the path
+once in a helper and assert the status at the call sites, so the number and the path are nowhere near
+each other (#141 — a census whose population is *the things that carry X* cannot find the thing that
+carries no X). Rewritten to count *files that delete the path × `204`s in the file*, it published 12
+for the seventh family — three files that really do delete under `teaching/sections/` while their
+`204`s belong to other routes — and missed the one row that holds the real one,
+`backend/test/enrolment.test.js:269`, because that file builds the path as
+`url(sectionId) + '/' + studentId`. **The second instrument failed the first instrument's way, one
+layer in**, and the figure it published, 46, was wrong by the same mechanism it had been written to
+correct; the true upper bound is 35. The one zero that survived both was the informative one:
+`rubrics` carries no `204` because it never answers one. And what the ticket's item 4 actually asked
+— *which sheets* — is a third number again: one sheet, `15-programs.md`, states a delete's status as
+a criterion at all, in two rows, one per branch.
 
 **The four mutants #210 withdrew stayed withdrawn, and for a different reason than the one written
 beside them.** That file's *what would bring them back* named #209 — but it named #209's **fix**, and
@@ -12099,4 +12110,13 @@ dated note under the sentence that implied it would.
 readings are two different wrong behaviours in opposite directions, which makes this #199's shape
 again — not a preference but a defect, because the system holds both and the situation picks. The
 options were re-priced from the mount points and written on
-`docs/acceptance/14-departments.md` §#209, where the answer will go.
+`docs/acceptance/14-departments.md` §#209, where the answer will go. One of the three — *stop
+stepping back at all* — is wider than the ticket's item 2, and is written down as being there to
+complete the fork rather than because the ticket offered it; saying so is what keeps the record
+from quietly widening the owner's question.
+
+**And the measurement found a symptom beside its own, which is a debt until it is filed.** The pager
+can draw *หน้า 3 จาก 2* because `backend/lib/paging.js` floors `page` at 1 and sets no ceiling, and
+the route echoes the page as asked; no open issue names it. Under option ก it becomes undrawable, and
+under the other two it stays — so it is a ticket, and until it is one, the paragraph on the sheet is
+exactly the deferral in prose that #119 is about and that #209 itself was opened to correct.

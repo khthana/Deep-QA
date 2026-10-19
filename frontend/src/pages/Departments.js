@@ -600,6 +600,16 @@ export default function Departments() {
       // left on a page whose rows are gone with the sentence over it. That half
       // needs a read of a page nobody is looking at; it is #209 and is not this
       // one's claim.
+      //
+      // 19 ตุลาคม 2569 - the clause *once the screen is showing another page's
+      // list* is too narrow, measured. #209's defect does not need the screen
+      // to have moved at all: a second actor writing this page before the
+      // person confirms leaves the key matching, and the live count is the
+      // count of the list that is **drawn**, which is already stale against
+      // the database. The read of a page nobody is looking at is still what
+      // answers it, and it is still #209 - what changed is that no race and no
+      // move are needed to get there. `docs/acceptance/14-departments.md`
+      // §#209 carries the two readings.
       const liveCountIsOfThisPage = onRows.current.of === readOf(page)
       const lostItsLastRow =
         page > 1 &&

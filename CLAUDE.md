@@ -999,9 +999,7 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
 - **A key that matches says a reading is of the right page, not that it is still true** — every rule
   about these refs is about *what the value is of* (#201, #185, #207, #211), and none of them makes a
   matching key a guarantee: *live* is the count of the list that is **drawn**, which a second writer
-  makes stale against the database with no race, no move and nothing for a reload to clear. So a
-  defect whose named ways in have all been closed can be reachable with none of them — which is also
-  what refutes an expiry condition written per #81, by the species rather than by the way in. (#209)
+  makes stale against the database with no race, no move and nothing for a reload to clear. (#209)
 
 ### Walks
 
