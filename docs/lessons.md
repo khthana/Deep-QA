@@ -11809,3 +11809,94 @@ rather than the draft — the draft had been proofread for Thai and for codepoin
 different question from whether its arithmetic is about the thing it names. Both the comment and
 the new ticket were corrected in place, and the register now says which population each count is
 of, because the two numbers go on living side by side in one sheet.
+
+## #218 — the waiter that took delivery of a sibling's answer, and the route the ticket named
+
+The red row of the 18 October full suite was `141a`'s *evidence the back button has left behind*, and
+#218 wrote down a mechanism for it: `waitForActivities` filters answers with `API`, which is a
+**prefix**, so the `/evidence` answer passes it and `untilActivitiesDrawn` reads `activities.length`
+off a body that has no `activities`. The shape of that diagnosis is right and **the route it names is
+not** — that row awaits the evidence answer *by identity* on the line before `upToParent`, so the
+answer nobody is waiting for is `GET /activities/:activityId`, which has exactly one caller in the
+application: `DEEPER_NAMES.activity` in `Mainpage.js`, resolving the breadcrumb, with
+`{ activity: … }` for a body. The
+ticket's own first criterion says that if the mechanism does not match the diagnosis the ticket closes
+with a different fix and not by anchoring the regex; the mechanism matched the *species* and the fix
+is the anchor, so what the criterion bought was the measurement, which named a different route and a
+different screen's read.
+
+Its other half had aged. The criterion exists because the failure text was believed lost to an
+overwritten `test-results/`; the 18 October handoff had recorded it all along —
+`TypeError: Cannot read properties of undefined (reading 'length')` at
+`untilActivitiesDrawn`'s first clause —
+which is *a ticket's What is wrong is a claim from the day it was written* met on the evidence rather
+than on the defect.
+
+**The window had to be opened by hand, because nothing green says it is shut.** The full suite of
+19 October was 824 passed, 0 red, this row among them, and running the first eighteen files in suite
+order (161 passed, 11.3 minutes) was green too — with a probe inside the waiter reporting that it had
+been pending three times and that what arrived in the window was the list on all three. So the window
+is real and that day nobody walked into it. #207's instrument then opened it on purpose: hold the
+breadcrumb's answer until the row releases it, and let the list's answer arrive behind it. Unfixed,
+red at `untilActivitiesDrawn`'s first clause with the full suite's own message; fixed, green.
+Built where the two
+codes agree, run on both sides, deleted.
+
+**A matcher two questions share cannot be narrowed for one of them.** The obvious fix is to anchor
+`API`, and `API` is handed to `gate`, `waitForReload` and `page.route` by `CARD_SCREENS` in five spec
+files whose question is *any request this screen makes* — writes among them. So the repair is a
+**second** matcher beside the first, `isActivitiesList`, and the loose one keeps its callers plus a
+reason with a date on it (#131): of the routes under the prefix, one POST and one PUT are reachable
+from the screens those write waiters run on, measured 19 October against `backend/routes/`.
+
+**Then the same shape elsewhere, counted by the mechanism and not by the name** (#174). The
+population is *one waiter and one method: how many routes the server really mounts can satisfy it* —
+161 routes against the 76 `waitForResponse` calls in `e2e/support`, 31 of them reads. It found
+`clos-screen.js` accepting four GET routes with the identical defect, **never reported by anybody**,
+and `program-subjects-screen.js`'s `openEditor` accepting four, on a screen that asks the catalogue
+route as the form is typed into — so a search's answer can be handed to the editor's read. `weights`
+had been repaired before this ticket with `endsWith('/weights')`, which is correct and unreadable to
+an instrument, and became `isWeightsList` for that reason alone: *a reader that knows one spelling is
+the reader that stops seeing its population* (#141).
+
+Which it duly was, about itself. The first version recognised an inline regex by a leading `/^` and
+so reported `evidence-screen.js` as something it could not resolve; walking back from `.test(` to the
+opening slash sees a tail anchor as well. The census gives **three answers and not two** (#159) —
+counted, exact by construction (`pathname ===` cannot accept two routes), and *could not ask* — and
+the third is asserted by name and by count, because an instrument that quietly skips what it cannot
+read is the one that prints `problems 0` over the sites it has stopped seeing (#208, #123). Then
+**break a real site before believing it** (#124): the `$` came off `isActivitiesList` and four of the
+six rows went red with the census printing all five routes; `plan-screen.js`'s waiter was made
+unreadable and the census went red naming that file. Both restored from a copy — never with
+`git checkout --` — and 48 of 48 again.
+
+It lives at the third seam, `e2e/support/*.test.js` under `npm run test:support`, 42 rows to 48,
+which is where it belongs twice over: these are claims about an instrument and not about the product,
+so no sheet row rests on them, and at the browser seam the window has to be opened by hand to be seen
+at all. What it cannot say is written beside it: it reads only `e2e/support` and not waiters written
+inside a spec, it answers about **routes** and never about whether a waiter is fenced by `openAt`
+(#160), which is the other half of this mechanism, and it compares against paths `router.<method>`
+writes as plain strings, so a path assembled from a variable is invisible to it.
+
+**Then the review read the record back, and three of its four findings were about the record rather
+than the code.** The section that closes by saying a citation goes by file name *because a citation
+by line number ages the day anything above it grows* had cited `activities-screen.js:69` three times
+— and that citation was **already stale inside its own diff**, the thirty lines of new docstring
+above the assertion having moved it to :99 before anything shipped. #173 is not a rule about other
+people's sheets: it is about the paragraph you are writing, which is the one place a line number
+looks safe because you have just read it. All of them now name a string that can be found —
+`untilActivitiesDrawn`'s first clause, `DEEPER_NAMES.activity` in `Mainpage.js`, `32a`'s way in
+through the menu — and the fifth caller the survey had enumerated short, `saveActivity`'s reload,
+went in beside `removeActivity`'s. (The review also said `Mainpage.js:130` was off by one; read, it
+was right, which is the one finding a round that is wrong — *verify before acting* — and the
+citation went by name anyway.)
+
+**And one finding was about the instrument going deaf in exactly the files it names.** The *could not
+ask* group was a `Set` of **file names**, asserted against three of them, so a second unresolvable
+waiter added to any of those three left the set identical, the two other counts untouched and the
+gate green — the comment promising *named so that a new one is a red and not a silence* failing on
+precisely the three modules most likely to grow one. It is now a count per file, and the proof is the
+third break: a second unreadable waiter in `plos-screen.js` reds the row at `{"plos-screen.js":2}`.
+The same reading turned the other two floors into equalities, because `counted >= 9` cannot see a
+waiter that has slid from *counted* into *exact* — *a floor hides what has moved*, and the printed
+groups are what the next person reads, never the total (#208).

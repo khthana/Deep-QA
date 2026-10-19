@@ -20,14 +20,44 @@ const { openAt } = require('./navigation');
  * it by.
  */
 
+/**
+ * Every address this screen's family answers at, the children included.
+ *
+ * It stays a prefix on purpose: `CARD_SCREENS`'s `api` hands it to `gate`,
+ * `waitForReload` and `page.route` in `146a`, `149a`, `151a`, `152a` and `99a`,
+ * whose question is *any request this screen makes*, writes among them. What it
+ * must not be used for is a read, because five GET routes satisfy it — which is
+ * what `isActivitiesList` is for (#218).
+ *
+ * The write waiters below still use it, and that is safe for a reason with a
+ * date on it (#131): of the routes under this prefix, exactly one POST and one
+ * PUT are reachable from the screens those waiters run on, the others belonging
+ * to evidence (#35) and to the marks grid (#34), which no form here submits.
+ * Measured 19 Oct 2569 against `backend/routes/`.
+ */
 const API = /^\/api\/teaching\/sections\/\d+\/activities/;
+
+/**
+ * The list read itself, which is what **identifies** this screen's own answer.
+ *
+ * `API` accepts five real GET routes — the list, the one Activity the shell's
+ * breadcrumb resolves (`Mainpage.js`), its evidence, its marks and the marks
+ * template — and a body from any of the other four has none of the keys
+ * `untilActivitiesDrawn` reads. The waiter below is unfenced, unlike the one
+ * `openAt` builds (#160), so whatever lands first while it is pending is what
+ * it hands back. Measured, not reasoned about: `docs/acceptance/32-activity-list.md`
+ * §#218 carries what the probe measured and the message it died with (#218).
+ */
+const LIST = /^\/api\/teaching\/sections\/\d+\/activities$/;
+
+const isActivitiesList = url => LIST.test(new URL(url).pathname);
 
 const path = sectionId => `${DASHBOARD}/${sectionId}/learningActivities`;
 
 /** Waits for the screen's own read, whatever the answer turns out to be. */
 const waitForActivities = page =>
   page.waitForResponse(
-    answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
+    answer => isActivitiesList(answer.url()) && answer.request().method() === 'GET',
   );
 
 /**
@@ -225,6 +255,7 @@ const attributionOf = (page, name) =>
 
 module.exports = {
   API,
+  isActivitiesList,
   path,
   waitForActivities,
   untilActivitiesDrawn,

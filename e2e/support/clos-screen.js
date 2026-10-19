@@ -18,14 +18,38 @@ const { openAt } = require('./navigation');
  * asking for it.
  */
 
+/**
+ * Every address this screen's family answers at, the children included — the
+ * two screens one level down (#28's พฤติกรรมบ่งชี้ and #29's เกณฑ์การบรรลุผล)
+ * hang under a CLO's own address. It stays a prefix because `CARD_SCREENS`'s
+ * `api` asks *any request this screen makes* with it, writes among them; what it
+ * must not be used for is a read (#218, measured on the Activities screen's
+ * twin of this line).
+ *
+ * The write waiters below still use it, which is safe for a reason with a date
+ * on it (#131): of the routes under this prefix, the POST and the PUT the
+ * children own are reachable only from those children's own screens, and the
+ * form here submits neither. Measured 19 Oct 2569 against `backend/routes/`.
+ */
 const API = /^\/api\/teaching\/sections\/\d+\/clos/;
+
+/**
+ * The list read itself, which is what **identifies** this screen's own answer.
+ *
+ * `API` accepts four real GET routes — the list, one CLO, its behaviours and its
+ * criteria — and a body from any of the other three has none of the keys
+ * `untilClosDrawn` reads.
+ */
+const CLO_LIST = /^\/api\/teaching\/sections\/\d+\/clos$/;
+
+const isClosList = url => CLO_LIST.test(new URL(url).pathname);
 
 const path = sectionId => `${DASHBOARD}/${sectionId}/courseOutcomes`;
 
 /** Waits for the screen's own read, whatever the answer turns out to be. */
 const waitForClos = page =>
   page.waitForResponse(
-    answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
+    answer => isClosList(answer.url()) && answer.request().method() === 'GET',
   );
 
 /**
@@ -168,6 +192,7 @@ async function removeClo(page, code, { confirm = true } = {}) {
 
 module.exports = {
   API,
+  isClosList,
   path,
   waitForClos,
   untilClosDrawn,

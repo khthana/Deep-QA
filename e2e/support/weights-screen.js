@@ -20,15 +20,24 @@ const { openAt } = require('./navigation');
 
 const API = /^\/api\/teaching\/sections\/\d+\/weights/;
 
+/**
+ * The list read itself, which is what **identifies** this screen's own answer.
+ *
+ * `API` accepts the template's own GET as well, which is why this waiter has
+ * always asked a second question about the tail. Since #218 it asks it as one
+ * anchored matcher instead, so the instrument in `list-reads.test.js` can read
+ * what this waiter accepts rather than having to recognise a spelling (#141).
+ */
+const WEIGHTS_LIST = /^\/api\/teaching\/sections\/\d+\/weights$/;
+
+const isWeightsList = url => WEIGHTS_LIST.test(new URL(url).pathname);
+
 const path = (sectionId) => `${DASHBOARD}/${sectionId}/gradingWeights`;
 
 /** Waits for the screen's own read, whatever the answer turns out to be. */
 const waitForWeights = page =>
   page.waitForResponse(
-    answer =>
-      API.test(new URL(answer.url()).pathname) &&
-      new URL(answer.url()).pathname.endsWith('/weights') &&
-      answer.request().method() === 'GET',
+    answer => isWeightsList(answer.url()) && answer.request().method() === 'GET',
   );
 
 /** Goes to the scheme and hands back the read a row asserts on. */
@@ -89,6 +98,7 @@ async function removeRow(page, no, { confirm = true } = {}) {
 
 module.exports = {
   API,
+  isWeightsList,
   path,
   waitForWeights,
   openWeights,

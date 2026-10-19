@@ -60,8 +60,8 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   claim about what the caller puts in it (#185), an inference drawn from a
   measurement that was itself correct (#165, #186), a list of verbs naming an action no route performs
   (#58), a count of red rows inflated by the runner's output shape, with an explanation under it
-  that was arithmetically impossible before anybody ran anything (#187) — and the sheet itself
-  asking for the defect (#89).
+  that was arithmetically impossible before anybody ran anything (#187), right in its species and wrong in the route it
+  names (#218) — and the sheet itself asking for the defect (#89).
 - **A ticket's supporting identifiers are a claim like its numbers** — #54's argument named five
   other years to show this one was the odd one out, and of the five, two tables do not exist under
   those names, one carries no such column and one is pluralised: they are `CONTEXT.md`'s names for
@@ -557,6 +557,12 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   truncates a row to its header width, so a count of the drawn cells is right whether the row is
   broken or fixed, and the first verification script called both *2 cells of 2*. Count the
   **source** to find it, and prove the render by reading the cell's **content** back. (#175)
+- **A matcher two questions share cannot be narrowed for one of them** — a prefix that answers
+  *any request this screen makes* for a family question is the wrong instrument for *which answer is
+  this screen's own read*, so the repair is a second, anchored matcher beside it and not an edit to
+  the first; the loose one's remaining callers then owe a reason with a date on it (#131). What finds
+  the siblings is a census by the mechanism — one waiter and one method against the routes the server
+  really mounts — and it found two sites nobody had reported. (#218)
 - **A waiter that filters on the value is a fourth** — a predicate requiring `status() === 404`
   makes the `expect` below it read what it guaranteed, and a route that answered otherwise hangs in
   the waiter and dies at the timeout instead of reading as a red. Match the waiter by the request,

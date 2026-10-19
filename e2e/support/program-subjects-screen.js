@@ -118,12 +118,27 @@ async function searchCatalogue(page, term) {
   ]);
 }
 
+/**
+ * The read of one pair, which is what **identifies** the editor's own answer.
+ *
+ * `${API}/` is the prefix of four GET routes — `/programs`, `/catalogue`,
+ * `/import-template` and the pair itself — and this screen asks the catalogue
+ * one as the form is typed into, so a waiter written as that prefix can be
+ * handed a search's answer instead (#218's species, found by the census in
+ * `list-reads.test.js` on 19 Oct 2569). Two segments is what tells the pair
+ * from the three singles; their shape is `ADR-0001`'s business and not this
+ * matcher's.
+ */
+const ONE_PAIR = /^\/api\/program-subjects\/[^/]+\/[^/]+$/;
+
+const isOnePair = url => ONE_PAIR.test(new URL(url).pathname);
+
 /** Opens the editor on one row and waits for the pair to be read back. */
 async function openEditor(page, subjectId) {
   await Promise.all([
-    page.waitForResponse(answer =>
-      new URL(answer.url()).pathname.startsWith(`${API}/`) &&
-      answer.request().method() === 'GET'),
+    page.waitForResponse(
+      answer => isOnePair(answer.url()) && answer.request().method() === 'GET',
+    ),
     pairRow(page, subjectId).getByRole('button', { name: 'แก้ไข' }).click(),
   ]);
   await expect(page.getByRole('heading', { name: 'แก้ไขรายวิชาในหลักสูตร' })).toBeVisible();
@@ -212,6 +227,7 @@ module.exports = {
   offered,
   openAddForm,
   searchCatalogue,
+  isOnePair,
   openEditor,
   save,
   startRemoval,
