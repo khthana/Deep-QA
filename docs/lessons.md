@@ -11796,3 +11796,16 @@ from the code it is about. What the contract owes a later reader is the rule as 
 what the following cannot say: it is scope- and order-blind, since the walk is over the whole of
 `fn.body`, and it answers *a guard is there* and never *the guard is right* — the sites #207 and
 #211 repaired were guarded by this question throughout.
+
+**And then the ticket was closed on a count of the wrong population.** The owner's decision was to
+move the remainder to a ticket whose title is true (#220) and close this one, and the comment
+announcing it said *thirteen sites got rows*. Measured against the register's own tables it is
+**fifteen** — four in `141a` and eleven in `141b` — and what is left is **one** site of the sixteen
+carrying **three claims**, sheet `12`'s `load`, `add` and `remove`. The thirteen was real but
+belonged to another population: the 5 October table's *another thirteen sites*, meaning the ones
+whose **line numbers had not moved** that day. *A census is evidence about the property it counted*
+(#174) read on a sentence instead of on a script, and the tell was reading the published text back
+rather than the draft — the draft had been proofread for Thai and for codepoints, which is a
+different question from whether its arithmetic is about the thing it names. Both the comment and
+the new ticket were corrected in place, and the register now says which population each count is
+of, because the two numbers go on living side by side in one sheet.
