@@ -11725,3 +11725,74 @@ listed: nine page comments in `frontend/src/pages/`, six spec docblocks, a suppo
 mutation files and three sheets. They are **dated, not deleted** (#54) — and what dates them is the
 sentence beside the one you came for, because the same paragraph usually carries the way in *and*
 the expiry condition it was written under.
+
+## #141 (the instrument, again) — the shape #202 wrote and the census stopped seeing
+
+#141's first closing criterion is *measure the list again first*, and since 1 October 2569 the thing
+that measures it has been an instrument in the repository rather than a hand census. So the criterion
+now has a second half nobody wrote down: **the instrument is a claim too, and the way to ask it is to
+run it at the commit the last figure was written at.** Run at HEAD it answered `drawing the answer 60
+· guarded 55 · marked 5 · problems 0`; run at `af357d0`, the commit the 8 October record was written
+at, it answered `63 · 57 · 6`. Three sites had left the population with `problems 0` on both runs —
+**the count is the tell, not the exit code** (#208), and which three is answered by diffing the
+*lists*, never by subtracting the totals.
+
+The cause was another ticket's fix spreading. #202 and #203 rewrote ten administration screens into a
+shape that builds the sentence first, hands it to the loader, and draws it after — `const said = {…
+student.full_name_th}` and then `setNotice(said)` — so the name the setter reads is not the name the
+answer was bound to. `drawsTheAnswer` followed one hop, so an **unguarded** site written that way was
+not reported as bare: it was not reported at all. That is the one answer a census of this kind must
+never give, and it is #208's rule met a second time, from the other side: there an instrument went
+blind because the spelling it classified by changed; here because the *distance* between the answer
+and the drawing grew by one binding.
+
+**Proved with four snippets through `examine`, then repaired, then broken on purpose.** Following
+names to a fixed point over declarators brings the tree to `68 · 63 · 5 · problems 0` — eight sites
+nobody had ever seen, all eight guarded, none of them in #141's own nineteen claims (those are
+written in the one-hop shape, which is why the blindness never hid one). An instrument is not
+believed because its own fixtures pass, so every one of the eight had its file's `.current` reads
+replaced and every new site read **BARE** afterwards. The first attempt at that break aimed at the
+*spelling* of the comparison and four of the eight files did not move, their guards being written
+`showing.current === sent` and `onRows.current.of === readOf(page)` — *a break by spelling is
+evidence about the spelling* (#111), one layer along from the grep it was written for.
+
+**And a marker can outlive the gap it documented, which turns it into an exemption.** #202 rewrote
+`SubjectStudents.add`'s marker on 11 October to begin `superseded-answer: guarded.` — a marker whose
+own first word says it is not needed — and while the site was invisible nothing read it either way.
+With the site visible again the guard answers and the marker is never reached; but with the guard
+broken the census read `marked` rather than `BARE`, so the marker was standing there waiting for the
+day the guard goes. The prefix came out, prose intact and **line-count neutral**, because this ticket
+had to revert exactly that kind of rewrite on 5 October when six lines per file aged every citation
+below it. *A marker written for an instrument has to be in a syntax the instrument reads* (#93) has a
+twin: a marker that says the site is guarded is a claim the guard already makes, and the instrument
+reads it only on the day it would do harm.
+
+The three claims the ticket is still open for did not move. `GrantsPanel.load`, `.add` and `.remove`
+are reached through a prop, `Users.js` writes `setEditing` to `null` at both of the two sites that
+can run while the editor is up, and `users` has no `:id` for an address to carry — so 5 October's
+asymmetric way in cannot reach them either. Criterion 3 says no row is ticked from reading code, so
+the sentence that closes them is held by `141c`, run again today: **4 passed of 4**, row 4 green.
+Criterion 4 keeps the ticket open.
+
+**Then the review asked the question the repair had not: does the following count every identifier
+on the right-hand side?** It did, and *a rule that is too loose fails the other way* (#174) had two
+shapes here. `const { message } = await send(body)` followed by `const said = { message: 'done' }`
+read as **a site with no flag**, because `message` as an object *key* was counted as a read of the
+answer; `const { rows } = await listRows(id)` with `const count = other.rows` read the same way off
+a member property name. Both are sites where nothing of the answer reaches the screen at all. So
+`identifiersIn` now skips non-computed, non-shorthand keys and non-computed property names
+(`isAName`; shorthand still taints, key and value being one node) — and the thing that says the
+narrowing was not bought with blindness is that the tree reads `68 · 63 · 5 · problems 0`, every
+figure unchanged: no real site was being counted through a key or a dot. The loud direction needs no
+fixture, so the fixture went on the quiet one, which is the whole of why there are now 91 rows and
+not 90.
+
+**And a fix to an instrument ages the sentence that documents its rule.** The header of
+`superseded-answers.js` promised, in its numbered contract, exactly the one-hop rule the repair had
+just proved wrong, which is *a claim written in prose expires like a number* (#130) with the number
+and the prose in the same file — and the dated measurement written into the new docstring published
+`63 → 60` as the reading of a tree that reads 68, which is #54's split for a figure three paragraphs
+from the code it is about. What the contract owes a later reader is the rule as it now stands, plus
+what the following cannot say: it is scope- and order-blind, since the walk is over the whole of
+`fn.body`, and it answers *a guard is there* and never *the guard is right* — the sites #207 and
+#211 repaired were guarded by this question throughout.

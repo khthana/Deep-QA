@@ -186,7 +186,10 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   between two JSX tags is `JSXText`: the parser sees no comment and the browser draws the words
   on the screen, so a census read three marked sites as bare and a note addressed to it nearly
   shipped above a report heading. The same species as a tool that cannot say what it did not look
-  at, except that what it could not look at was the note written for it. (#93)
+  at, except that what it could not look at was the note written for it. **And a marker outlives
+  the gap it documented, which turns it into an exemption** — one rewritten to begin *guarded* is
+  a claim the guard already makes, and the instrument reads it again only on the day the guard
+  goes. (#93, #141)
 - A ticket that says *unless X* has told you what to go and look for; one that asks you to
   *consider* something is answered by a measurement, and *no, and here is what it would cost* is
   a finished answer. (#101, #89)

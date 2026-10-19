@@ -38,6 +38,80 @@ test('an answer that is named first is the same site - the shape a grep misses',
   assert.equal(site.guard, undefined)
 })
 
+test('an answer drawn through a second name is the same site - #202 and #203 shape', () => {
+  // The shape ten administration screens were rewritten into: the sentence is
+  // built from the answer, handed to the loader, and drawn after it. Asking
+  // only whether a setter reads `student` answered *no site here at all* about
+  // this, which is the one answer this census must never give - it was blind to
+  // eight sites in the tree, three of which left the population between
+  // `af357d0` and 19 ตุลาคม 2569 with `problems 0` throughout (#141, #208).
+  const site = one(`
+    async function add() {
+      const { student } = await enrol(id, code)
+      const said = { error: false, message: student.full_name_th }
+      setNotice(said)
+    }
+  `)
+  assert.equal(site.guard, undefined)
+  assert.equal(site.marker, null)
+})
+
+test('a second name is followed through the await in between, and the guard read', () => {
+  const site = one(`
+    async function add() {
+      const sent = onScreen.current
+      const { student } = await enrol(id, code)
+      const said = { error: false, message: student.full_name_th }
+      const reloaded = await reload(said)
+      if (reloaded && onScreen.current === sent) setNotice(said)
+    }
+  `)
+  assert.equal(site.guard, 'ref')
+})
+
+test('a second name that reaches no setter is still not a site', () => {
+  // The rule has to fail the other way too: following names is not the same as
+  // assuming they arrive. What `logged` is read by decides nothing on screen.
+  assert.deepEqual(
+    sites(`
+      async function add() {
+        const { student } = await enrol(id, code)
+        const logged = { who: student.student_id }
+        record(logged)
+      }
+    `),
+    []
+  )
+})
+
+test('a key and a property name are names, not reads of the answer', () => {
+  // Following names costs a direction: a name written as an object key or after
+  // a dot is not a read of the value bound to it. `message` here is the key of
+  // a sentence of the screen's own, and `rows` is somebody else's field - both
+  // would taint `said` and `count` if the walk counted every identifier, and
+  // the census would report a site where nothing of the answer is drawn.
+  assert.deepEqual(
+    sites(`
+      async function save() {
+        const { message } = await send(body)
+        const said = { message: 'done' }
+        setNotice(said)
+      }
+    `),
+    []
+  )
+  assert.deepEqual(
+    sites(`
+      async function load() {
+        const { rows } = await listRows(id)
+        const count = other.rows
+        setTotal(count)
+      }
+    `),
+    []
+  )
+})
+
 test('an answer nobody draws is not this family at all', () => {
   assert.deepEqual(
     sites(`

@@ -238,10 +238,10 @@ export default function SubjectStudents() {
    * page being shown is a page of ten sorted by code, and a student whose code
    * sorts before the last one on it does not belong at the bottom.
    *
-   * superseded-answer: guarded. The reason written here on 1 October 2569 - that
-   * nothing can begin a second enrolment while this is out, the submit button
-   * being `disabled={busy}` and a disabled default button being what stops Enter
-   * in the field submitting too - named a way in and not the population (#179).
+   * Not a marker any more - this draws under the ref below (#141, 19 ตุลาคม
+   * 2569). The reason written here on 1 October 2569 - nothing can begin a
+   * second enrolment while this is out, the submit button `disabled={busy}`
+   * stopping Enter in the field too - a way in, not the population (#179).
    * ถัดไป was pressable for as long as the write was out, and it begins no
    * second enrolment while changing what the read is *of*, which was enough.
    * The owner's answer to #199 on 15 October 2569 closed that way in: this

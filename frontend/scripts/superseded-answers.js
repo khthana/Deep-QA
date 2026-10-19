@@ -16,10 +16,14 @@
  * What it asks, per `await`:
  *
  * 1. Does the answer reach the screen? Either the `await` is itself the
- *    argument of a `set…` call, or it is bound to a name that a `set…` call in
- *    the same function reads. Anything else is not this family: an answer
- *    handed to `window.open` through `showPdf` gets its own tab, and an answer
- *    nobody draws cannot be drawn late.
+ *    argument of a `set…` call, or a `set…` call in the same function reads a
+ *    name the answer reaches - the name it was bound to, or a name computed
+ *    from that one, followed to a fixed point over declarators. The second
+ *    name is the shape #202 and #203 wrote on ten screens, and asking only
+ *    about the first made this census blind to it; `drawsTheAnswer` carries
+ *    the measurement and what the following cannot say. Anything else is not
+ *    this family: an answer handed to `window.open` through `showPdf` gets its
+ *    own tab, and an answer nobody draws cannot be drawn late.
  * 2. If it does, is the drawing guarded? Two shapes count, because both are in
  *    the tree: a predicate the function is handed and calls (`isCurrent()`,
  *    the shape #133 and #140 settled on), and a `useRef` the function compares
@@ -142,10 +146,22 @@ const isSetter = node =>
 
 function identifiersIn(node) {
   const names = new Set()
-  walk(node, inner => {
-    if (inner.type === 'Identifier') names.add(inner.name)
+  walk(node, (inner, above) => {
+    if (inner.type !== 'Identifier') return
+    const parent = above[above.length - 1]
+    if (parent && isAName(parent, inner)) return
+    names.add(inner.name)
   })
   return names
+}
+
+/** Is this identifier a name being written rather than a value being read? */
+function isAName(parent, child) {
+  if (parent.type === 'Property' || parent.type === 'ObjectProperty')
+    return parent.key === child && !parent.computed && !parent.shorthand
+  if (parent.type === 'MemberExpression' || parent.type === 'OptionalMemberExpression')
+    return parent.property === child && !parent.computed
+  return false
 }
 
 /**
@@ -155,6 +171,51 @@ function identifiersIn(node) {
  * answer is bound, and a setter in the same function reads that name - which is
  * how the six sites #133 found beyond the grep are written, and the reason this
  * asks about names rather than about expressions.
+ *
+ * **And the name the setter reads need not be the name the answer was bound
+ * to** - #202 and #203 rewrote ten administration screens into a shape that
+ * builds the sentence first, hands it to the loader, and draws it after:
+ *
+ *     const { student } = await enrol(id, code)
+ *     const said = { error: false, message: student.full_name_th }
+ *     const reloaded = await reload(said)
+ *     if (reloaded && onScreen.current === sent) setNotice(said)
+ *
+ * Asking only whether a setter reads `student` answers *no site here at all*
+ * about that, which is the one answer this census must never give: an
+ * unguarded site written that way is invisible rather than red. Measured on
+ * 19 ตุลาคม 2569 - `SubjectStudents.add`, `Offerings.onSection` and
+ * `RubricCriteria`'s handler left the population between `af357d0` and that
+ * day, one of them carrying a written marker with it: `drawing the answer`
+ * read 63 at `af357d0` and 60 that morning under the rule this paragraph
+ * replaces, with `problems 0` throughout (#208's rule: the count is the tell,
+ * not the exit code). Those two are a record of that measurement and not a
+ * reading of the tree (#54) - under the rule as it now stands the same tree
+ * read 68, the eight it had never seen all carrying a flag, and what says what
+ * the tree reads today is `npm run census`.
+ *
+ * So the names are followed to a fixed point: a name whose declarator reads a
+ * tainted name is tainted too. It is deliberately one direction and
+ * declarators only - what this asks is whether anything computed *from* the
+ * answer reaches a setter, and a value that reaches the screen through two
+ * names reaches it just as late as one that reaches it through one.
+ *
+ * What the following cannot say, written down because a tool that cannot say
+ * what it did not look at is the thing this file was built to replace (#123):
+ *
+ * - It is scope- and order-blind. The walk is over the whole of `fn.body`, so
+ *   a declarator inside a nested callback taints, a `const` that shadows a
+ *   tainted name reads as that same name, and a declarator above the `await`
+ *   taints as readily as one below. All three can only answer *a site here*,
+ *   which is the loud direction: none of them hides one.
+ * - A name written as an object key, or read after a dot, is not a read of the
+ *   value bound to it (`isAName`), so `const said = { message: 'done' }` is not
+ *   tainted by an answer bound as `const { message } = await …`. That is the
+ *   quiet direction, which is why it is the one with a fixture on it.
+ * - It asks whether a guard is **there**, never whether it is the right guard.
+ *   The sites #207 and #211 repaired - a ref keyed on the wrong thing, and a
+ *   ref holding what the handler had to compare instead of what it had to pick
+ *   - were guarded by this census's question throughout.
  */
 function drawsTheAnswer(awaitNode, parents, fn) {
   const parent = parents[parents.length - 1]
@@ -164,11 +225,27 @@ function drawsTheAnswer(awaitNode, parents, fn) {
   const names = declarator ? boundNames(declarator.id) : []
   if (!names.length) return false
 
+  const tainted = new Set(names)
+  let growing = true
+  while (growing) {
+    growing = false
+    walk(fn.body, node => {
+      if (node.type !== 'VariableDeclarator' || !node.init) return
+      const read = identifiersIn(node.init)
+      if (![...tainted].some(name => read.has(name))) return
+      for (const name of boundNames(node.id))
+        if (!tainted.has(name)) {
+          tainted.add(name)
+          growing = true
+        }
+    })
+  }
+
   let drawn = false
   walk(fn.body, node => {
     if (drawn || !isSetter(node)) return
     const read = identifiersIn(node.arguments)
-    if (names.some(name => read.has(name))) drawn = true
+    if ([...tainted].some(name => read.has(name))) drawn = true
   })
   return drawn
 }
