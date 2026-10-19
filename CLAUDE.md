@@ -82,7 +82,9 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   date is right for that way in and blind to any other, so writing it down (which #81 asks for)
   is what keeps the blocker looking fresh. #179 one layer along: a *reason* that names a way in
   has named a way in, not the population. Ask which half of the situation has to come from inside
-  the application at all — of two addresses, only the second did. (#141)
+  the application at all — of two addresses, only the second did. **And the blocker landing is not
+  the way in closing**: measure it afterwards, because a trap that holds the keyboard leaves the
+  mouse one dismissal away. (#141, #210)
 - **A ticket's own fallback is not the ticket's target, and the clause that licences it is a
   condition to measure against your own code.** #116 wrote its target as a sentence and offered a
   cheaper half *at minimum, with no data from the server*; the first round drew the cheap half and

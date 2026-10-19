@@ -11900,3 +11900,46 @@ third break: a second unreadable waiter in `plos-screen.js` reds the row at `{"p
 The same reading turned the other two floors into equalities, because `counted >= 9` cannot see a
 waiter that has slid from *counted* into *exact* — *a floor hides what has moved*, and the printed
 groups are what the next person reads, never the total (#208).
+
+## #210 — the blocker that was supposed to close the way in, and the fork that had already gone
+
+#210 asks whether the six other administration screens have the two windows #199 measured, and
+offers three options. Two of them are claims about **today**, and both were wrong by the time the
+ticket was taken.
+
+**Option 2 — *let #204 answer: if focus is trapped the keyboard cannot reach the pager and the way in
+disappears on all six screens* — is refuted by the fix it was waiting for.** #217 landed the trap on
+18 October; measured on 19 October, the pager is still live under the cover. The reason is in the
+same dialog: ยกเลิก is not disabled while `busy`, so pressing it puts the question away while the
+`DELETE` it confirmed is still in flight, and the pager is then an ordinary mouse press away — no
+keyboard in the way in at all. This is #217's own lesson read from the other side: the price of
+closing a way in is paid only where the person has no second way to the same situation, and here
+they have one. It is also #141 and #179 again — **a blocker's expiry condition names the way in its
+author had in mind**, and #210's blocker named the keyboard.
+
+**Option 1's price is a claim about today too, and the seed answers it.** #57's end rule disables
+both buttons on a one-page list, so the window needs a second page before anything can be pressed.
+Of the six screens, exactly one — `Rubrics`, at 11 rows — has one in today's seed; the other five
+read *หน้า 1 จาก 1*. So *send `busy` to all six* changes the behaviour of one screen today and is a
+guard against growth on the other five, which is a different sentence from the one the ticket priced.
+
+**And the defect the ticket inherited is not a fork any more.** #199 was a #52 — one person, one
+action, and whether they hear the sentence decided by which invisible window the press landed in.
+Measured across five orderings (press while the `DELETE` is out, press while the reload is out, the
+step-back branch that hands the sentence on by key, and an unpressed twin on each screen), the sentence was
+**said every time**, because #205 keyed it to the read that draws what it is about and #206 and #207
+made the step-back read the page the command was sent from. What is left is one behaviour rather than
+two: the sentence is drawn over the list of the page the person moved to, which the removal is not
+about. `showing` holds *what is open on this screen* — a form or editor token — and not the list's
+coordinate, so moving a page does not write it and #202's guard has nothing to compare; that is #205's
+*two guards that both ask is this still current can be asking about different things*. Whether that
+wording is wrong is `docs/06` §Out of Scope, so the ticket's question changed shape: not *which of
+three fixes* but *is a sentence over the wrong list acceptable*, with the fork it was filed about gone.
+
+**The rows wait on the answer, because option 1 is what deletes them.** A row that holds *the
+sentence is said over the page the person moved to* arranges its situation by pressing the pager under
+the cover, which is exactly the press option 1 makes impossible; written now, each would be rewritten
+the day the owner says yes as a row that reads *the button is disabled*. What does **not** depend on
+the answer — the way in is still open after #217 — `207a` already holds as a row, and is cited rather
+than written twice (#171). The measurement itself was a probe, built on both sides, run, and deleted
+(#207).
