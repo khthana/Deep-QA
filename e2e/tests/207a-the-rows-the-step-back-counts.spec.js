@@ -100,6 +100,17 @@ const departments = require('../support/departments-screen');
  * search box arriving here, or `onImported` reloading the current page instead
  * of going to page one.
  *
+ * **19 ตุลาคม 2569 - what #210 closed was the way in to *these three claims*,
+ * not the species of the symptom.** A probe run the same day reached #209's
+ * defect with no race: a second actor writing this page before the person
+ * confirms leaves the key matching, so the handler reads the live count and
+ * the live count is already stale against the database. It kept a page that
+ * had lost every row and left a page that had filled up again. That is not one
+ * of the three claims above and does not bring them or the four mutants back -
+ * where the key matches, the ref and the closure hold the same number, and a
+ * mutant swapping one for the other is invisible there (#117). The readings
+ * and the owner's question are on `docs/acceptance/14-departments.md` §#209.
+ *
  * One `hold()`: the net imports a department and holds a removal, and the
  * schema is put back when the file ends (#134).
  */

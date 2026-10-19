@@ -12038,3 +12038,65 @@ sheet says where the component's `ก่อนหน้า` half is held instead
 with the premise read above it, and `207a`'s net reads it on the **last** page of the department
 screen, where the two halves swap roles — there `ถัดไป` is the end rule and `ก่อนหน้า` is the
 claim. Three files, each proving the half its own page can put at risk.
+
+
+## #209 — the expiry condition that was refuted by the species, not by the way in
+
+#209 wrote its own expiry condition the way #81 asks: *if #199 and #204 close the way in, this ticket
+cannot be reached either.* Both landed — #217 trapped the dialog on 18 October, #210 sent `busy` to
+all six administration pagers on 19 October — and #210's own lesson says a blocker landing is not the
+way in closing, so the first move was to measure rather than to read the paragraph. The paragraph was
+right about the way in. The ticket was still reachable.
+
+**A probe reached the defect with no race at all.** No pager, no cover, no held answer, no key
+mismatch: a second actor writing the page the person is looking at, on the browser's own cookie,
+**before** they press ยืนยัน. Two readings on `Departments`. A last page drawn with two rows, one of
+them removed by the other actor, then the person removes the other: the screen stays on a page that
+no longer exists and draws *หน้า 3 จาก 2* over *ยังไม่มีภาควิชาในระบบ*. A last page drawn with one
+row, another row added to it by the other actor, then the person removes the drawn one: the screen
+steps back off a page that still has a row on it, which is #206's worse answer. This is #179 one
+layer out — **a ticket that names a race has named a window, not the population of ways in** — but
+told about an *expiry condition* rather than about a diagnosis: the condition dates the way in its
+author had in mind, and the symptom's species can outlive it. A reload does not clear this one, so it
+is the version a person meets.
+
+**And the mechanism is new. In both readings the key matched.** `onRows.current.of === readOf(page)`
+held, so the handler read the live count and the live count was still wrong — because
+***live* means the count of the list that is drawn, not the count of the page.** Every rule this
+repo has written about that ref is about *which page the value is of* (#201, #185, #207); none of
+them says the value can be of the right page and false, which is what a second writer makes it. A
+key that matches says the reading is of the right question, not that it is still the answer.
+
+**The fourth option was invisible until the handler's branches were counted.** The ticket priced its
+alternative — *re-read the page they are on and let the server say how many pages there are* — as an
+extra read, and priced the cheaper shape — *let the `DELETE` answer carry the remaining count* — as a
+change to seven routes' contracts. Both prices are of a shape nobody checked (#77). Every branch of
+the handler already re-reads the page the person is on, and that answer already carries `total`:
+reading 1 is the proof, the screen holding `total 20` in hand while drawing *หน้า 3 จาก 2*. So the
+server already says how many pages there are, and the option the ticket called an extra request adds
+none in the common case. The other option is not seven contracts either — `rubrics` answers 200 with
+a body every time, and `programs`, `subjects` and `program-subjects` answer 200 with
+`deactivated: true` when they switch a row off instead of deleting it, which their three screens
+already read, and read in the step-back condition itself.
+
+**The census that priced the rest got the right answer the second time.** Asking for a `204` within
+six lines of the deleted path answered 0 for six of the seven families: the backend tests spell the
+path once in a helper and assert the status at the call sites, so the number and the path are nowhere
+near each other (#141 — a census whose population is *the things that carry X* cannot find the thing
+that carries no X). Counted by file instead, the upper bound is 46 rows, and the one zero that
+survived the rewrite was the informative one: `rubrics` carries no `204` because it never answers
+one.
+
+**The four mutants #210 withdrew stayed withdrawn, and for a different reason than the one written
+beside them.** That file's *what would bring them back* named #209 — but it named #209's **fix**, and
+the probe shows the fix and the situation are not the same thing. Where the key matches, the ref and
+the closure hold the same number, so a mutant swapping one for the other is invisible (#117) and this
+situation puts none of the three withdrawn claims at risk. Nothing came back; what came back was a
+dated note under the sentence that implied it would.
+
+**What the phase delivers is a question, not a fix.** Item 2 of the ticket is the owner's
+(`docs/06` §Out of Scope), and the measurement sharpened it rather than answering it: the two
+readings are two different wrong behaviours in opposite directions, which makes this #199's shape
+again — not a preference but a defect, because the system holds both and the situation picks. The
+options were re-priced from the mount points and written on
+`docs/acceptance/14-departments.md` §#209, where the answer will go.

@@ -287,6 +287,21 @@ export default function Departments() {
    * `mutation/207-the-rows-the-step-back-counts.py` says which four mutants
    * went with them.
    *
+   * **19 ตุลาคม 2569, measured by a probe the same day rather than read off
+   * this code: that window is closed and the species is not.** #209's own
+   * situation needs no race at all. A second actor writing this page before
+   * the person presses ยืนยัน leaves the key matching, so what is read here is
+   * the live count - and the live count is the count of the list that is
+   * *drawn*, which is older than the database from the moment the other actor
+   * wrote. Two readings on this screen: a page that had lost every row was
+   * kept (หน้า 3 จาก 2 over *ยังไม่มีภาควิชาในระบบ*), and a page that had
+   * filled up again was left. So the sentence above is true of *that window*
+   * and says nothing about the step back being right. The readings, the
+   * re-priced options and the owner's question are on
+   * `docs/acceptance/14-departments.md` §#209; the four withdrawn mutants stay
+   * withdrawn, because where the key matches the ref and the closure hold the
+   * same number and a mutant swapping one for the other is invisible (#117).
+   *
    * The count on its own is not enough, which both axes of this ticket's
    * review said and a throwaway row measured the same day: `onPage` is written
    * by an effect on `[page]`, at the press, and this one by an effect on
