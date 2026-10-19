@@ -437,6 +437,7 @@ export default function Programs() {
             total={data.total}
             perPage={PAGE_SIZE}
             onPage={setPage}
+            busy={busy}
           />
 
           <ImportPanel

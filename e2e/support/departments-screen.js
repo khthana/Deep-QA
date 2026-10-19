@@ -158,6 +158,37 @@ async function threePagesEndingIn(page, { rows, prefix, note }) {
   return before + add;
 }
 
+/**
+ * One row imported through the panel, which is the way in that survives #210.
+ *
+ * `ImportPanel` keeps its own flag and the screen's `busy` does not reach it,
+ * so the file input is live while a write of the person's own is still out; and
+ * `onImported` goes to page one - or hand-reloads page one when that is where
+ * they already are. It is therefore a read of the list a person can start while
+ * a removal is held, which is what `206a` and `208a` arranged with the pager
+ * until 19 ตุลาคม 2569 - the day the six administration pagers took `busy` and
+ * closed that way in (#210). Measured by a probe on this screen that day,
+ * before either file was re-aimed, and the probe deleted once it had answered
+ * (#207).
+ *
+ * Answers the import's own response. The list read it starts belongs to the
+ * caller, which waits for it or holds it at the route - and the template is
+ * fetched here because nothing in the panel but the file input is disabled
+ * while an import is out, read from `ImportPanel.js` on 19 ตุลาคม 2569. Here
+ * rather than in a spec for `threePagesEndingIn`'s reason: no row's claim lives
+ * in it, only the situation (#171).
+ */
+async function importOneRow(page, { code, name, note }) {
+  const header = headerOf(await downloadTemplate(page));
+  const answer = await importDepartments(page, csv(header, `${code},${name},${note}`));
+  // Read here, because a refused import calls no `onImported` and the caller
+  // would meet it as a timeout in a list waiter instead of a red at the
+  // import - measured on 19 ตุลาคม 2569 with a code `threePagesEndingIn` had
+  // already written, which is why callers pass two letters after the prefix.
+  expect(answer.ok(), `the import of ${code}, which is the way in`).toBe(true);
+  return answer;
+}
+
 module.exports = {
   DEPARTMENTS,
   API,
@@ -173,4 +204,5 @@ module.exports = {
   removeDepartment,
   ALPHABET,
   threePagesEndingIn,
+  importOneRow,
 };

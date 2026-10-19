@@ -619,13 +619,13 @@ class Citations(TempStore):
         return [self.write("10-made-up.md", text)]
 
     def test_a_name_that_is_still_in_the_spec(self):
-        files = self.sheet("| x | `10a:the second window, before the session ends` |\n")
+        files = self.sheet("| x | `10a-shell.spec.js:the second window, before the session ends` |\n")
         self.assertEqual(anchors.citations(files), (0, 1, 0, 0))
 
     def test_a_name_that_is_gone(self):
         # The disease. A row names an assertion, the assertion is renamed or
         # deleted by another ticket, and nothing about the row looks wrong.
-        files = self.sheet("| x | `10a:where the box used to be` |\n")
+        files = self.sheet("| x | `10a-shell.spec.js:where the box used to be` |\n")
         self.assertEqual(anchors.citations(files), (1, 1, 0, 0))
 
     def test_a_token_naming_no_spec_at_all(self):
@@ -642,6 +642,11 @@ class Citations(TempStore):
         # it must not give. The store had such a citation when this was
         # written and the fix was to name the file.
         self.assertEqual(len(anchors._needle("22a", anchors._store()[0])), 2)
+        # And `10a` joined it on 19 October 2569, when #210's spec landed: the
+        # ticket number holds the older one's token. Sheet 10's sixteen
+        # citations moved to the whole stem that hour, which is the repair
+        # this question asks for and not a second rule.
+        self.assertEqual(len(anchors._needle("10a", anchors._store()[0])), 2)
         files = self.sheet("| x | `22a:106` |\n")
         self.assertEqual(anchors.citations(files)[0], 1)
 
@@ -649,7 +654,7 @@ class Citations(TempStore):
         # The third answer, and the reason this question exists. The line is
         # there - it is line 194 of a file with more than 194 lines - and that
         # is not the question anybody asked (#159, #173).
-        files = self.sheet("| x | `10a:194` |\n")
+        files = self.sheet("| x | `10a-shell.spec.js:194` |\n")
         self.assertEqual(anchors.citations(files), (0, 0, 1, 0))
 
     def test_the_old_spellings_are_counted_where_they_stand(self):
@@ -682,7 +687,7 @@ class Citations(TempStore):
         # Written down rather than fixed: `The price #94 pays` is a comment in
         # `10a` and not an assertion, and nothing here can tell the two apart.
         # A citation that lands in a comment reads as clean.
-        files = self.sheet("| x | `10a:The price #94 pays` |\n")
+        files = self.sheet("| x | `10a-shell.spec.js:The price #94 pays` |\n")
         self.assertEqual(anchors.citations(files), (0, 1, 0, 0))
 
     def test_a_token_that_names_nothing_in_an_empty_suite_is_still_a_problem(self):

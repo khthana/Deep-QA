@@ -484,6 +484,7 @@ export default function Subjects() {
             total={data.total}
             perPage={PAGE_SIZE}
             onPage={setPage}
+            busy={busy}
           />
 
           <ImportPanel

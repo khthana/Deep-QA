@@ -45,12 +45,22 @@ const enrolment = require('../support/enrolment-screen');
  * Each row opens its screen on page one, holds back every read of page one with
  * `page.route` for `HELD_MS`, and presses the handler. Once the reload has been
  * **sent** — waited for as a request, so a handler that reloads nothing fails
- * the row rather than passing it — it presses ถัดไป, waits for page two to
- * answer, then for the held answer to be handed back, and reads the screen once
- * after `SETTLE_MS`: the pager's line and the first cell of every row, against
- * page two's answer. The pager is the control on every screen because it is the
- * one every one of them has; the filters some of them also carry supersede the
- * same request by the same route through `load`'s dependencies.
+ * the row rather than passing it — it supersedes that read, waits for the
+ * superseding one to answer, then for the held answer to be handed back, and
+ * reads the screen once after `SETTLE_MS`: the pager's line and the first cell
+ * of every row, against the superseding answer. The control is ถัดไป, because
+ * it is the one every screen has.
+ *
+ * One row's is not, since 19 ตุลาคม 2569. #210 gave the six administration
+ * pagers `busy`, and `ข้อมูลการเปิดรายวิชา: เปิดรายวิชา` holds its reload while
+ * the save that made it is still out, so ถัดไป is disabled exactly there - the
+ * price of closing a way in, paid wherever the person has another way to the
+ * same situation (#217). That row passes a `move` of its own: the screen's
+ * ปีการศึกษา filter, which is not `disabled={busy}` and supersedes the same
+ * request by the same route through `load`'s dependencies. What the row claims
+ * is unchanged; only which control replaced the read has moved. Censused the
+ * same day: it is the only one of this file's rows whose press leaves `busy`
+ * up at the moment the superseding control is pressed.
  *
  * `SubjectStudents` has one site with two callers — `reload`, which adding a
  * student and the import both call — so it has two rows and one guard.
@@ -166,19 +176,36 @@ const late = (ms) => async (route, request) => {
 };
 
 /**
- * Presses a handler, moves the pager while its reload is out, and reads once.
+ * Presses a handler, supersedes its reload while it is out, and reads once.
  *
  * `list` is the pathname the screen's list is read from, `table` its table,
  * `rows` the key of the answer's array and `key` the natural key a row's first
  * cell shows. `press` does whatever makes the handler run and may return before
  * the reload is sent: the wait for the request is here.
+ *
+ * `move` is the superseding read, and it defaults to the pager's: a press of
+ * ถัดไป and page two. A row whose screen disables the pager while its own write
+ * is out passes one of its own - `reads` says which request is the superseding
+ * one, `press` makes it, and `pages` is for the premise that only a page move
+ * needs (#210, and `## How a row is built` above).
  */
-async function supersede(page, { list, table, rows, key, press }) {
+async function supersede(page, { list, table, rows, key, press, move }) {
   const isList = (url) => url.pathname === list;
-  const isHeld = (url) => isList(url) && asPage(url, 1);
+  const moveTo = move ?? {
+    pages: true,
+    reads: (url) => asPage(url, 2),
+    press: async () => {
+      await expect(next(page)).toBeEnabled();
+      await next(page).click();
+    },
+  };
+  // The superseding read is not held, whatever identifies it: holding both
+  // would leave the row waiting for the answer it is about to compare (#160's
+  // species - a matcher that takes in more than the request it names).
+  const isHeld = (url) => isList(url) && asPage(url, 1) && !moveTo.reads(url);
 
   const before = await reading(page, table);
-  expect(before.pages, 'the row needs a page two to move to').toBeGreaterThan(1);
+  if (moveTo.pages) expect(before.pages, 'the row needs a page two to move to').toBeGreaterThan(1);
 
   // `unroute` finds a route by the matcher it was given, compared with `===`,
   // so the same function goes to both.
@@ -195,14 +222,13 @@ async function supersede(page, { list, table, rows, key, press }) {
       (answer) =>
         answer.request().method() === 'GET' &&
         isList(new URL(answer.url())) &&
-        asPage(new URL(answer.url()), 2),
+        moveTo.reads(new URL(answer.url())),
     );
 
     await press(page);
     await reloadSent;
 
-    await expect(next(page)).toBeEnabled();
-    await next(page).click();
+    await moveTo.press(page);
 
     const moved = await (await movedArrived).json();
     const held = await (await heldArrived).json();
@@ -565,6 +591,23 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   await page.route((url) => offeringDetail.test(url.pathname), late(HELD_MS * 5));
   await supersede(page, {
     ...opened,
+    // The pager is `disabled={busy}` here since #210 and the save is still out,
+    // so what supersedes the reload is the screen's own ปีการศึกษา box: the
+    // fixture's offerings are all in `FUTURE`, and the seed's are in the
+    // current year, so the two reads answer different rows.
+    move: {
+      reads: (url) => url.searchParams.get('academic_year') === CURRENT_YEAR,
+      press: async () => {
+        // Named once: a locator built out of a source string is a claim about
+        // the DOM (#118), and one written twice is two.
+        const yearFilter = page.getByPlaceholder('ทุกปี');
+        await expect(
+          yearFilter,
+          'the filter, which is not disabled while the save is out',
+        ).toBeEnabled();
+        await yearFilter.fill(CURRENT_YEAR);
+      },
+    },
     // The form replaces the list, so it is filled inside the press: the row
     // reads the pager before it starts.
     press: async () => {

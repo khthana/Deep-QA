@@ -32,9 +32,13 @@ const { PROGRAM } = require('../../db/seed');
  * Of the ten sites that hand a sentence over, three sit behind a form submit
  * (`SubjectStudents` twice and `Students` once) and seven behind the removal
  * dialog, whose ยืนยัน really is `disabled={busy}`. The three need no second
- * defect to reach: no `Pager` on any of the eight screens carries `busy`, which
- * `SubjectStudents.add`'s own comment measured on 11 October 2569 (#199), so
- * ถัดไป is pressable for as long as the write is out. The seven needed the
+ * defect to reach: no `Pager` on any of the eight screens carried `busy` when
+ * this was written, which `SubjectStudents.add`'s own comment measured on
+ * 11 October 2569 (#199), so ถัดไป was pressable for as long as the write was
+ * out. Six of the eight took one on 19 ตุลาคม 2569, the owner's answer to #210,
+ * and these rows run unchanged - which is the measurement that says they do not
+ * arrange their situation on one of the six. What expired is the sentence and
+ * not the rows (#130). The seven needed the
  * keyboard hole of #204 to reach the pager under the dialog - closed by #217 on
  * 18 ตุลาคม 2569, after which what reaches them is ยกเลิก and then an
  * ordinary click (#203) - and this file says so rather than claiming the shape

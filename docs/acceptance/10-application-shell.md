@@ -147,8 +147,17 @@ sidebar มีอะไรอยู่บ้าง breadcrumb อ่านว่
 รูปของมันเป็นโค้ดสแปนเดียว คือ token ของ spec โคลอน แล้วสตริงที่อยู่ในไฟล์นั้นจริง ๆ
 
 ```
-`10a:<a string that is in that file>`
+`10a-shell.spec.js:<a string that is in that file>`
 ```
+
+**และ token ต้องชี้ไฟล์เดียว** เมื่อ 19 ต.ค. 2569 สเปกของ #210 คือ
+`210a-the-pager-while-a-write-is-out-on-the-administration-screens.spec.js` ลงมา และชื่อของมันมี
+คำว่า `10a` อยู่ข้างใน การอ้างของตารางนี้ทั้งสิบหกแห่งจึงชี้สองไฟล์ในวันเดียว — คำถามที่ห้าของ
+`anchors.py` รายงานไว้สิบสามแห่ง (อีกสามแห่งอยู่ในรั้วโค้ด นับแล้วไม่อ่าน) สายพันธุ์เดียวกับที่ #154
+กับ #158 วัดไว้ว่า `51a` รัน `151a` ด้วย เพราะ token ถูกจับแบบ substring ตามที่ Playwright ทำ
+ทางซ่อมคือสะกดชื่อไฟล์ให้ครบ อย่างที่ `21-rubrics.md` ทำมาตั้งแต่ `121a` ชนกับ `21a` ฉะนั้นตารางนี้
+อ้างว่า `10a-shell.spec.js:` ตั้งแต่วันนั้น และข้อความในย่อหน้าข้างบนที่เขียนรูปเก่าว่า `10a:` ไว้ก็ถูก
+แปลงไปด้วยทั้งแฟ้ม
 
 และคำถามที่ห้าของ `python mutation/anchors.py` ตรวจมัน — ชื่อที่หายไปเป็น `GONE` ชื่อที่ยังอยู่
 เป็นเขียว เหตุผลคือเมื่อ 7 ต.ค. 2569 เลขแปดตัวที่ตารางนี้เคยอ้างเข้า `10a-shell.spec.js`
@@ -166,8 +175,8 @@ assertion ที่เขียนด้วยข้อความเดีย�
 **และสองที่ที่ชื่อต้องถูกใส่ลงใน spec ไม่ใช่อ่านออกมาจากมัน** สอง assertion ของแถวหน้าต่างที่สอง
 
 ```
-`10a:the second window, before the session ends`
-`10a:the second window, after it reloads into no session`
+`10a-shell.spec.js:the second window, before the session ends`
+`10a-shell.spec.js:the second window, after it reloads into no session`
 ```
 
 เป็นบรรทัดโค้ดเดียวกันสองครั้งในแถวเดียวกัน และเป็นที่ตายของมัตแตนต์สองตัวต่างกัน (`lump403`
@@ -202,20 +211,20 @@ spec ซึ่งส่วนใหญ่คือทะเบียนจุด
 
 | กลายพันธุ์ | แก้อะไร | assertion ที่ล้ม |
 |---|---|---|
-| `senior` | `actingFrom` ตกกลับไปที่ `roles[roles.length - 1]` แทน `roles[0]` | row 3 ที่ `10a:new RegExp(PROGRAM_MANAGER_0501)` — ปุ่มอ่านว่า *อาจารย์ผู้สอน* |
-| `echoacting` | `PUT /me/acting-role` ตอบ `req.auth` เดิมแทน `acting: held` | row 3 ที่ `10a:(await answer.json()).acting` — `acting` ที่ตอบกลับไม่ใช่ TEACHER |
-| `stalelabel` | `RoleDropdown` วาดป้ายจาก `roles[0]` แทน `acting` | row 3 ที่ `10a:toHaveText(new RegExp(TEACHER))` — ปุ่มยังอ่านว่า *กรรมการหลักสูตร 0501* หลังสลับแล้ว |
-| `maintainer` | เติม `'TEACHER'` ลงใน `MAINTAINERS` ของ `programSubjects.js` | row 4 ที่ `10a:expect(asTeacher.status()).toBe(403)` — ได้ 200 ที่ควรได้ 403 (เขียนใหม่ที่ #79 รันซ้ำแล้ว) |
+| `senior` | `actingFrom` ตกกลับไปที่ `roles[roles.length - 1]` แทน `roles[0]` | row 3 ที่ `10a-shell.spec.js:new RegExp(PROGRAM_MANAGER_0501)` — ปุ่มอ่านว่า *อาจารย์ผู้สอน* |
+| `echoacting` | `PUT /me/acting-role` ตอบ `req.auth` เดิมแทน `acting: held` | row 3 ที่ `10a-shell.spec.js:(await answer.json()).acting` — `acting` ที่ตอบกลับไม่ใช่ TEACHER |
+| `stalelabel` | `RoleDropdown` วาดป้ายจาก `roles[0]` แทน `acting` | row 3 ที่ `10a-shell.spec.js:toHaveText(new RegExp(TEACHER))` — ปุ่มยังอ่านว่า *กรรมการหลักสูตร 0501* หลังสลับแล้ว |
+| `maintainer` | เติม `'TEACHER'` ลงใน `MAINTAINERS` ของ `programSubjects.js` | row 4 ที่ `10a-shell.spec.js:expect(asTeacher.status()).toBe(403)` — ได้ 200 ที่ควรได้ 403 (เขียนใหม่ที่ #79 รันซ้ำแล้ว) |
 | `silent401` | `client.js` ไม่ประกาศ 401 ให้ใครรู้อีกต่อไป (ผูกจุดยึดใหม่ที่ #97 บรรทัดนั้นเลิกมีธง `anonymous` และเริ่มส่ง `reason` ไปด้วย) | row 6 — ไม่มีกล่อง *Session หมดอายุ* **ตั้งแต่ #97 มันล้มห้าแถว** ทั้งหมดคือแถวข้อ 6 ที่พูดถึงกล่อง: กล่องขึ้นตอน session จบ · โหลดหน้าใหม่ในช่วงที่ cookie ยังอยู่ · ปุ่มในกล่องพากลับเข้าใช้งาน · โหลดใหม่ครั้งที่สอง · หน้าต่างที่สองที่ไม่ได้ยินข่าว **ก่อนหน้านั้นมันล้มสองแถว** เพราะ `AuthContext.load()` ยกกล่องขึ้นเองอีกทางหนึ่ง แถวโหลดหน้าใหม่จึงผ่านทั้งที่ listener ถูกปิดไปแล้ว — ตัวเลข 2 → 5 นี้คือราคาของความเห็นที่ซ้ำ วัดได้ตรง ๆ |
-| `lump403` | `client.js` ประกาศ 403 ด้วย (ข้อผิดพลาดของรุ่นที่สืบทอดมา · ผูกจุดยึดใหม่ที่ #97) | **ฆ่าสามแถว** — แถวหน้าต่างที่สองที่ `10a:the second window, before the session ends` ซึ่งเป็น assertion ตั้งต้นว่าหน้าต่างที่สอง*เปิดขึ้นมาโดยยังไม่มีกล่อง* มันล้มเพราะ `teacher.one@` เปิดหน้า Program Subjects แล้วมีคำขอที่ตอบ 403 อยู่ · `10a:row 6: a 403 is not an expiry` ที่ `toHaveCount(0)` ของมัน — กล่องขึ้นทั้งที่ไม่ควรขึ้น · และ `10a:row 7: the wrong current password` ที่ `toHaveCount(0)` ของมัน ด้วยเหตุเดียวกัน ตารางฉบับก่อนระบุเหยื่อไม่ครบสองครั้งแล้ว ครั้งนี้จึงไล่ครบทั้งสาม |
+| `lump403` | `client.js` ประกาศ 403 ด้วย (ข้อผิดพลาดของรุ่นที่สืบทอดมา · ผูกจุดยึดใหม่ที่ #97) | **ฆ่าสามแถว** — แถวหน้าต่างที่สองที่ `10a-shell.spec.js:the second window, before the session ends` ซึ่งเป็น assertion ตั้งต้นว่าหน้าต่างที่สอง*เปิดขึ้นมาโดยยังไม่มีกล่อง* มันล้มเพราะ `teacher.one@` เปิดหน้า Program Subjects แล้วมีคำขอที่ตอบ 403 อยู่ · `10a-shell.spec.js:row 6: a 403 is not an expiry` ที่ `toHaveCount(0)` ของมัน — กล่องขึ้นทั้งที่ไม่ควรขึ้น · และ `10a-shell.spec.js:row 7: the wrong current password` ที่ `toHaveCount(0)` ของมัน ด้วยเหตุเดียวกัน ตารางฉบับก่อนระบุเหยื่อไม่ครบสองครั้งแล้ว ครั้งนี้จึงไล่ครบทั้งสาม |
 | `nowrite` | `PUT /api/me/password` ตอบ 200 แต่ไม่เขียนลง `users.password` | row 7 — ออกจากระบบแล้วเข้าด้วยรหัสใหม่ไม่ได้ **ตัวนี้อยู่ในไฟล์กลายพันธุ์มาตลอด แต่ไม่เคยอยู่ในตารางนี้** และแถวที่ 7 ก็ติด ⚙ โดยไม่ได้ชี้ไปที่มัตแตนต์ตัวใด ซึ่งเป็นรูปแบบที่ `CLAUDE.md` บอกให้ไล่ตรวจตั้งแต่ #44 — เจอตอน #97 แก้ตารางนี้ด้วยเรื่องอื่น |
 | `onlytheserverknows` | `AuthContext` เลิกนับว่ามีใครเข้าระบบอยู่ กล่องจึงขึ้นเฉพาะตอน server ตอบ `expired` (อยู่ใน `mutation/97-refusal-is-not-expiry.py` ไม่ใช่ไฟล์ของใบนี้) | row 6 — ลบ cookie กลางคันแล้วไม่มีกล่อง เพราะ server ตอบ `anonymous` ไม่ใช่ `expired` จากที่ server ยืนอยู่ไม่มีอะไรให้หมดอายุ **นี่คือมัตแตนต์ที่ค้ำครึ่งที่สองของกฎ** และเป็นเหตุผลที่ [#97](https://github.com/khthana/Deep-QA/issues/97) ไม่ได้ทำตามตัวอักษรของตั๋วตัวเอง ซึ่งเขียนว่าให้ดู `expired` เท่านั้น |
-| `shortcookie` | `COOKIE_LIFETIME_SECONDS` กลับไปเท่ากับ `LIFETIME_SECONDS` | row 6 ที่ `10a:toBeGreaterThan(5 * 60)` — ระยะห่างระหว่างอายุ cookie กับ `exp` เหลือ 0 วินาที |
-| `guardedlogout` | เอา `requireSession` กลับไปครอบ `POST /auth/logout` อีกครั้ง ซึ่งคือสภาพก่อนแก้ #92 | row 6 ที่ `10a:expect(signedOut.status()).toBe(200)` — `POST /auth/logout` ตอบ 401 ไม่ใช่ 200 และเป็นแถวเดียวที่ล้ม — อีกห้าแถวของ row 6 ผ่านทั้งหมด **จุดตายย้ายที่ตอน #94** ก่อนหน้านั้นมันตายที่ *กล่องยังอยู่หลังกดปุ่ม* ซึ่งตอนนี้ไม่ล้มอีกแล้ว เพราะ `logout` พาไป `/` เสมอ และคำถามตั้งต้นที่หน้านั้นลบ cookie ให้เอง สิ่งที่การถอด guard ยังซื้อมาได้จึงเหลือสองอย่าง — จบในขั้นตอนเดียว และมีบรรทัดในประวัติ — ข้อแรกคือสิ่งที่ browser ยังเห็นได้ ส่วนข้อหลัง `backend/test/auth.test.js` ถืออยู่แล้ว |
-| `keepdeadcookie` | `requireSession` เก็บ cookie ที่ตายแล้วไว้เหมือนก่อนแก้ #94 | `10a:row 6: a second reload` ที่ `toHaveCount(0)` ของมัน — โหลดใหม่ครั้งที่สองแล้วกล่องยังอยู่ (`Received: 1`) **และแถวหน้าต่างที่สองที่ `10a:the second window, after it reloads into no session`**: cookie ที่ไม่ถูกลบทำให้หน้าต่างที่สองได้กล่องแทนหน้าลงชื่อเข้าใช้ รอบแรกที่รันมันตายที่ `sessionCookie` ของ*หน้าต่างแรก* — สำเนาของ assertion ที่แถวก่อนหน้าเป็นเจ้าของอยู่แล้ว จึงถอดบรรทัดนั้นออกจากเทสต์ใหม่ เพื่อให้จุดตายเป็นข้ออ้างของแถวนี้เอง ไม่ใช่ของแถวอื่น |
+| `shortcookie` | `COOKIE_LIFETIME_SECONDS` กลับไปเท่ากับ `LIFETIME_SECONDS` | row 6 ที่ `10a-shell.spec.js:toBeGreaterThan(5 * 60)` — ระยะห่างระหว่างอายุ cookie กับ `exp` เหลือ 0 วินาที |
+| `guardedlogout` | เอา `requireSession` กลับไปครอบ `POST /auth/logout` อีกครั้ง ซึ่งคือสภาพก่อนแก้ #92 | row 6 ที่ `10a-shell.spec.js:expect(signedOut.status()).toBe(200)` — `POST /auth/logout` ตอบ 401 ไม่ใช่ 200 และเป็นแถวเดียวที่ล้ม — อีกห้าแถวของ row 6 ผ่านทั้งหมด **จุดตายย้ายที่ตอน #94** ก่อนหน้านั้นมันตายที่ *กล่องยังอยู่หลังกดปุ่ม* ซึ่งตอนนี้ไม่ล้มอีกแล้ว เพราะ `logout` พาไป `/` เสมอ และคำถามตั้งต้นที่หน้านั้นลบ cookie ให้เอง สิ่งที่การถอด guard ยังซื้อมาได้จึงเหลือสองอย่าง — จบในขั้นตอนเดียว และมีบรรทัดในประวัติ — ข้อแรกคือสิ่งที่ browser ยังเห็นได้ ส่วนข้อหลัง `backend/test/auth.test.js` ถืออยู่แล้ว |
+| `keepdeadcookie` | `requireSession` เก็บ cookie ที่ตายแล้วไว้เหมือนก่อนแก้ #94 | `10a-shell.spec.js:row 6: a second reload` ที่ `toHaveCount(0)` ของมัน — โหลดใหม่ครั้งที่สองแล้วกล่องยังอยู่ (`Received: 1`) **และแถวหน้าต่างที่สองที่ `10a-shell.spec.js:the second window, after it reloads into no session`**: cookie ที่ไม่ถูกลบทำให้หน้าต่างที่สองได้กล่องแทนหน้าลงชื่อเข้าใช้ รอบแรกที่รันมันตายที่ `sessionCookie` ของ*หน้าต่างแรก* — สำเนาของ assertion ที่แถวก่อนหน้าเป็นเจ้าของอยู่แล้ว จึงถอดบรรทัดนั้นออกจากเทสต์ใหม่ เพื่อให้จุดตายเป็นข้ออ้างของแถวนี้เอง ไม่ใช่ของแถวอื่น |
 | `clearanywhere` | ข้อยกเว้นของ #94 ขยายไปทุก route ที่ถูกป้องกัน ไม่ใช่เฉพาะ `GET /me` | `backend/test/shell.test.js` — *is left alone when a screen asks, not the shell* ล้ม ส่วนแถวที่ว่าด้วยการลบยังผ่าน นี่คือแถวที่กันไม่ให้การแก้กลืนเหตุผลที่ `auth/session.js` เขียนไว้แต่แรก |
-| `wrongas401` | รหัสเดิมผิดตอบ 401 แทน 403 | row 7 ที่ `10a:expect(answer.status()).toBe(403)` |
-| `ejectonrefusal` | `Navbar.js` ปิดกล่องกับข้อผิดพลาดทุกชนิด ไม่ใช่เฉพาะ `err.expired` | row 7 ที่ `10a:REFUSALS.wrongPassword` — ข้อความหายไปพร้อมกล่อง และเป็นแถวเดียวที่ล้ม · จุดตายของแถวนี้เคยเขียนไว้เป็นเลข 294 แล้วเลื่อนเป็น 342 เพราะแถวหน้าต่างที่สองแทรกอยู่เหนือมัน แล้วเลื่อนต่อไปเป็น 364 โดยไม่มีใครทัน — เป็นแถวที่บอกเรื่องของ [#173](https://github.com/khthana/Deep-QA/issues/173) ได้สั้นที่สุด |
+| `wrongas401` | รหัสเดิมผิดตอบ 401 แทน 403 | row 7 ที่ `10a-shell.spec.js:expect(answer.status()).toBe(403)` |
+| `ejectonrefusal` | `Navbar.js` ปิดกล่องกับข้อผิดพลาดทุกชนิด ไม่ใช่เฉพาะ `err.expired` | row 7 ที่ `10a-shell.spec.js:REFUSALS.wrongPassword` — ข้อความหายไปพร้อมกล่อง และเป็นแถวเดียวที่ล้ม · จุดตายของแถวนี้เคยเขียนไว้เป็นเลข 294 แล้วเลื่อนเป็น 342 เพราะแถวหน้าต่างที่สองแทรกอยู่เหนือมัน แล้วเลื่อนต่อไปเป็น 364 โดยไม่มีใครทัน — เป็นแถวที่บอกเรื่องของ [#173](https://github.com/khthana/Deep-QA/issues/173) ได้สั้นที่สุด |
 | `adminteacher` | เติม `'TEACHER'` ลงใน `ADMIN_ROLES` ของ `backend/auth/administration.js` | row 8 ของ `11a-users-refusals.spec.js:expect(response.status()).toBe(403)` — ได้ 200 ที่ควรได้ 403 · เลขที่แถวนี้เคยอ้าง (บรรทัด 41) เป็นเลขเดียวในตารางนี้ที่ยัง**ตรง** วันที่แปลง ซึ่งเป็นเหตุผลที่เครื่องมือต้องตอบสามอย่าง ไม่ใช่สอง |
 | `landingisahandoffagain` | `GuestRoute` กลับไปพูดว่า `/main` แล้วปล่อยที่เหลือให้ `SidebarItem` คือแฟ้มก่อน [#120](https://github.com/khthana/Deep-QA/issues/120) ทั้งอัน | `66a` rows 6–7 — จุดที่เบราว์เซอร์**หยุด** ยังเท่าเดิม rows 1–2 จึงยังผ่าน — นี่คือตัวที่บอกว่าแถวซึ่งอ่านแค่*ที่ที่ไปถึง*มองไม่เห็นทางที่เดิน |
 | `landingstopsattheshell` | `SidebarItem` เลิกย้ายคนที่ยืนอยู่บน `/main` (เงื่อนไขชี้ไปที่ path ที่ไม่มีอยู่) | `66a` row 8 — คนที่**พิมพ์** `/main` เองค้างอยู่กับ `<div />` ว่าง · ก่อน [#120](https://github.com/khthana/Deep-QA/issues/120) มันฆ่า rows 1–2 หลังจากนั้นการเข้าระบบไม่ผ่านทางนี้อีก มันจึงรอดการกวาด **มัตแตนต์ที่รอดตรงที่ไฟล์ของมันทำนายว่าจะฆ่า คือแถวที่ยังไม่มี** ([#118](https://github.com/khthana/Deep-QA/issues/118)) แถว 8 จึงเขียนขึ้นเพราะมัน |

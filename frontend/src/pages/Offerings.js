@@ -766,6 +766,7 @@ export default function Offerings() {
             total={data.total}
             perPage={PAGE_SIZE}
             onPage={setPage}
+            busy={busy}
           />
 
           <CopyTermPanel busy={busy} report={copied} onCopy={runCopy} />

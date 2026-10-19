@@ -11943,3 +11943,98 @@ the day the owner says yes as a row that reads *the button is disabled*. What do
 the answer — the way in is still open after #217 — `207a` already holds as a row, and is cited rather
 than written twice (#171). The measurement itself was a probe, built on both sides, run, and deleted
 (#207).
+
+### What option 1 cost, once the owner answered
+
+The owner's answer on 19 October was **option 1**, and the fix is one line at six call sites:
+every one of the six screens already computes `const busy = writing || reading` for its own
+form, so `busy={busy}` on the `<Pager>` is all of it. The whole of the ticket's cost is
+somewhere else.
+
+**The price of closing a way in is paid in mutants as well as in rows.** #217 priced a trap at
+ten rows in five files and paid ten one-line re-aims, because the person had a second way to the
+same situation. Here the census by mechanism — *rows that press the pager on one of the six
+screens*, not *rows that mention the pager* — found four spec files, and three of them re-aimed
+the same way: `206a` rows 1 and 3, `208a` row 1 and `140a`'s Offerings row all arrange their
+situation through *something that re-reads the list while a write is out*, and the import panel
+still does that (it keeps its own flag). What it does differently is ask for **page one**, which
+is a move; and for three of those four rows a move is as good as a press. `140a`'s row was using
+the pager as an instrument rather than as a claim, so it moved to the year filter instead.
+
+The fourth file had nowhere to go. `207a`'s three rows need a read that lands while the removal
+is out **and leaves the pager where it started**, and after option 1 the only control that reads
+the list at all moves the person. So the three rows became one net asserting the mechanism (#203,
+#47) — and **the four mutants whose only killers those rows were came out with them**. Nothing
+reports that. `anchors.py` says the anchors are exact, because they are; the code the mutants
+edit is untouched; the difference is in another file entirely. Only re-running them says it
+(#107, #68), which is what the re-sweep did: `closurerowcount`, `trustthestalecount`,
+`refalwaysone` and `alwaysthelivecount` survived all fifteen rows between them, and
+`refnevermoves` kept two killers and stayed.
+
+**The fourth of those four is the tenth reading of a survivor, met in the clearest shape yet.**
+`alwaysthelivecount` was written against `206a`'s first row, not against `207a`, so the first
+pass of this work listed it as staying — its killer was not one of the three rows being
+withdrawn. The re-sweep an hour later found it surviving that row too, and the mechanism is
+#206's own: the remaining way in is the import panel, whose read the row **holds at the route**,
+so `data.departments.length` in the closure and `onRows.current.rows` in the ref are reading the
+same drawn list and are the same number. A mutant that swaps one for the other is invisible
+wherever the two agree, and closing the pager is what made them agree. The sheet's prediction
+written before the sweep is what caught it (#201): the row it named did not go red.
+
+### Two figures in a record I wrote the same hour
+
+The withdrawal said the four were measured *16 rows each*. The files it names add up to
+3 + 1 + 9 + 2 = 15, and the sweep's own output directory had no `208a` run for
+`alwaysthelivecount` at all — so one of the four had thirteen. Both are species this file keeps
+writing down (#119's hand-kept number, #173's figure published by a second counter instead of by
+the instrument), and what is worth adding is where the answer was: **the directory of sweep
+output is the record of which runs exist**, and it was sitting there while the sentence was
+written from memory. The missing run was taken before the correction — the mutant put back into
+`MUTANTS` for one run and taken out again, with `git diff` to say the file came back — and it
+survived there too, so the corrected figure is 15 of 15 and measured rather than inferred. Then
+the figure had a third copy, in the catalogue row written the same hour, which only grepping the
+number found (#96, #130, #154).
+
+### And the spec's own filename made a closed sheet's citations ambiguous
+
+`210a-the-pager-while-a-write-is-out-on-the-administration-screens.spec.js` holds the string
+`10a`. `anchors.py` resolves a citation's token as a **substring**, because that is what
+Playwright's own file argument does (#154, #158), so the hour the file landed, sheet 10's sixteen
+citations named two files and the instrument said so — thirteen of them, the other three being
+inside code fences, which it counts and does not read. The repair is the spelling
+`21-rubrics.md` has used since `121a` collided with `21a`: the whole stem, `10a-shell.spec.js:`.
+Worth writing down only as the shape — **a new spec file is a change to every sheet whose
+citation token is a substring of its name**, and the ticket number is where the collision comes
+from, so it is predictable the moment the file is named.
+
+And it reaches further than the citations: `mutation/README.md` carries a measured **37 tokens the
+two resolution rules answer differently**, and `10a` joined that set the hour this file landed,
+having matched one file under both rules before. So a figure in a document nobody was editing went
+stale — #48's rule (*a kill count is a claim about the fixtures as much as about the code*) with
+a filename in place of a fixture. What is interesting is what it costs to put right: the figure is
+**dated and not corrected**, because a hand count of one definition of that population — the short
+token of each of the 107 spec files — gives 24 at this commit, so 37 counts something else, and
+nothing prints it. #141 says to run the instrument at the commit the figure was written at; where
+there is no instrument, the honest repair is a note saying which way the number moved and that the
+**population** is the thing missing, rather than a new number with the same problem.
+
+### A row that goes red before the fix can still hold an assertion that cannot fail
+
+Each of `210a`'s four rows read two buttons: `ถัดไป` disabled while the removal was out, and
+`ก่อนหน้า` disabled beside it. Every row went red against the unfixed screens, which is the
+check #203 bought for free and the thing a new row is supposed to be measured by — and it
+licensed nothing about the second line. The rows stand on **page one**, because what the fixture
+builds is a second page rather than a move onto a middle one, and `Pager` writes
+`disabled={busy || page <= 1}`: at page one `ก่อนหน้า` is disabled by #57's end rule whatever the
+flag says. The red came from the line above it every time.
+
+This is #88's rule met on a clean run instead of under a mutant — *a claim written below another
+claim is proved by nothing* — and the reading that generalises is that **a row is red or green,
+while an assertion is proved or not**: the row's verdict is the verdict of its first failing
+line, and nothing about the rest. What found it was the Standards and Spec axes reading the two
+reads against `Pager`'s own expressions, which is the same question #171 asks about a locator
+asked about an end rule. The half that was really at risk stayed, the other came out, and the
+sheet says where the component's `ก่อนหน้า` half is held instead: `199a` reads it on page two
+with the premise read above it, and `207a`'s net reads it on the **last** page of the department
+screen, where the two halves swap roles — there `ถัดไป` is the end rule and `ก่อนหน้า` is the
+claim. Three files, each proving the half its own page can put at risk.

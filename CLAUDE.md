@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 18 October 2569 that is
-`2026-10-18-the-price-of-closing-a-way-in.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 19 October 2569 that is
+`2026-10-19-one-line-at-six-sites-and-the-mutants-it-took-with-it.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -547,6 +547,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   the first**: substituting it back for the live ref is a different mutant, and it killed the row
   about the superseded read instead of the row about the move that causes no read, which is the
   row it was written for. Read a re-aimed mutant's kill against the row it is *for*. (#205)
+- **A row left as a net takes its mutants with it** — a mutant whose only killer becomes a net
+  proves nothing, and no instrument says so: the anchor is still exact, the code it edits is
+  untouched, and the difference is in another file, so only re-running it speaks (#107, #68).
+  Four of #207's five went that way the day the owner closed the pager, and the survivor of the
+  four survived for a second reason — the one remaining way in made the two values it swaps the
+  same number (#206's tenth reading). Price a closed way in in mutants as well as in rows (#217).
+  (#210)
 
 ### Tests and fixtures
 

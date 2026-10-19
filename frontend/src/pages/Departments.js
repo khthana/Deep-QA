@@ -131,8 +131,14 @@ export default function Departments() {
    * had measured on 11 October 2569 (#199), so ถัดไป is pressable for as long as
    * a write is out and the read it starts is superseded by the handover's own.
    * The owner's answer to #199 on 15 October 2569 gave the enrolment screen's
-   * pager a `busy` and left these eight alone, so the sentence above is still
-   * true of them and is no longer true of every screen.
+   * pager a `busy` and left these eight alone, so the sentence above was still
+   * true of them and not of every screen - until 19 ตุลาคม 2569, when the answer
+   * to #210 gave all six administration pagers one. On this screen the clause is
+   * therefore false again and the paragraph it replaced is true again by
+   * accident: every control that hands a sentence over is `disabled={busy}`,
+   * **except the import panel**, which keeps its own flag. That is the one way
+   * in left here (`206a`, `208a`), and `207a` is the net that says what closing
+   * the pager made unreachable.
    * Three rows in
    * `e2e/tests/205a-the-handed-over-sentence-and-a-superseded-read.spec.js`
    * measure what that lost, on the screen that carries the same shape.
@@ -218,12 +224,16 @@ export default function Departments() {
    * A removal steps back because the page it was sent from has lost its last
    * row. That is a fact about the page this render closed over and says nothing
    * about where the person is standing when the answer arrives: this screen's
-   * `Pager` is given no `busy` — #199 gave one to the enrolment screen's on 15
-   * October 2569 and to no other — so the pager's own buttons are pressable for
-   * as long as the removal is out. They were reachable from under the
-   * confirmation with the keyboard until 18 ตุลาคม 2569, the box trapping no focus
-   * (#204); since #217 contained it the way in is ยกเลิก and then an ordinary
-   * click, which is the same situation (#203).
+   * `Pager` was given no `busy` until 19 ตุลาคม 2569 — #199 gave one to the
+   * enrolment screen's on 15 October 2569 and to no other, and #210's answer
+   * that day gave one to all six administration screens — so the pager's own
+   * buttons were pressable for as long as the removal was out. They were
+   * reachable from under the confirmation with the keyboard until
+   * 18 ตุลาคม 2569, the box trapping no focus (#204); #217 contained it that day
+   * and the way in became ยกเลิก and an ordinary click, the same situation
+   * (#203); and since #210 it is the import panel, whose `onImported` goes to
+   * page one and which carries its own flag. The claim below is reachable
+   * through it and `206a` is where it is read.
    * Measured on this screen on 13 October 2569, with the removal held at the
    * route: the step back asked for one page while the sentence was keyed for
    * another, so the sentence was said by nothing at all, and the person was
@@ -254,16 +264,28 @@ export default function Departments() {
    *
    * Measured on this screen on 14 October 2569. After #206 a page move alone
    * cannot reach it, because somebody who moved takes the branch that moves
-   * nobody. What reaches it is a read that lands while the removal is out and
-   * leaves the pager where it started, which the pager's own two presses do -
-   * this screen's `Pager` is given no `busy` (#199 gave one to the enrolment
-   * screen's on 15 October 2569 and to no other); the confirmation trapped no
-   * focus until 18 ตุลาคม 2569 (#204, contained by #217 that day), and what reaches the
-   * pager since is ยกเลิก and then a click. The handler then counts a list that is no longer on the
-   * screen: it counted two rows and stayed on a page whose one remaining row it
-   * was about to remove, and the other way round it carried somebody off a page
-   * that had filled up again. Both are in
-   * `e2e/tests/207a-the-rows-the-step-back-counts.spec.js`.
+   * nobody. What reached it was a read that lands while the removal is out and
+   * leaves the pager where it started, which the pager's own two presses did -
+   * this screen's `Pager` was given no `busy` until 19 ตุลาคม 2569 (#199 gave one
+   * to the enrolment screen's on 15 October 2569 and to no other); the
+   * confirmation trapped no focus until 18 ตุลาคม 2569 (#204, contained by #217
+   * that day), and what reached the pager after that was ยกเลิก and then a
+   * click. The handler then counted a list that was no longer on the screen: it
+   * counted two rows and stayed on a page whose one remaining row it was about
+   * to remove, and the other way round it carried somebody off a page that had
+   * filled up again.
+   *
+   * **Since 19 ตุลาคม 2569 nothing on this screen reaches that window**, which
+   * is the owner's answer to #210: the pager is `disabled={busy}` here, and the
+   * one control that still reads the list while a write is out - the import
+   * panel, which keeps its own flag - asks for page one, so it *moves* the
+   * person and the branch above runs instead. The clause stays, both halves of
+   * it keep their comment, and
+   * `e2e/tests/207a-the-rows-the-step-back-counts.spec.js` is one net row
+   * rather than the three that read the two directions; it names the three
+   * claims it withdrew and the condition that would bring them back, and
+   * `mutation/207-the-rows-the-step-back-counts.py` says which four mutants
+   * went with them.
    *
    * The count on its own is not enough, which both axes of this ticket's
    * review said and a throwaway row measured the same day: `onPage` is written
@@ -725,6 +747,7 @@ export default function Departments() {
             total={data.total}
             perPage={PAGE_SIZE}
             onPage={setPage}
+            busy={busy}
           />
 
           <ImportPanel

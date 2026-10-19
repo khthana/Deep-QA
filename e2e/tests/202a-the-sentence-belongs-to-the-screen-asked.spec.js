@@ -114,9 +114,12 @@ const plos = require('../support/plos-screen');
  *
  * **Through the pager.** The four sites that rode on #152's flag are superseded
  * by a control that takes nothing away and opens nothing: ถัดไป, which changes
- * what the read is *of*. `Pager` carries no `busy` — #199 measured that in the
- * code — so it is pressable for as long as a write is out, and on the enrolment
- * screen that is a way in needing no second defect and no keyboard. Of the four,
+ * what the read is *of*. `Pager` carried no `busy` when this was written —
+ * #199 measured that in the code — so it was pressable for as long as a write
+ * was out, and on the enrolment screen that is a way in needing no second
+ * defect and no keyboard. Six administration pagers took one on
+ * 19 ตุลาคม 2569 (#210); these rows are on the enrolment screen and run
+ * unchanged, so what expired is the sentence (#130). Of the four,
  * that screen's two are the rows below; the other two are superseded by the
  * section jump instead, which no row walks yet and which their sheets say is
  * unproved (#68).

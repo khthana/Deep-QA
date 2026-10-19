@@ -4,10 +4,11 @@ const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { BACKEND_URL } = require('../support/env');
 const { gate, isGet, isWrite } = require('../support/gate');
 const { dismiss, panel } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
-const { keysOn, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
+const { keysOn, next, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
 const departments = require('../support/departments-screen');
 
 /**
@@ -23,35 +24,44 @@ const departments = require('../support/departments-screen');
  * nobody is going to make - so it is **never said**, which is a different
  * failure from #205's *said over another list*.
  *
- * ## The way in, and why it needs no race
+ * ## The way in, which moved on 19 ตุลาคม 2569
  *
- * `ConfirmDialog` draws a `fixed inset-0` overlay, and until 18 ตุลาคม 2569 it
- * trapped no focus (#204, contained by #217 that same day), and this screen's
- * `Pager` is given no `busy`: the pager's own buttons are therefore enabled for
- * as long as the removal is out, and were reachable by keyboard from under the
- * cover until that date. Both rows below now put the question away with ยกเลิก
- * and click the control - the same situation, reached the way a person has
- * (#203) - and the first asserts that the pager is enabled before dismissing,
- * because that is the premise of the whole file (#51). The day either of those tickets closes is the day to
- * measure this way in again; the claim the rows make about the key does not
- * depend on it.
+ * Until that day the way in was the pager itself. `ConfirmDialog` draws a
+ * `fixed inset-0` overlay; it trapped no focus until 18 ตุลาคม 2569 (#204,
+ * contained by #217 that same day), and this screen's `Pager` was given no
+ * `busy`, so its own buttons were live for as long as the removal was out -
+ * reachable by keyboard from under the cover until that date, and by ยกเลิก and
+ * an ordinary click after it (#203). #199 closed on 15 ตุลาคม 2569 and left them
+ * live, its new prop defaulting to `false`.
  *
- * #199 closed on 15 October 2569 and this way in survived it: what the owner
- * decided is that **the enrolment screen's** pager goes dead while one of its
- * own writes is out, and `Pager`'s new prop defaults to `false`, so the ten
- * other callers - these screens among them - are unchanged. The premise is
- * asserted at the control below either way, which is what makes the survival a
- * measurement rather than a reading of the diff.
+ * #210 asked whether those ten callers were unchanged by measurement or by
+ * construction, and the owner's answer on 19 ตุลาคม 2569 was to send `busy` to
+ * all six administration screens. The premise below is therefore the opposite
+ * one, and it is still asserted at the control rather than assumed (#51): the
+ * pager is **dead** while the removal is out, which `210a` is the file that
+ * proves, at each of the six.
  *
- * ## Why the first row moves two pages
+ * What survives is the import panel: it keeps its own flag, the screen's `busy`
+ * does not reach it, and its `onImported` goes to page one, so a person can
+ * still make this screen read a list while a removal of their own is held. Both
+ * rows arrange their situation through it now
+ * (`departments.importOneRow`), and the claims they make about the key are
+ * unchanged - the price of closing a way in is paid in re-aims wherever the
+ * person has another way to the same situation (#217).
  *
- * One press is not enough to see the whole fix. The page the handler closed
- * over is the last one, so `readOf(page - 1)` names the page one press reaches
- * and the key is then right by accident: the mutant that writes the stale key
- * survived 1 of 1, where the mutant that drops the comparison died. Two
- * presses put the destination at `pages - 2` and the stale key at `pages - 1`,
- * which is the point where the two disagree - #154's rule the other way up,
- * the row having been built where they coincide.
+ * `207a` had no other way: its three rows need a read of the page the person is
+ * standing on, and the import always goes to page one. There the price was
+ * nets, and three of #207's five mutants withdrawn for want of a killer.
+ *
+ * ## Why the destination has to be more than one page back
+ *
+ * The page the handler closed over is the last one, so the stale key names
+ * `pages - 1`, and a destination one page back makes the wrong key right by
+ * accident: the mutant that writes it survived 1 of 1 where the mutant that
+ * drops the comparison died. Two presses used to put the destination at
+ * `pages - 2`; the import's own move puts it at page one, and the fixture holds
+ * three pages, so the two still disagree - #154's rule the other way up, the
+ * row having been built where they coincide.
  *
  * ## Why this screen
  *
@@ -79,6 +89,22 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
+/**
+ * The departments the way in imports, taken out again between rows.
+ *
+ * Two letters after the prefix, which `threePagesEndingIn` never writes - its
+ * codes are one letter - so neither row's import can be a duplicate of the
+ * fixture's. Taken out because the fixture counts what is in the table (#132)
+ * and tops it up with codes it has written before, which one row left behind
+ * would make it write twice.
+ */
+const IMPORTED = ['XZZ', 'XZY'];
+test.afterEach(async ({ page }) => {
+  for (const code of IMPORTED) {
+    await page.request.delete(`${BACKEND_URL}${departments.API}/${code}`);
+  }
+});
+
 /** What the row presses, and what the screen says when the removal lands. */
 const REMOVE = 'ลบ';
 const CONFIRM = 'ลบภาควิชา';
@@ -94,7 +120,10 @@ const pageOf = request => new URL(request.url()).searchParams.get('page');
  */
 async function askToRemove(page, code) {
   await departments.departmentRow(page, code).getByRole('button', { name: REMOVE }).click();
-  const write = await gate(page, new RegExp(`^${departments.API}/[^/]+$`), isWrite, {
+  // The hold names the one id: `^.../[^/]+$` would take the import panel's own
+  // `POST .../import` as well, and the way in both rows use is an import
+  // (measured on 19 ตุลาคม 2569, the read it starts never arriving).
+  const write = await gate(page, new RegExp(`^${departments.API}/${code}$`), isWrite, {
     success: {},
   });
   await panel(page).getByRole('button', { name: CONFIRM }).click();
@@ -103,19 +132,27 @@ async function askToRemove(page, code) {
 }
 
 /**
- * The pager's own way back, pressed while the removal is still out.
+ * The move that survives #210, made while the removal is still out: a row
+ * imported through the panel, whose `onImported` goes to page one.
  *
- * From under the dialog's overlay with the keyboard until 18 ตุลาคม 2569,
- * because the cover ate a click and contained nothing (#204); an ordinary click
- * since #217 contained the focus and the rows put the question away first. The
- * situation is the same one and only the way in moved (#203) - dismissing the
- * question cancels nothing that has already left the browser.
+ * The pager's own two presses did this until 19 ตุลาคม 2569 - from under the
+ * dialog's overlay with the keyboard until 18 ตุลาคม 2569, because the cover ate
+ * a click and contained nothing (#204), and by ยกเลิก and an ordinary click
+ * after #217 contained it (#203). The situation is the same one and only the
+ * way in has moved again; what the rows claim about the key is untouched.
+ *
+ * Returns the list read the move started, which the caller draws or holds.
  */
-async function stepBack(page) {
+async function moveByImport(page, code) {
   const moved = departments.waitForList(page);
-  await previous(page).click();
+  await departments.importOneRow(page, {
+    code,
+    name: 'ภาควิชาทดสอบทางเข้า',
+    note: 'Row 206 - the way in that survives #210',
+  });
   const answer = await moved;
   expect(answer.status()).toBe(200);
+  expect(pageOf(answer.request()), 'the page the import takes them to').toBe('1');
   return answer;
 }
 
@@ -136,21 +173,18 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     expect(last, 'one row on the last page, which is what a step back needs').toHaveLength(1);
 
     const write = await askToRemove(page, last[0]);
-    // The premise: the pager is enabled while the removal is out, which is this
-    // screen's missing `busy` (#199, which did not reach it). Reaching it is the
-    // half #217 moved - the question is put away rather than reached through,
-    // and putting it away leaves the answer held where it was - so the two
-    // presses below are ordinary clicks. The assertion that the pager held the
-    // focus went with that move: it stated how the keyboard got there, and
-    // there is no keyboard in this way in.
-    await expect(previous(page), 'the pager while the removal is out').toBeEnabled();
     await dismiss(page);
+    // The premise, the other way up since #210: the pager is dead while the
+    // removal is out, so the move below is not made with it. Asserted rather
+    // than assumed, because it is what decides which way in the row takes
+    // (#51) - and read with the question put away, which is where a person
+    // reads it.
+    await expect(previous(page), 'ก่อนหน้า while the removal is out').toBeDisabled();
+    await expect(next(page), 'ถัดไป while the removal is out').toBeDisabled();
 
-    const first = await stepBack(page);
-    expect(pageOf(first.request()), 'the page the first press asked for').toBe(String(pages - 1));
-    await untilDrawn(page, first);
-    const moved = await stepBack(page);
-    expect(pageOf(moved.request()), 'the page the person moved to').toBe(String(pages - 2));
+    const moved = await moveByImport(page, 'XZZ');
+    await untilDrawn(page, moved);
+    expect((await reading(page, table)).shown, 'the page the person moved to').toBe(1);
 
     // The removal lands. Nothing steps back, because the page that lost its
     // last row is not the one in front of the person, and the list they are on
@@ -159,14 +193,14 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     write.open();
     await write.answered;
     const answer = await drawn;
-    expect(pageOf(answer.request()), 'the page the handler read').toBe(String(pages - 2));
+    expect(pageOf(answer.request()), 'the page the handler read').toBe('1');
     await untilDrawn(page, answer);
 
     // Drawn, and drawn where they were standing. A row that only said *I saw
     // the sentence* would pass on a screen that drew nothing (#203), and one
     // that only read the page would pass on the defect's own silence.
     expect(await keysOn(table), 'the full page they moved to').toHaveLength(10);
-    expect((await reading(page, table)).shown, 'the page the pager still reads').toBe(pages - 2);
+    expect((await reading(page, table)).shown, 'the page the pager still reads').toBe(1);
     await expect(page.getByRole('status'), 'the banner of the removal').toHaveText(REMOVED);
   });
 
@@ -214,27 +248,34 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
    * row, and a fix that splits a guard shrinks every mutant that quoted the
    * block whole (#203).
    *
-   * Here the press is **held at the route**, so the list drawn is still the
-   * page the removal was sent from: #207's key matches, and the only thing left
-   * saying the move may not be made is that the pager has asked for somewhere
-   * else. That is this file's claim, with nothing else holding it up.
+   * Here the move's own read is **held at the route**, so the list drawn is
+   * still the page the removal was sent from: #207's key matches, and the only
+   * thing left saying the move may not be made is that the pager has been asked
+   * for somewhere else. That is this file's claim, with nothing else holding it
+   * up - and since #210 the asking is done by the import panel's `onImported`
+   * rather than by a press, which writes `page` exactly as the pager did.
    */
   test('a removal moves nobody while the page the pager asked for has not landed', async ({
     page,
   }) => {
     const table = departments.listTable(page);
     const pages = await toLastPage(page, table, departments.waitForList);
+    expect(pages).toBeGreaterThanOrEqual(3);
     const last = await keysOn(table);
     expect(last, 'one row on the last page, which is what a step back needs').toHaveLength(1);
 
     const write = await askToRemove(page, last[0]);
-    // One press back, with that page's list held: the pager has asked for
-    // another page and the rows in front of the person are still this one's.
     await dismiss(page);
+    // The move, with the list it asks for held: the screen has been moved to
+    // page one and the rows in front of the person are still the last page's.
     const heldList = await gate(page, new RegExp(`^${departments.API}$`), isGet);
-    await previous(page).click();
+    await departments.importOneRow(page, {
+      code: 'XZY',
+      name: 'ภาควิชาทดสอบทางเข้า',
+      note: 'Row 206 - the window the move opens',
+    });
     await heldList.sent;
-    expect(pageOf(heldList.request), 'the page the press asked for').toBe(String(pages - 1));
+    expect(pageOf(heldList.request), 'the page the move asked for').toBe('1');
 
     // The removal lands inside that window. Nothing moves: the read is of the
     // page the person has asked for, and the sentence is keyed for it.
@@ -247,12 +288,12 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     write.open();
     await write.answered;
     const answer = await follow;
-    expect(pageOf(answer.request()), 'the page the handler read').toBe(String(pages - 1));
+    expect(pageOf(answer.request()), 'the page the handler read').toBe('1');
     heldList.open();
     await untilDrawn(page, answer);
 
-    expect(await keysOn(table), 'the full page the press asked for').toHaveLength(10);
-    expect((await reading(page, table)).shown, 'the page the pager reads now').toBe(pages - 1);
+    expect(await keysOn(table), 'the full page the move asked for').toHaveLength(10);
+    expect((await reading(page, table)).shown, 'the page the pager reads now').toBe(1);
     await expect(page.getByRole('status'), 'the banner of the removal').toHaveText(REMOVED);
   });
 });

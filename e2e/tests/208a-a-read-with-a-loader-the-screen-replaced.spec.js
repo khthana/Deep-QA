@@ -54,15 +54,22 @@ const {
  * costs to lose them:
  *
  * - **Departments** is where the defect was measured, on 14 October 2569 while
- *   #207 was being built, and the way in is the pager under the confirmation's
- *   overlay: keyboard only, because `bg-black/50` eats the click (#199's own
- *   measurement), so it expired the day a focus trap landed: #204 closed on
- *   18 ตุลาคม 2569 with the announcing half, which traps nothing, and #217
- *   contained the focus the same day. **The row was re-aimed rather than left
- *   as a net** - it dismisses the question with ยกเลิก and clicks the pager,
- *   which is the situation unchanged and the way in moved (#203). #210's `busy`
- *   would have closed it one screen sooner, and would now take the control
- *   away rather than the keyboard.
+ *   #207 was being built, and the way in was the pager under the
+ *   confirmation's overlay: keyboard only, because `bg-black/50` eats the click
+ *   (#199's own measurement), so it expired the day a focus trap landed: #204
+ *   closed on 18 ตุลาคม 2569 with the announcing half, which traps nothing, and
+ *   #217 contained the focus the same day. The row was re-aimed rather than left
+ *   as a net - ยกเลิก and then an ordinary click, the situation unchanged and the
+ *   way in moved (#203) - and on 19 ตุลาคม 2569 it was re-aimed a second time,
+ *   for the same reason: #210 sent `busy` to all six administration pagers, so
+ *   the control itself is gone while the removal is out. What it is aimed at now
+ *   is the import panel, which keeps its own flag and whose `onImported` goes to
+ *   page one: a read of a list the person can still start while a removal of
+ *   theirs is held (`departments.importOneRow`). The claim is unchanged - the
+ *   handler's own read is made with a loader the screen has replaced - and only
+ *   the page it draws has moved, from the one they were standing on to the one
+ *   the import takes them to. `207a` had no such way left and is three nets;
+ *   this row is what #217's rule calls the other half of that bill (#210).
  * - **The accounts screen** asked nothing before it switched a status when this
  *   was written: no overlay, no dialog, and the search box and the pager were
  *   ordinary clicks while the `PUT` was out - a way in reachable with a bare
@@ -122,34 +129,28 @@ async function askToRemove(page, code) {
 }
 
 /**
- * One press of the pager, with the removal still out.
+ * The read the person can still start while the removal is out, which since
+ * #210 is the import panel's: `onImported` goes to page one, so the screen is
+ * reading a list the handler's own loader does not belong to.
  *
- * Focus and Enter from under the dialog's overlay until 18 ตุลาคม 2569, the cover
- * having taken a click and contained nothing (#204); an ordinary click since
- * #217 contained it and the row dismisses the question first. The way in `206a`
- * and `207a` measured, moved the same way (#203).
+ * The pager's two presses did this until 19 ตุลาคม 2569 - away and back, which
+ * left the person where they were and replaced `load` twice over. What the
+ * branch under test needs is not that they stood still but that the handler
+ * **moves** nobody, and it moves nobody here because the last page keeps rows
+ * after the removal: the page the answer is drawn on is then whichever one the
+ * screen is reading, which is page one.
  */
-async function pressPager(page, button) {
+async function readElsewhere(page) {
   const moved = departments.waitForList(page);
-  await button.click();
+  await departments.importOneRow(page, {
+    code: 'ZI',
+    name: 'ภาควิชาทดสอบทางเข้า',
+    note: 'Row 208 - the way in that survives #210',
+  });
   const answer = await moved;
   expect(answer.status()).toBe(200);
+  expect(pageOf(answer.request()), 'the page the import takes them to').toBe('1');
   return untilDrawn(page, answer);
-}
-
-/**
- * Back one page and forward again: the pager where it started, and a `load` the
- * screen has replaced twice over.
- *
- * Twice over on purpose. One press would leave the person on another page,
- * which is a different branch of the same handler (#206's), and what this
- * ticket is about is the branch that moves nobody: the page the removal was
- * sent from is the page they are standing on, and the loader that reads it is
- * still not the one the handler holds.
- */
-async function awayAndBack(page) {
-  await pressPager(page, previous(page));
-  return pressPager(page, next(page));
 }
 
 test.describe('ภาควิชา — the removal that moves nobody (Departments.js)', () => {
@@ -158,10 +159,11 @@ test.describe('ภาควิชา — the removal that moves nobody (Departme
     await departments.openDepartments(page);
   });
 
-  test('a removal draws the list of the page the pager came back to', async ({ page }) => {
+  test('a removal draws the list of the page the screen is reading', async ({ page }) => {
     const table = departments.listTable(page);
     await departments.threePagesEndingIn(page, { rows: 3, prefix: 'ZZ', note: 'Row 208' });
     const pages = await toLastPage(page, table, departments.waitForList);
+    expect(pages, 'a page the import can move them off').toBeGreaterThan(1);
     const last = await keysOn(table);
     expect(
       last,
@@ -169,34 +171,37 @@ test.describe('ภาควิชา — the removal that moves nobody (Departme
     ).toHaveLength(3);
 
     const write = await askToRemove(page, last[0]);
-    // The premise of the way in, asserted rather than assumed (#51): this
-    // screen's `Pager` is given no `busy` - #199 gave one to the enrolment
-    // screen and to no other, the prop defaulting to `false` - so the pager is
-    // pressable for as long as the removal is out. Since #217 the question has
-    // to be got out of the way rather than reached through, which is a press of
-    // its own and leaves the write where it was.
+    // The premise of the way in, asserted rather than assumed (#51) and the
+    // other way up since #210: this screen's `Pager` is given `busy`, so the
+    // control the row used until 19 ตุลาคม 2569 is dead for as long as the
+    // removal is out, and the read below is started somewhere else. The
+    // question is put away first either way, which is a press of its own and
+    // leaves the write where it was (#217).
     await dismiss(page);
-    await expect(previous(page), 'the pager while the removal is out').toBeEnabled();
+    await expect(previous(page), 'ก่อนหน้า while the removal is out').toBeDisabled();
+    await expect(next(page), 'ถัดไป while the removal is out').toBeDisabled();
 
-    await awayAndBack(page);
+    await readElsewhere(page);
     expect(
       await keysOn(table),
-      'the rows the page still holds, the removal not having landed yet',
-    ).toEqual(last);
-    const { total: before } = await reading(page, table);
+      'the rows of the last page, which the screen is no longer showing',
+    ).not.toEqual(last);
+    const onScreen = await keysOn(table);
+    const { total: before, shown } = await reading(page, table);
+    expect(shown, 'the page the import put them on').toBe(1);
 
     const drawn = departments.waitForList(page);
     write.open();
     await write.answered;
     const answer = await drawn;
-    expect(pageOf(answer.request()), 'the page the handler read').toBe(String(pages));
+    expect(pageOf(answer.request()), 'the page the handler read').toBe('1');
     // The claim: the answer to that read is drawn. Not *I saw no placeholder* -
     // a row that says only what it did not see passes for the wrong reason
     // (#203) - but the count and the page the line reads out, which move only
     // when `setData` runs.
     await untilDrawn(page, answer);
 
-    expect(await keysOn(table), 'the rows left on the page nobody moved off').toEqual(last.slice(1));
+    expect(await keysOn(table), 'the rows of the page the screen is reading').toEqual(onScreen);
     expect((await reading(page, table)).total, 'the count the line reads out').toBe(before - 1);
     expect(
       await table.getByText(LOADING).count(),
