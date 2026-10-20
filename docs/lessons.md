@@ -12264,7 +12264,10 @@ instead of implying a mutant.
 
 Third, the `finally`'s `if (!handedOn)` leaves a sentence keyed for *another* read neither said
 nor cleared, where before the fix it was always cleared. Narrow, untested, no mutant — written
-into the catalogue's list of what cannot be reached at this seam, with a ticket owed.
+into the catalogue's list of what cannot be reached at this seam, and filed as #224 — which asks for the
+ways in to be measured before anything is changed, because a window nothing can reach is answered by a
+dated paragraph and not by a fix (#81). The other two debts #209 found went the same day: #222 for the
+server's missing page ceiling, #223 for the twelve `140a` rows whose supersession #210's `busy` moved.
 
 And one finding was wrong, which is about the rate #209 had already measured for its own ticket's
 claims: sheet `16`'s walked row *the table steps back to the previous page by itself* was reported
