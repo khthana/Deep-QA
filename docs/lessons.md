@@ -12379,3 +12379,61 @@ control live, five of them on the two screens #221 is about. The docstring had w
 prediction down and dating it is what made it look handled: a deferral in prose and not in the
 tracker is a decision nobody can find (#119, #89, #125), so it is **#225** now, with the census
 and the re-sweep condition in it.
+
+## #225 — the wait that came out, and the five rows that were three
+
+#223 left the retrying wait in `supersede` for the eleven rows whose screens still leave the
+pager live, wrote the prediction into the docstring, dated it, and filed the deferral as a ticket
+because a deferral in prose is a decision nobody can find. The fix is one shape in three places:
+read `isDisabled()` once and assert it, instead of `await expect(...).toBeEnabled()`.
+
+**The census I published was evidence about the control, not about the species.** #223's third
+question had been counted by the **pager**: four press sites in the suite, only `supersede`'s
+behind a retrying wait, so *empty*. Counted by the **mechanism** — a retrying enable-wait in front
+of a press that has to land inside the held window — it is **three**, and all three are in the
+same file: `supersede`'s default press and the two **filter** presses, which `moveTo.press` runs
+after `reloadSent` exactly as it runs the pager's. The day a filter is given `disabled={busy}`,
+which is what #210 did to the pagers, five rows would defer their press and pass in silence. That
+is #174 met in my own instrument, one layer up from where it was written: the population was not
+*presses of a pager*, it was *presses inside a held window*. The nine other files that write
+`toBeEnabled` hold none of the species — their waits are claims that a control comes **back** when
+the answer lands, where retrying is the whole point, or premises read with nothing out, where a
+dead control hangs and the row dies red at the timeout rather than passing. `ontoPageTwo` and
+`pagerIsDeadWhileTheReloadIsOut`'s own premise are that second kind and keep their waits, which is
+the same reading as #50/#214's *who else removes this*: ask what the wait can be satisfied by.
+
+**And the ticket's number for what the fix buys was wrong, measured.** #225 said five rows: three
+on ข้อมูลผู้ใช้งาน and two on ข้อมูลนักศึกษา, the two screens whose `<Pager>` is handed no `busy`
+although the screen holds one (#221's question). The measurement is four cells — two mutants that
+are #221's proposal **made to run** (#48), each with the wait in and with it out:
+
+| | with the wait in | with the read in |
+|---|---|---|
+| `140:usersbusypager` (three rows) | 3 passed | **2 red**, 1 passed |
+| `140:studentsbusypager` (two rows) | 2 passed | **1 red**, 1 passed |
+
+Five of five pass blind with the wait in, which is the defect, and **three** go red with it out.
+The two that still pass are the **import** rows: `ImportPanel` keeps its own flag and never raises
+the screen's, so a `<Pager>` handed a `busy` the import does not put up is live through the import
+anyway — the same three-ways-in reading that gave #223 eleven survivors instead of one, met from
+the other side. So the eleven rows that press ถัดไป are three that #221 would blind, seven imports
+that no mutant here can blind at all, and `onBack`, which lets `busy` down before it reloads.
+
+The wrong five had been published in four places by then: both docstring paragraphs, the mutation
+file's own block, the ticket body and a comment on #221 pointing the number at the owner. The two
+docstrings and the mutation block are corrected; the **ticket body is left standing**, being a
+record of what was claimed on the day it was written (#54), and #221 gets a second comment rather
+than an edited one, for the same reason. What a ticket's closing comment is for is the refutation.
+
+**The re-sweep, 20 October 2569.** Eighteen mutants, one at a time, code restored between, each
+against its own screen's rows in `140a`: the eleven that still killed after #210, #225's own two,
+and the five whose rows press a **filter**, because a change to how a row presses is a change to
+what the row measures (#107, #68) and those five presses changed too. Every one red at the row it
+was written for; `140a` with the read in and no mutant applied was **32 of 32**
+on 20 October 2569 (2.7 minutes), run before the sweep - a different measurement
+from #223's baseline of the same shape the day before, and the one #225's closing
+condition asks for. `enrolmentreloadstalewins` kills
+**two** rows, เพิ่มนักศึกษา and การนำเข้า, and that is right rather than a bystander: the file's own
+docstring says those two call one guard, so one mutant is two reachability claims and not one claim
+counted twice (#191). What was wrong there was the *written for* label in my sweep driver, which
+named one of the two — a driver's own table is a hand-kept figure like any other (#119).

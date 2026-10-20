@@ -101,6 +101,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   priced another at *spreads session knowledge into every endpoint*, when the mount point that
   already holds the data and the client funnel that already holds the listener made it two sites
   and one `exposedHeaders` line. Re-derive each price from the mount points before choosing. (#77)
+- **A ticket's count of what its fix *buys* is a claim like its count of what is wrong** — and the
+  instrument that settles it is the ticket's own proposal made to run (#48), applied with the
+  defect in and with it out. #225 predicted five rows would stop measuring the day #221 landed;
+  four cells gave **three**, because two of the five press their control through an import, and a
+  panel that keeps its own flag leaves that control live whatever the screen is handed. Measure
+  both sides of each mutant before publishing the number — and when it is refuted, the ticket body
+  stays standing as the record of what was claimed (#54): the refutation goes in the closing
+  comment and in whatever comment pointed the wrong number at somebody else. (#225)
 - **A ticket written from another ticket's closing sweep inherits that sweep's population** —
   #209 swept the thirteen mutants its own fix re-aimed and reported twelve survivors, which is the
   right scope for #209 and not a statement about a file of thirty-one. Re-swept whole before

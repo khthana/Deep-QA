@@ -110,22 +110,42 @@ const enrolment = require('../support/enrolment-screen');
  * re-aimed by #210, **two** nets and **eleven** still pressing ถัดไป.
  *
  * #223's third question was asked before either of its options — does any
- * other caller defer a press the same way? Measured 20 ตุลาคม 2569: the suite
- * presses a pager at four sites, `supersede` and `ontoPageTwo` here and
- * `68a:98` and `68a:228`, and only `supersede`'s stands behind a retrying
- * `toBeEnabled()`. `68a`'s two are on ข้อมูลนักศึกษา, whose `<Pager>` is handed
- * no `busy` at all, so the census of other blinded callers is **empty**. The
- * wait is still in `supersede` for the eleven rows below, which is safe only
- * while their own screens leave the control live — **#225**.
+ * other caller defer a press the same way? Counted by the **pager** first, and
+ * that census was evidence about what it counted (#174): the suite presses a
+ * pager at four sites, `supersede` and `ontoPageTwo` here and `68a:98` and
+ * `68a:228`, and only `supersede`'s stood behind a retrying `toBeEnabled()`,
+ * `68a`'s two being on ข้อมูลนักศึกษา, whose `<Pager>` is handed no `busy` at
+ * all. Counted by the **mechanism** on 20 ตุลาคม 2569 — a retrying enable-wait
+ * in front of a press that has to land inside the held window — it is three,
+ * all three in this file: `supersede`'s default and the two **filter** presses,
+ * which `moveTo.press` runs after `reloadSent` just the same. All three now
+ * read once. The nine other files that write `toBeEnabled` hold none of the
+ * species: their waits are either claims that a control comes **back** when the
+ * answer lands, where retrying is the whole point, or premises read with
+ * nothing out, where a dead control hangs and the row dies red at the timeout
+ * rather than passing (`ontoPageTwo` and `pagerIsDeadWhileTheReloadIsOut`'s own
+ * premise are that second kind, and keep their waits).
  *
- * Eleven rows still press ถัดไป, and five of them are the reason to read this
- * paragraph before writing one: ข้อมูลผู้ใช้งาน's three and ข้อมูลนักศึกษา's two
- * are on the two screens whose `<Pager>` is handed no `busy` although the
- * screen holds one, which is **#221**'s question and not a property of this
- * file. The day it is answered the way #210 was, those five rows are blinded
- * exactly as these were and nothing goes red (measured 20 ตุลาคม 2569; the
- * other six press a control the handler leaves live - the five imports and
- * `onBack`).
+ * The wait came out of `supersede` on 20 ตุลาคม 2569 (**#225**): the press now
+ * reads `isDisabled()` once, so a row whose pager has gone dead fails at the
+ * press. `usersbusypager` and `studentsbusypager` are #221's proposal made to
+ * run, and measured on both sides that day they say so — five of five passed
+ * with the wait in, **three** red at the press with it out.
+ *
+ * Three and not five, which is the number #225 was filed with. The five rows on
+ * those two screens are ข้อมูลผู้ใช้งาน's บันทึก, ระงับ and การนำเข้า and
+ * ข้อมูลนักศึกษา's บันทึก and การนำเข้า, and the two **imports** among them keep
+ * their claim whatever #221 is answered - they pass under those two mutants
+ * rather than going red, because the control they press really is live:
+ * `ImportPanel` keeps its own flag and never raises the screen's, so a
+ * `<Pager>` handed a `busy` the import does not put up is live through the
+ * import anyway. So the eleven rows that press ถัดไป are
+ * **three** that #221 would blind — and which, since #225, go **red** at the
+ * press the day it does instead of passing in silence, that being the whole of
+ * what #225 bought — **seven** imports, which no mutant here can blind at all,
+ * and `onBack`, which lets `busy` down before it reloads. Blinding the seven
+ * would need a panel that raises the screen's flag, which no code does today
+ * (#123 — write down what the instrument cannot measure).
  *
  * Two rows are left as **nets** instead — the refused แก้ไข of Rubric and of
  * ข้อมูลการเปิดรายวิชา. Their only way in left is the filter, and `144a` already
@@ -263,6 +283,24 @@ const late = (ms) => async (route, request) => {
 };
 
 /**
+ * Reads once that a control is live and hands it back to be pressed - #225.
+ *
+ * The three superseding presses in this file all land **inside** the window the
+ * row holds, so `await expect(...).toBeEnabled()` was the wrong instrument: it
+ * retries, and a control that comes back to life when the held answer is drawn
+ * satisfies it by waiting, which moves the press instead of failing the row
+ * (#50, #209, #214). This is an instrument and not a claim of any row, so one
+ * copy serves all three (#171).
+ */
+async function live(control, what) {
+  expect(
+    await control.isDisabled(),
+    `${what} is live, so pressing it supersedes the held read`,
+  ).toBe(false);
+  return control;
+}
+
+/**
  * Presses a handler, supersedes its reload while it is out, and reads once.
  *
  * `list` is the pathname the screen's list is read from, `table` its table,
@@ -287,10 +325,7 @@ async function supersede(page, { list, table, rows, key, press, move, held }) {
   const moveTo = move ?? {
     pages: true,
     reads: (url) => isList(url) && asPage(url, 2),
-    press: async () => {
-      await expect(next(page)).toBeEnabled();
-      await next(page).click();
-    },
+    press: async () => (await live(next(page), 'ถัดไป')).click(),
   };
   const isAsked = held ?? ((url) => isList(url) && asPage(url, 1));
   // The superseding read is not held, whatever identifies it: holding both
@@ -713,13 +748,10 @@ async function openRubricsScreen(page) {
 /** The หลักสูตร filter, which is a dependency of `load` and is never `disabled={busy}`. */
 const throughTheProgramFilter = (page) => ({
   reads: (url) => url.pathname === rubrics.API && url.searchParams.get('program_id') === PROGRAM_INTL,
-  press: async () => {
-    await expect(
-      rubrics.programFilter(page),
-      'the filter, which is not disabled while the write is out',
-    ).toBeEnabled();
-    await rubrics.programFilter(page).selectOption(PROGRAM_INTL);
-  },
+  press: async () =>
+    (await live(rubrics.programFilter(page), 'the หลักสูตร filter')).selectOption(
+      PROGRAM_INTL,
+    ),
 });
 
 test('Rubric (Rubrics.js): the list a refused แก้ไข reloads does not land on the page the pager has left', async ({
@@ -790,13 +822,10 @@ const offeringDetail = /^\/api\/offerings\/\d+$/;
 const throughTheYearFilter = (page) => ({
   reads: (url) =>
     url.pathname === offerings.API && url.searchParams.get('academic_year') === CURRENT_YEAR,
-  press: async () => {
-    await expect(
-      offerings.yearFilter(page),
-      'the filter, which is not disabled while the write is out',
-    ).toBeEnabled();
-    await offerings.yearFilter(page).fill(CURRENT_YEAR);
-  },
+  press: async () =>
+    (await live(offerings.yearFilter(page), 'the ปีการศึกษา filter')).fill(
+      CURRENT_YEAR,
+    ),
 });
 
 test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused ตอนเรียนและผู้สอน reloads does not land on the page the pager has left', async ({

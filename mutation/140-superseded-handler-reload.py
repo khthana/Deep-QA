@@ -368,6 +368,42 @@ MUTANTS = {
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => true)\n'),
+    # --- #225 ---------------------------------------------------------------
+    # Not #140 claims. These two are #221's proposal made to run: they hand the
+    # two screens whose `<Pager>` takes no `busy` the flag the screen already
+    # holds, which is what #210 did to the other six on 19 ต.ค. 2569. What they
+    # put at risk is `140a`'s own press - `supersede` read the control instead
+    # of waiting for it from #225 (20 ต.ค. 2569), so a row whose pager has gone
+    # dead fails at the press. Measured on both sides that day, which is the
+    # four cells a fix owes (#203):
+    #
+    #                         with the wait in   with the read in
+    #   usersbusypager        3 passed           2 red, 1 passed
+    #   studentsbusypager     2 passed           1 red, 1 passed
+    #
+    # Five of five passed blind with the wait in - that is the defect #225 was
+    # filed for - and **three** go red with it out, not the five the ticket
+    # predicted. The two that still pass are the **import** rows: `ImportPanel`
+    # keeps its own flag and never raises the screen's, so a `<Pager>` handed
+    # `busy` is live through an import anyway. The three reds are
+    # ข้อมูลผู้ใช้งาน's บันทึก and ระงับ and ข้อมูลนักศึกษา's บันทึก.
+    #
+    # What no mutant here builds: the other eight rows press ถัดไป on a
+    # control the handler leaves live - seven imports, whose panel keeps its own
+    # flag, and `onBack`, which lets `busy` down before it reloads. Blinding the
+    # seven needs a panel that raises the screen's flag, which no code does
+    # today (#123 - write down what the instrument cannot measure).
+    #
+    # If #221 is answered *do not disable those two pagers*, these two stay:
+    # a declined proposal made to run is what keeps *we chose otherwise* a claim
+    # the suite holds (#48), and they would then be the only thing measuring that
+    # the two screens' pagers are live on purpose rather than by omission.
+    'usersbusypager': ('users',
+        '            onPage={setPage}\n          />\n',
+        '            onPage={setPage}\n            busy={busy}\n          />\n'),
+    'studentsbusypager': ('students',
+        '            onPage={setPage}\n          />\n',
+        '            onPage={setPage}\n            busy={busy}\n          />\n'),
 }
 
 main(FILES, MUTANTS)
