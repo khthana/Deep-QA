@@ -101,6 +101,14 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   priced another at *spreads session knowledge into every endpoint*, when the mount point that
   already holds the data and the client funnel that already holds the listener made it two sites
   and one `exposedHeaders` line. Re-derive each price from the mount points before choosing. (#77)
+- **A ticket written from another ticket's closing sweep inherits that sweep's population** —
+  #209 swept the thirteen mutants its own fix re-aimed and reported twelve survivors, which is the
+  right scope for #209 and not a statement about a file of thirty-one. Re-swept whole before
+  anything was changed, **fifteen** survived, and the repair was nineteen rows plus two nets rather
+  than the ticket's twelve — three ways in that the ticket's one sentence had no room for were
+  already killing, four of them held by rows in a sibling file that the one-file sweep never ran.
+  A sweep is evidence about the mutants somebody ran (#107, #68), so re-derive the population from
+  the catalogue before pricing the fix. (#223)
 - **A ticket that names a race has named a window, not the population of ways in** — the same wrong
   screen can be reachable with no race at all, and that way lasts until a reload, so it is the one a
   person meets. Measure for the raceless sibling before accepting the sequence the ticket wrote.
@@ -560,7 +568,11 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   Four of #207's five went that way the day the owner closed the pager, and the survivor of the
   four survived for a second reason — the one remaining way in made the two values it swaps the
   same number (#206's tenth reading). Price a closed way in in mutants as well as in rows (#217).
-  (#210)
+  **But the net and the mutant part company where a second file's rows press the same handler** —
+  two of #223's refusal mutants kept every kill they had, in `144a`, while the `140a` row they used
+  to prove became a net, so the withdrawal question is asked per mutant and not per row; and reading
+  that re-sweep against the total says nothing, the count being unchanged and the row that lost its
+  proof being in another file (#83). (#210, #223)
 
 ### Tests and fixtures
 

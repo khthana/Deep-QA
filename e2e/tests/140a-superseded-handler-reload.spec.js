@@ -3,13 +3,20 @@
 const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
-const { byAlias, CURRENT_YEAR, PROGRAM } = require('../../db/seed');
+const { byAlias, CURRENT_YEAR, PROGRAM, PROGRAM_INTL } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv, importCsv } = require('../support/import-panel');
-const { next, reading, keysOn } = require('../support/pager');
+const { next, reading, keysOn, untilDrawn } = require('../support/pager');
+const {
+  DOCUMENT,
+  LAST_YEAR,
+  intoTheListedSectionScreen,
+  markDocument,
+} = require('../support/section-jump');
+const { DASHBOARD } = require('../support/teaching-screen');
 const users = require('../support/users-screen');
 const departments = require('../support/departments-screen');
 const programs = require('../support/programs-screen');
@@ -42,28 +49,75 @@ const enrolment = require('../support/enrolment-screen');
  *
  * ## How a row is built
  *
- * Each row opens its screen on page one, holds back every read of page one with
- * `page.route` for `HELD_MS`, and presses the handler. Once the reload has been
- * **sent** — waited for as a request, so a handler that reloads nothing fails
- * the row rather than passing it — it supersedes that read, waits for the
+ * Each row opens its screen, holds back the read its handler is about to send
+ * with `page.route` for `HELD_MS`, and presses the handler. Once the reload has
+ * been **sent** — waited for as a request, so a handler that reloads nothing
+ * fails the row rather than passing it — it supersedes that read, waits for the
  * superseding one to answer, then for the held answer to be handed back, and
  * reads the screen once after `SETTLE_MS`: the pager's line and the first cell
- * of every row, against the superseding answer. The control is ถัดไป, because
- * it is the one every screen has.
- *
- * One row's is not, since 19 ตุลาคม 2569. #210 gave the six administration
- * pagers `busy`, and `ข้อมูลการเปิดรายวิชา: เปิดรายวิชา` holds its reload while
- * the save that made it is still out, so ถัดไป is disabled exactly there - the
- * price of closing a way in, paid wherever the person has another way to the
- * same situation (#217). That row passes a `move` of its own: the screen's
- * ปีการศึกษา filter, which is not `disabled={busy}` and supersedes the same
- * request by the same route through `load`'s dependencies. What the row claims
- * is unchanged; only which control replaced the read has moved. Censused the
- * same day: it is the only one of this file's rows whose press leaves `busy`
- * up at the moment the superseding control is pressed.
+ * of every row, against the superseding answer.
  *
  * `SubjectStudents` has one site with two callers — `reload`, which adding a
  * student and the import both call — so it has two rows and one guard.
+ *
+ * ## Which control supersedes the read, and why it is ถัดไป on eleven rows only
+ *
+ * It was ถัดไป on every row until 19 ตุลาคม 2569, that being the one control
+ * every screen has. #199 then gave the enrolment screen's pager
+ * `disabled={busy}` and #210 the six administration screens' — and `busy` is up
+ * from a handler's press until the read it is waiting for has been drawn, so on
+ * seven of the nine screens this file's press became a press of a dead button.
+ * Nothing went red. `supersede` pressed it behind
+ * `await expect(next(page)).toBeEnabled()`, which is a **retrying wait** and
+ * not an assertion: the press moved to after the held answer had been drawn, so
+ * the supersession each row exists to build never happened and the row passed
+ * whether the guard was there or not (#171, and the `CLAUDE.md` line #209 wrote
+ * about a wait in front of a superseding press).
+ *
+ * Which claims that left standing was swept on 20 ตุลาคม 2569, one mutant at a
+ * time: of the thirty-one in `mutation/140-superseded-handler-reload.py`, five
+ * are on the two screens whose pager is still live (#221 holds the question of
+ * whether it should be), eleven were still killed, and **fifteen were proved by
+ * nothing**. Eleven and not one, because three ways in were never gated:
+ * `ImportPanel` keeps its own flag and touches neither of the screen's, which
+ * leaves the pager live through the five imports' own rows; `onBack` on
+ * ข้อมูลการเปิดรายวิชา lets `busy` down before it reloads; and `144a`'s rows
+ * supersede by **filter**, which kept the four refusals of the filtered screens
+ * killed in a file this file's own sweep never runs (#123).
+ *
+ * So eighteen rows are re-aimed here, on 20 ตุลาคม 2569, at a control the
+ * person still has while the write is out — the price of closing a way in, paid
+ * wherever they have another way to the same situation (#217):
+ *
+ * - **twelve** on the four screens that import. `ImportPanel`'s `onImported`
+ *   goes to page one when the person is not on it, so the row stands on **page
+ *   two** and the superseding read is still a page move, asked for by a control
+ *   the screen leaves live. `held` says which read is held, for exactly this.
+ * - **four** on Rubric and ข้อมูลการเปิดรายวิชา, which have no import panel: a
+ *   **filter**, which is a dependency of `load` like the page and is not
+ *   `disabled={busy}` on any of these screens. `140:offeringssavestalewins` was
+ *   given one on 19 ตุลาคม 2569 and was the only mutant of those two screens
+ *   still killing anything the morning this was measured.
+ * - **two** on the enrolment screen, which has neither a filter nor a panel
+ *   move from page one: the **section jump**, which `202a` was re-aimed at when
+ *   #199 closed the same way in there, and which `141b` measured keeps the
+ *   document (`load` is keyed on `sectionId` as well as on `page`).
+ *
+ * Eleven rows still press ถัดไป, and five of them are the reason to read this
+ * paragraph before writing one: ข้อมูลผู้ใช้งาน's three and ข้อมูลนักศึกษา's two
+ * are on the two screens whose `<Pager>` is handed no `busy` although the
+ * screen holds one, which is **#221**'s question and not a property of this
+ * file. The day it is answered the way #210 was, those five rows are blinded
+ * exactly as these were and nothing goes red (measured 20 ตุลาคม 2569; the
+ * other six press a control the handler leaves live - the five imports and
+ * `onBack`).
+ *
+ * Two rows are left as **nets** instead — the refused แก้ไข of Rubric and of
+ * ข้อมูลการเปิดรายวิชา. Their only way in left is the filter, and `144a` already
+ * presses that handler and moves that filter, so a re-aim here would be a copy
+ * of a row in another file. Each reads once that ถัดไป is dead while the reload
+ * is out, which is the premise under #210's price, and says where its claim is
+ * held (#47, #203 — a row left as a net says it is one).
  *
  * ## What this file writes
  *
@@ -76,6 +130,14 @@ const enrolment = require('../support/enrolment-screen');
  * subjects (#139's reason). The rows themselves write too — an edit saved
  * unchanged, a suspension, an import, an enrolment, a deletion, a copy — and
  * `hold()` puts all of it back.
+ *
+ * Four more subjects since #223, sorting after the first ten and so onto page
+ * two: one for the removal that happens there, because a placed subject is
+ * refused by the schema's `RESTRICT` and a refusal reloads nothing, and three
+ * for รายวิชาในหลักสูตร's three moves to place, a placement being what that
+ * screen's import panel adds. A seed that gains a row a mutant can reach
+ * expires a kill count (#48, #202), which is why every mutant of this file was
+ * swept again the day they went in.
  */
 
 const db = createPool({ schema: E2E_SCHEMA });
@@ -93,6 +155,16 @@ const PROGRAMS = eleven('00140', 2);
 const SUBJECTS = Array.from({ length: 13 }, (unused, i) => `00140${String(i).padStart(3, '0')}`);
 const PLACED = SUBJECTS.slice(1, 12);
 const UNPLACED_FOR_IMPORT = SUBJECTS[12];
+/**
+ * Four subjects of page two, since #223, placed nowhere.
+ *
+ * `00140050` is what the ข้อมูลรายวิชา removal removes from there - `SUBJECTS[10]`
+ * is on page two too but is placed, and `RESTRICT` would refuse it. The other
+ * three are what รายวิชาในหลักสูตร's three moves place, one each: its import
+ * panel adds a placement, so each move needs a subject that has none.
+ */
+const PAGE_TWO_SPARE = '00140050';
+const TO_PLACE = ['00140060', '00140061', '00140062'];
 const RUBRICS = ['RUB-140A', 'RUB-140B'];
 
 let release;
@@ -113,7 +185,7 @@ test.beforeAll(async () => {
       [id, `หลักสูตรของแถว #140 ${i}`, `Programme for #140 ${i}`],
     );
   }
-  for (const [i, id] of SUBJECTS.entries()) {
+  for (const [i, id] of [...SUBJECTS, PAGE_TWO_SPARE, ...TO_PLACE].entries()) {
     await db.query(
       `INSERT INTO subjects (subject_id, subject_name_th, subject_name_en, credits, department_id, created_by)
        VALUES ($1, $2, $3, 3, '05', $4)`,
@@ -187,22 +259,29 @@ const late = (ms) => async (route, request) => {
  * ถัดไป and page two. A row whose screen disables the pager while its own write
  * is out passes one of its own - `reads` says which request is the superseding
  * one, `press` makes it, and `pages` is for the premise that only a page move
- * needs (#210, and `## How a row is built` above).
+ * needs (#210, #223 and `## Which control supersedes the read` above). `reads`
+ * identifies that request whole, path and all, because a jump to another
+ * Section's list is a read of another path.
+ *
+ * `held` says which read the row holds, and defaults to page one of `list`: the
+ * twelve rows that stand on page two so the import panel's move is a page move
+ * pass their own (#223).
  */
-async function supersede(page, { list, table, rows, key, press, move }) {
+async function supersede(page, { list, table, rows, key, press, move, held }) {
   const isList = (url) => url.pathname === list;
   const moveTo = move ?? {
     pages: true,
-    reads: (url) => asPage(url, 2),
+    reads: (url) => isList(url) && asPage(url, 2),
     press: async () => {
       await expect(next(page)).toBeEnabled();
       await next(page).click();
     },
   };
+  const isAsked = held ?? ((url) => isList(url) && asPage(url, 1));
   // The superseding read is not held, whatever identifies it: holding both
   // would leave the row waiting for the answer it is about to compare (#160's
   // species - a matcher that takes in more than the request it names).
-  const isHeld = (url) => isList(url) && asPage(url, 1) && !moveTo.reads(url);
+  const isHeld = (url) => isAsked(url) && !moveTo.reads(url);
 
   const before = await reading(page, table);
   if (moveTo.pages) expect(before.pages, 'the row needs a page two to move to').toBeGreaterThan(1);
@@ -219,10 +298,7 @@ async function supersede(page, { list, table, rows, key, press, move }) {
       (answer) => answer.request().method() === 'GET' && isHeld(new URL(answer.url())),
     );
     const movedArrived = page.waitForResponse(
-      (answer) =>
-        answer.request().method() === 'GET' &&
-        isList(new URL(answer.url())) &&
-        moveTo.reads(new URL(answer.url())),
+      (answer) => answer.request().method() === 'GET' && moveTo.reads(new URL(answer.url())),
     );
 
     await press(page);
@@ -291,6 +367,79 @@ async function pressAndConfirm(page, row, label, confirm) {
 async function importLine(page, path, line) {
   const header = headerOf(await downloadTemplate(page));
   await importCsv(page, { path, text: csv(header, typeof line === 'function' ? line(header) : line), name: 'row-140.csv' });
+}
+
+/**
+ * Walks to page two, and says the screen is on it - #223.
+ *
+ * The premise of the twelve rows whose superseding control is the import panel:
+ * `onImported` reloads by hand when the person is on page one and moves them to
+ * page one when they are not, so the move is a page move only from somewhere
+ * else. Walked here, before anything is held, where the pager is live because
+ * nothing is out.
+ */
+async function ontoPageTwo(page, { list, table }) {
+  const drawn = page.waitForResponse(
+    (answer) =>
+      answer.request().method() === 'GET' &&
+      new URL(answer.url()).pathname === list &&
+      asPage(new URL(answer.url()), 2),
+  );
+  await expect(next(page), 'the row needs a page two to stand on').toBeEnabled();
+  await next(page).click();
+  await untilDrawn(page, await drawn);
+  expect((await reading(page, table)).shown, 'standing on page two').toBe(2);
+}
+
+/**
+ * The import panel's move to page one, as a superseding read - #223.
+ *
+ * `ImportPanel` keeps its own flag and touches neither of the screen's - the
+ * comment over `writing` in `frontend/src/pages/Departments.js` says so, and
+ * the sweep of 20 ตุลาคม 2569 measured it: the five imports' own rows were among
+ * the eleven that still killed, their press being the one that leaves the pager
+ * live. From page two its `onImported` calls `setPage(1)`, so what replaces the
+ * handler's held read is a read of another page, exactly as ถัดไป's was.
+ *
+ * The template is fetched by the caller, before the hold: a download inside the
+ * window would spend it (`HELD_MS` is what the move has to finish in).
+ */
+function throughTheImportPanel(page, { list, path, template, line }) {
+  return {
+    reads: (url) => url.pathname === list && asPage(url, 1),
+    press: () =>
+      importCsv(page, { path, text: csv(template, line), name: 'move-223.csv' }),
+  };
+}
+
+/**
+ * Reads once that ถัดไป is dead while the handler's reload is out - #223.
+ *
+ * What the two net rows assert in place of a supersession they cannot build.
+ * Read once rather than with `expect(...).toBeDisabled()`, because a retrying
+ * read of a button that comes back to life when the held answer lands is a read
+ * that can be satisfied by waiting - which is the whole defect this file walked
+ * into (#209, #50).
+ */
+async function pagerIsDeadWhileTheReloadIsOut(page, { list, table, press }) {
+  const isHeld = (url) => url.pathname === list && asPage(url, 1);
+  expect((await reading(page, table)).pages, 'a page two, so ถัดไป is not dead for #57').toBeGreaterThan(1);
+  await expect(next(page), 'the premise: ถัดไป is live with nothing out').toBeEnabled();
+
+  await page.route(isHeld, late(HELD_MS));
+  try {
+    const reloadSent = page.waitForRequest(
+      (request) => request.method() === 'GET' && isHeld(new URL(request.url())),
+    );
+    await press(page);
+    await reloadSent;
+    expect(
+      await next(page).isDisabled(),
+      'ถัดไป while the reload the handler is waiting for is out',
+    ).toBe(true);
+  } finally {
+    await page.unroute(isHeld);
+  }
 }
 
 // ── ข้อมูลผู้ใช้งาน ─────────────────────────────────────────────────────────
@@ -377,13 +526,18 @@ const MASTER = [
     list: departments.API,
     rows: 'departments',
     key: (row) => row.department_id,
-    row: (page) => departments.departmentRow(page, DEPARTMENTS[1]),
-    detail: `${departments.API}/${DEPARTMENTS[1]}`,
-    removed: (page) => departments.departmentRow(page, DEPARTMENTS[0]),
+    row: (page) => departments.departmentRow(page, DEPARTMENTS[10]),
+    detail: `${departments.API}/${DEPARTMENTS[10]}`,
+    removed: (page) => departments.departmentRow(page, DEPARTMENTS[10]),
     remove: 'ลบ',
     confirm: 'ลบภาควิชา',
     importPath: `${departments.API}/import`,
     importLine: 'X140,ภาควิชานำเข้าของแถว #140,',
+    moves: [
+      'X223A,ภาควิชาที่การนำเข้าแซงด้วย A,',
+      'X223B,ภาควิชาที่การนำเข้าแซงด้วย B,',
+      'X223C,ภาควิชาที่การนำเข้าแซงด้วย C,',
+    ],
   },
   {
     name: 'ข้อมูลหลักสูตร',
@@ -393,13 +547,18 @@ const MASTER = [
     list: programs.API,
     rows: 'programs',
     key: (row) => row.program_id,
-    row: (page) => programs.programRow(page, PROGRAMS[1]),
-    detail: `${programs.API}/${PROGRAMS[1]}`,
-    removed: (page) => programs.programRow(page, PROGRAMS[0]),
+    row: (page) => programs.programRow(page, PROGRAMS[10]),
+    detail: `${programs.API}/${PROGRAMS[10]}`,
+    removed: (page) => programs.programRow(page, PROGRAMS[10]),
     remove: 'ลบ',
     confirm: 'ลบหลักสูตร',
     importPath: `${programs.API}/import`,
     importLine: 'ZP140,หลักสูตรนำเข้าของแถว #140,Imported for #140,05,2565',
+    moves: [
+      'ZP223A,หลักสูตรที่การนำเข้าแซงด้วย A,Imported for #223 A,05,2565',
+      'ZP223B,หลักสูตรที่การนำเข้าแซงด้วย B,Imported for #223 B,05,2565',
+      'ZP223C,หลักสูตรที่การนำเข้าแซงด้วย C,Imported for #223 C,05,2565',
+    ],
   },
   {
     name: 'ข้อมูลรายวิชา',
@@ -409,13 +568,20 @@ const MASTER = [
     list: subjects.API,
     rows: 'subjects',
     key: (row) => row.subject_id,
-    row: (page) => subjects.subjectRow(page, SUBJECTS[1]),
-    detail: `${subjects.API}/${SUBJECTS[1]}`,
-    removed: (page) => subjects.subjectRow(page, SUBJECTS[0]),
+    row: (page) => subjects.subjectRow(page, SUBJECTS[10]),
+    detail: `${subjects.API}/${SUBJECTS[10]}`,
+    // The one subject of page two that is placed nowhere, so `RESTRICT` lets it
+    // go and the removal has a reload to supersede.
+    removed: (page) => subjects.subjectRow(page, PAGE_TWO_SPARE),
     remove: 'ลบ',
     confirm: 'ลบรายวิชา',
     importPath: `${subjects.API}/import`,
     importLine: '01140199,วิชานำเข้าของแถว #140,Imported for #140,3,05,,',
+    moves: [
+      '01140190,วิชาที่การนำเข้าแซงด้วย A,Imported for #223 A,3,05,,',
+      '01140191,วิชาที่การนำเข้าแซงด้วย B,Imported for #223 B,3,05,,',
+      '01140192,วิชาที่การนำเข้าแซงด้วย C,Imported for #223 C,3,05,,',
+    ],
   },
   {
     name: 'รายวิชาในหลักสูตร',
@@ -425,13 +591,14 @@ const MASTER = [
     list: pairs.API,
     rows: 'program_subjects',
     key: (row) => row.subject_id,
-    row: (page) => pairs.pairRow(page, PLACED[1]),
-    detail: `${pairs.API}/${PROGRAM}/${PLACED[1]}`,
-    removed: (page) => pairs.pairRow(page, PLACED[0]),
+    row: (page) => pairs.pairRow(page, PLACED[10]),
+    detail: `${pairs.API}/${PROGRAM}/${PLACED[10]}`,
+    removed: (page) => pairs.pairRow(page, PLACED[10]),
     remove: 'นำออก',
     confirm: 'นำออกจากหลักสูตร',
     importPath: `${pairs.API}/import`,
     importLine: `${PROGRAM},${UNPLACED_FOR_IMPORT},required`,
+    moves: TO_PLACE.map((subject) => `${PROGRAM},${subject},required`),
   },
 ];
 
@@ -441,16 +608,38 @@ async function openMaster(page, screen) {
   return { list: screen.list, table: page.locator('table').first(), rows: screen.rows, key: screen.key };
 }
 
+/**
+ * These screens' three rows, as they are built since #223: standing on page
+ * two, with the import panel's move to page one as the superseding read.
+ *
+ * `move` is which of the screen's three lines this row imports, so no two rows
+ * import the same key. The template is fetched here, before anything is held.
+ */
+async function supersededByTheImportPanel(page, screen, move, press) {
+  const opened = await openMaster(page, screen);
+  const template = headerOf(await downloadTemplate(page));
+  await ontoPageTwo(page, opened);
+  await supersede(page, {
+    ...opened,
+    held: (url) => url.pathname === screen.list && asPage(url, 2),
+    move: throughTheImportPanel(page, {
+      list: screen.list,
+      path: screen.importPath,
+      template,
+      line: screen.moves[move],
+    }),
+    press,
+  });
+}
+
 for (const screen of MASTER) {
   test(`${screen.name} (${screen.file}): the list a refused แก้ไข reloads does not land on the page the pager has left`, async ({
     page,
   }) => {
-    // `openEditor`'s `catch`: the form never opened, so the pager never left.
-    const opened = await openMaster(page, screen);
-    await refuseRead(page, screen.detail);
-    await supersede(page, {
-      ...opened,
-      press: () => screen.row(page).getByRole('button', { name: 'แก้ไข', exact: true }).click(),
+    // `openEditor`'s `catch`: the form never opened, so the page never left.
+    await supersededByTheImportPanel(page, screen, 0, async () => {
+      await refuseRead(page, screen.detail);
+      await screen.row(page).getByRole('button', { name: 'แก้ไข', exact: true }).click();
     });
   });
 
@@ -458,22 +647,18 @@ for (const screen of MASTER) {
     page,
   }) => {
     // `save` closes the form before it reloads.
-    const opened = await openMaster(page, screen);
-    await supersede(page, {
-      ...opened,
-      press: () => saveUnchanged(page, screen.row(page), screen.detail),
-    });
+    await supersededByTheImportPanel(page, screen, 1, () =>
+      saveUnchanged(page, screen.row(page), screen.detail),
+    );
   });
 
   test(`${screen.name} (${screen.file}): the list ${screen.remove} reloads does not land on the page the pager has left`, async ({
     page,
   }) => {
     // `confirmRemoval` closes the confirmation before it reloads.
-    const opened = await openMaster(page, screen);
-    await supersede(page, {
-      ...opened,
-      press: () => pressAndConfirm(page, screen.removed(page), screen.remove, screen.confirm),
-    });
+    await supersededByTheImportPanel(page, screen, 2, () =>
+      pressAndConfirm(page, screen.removed(page), screen.remove, screen.confirm),
+    );
   });
 
   test(`${screen.name} (${screen.file}): the list an import reloads does not land on the page the pager has left`, async ({
@@ -490,8 +675,19 @@ for (const screen of MASTER) {
 
 // ── Rubric ───────────────────────────────────────────────────────────────────
 
+/**
+ * The screen, as a Department Admin of 05 since #223.
+ *
+ * It was a กรรมการหลักสูตร until then, and a committee reaches one curriculum
+ * and is drawn **no** หลักสูตร picker - `Rubrics.js` draws the name instead when
+ * `programs.length === 1`. The filter is the only control this screen leaves
+ * live while a write is out, so the two rows that supersede by filter need an
+ * account that is offered it, and `DEPT_ADMIN` is a maintainer of a Rubric by
+ * `backend/routes/rubrics.js`'s own list. `144a` signs the same account in for
+ * the same reason.
+ */
 async function openRubricsScreen(page) {
-  await signIn(page, ACCOUNTS.committee0501);
+  await signIn(page, ACCOUNTS.departmentAdmin05);
   const answer = await (await rubrics.openRubrics(page)).json();
   return {
     opened: { list: rubrics.API, table: rubrics.table(page), rows: 'rubrics', key: (row) => row.rubric_code },
@@ -499,12 +695,30 @@ async function openRubricsScreen(page) {
   };
 }
 
+/** The หลักสูตร filter, which is a dependency of `load` and is never `disabled={busy}`. */
+const throughTheProgramFilter = (page) => ({
+  reads: (url) => url.pathname === rubrics.API && url.searchParams.get('program_id') === PROGRAM_INTL,
+  press: async () => {
+    await expect(
+      rubrics.programFilter(page),
+      'the filter, which is not disabled while the write is out',
+    ).toBeEnabled();
+    await rubrics.programFilter(page).selectOption(PROGRAM_INTL);
+  },
+});
+
 test('Rubric (Rubrics.js): the list a refused แก้ไข reloads does not land on the page the pager has left', async ({
   page,
 }) => {
+  // A net since #223, and not a re-aim. #210 closed this row's way in - ถัดไป
+  // is dead from the press until the held read is drawn - and the only control
+  // left is the filter, which `144a`'s *the list a refused แก้ไข reloads does
+  // not land on the หลักสูตร filter that has moved* already presses with the
+  // same handler. So what is left to read here is the premise under that
+  // price, and the claim itself is held there (#47, #203, #217).
   const { opened, idOf } = await openRubricsScreen(page);
   await refuseRead(page, `${rubrics.API}/${idOf(RUBRICS[1])}`);
-  await supersede(page, {
+  await pagerIsDeadWhileTheReloadIsOut(page, {
     ...opened,
     press: () =>
       rubrics.rubricRow(page, RUBRICS[1]).getByRole('button', { name: 'แก้ไข', exact: true }).click(),
@@ -515,6 +729,7 @@ test('Rubric (Rubrics.js): the list บันทึก reloads does not land on 
   const { opened, idOf } = await openRubricsScreen(page);
   await supersede(page, {
     ...opened,
+    move: throughTheProgramFilter(page),
     press: () =>
       saveUnchanged(page, rubrics.rubricRow(page, RUBRICS[1]), `${rubrics.API}/${idOf(RUBRICS[1])}`),
   });
@@ -524,6 +739,7 @@ test('Rubric (Rubrics.js): the list ลบ reloads does not land on the page the
   const { opened } = await openRubricsScreen(page);
   await supersede(page, {
     ...opened,
+    move: throughTheProgramFilter(page),
     press: () => pressAndConfirm(page, rubrics.rubricRow(page, RUBRICS[0]), 'ลบ', 'ลบ Rubric'),
   });
 });
@@ -546,14 +762,41 @@ async function openOfferingsScreen(page) {
 
 const offeringDetail = /^\/api\/offerings\/\d+$/;
 
+/**
+ * The ปีการศึกษา box, which is a dependency of `load` and is not
+ * `disabled={busy}` - the move #210 gave this screen's save row on 19 ตุลาคม
+ * 2569 and #223 gave its other two writing rows.
+ *
+ * The fixture's offerings are all in `FUTURE` and the seed's in the current
+ * year, so the two reads answer different rows. Named once: a locator built out
+ * of a source string is a claim about the DOM (#118), and one written twice is
+ * two.
+ */
+const throughTheYearFilter = (page) => ({
+  reads: (url) =>
+    url.pathname === offerings.API && url.searchParams.get('academic_year') === CURRENT_YEAR,
+  press: async () => {
+    await expect(
+      offerings.yearFilter(page),
+      'the filter, which is not disabled while the write is out',
+    ).toBeEnabled();
+    await offerings.yearFilter(page).fill(CURRENT_YEAR);
+  },
+});
+
 test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused ตอนเรียนและผู้สอน reloads does not land on the page the pager has left', async ({
   page,
 }) => {
   // `openSections`' `catch`: the panel never opened.
+  //
+  // A net since #223, for Rubric's reason one screen along: ถัดไป is dead from
+  // the press until the held read is drawn, and `144a` presses this same
+  // handler and moves each of this screen's three filters - three rows, which
+  // is where the claim is held (#47, #203, #217).
   const { opened, answer } = await openOfferingsScreen(page);
   const [first] = answer.offerings;
   await refuseRead(page, `${offerings.API}/${first.id}`);
-  await supersede(page, {
+  await pagerIsDeadWhileTheReloadIsOut(page, {
     ...opened,
     press: () =>
       offerings
@@ -592,22 +835,8 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   await supersede(page, {
     ...opened,
     // The pager is `disabled={busy}` here since #210 and the save is still out,
-    // so what supersedes the reload is the screen's own ปีการศึกษา box: the
-    // fixture's offerings are all in `FUTURE`, and the seed's are in the
-    // current year, so the two reads answer different rows.
-    move: {
-      reads: (url) => url.searchParams.get('academic_year') === CURRENT_YEAR,
-      press: async () => {
-        // Named once: a locator built out of a source string is a claim about
-        // the DOM (#118), and one written twice is two.
-        const yearFilter = page.getByPlaceholder('ทุกปี');
-        await expect(
-          yearFilter,
-          'the filter, which is not disabled while the save is out',
-        ).toBeEnabled();
-        await yearFilter.fill(CURRENT_YEAR);
-      },
-    },
+    // so what supersedes the reload is the screen's own ปีการศึกษา box.
+    move: throughTheYearFilter(page),
     // The form replaces the list, so it is filled inside the press: the row
     // reads the pager before it starts.
     press: async () => {
@@ -628,6 +857,9 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   const { opened } = await openOfferingsScreen(page);
   await supersede(page, {
     ...opened,
+    // Re-aimed at the filter by #223: `runCopy` holds `writing` until its own
+    // reload has answered, so ถัดไป is dead for the whole window.
+    move: throughTheYearFilter(page),
     press: () =>
       offerings.copyFromTerm(page, { year: FUTURE, semester: 1 }, { year: FUTURE, semester: 2 }),
   });
@@ -640,6 +872,8 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   const { opened } = await openOfferingsScreen(page);
   await supersede(page, {
     ...opened,
+    // Re-aimed at the filter by #223, with the save row's reason.
+    move: throughTheYearFilter(page),
     press: () =>
       pressAndConfirm(page, offerings.offeringRow(page, PLACED[4]), 'ยกเลิกการเปิด', 'ยกเลิกการเปิดรายวิชา'),
   });
@@ -704,15 +938,69 @@ async function openEnrolmentScreen(page) {
   };
 }
 
+/**
+ * The same screen, with last year's Section underneath it in the history list
+ * of one document - #223, and `202a`'s own re-aim when #199 closed this screen's
+ * pager on 15 ตุลาคม 2569.
+ *
+ * This screen has no filter, and its import panel's move is a page move only
+ * from somewhere other than page one - where `reload` reads by hand and so has
+ * nothing of its own to supersede. What is left is the **section jump**: `load`
+ * is keyed on `sectionId` as well as on `page`, so a move to another Section of
+ * the same route shape replaces the loader exactly as a page move did.
+ * `support/section-jump.js` carries the walk and says why the sequence is
+ * asymmetric; `141b` measured on 5 ตุลาคม 2569 that the document survives it,
+ * which is the premise each of these two rows reads back.
+ */
+async function openWhereTheJumpIsPossible(page) {
+  await signIn(page, ACCOUNTS.teacherOne);
+  const [section] = await enrolment.mySectionIds(page);
+  await enrolment.openEnrolment(page, LAST_YEAR);
+  await markDocument(page);
+
+  const drawn = await intoTheListedSectionScreen(
+    page,
+    section,
+    '/subjectStudents',
+    enrolment.waitForList,
+  );
+  await untilDrawn(page, drawn);
+  const table = enrolment.listTable(page);
+  expect((await reading(page, table)).shown, "page one of this year's list").toBe(1);
+  return {
+    list: `/api/teaching/sections/${section}/students`,
+    table,
+    rows: 'students',
+    key: (row) => row.student_id,
+  };
+}
+
+/** Last year's Section, in one move of the history list and with no commit. */
+const throughTheSectionJump = (page) => ({
+  reads: (url) => url.pathname === `/api/teaching/sections/${LAST_YEAR}/students`,
+  press: () => page.evaluate(() => window.history.go(-3)),
+});
+
+/** What says the router never replaced the document - the premise of both jumps. */
+const sameDocument = async (page) => {
+  expect(
+    await page.evaluate(() => window.__document),
+    'the one document the router has been moving inside',
+  ).toBe(DOCUMENT);
+};
+
 test('รายชื่อนักศึกษาของรายวิชา (SubjectStudents.js): the list เพิ่มนักศึกษา reloads does not land on the page the pager has left', async ({
   page,
 }) => {
-  // `reload`, from `add`. The same site as the import's row below.
-  const { opened } = await openEnrolmentScreen(page);
+  // `reload`, from `add`. The same site as the import's row below, which keeps
+  // the pager as its way in because `ImportPanel` holds its own flag.
+  const opened = await openWhereTheJumpIsPossible(page);
   await supersede(page, {
     ...opened,
+    move: throughTheSectionJump(page),
     press: () => enrolment.enrol(page, enrolment.SPARE_CODES[0]),
   });
+  await sameDocument(page);
 });
 
 test('รายชื่อนักศึกษาของรายวิชา (SubjectStudents.js): the list an import reloads does not land on the page the pager has left', async ({
@@ -733,15 +1021,17 @@ test('รายชื่อนักศึกษาของรายวิช�
   // `remove` closes the confirmation before it reloads. The student removed is
   // one this row enrols, because a seeded one has marks and is refused — and a
   // refusal reloads nothing.
-  const { opened } = await openEnrolmentScreen(page);
+  const opened = await openWhereTheJumpIsPossible(page);
   const code = enrolment.SPARE_CODES[2];
   await Promise.all([enrolment.waitForList(page), enrolment.enrol(page, code)]);
   await expect(page.getByRole('button', { name: `นำ ${code} ออกจากตอนเรียน` })).toBeVisible();
   await supersede(page, {
     ...opened,
+    move: throughTheSectionJump(page),
     press: async () => {
       await page.getByRole('button', { name: `นำ ${code} ออกจากตอนเรียน` }).click();
       await page.getByRole('button', { name: 'นำออก', exact: true }).click();
     },
   });
+  await sameDocument(page);
 });

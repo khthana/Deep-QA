@@ -12275,3 +12275,76 @@ as describing a deleted mechanism. It describes what a person sees, which did no
 only who decides it. Sheet `15`'s row named the mechanism outright and was rewritten the day the
 fix landed. The stale sentence was on a third sheet, `17`, naming *the removal that steps the page
 back, six sites*, and it is dated rather than deleted (#54).
+
+## #223 — the twelve rows that were nineteen, and the two with nowhere left to press
+
+#223 was written by #209's own closing sweep: thirteen mutants of
+`mutation/140-superseded-handler-reload.py` re-aimed, twelve of them surviving `140a` 32 of 32,
+and the mechanism already diagnosed in that record — #210 had given six administration pagers
+`disabled={busy}` the same morning, `busy` is held from a save, a removal or a refused read until
+the reload it awaits answers, and `140a`'s `supersede` presses ถัดไป behind
+`await expect(next(page)).toBeEnabled()`. A retrying wait is not an assertion: it moved the press
+to after the held answer had been drawn, so the race the row exists to build never happened and
+the row passed with the mutant applied and without it (#209's rule, met here as the thing to
+repair).
+
+So the diagnosis was right, and every number attached to it was a number about **thirteen
+mutants**.
+
+**A ticket written from another ticket's closing sweep inherits that sweep's population.** #209
+swept the mutants its own fix had re-aimed, which is the right scope for #209 and not a statement
+about the file. The file holds thirty-one. Re-swept whole, before anything was changed:
+**fifteen** survived, not twelve; five of the rest belong to screens #210 never touched (`users`
+×3, `students` ×2 — the live pagers, which is #221's question); and **eleven were still killing**,
+through three different ways in that the ticket's one sentence had no room for — the four MASTER
+screens' import rows and `enrolmentreloadstalewins` because `ImportPanel` keeps its own flag, the
+four refusal mutants because `144a`'s filter rows press the same handlers (a file #209's one-file
+sweep never ran), `offeringssavestalewins` because #210 had already moved that row to the
+ปีการศึกษา box, and `offeringsbackstalewins` because `onBack` lets `busy` down before it reloads.
+The ticket's option 2 — *withdraw the mutants of the rows that cannot be re-aimed* — was therefore
+answered **no** with a number: every one of the thirty-one claims still had a live way in
+somewhere.
+
+**What makes a re-aim possible is written in the flag's own comment, not in the JSX.** The
+sentence over `writing` in `Departments.js` says `ImportPanel` holds its own flag and touches
+neither half of `busy`. That one line is what turned twelve impossible rows into twelve
+one-import-line rows: the row walks onto page two first, holds page two's reads, presses the
+handler, and then imports a single line — `onImported` calls `setPage(1)` when the screen is not
+on page one, which builds a new `load` exactly as the pager did (#83 again; #140's own rule that a
+control is a way in only if it feeds what the request asks for). The four screens with no import
+panel took the other two shapes: `Rubrics` and `Offerings` supersede with a filter that is a
+dependency of `load` and is not disabled, and `SubjectStudents`, which has neither, supersedes
+with #141b's **section jump** — `load` is keyed on `sectionId` as well as `page`, so one move of
+the history list to another Section of the same route shape replaces the loader without replacing
+the document.
+
+**The repair was nineteen rows and two nets, not twelve rows.** Twelve through the import panel,
+four through a filter, two through the jump — and a nineteenth nobody had counted: `Offerings`'
+*เปิดรายวิชา* row, which #210 moved to the year box in code on 19 October and left described on
+its sheet as pressing ถัดไป. A re-aim that does not reach the sheet leaves the sheet telling a
+later reader to press a control the row has not pressed for a day (#130, one layer along: the
+prose expires like the number, and this one expired inside the diff that caused it).
+
+**Two rows had nowhere left to press, and their mutants did not go with them.** The refused
+*แก้ไข* of `Rubrics` and the refused *ตอนเรียนและผู้สอน* of `Offerings` reach the same situation
+only through the pager: the screens have no import panel, and their filters are the way in of a
+*different* claim, which `144a` already holds in rows of its own. Both became nets that read the
+**mechanism** — ถัดไป is disabled for the whole window — with the condition that would make the
+claim measurable again written in the ☐ beside it (#47, #203, #141). But #210's rule that *a row
+left as a net takes its mutants with it* does not hold here: `rubricsrefusalstalewins` still kills
+one row of `144a` and `offeringsrefusalstalewins` still kills three, so neither is withdrawn. The
+net and the mutant part company exactly when a second file's rows press the same handler — which
+is also why reading the re-sweep against the total would have said nothing: both mutants kill the
+same number of rows as before, and the row that stopped being proved is in another file.
+
+**The re-sweep, 20 October 2569.** All thirty-one, one at a time, code restored between, each
+against its own screen's rows in `140a` and `144a` — 19.5 minutes, every one red at the row it was
+written for, bar the two refusal mutants whose rows are now nets and which died at their filter
+rows instead. The clean `140a` was **32 of 32** (2.8 minutes) before any of it, which is what says
+the nineteen re-aimed rows and the two nets pass on good code; the sweep is what says they fail on
+broken code. Neither question is answered by the other (#107, #68).
+
+One instrument finding on the way in: the first reading of the stage-2 log counted every
+`[chromium] › …` line as a failure, because the `line` reporter prints one per row, pass or fail.
+The counts came from the reporter's own `N passed` / `N failed` summary after that — a count read
+off the wrong lines is #187's shape, met in my own driver rather than in a ticket.
