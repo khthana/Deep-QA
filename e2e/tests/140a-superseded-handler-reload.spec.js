@@ -16,7 +16,6 @@ const {
   intoTheListedSectionScreen,
   markDocument,
 } = require('../support/section-jump');
-const { DASHBOARD } = require('../support/teaching-screen');
 const users = require('../support/users-screen');
 const departments = require('../support/departments-screen');
 const programs = require('../support/programs-screen');
@@ -102,6 +101,22 @@ const enrolment = require('../support/enrolment-screen');
  *   move from page one: the **section jump**, which `202a` was re-aimed at when
  *   #199 closed the same way in there, and which `141b` measured keeps the
  *   document (`load` is keyed on `sectionId` as well as on `page`).
+ *
+ * A nineteenth row was re-aimed before this ticket, and it is why the three
+ * numbers above do not account for the file on their own: ข้อมูลการเปิดรายวิชา's
+ * เปิดรายวิชา was moved onto the ปีการศึกษา box by #210 itself on 19 ตุลาคม
+ * 2569, and left described on sheet `23` as pressing ถัดไป, which #223
+ * corrected there. So the thirty-two rows are **eighteen** re-aimed here, one
+ * re-aimed by #210, **two** nets and **eleven** still pressing ถัดไป.
+ *
+ * #223's third question was asked before either of its options — does any
+ * other caller defer a press the same way? Measured 20 ตุลาคม 2569: the suite
+ * presses a pager at four sites, `supersede` and `ontoPageTwo` here and
+ * `68a:98` and `68a:228`, and only `supersede`'s stands behind a retrying
+ * `toBeEnabled()`. `68a`'s two are on ข้อมูลนักศึกษา, whose `<Pager>` is handed
+ * no `busy` at all, so the census of other blinded callers is **empty**. The
+ * wait is still in `supersede` for the eleven rows below, which is safe only
+ * while their own screens leave the control live — **#225**.
  *
  * Eleven rows still press ถัดไป, and five of them are the reason to read this
  * paragraph before writing one: ข้อมูลผู้ใช้งาน's three and ข้อมูลนักศึกษา's two
@@ -615,7 +630,7 @@ async function openMaster(page, screen) {
  * `move` is which of the screen's three lines this row imports, so no two rows
  * import the same key. The template is fetched here, before anything is held.
  */
-async function supersededByTheImportPanel(page, screen, move, press) {
+async function supersededByTheImportPanel(page, screen, moveIndex, press) {
   const opened = await openMaster(page, screen);
   const template = headerOf(await downloadTemplate(page));
   await ontoPageTwo(page, opened);
@@ -626,7 +641,7 @@ async function supersededByTheImportPanel(page, screen, move, press) {
       list: screen.list,
       path: screen.importPath,
       template,
-      line: screen.moves[move],
+      line: screen.moves[moveIndex],
     }),
     press,
   });

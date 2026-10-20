@@ -12348,3 +12348,34 @@ One instrument finding on the way in: the first reading of the stage-2 log count
 `[chromium] › …` line as a failure, because the `line` reporter prints one per row, pass or fail.
 The counts came from the reporter's own `N passed` / `N failed` summary after that — a count read
 off the wrong lines is #187's shape, met in my own driver rather than in a ticket.
+
+**What the two review axes found after it was committed.** Four things, and three of them are
+rules this file already carries, met somewhere new.
+
+The spec file's own docstring partitioned its rows as eighteen re-aimed, two nets and eleven still
+pressing ถัดไป — **thirty-one of its thirty-two**. The missing one is the row #210 re-aimed in
+code and this ticket corrected only on sheet `23`, so every number was right and the set was
+short: a hand-kept figure in a file that grows every ticket (#119), met inside a docstring instead
+of on a sheet, and a sum that adds up over an incomplete list (#58). The commit message's
+*nineteen* and the docstring's *eighteen* were both true and nothing said so, which is #154's
+*read the pair side by side* with the pair two files apart.
+
+The ticket's third question — *does any other caller defer a press the same way* — was asked
+before either option, measured, and **not published**: the suite presses a pager at four sites,
+only `supersede`'s stands behind a retrying `toBeEnabled()`, and `68a`'s two are on a screen whose
+`<Pager>` is handed no `busy` at all, so the census is empty. An empty census is an answer (#101's
+*no, and here is what it would cost*), and a measurement that reaches no file is a measurement
+nobody has (#102).
+
+Of the nine sheets, the dated 18 ก.ย. records on **two** describe their mutant as killing *its own
+pager row*, which this ticket turned into a net. #54's dated note was owed there and nowhere else:
+on the MASTER sheets the September figure still holds, because the re-aim moved which row kills
+the mutant and not how many. A stale *sentence* and a stale *number* expire separately (#130), and
+the review's first reading — that every sheet owed the note — was the generalisation the control
+group refutes.
+
+And the retrying wait is **still in `supersede`** for the eleven rows whose screens leave the
+control live, five of them on the two screens #221 is about. The docstring had written that
+prediction down and dating it is what made it look handled: a deferral in prose and not in the
+tracker is a decision nobody can find (#119, #89, #125), so it is **#225** now, with the census
+and the re-sweep condition in it.
