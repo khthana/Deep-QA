@@ -296,6 +296,14 @@ export default function SubjectStudents() {
         error: false,
         message: `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
       }
+      // `reload` hands back whatever the loader answered, so `HANDED_ON`
+      // would read as *it drew* here - the one thing the third answer exists to
+      // prevent (#209, and the docstring on `Departments.js`). It cannot
+      // arrive: the read this awaits is a read of page 1, and a read of page 1
+      // is never told its page has gone, `lastPage` being floored at 1.
+      // Structurally unreachable rather than untested (#102, #117) - the day
+      // something here awaits a read of a page it did not choose, this answer
+      // has to be compared with `HANDED_ON` before it is believed.
       const reloaded = await reload(said)
       if (reloaded && onScreen.current === sent) setNotice(said)
     } catch (error) {

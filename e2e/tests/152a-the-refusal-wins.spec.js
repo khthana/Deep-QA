@@ -479,11 +479,21 @@ test.describe('SubjectStudents.js', () => {
   });
 
   /**
-   * A page 2 holding one student, so a removal there takes its step-back
-   * branch: the real answer with its list cut to one, keeping the server's
+   * A page 2 holding one student, so a removal there empties the page it is
+   * on: the real answer with its list cut to one, keeping the server's
    * `total`, `page` and `section`. The seeded class list of fifty-odd has no
-   * such page, and the branch is in the handler rather than in the data, so
-   * the fixture is what makes the claim reachable (#96).
+   * such page, and the situation is made by the handler's own read rather than
+   * by the data, so the fixture is what makes the claim reachable (#96).
+   *
+   * Until 19 ตุลาคม 2569 the read this row gates was of **page 1**, because the
+   * handler counted the rows in front of the person and stepped the page back
+   * itself. The owner's answer to #209 that day gave that decision to the
+   * server: the removal reloads the page the person is on, and `load` hands
+   * them on only when the answer says that page has gone. A refused read never
+   * carries an answer, so nobody is handed anywhere - which is this row's own
+   * claim, and is why the page it asks for is now 2. Nothing in the sweep of
+   * the re-aimed mutants could say so: a sweep cannot see the row your own fix
+   * breaks, only the clean suite can (#83, #96, #107), and this red was in it.
    */
   async function oneStudentOnPageTwo(page) {
     await page.route(
@@ -502,7 +512,7 @@ test.describe('SubjectStudents.js', () => {
     );
   }
 
-  test('a removal that empties a page says the refusal of the page behind it and not that it removed', async ({
+  test('a removal that empties a page says the refusal of the read of the page it is on and not that it removed', async ({
     page,
   }) => {
     await signIn(page, ACCOUNTS.teacherOne);
@@ -514,14 +524,20 @@ test.describe('SubjectStudents.js', () => {
     await expect(bin, 'the one student this page is left with').toHaveCount(1);
 
     // Registered after the trimming route above, so it is this one that takes
-    // the read the step back asks for.
+    // the read the removal asks for.
     const gates = await gateTheWriteAndItsReload(page, REMOVAL, enrolment.API);
     await bin.click();
     const watch = await watchForTheSentence(page, 'ออกจากตอนเรียนแล้ว');
     await button(page, 'นำออก').click();
     await refuseTheReload(page, gates, { held: 300 });
 
-    expect(pageOf(gates.reload.request), 'the page the refused read asked for').toBe('1');
+    // Two rows in this file gate a refused read and name the page it asked
+    // for, so the message says which claim this one is - a citation by text is
+    // a claim that the text is unique (#173).
+    expect(
+      pageOf(gates.reload.request),
+      'the page the refused read asked for, which is the page they are on',
+    ).toBe('2');
     await neverSaid(watch, 'frames saying the removal had happened');
     await onlyTheRefusal(page, 'ออกจากตอนเรียนแล้ว', 'the banner of the removal');
   });

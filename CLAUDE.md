@@ -319,6 +319,13 @@ line here — this file reached 115 KB on 11 September 2569 because every ticket
   at risk (delete the mutant, mark ☑); a mutant that **kills too much** has stopped the
   application; a **survivor on a row nobody suspected** is an overclaim; and a sweep **cannot see
   the row your own fix breaks** — only the clean suite can. (#45, #97, #96, #83)
+- **A sweep's red can be a row your own fix broke, and then the kill count is right for the
+  wrong reason** — the twelfth reading, beside #49's flaky bystander, and the second where the
+  kill rather than the survivor is what is wrong. It looks like any other red, it inflates the
+  count by one, and the mutant's coverage of that row stays unmeasured until the row is repaired
+  and the mutant run again. No instrument says so — the anchor is exact and the mutated code
+  untouched — and the sweep's own output had the row's name in it beside the number (#52). Only
+  the clean suite tells you (#83, #96, #107), which is what it is run at the end for. (#209)
 - **A mutant that survives where its own file predicted a kill has found a row that does not
   exist yet** — the fix is the row, not the mutant, and believing the prediction would have left
   the claim it exists to prove with nothing under it. (#118)

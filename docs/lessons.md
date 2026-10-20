@@ -12214,3 +12214,61 @@ been propped up by the withdrawn mutant and by nothing else (`205:clearsoutside`
 which is the shape of a mark that outlives its proof — so it got a mutant of its own the same day,
 keyed for a page nobody will read, #206's mistake written at this site. A withdrawal is only
 finished when every row that cited it has been read again.
+
+### The clean suite's one red, and a kill count that was right for the wrong reason
+
+The full browser suite, run once at the end as the ticket asks, came back **828 passed, 1
+failed, 45.4 minutes**. The red was `152a`'s page-2 row, which asserts that the read a refused
+removal makes asks for `page=1` — and it got `2`. That is the correct answer under the owner's
+option ก: the removal no longer decides anything about the page, it re-reads the page the person
+is standing on, and `load` hands them on only when the answer says that page has gone. The row
+had been asserting the mechanism the ticket moved to the server, with a comment beside it saying
+exactly that (*"which is what says the handler took the moving branch"*), so the re-aim was to
+the new page number, with the row's own #152 claim — no frame says it removed, one refusal at the
+end — untouched.
+
+What makes it worth a story is **where the evidence had already been printed.** The re-aim sweep
+of the day before ran 41 mutants and recorded `152:enrolmentremovalanyway` as *kills 2, passes
+19*. Its two reds were its own intended row and this one, which was red at `HEAD` whatever the
+mutant did. The count was right; one half of it was not a kill. The sweep's own output named both
+rows, and what I read was the number — #52's *read the names beside the count* met from the other
+side, where the count looks like the sheet rather than like a leak. And no instrument could have
+said so: the anchors were exact, the mutated code untouched, and a sweep cannot see the row your
+own fix breaks (#83, #96, #107) — only the clean suite can, which is why the ticket's closing
+criteria run it. Re-measured after the re-aim, the figure is *kills 2, passes 19* again, and this
+time both reds are the mutant's; `152:enrolmentmovedremovalanyway` is *kills 1, passes 20* at the
+same assertion, as its record said.
+
+So a sweep's **kill** has a twelfth reading, beside #49's flaky bystander: a red that is a row
+your own change broke. It looks like every other red, it inflates the count by one, and the
+mutant's coverage of that row stays unmeasured until the row is fixed and the mutant run again.
+
+### The review's three, and the one it got wrong
+
+The two-axis review found three things worth writing down, all of them debts of words rather than
+of behaviour. The **third answer has no reader but one**: six screens await their loader and
+discard what it says, and the single caller anywhere that reads a loader's answer — `add` on
+`SubjectStudents.js` — says its sentence whenever that answer is truthy, which `HANDED_ON` is.
+The docstring forbidding exactly that was a claim about every caller, and the caller that breaks
+it is safe for a reason nothing had written down: its read is a read of page 1, where
+`answer.page > lastPage` cannot hold. Structurally unreachable rather than untested, which is the
+clause #102 and #117 ask for, written at the docstring and at the call.
+
+Second, row 2 of `209a` cited one mutant for three claims. Its sentence claim does have a killer,
+`206:sentenceofthepagetheyleft`, measured in the same sweep and dying at that very line — the
+citation was missing, not the proof. Its middle claim, *the two rows that arrived are drawn*, has
+no killer and will not get one: the pager's line and the list come out of one `setData(answer)`,
+so no mutant can tell the two apart (#191), and the mutant that removes the drawing dies at the
+assertion above it (#88). What that reading adds is reachability, and the sheet now says so
+instead of implying a mutant.
+
+Third, the `finally`'s `if (!handedOn)` leaves a sentence keyed for *another* read neither said
+nor cleared, where before the fix it was always cleared. Narrow, untested, no mutant — written
+into the catalogue's list of what cannot be reached at this seam, with a ticket owed.
+
+And one finding was wrong, which is about the rate #209 had already measured for its own ticket's
+claims: sheet `16`'s walked row *the table steps back to the previous page by itself* was reported
+as describing a deleted mechanism. It describes what a person sees, which did not change at all —
+only who decides it. Sheet `15`'s row named the mechanism outright and was rewritten the day the
+fix landed. The stale sentence was on a third sheet, `17`, naming *the removal that steps the page
+back, six sites*, and it is dated rather than deleted (#54).

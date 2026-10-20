@@ -79,6 +79,19 @@ const readOf = page => `${page}`
  * it has just awaited was not about. Folding it into either of the other two
  * says the wrong thing: `true` draws the sentence over a page about to be
  * replaced, `false` reads as a refusal and the sentence is lost.
+ *
+ * **Which callers read it, measured 20 ตุลาคม 2569.** None on the six
+ * administration screens: each awaits its loader and discards the answer,
+ * because the sentence it has to say is left in `waiting` above and said by the
+ * read that draws. The only caller anywhere that reads a loader's answer is
+ * `add` on `SubjectStudents.js`, and it does not hand its sentence over in this
+ * case - it says it whenever the answer is truthy, which `HANDED_ON` is. That
+ * is **structurally unreachable** and not untested (#102, #117): the read that
+ * caller awaits is a read of page 1, and `answer.page > lastPage` cannot hold
+ * there, `lastPage` being floored at 1. The reason is written at that call too,
+ * because a guard written for one caller is a claim about every caller (#68,
+ * #133) - and the day a caller reads this answer on a page it did not choose,
+ * the paragraph above is the clause it owes.
  */
 const HANDED_ON = 'handed-on'
 
