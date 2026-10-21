@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 21 October 2569 that is
-`2026-10-21-the-criterion-with-no-caller.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-21-the-box-that-outlived-its-close.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -553,6 +553,17 @@ citation.
   is an instrument rather than a claim of any sheet. Its own first version is a claim too, so ask
   the placeholder by name rather than counting rows (#164's blind sampler one species along).
   (#207)
+- **But a probe is *kept* where no seam can ever hold the claim** — #141 one layer along: a
+  situation that cannot be built at the seam can still be buildable outside it, and what removes it
+  may be the **driver** rather than the browser, so ask that before believing *unreachable*. The
+  instrument then goes in the tree with the fix, run on the unfixed code and on the fix, because
+  it is the only thing that can read that behaviour again. (#169)
+- **An option licensed by *nobody can see this* owes the reading where somebody can, and that
+  reading is the sequence which enters and leaves the unseen state *before* the act** — a flag
+  raised while nobody was looking is still raised when they come back, so three measurements taken
+  inside the unseen state can all pass over a change that happens in front of the person. The
+  question is not whether the thing still goes away but whether it still goes away at the same
+  speed while being watched. (#169)
 - **An in-page override is a claim, and the cheapest check on it is the property it was meant to
   change** — an `!important` that does not land prints the old value beside the variant's name and
   reads exactly like a candidate that buys nothing, which is an answer somebody will act on.

@@ -177,10 +177,19 @@ const avatarImage = page => avatarButton(page).locator('img');
  * By the element rather than by the role, for `avatarImage`'s reason one layer
  * out. A file input answers to the button role and carries no text either, and
  * the navbar has one in it: the profile-photo dialog is mounted there, and a
- * closed dialog is still in the document — the `AnimatePresence` around it fades
- * it to `opacity: 0` and removes nothing. So after any row has opened and closed
- * that box, `getByRole('button')` here resolves to two elements and every lookup
- * built on this helper fails in strict mode.
+ * closed dialog stays in the document for as long as its exit tween runs. So for
+ * that window after any row has opened and closed that box, `getByRole('button')`
+ * here resolves to two elements and every lookup built on this helper fails in
+ * strict mode.
+ *
+ * **Dated 21 October 2569 (#169).** This paragraph used to say the box fades to
+ * `opacity: 0` and is removed never. Measured, in a tab that is getting frames it
+ * is removed when the tween ends, about 190ms after the close; in a tab that is
+ * getting none the tween never started, so it did not fade either - it stayed at
+ * `opacity: 1` until the person came back, which is what `DialogPresence` now
+ * prevents. Neither half changes this helper: a window of 190ms is enough to make
+ * a row that looks inside it fail, and this seam cannot build the other half at
+ * all.
  */
 const avatarButton = page =>
   navbar(page).locator('button').filter({ hasNotText: /\S/ });

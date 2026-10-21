@@ -12850,3 +12850,100 @@ decision today and where the file-deletion requirement went (#54).
 
 No production code, no row and no mutant: the ticket asked a question, and what the answer changed
 was three documents and a migration comment.
+
+## #169 — the box that outlived its close, and the condition the driver was hiding
+
+A `question` ticket, opened 28 September 2569 out of what #47 and #167 left behind. Both of those
+closed by fixing a box's **state** — every dialog now clears its own on the way out — and neither
+touched the **presence of the node**: a box closed in a tab that is getting no frames is not
+removed from the document. Under `docs/06` §Out of Scope that was the owner's to decide, because
+every way the ticket could see to fix it changed an animation people watch. The ticket also named
+its own precondition: both of its options waited on two measurements nobody had taken — the
+change-password box's own numbers, and whether the lingering node reaches a person at all.
+
+**The first finding was about the instrument, not about the box.** The record said the suite could
+not put the claim at risk because stopping `requestAnimationFrame` from inside the page does not
+reproduce it, the frame loop having bound its own reference at import. That is true and it is half
+the reason. The other half is that **the driver removes the situation**: a Playwright page with
+another tab in front still reports `visibilityState: "visible"` and counts 60 frames in a second,
+`Page.setWebLifecycleState: frozen` is undone at once — 61 frames while it was supposed to be
+frozen — and launching with `--disable-backgrounding-occluded-windows`,
+`--disable-renderer-backgrounding` and `--disable-background-timer-throttling` removed changes
+none of it. So the instrument was built outside the seam: a Chrome of its own, driven over raw
+CDP, where a backgrounded tab is `hidden` with **0 frames in a second**. The condition reproduced
+on the first run.
+
+**Both measurements came back wider than the price the ticket had accepted** (#153). The ticket's
+option (ก) priced the harm as an invisible node lingering in a tab nobody is looking at. What is
+there is not faded at all: with no frames the tween never starts, so the box sits at
+`opacity: 1`, `pointer-events: auto`, `checkVisibility()` true, outside any `aria-hidden` or
+`inert` — still in the document at 0.5, 1 and 3 seconds. Every control in it takes focus: two in
+the photo box, **eight** in the change-password box, its three password fields among them. The
+accessibility tree holds the subtree whole — 23 nodes for the photo box and 35 for the password
+box, with the heading, the three textboxes and both buttons still named and not ignored. And the
+return is not a quiet cleanup: the tween starts on the first frame the tab is given, so the box the
+person already closed is **drawn again at full opacity** and fades out in front of them, the last
+frame still drawing it at 194–196ms. The change-password box — measurement 1, never taken before —
+matched the photo box on every number.
+
+**And the way in is not a race with the person's own hand** (#179). A cancel needs a press and a
+press needs the tab in front, which leaves only the ~180ms between the click and the end of the
+fade. But both boxes close themselves *after* an awaited request — the photo box through `onSaved`,
+the change-password box through `closeChangePassword` — so pressing save and switching away while
+the request is out lands the close in a tab that already has no frames. Measured: same numbers,
+with nothing racing anybody.
+
+**The measurement changed the option list before it changed the answer** (#128, #204). All three of
+the ticket's ways in option (ข) moved something people see, and the fourth — retire the node on the
+browser's own timeline instead of framer-motion's — died in the same hour it was thought of:
+neither `transitionend` nor `animationend` fires in a frameless tab. What does still run is
+`setTimeout`, throttled to about 1Hz (200ms arrived at 1000ms), and React's own scheduler, which is
+why the close commits at all in a tab with no frames. That is the opening: when the flag goes false
+while `document.hidden`, the child is dropped on the next commit with no `AnimatePresence` around
+it to hold it, and a `visibilitychange` listener covers the other half — a box closed while the tab
+is in front and the tab backgrounded inside the fade. **Nothing changes for anybody who is looking
+at the screen**, which is the option the ticket said did not exist. The owner took it.
+
+**Run on both sides, because nothing else could ever say so** (#203). Before: present at 0.5, 1 and
+3 seconds on all three ways in. After: gone by 0.5 seconds on all three, and the per-frame sampler
+sees it on **no frame at all** after the return. The visible case was measured at `HEAD` and on the
+fix, which is the half that says the fix costs the person nothing: 12 frames still drawing the box
+either way, the last at 186ms at `HEAD` and 192ms on the fix, opacity coming down both times, node
+gone at the end both times.
+
+**What holds the new behaviour is nothing in either suite, and that is written down rather than
+left to be discovered.** `DialogPresence.js` says so in its own header, and the probe is committed
+at `e2e/probes/169-presence-without-frames.js` instead of being deleted with the measurement
+(#207), because it is the only thing that can read this behaviour again — the seam that would
+normally hold it is the seam that cannot build the condition. A claim no seam can put at risk is
+still measurable; what is owed is the instrument, outside the seam, run on both sides and kept.
+
+**And the fix's own first version failed the half that made the option allowed.** The owner's
+answer was *drop it when nobody can see it*, which is only an answer while nothing changes for
+somebody who can. The listener on `visibilitychange` was written with no dependencies, so it ran
+behind an **open** box too: a tab sent away while the box was up put the flag down, nothing put it
+back, and the close minutes later - in front of the person, tab in focus - dropped the node with no
+fade at all. Three measurements had already passed, because all three closed the box in a
+backgrounded tab or never left the tab at all; the sequence that catches it leaves and comes back
+**while the box is open**. Keyed on the box being on its way out, the same sequence reads 13 frames
+ending at ~195ms; with the first version it reads **0**. So the guard on a retirement change is not
+*does the thing still go away* but *does it still go away at the same speed in front of somebody*,
+and that reading belongs in the probe rather than in anybody's head - it was added as a fourth mode
+and run on both versions (#203).
+
+**And a probe is read at the moment its input is dirtiest** (#186's rule, one instrument along).
+The first run of that fourth mode after restoring the file reported **1 frame**, which reads
+exactly like the defect it was written to catch. Nothing was wrong with the code: the dev server was
+recompiling the file that had just been written, and the page under measurement reloaded inside the
+run. Re-running with nothing compiling gave 12. A probe that drives a hot-reloading dev server has
+a precondition no assertion in it can state, and the cheapest way to meet it is to let the compile
+finish before the measurement starts.
+
+**Scope, and what was deferred into the tracker rather than into prose** (#119). The two navbar
+modals are the ones with a raceless way in, and they are the two that changed. The five other
+`AnimatePresence` sites — the user menu, `RoleDropdown`, `SidebarItem`'s submenu and `Login`'s two
+— are retired by a press or by a navigation, which needs a tab in front, so only the ~180ms race
+reaches them; that is a ticket, not a silence in this one. On the way past: sheet 10's census of
+28 September counted **five files** using `AnimatePresence`, and four do. `ProfilePhotoDialog.js`
+only names it in a comment, which is #111 in one word — a grep is evidence for the pattern you
+typed.

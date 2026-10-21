@@ -45,11 +45,16 @@ proved by the hand-walk. The presence itself is not this ticket's; it is shared
 with the change-password box in the same navbar, and it split in two. #167 held the
 second mechanism, measured after it was opened - that box's state lives in `Navbar.js`
 itself and nothing cleared it on the way out, which is provable at this seam - and it
-is closed: every dialog now clears its own state on the way out. **The presence is
-#169**, which is a question for the owner rather than a task, because every way to
-remove the node changes animation timing people see. Two things it asks not to do:
-do not write a mutant for a claim the harness cannot put at risk, and do not delete
-row 4 of `47a`, which is a net on purpose.
+is closed: every dialog now clears its own state on the way out. **The presence was
+#169, and it was answered on 21 October 2569**: the owner chose to drop a closed box
+from the document at once when the tab is getting no frames, which is what
+`frontend/src/components/DialogPresence.js` now does for both boxes of the navbar.
+It was measured with `e2e/probes/169-presence-without-frames.js`, outside both seams,
+because Playwright is what suppresses the condition - a page another tab is in front
+of still reports `visible` and counts 60 frames a second. Both things #169 asked for
+still hold here: there is no mutant for a claim the harness cannot put at risk, and
+row 4 of `47a` stays a net on purpose. What #169 changed is the hand-walk's cause,
+not the row.
 """
 
 from harness import main

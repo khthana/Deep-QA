@@ -49,6 +49,18 @@ import { uploadProfilePhoto } from '../api/profile'
  *
  * The presence bug itself is not this ticket's: it is shared with the
  * change-password dialog, where a typed current password is what survives.
+ *
+ * **Dated 21 October 2569 (#169, closed).** The mechanism in the paragraph above
+ * was measured again, with a Chrome driven over raw CDP rather than through
+ * Playwright, which suppresses the condition. In a tab that is getting frames the
+ * box is removed when its exit tween ends, about 190ms after `onClose`, so nothing
+ * answers three seconds later; in a tab that is getting none the tween never
+ * started, so it did not fade to `opacity: 0` either - it stayed at `opacity: 1`,
+ * focusable and whole in the accessibility tree, until the person came back. That
+ * second half is what the hand-walk met, and `DialogPresence` in `Navbar.js` now
+ * drops the child at once in it. **The reset below stays**: it is what empties the
+ * box in both halves, and it is the only one of the two that `e2e/tests/47a` can
+ * read.
  */
 export default function ProfilePhotoDialog({
   maxBytes,

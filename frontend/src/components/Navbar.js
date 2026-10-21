@@ -6,6 +6,7 @@ import { RiLockPasswordFill } from 'react-icons/ri'
 import ProfilePhotoDialog from './ProfilePhotoDialog'
 import { getProfilePhoto } from '../api/profile'
 import ContentMotionDIV from './ContentMotionDIV'
+import DialogPresence from './DialogPresence'
 import { AnimatePresence } from 'framer-motion'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 
@@ -321,19 +322,23 @@ function Navber({ setAlert, onStayedPut }) {
                 </ContentMotionDIV>
               )}
             </AnimatePresence>
-            <AnimatePresence>
-              {showPhotoDialog && (
-                <ProfilePhotoDialog
-                  maxBytes={photo?.max_bytes ?? null}
-                  currentUrl={photoUrl}
-                  onClose={() => setShowPhotoDialog(false)}
-                  onSaved={photoSaved}
-                />
-              )}
-            </AnimatePresence>
-            <AnimatePresence>
-              {showChangePwd && (
-                <ContentMotionDIV
+            {/* `DialogPresence` rather than `AnimatePresence` on the two
+                boxes - #169. Both close themselves after an awaited request,
+                so the close can land in a tab that is getting no frames, and
+                an exit tween that never runs leaves the whole box in the
+                document until the person comes back and watches it fade. The
+                menu above keeps `AnimatePresence`: it is closed by a press,
+                which needs a tab that is in front. */}
+            <DialogPresence show={showPhotoDialog}>
+              <ProfilePhotoDialog
+                maxBytes={photo?.max_bytes ?? null}
+                currentUrl={photoUrl}
+                onClose={() => setShowPhotoDialog(false)}
+                onSaved={photoSaved}
+              />
+            </DialogPresence>
+            <DialogPresence show={showChangePwd}>
+              <ContentMotionDIV
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -497,8 +502,7 @@ function Navber({ setAlert, onStayedPut }) {
                     </form>
                   </ContentMotionDIV>
                 </ContentMotionDIV>
-              )}
-            </AnimatePresence>
+            </DialogPresence>
           </div>
         </div>
       </div>

@@ -171,7 +171,11 @@ test('a dialog reopened after a refusal remembers nothing', async ({ page }) => 
   // refused file still listed, the sentence still under it and a live save
   // button, because closing the dialog does not always remove it — an exit
   // animation that never gets a frame leaves `AnimatePresence` holding the child,
-  // and reopening hands the same instance back.
+  // and reopening hands the same instance back. #169 closed that way in on
+  // 21 October 2569: a box closed while the tab is getting no frames is now
+  // dropped from the document at once (`components/DialogPresence.js`). So the
+  // hand-walk's own cause is gone, and the row stays a net anyway - this browser
+  // never had it.
   //
   // **This row cannot fail in this browser**, and that is written down rather
   // than papered over: `mutation/47-profile-photo.py` says how it was measured.
