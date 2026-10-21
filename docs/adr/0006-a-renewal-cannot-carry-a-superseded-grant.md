@@ -57,6 +57,9 @@ per live session, or an identifier minted at sign-in and carried through renewal
 that the JWT deliberately replaces, and a larger change than #51 was opened for. It is written here rather than fixed
 quietly: if a second device is ever a case that matters, this paragraph is the one to reopen.
 
+It was reopened, by #153 on 21 October 2569, and left as it stands with the price measured instead — see the section at
+the end of this page, which also names the two sentences above that read differently today.
+
 ## How it is proved
 
 The mechanism is `backend/test/shell.test.js` *a renewal that crosses a switch (#51)*, where a token from before the
@@ -92,3 +95,50 @@ part. It kills that row and no other, and nothing at the browser seam.
 
 `mutation/51-renewal-across-a-switch.py` holds the mutants: the write, its order, the grant it carries, the comparison
 removed, the comparison always false, and the missing claim read as zero.
+
+## Reopened by #153 — and left as it stands (21 October 2569)
+
+§What it costs above says this paragraph is the one to reopen if a second device is ever a case that matters.
+[#153](https://github.com/khthana/Deep-QA/issues/153) reopened it as a question for the owner, who chose to **leave the
+behaviour as it stands and have the price measured**. The price is now seven rows at the HTTP seam, in
+`backend/test/shell.test.js` *two devices of one account (#153)*, recorded in
+`docs/acceptance/10-application-shell.md` §ราคาที่ #51 ยอมแลก วัดแล้ว. Measuring it changed three things this
+page had written down.
+
+**The price is wider than this page said.** It is not that a second device stops renewing: it is that **every device
+except the one that switched last** stops renewing. The second device is not stuck — switching grant there writes a
+cookie whatever the counter said, because the switch bumps the counter and stamps the value it has just written — but
+the moment it does, the first device is the one that cannot renew. Two machines take it in turns. A fix for #153 is
+priced against that shape, not against one device dying. The rows that hold it are *lets the second device recover by
+switching itself* and *and leaves the first device as the one that cannot renew*.
+
+**And it reaches the heartbeat**, which is what makes "signed out however hard the person is working on it" true
+rather than rhetorical: `POST /api/me/activity` is a request like any other (#99, ADR-0005), it reaches the same
+comparison, and it is refused the same way. The half hour counts from the last token *issued*, and no token is being
+issued. The row is *and not for a heartbeat once the first has switched*, with a control row beside it, because a
+heartbeat that never renewed anything would make it pass without the counter having refused a thing.
+
+**"A store of session state that the JWT deliberately replaces" is not a decision anybody recorded.** That sentence in
+§What it costs reads differently today. Nothing in `docs/` or `CONTEXT.md` chooses a JWT over a session store —
+`stateless`, `session store` and `sessions table` appear nowhere — and the JWT is **inherited** from the delivered
+student implementation, as `backend/auth/session.js`'s own docstring says of `generateToken`. ADR-0002 is about
+authorisation being derived server-side from the database, and it already licenses a claim in the token that is a
+*pointer, not an authority*: `acting`, and since #51 `acting_epoch`. A session id would be a third of the same kind. So
+a `sessions` table would amend **this** page and not ADR-0002, and its price is one migration, one table and the three
+places a token is minted — `routes/auth.js` at sign-in, `routes/me.js` at the switch, `session.js` at the renewal —
+rather than the reopening of a founding decision.
+
+**A fourth option the ticket did not list**, for whoever prices this next: store the *selection* on `users` beside the
+counter (two columns, no new table) and have a renewal whose counter does not match **stamp the newest selection**
+rather than write nothing. Every device goes on renewing, and last-write-wins stops being harmful because every
+renewal stamps the newest value — so it would close #51 by a different mechanism and supersede this page as well as
+ADR-0002's *selection* paragraph. Its price is behaviour, not code: the hat becomes the account's rather than the
+browser's, so one person cannot wear two hats on two machines at once. Nothing stores the selection today — there is
+no `acting_role_id` column anywhere in the repo, the hat lives in the cookie alone — which is why "renew under the
+account's current hat" is not available as written.
+
+**What is still not measured** is the browser half. There is no `newContext` anywhere in `e2e/`, so the cookie jars of
+two devices have never been held side by side in a browser; what the HTTP rows cannot see is anything the jar itself
+decides. That claim was true of both seams on the day this page was written, and was never true of the HTTP seam —
+#153's own §How it would be proved said so itself, four lines below the §Measured that said it could not be
+done.

@@ -64,6 +64,23 @@ when the grant changes…*, ที่สอง *a session inside its last ten mi
 `missingiszero` เพิ่มเมื่อ 23 ก.ย. 2569 พร้อมแถว HTTP ที่หกกับที่เจ็ดของ #154 รันกับทั้งสอง seam
 และรัน `noguard` ซ้ำเพราะแถวใหม่เปลี่ยนรายการที่มันฆ่า
 
+**กวาดซ้ำทั้งหกตัวเมื่อ 21 ต.ค. 2569** (#153) ไม่ได้แก้มัตแตนต์ใบไหนเลย แต่ `shell.test.js` ได้
+กลุ่มใหม่ *two devices of one account (#153)* เจ็ดแถว ซึ่งมัตแตนต์เอื้อมถึง ตัวเลขจึงหมดอายุทั้งหก
+(#48 · #202) baseline **57 ผ่าน 0 ตก** และ**ลำดับที่** ของแถว HTTP ข้างบนนับเฉพาะในกลุ่ม *a renewal
+that crosses a switch (#51)* เท่านั้น — แถวของกลุ่มใหม่อ้างด้วยชื่อ (#173):
+
+* `nobump` **6 แถว** — เดิมสองแถว บวก *stops the second device renewing once the first switches* ·
+  *and not for a heartbeat once the first has switched* · *lets the second device recover by
+  switching itself* · *and leaves the first device as the one that cannot renew*
+* `noguard` **6 แถว** — เดิมสองแถว บวกสี่แถวชุดเดียวกับ `nobump` (ทั้งสองตัวทำให้ทุกอย่างต่ออายุได้
+  แถวกู้คืนจึงตายที่*จำนวน*คุกกี้ ไม่ใช่ที่หมวก)
+* `neverrenew` **7 แถว** — เดิมสี่ บวกสองตัวควบคุม *renews the second device while nobody has
+  switched* · *renews it for a heartbeat while nobody has switched* และ *and leaves the first
+  device…* ที่การอ่านครั้งแรกของมัน
+* `switchkeepsold` **5 แถว** — เดิมสี่ บวก *lets the second device recover by switching itself*
+* `bumpafterissue` **3 แถว** — เดิมสองแถว บวก *and leaves the first device…* ที่การอ่านครั้งแรก
+* `missingiszero` **1 แถว** เท่าเดิม
+
 **`node --test` นับ test ตัวนอกเป็นความล้มเหลวด้วย** ตัวเลข `# fail` ของไฟล์นี้จึงมากกว่าจำนวนแถวที่ตาย
 อยู่หนึ่งเสมอ อ่านชื่อในบรรทัด `not ok` ที่ย่อหน้าสี่ช่อง ไม่ใช่ตัวเลข
 

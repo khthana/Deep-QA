@@ -746,3 +746,173 @@ test('a renewal that crosses a switch (#51)', async (t) => {
     assert.equal(response.headers['set-cookie'], undefined);
   });
 });
+
+/**
+ * #153: the price ADR-0006 accepted, measured.
+ *
+ * The counter is on the account, so it cannot tell the account's own browsers
+ * apart. Somebody signed in on two machines who switches grant on the first
+ * leaves the second holding a token whose number is behind: it is answered
+ * exactly as before, because the counter decides nothing about authorisation,
+ * and it never renews again, so that machine is signed out when its half hour
+ * runs out. ADR-0006 wrote that down as the accepted price of #51 and said the
+ * paragraph was the one to reopen; the owner read it on 21 October 2569 and
+ * chose to leave the behaviour as it stands. These rows are that decision's
+ * price turned into claims the suite holds - so it is measured rather than
+ * reasoned about, and so anybody who changes it later has to change a row.
+ *
+ * Two sessions of one account at once needed no new instrument: it is
+ * `signInAs` twice. This sheet used to say both seams run a single browser
+ * context and neither could build it, which is true of the browser seam and
+ * says nothing about this one - there is no browser here, only cookies, and
+ * nothing stops a row holding two.
+ *
+ * Measured against the code before #51 (`51:noguard`) the three rows that say
+ * no cookie is written go red - *stops the second device renewing once the
+ * first switches*, *and not for a heartbeat once the first has switched* and
+ * *and leaves the first device as the one that cannot renew* - which is what
+ * says they are about the guard rather than about something else. The other
+ * four are the two controls, the row about what the stale request is still
+ * answered as, and the recovery; `docs/acceptance/10-application-shell.md`
+ * says which mutant kills each of them.
+ */
+test('two devices of one account (#153)', async (t) => {
+  const PROG = { role_id: 'PROG_MANAGER', scope_id: PROGRAM_THAI };
+  const TEACH = { role_id: 'TEACHER', scope_id: DEPT_COMPUTER };
+
+  const heartbeat = (cookie) =>
+    request(api.app).post('/api/me/activity').set('Cookie', cookie);
+
+  /**
+   * Two sign-ins of one account: two cookie jars holding two tokens, and one
+   * counter behind both. Sign-in reads the counter rather than moving it, so
+   * the two start level - asserted here because every row below is about what
+   * happens when they stop being level, and a second sign-in that bumped
+   * anything would make them all pass for the wrong reason.
+   */
+  async function twoDevices() {
+    const first = await signInAs('U_MULTI');
+    const second = await signInAs('U_MULTI');
+    assert.equal(
+      claimsOf(first).acting_epoch,
+      claimsOf(second).acting_epoch,
+      'two sign-ins of one account should start on the same counter',
+    );
+    return { first, second };
+  }
+
+  // The control, and what makes the rows below about the switch: nine minutes
+  // left and nobody switching renews the second jar exactly like the first.
+  await t.test('renews the second device while nobody has switched', async () => {
+    const { second } = await twoDevices();
+
+    const response = await me(aged(second, 9 * 60));
+
+    assert.equal(response.status, 200);
+    assert.ok(response.headers['set-cookie'], 'the second device should renew');
+  });
+
+  // The price itself. Nothing was done on the second machine; the switch
+  // happened somewhere else entirely, and this token can no longer be put back
+  // on the browser holding it.
+  await t.test('stops the second device renewing once the first switches', async () => {
+    const { first, second } = await twoDevices();
+    const working = aged(second, 9 * 60);
+
+    assert.equal((await switchTo(first, TEACH)).status, 200);
+    const response = await me(working);
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers['set-cookie'], undefined);
+  });
+
+  // And the other half of the price, which is what keeps it a cost rather than
+  // a lock-out: the machine goes on working, under the hat it chose, for
+  // whatever is left of its half hour.
+  await t.test('and answers it under the grant that device chose', async () => {
+    const { first, second } = await twoDevices();
+    const working = aged(second, 9 * 60);
+
+    assert.equal((await switchTo(first, TEACH)).status, 200);
+    const response = await me(working);
+
+    assert.deepEqual(response.body.acting, PROG);
+  });
+
+  // The control for the row below. #99's heartbeat is the request a person's
+  // typing produces, and it renews like any other request - asserted here
+  // because a heartbeat that never renewed anything would make that row pass
+  // without the counter having refused a thing.
+  await t.test('renews it for a heartbeat while nobody has switched', async () => {
+    const { second } = await twoDevices();
+
+    const response = await heartbeat(aged(second, 9 * 60));
+
+    assert.equal(response.status, 204);
+    assert.ok(response.headers['set-cookie'], 'the heartbeat should renew');
+  });
+
+  // Which is what makes the price read "however hard the person is working on
+  // it": the request their typing produces reaches the same comparison and is
+  // refused the same way, so working in the second machine cannot keep it
+  // alive. ADR-0005 is why that matters - the half hour counts from the last
+  // token issued, and no token is being issued here any more.
+  await t.test('and not for a heartbeat once the first has switched', async () => {
+    const { first, second } = await twoDevices();
+    const working = aged(second, 9 * 60);
+
+    assert.equal((await switchTo(first, TEACH)).status, 200);
+    const response = await heartbeat(working);
+
+    assert.equal(response.status, 204);
+    assert.equal(response.headers['set-cookie'], undefined);
+  });
+
+  // What ADR-0006 did not say, and the shape the price really has: the second
+  // machine is not stuck. Switching grant there writes a cookie whatever the
+  // counter said, because the switch bumps the counter and stamps the value it
+  // has just written - so the person has a way back.
+  await t.test('lets the second device recover by switching itself', async () => {
+    const { first, second } = await twoDevices();
+    const working = aged(second, 9 * 60);
+    assert.equal((await switchTo(first, TEACH)).status, 200);
+
+    const recovered = await switchTo(working, PROG);
+
+    assert.equal(recovered.status, 200);
+    const written = [recovered.headers['set-cookie']].flat().filter(Boolean);
+    assert.equal(
+      written.length,
+      1,
+      'the switch should write exactly one cookie whatever the counter said',
+    );
+    assert.deepEqual(claimsOf([written[written.length - 1]]).acting, PROG);
+  });
+
+  // And the reason that way back is not a fix: it moves the problem. Whoever
+  // switched last is the only device that can renew, so two machines take it in
+  // turns. This row is the one to read before pricing a fix for #153 - the cost
+  // is not "a second device dies" but "every device except the one that
+  // switched last dies".
+  await t.test('and leaves the first device as the one that cannot renew', async () => {
+    const { first, second } = await twoDevices();
+    const switched = await switchTo(first, TEACH);
+    assert.equal(switched.status, 200);
+    // The cookie the switch issued, not the one sign-in issued: that one
+    // carries the counter from before the bump and so cannot renew whatever
+    // the second device does, which would make this row pass for free.
+    const firstStillWorking = aged(carried(switched, first), 9 * 60);
+
+    const before = await me(firstStillWorking);
+    assert.ok(
+      before.headers['set-cookie'],
+      'the device that switched last should be the one that renews',
+    );
+
+    assert.equal((await switchTo(aged(second, 9 * 60), PROG)).status, 200);
+    const response = await me(firstStillWorking);
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers['set-cookie'], undefined);
+  });
+});

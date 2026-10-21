@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 21 October 2569 that is
-`2026-10-21-a-sentence-that-names-its-offering.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-21-the-price-that-was-wider-than-the-page.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -65,7 +65,10 @@ citation.
   defect. (#66, #111, #55, #155, #102, #122, #67, #101, #48, #133, #127, #185, #165, #186, #58,
   #187, #218, #89)
 - **A ticket's supporting identifiers are a claim like its numbers** — ask `CREATE TABLE` before
-  pasting a list of names, because a wrong list gets pasted more than once. (#54)
+  pasting a list of names, because a wrong list gets pasted more than once. **And a *decision* a
+  cost line cites is the same kind of claim**: grep the corpus before believing it was ever taken,
+  because an inherited mechanism is not a decision, and a citation that prices one option as
+  reopening a founding decision is a thumb on the scale for the others (#77). (#54, #153)
 - **A ticket's reason for being *untestable* is a claim like its numbers** — measure whether the
   situation can be built; do not reason about it. (#141)
 - **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
@@ -81,6 +84,11 @@ citation.
 - **A ticket's cost line is a claim about the shape its author pictured, not about the option** —
   and alone among its claims this one is about the *fix*, so it is what decides which option gets
   built. Re-derive each price from the mount points before choosing. (#77)
+- **An accepted price is a claim like a ticket's numbers, and measuring it can widen it** — the cost
+  line's twin, for the cost of *not* fixing. Ask what the person can do about it, because the
+  recovery they have may move the price rather than end it, and ask whether it reaches the work they
+  are doing, which is usually the half that makes the price's own wording true. A ticket that says
+  it cannot be measured is answered by its own next paragraph more often than by a seam. (#153)
 - **A ticket's count of what its fix *buys* is a claim like its count of what is wrong** — settled
   by the ticket's own proposal made to run (#48), applied with the defect in and with it out. When
   it is refuted the ticket body stays standing as the record of what was claimed (#54), and the

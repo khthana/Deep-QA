@@ -12526,3 +12526,95 @@ two `` `43a:NNN` `` citations in `e2e/README.md` became two-file names the momen
 when `151a` landed: narrow the citation, not the filename, since every `1NNa` contains `NNa` and
 the ticket number is not negotiable. Second time for this species, which is why it is a sentence
 here and not a new line in the index.
+
+## #153 — the accepted price that was wider than the page that accepted it
+
+A `question` ticket, and the owner's answer was the cheapest of the four options put to them: **leave
+the behaviour as it stands, and have the price measured.** So the ticket cost no line of production
+code and seven rows at the HTTP seam, which is the shape #48 describes from the other side — a
+criterion answered *no* needs a row as much as one answered *yes* — except that here what is answered
+*no* is a whole ticket, and the row is what keeps the answer from being a sentence nobody can check.
+
+**The ticket said it was not measurable, and its own next paragraph said how to measure it.** *Not
+measured in a row: both seams run a single browser context, so neither can hold two sessions of one
+account at once* — and then, four lines later, *`backend/test/shell.test.js` can, by signing two
+cookies and sending them in turn*. Two sessions of one account is `signInAs` twice: there is no
+browser at that seam at all, only cookies, and nothing stops a row holding two. The whole measurement
+was a probe of five rows that passed first time, which makes this #141's rule met again — a ticket's
+reason for being untestable is a claim like its numbers — with the aggravation that the claim was
+refuted inside the ticket. What was true was the clause nobody had reason to doubt: there is no
+`newContext` anywhere in `e2e/`, so the browser half is still unmeasured, and the jar is where *last
+write wins* actually happens.
+
+**Measuring it widened the price, which is the finding.** ADR-0006 §What it costs had it as *the
+second machine is signed out when its half hour runs out*. What the probe found is that the second
+machine is not stuck at all: switching grant there writes a cookie **whatever the counter said**,
+because the switch bumps the counter and stamps the value it has just written — so the person has a
+way back. And the moment they take it, the *first* machine is the one that cannot renew. Two devices
+take it in turns, and only the one that switched last can renew. That is a different sentence to
+price a fix against, and it was invisible from the code: the mechanism is in `routes/me.js`, the
+symptom is in `session.js`, and nothing in either file says that the two of them make the cost
+symmetrical. It is #225's rule read from the other end — there the count of what a fix *buys* was a
+claim to measure; here it is the count of what *not* fixing costs, and the instrument is the same,
+the situation built with the defect in.
+
+**The reach is the heartbeat, which is what makes the price's own wording true.** *However hard the
+person is working on it* is only true if the request their typing produces is refused too, and
+`POST /api/me/activity` is a request like any other: it reaches the same comparison and is refused
+the same way (#99, ADR-0005 — the half hour counts from the last token *issued*, and none is being
+issued). The row needed its control beside it, because a heartbeat that never renewed anything at
+all would make the claim pass without the counter having refused a thing — #83's species, a row that
+passes before and after the thing it is about.
+
+**The ticket's supporting citation was a decision nobody had made.** Option 2 was priced as *a store
+of session state the JWT was deliberately chosen to replace (ADR-0002)*, which made it read as an
+amendment to a founding decision. ADR-0002 is about authorisation being derived server-side from the
+database; it says nothing about session storage, and it already licenses exactly this kind of claim
+in the token as a *pointer, not an authority* — `acting`, and since #51 `acting_epoch`. Grepping the
+corpus for `stateless`, `session store` and `sessions table` returns **nothing**: the JWT was never
+chosen over anything, it is **inherited** from the delivered student code, as `session.js`'s own
+docstring says of `generateToken`. Re-derived from the mount points, option 2 is one migration, one
+table and the three places a token is minted — sign-in, the switch, the renewal — and it amends
+ADR-0006 alone, which is the page that says it is the one to reopen. This is #54's rule one layer
+up: there the invented identifiers were table and column names, here it is the *decision* a cost line
+cites, and because a cost line is what decides which option gets built (#77), a citation that inflates
+one option's price is a thumb on the scale for the others.
+
+**And the measurement found the fourth option** (#128's shape again). Nothing in the system stores the
+selection — there is no `acting_role_id` column anywhere, the hat lives in the cookie alone — which
+is why a renewal cannot simply re-stamp the account's current hat. Store it (two columns, no table)
+and a mismatched renewal can stamp the newest selection instead of writing nothing: every device
+renews, and *last write wins* stops being harmful because every renewal writes the newest value. It
+closes #51 by a different mechanism, and its price is **behaviour rather than code** — the hat becomes
+the account's rather than the browser's, so nobody can wear two hats on two machines. That is an
+owner's question, which is why it is written into ADR-0006 for whoever prices this next rather than
+built.
+
+**The mutant for the declined option already existed.** Option 3 was *counter per token rather than
+per account*, which made to run (#48) is a comparison of the token's number against itself — that is
+`51:noguard`, the mutant that is already the code before #51. It kills four of the seven new rows,
+and so does `51:nobump`; `51:neverrenew` kills the two controls and the last row, `51:bumpafterissue`
+the last row alone, and `51:switchkeepsold` the recovery row. Six of the seven therefore have a
+killer; the one that does not is the row saying the stale device is still *answered*, for the same
+reason its #51 sibling has none — it is the behaviour #51 had to leave alone. Six mutants nobody
+edited had their figures expire, the anchors exact and the code untouched, because the file gained
+rows they can reach (#48, #202): re-swept at a baseline of 57, the HTTP counts went 2→6, 2→6, 4→7,
+4→5 and 2→3, and `missingiszero`, which reaches none of the new rows, stayed at one. The browser
+figures did not move and were not re-run: the diff is one test file, which no spec in `e2e/` imports.
+
+**And the last row was killed by two of them while measuring nothing at all**, which is why the
+second sweep is the one those figures come from. As first written it aged the cookie *sign-in*
+issued rather than the cookie the switch issued — a token carrying the counter from before the bump,
+which cannot renew whatever the second device does — so the claim the row exists for, *only the
+device that switched last can renew*, was never at risk. `51:nobump` and `51:noguard` killed it
+anyway: they make everything renew, and the row's assertion is that nothing was written. It read
+exactly like a proved row, with the right mutants cited beside it. That is #116's fourth reading of
+a sheet met again — a row that cites the right mutant and never states its claim, the only one of
+the four that leaves the sheet looking modest — and it was found by `/code-review` rather than by a
+sweep, because **no sweep can see it**: the mutant dies at an assertion that is true for a reason
+the row did not arrange. What repaired it is a read *before* the second device switches, asserting
+that this cookie renewed while it was the one that had switched last; and that read is what bought
+`neverrenew` and `bumpafterissue` as killers. Tightening the recovery row from *a cookie was
+written* to *exactly one cookie was written* bought `nobump` and `noguard` there as well, the
+mutants that remove the comparison making the switch renew too. Repairing one vacuous row and one
+loose count added four kills, which is the measure of how loose they were.
