@@ -211,14 +211,23 @@ function SidebarItem({
                                       until this, so the icons the config named
                                       were never on screen.
 
-                                      The box is sized to the label's own line
-                                      so that swapping a 4px dot for it leaves
-                                      the row the height it was; what it does
-                                      take is width, which the numbers on
-                                      docs/acceptance/30 record, along with the
-                                      two labels that now take two lines and the
-                                      question that was raised about them rather
-                                      than answered here.
+                                      The box is sized inside the label's own
+                                      line so that swapping a 4px dot for it
+                                      leaves the row the height it was; what it
+                                      does take is width, which the numbers on
+                                      docs/acceptance/30 record.
+
+                                      16px, and not the 20 this shipped with,
+                                      because that is what #156 answered. Of
+                                      the four ways to give the label its width
+                                      back, this is the only one that changes
+                                      no value the delivered UI fixes: `gap-3`
+                                      is the gap the delivered shell drew its
+                                      dot with, and 20px was a number #105
+                                      chose. What it buys, and the three
+                                      options it was priced against, are on
+                                      docs/acceptance/30 and not restated
+                                      here.
 
                                       Below it the dot is left exactly as it
                                       was, active branch and all, for an entry
@@ -231,9 +240,15 @@ function SidebarItem({
 
                                       The icon itself takes no such branch: it
                                       draws in the link's own text colour, which
-                                      the active state already changes.
+                                      the active state already changes. #156
+                                      asked whether it should change colour
+                                      under the pointer, as the dot below it
+                                      does, and the answer was no - for the
+                                      same reason the top-level row above does
+                                      not. What answers the pointer on this row
+                                      is `hover:bg-blue-50`, the background.
                                     */}
-                                    <div className="flex h-5 w-5 shrink-0 items-center justify-center text-[18px]">
+                                    <div className="flex h-4 w-4 shrink-0 items-center justify-center text-[16px]">
                                       {sub.icon ?? (
                                         <div
                                           className={`h-1 w-1 rounded-full transition-all ${

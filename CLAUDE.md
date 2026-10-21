@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 21 October 2569 that is
-`2026-10-21-the-price-that-was-wider-than-the-page.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-21-the-override-that-never-landed.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -126,6 +126,12 @@ citation.
 - **A ticket that proposes one fix can be proposing two, and the split is the fourth option** —
   price the halves before writing the owner's question, and say which reader each half is for.
   (#204)
+- **Which of a ticket's options are *allowed* is decided by who chose each value, which is not
+  what an option does to the screen** — under `docs/06` §Out of Scope an option that moves a
+  delivered number is a divergence and one that moves a number the rebuild chose is not, however
+  alike the two look on the screen. So ask the delivered code who picked each number before writing
+  the owner's question: that is where the option nobody listed comes from, and it can buy exactly
+  what the divergence would have (#45, #204). (#156)
 - Read a ticket to its end before believing its first sentence; aim at the branch, not the
   function. (#102, #119)
 - **A spec that fails only in the full suite is not a flaky spec until the mechanism is measured** —
@@ -535,6 +541,11 @@ citation.
   is an instrument rather than a claim of any sheet. Its own first version is a claim too, so ask
   the placeholder by name rather than counting rows (#164's blind sampler one species along).
   (#207)
+- **An in-page override is a claim, and the cheapest check on it is the property it was meant to
+  change** — an `!important` that does not land prints the old value beside the variant's name and
+  reads exactly like a candidate that buys nothing, which is an answer somebody will act on.
+  Reproduce one candidate by editing the code before believing the table. **And the probe goes when
+  the *fix* has been measured, not when the question has been answered** (#207). (#156)
 - **A red is not a measurement until the same read has been seen green** — the same rule from the
   failing side. A locator scoped to a heading the screen never draws reads empty drawn and undrawn
   alike, so ten reds of ten can mean nothing, and a fix built on them is wrong the same way. (#171)

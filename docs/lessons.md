@@ -3360,6 +3360,13 @@ drop to two lines. Seven of twenty-eight labels now take two lines where five di
 not a walk** — it is cheaper than a person, it can be re-run after the next change, and it was deleted the moment it
 had answered.
 
+**Those figures are of 23 September 2569, and #156 is where they now live.** The menus have held 32 sub-items across
+**four** role menus since #49 gave the external assessor one on 16 October, so *seven of twenty-eight* read as
+**eight of thirty-two** on the day the question was answered; the box went to 16px on 21 October and the count is
+seven. The paragraph is kept as the record of what was measured, not corrected (#54); the table of all five
+geometries is on `docs/acceptance/30-weighting-scheme.md` under §#156, and the story is §#156 at the end of this
+file.
+
 **But a measurement answers *what it costs*, not *may I*.** Tightening the gap between mark and label from 12px to
 8px was measured too, and it is worth 194px → 198px and one label back — and it went in, and `/code-review` took it
 out again, quoting `docs/06` §Out of Scope: the UI is reproduced as-is, and a proposal to change it is raised as a
@@ -12618,3 +12625,70 @@ that this cookie renewed while it was the one that had switched last; and that r
 written* to *exactly one cookie was written* bought `nobump` and `noguard` there as well, the
 mutants that remove the comparison making the switch renew too. Repairing one vacuous row and one
 loose count added four kills, which is the measure of how loose they were.
+
+## #156 — the override that never landed, and the option nobody had priced
+
+A `question` ticket raised by #105 on its way past, under `docs/06` §Out of Scope — *the UI is
+reproduced as-is; any proposal to change it is raised as a question, not implemented.* #105 had made
+the shell draw the icon each menu entry declares, a 20px box where a 4px dot had been, and the width
+came out of the label: two more labels fell to two lines. The ticket put three answers to the owner —
+leave it, tighten the gap, shorten the labels — with a table of numbers beside them.
+
+**Every number in the table had to be measured again, and two of them were wrong in different
+ways.**
+
+The population first. The ticket counted 28 sub-items across the three role menus that had any;
+today there are **32 across four**, because #49 gave the external assessor a menu on 16 October by
+copying the programme manager's fourth group whole, and the longest label in the system came with
+it. So *7 of 28* was a figure about the day it was written, which is the catalogue's first rule met
+again — a ticket's *What is wrong* is a claim from the day it was written — but with the twist that
+nothing in it was ever wrong: the sentence aged by a fix landing somewhere else, in a file the
+ticket does not name, five weeks after it was filed. Re-measured, today's menus wrap **8 of 32**.
+
+**Then the override.** The probe applied each candidate as an inline style over the live layout
+rather than by editing the component — one page load per variant, so nothing accumulated — and
+reported that tightening the gap to 8px changed nothing at all: `gap8` came back byte for byte
+identical to `head`, same 194px, same eight labels. The first reading of that is that the ticket was
+wrong about its own option. It was not. `link.style.setProperty('column-gap', '8px', 'important')`
+had not landed, and the proof is in the probe's own output, where the variant called `gap8` printed
+`gap=12` beside its name. The fix for the measurement was to stop measuring that way: `gap-3` was
+edited to `gap-2` in the component, the probe run against the real tree, and the number came back
+**198px and seven labels** — the direction the ticket claimed, at numbers one step along from the
+ones it wrote, because its *7 instead of 6* had been measured when the menu was 28 items wide.
+
+So an in-page override is a claim like any other, and the cheapest check on it is the property
+itself: a variant that reports the value it was supposed to change has measured nothing, and it
+reports it in the same shape as a real result — a row of numbers under a name. Nothing is red,
+nothing times out, and the inert variant looks like a candidate that buys nothing, which is exactly
+the answer somebody would act on. What settles it is the thing the probe's own docstring promised
+and had not yet done: one candidate reproduced by editing the code, and compared.
+
+**The option that was chosen is not one of the three.** All three in the ticket are priced by what
+is on the screen. What none of them asks is which of the numbers in that drawing the delivered
+system fixed and which the rebuild chose for itself —
+`DEEP-QA-FRONTEND/src/components/SidebarItem.js` drew its 4px dot with `gap-3`, so **the 12px gap is
+a delivered value and the 20px box is a number #105 picked**, sized to the label's 24px line so the
+row height would not move. Shrinking the box to 16px gives back 4px of the 16 and buys the same one
+label the gap change buys — at no divergence from the delivered UI at all, where tightening the gap
+is a change to something the students shipped. That asymmetry is #45 one layer up (a number copied
+from a sibling screen is a decision, not an inheritance) and it is invisible to a ticket that prices
+its options by their effect: the two cheap options cost the same 4px and buy the same label, and
+everything that distinguishes them is in a file the ticket never opens. The owner took it, and the
+second item on the ticket — the mark no longer changing colour under the pointer, because
+`text-primary` and `hover:text-primary` unfold to the same token — was answered *leave it*, which
+makes the top-level row's behaviour the rule rather than a gap in this one.
+
+**No mutant, and that is the whole of what #156 owes the suite.** `105a` asks whether the shell
+reads each entry's own config — no entry drawing nothing, two entries not drawing the same thing —
+and a box's size is not that question. Size is appearance, appearance is hand-walked here, and so
+the deliverable is three ◐ rows: the menu row of sheets 30, 31 and 32, each of which was walked at
+20px on 23 September and now has a drawing nobody has looked at. That is #105's own rule read the
+other way — a row can gain a walkable half the day a ticket lands — except that here the ticket
+that re-opened them is the one answering the question they were opened by.
+
+**And the probe was deleted one measurement too early.** It had answered the question, so it went,
+by #207's rule that a probe is an instrument: built, run, deleted. But a fix made from a probe's
+numbers is owed a reading *after* it lands, and the instrument for that reading is the probe, so it
+had to be written again from scratch to confirm the 198px and the seven labels in the tree as
+committed. The rule is the same one, with its moment moved: delete the probe when the fix has been
+measured, not when the question has been answered.
