@@ -53,12 +53,18 @@ const { evidenceDir } = require('./evidence');
  * `removePhoto` unlinks. Two callers need it and only one of them exists today:
  * a replacement, which is criterion 4 and the one part of the inherited
  * implementation that was already right; and the deletion of an account, which
- * is criterion 5 and which no route in this application can do — `users.js` has
- * no DELETE and `docs/acceptance/11-user-accounts.md` says why. Migration 0004's
- * CASCADE removes the row the day somebody deletes a user through SQL; the file
- * is what this function is for, and the route that will need it does not exist
- * yet. That is written on the sheet rather than solved with a caller nobody
- * calls.
+ * no route in this application can do — `users.js` has no DELETE, and `docs/06`
+ * user story 19 has an account created, edited and *deactivated* rather than
+ * deleted. Migration 0004's CASCADE removes the row the day somebody deletes a
+ * user through SQL; the file is what this function is for.
+ *
+ * #47 asked for that second caller as criterion 5, and this paragraph used to
+ * say the requirement was written on the sheet. On 21 October 2569 the product
+ * owner struck the criterion out and moved the requirement to where the
+ * mechanism that makes it true lives: the CASCADE comment in
+ * `db/migrations/0004_user_profile_image.sql`, which binds every path that
+ * deletes a `users` row and not only a route (#166). Read the requirement
+ * there.
  */
 
 /** The signature of each kind, with what to serve it as and what to call it. */

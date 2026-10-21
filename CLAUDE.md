@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 21 October 2569 that is
-`2026-10-21-the-half-that-was-measured-one-layer-down.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-21-the-criterion-with-no-caller.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -116,6 +116,14 @@ citation.
   answered by the owner** — a control that was there and the rebuild dropped makes the ticket a
   regression with its wording already decided. The half that does not survive the shared component
   is the half to say out loud. (#86)
+- **And a question about whether to *strike* a criterion is answered by the spec's own user stories
+  before it is answered by the owner** — #86's rule with the other witness, and the two can point
+  opposite ways on one absence: a decision already written in `docs/06` turns *decide this* into
+  *confirm what you decided* and makes the ticket's other option a change to a user story, while
+  the delivered code can still show the same absence to be a divergence that was chosen. Then the
+  requirement the struck criterion carried goes **where the mechanism that makes it true lives**,
+  not into the ticket being closed over it — a constraint binds every path, a ticket binds a route.
+  (#166)
 - **A delivered screen that never had the words can still have had the protection** — what it used
   instead may be a **mechanism** the rebuild dropped on purpose, which makes the ticket the price
   of a divergence already taken, and restoring that mechanism a **new rule** rather than a

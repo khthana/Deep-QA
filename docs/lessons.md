@@ -12771,3 +12771,82 @@ step the repo controls is the `title` attribute, and `84a` and `12a` already ass
 `REFUSALS.selfStatus` and `REFUSALS.selfRevoke` themselves. The attribute-to-description mapping is
 Chrome's, not ours. There is no gap between what was measured and what is held, so there is no
 ticket to open for one.
+
+## #166 — the criterion with no caller, and the answer that was already in the spec
+
+A `question` ticket, opened 27 September 2569 out of #47's own closing sweep. Criterion 5 of #47 —
+*delete an account and the photo file must be gone from the disk, not only the row* — has no
+caller, because the rebuild suspends accounts and never deletes them, and the third conjunct of
+criterion 8 waits on the same absence. The ticket offered two: **(ก)** the day a delete route is
+built, its ticket calls `removePhoto` per `user_image` row before the row goes and carries a
+backend row that reads the file back off the disk; or **(ข)** if it is confirmed that accounts are
+never deleted, strike criterion 5 and half of 8 out formally and rewrite sheet 47's ☐ row to say
+so. Under `docs/06` §Out of Scope that choice is the owner's.
+
+**Every claim in it measured true.** `backend/routes/users.js` has seven routes — a list, an import
+template, one by id, a create, an update, a status change and an import — and **none of them
+deletes**. `backend/lib/userPhoto.removePhoto` exists, is called by the replace path, and its own
+header said the delete-account route must call it — a sentence that expired the day the criterion
+was struck, in the file nobody thought they were changing (#130): the review found it, and it was
+dated and redirected to `0004` as part of this change. So the criterion had no caller, exactly as
+written, and this is one of the ones whose *What is wrong* was still true on the day it was read.
+
+**What decided the question was not on the ticket: the answer was already in the spec.** `docs/06`
+user story 19 reads *create, edit and deactivate user accounts*, and stories 29 and 40 write the
+same doctrine for a Program and a Program Subject — *deactivated rather than deleted*. The missing
+route is therefore a **decision already written down**, not an omission, which changes what the two
+options are: (ก) is not a gap waiting to be filled on some later ticket, it is a change to user
+story 19. The owner's question stops being *decide this* and becomes *confirm what you decided*,
+which is a cheaper question and a different one. This is #86's rule with the other witness: there
+the **delivered UI** answered the owner's question about a missing control before the owner did;
+here the **spec's own user story** answers it, and the two can point opposite ways on one absence.
+
+**They do here, which is why the confirmation was still worth having.** The delivered system *had*
+the control: `UserTable.js` draws a trash button per row behind a confirmation box, it calls
+`DELETE /api/user/delete/:user_id`, and `userModel.deleteUser` really does delete the `users` row
+after two business guards — sweeping `course_sections_teacher` by hand on the way, never touching
+`user_image`, and never unlinking a file. So the rebuild's missing route is a **divergence that was
+chosen**, and #47's *the day a delete route exists* was not hypothetical but a control the rebuild
+had declined to reproduce. An absence can be a decision in the spec and a divergence from the
+delivered code at the same time, and both halves belong in the owner's question.
+
+**Striking a criterion would have lost its requirement with it — unless the requirement is written
+where the mechanism that makes it true lives.** The owner took that option, which is neither of the
+ticket's two: strike criterion 5 and the third half of 8, and move the requirement into
+`db/migrations/0004_user_profile_image.sql`, beside the `ON DELETE CASCADE` on
+`user_image.user_id`. That is the right address for it twice over. The migration chose CASCADE
+against `0001`'s general `RESTRICT` **citing the inherited `deleteUser`**, so it is already the
+file that anybody writing a deletion path has to read; and CASCADE makes the requirement true of
+**every path that deletes a `users` row** — a future route, an administration script, a hand at a
+`psql` prompt — rather than of a route, which is all the closed ticket could have bound. A struck
+criterion's requirement goes to the mechanism, not to the ticket that is being closed over it.
+
+**And the price it is written against is smaller than the migration said.** `0004`'s own comment
+had it that an orphaned file is *still served*: true of the delivered system, which served the
+photos through an unguarded `express.static`. Since #47 the rebuild has **no static mount at all**
+and `GET /me/photo` reads `user_image` for `req.auth.userId` only, so an orphan here is reachable
+through **no route**. What it costs is disk, and a photograph of a person whose account is gone —
+retention, not exposure. The sentence was right the day it was written and was expired by another
+ticket's fix, which is #130 in a migration comment instead of a sheet: it was dated rather than
+deleted.
+
+**The requirement is also bounded, which is what makes one comment enough.** Photos are the only
+file-bearing table that cascades from `users`: `activity_evidence.uploaded_by` is
+`ON DELETE SET NULL`, so deleting an account leaves the evidence rows and their files alone, and
+`course_sections_teacher.user_id` is `ON DELETE RESTRICT` here — a future delete route would be
+**refused** for a teacher who has teaching load, where the delivered code swept that table clean
+first. So the sweep the requirement asks for is one call about one table, not a doctrine.
+
+**What changed on the sheets.** Sheet 47 row 5 keeps **☐** and keeps its place in the table:
+the row is the record of what #47 asked for, not a queue, and there is no fifth mark to invent
+(#97, #66) — what it gained is the dated sentence saying it was struck and where its requirement
+now lives. Row 8's third conjunct is struck through in the criterion cell itself, which leaves two
+conjuncts that both have rows in that table, so the row goes **◐ → ☑** and the walk queue is one
+shorter. The answered question moved out of `## คำถามที่ยังไม่ได้ตอบ` into its own dated
+section, on #48's pattern. On sheet 11 the sentence the ticket cites — *there is no `DELETE`, so
+that account can only be suspended* — sits inside a **dated record** of #124's measurement, so it
+was not rewritten: it got a dated line beside it saying that the absence reads as a confirmed
+decision today and where the file-deletion requirement went (#54).
+
+No production code, no row and no mutant: the ticket asked a question, and what the answer changed
+was three documents and a migration comment.

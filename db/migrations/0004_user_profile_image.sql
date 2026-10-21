@@ -37,9 +37,32 @@ CREATE TABLE user_image (
   -- uploaded a photo would be undeletable through that path.
   --
   -- The file on disk is not swept up with the row: deleteUser does not unlink,
-  -- so a deleted user leaves an orphan under /data/evidence/user_image, still
-  -- served. The database cannot reach a filesystem, so this half belongs to the
-  -- upload path, with the type-check and retrieval-auth defects: #47.
+  -- so a deleted user leaves an orphan under /data/evidence/user_image. In the
+  -- delivered system that orphan was still served, the photos sitting under an
+  -- unguarded express.static; since #47 the rebuild has no static mount at all
+  -- and GET /me/photo reads user_image for the caller's own id, so an orphan
+  -- here is reachable through no route. What it costs is disk, and a photograph
+  -- of a person whose account is gone - a retention question and not an
+  -- exposure (measured 21 October 2569, #166).
+  --
+  -- The database cannot reach a filesystem, so this half belongs to whatever
+  -- deletes. #47 asked for it as criterion 5; on 21 October 2569 the product
+  -- owner struck that criterion out, because docs/06 user story 19 has an
+  -- account created, edited and *deactivated* and never deleted, and no route
+  -- in the rebuild deletes one (#166). The requirement is written here rather
+  -- than left in that closed ticket because CASCADE makes it true of every path
+  -- that deletes a users row and not only of a route - a future route, an
+  -- administration script, or a hand at a psql prompt:
+  --
+  --   whatever first deletes a users row calls removePhoto of
+  --   backend/lib/userPhoto.js for that account's user_image row - user_id is
+  --   this table's whole primary key, so there is at most one - *before* the
+  --   row goes, a deleted row being one nobody can ask the filename of; and it
+  --   carries a backend test that
+  --   reads the file back off the disk and finds it gone, not one that only
+  --   finds the row gone. backend/test/profile-photo.test.js already has that
+  --   shape in "a replacement removes the previous file from disk", which
+  --   asserts fs.existsSync is false on the file it replaced - copy it there.
   --
   -- No index. user_id is the leftmost column of the primary key, which is the
   -- case 0001's index rule exempts.
