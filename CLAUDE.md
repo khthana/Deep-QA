@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 21 October 2569 that is
-`2026-10-21-the-override-that-never-landed.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-21-the-half-that-was-measured-one-layer-down.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -71,6 +71,10 @@ citation.
   reopening a founding decision is a thumb on the scale for the others (#77). (#54, #153)
 - **A ticket's reason for being *untestable* is a claim like its numbers** — measure whether the
   situation can be built; do not reason about it. (#141)
+- **A half that needs a human sense to answer has a layer under it an instrument can reach** —
+  *does anybody hear it* needs a voice, while *is the sentence in the accessibility tree, on a node
+  the browser does not mark ignored* needs only the browser and decides the same price. The layer is
+  not the question: the row stays ◐, because a tree is not an ear. (#163)
 - **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. (#81)

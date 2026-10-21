@@ -12692,3 +12692,82 @@ numbers is owed a reading *after* it lands, and the instrument for that reading 
 had to be written again from scratch to confirm the 198px and the seven labels in the tree as
 committed. The rule is the same one, with its moment moved: delete the probe when the fix has been
 measured, not when the question has been answered.
+
+## #163 — the half that could not be measured, one layer down
+
+#163 was opened out of the 24 September walk of sheets 11 and 12: a `disabled` button does not take
+focus, so the `title` that says *why* it cannot be pressed has no way to be shown to anybody not
+using a mouse. The measurement was clean and had a control — from *แก้ไข* on the signed-in
+administrator's own row, one `Tab` landed on the next row's *แก้ไข*, skipping the *ระงับ* button
+whole, while the same button on `cross01`, where it is not `disabled`, took the focus normally. It
+was a question and not a task, because the fix changes behaviour rather than appearance
+(`docs/06` §Out of Scope), and the ticket said so itself.
+
+**And the ticket wrote down what it did not know, which is what made it answerable.** Its own last
+section said the screen-reader half was unmeasured, that `disabled` keeping the keyboard away did
+not kill it because browse mode sweeps content without regard to focus, that the walking machine
+had no Thai voice, and — the sentence that mattered — that **if that half came back "heard", the
+price of the ticket changes**, because the harmed group would then be keyboard users who are not
+running a screen reader rather than both groups together. The ticket had priced its own
+measurement in advance.
+
+**The half needed a human ear; the layer under it needed no voice at all.** *Does anybody hear it*
+cannot be asked without NVDA and a Thai voice. *Is the sentence in the accessibility tree, on a
+node the browser does not mark ignored* can be asked of Chrome directly, and it decides the same
+price. A throwaway Playwright probe pointed CDP at each button — a marker attribute on the element
+the locator found, then `DOM.describeNode`, `Accessibility.getPartialAXTree` and
+`Accessibility.getFullAXTree`, matched by `backendDOMNodeId` — and read the node Chrome itself
+computes. Both dead buttons are in the full tree with `ignored: false` and role `button`; the
+`title` arrives as the accessible **description**, 25 characters at `Users.js` equal to
+`REFUSALS.selfStatus` and 26 at `GrantsPanel.js` equal to `REFUSALS.selfRevoke`; `nameFrom` lists
+`contents` and `attribute` on the dead nodes against `contents` alone on the control, the attribute
+being superseded, so the name is the button's own text and the title is a description rather than
+being swallowed into it; and neither dead node carries a `focusable` property at all, where the
+enabled control carries `focusable: true` and no description. That last pair is the tree confirming
+the ticket's `Tab` measurement from the inside, with its own control.
+
+So the reason does reach assistive technology, attached to a node the browser does not mark
+ignored, and what is left of the unmeasured half is not about this code: it is whether a given
+reader is configured to speak object descriptions. The owner left the behaviour alone on 21 October
+2569 and the ticket closed as answered, with sheet 11's row staying ◐ — the human half is still
+blocked by the voice, and a tree is not an ear.
+
+**The two prices the ticket had not counted were both in the harness.** Seven mutants live on the
+lines the WAI-ARIA route would edit: `84:alwaysenabled`, `84:everyrowisdead`, `84:titledrifts`,
+`130:alwaysenabled`, `130:everyrowisdead`, `130:titledrifts` and `130:selfrowhidesthebutton`. Four
+of them quote the two `disabled={…}` lines exactly, and two of those four would stop meaning what
+their sheets say they mean — once the guard is in the handler, making the attribute wrong is no
+longer making the button live — so they are rewrites and not re-aims (#203), and a sweep has to
+follow (#107, #68). Second, every `disabled:` Tailwind variant stops applying the moment the
+attribute goes (`disabled:text-gray-400`, `disabled:cursor-not-allowed`,
+`disabled:hover:bg-transparent`, `disabled:opacity-40`), so the appearance the owner approved on 24
+September — sheet 11's row *ปุ่มที่กดไม่ได้ ดูออกไหมว่ากดไม่ได้* and sheet 12's hover row, both ☑ —
+would have to be rebuilt on `aria-disabled:` variants and walked again. The ticket's four-item cost
+list named the rows and the walks and stopped at the seam it could see.
+
+A third thing the ticket's list missed is smaller and sharper: `GrantsPanel` is
+`disabled={busy || isSelf}`, and the `busy` half carries no title. A handler guard there has to
+answer two reasons, not one, and the `busy` one belongs to #142.
+
+**Its supporting identifiers had aged the usual way** (#54). Both line numbers had moved, 404–412 →
+532 and 214–222 → 255; `title=` was 47 lines rather than 46; "`84a` rows 1 and 2" are both named
+`row 3` in the file, after the sheet row they belong to; `12:291` is now `12:336`; and `12:63`,
+offered as the second place this ticket's unmeasured half was recorded, was right at the ticket's
+own commit — `git show 5af5903` puts the *#111 ครึ่งที่สอง* row on that line — and has only moved
+since, to `12:68`. What that row records is the same blocker, a missing Thai voice, for a different
+claim, which is why the line added to it says so rather than ticking it. The species held: HTML
+`title` on a `disabled` control is still exactly two sites, the other 45 being component props
+named `title` or `<th>` headers.
+
+**The fourth option was cheap and was declined anyway.** Keeping `disabled` and putting the
+sentence somewhere on the screen that depends on neither hover nor focus changes no behaviour,
+re-aims no mutant, rewrites no assertion and needs no handler guard; it costs a hand-walk and a
+permanent sentence on one row. It was worth putting in front of the owner beside the ARIA route,
+and the measurement is what made leaving it alone defensible rather than merely cheaper.
+
+**And nothing was owed a row, which is worth saying because the decision rests on a measurement.**
+The property the answer leans on is that the refusal reaches the tree as a description — but the
+step the repo controls is the `title` attribute, and `84a` and `12a` already assert it is
+`REFUSALS.selfStatus` and `REFUSALS.selfRevoke` themselves. The attribute-to-description mapping is
+Chrome's, not ours. There is no gap between what was measured and what is held, so there is no
+ticket to open for one.
