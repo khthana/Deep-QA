@@ -12437,3 +12437,92 @@ condition asks for. `enrolmentreloadstalewins` kills
 docstring says those two call one guard, so one mutant is two reachability claims and not one claim
 counted twice (#191). What was wrong there was the *written for* label in my sweep driver, which
 named one of the two — a driver's own table is a hand-kept figure like any other (#119).
+
+## #143 — three ways in that all reproduced, and a fix with nothing to guard
+
+#139 decided on 1 October 2026 that a section write's banner is **not** guarded against the person
+moving: the sentence is about a write they ordered and not about the panel they are now looking at.
+#143 asked the half #139 left — whether a sentence that lands over *another Offering's* panel is
+readable at all — and wrote its own sequence down as *read from the code, not measured*.
+
+**Measured first, the ticket's diagnosis was right: all three ways in reproduce.** A probe on the
+browser seam, 21 October 2569, before any row was written — an accepted เพิ่มตอนเรียน, a refused
+one and a ลบตอนเรียน, each said over the seeded Offering's panel while the work was on this file's
+own subject. That is worth writing down because the index's long list under *a ticket's diagnosis*
+is twelve ways one was **wrong**; here it was right, and the measurement still changed the ticket,
+because what it bought was three things the ticket did not know.
+
+**The first: a way in can need another ticket's escape hatch pressed before it is a way in at
+all.** Since #217 the confirmation box traps focus and covers the screen until the write answers,
+so กลับไปหน้ารายการ is under the cover. The probe's first version simply clicked it — and
+Playwright waited for the cover to lift, which *is* the answer landing, and `onBack`'s
+`setNotice(null)` then wiped the sentence. It read as *the removal is already silent*, which would
+have closed a third of the ticket as not-a-defect. The press that makes it a way in is ยกเลิก,
+which puts the box away while the write it confirmed is still in flight: #217's own rule — *ask
+what they can still do before writing those rows off* — met from the measuring side rather than
+the pricing side. A probe that waits for a cover to lift is timing the cover.
+
+**The second: the guard that is there answers a different question, and the census cannot see it.**
+`confirmRemoval`'s sentence sits behind `showing.current === sent`, which #146 documented as *the
+last thing that opened on this screen* — it says whether anything has opened since, never which
+panel. `sentences-after-a-move.js` reads the site as `enclosed (ref)` and reports green, because
+the instrument finds a guard **by the ref** and does not ask what that ref can tell apart. That is
+#208's species exactly, one file along — not *the instrument cannot find it* but *it found it and
+counted it as enough* — and it is filed as [#226](https://github.com/khthana/Deep-QA/issues/226) rather than fixed, the owner's answer
+having made the sentence readable wherever it lands. In the tracker and not in prose, because a
+deferral nobody can find is a decision nobody can find (#119, #89, #125), with the condition that
+would make it a real defect written on it: a reversal of #139/#143's decision, after which
+`showing` could not guard the sentence and the census would still be green.
+
+**The third: one of the ticket's three options was already the repository's convention, which
+turns another into #152's question.** `ActivityScores.js` has named the activity its sentence is
+about since 12 October 2569. So *keep it as it is* did not mean *change nothing*; it meant **keep
+two behaviours, three sentences to one**, and the owner's question was which behaviour the system
+should have. #152's rule is written about a ticket's *as today* option being a claim that today is
+one thing, on one screen's nine-to-ten split; this is the same reading across screens, and the
+cheapest way to find it is to grep the sibling sentences before writing the owner's options down.
+
+### A sentence that cannot be read is not a sentence that is wrong
+
+The owner chose the third option, and the fix is then **wording with nothing to guard**. `onSection`
+is re-created every render, so the `viewing` one invocation closed over is the panel the press was
+made on for as long as it runs, however far the person has moved — the sentence was about the right
+Offering all along and simply never said which. Every rule this repo has about these refs (#201,
+#185, #207, #211) is about a closure being **stale**; this is the one case where a frozen closure is
+exactly what makes the value right.
+
+Two consequences. The call-site name `const offering = viewing` is a label and not a guard, and the
+comment says so, because the next reader will otherwise take it for one. And the rows' negative
+assertion — *the sentence does not name the Offering on the screen* — is a **net**: the only mutant
+that would put it at risk substitutes `viewing` back for `offering`, which is the same program, so
+it is an equivalent mutant and not a claim the harness can fail. That is #47's sixth reading from
+the other side — there the situation could not be built at the seam, here it cannot be built at all
+— and what is owed is the condition that would make it readable again, written beside it: somebody
+making that line read a live value, a ref or state the handler reads when the answer lands.
+
+### The rows, the mutants, and a filename that aged a closed sheet's citations
+
+`143a` holds a row per way in, each with the write's answer held back three seconds by
+`support/late-answer.js` as #139's rows do, and each reading the banner once at a settle point
+rather than through a retrying wait, which would die at the timeout instead of dying with the words
+it found (#209). All three were run against the **unfixed** code first and were red at
+*names the Offering it is about*, having passed the assertions above it — the window really opened
+and the sentence really was drawn — so none of them is a row that measures nothing (#203).
+
+Four mutants. Three are the declined options made to run (#48), one per way in: `bareadd`,
+`barerefusal` and `bareremoval` each kill their own row and leave the other two standing, one red
+and two passed. The fourth, `nameonly`, drops the term and keeps the subject, and kills **all
+three** at *names that Offering's academic year* — it lives in the code the three ways in share, so
+it cannot tell the rows apart, and that is what it proves: each row's claim is that its own way in
+reaches that line (#191). The term is the half that is load-bearing today, because `01076105` is
+opened in two terms; the หลักสูตร is left out of the sentence because no subject is placed in more
+than one, which is a condition with a date on it and a written expiry (#113, #81) rather than a
+property of the key.
+
+**And the new spec's filename aged a closed sheet's citations.** `143a-a-sentence-that-names-its-offering.spec.js`
+contains `43a`, so `npx playwright test 43a` in `mutation/43-program-level-all-students.py` and
+two `` `43a:NNN` `` citations in `e2e/README.md` became two-file names the moment the file landed.
+`anchors.py` printed all four before anything was committed, and the repair is the one #51 made
+when `151a` landed: narrow the citation, not the filename, since every `1NNa` contains `NNa` and
+the ticket number is not negotiable. Second time for this species, which is why it is a sentence
+here and not a new line in the index.

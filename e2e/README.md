@@ -354,7 +354,7 @@ those four are wired at more than one site, because that is where the requests a
 and `addYear`, `openReport` and `showIntake` — and `174a` holds a row per site with a hand-run
 control behind it, each killing its own row and nothing else. `all-students-screen.js` was in the
 count and is **not** a hole: in every spec that calls `openHeatmap` a `showIntake` stands between
-the open and the raw read — `43a:131` then `:134`, `43a:161` then `:173`, `45a:195` then `:209` —
+the open and the raw read — `43a-program-level:131` then `:134`, `43a-program-level:161` then `:173`, `45a:195` then `:209` —
 and that helper waits for the cohort line the screen draws from the answer (#132). Its same-named
 twin on the by-intake report waited for the response only — a guard that greps the same is not the
 same guard (#107). What the census cannot see is exactly that: the line between the open and the

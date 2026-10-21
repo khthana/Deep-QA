@@ -21,7 +21,7 @@ unmarked intake gets a sentence, and that the menu entry leads here.
 
 Killing them:
 
-    cd e2e && npx playwright test 43a
+    cd e2e && npx playwright test 43a-program-level
 """
 
 from harness import main

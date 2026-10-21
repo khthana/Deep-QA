@@ -87,6 +87,52 @@ const readOf = (page, program, year, semester) =>
  */
 const HANDED_ON = 'handed-on'
 
+/**
+ * A section write's sentence, told which Offering it is about - #143.
+ *
+ * ## What was measured
+ *
+ * Nothing beside the panel is disabled while a section write is out:
+ * กลับไปหน้ารายการ and then ตอนเรียนและผู้สอน of another Offering can both be
+ * pressed first, and the answer then arrives over somebody else's panel. The
+ * banner is deliberately not guarded against that - the sentence is about a
+ * write the person made and not about the panel they are now looking at, which
+ * is the decision of 1 October 2026 that `asked` is documented with - so #143
+ * asked whether such a sentence is readable at all. Measured at the browser
+ * seam on 21 ตุลาคม 2569, all three of its ways in do it: an accepted
+ * เพิ่มตอนเรียน, a refused one, and ลบตอนเรียน, each on the list and over
+ * another Offering's panel. `143a-a-sentence-that-names-its-offering.spec.js`
+ * carries the measurement and the rows.
+ *
+ * **The owner's answer of 21 ตุลาคม 2569 is #143's third option: the sentence
+ * is still drawn whichever panel it lands on, and it names the Offering it is
+ * about.** Dropping it once another panel is open was declined because a
+ * refusal that really happened would go silent and the person would believe
+ * the write went through; leaving it as it was, because the repository would
+ * then hold two behaviours for one decision - `ActivityScores.js` has named
+ * the activity its sentence is about since 12 ตุลาคม 2569.
+ *
+ * ## Why the name and the term, and not the หลักสูตร
+ *
+ * What identifies an Offering is (หลักสูตร, รายวิชา, ปีการศึกษา, ภาคการศึกษา)
+ * - ADR-0001's second tier. The term is load-bearing today: asked of the
+ * database on 21 ตุลาคม 2569, `01076105` is opened in two terms, so a sentence
+ * that named the subject alone would not say which of them it meant.
+ *
+ * The หลักสูตร is left out because no subject is placed in more than one today
+ * (asked the same hour), so the subject and the term name one Offering, and a
+ * fourth field is weight on a banner for nothing. **What re-dates this is a
+ * subject placed in two หลักสูตร**, which the screen itself makes reachable:
+ * its three filters all take a blank, so one list can hold both Offerings and
+ * a person can press into either. The condition to measure is therefore the
+ * database's, not the screen's.
+ *
+ * The subject's name and not its code, for #93's reason: a code in front of a
+ * name is a label somebody chose from, and this is prose.
+ */
+const aboutOffering = (offering, sentence) =>
+  `${sentence} (รายวิชา ${offering.subject_name_th} ปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester})`
+
 export default function Offerings() {
   const [page, setPage] = useState(1)
   const [program, setProgram] = useState('')
@@ -112,6 +158,23 @@ export default function Offerings() {
     // A 401 already raises the shell's dialog; saying it again here would put a
     // banner behind that dialog.
     if (!error.expired) setNotice({ error: true, message: error.message })
+  }, [])
+
+  /**
+   * The same, for a refusal that belongs to one Offering - #143.
+   *
+   * `report` itself is not changed: the list's own reads go through it and a
+   * refusal of the list is about no one Offering. Only a section write's two
+   * refusals are named, which are the write's own and the read-back that
+   * follows it, both of them about the Offering the press was made on.
+   *
+   * The `expired` rule is `report`'s and is kept: a 401 raises the shell's
+   * dialog, and a banner behind that dialog is a sentence nobody reads.
+   */
+  const reportAbout = useCallback((offering, error) => {
+    if (!error.expired) {
+      setNotice({ error: true, message: aboutOffering(offering, error.message) })
+    }
   }, [])
 
   /**
@@ -321,29 +384,46 @@ export default function Offerings() {
    * only for the ask it is handed - and the banner is deliberately not, which is
    * the decision `asked` is documented with above: the sentence is about a write
    * the person made and not about the panel they are now looking at, so it is
-   * drawn whichever panel that is. Measured 1 October 2026 (#139, #141)
+   * drawn whichever panel that is. Measured 1 October 2026 (#139, #141).
+   *
+   * **That decision stands, and since the owner's answer to #143 of
+   * 21 ตุลาคม 2569 the sentence names the Offering it is about** - which is
+   * what makes it readable wherever it lands. `aboutOffering` carries the
+   * wording, what was measured and what would re-date it.
    */
   const onSection = async work => {
     const ask = asked.current
+    // The Offering this write is of, named where the press was made (#143).
+    //
+    // This is a name and not a guard: `onSection` is re-created each render, so
+    // the `viewing` this invocation closed over is the panel the press was made
+    // on for as long as it runs, however far the person has moved. That is why
+    // #143 is a wording change and not a change to what is read - the sentence
+    // was always about the right Offering and never said which.
+    const offering = viewing
     setNotice(null)
     setWriting(true)
     try {
       const message = await work()
-      await refresh(viewing.id, ask)
-      // sentence-after-a-move: decided 1 October 2026 - the banner is about
-      // the write the person ordered and not about the panel they are now
-      // looking at, so it is drawn whichever panel that is. (#139, #141)
-      if (message) setNotice({ error: false, message })
+      await refresh(offering.id, ask)
+      // sentence-after-a-move: decided 1 October 2026, and named since
+      // 21 ตุลาคม 2569 (#143) - the banner is about the write the person
+      // ordered and not about the panel they are now looking at, so it is
+      // drawn whichever panel that is and says which Offering it is of.
+      // (#139, #141, #143)
+      if (message) {
+        setNotice({ error: false, message: aboutOffering(offering, message) })
+      }
       return true
     } catch (error) {
-      report(error)
+      reportAbout(offering, error)
       // The panel is read back even after a refusal: a 409 on one section says
       // nothing about the state of the others, and leaving a stale panel on the
       // screen under an error banner is how #91 was reported.
       try {
-        await refresh(viewing.id, ask)
+        await refresh(offering.id, ask)
       } catch (again) {
-        report(again)
+        reportAbout(offering, again)
       }
       return false
     } finally {
@@ -479,7 +559,12 @@ export default function Offerings() {
         await deleteSection(viewing.id, removing.section.section_id)
         setRemoving(null)
         if (showing.current === sent) {
-          setNotice({ error: false, message: 'ลบตอนเรียนเรียบร้อยแล้ว' })
+          // Named since 21 ตุลาคม 2569 - the owner's answer to #143, which
+          // `aboutOffering` carries. The removal is the third of its three
+          // measured ways in, and the only one whose way to another panel
+          // needs ยกเลิก pressed first: since #217 the question covers
+          // กลับไปหน้ารายการ until the write answers.
+          setNotice({ error: false, message: aboutOffering(viewing, 'ลบตอนเรียนเรียบร้อยแล้ว') })
         }
         await refresh(viewing.id, ask)
       } else {
