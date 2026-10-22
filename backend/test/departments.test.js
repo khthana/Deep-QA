@@ -642,3 +642,47 @@ test('a department somebody administers is refused, not deleted — #60', async 
   );
   assert.deepEqual(rows, []);
 });
+
+test('a department is created open, whatever the body says - #180', async () => {
+  // #180 item 3: ภาควิชา was the only one of the five screens whose *create*
+  // form offered the status field, and this route the only one of the five that
+  // read `is_active` on a creation - the shape the delivered backend had, kept
+  // here and diverged from in the four routes that followed, each of which says
+  // so in a comment at the insert. The owner answered on 22 October 2569 that
+  // the field comes off the create form like the other four, and this is the
+  // half of that answer every caller meets rather than the one a screen hides.
+  const cookie = await signInAs('U_FAC');
+
+  const added = await create(cookie, {
+    department_id: 'T23',
+    department_name_th: 'วิศวกรรมสำรวจ',
+    department_name_en: 'Geomatics Engineering',
+    is_active: false,
+  });
+  try {
+    assert.equal(added.status, 201, added.body.message);
+    assert.equal(added.body.department.is_active, true);
+
+    // And the table, because `RETURNED` is a projection this route chooses: a
+    // row that read the answer alone would pass on a route that inserted false
+    // and reported true.
+    const { rows } = await api.pool.query(
+      'SELECT is_active FROM departments WHERE department_id = $1',
+      ['T23'],
+    );
+    assert.deepEqual(rows, [{ is_active: true }]);
+
+    // Switching one off is still the edit's job. Asserted here because it is
+    // what makes the two assertions above about the *creation* rather than
+    // about the column, and it is the direction the form still offers.
+    const edited = await edit(cookie, 'T23', {
+      department_name_th: 'วิศวกรรมสำรวจ',
+      department_name_en: 'Geomatics Engineering',
+      is_active: false,
+    });
+    assert.equal(edited.status, 200, edited.body.message);
+    assert.equal(edited.body.department.is_active, false);
+  } finally {
+    await remove(cookie, 'T23');
+  }
+});

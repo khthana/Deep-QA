@@ -171,17 +171,25 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
 
         {/* Only on an edit: a programme is created because it is being offered,
             and the server does not read the field on a creation either. */}
+        {/* A select since #180, in the words the table's own badge uses: the
+            field was a checkbox reading *เปิดใช้งาน* on three of the five forms
+            and a select reading *ใช้งานอยู่ / ปิดใช้งาน* on the other two. */}
         {editing && (
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={draft.is_active}
+          <Field label="สถานะ">
+            <select
+              className={field}
+              value={draft.is_active ? 'active' : 'inactive'}
               onChange={event =>
-                setDraft(current => ({ ...current, is_active: event.target.checked }))
+                setDraft(current => ({
+                  ...current,
+                  is_active: event.target.value === 'active',
+                }))
               }
-            />
-            เปิดใช้งาน
-          </label>
+            >
+              <option value="active">ใช้งานอยู่</option>
+              <option value="inactive">ปิดใช้งาน</option>
+            </select>
+          </Field>
         )}
 
         <div className="flex justify-end gap-3 pt-2">

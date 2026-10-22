@@ -197,17 +197,24 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
         {/* Only on an edit: a subject is added to the catalogue because it is
             being taught, and the server does not read the field on a creation
             either. */}
+        {/* A select since #180, in the words the table's own badge uses - the
+            same change as on the ภาควิชา and หลักสูตร forms. */}
         {editing && (
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={draft.is_active}
+          <Field label="สถานะ">
+            <select
+              className={field}
+              value={draft.is_active ? 'active' : 'inactive'}
               onChange={event =>
-                setDraft(current => ({ ...current, is_active: event.target.checked }))
+                setDraft(current => ({
+                  ...current,
+                  is_active: event.target.value === 'active',
+                }))
               }
-            />
-            เปิดใช้งาน
-          </label>
+            >
+              <option value="active">ใช้งานอยู่</option>
+              <option value="inactive">ปิดใช้งาน</option>
+            </select>
+          </Field>
         )}
 
         <div className="flex justify-end gap-3 pt-2">

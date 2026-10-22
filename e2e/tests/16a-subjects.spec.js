@@ -6,7 +6,11 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv, total } = require('../support/import-panel');
-const { openDepartments, departmentRow } = require('../support/departments-screen');
+const {
+  openDepartments,
+  departmentRow,
+  statusField: departmentStatusField,
+} = require('../support/departments-screen');
 const {
   SUBJECTS,
   waitForList,
@@ -250,7 +254,7 @@ test('row 97: a department retired afterwards still says where its subjects live
   await signIn(theirs, ACCOUNTS.facultyAdmin);
   await openDepartments(theirs);
   await departmentRow(theirs, '01').getByRole('button', { name: 'แก้ไข' }).click();
-  await theirs.getByRole('checkbox', { name: 'เปิดใช้งาน' }).uncheck();
+  await departmentStatusField(theirs).selectOption({ label: 'ปิดใช้งาน' });
   await theirs.getByRole('button', { name: 'บันทึก' }).click();
   await expect(theirs.getByText('บันทึกข้อมูลเรียบร้อยแล้ว')).toBeVisible();
 
@@ -285,7 +289,7 @@ test('row 97: a department retired afterwards still says where its subjects live
     // Put it back, whatever happened above: every other spec file in this
     // suite runs against the same schema and expects department 01 open.
     await departmentRow(theirs, '01').getByRole('button', { name: 'แก้ไข' }).click();
-    await theirs.getByRole('checkbox', { name: 'เปิดใช้งาน' }).check();
+    await departmentStatusField(theirs).selectOption({ label: 'ใช้งานอยู่' });
     await theirs.getByRole('button', { name: 'บันทึก' }).click();
     await expect(theirs.getByText('บันทึกข้อมูลเรียบร้อยแล้ว')).toBeVisible();
     await faculty.close();

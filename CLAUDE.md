@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 21 October 2569 that is
-`2026-10-21-the-box-that-outlived-its-close.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 22 October 2569 that is
+`2026-10-22-the-label-that-read-its-own-options.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -539,6 +539,10 @@ citation.
   commit the DOM is mid-write and the clean code passes through untrue combinations too. (#188)
 - **A status code is not an assertion about your guard on a route with more than one way to
   answer it.** A row that passes both before and after a fix was never about it. (#125, #83)
+- **A label that wraps its control carries the control's own text** — `getByLabel` then reads
+  `สถานะใช้งานอยู่ปิดใช้งาน` where the accessible name is `สถานะ`, so a reader built from the
+  label's words finds nothing on a screen that is drawing the field correctly. The failing run's
+  **snapshot** names the element and its name; read it before the waiting stack (#160). (#180)
 - **The price of closing a way in is the rows that arrange their situation through it, and that
   price is paid in re-aims wherever a person has another way to the same situation** — so ask what
   they can still do before writing those rows off as nets. A row left as a net is what it costs when

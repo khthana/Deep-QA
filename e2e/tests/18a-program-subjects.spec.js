@@ -10,6 +10,7 @@ const {
   openSubjects,
   importSubjects,
   subjectRow,
+  statusField: subjectStatusField,
 } = require('../support/subjects-screen');
 const {
   CELL,
@@ -354,7 +355,7 @@ test('row 10: a subject the university has retired is not offered', async ({ pag
 
   try {
     await subjectRow(theirs, RETIRED).getByRole('button', { name: 'แก้ไข' }).click();
-    await theirs.getByRole('checkbox', { name: 'เปิดใช้งาน' }).uncheck();
+    await subjectStatusField(theirs).selectOption({ label: 'ปิดใช้งาน' });
     await theirs.getByRole('button', { name: 'บันทึก' }).click();
     await expect(theirs.getByText('บันทึกข้อมูลเรียบร้อยแล้ว')).toBeVisible();
 
@@ -363,7 +364,7 @@ test('row 10: a subject the university has retired is not offered', async ({ pag
     expect(await offered(cataloguePicker(page))).toEqual(['']);
   } finally {
     await subjectRow(theirs, RETIRED).getByRole('button', { name: 'แก้ไข' }).click();
-    await theirs.getByRole('checkbox', { name: 'เปิดใช้งาน' }).check();
+    await subjectStatusField(theirs).selectOption({ label: 'ใช้งานอยู่' });
     await theirs.getByRole('button', { name: 'บันทึก' }).click();
     await expect(theirs.getByText('บันทึกข้อมูลเรียบร้อยแล้ว')).toBeVisible();
     await department.close();

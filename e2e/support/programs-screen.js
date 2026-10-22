@@ -78,9 +78,9 @@ async function openEditor(page, programId) {
 /**
  * The form's status control - drawn only on an edit here, because a programme
  * is created in order to be offered and the route reads no such field on a
- * creation. See `departments-screen.js` for what #180 asks about its shape.
+ * creation. A `select` since #180; `departments-screen.js` carries the answer.
  */
-const statusBox = page => page.getByRole('checkbox', { name: 'เปิดใช้งาน' });
+const statusField = page => page.getByRole('combobox', { name: 'สถานะ' });
 
 /** Presses *บันทึก* and waits for the list the save reloads. */
 async function save(page) {
@@ -126,7 +126,7 @@ module.exports = {
   listTable,
   programRow,
   openEditor,
-  statusBox,
+  statusField,
   save,
   statusOf,
   removeProgram,

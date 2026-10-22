@@ -280,16 +280,23 @@ function departmentRoutes(pool) {
       const faculty = await facultyFor(req, req.body?.faculty_id);
       if (!faculty.ok) return res.status(403).json({ message: REFUSALS[faculty.reason] });
 
+      // `is_active` is deliberately not read here - #180, answered by the
+      // owner on 22 October 2569. A department is created because it takes
+      // students; retiring one is what the second criterion describes, and it
+      // happens on an edit, not at birth. This route read the field until that
+      // day, which was the shape the delivered backend had rather than a
+      // decision of this rebuild's, and it was the only one of the five that
+      // did: `programs`, `subjects`, `programSubjects` and `plos` each say the
+      // same thing at their own insert.
       const { rows } = await pool.query(
         `INSERT INTO departments
-           (department_id, department_name_th, department_name_en, faculty_id, is_active)
-         VALUES ($1, $2, $3, $4, coalesce($5, true)) RETURNING ${RETURNED}`,
+           (department_id, department_name_th, department_name_en, faculty_id)
+         VALUES ($1, $2, $3, $4) RETURNING ${RETURNED}`,
         [
           draft.values.department_id,
           draft.values.department_name_th,
           draft.values.department_name_en,
           faculty.facultyId,
-          typeof req.body?.is_active === 'boolean' ? req.body.is_active : null,
         ],
       );
 

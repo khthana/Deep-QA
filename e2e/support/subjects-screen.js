@@ -51,11 +51,29 @@ const subjectRow = (page, subjectId) =>
 /**
  * The form's department picker.
  *
- * By role rather than by label, because `Field` wraps the whole control in the
- * `<label>`, so a name lookup would have to match every option's text as well
- * as the label's.
+ * By role **and name** since #180, which put a second combobox on this form -
+ * the status field, a checkbox until then - and made every read through this
+ * locator a strict-mode violation. It was unfiltered because `Field` wraps the
+ * whole control in the `<label>`, which is true of `getByLabel` and not of the
+ * name here: a wrapping label's text content carries the `<option>`s with it,
+ * while the accessible name is the label's own words. Measured on #180's first
+ * run - the snapshot printed `combobox "สถานะ"` for a label whose text was
+ * `สถานะใช้งานอยู่ปิดใช้งาน`.
  */
-const departmentPicker = page => page.getByRole('combobox');
+const departmentPicker = page => page.getByRole('combobox', { name: 'ภาควิชา' });
+
+/**
+ * The form's status control, a `select` since #180.
+ *
+ * Here rather than in a spec because two files press it - `16a` row 97 and
+ * `18a` row 10 - and a fixture a second file needs is shared (#171): no row's
+ * claim lives in it, only the situation. `16-subjects.md`'s own rows about the
+ * field's shape and wording are hand-walked, which is why there is no mutant
+ * for this form's options in `180-the-status-field-shape.py`.
+ *
+ * By the **role and name** for `departmentPicker`'s reason, above.
+ */
+const statusField = page => page.getByRole('combobox', { name: 'สถานะ' });
 
 /**
  * Opens the เพิ่มรายวิชา form and fills every box the acceptance row names.
@@ -107,6 +125,7 @@ module.exports = {
   importSubjects,
   subjectRow,
   departmentPicker,
+  statusField,
   fillNewSubject,
   save,
   listTable,

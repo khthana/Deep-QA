@@ -64,6 +64,10 @@ export default function DepartmentForm({ value, busy, onSave, onCancel }) {
       department_id: draft.department_id.trim(),
       department_name_th: draft.department_name_th.trim(),
       department_name_en: draft.department_name_en.trim(),
+      // Sent on a creation too, where the route has ignored it since #180.
+      // Left in rather than made conditional: it is the line `181`'s four
+      // form mutants are anchored on, and a creation carries `EMPTY`'s
+      // `true`, so what it sends is what the server would have written.
       is_active: draft.is_active,
     })
   }
@@ -105,19 +109,27 @@ export default function DepartmentForm({ value, busy, onSave, onCancel }) {
           </Field>
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={draft.is_active}
-            onChange={event =>
-              setDraft(current => ({
-                ...current,
-                is_active: event.target.checked,
-              }))
-            }
-          />
-          เปิดใช้งาน
-        </label>
+        {/* Only on an edit, like the other four forms - #180, answered by the
+            owner on 22 October 2569. A department is created because it takes
+            students, and since the same answer the route does not read the
+            field on a creation either. */}
+        {editing && (
+          <Field label="สถานะ">
+            <select
+              className={field}
+              value={draft.is_active ? 'active' : 'inactive'}
+              onChange={event =>
+                setDraft(current => ({
+                  ...current,
+                  is_active: event.target.value === 'active',
+                }))
+              }
+            >
+              <option value="active">ใช้งานอยู่</option>
+              <option value="inactive">ปิดใช้งาน</option>
+            </select>
+          </Field>
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <button

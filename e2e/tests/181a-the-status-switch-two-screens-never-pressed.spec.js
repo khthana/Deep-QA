@@ -10,14 +10,14 @@ const { hold } = require('../support/hold');
 const {
   openDepartments,
   openEditor: openDepartmentEditor,
-  statusBox: departmentStatusBox,
+  statusField: departmentStatusField,
   save: saveDepartment,
   statusOf: departmentStatus,
 } = require('../support/departments-screen');
 const {
   openPrograms,
   openEditor: openProgramEditor,
-  statusBox: programStatusBox,
+  statusField: programStatusField,
   save: saveProgram,
   statusOf: programStatus,
   removeProgram,
@@ -43,9 +43,9 @@ const { PLOS, waitForReach, ploRow } = require('../support/plos-screen');
  *
  * ## What was already at risk, and what was not
  *
- * The department box is *pressed* at this seam already — `16a` row 97 closes
+ * The department field is *pressed* at this seam already — `16a` row 97 closes
  * department `01` from a second context, as a fixture, to look at what the
- * subject form's picker then offers. So a form that ignored the box would be
+ * subject form's picker then offers. So a form that ignored the field would be
  * caught there. What no row asked is the question these rows ask: **does the
  * ภาควิชา screen itself read the field back**, in the badge its own table draws.
  * An instrument is not an assertion (#171), and that is the difference between
@@ -63,8 +63,11 @@ const { PLOS, waitForReach, ploRow } = require('../support/plos-screen');
  * two apart.
  *
  * What is left to a person on both sheets is the appearance: the wording of the
- * label, the colour of the badge, and the question #180 asks about the shape of
- * the control.
+ * label and the colour of the badge. #180 asked what shape the control should
+ * be, and was answered on 22 October 2569 - a two-option `select` on all five
+ * forms, in the words the table's own badge uses - so the rows below read it
+ * with `getByRole('combobox', { name: 'สถานะ' })` and press it by the visible
+ * word. The sheets carry one hand-walked row each for that shape.
  *
  * ## Why the cleanup here goes to the database
  *
@@ -114,17 +117,20 @@ const CLOSED = 'ปิดใช้งาน';
 const SAVED = 'บันทึกข้อมูลเรียบร้อยแล้ว';
 
 /**
- * Opens the editor, moves the box the way asked, saves and reads the banner.
+ * Opens the editor, moves the control the way asked, saves and reads the banner.
  *
- * The box's state before the press is asserted rather than assumed: it is drawn
- * from the answer the editor read, so a form that drew it from a default would
- * make the press a no-op and the badge assertion below true by accident (#51).
+ * The control's state before the press is asserted rather than assumed: it is
+ * drawn from the answer the editor read, so a form that drew it from a default
+ * would make the press a no-op and the badge assertion below true by accident
+ * (#51). That read is **by value** and the press is **by the visible word**,
+ * deliberately: the words are what #180 changed and what the person reads, so
+ * `departmentoptionsswapped` has to land on the badge the row is for rather
+ * than on this precondition one line above it (#193).
  */
-async function setStatus(page, { box, open, openEditor, save }) {
+async function setStatus(page, { field, open, openEditor, save }) {
   await openEditor(page);
-  await expect(box(page)).toBeChecked({ checked: !open });
-  if (open) await box(page).check();
-  else await box(page).uncheck();
+  await expect(field(page)).toHaveValue(open ? 'inactive' : 'active');
+  await field(page).selectOption({ label: open ? ACTIVE : CLOSED });
   const reloaded = await save(page);
   expect(reloaded.status()).toBe(200);
   await expect(page.getByText(SAVED)).toBeVisible();
@@ -159,7 +165,7 @@ test.afterAll(() => {
 
 const department = {
   what: `department ${DEPARTMENT}`,
-  box: departmentStatusBox,
+  field: departmentStatusField,
   openEditor: page => openDepartmentEditor(page, DEPARTMENT),
   save: saveDepartment,
   status: page => departmentStatus(page, DEPARTMENT),
@@ -172,7 +178,7 @@ const department = {
 
 const program = {
   what: `curriculum ${PROGRAM}`,
-  box: programStatusBox,
+  field: programStatusField,
   openEditor: page => openProgramEditor(page, PROGRAM),
   save: saveProgram,
   status: page => programStatus(page, PROGRAM),
@@ -197,7 +203,7 @@ test('14 item 3: a department is retired from its own form, and its table says s
     await expect(department.status(page)).toHaveCount(1);
     await expect(department.status(page)).toHaveText(CLOSED);
 
-    // *คืนสถานะได้* — the way back, through the same box, which is a second
+    // *คืนสถานะได้* — the way back, through the same control, which is a second
     // claim and not the first one read backwards.
     await setStatus(page, { ...department, open: true });
     await expect(department.status(page)).toHaveText(ACTIVE);

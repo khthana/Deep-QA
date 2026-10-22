@@ -61,12 +61,20 @@ async function openEditor(page, departmentId) {
 /**
  * The form's status control.
  *
- * A checkbox today, which is what every row built on this is a claim about;
- * #180 asks whether the five forms that carry this field should all use the
- * `select` two of them use, and if that is answered yes this is the one line
- * that changes.
+ * A `select` since #180, which the owner answered on 22 October 2569 in favour
+ * of the shape two of the five forms already had and of the words the table's
+ * own badge uses. It was a checkbox reading *เปิดใช้งาน* until then. In this
+ * file that answer is one line; across the suite it was nine rows at nine
+ * sites, which is what sheet `14`'s §#181 had predicted otherwise.
+ *
+ * Found by its accessible name, which is the only name it has: the hint
+ * paragraph and the `disabled` the other two forms carry are #228, a separate
+ * ticket by the same answer. By the **role** and not by `getByLabel`, because `Field`
+ * wraps the control in the `<label>` and a wrapping label's text content
+ * carries the `<option>`s with it - the name is `สถานะ` and the label's text is
+ * `สถานะใช้งานอยู่ปิดใช้งาน`.
  */
-const statusBox = page => page.getByRole('checkbox', { name: 'เปิดใช้งาน' });
+const statusField = page => page.getByRole('combobox', { name: 'สถานะ' });
 
 /** Presses *บันทึก* and waits for the list the save reloads. */
 async function save(page) {
@@ -197,7 +205,7 @@ module.exports = {
   importDepartments,
   departmentRow,
   openEditor,
-  statusBox,
+  statusField,
   save,
   statusOf,
   listTable,

@@ -13028,3 +13028,167 @@ apart from its sentence by `alwaysoffersthebuddhistreading`, and the file says w
 the missing mutant is: structurally unreachable, not a gap. #97's *one mutant per link* is a rule
 about what to try, and #101's three answers are what to write down when one of them turns out to be
 the same mutant twice.
+
+## #180 — the status field in three shapes, and the label that read its own options
+
+A `question` ticket, opened 1 October 2569. Five forms carry a status field. Three of them —
+`DepartmentForm`, `ProgramForm`, `SubjectForm` — drew a checkbox reading *เปิดใช้งาน*; two —
+`ProgramSubjectForm`, `PloForm` — drew a two-option `select` reading *ใช้งานอยู่ / ปิดใช้งาน*,
+which is the wording all five tables' own badges use. So three screens wrote one state in two
+vocabularies on one screen. And ภาควิชา was the only one of the five that offered the field at
+**creation**, its route the only one of the five that read `is_active` out of a POST body.
+
+**The delivered code answered the question that comes before the owner's.** Under `docs/06`
+§Out of Scope an option that moves a delivered number is a divergence and one that moves a number
+the rebuild chose is not (#156), so the first measurement was not of the five forms but of
+`DEEP-QA-FRONTEND`: it has no status control on any screen and reads `is_active` nowhere. All five
+fields are the rebuild's own, and the shape question was the owner's to answer with nothing in the
+way. The departments route was the other half of the same measurement and came out differently:
+`departmentModel.js` in the delivered backend writes `is_active` on create, so that read was
+**inherited** rather than chosen — an inherited mechanism is not a decision (#77), which is what
+made taking it out a correction rather than a divergence.
+
+The owner answered on 22 October 2569: a two-option `select` on all five, in the badge's words;
+the shape and the words first, with the hint paragraph and the `disabled={busy}` that the other two
+forms carry left to #228; and the field off the ภาควิชา create form. The deferral went into the
+tracker the same hour, because a deferral written into prose and not into the tracker is a decision
+nobody can find (#119).
+
+**The ticket's opinion was right for a reason that was wrong.** It recorded, from 1 October, that
+*the shape question is the one real finding left over from #178* — and #178's premise had been that
+no status control existed on any screen, which that day's measurement had already refuted. A
+conclusion right for the wrong reason expires on the wrong day (#141), so the opinion was re-derived
+from the five forms rather than inherited: it survived, which is worth writing down because the
+ticket's own paragraph could not be cited for it.
+
+### Four rows priced, nine rows measured, and the sheet's own prediction refuted
+
+The ticket's cost line said four e2e rows would expire, in `16a` and `18a`. True on 1 October.
+#181 landed after it and brought five more rows that press this control through two helpers, so the
+figure is **nine rows at nine sites** — four pressing it directly as an **instrument** (#171) and
+five of `181a` through `statusBox`. A ticket's cost line is a claim about the shape its author
+pictured (#77), and this one had been overtaken by another ticket rather than being wrong when
+written.
+
+Sheet `14`'s §#181 had gone further and predicted the price in advance: *if the answer is yes, the
+one line that changes is `statusBox` in `e2e/support/` for each screen*. It is one line **in that
+file**; it is nine sites in the suite, and one of them was not a status reader at all. A sheet's
+prediction about what a future fix will cost is a claim like its numbers (#52), and the one place
+it was recorded is the place a later ticket reads it as settled.
+
+No mutant needed re-aiming, which is the rarer outcome when a fix reaches three components: #181's
+four are anchored on the `is_active: draft.is_active` line of each submit payload, which this change
+does not touch. `python mutation/anchors.py` says the anchors still apply; only a sweep says they
+still prove what their sheets credit them with (#107, #68), and the full suite at the end is where
+that was read.
+
+### A wrapping label carries its control's own text
+
+The first move was the obvious one: `statusBox` became
+`getByLabel('สถานะ', { exact: true })`. Six rows went red with **not found** — on a screen that was
+drawing the field correctly.
+
+`Field` in all three forms wraps the control inside the `<label>`:
+`<label><span>{label}</span>{children}</label>`. A wrapping label's **text content** is everything
+inside it, the `<option>`s included, so the label's text is `สถานะใช้งานอยู่ปิดใช้งาน` and matching
+on `สถานะ` exactly matches nothing. The **accessible name** is the label's own words, `สถานะ`, which
+is a different string computed by a different rule. The failing run said so itself: its snapshot
+printed `combobox "สถานะ"`, which is the second time this repo has learned to read the saved
+snapshot before the waiting stack (#160). Every reader became
+`getByRole('combobox', { name: 'สถานะ' })`.
+
+**And one unfiltered locator broke.** `departmentPicker` in `e2e/support/subjects-screen.js` was a
+bare `getByRole('combobox')`, unique only because that form had no second `select`. Adding the
+status field made it a strict-mode violation — a locator can be unique only by accident of the thing
+you are about to remove, or to add (#93). The repair is the name, and the census that found it was
+every `getByRole('combobox'` and `getByRole('checkbox'` in `e2e/` (#111, #122); this was the only
+site, which is a measured number and not an estimate.
+
+### The marks, including two that went backwards
+
+Sheet `16`'s rows for this field had been hand-walked through the checkbox. *ข้อมูลเดิมยังอ่านได้*
+became ◐: its first half (name, credits, department, description still there) was walked and is
+still true, while the half that reads the status control was walked through a control that no longer
+exists. *เปิดกลับมาได้* went back to ☐, the whole row being that one press. *ฟอร์ม เพิ่ม
+ไม่มีช่องสถานะ* stayed ☑, because its claim is the **absence**, which did not change — only the word
+*checkbox* in its wording expired, and that is dated rather than deleted (#54).
+
+Neither of the two that went backwards is earned by `16a` pressing the control, because `16a` row 97
+and `18a` row 10 press it to arrange a situation for another screen. An instrument is not an
+assertion (#171), which is also why there is no swapped-options mutant for `SubjectForm`: it would
+go red on those rows and the kill would be credited to rows that never said anything about the
+form's words.
+
+Each sheet gained one ☐ row for the shape and the wording, because that is the half the browser
+seam cannot answer (`CLAUDE.md` §Two test seams). The walk queue grows by five.
+
+### The mutants, and the two rows that could not be written
+
+`statusatcreation` is the diagnosed code restored (#115): the route reading `is_active` out of a
+creation's body. It kills **one** backend subtest and nothing else — no row in eleven tickets had
+ever sent the field to a creation, which is exactly why the behaviour was invisible until a ticket
+went looking for it.
+
+`createformshowsstatus` draws the field at creation again and kills `180a` at the count. That row
+reads the **same locator** back as present on the edit form one line later, because a row that only
+ever counted zero would pass on a screen that never drew the control at all (#171's rule from the
+counting side, and #164's *count the controls as well as reading them*).
+
+`departmentoptionsswapped` and `programoptionsswapped` swap the two options' values, one mutant per
+form, because the two forms hold two copies of one opinion and there is nothing shared for a single
+mutant to stand in the middle of (#97). The department one kills **three** rows, not the two
+predicted: the third is `16a` row 97, whose instrument closes department `01` through this very
+form. A fix that changes a control is a change to every row that presses it, including the rows that
+press it to arrange something (#199), and the prediction written before the sweep was corrected from
+the sweep rather than the other way round.
+
+`180a` survives both swaps, which is the #193 split doing its work from the other side: `181a`
+asserts its precondition **by `value`** and presses **by the visible word**, so a swapped-options
+mutant lands on the badge the row is for instead of dying one line above it on the precondition.
+
+Two rows could not be written. There is no browser row for *a department is created open*: the
+form's `EMPTY` has `is_active` true, so a screen with the field back still creates an open
+department, and the row would pass against the unfixed code and measure nothing (#203). That claim
+lives at the HTTP seam, where the body can say `false` and the answer must still say open. And there
+is no mutant for the รายวิชา form, for the instrument reason above.
+
+### What the review changed
+
+Four findings of six survived checking, which is the usual rate.
+
+**The sheet credited a row to a mutant that never read most of it.** The backend
+subtest asserts the answer's `is_active`, then the column in the table, then that
+an edit still switches one off; `statusatcreation` dies at the first, so
+everything below that line was credited and unread (#88). The row's own comment
+had already written the mutant that was missing — *a route that inserted false
+and reported true* — so `reportsopenbutinsertsclosed` is that sentence made to
+run (#115 from the other side) and it dies at `:673`, the read of the table,
+rather than at `:664`. Its third assertion is left without one on purpose: it is
+criterion 3's claim, held by `181a`, and it is in this row to make the two above
+it about the **creation** rather than about the column.
+
+**A count of another ticket's mutants was wrong in three places.** The prose said
+`181-the-status-switch.py` holds four; it holds **six**, the other two being in
+`backend/auth/authorise.js`. A ticket that states how many places something
+touches has published a claim a one-minute grep can check (#55, #96, #107), and
+this one had been read off the four that happened to matter rather than off the
+file. The same paragraph's re-aim claim was narrower than the change for the same
+reason: `SubjectForm.js` is edited here too and belongs to `16-subjects.py` and
+`18-program-subjects.py`. Those anchors are exact, which `anchors.py` says for
+the whole catalogue at once — but it was the wrong sentence standing on the right
+measurement.
+
+**Four inline reads of one control, across two files, with the helpers already
+there.** `16a`'s two are on the ภาควิชา screen, whose `statusField` this ticket
+had just written; `18a`'s two are on the รายวิชา form, whose helper had none. An
+instrument a second file needs is shared, because no row's claim lives in it
+(#171). Moving a press behind a helper is the same press, and what says so is
+re-running `departmentoptionsswapped` rather than reasoning about it (#107, #68):
+the same three rows, the same bystander.
+
+**And one finding was declined.** The sweep table in
+`mutation/181-the-status-switch.py` cites `181a` by line number, and this change
+moved those lines by six. But the line above the table says *the line numbers are
+of the spec file as it was at the last sweep*, and the table is dated: a dated
+record is not a citation (#54, #173). What a dated record owes is the note, and
+it already carried it.
