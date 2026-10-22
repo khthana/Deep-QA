@@ -856,3 +856,128 @@ test('a programme somebody manages is deactivated instead of deleted — #60', a
   );
   assert.deepEqual(rows, []);
 });
+
+test('a revision year that is not a plausible Buddhist-era one is refused, and the era mistake is named — #177', async () => {
+  // #177. The column holds the Buddhist-era year the registrar writes, and
+  // until this ticket it was checked for shape alone: `2024` - the common-era
+  // year for what somebody means as 2567 - was stored, and `9999` with it. The
+  // owner's answer on 22 October 2569 was both links of the guard, with a
+  // constant ceiling: no bound in this server's validation is derived from the
+  // clock, so a ceiling of "a few years from now" would be the first that was,
+  // and the day a test runs would decide what the test asserts (#52).
+  //
+  // The range and the two sentences are written out here rather than imported
+  // from `lib/revisionYear.js`, for the reason COLUMNS is at the top of this
+  // file: a test that asked the constant what the constant says would pass
+  // whatever it said.
+  const cookie = await signInAs('U_FAC');
+
+  // The mistake the ticket opens with: four digits, and a year this column
+  // cannot mean. It is diagnosable, so the sentence does the arithmetic.
+  const commonEra = await create(cookie, {
+    program_id: 'T7701',
+    program_name_th: 'ปีที่เป็น ค.ศ.',
+    department_id: DEPT_COMPUTER,
+    revision_year: '2024',
+  });
+  assert.equal(commonEra.status, 400);
+  assert.equal(commonEra.body.message, REFUSALS.revisionYearEra(2024, 2567));
+
+  // A typing mistake, whose Buddhist reading is no better: the useful thing to
+  // say is the range, which is why this is a second sentence and not one.
+  const typo = await create(cookie, {
+    program_id: 'T7702',
+    program_name_th: 'ปีพิมพ์ผิด',
+    department_id: DEPT_COMPUTER,
+    revision_year: '1234',
+  });
+  assert.equal(typo.status, 400);
+  assert.equal(typo.body.message, REFUSALS.revisionYearOutOfRange(1234, 2500, 2600));
+
+  const far = await create(cookie, {
+    program_id: 'T7703',
+    program_name_th: 'ปีไกล',
+    department_id: DEPT_COMPUTER,
+    revision_year: '9999',
+  });
+  assert.equal(far.status, 400);
+  assert.equal(far.body.message, REFUSALS.revisionYearOutOfRange(9999, 2500, 2600));
+
+  // The shape refusal keeps its own sentence, because the shape gate is still
+  // asked first: `25` is not four digits and there is nothing to do arithmetic
+  // with. The walked row that recorded that sentence (docs/acceptance/15 row
+  // "ปีหลักสูตรต้องเป็นสี่หลัก") therefore still reads as it did (#60: the order
+  // of two gates decides which sentence the caller gets).
+  const short = await create(cookie, {
+    program_id: 'T7704',
+    program_name_th: 'ปีสั้น',
+    department_id: DEPT_COMPUTER,
+    revision_year: '25',
+  });
+  assert.equal(short.status, 400);
+  assert.equal(short.body.message, REFUSALS.invalidProgram);
+
+  for (const id of ['T7701', 'T7702', 'T7703', 'T7704']) {
+    assert.equal((await read(cookie, id)).status, 404);
+  }
+
+  // And the other direction, which is what makes the refusals above measure
+  // anything (#108): a guard that is "refuse only where X" is wrong in two
+  // ways. Both edges of the range are inside it, and so is the year the seed
+  // writes.
+  for (const [id, year] of [['T7705', '2500'], ['T7706', '2600'], ['T7707', '2569']]) {
+    const accepted = await create(cookie, {
+      program_id: id,
+      program_name_th: `ปี ${year}`,
+      department_id: DEPT_COMPUTER,
+      revision_year: year,
+    });
+    assert.equal(accepted.status, 201, `${year} was refused: ${accepted.body.message}`);
+    assert.equal(accepted.body.program.revision_year, year);
+    assert.equal((await remove(cookie, id)).status, 204);
+  }
+});
+
+test('the same year refusal reaches an edit and a spreadsheet row — #177', async () => {
+  // #177's second half: one reader, three callers. `readProgram` is what the
+  // form, the edit and the import all read, so the sentence is the same one in
+  // all three - the import's by way of `sentenceOf`, which is how a refusal
+  // that names a value has reached a line number since #125.
+  const cookie = await signInAs('U_FAC');
+
+  const made = await create(cookie, {
+    program_id: 'T7708',
+    program_name_th: 'ปีที่จะถูกแก้',
+    department_id: DEPT_COMPUTER,
+    revision_year: '2565',
+  });
+  assert.equal(made.status, 201);
+
+  const edited = await edit(cookie, 'T7708', {
+    program_name_th: 'ปีที่จะถูกแก้',
+    department_id: DEPT_COMPUTER,
+    revision_year: '2024',
+  });
+  assert.equal(edited.status, 400);
+  assert.equal(edited.body.message, REFUSALS.revisionYearEra(2024, 2567));
+  // The row keeps the year it had: a refused edit writes nothing.
+  assert.equal((await read(cookie, 'T7708')).body.program.revision_year, '2565');
+  assert.equal((await remove(cookie, 'T7708')).status, 204);
+
+  const imported = await importCsv(
+    cookie,
+    csvOf([
+      {
+        program_id: 'T7709',
+        program_name_th: 'แถวปีผิด',
+        department_id: DEPT_COMPUTER,
+        revision_year: '2024',
+      },
+    ]),
+  );
+  assert.equal(imported.status, 400);
+  assert.deepEqual(imported.body.errors, [
+    { line: 2, message: REFUSALS.revisionYearEra(2024, 2567) },
+  ]);
+  assert.equal((await read(cookie, 'T7709')).status, 404);
+});

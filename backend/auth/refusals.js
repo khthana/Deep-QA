@@ -133,6 +133,16 @@ const REFUSALS = {
     `ปี ${year} อยู่นอกช่วงที่รับได้ หากกรอกเป็น พ.ศ. ให้ใช้ ค.ศ. ${commonEra} แทน`,
   yearOutOfRange: (year, earliest, latest) =>
     `ปี ${year} อยู่นอกช่วงที่รับได้ ต้องเป็น ค.ศ. ระหว่าง ${earliest} ถึง ${latest}`,
+  // #177. The same two mistakes about a curriculum's revision year, which is
+  // Buddhist-era text and not a date, so the arithmetic runs the other way:
+  // `2024` is offered 2567 rather than the reverse. The pair above cannot
+  // answer for this column - its range is of the common era, which refuses
+  // `2565` and accepts `2024`, the exact wrong way round. `lib/revisionYear.js`
+  // decides which one a year gets and says why it is its own file.
+  revisionYearEra: (year, buddhist) =>
+    `ปีหลักสูตร ${year} อยู่นอกช่วงที่รับได้ หากกรอกเป็น ค.ศ. ให้ใช้ พ.ศ. ${buddhist} แทน`,
+  revisionYearOutOfRange: (year, earliest, latest) =>
+    `ปีหลักสูตร ${year} อยู่นอกช่วงที่รับได้ ต้องเป็น พ.ศ. ระหว่าง ${earliest} ถึง ${latest}`,
   // The roles the sign-in rule sends to the password form rather than to
   // Google. An account of one of those created without a password can sign in
   // by neither path, which is the state #11's second criterion rules out.

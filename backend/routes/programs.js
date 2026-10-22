@@ -51,12 +51,13 @@ const express = require('express');
 
 const { onProgram, recordActivity } = require('../auth/accounts');
 const { requireRole, coveredScopes } = require('../auth/authorise');
-const { REFUSALS } = require('../auth/refusals');
+const { REFUSALS, sentenceOf } = require('../auth/refusals');
 const { blankToNull, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const { departmentInReach, reachableDepartments } = require('../lib/reach');
 const { deleteOrDeactivate } = require('../lib/removal');
+const { revisionYearRefusal } = require('../lib/revisionYear');
 const { forgetRevokedGrants, isGranted } = require('../lib/scopeGrants');
 
 /**
@@ -97,7 +98,9 @@ const IMPORT_COLUMNS = [
  * generated nor editable afterwards. The Thai name is required because it is
  * what every screen displays; the English one is optional, as the column is.
  * `revision_year` is the Buddhist-era year the curriculum was revised, four digits,
- * kept as the text the registrar writes rather than converted to anything.
+ * kept as the text the registrar writes rather than converted to anything - and
+ * since #177 inside a plausible Buddhist-era range as well, which refuses a
+ * value without converting one, so the sentence above still holds.
  */
 function readProgram(source, { editing = false } = {}) {
   const values = {
@@ -121,6 +124,16 @@ function readProgram(source, { editing = false } = {}) {
   // created; on an edit an absent column means "leave it where it is".
   if (!editing && !values.department_id) return { ok: false, reason: 'invalidProgram' };
   if (values.revision_year && !/^\d{4}$/.test(values.revision_year)) return { ok: false, reason: 'invalidProgram' };
+  // #177, and asked second on purpose: `25` has no year in it to do arithmetic
+  // with, so the shape gate keeps the generic sentence it has always answered
+  // with and this one is reached by exactly the values that used to be stored
+  // (#60). `reason` stays what it always was, so anything reading the key still
+  // reads it; the `message` is carried alongside for the refusal that names the
+  // year, which is how `sentenceOf` reaches a form, an edit and a CSV line.
+  if (values.revision_year) {
+    const refusal = revisionYearRefusal(Number(values.revision_year));
+    if (refusal) return { ok: false, reason: 'invalidProgram', message: refusal };
+  }
 
   return { ok: true, values };
 }
@@ -337,7 +350,7 @@ function programRoutes(pool) {
   router.post('/programs', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const draft = readProgram(req.body ?? {});
-      if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
+      if (!draft.ok) return res.status(400).json({ message: sentenceOf(draft) });
 
       const refusal = await departmentRefusal(req, draft.values.department_id);
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
@@ -393,7 +406,7 @@ function programRoutes(pool) {
       if (!existing) return res.status(404).json({ message: REFUSALS.programNotFound });
 
       const draft = readProgram(req.body ?? {}, { editing: true });
-      if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
+      if (!draft.ok) return res.status(400).json({ message: sentenceOf(draft) });
 
       // A department that has since been retired may keep the programmes
       // already filed under it - otherwise retiring a department would freeze

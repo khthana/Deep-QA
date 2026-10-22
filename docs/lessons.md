@@ -12947,3 +12947,84 @@ reaches them; that is a ticket, not a silence in this one. On the way past: shee
 28 September counted **five files** using `AnimatePresence`, and four do. `ProfilePhotoDialog.js`
 only names it in a comment, which is #111 in one word — a grep is evidence for the pattern you
 typed.
+
+## #177 — the year that was checked for shape, and the helper that was its mirror image
+
+A `question` ticket, opened 30 September 2569. `programs.revision_year` holds the Buddhist-era
+year a curriculum was revised in, as text, and `readProgram` checked it with `/^\d{4}$/` and
+nothing else. So `1234` and `9999` were stored, and so was `2024` — the common-era year for what
+somebody means as 2567 — and the three screens that print the value printed the wrong label. A
+guard that is strict about a format cannot see a mistake about meaning (#124), which is #125's
+whole ticket one column along, with the arithmetic running the other way.
+
+Everything in the ticket's diagnosis measured true, which is worth writing down because it is the
+rarer outcome (#66's catalogue). The guard was still the line it quoted, the three readers were
+display-only, and the generic sentence *ข้อมูลหลักสูตรไม่ครบถ้วนหรือไม่ถูกต้อง* was what a wrong
+year got. Two things it did not say were found by measuring around it.
+
+**The helper the ticket named as the obvious home is the exact mirror image of what the column
+needs.** The cost line offered `lib/year.js` and then dismissed it as *unsuitable*, which reads
+like a judgement about style. Run, it is a refutation: `yearRefusal(2565)` — the correct value,
+the one this column exists to hold — **refuses** it and offers ค.ศ. 2022, while `yearRefusal(2024)`
+returns `null`. Its range is 1900–2200 *of the common era*. A helper named for a type is a promise
+about that type (#107), and here the promise is kept and useless: the file is right about dates and
+this column is not a date. So `backend/lib/revisionYear.js` is its own file, and what the two share
+is the **shape** of the answer — inside the range accepted, the other reading offered when it lands
+inside, the range named otherwise — and not one line of the range itself. A cost line is a claim
+about the shape its author pictured (#77); this one named the right shape and the wrong file, and
+only running the function says which.
+
+**No bound in this server's validation is derived from the clock.** The ticket's second question
+was whether the ceiling should be a constant or derived from today, and the argument for today is
+good: a Program can be revised for a year that has not arrived, so the plausible ceiling is *a few
+years ahead*. A ceiling of *a few years from now* would have been the first bound in the system
+that moved with the day — #52's *anything written for timing must not be able to decide
+anything*, met in the product rather than in a fixture (#199's species). That measurement went to
+the owner as part of the question rather than as a recommendation dressed up as a fact, and the
+answer on 22 October 2569 was **both links of the guard, with a constant ceiling** — 2500 to 2600,
+which is how `lib/year.js` chose 2200.
+
+**And the first wording of that sentence was wrong, which a grep found and a census did not.**
+What went into four files first was *nothing in this server's validation reads the clock*, off a
+census whose only hits were comments mentioning `Date.now()` in `evidence.js` and `userPhoto.js`.
+`auth/accounts.js`'s `validityRefusal` reads it on both ways in — `today = BANGKOK.format(new
+Date())` — and a grep for `new Date()` says so in a second. **A grep is evidence for the pattern
+you typed** (#111, #124), and the pattern here was one spelling of two. What is true is narrower,
+and it is the sentence the owner's answer actually rests on: the one guard that reads the clock
+reads it to compare *somebody's stored window* against today, not to pick a bound of its own, so a
+ceiling computed from today would be the first bound that moved. The correction reached five
+files, because a claim written in prose expires like a number and the copy you will miss is in the
+file you did not think you were changing (#130).
+
+**The new gate goes second, and that is what keeps a closed ticket's walked row true.** `25` has no
+year in it to do arithmetic with, so the shape gate is asked first and answers it exactly as it
+always did. Sheet 15's row *ปีหลักสูตรต้องเป็นสี่หลัก* records that generic sentence from a curl
+walk in August 2569, and it still reads as it did — the order of two gates decides which sentence
+the caller gets (#60), and here the order was chosen so that no walked row expired. The row gained
+a sentence saying four digits is no longer enough; its result did not change.
+
+The sentence itself is a function in `REFUSALS`, like #125's, so the two route sites that looked the
+refusal up as a key had to read `sentenceOf` instead. The import needed nothing: `lib/importer.js`
+has read a `message` before a `reason` since #26, so the CSV path got the sentence for free — which
+is a thing to measure rather than to assert, and `formsentenceisakey` and `editsentenceisakey` are
+one mutant per site because three paths out of one reader fail one at a time or they were never
+three.
+
+**A browser row exists here for a reason no HTTP test can state.** The field carries
+`pattern="\d{4}"` inside a form with no `noValidate`, which is why the *shape* refusal is the
+browser's sentence and not the server's (#88) — sheet 15's own row says so in its own words,
+*เบราว์เซอร์ทักที่ช่อง*. `2024` satisfies that pattern, so the claim `177a` holds is that **the
+request leaves the page at all**, and then that what the person reads is the sentence naming the
+year. Its second row reads the form back: a refusal that names a way out is a claim that the way out
+is reachable from where it is read (#178), and typing 2567 instead is worth nothing if the save
+threw away what was typed.
+
+**And one of the guard's two links cannot be mutated apart from the other.** `edgesoftherangearerefused`
+and `ceilingisnotread` hold the ceiling, at its edge and whole. The floor has no equivalent: the
+value the era sentence exists for, 2024, lies *below* the floor, so a mutant that stops reading the
+floor stops refusing 2024 as well and dies at the era row — a duplicate of `theyearisonlyshaped`
+rather than a second claim. The floor is proved whole by that mutant, at its edge by the first, and
+apart from its sentence by `alwaysoffersthebuddhistreading`, and the file says which of #101's three
+the missing mutant is: structurally unreachable, not a gap. #97's *one mutant per link* is a rule
+about what to try, and #101's three answers are what to write down when one of them turns out to be
+the same mutant twice.
