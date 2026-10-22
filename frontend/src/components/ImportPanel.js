@@ -63,15 +63,20 @@ import { saveAsFile } from '../api/client'
  * callers has a picker. What a caller whose target cannot change passes is the
  * name of the register it imports into, which is the truth about it.
  *
- * **Nothing enforces it, and that is a gap and not a decision.** An eleventh
- * caller that forgets `target` gets `undefined` on both sides of every
- * comparison here, which is the silent old behaviour - *yes, still current* -
- * and no instrument says so: `frontend/` has no component test harness (no file
- * under `src` is named `*.test.js`) and `prop-types` is not a dependency, so
- * a throw on a missing prop could not be proved by anything, and the census in
- * `frontend/scripts/` reads a screen's own `await`s and never a component's
- * props. Measured 1 ตุลาคม 2569, written here so the next caller is read rather
- * than trusted.
+ * **What enforces it is the declaration below and the census that reads it -
+ * #182.** An eleventh caller that forgets `target` gets `undefined` on both
+ * sides of every comparison here, which is the silent old behaviour - *yes,
+ * still current* - and until 22 ตุลาคม 2569 nothing in the tree could say so:
+ * `frontend/` has no component test harness (no file under `src` is named
+ * `*.test.js`) and `prop-types` is not a dependency, so a throw on a missing
+ * prop could not be proved by anything, and the five censuses then in
+ * `frontend/scripts/` read a screen's own `await`s, its labels and its refs,
+ * and never a prop that JSX passes to a component. That was #179's gap, written
+ * down rather than hidden (#123), and #182 was its queue. The answer was a sixth
+ * census, `required-props.js`, whose population is every component that writes
+ * the export below: `npm run census` is red on a call site that leaves out a
+ * declared prop, and what it still cannot read - a spread, a wrapper, a value
+ * that is `undefined` - is listed in that file.
  *
  * Three things follow from the prop, and they answer different ways in -
  * `mutation/179-the-report-of-another-activity.py` has a mutant for each:
@@ -85,6 +90,19 @@ import { saveAsFile } from '../api/client'
  *   the guard: a refusal with no rows in it is about the person, not about the
  *   target, and the person hears it wherever the picker has since moved to.
  */
+/**
+ * What this panel cannot be drawn without - read by
+ * `frontend/scripts/required-props.js`, which is red on any call site that
+ * leaves one out (#182).
+ *
+ * `target` is the only name in it, and the four props above it are not, for the
+ * reason the docstring gives: a missing `title` or `send` is a panel that is
+ * visibly wrong or does nothing when the button is pressed, which the first
+ * person to open the screen sees. A missing `target` is a panel that works and
+ * is quietly wrong about whose file was imported.
+ */
+export const REQUIRED_PROPS = ['target']
+
 export default function ImportPanel({
   title,
   subtitle,

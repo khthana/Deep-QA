@@ -13192,3 +13192,102 @@ moved those lines by six. But the line above the table says *the line numbers ar
 of the spec file as it was at the last sweep*, and the table is dated: a dated
 record is not a citation (#54, #173). What a dated record owes is the note, and
 it already carried it.
+
+
+## #182 — the prop nothing could make a caller pass, and the instrument that was red in the right place for the wrong reason
+
+#179 gave `ImportPanel` a prop, `target`, saying what the report in the panel is
+about, and wrote in its own docstring that nothing enforces it: an eleventh
+caller that forgot it would get `undefined` on both sides of every comparison in
+the panel, which is the silent behaviour from before the ticket. **A prop is not
+an argument.** `isCurrent` is passed in a call, so forgetting it throws;
+`target=` missing from JSX is `undefined` and the screen draws. So whatever makes
+a prop required is an instrument or nothing at all, and #179 could not write the
+instrument: `frontend/` has no component test harness, `prop-types` is not a
+dependency, and the five censuses then in the tree read a screen's `await`s, its
+labels and its refs and had never read a prop that JSX passes. The gap went into
+the docstring and into `34-activity-marks.md` rather than being hidden (#123),
+and #182 was its queue.
+
+**The ticket's four options came with a column saying which were provable, and
+that column is a claim like its numbers** (#141). The first option — `prop-types`
+with CRA's console warning — was priced **ไม่**, because *nothing reads the dev
+server's console and a warning makes nothing red*. The first half is a fact about
+today's suite; the second is a claim about what a row can do, which is a different
+thing. A probe measured it, and was deleted after (#207): `e2e` runs **CRA's dev
+server**, not a build, so a `console.error` emitted while a component renders
+reaches `page.on('console')` — eight times in one screen open, through React's
+double render. The console is reachable; what is not available is a *global* net
+over it, because 2 of the 12 messages on one screen open are `Failed to load
+resource: 401` from signing in. A net matching the message would work.
+
+**And measuring that produced an option the ticket had not listed** (#128, #204):
+if the console is readable, the panel can say the sentence itself — three lines of
+plain JavaScript, no dependency — which buys exactly what `prop-types` buys and
+costs less, with a **narrow** mutant: removing `target=` from one real screen
+makes the warning appear and kills only the row that reads for it, the screen
+still drawing. That is the asymmetry the ticket's second option does not have: a
+`throw` in the panel is proved only by a mutant that takes the whole screen down,
+which is not the shape a mutant has to have (#97). So the measurement left the
+owner four live options rather than the two the table implied, and the
+dominated one was the ticket's own first.
+
+**The owner chose the census**, and the ticket's own condition on that choice was
+the interesting part: the rule had to be about *a prop the component declares it
+must have* rather than about the name `ImportPanel`, or it is a rule for one
+component wearing the clothes of a general instrument — `mutation/README.md`'s
+word for that is a list, not a catalogue (#126). So the component declares, in
+code rather than in a comment:
+
+    export const REQUIRED_PROPS = ['target']
+
+a named export beside the default one, which is a spelling this tree already
+writes (`RadarChart.js` exports `MAX_AXES`) and a syntax the parser reads, which a
+`//` between two tags is not (#93). The census's population is every file that
+writes one. **A declaration is then a claim to check against its own subject**:
+a name the component never destructures is a declaration that proves nothing, and
+`required-props.js` reports it.
+
+**Breaking real sites found two defects in the census that its own twenty-one
+fixtures were silent about** (#141, and #124 — before trusting a new assertion,
+break the thing it is about). Eight readings, on `Departments.js` and on the
+panel itself, restored each time:
+
+- `{...rest}` in place of `target=` was reported as **is given no `target`** — a
+  sentence the instrument cannot say, because what the object holds was decided
+  in another file. The spread has to be asked about *first*: it removes the
+  attribute, so asking *what is missing* first reads a call it cannot read as one
+  it had read.
+- A declaration with a typo in it — `['taget']` — was reported once at the
+  declaration and then **ten more times, once per caller**, and those ten reports
+  name the wrong fix: add `taget=` to ten screens. A name the component does not
+  take apart is now dropped from what callers are measured against.
+
+Both were **red in the right place**. The exit code was 1 either way, the file and
+the line were right either way, and what was wrong was the sentence and the blast
+radius — which is the part a count never shows and a fixture written from the
+rule rather than from the tree cannot reach. The other six readings were the ones
+a fixture can hold, and they are rows in `required-props.test.js` now: the missing
+prop, a spread beside a prop that is passed, a marker with a reason and a ticket,
+a marker without a ticket, a marker written as `//` between two tags, and a
+declaration that is not a literal array.
+
+The gap paragraph in `ImportPanel`'s docstring is rewritten rather than deleted,
+because half of it is still true and dated: there is still no component harness
+and still no `prop-types`. What changed is the last sentence.
+
+**And the review found the instrument red in the right place and wrong about
+what to do twice more, in its own code this time.** The summary line printed
+`problems 0` **before** the loop that turns an unparsable code file into a
+problem, so the day a `.jsx` lands the script would have printed `problems 0`,
+then listed a problem, then exited 1 — `label-codes.js` pushes first and logs
+after, and this one had the two the other way round. And the soundness filter,
+the repair for the typo declaration above, was written inside `main()`, where no
+fixture can ask it: the rows holding it asked about `destructures` instead, which
+is one question short of the claim. It moved into `declaration()`, which now
+answers `sound` and `unsound`, and three fixtures ask it directly —
+`npm run census:test` 112 → **115**. The other three findings were #123's rule
+again: a second-pass parse failure swallowed by a bare `catch { continue }`, the
+`not code` count the three newest siblings print missing, and a blind-spot list
+that said nothing about `export { REQUIRED_PROPS }`, a re-export, or a second
+declaration in one file silently winning.

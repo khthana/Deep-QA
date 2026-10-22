@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 22 October 2569 that is
-`2026-10-22-the-label-that-read-its-own-options.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-22-the-prop-nothing-could-require.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -593,6 +593,12 @@ citation.
 - **A census built around a cause is read against its control group, not on its own** — the
   population *where the cause is absent* has a rate too, and when that rate is the lower one the
   cause was not the cause. (#194)
+- **An instrument can be red in the right place and wrong about what to do** — the exit code, the
+  file and the line are right, and what is wrong is the sentence or the blast radius: a call it
+  cannot read reported as one it had read, or one mistake in a declaration reported once at the
+  declaration and ten more times at callers whose fix it names wrongly. Its own fixtures are
+  silent on both, being written from the rule; only breaking a real site shows them (#141, #124).
+  (#182)
 - **Anything written for timing must not be able to decide anything.** (#52)
 - **A fixture builds its situation with a clock, and it has to be the clock the code decides
   with** — ask the database what its zone is rather than reading the compose file, and **build the
@@ -869,6 +875,11 @@ citation.
   checks; when a tool skips things by name, adding a file makes it lie; a guard that reads the
   world before it writes has to survive every state the world is in. Ask the catalogue, not a
   list — and write down what the instrument cannot measure. (#123, #126, #132)
+- **A prop is not an argument, so what makes one required is an instrument or nothing** — and the
+  instrument that must not become a list of component names is written against a **declaration the
+  subject makes in code**, which is then a claim to check against that subject: a declared name the
+  component never destructures proves nothing, and measuring every caller against it names the
+  wrong fix once per caller. (#182)
 - **A rule about keeping what was drawn is a claim about what the drawing was an answer to** — so
   the same rule has one half or two depending on what the loader depends on. #151's *a read that
   fails keeps what the screen last drew* is whole on a `load` keyed on one id, where a refused read is always a re-read of the same question, and coming apart on a
@@ -949,7 +960,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
-| `frontend/scripts/` | Five censuses, as instruments. `npm run census` runs all five; their own fixtures are `npm run census:test`. The five are listed below the table. |
+| `frontend/scripts/` | Six censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
 
 | Census | goes red when a screen |
 |---|---|
@@ -958,6 +969,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `sentences-after-a-move.js` | says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family). It asks about **enclosure**, not about a window of lines, and it finds the guard by the ref without asking what that ref can tell apart — [#226](https://github.com/khthana/Deep-QA/issues/226), opened 21 October 2569 |
 | `swallowed-refusals.js` | redraws from a loader without reading whether it drew (#152's family). Built by #200 and left unwired while the twenty administration sites it found were still red; #203 fixed those and wired it in on 12 October 2569 |
 | `dead-loaders.js` | reads a list again with the loader a handler closed over instead of the one the ref holds (#208's family). It finds its loaders **by the ref** and so cannot see a ref holding a coordinate |
+| `required-props.js` | leaves out a prop the component it draws declares it must have (#179's `target`, by #182's answer on 22 October 2569). Its population is every file exporting `REQUIRED_PROPS`, so it is a rule about a declaration and not about a component's name; it cannot read a spread, a wrapper, or a named import |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the

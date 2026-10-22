@@ -18,6 +18,7 @@ const CENSUSES = [
   'sentences-after-a-move.js',
   'swallowed-refusals.js',
   'dead-loaders.js',
+  'required-props.js',
 ]
 
 let worst = 0

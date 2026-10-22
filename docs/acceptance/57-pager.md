@@ -558,7 +558,8 @@ code review เจอ ทั้งสองส่งธงแล้วและ�
 `Plos.js:98` → `:104` · `PloMapping.js:104` → `:111` · `ProgramLevelByIntake.js:165` → `:172` ·
 `ProgramLevelIndividual.js:205` → `:211` · `Users.js:153` → `:152` · `Plos.js:141` → `:148` · `Plos.js:217` → `:230` ·
 และหลัง #179 (1 ต.ค.) `ImportPanel.js:85` → `:162` (`onImported?.()`) · `ImportPanel.js:83` → `:159`
-(`await send(await file.text())` ซึ่ง §วัดใหม่ ข้างบนอ้างไว้) —
+(`await send(await file.text())` ซึ่ง §วัดใหม่ ข้างบนอ้างไว้) ·
+และหลัง #182 (22 ต.ค.) `ImportPanel.js:162` → `:180` (`onImported?.()`) · `ImportPanel.js:159` → `:177` —
 เขียนไว้ที่นี่ ไม่ได้ทับลงไปที่นั่น (และเลขของ §ตัวกรองปิดแล้ว เป็นบรรทัด **dependency** ของ `load`
 ไม่ใช่บรรทัดประกาศ ซึ่งย่อหน้านั้นบอกไว้เอง)
 
