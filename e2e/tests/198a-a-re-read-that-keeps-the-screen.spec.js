@@ -7,7 +7,15 @@ const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { BACKEND_URL } = require('../support/env');
 const { actingButton, switchTo } = require('../support/shell');
-const { RUBRICS, API, listedCodes, openAddForm, openRubrics } = require('../support/rubrics-screen');
+const {
+  RUBRICS,
+  API,
+  listedCodes,
+  openAddForm,
+  openEditor,
+  openRubrics,
+  programPicker,
+} = require('../support/rubrics-screen');
 const { DASHBOARD, API: TEACHING_API } = require('../support/teaching-screen');
 
 /**
@@ -83,6 +91,9 @@ const REACHABLE = `${API}/programs`;
 
 /** A code nothing in the seed carries, so finding it is finding what was typed. */
 const TYPED = 'RUB-198';
+
+/** A rubric the seed files in `FIRST_SCOPE`, for the row that opens an editor. */
+const SEEDED = 'RUB-01';
 
 /**
  * The second committee grant both this file's situations are reached through,
@@ -160,17 +171,36 @@ test('a switch that leaves the address where it is re-reads the list without tak
     if (call.method() === 'GET' && new URL(call.url()).pathname === API) asked.push(call.url());
   });
 
+  // The second read's answer, asked for before the press so the row can wait
+  // for it rather than race it. Until 23 October 2569 this row read the field
+  // from the press onwards and was red about three runs in five: the form is
+  // thrown away by `RubricForm`'s own effect when this answer sets `programs`,
+  // so a retrying read that happened to see the field before the answer landed
+  // passed, and the claim was measured at the wrong moment (#152, #232).
+  const pool = page.waitForResponse(
+    answer =>
+      answer.request().method() === 'GET' && new URL(answer.url()).pathname === REACHABLE,
+  );
+
   await switchTo(page, `${COMMITTEE} ${SECOND_SCOPE}`);
 
   // The situation, said out loud: the hat changed and the address did not.
   await expect(actingButton(page)).toHaveText(new RegExp(`${COMMITTEE} ${SECOND_SCOPE}`));
   expect(new URL(page.url()).pathname, 'the switch moved nobody').toBe(RUBRICS);
 
+  // The settle point is what the answer carries rather than the answer itself
+  // (#132): the picker's new option is the drawing that says the second read
+  // has been applied to this form. Row 3 is where that is a claim; here it is
+  // the precondition that puts the field's read on the far side of it (#51).
+  await pool;
+  await expect(
+    page.getByRole('combobox').locator(`option[value="${SECOND_SCOPE}"]`),
+    'the second read has landed and the form has been drawn from it',
+  ).toHaveCount(1, { timeout: 15_000 });
+
   // #198's own claim, and first, because it is the one the remount fails: the
-  // form is still open and still holds what was typed into it. Polled rather
-  // than read once - the switch sets a render going, and a field read at the
-  // press is read before the shell has drawn anything at all.
-  await expect(code, 'what was typed survived the switch').toHaveValue(TYPED, { timeout: 15_000 });
+  // form is still open and still holds what was typed into it.
+  await expect(code, 'what was typed survived the switch').toHaveValue(TYPED);
 
   // And the other half of the pair, below it: the list *was* asked for again.
   // A row that only held the form would pass on a screen that had quietly
@@ -259,4 +289,103 @@ test('and the curricula the screen may place a rubric in are read again too', as
 
   // The mechanism underneath the drawing, said out loud: the screen asked.
   expect(asked.length, 'the curricula in reach were asked for again').toBeGreaterThan(0);
+});
+
+test('and the curriculum the form starts on is the new hat\'s, not the old one\'s', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.multiRole);
+  await openRubrics(page);
+
+  // A committee member reaches exactly one curriculum, so the form picks it
+  // rather than offering a choice - which is why the value this row reads is
+  // the screen's own statement of which curriculum a rubric typed here would
+  // be written into.
+  await openAddForm(page);
+  const picker = page.getByRole('combobox');
+  await expect(picker, 'the curriculum of the hat being taken off (#171)').toHaveValue(FIRST_SCOPE);
+
+  const code = page.getByPlaceholder(/เช่น RUB-/);
+  await code.fill(TYPED);
+
+  const pool = page.waitForResponse(
+    answer =>
+      answer.request().method() === 'GET' && new URL(answer.url()).pathname === REACHABLE,
+  );
+
+  await switchTo(page, `${COMMITTEE} ${SECOND_SCOPE}`);
+  await expect(actingButton(page)).toHaveText(new RegExp(`${COMMITTEE} ${SECOND_SCOPE}`));
+  await pool;
+
+  // The claim #232 added: what the person typed is kept and the curriculum
+  // they never picked is re-picked, because the old one is not in reach any
+  // more and a value outside the pool can be neither drawn nor saved
+  // (ADR-0002, and row 3 above, where the pool being the new grant's is the
+  // claim). Keeping everything would leave the picker pointing at a curriculum
+  // the server would refuse.
+  await expect(picker, 'the curriculum the new grant reaches').toHaveValue(SECOND_SCOPE, {
+    timeout: 15_000,
+  });
+  await expect(code, 'and what was typed is still there beside it').toHaveValue(TYPED);
+});
+
+test("an existing rubric keeps its own curriculum even when that curriculum is retired", async ({
+  page,
+  playwright,
+}) => {
+  // The one situation that separates #232's two conditions, and so the only
+  // one that can prove the branch which leaves an existing rubric alone.
+  // `GET /api/rubrics/programs` answers with retired curricula too
+  // (`reachablePrograms`: *Retired ones come too*), and the form keeps them out
+  // of the pool it may auto-pick from, because auto-picking a retired one would
+  // put the form in a state the server refuses before anybody has touched it.
+  // So a rubric filed in a retired curriculum holds a `program_id` that is
+  // **not** in the pool - the shape the second effect would re-pick if the
+  // `editing` branch were not there, which would leave the form saying the
+  // rubric belongs to a curriculum it does not belong to, and a save moving it.
+  //
+  // The seed has no retired curriculum (measured 23 October 2569), so the row
+  // makes one over HTTP and puts it back in `finally`, for the reasons the
+  // fixture at the head of this file gives: a mutant in the frontend cannot
+  // stop the restore, and `workers: 1` means nothing else is reading the
+  // curriculum while this row holds it switched off.
+  // A curriculum is maintained by the faculty and the department, not by the
+  // system administrator who makes this file's grant: `backend/routes/programs`
+  // names `FACULTY_ADMIN` and `DEPT_ADMIN` and answers anybody else 403, which
+  // is what the first draft of this row read (#107).
+  const faculty = await playwright.request.newContext();
+  const inn = await faculty.post(`${BACKEND_URL}/api/auth/login`, {
+    data: { email: ACCOUNTS.facultyAdmin, password: PASSWORD },
+  });
+  expect(inn.status(), 'the administrator who may switch a curriculum off').toBe(200);
+
+  const read = await faculty.get(`${BACKEND_URL}/api/programs/${FIRST_SCOPE}`);
+  expect(read.status(), 'the curriculum this row switches off for a moment').toBe(200);
+  const { program } = await read.json();
+
+  const off = await faculty.put(`${BACKEND_URL}/api/programs/${FIRST_SCOPE}`, {
+    data: { ...program, is_active: false },
+  });
+  expect(off.status(), 'switching the curriculum off').toBe(200);
+  const retired = await off.json();
+  expect(retired.program.is_active, 'the situation this row is about').toBe(false);
+
+  try {
+    await signIn(page, ACCOUNTS.multiRole);
+    await openRubrics(page);
+    await openEditor(page, SEEDED);
+
+    await expect(
+      programPicker(page),
+      'the rubric still says which curriculum it is in',
+    ).toHaveValue(FIRST_SCOPE);
+  } finally {
+    const on = await faculty.put(`${BACKEND_URL}/api/programs/${FIRST_SCOPE}`, {
+      data: { ...program, is_active: true },
+    });
+    if (on.status() !== 200) {
+      cleanupFailure = `the curriculum was answered ${on.status()} when switched back on`;
+    }
+    await faculty.dispose();
+  }
 });

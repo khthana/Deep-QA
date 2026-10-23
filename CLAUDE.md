@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 23 October 2569 that is
-`2026-10-23-the-rule-that-came-back.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-23-the-form-its-own-effect-threw-away.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -74,6 +74,9 @@ citation.
 - **A ticket's reason for *not deciding itself* is a claim like its numbers** — the sentence that
   makes it an owner's question rather than a task, and the rule such a reason invokes is usually
   real: what it licenses is the measurement, not the conclusion. (#197)
+- **An owner's question is void where one of its answers names a state the system cannot carry** —
+  a value the server would refuse is not a preference anybody can choose, so measure what each
+  option would put in front of the person before writing the question down. (#232)
 - **A half that needs a human sense to answer has a layer under it an instrument can reach** —
   *does anybody hear it* needs a voice, while *is the sentence in the accessibility tree, on a node
   the browser does not mark ignored* needs only the browser and decides the same price. The layer is

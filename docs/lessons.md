@@ -13704,3 +13704,68 @@ away by its own effect, and the row is green only when it reads before that answ
 (#152's seventh reading). It is [#232](https://github.com/khthana/Deep-QA/issues/232), with
 the sheet's own cell dated beside the ⚙ it still carries, because the mark is that
 ticket's to move.
+
+## #232 — the form its own effect threw away, and the owner's question that was already void
+
+[#232](https://github.com/khthana/Deep-QA/issues/232) is the defect
+[#198](https://github.com/khthana/Deep-QA/issues/198) was opened to prevent, read backwards and
+landed by #198 itself. #198 narrowed a re-read from a remount to a re-fetch so that a form typed
+and not saved survives a switch of hats which stays put; its own review then added the screen's
+generation to the dependency list of `Rubrics`'s **second** read, the curricula this account may
+place a rubric in. That read sets `programs`. `RubricForm` computes `onlyOne` from
+`programs.filter(...)` and had it in the dependency list of an effect that reset the whole draft —
+a new array identity every time the answer lands, so the form was thrown away by its own effect
+the moment the thing #198 narrowed the remount to keep was re-read.
+
+**The row was red about three runs in five, and the screen was wrong on every one of them.** The
+assertion was a retrying `toHaveValue` read from the press onwards, so it passed whenever it won
+the race with the answer; the sampler built from the row read the field ten frames at 300ms and
+forty frames at 500ms and saw `n=1 v=""` in every single frame. What was intermittent was the
+**read**, not the thing read (#164), which is #152's seventh reading of a survivor met in a row
+rather than in a mutant. The repair is the row: ask for the response before the press, then settle
+on what the answer *carries* — the new scope's `option` appearing in the picker (#132) — and read
+the field on the far side of that, where the claim lives on one side of a known event instead of
+racing it. That settle point is row 1's precondition and row 3's claim, asserted where it is used
+(#51).
+
+**The owner's question the ticket wrote down was void by the time it was written.** Item 3 asked
+whether an open, half-typed form should show the new hat's curriculum or the old one's. Row 3 of
+`198a`, landed hours earlier the same day, had already decided that the pool is the new grant's;
+and a `program_id` outside the pool is one the server refuses, authority being derived from the
+database (ADR-0002) — and on the add form no `option` draws it either, the old hat's curricula
+being absent from the new answer altogether. So *keep the old curriculum* does not name a state
+the person could see — it names an empty select that cannot be saved. One consistent rule was left:
+keep every typed field, keep `program_id` while it is still in reach, re-pick when it is not. The
+question was answered by measuring what each option would actually put on the screen, not by
+asking. **An option the system cannot carry to the end is not an option**, and the half of the
+question that looked like a preference had already been settled by a sibling row.
+
+**The fix is two halves, so it is two mutants, and one of them is bought for free.** `value` — state
+in the screen above — is the only thing that resets the draft; the pool is written as a *value*, a
+string of ids, and a second effect re-picks only when the field names something no longer in it,
+reading the live state through a functional updater rather than through a closure (#201). Row 4 was
+written for the second half and its **first** assertion passed against the unfixed code, because
+wiping the form re-picks the curriculum anyway (#203): a control bought for free. What measures the
+fix is its second assertion, and what tells the two apart is `keepsthecurriculum`, the ticket's own
+option 1 made to run (#48) — the form survives, the curriculum never moves, row 4 dies at its first
+assertion and **row 1 passes**. Beside it `arrayidentity` is the diagnosed code made to run (#115),
+killing row 1 and row 4's second assertion. Both needed more edits than the claim: a mutant that
+leaves `starting` or `pool` with no reader turns `no-unused-vars` into a failed compile under
+`CI=true`, which is a mutant that stops the application rather than one that fails a row (#101).
+The ticket's own wording for the second half — *auto-fill the curriculum only while nobody has
+touched the field* — is not what landed: a touched flag would keep a value the switch has just taken
+out of reach, which is a form the person cannot save, so what landed is the membership test and the
+divergence is written on the sheet with its date.
+
+**The `if (editing) return` branch was written up as having no mutant, and the review measured that
+the same day.** The reasoning was that an existing rubric's curriculum came from the list this
+account reaches, so it is always in the pool and the *in the pool* test does not move the field
+either — the situation that separates the two conditions cannot be built at this seam. But
+`reachablePrograms` says of itself that *Retired ones come too*, and the pool is `usable`, which
+filters the retired ones out. A rubric filed in a retired curriculum therefore holds a `program_id`
+the pool does not contain, which is exactly that situation, and a row can build it: switch a
+curriculum off through the faculty administrator's route, open the editor, put it back in `finally`.
+**A claim called structurally unreachable is the third of #102's three answers read as the second**,
+and what tells them apart is the file that defines the pool's own population — the reasoning named
+`programs` and the code reads `usable`. Row 5 holds the branch, `movesanexistingrubric` kills it,
+and the first draft of the sheet is the kind of overclaim that reads as modest (#116).

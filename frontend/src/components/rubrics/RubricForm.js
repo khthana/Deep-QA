@@ -58,15 +58,46 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
   const usable = programs.filter(program => program.is_active !== false)
   const onlyOne = usable.length === 1 ? usable[0] : null
 
+  // A curriculum to start on: the one the list is filtered to, or the only one
+  // this account holds. A กรรมการหลักสูตร never picks.
+  const starting = defaultProgram || onlyOne?.program_id || ''
+
+  // The pool as a value rather than as an array - #232. `programs` is a new
+  // array on every answer, so an effect that depended on it, or on anything
+  // derived from it by identity, re-ran whenever the screen read the pool
+  // again. That is how a form typed and not saved was thrown away by its own
+  // effect when a switch of hats which stays put re-read the curricula in
+  // reach: the one thing #198 narrowed the remount to keep.
+  const pool = usable.map(program => program.program_id).join(' ')
+
+  // The subject changed, so the form starts again: a different rubric is being
+  // edited, or the form was opened to add one. This is the only thing that
+  // throws away what a person has typed, and `value` is state in the screen
+  // above rather than anything derived here, so a re-read cannot move it.
   useEffect(() => {
-    setDraft({
-      ...EMPTY,
-      // A curriculum to start on: the one the list is filtered to, or the only
-      // one this account holds. A กรรมการหลักสูตร never picks.
-      program_id: defaultProgram || onlyOne?.program_id || '',
-      ...value,
-    })
-  }, [value, defaultProgram, onlyOne])
+    setDraft({ ...EMPTY, ...value })
+  }, [value])
+
+  // And the curriculum follows the pool, which is the half a re-read may move -
+  // #232. The field is left alone while it names something still in reach, and
+  // re-picked when it does not: the pool is what this hat may write into, so a
+  // value outside it is one the server refuses (ADR-0002), and nothing here may
+  // pick one - that would put the form in a refused state before the person had
+  // touched anything.
+  //
+  // An existing rubric is not moved at all, and that branch is not decoration:
+  // `GET /api/rubrics/programs` answers with retired curricula too, so a rubric
+  // filed in one holds a program_id the pool does not contain, and re-picking
+  // would make the form say it belongs somewhere else. `198a` row 5 holds that,
+  // and `232:movesanexistingrubric` is the mutant.
+  useEffect(() => {
+    if (editing) return
+    setDraft(current =>
+      current.program_id && pool.split(' ').includes(current.program_id)
+        ? current
+        : { ...current, program_id: starting },
+    )
+  }, [editing, pool, starting])
 
   const set = name => event => setDraft(current => ({ ...current, [name]: event.target.value }))
 
