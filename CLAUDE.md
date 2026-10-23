@@ -794,6 +794,10 @@ citation.
 - **When a guard has to widen, ask first whether what it reads is what is wrong** — changing what
   a ref *means*, and which controls write it, can leave every comparison and every mutant where
   they stand. (#146)
+- **An endpoint that answers *what may be offered* is not one that answers *what this
+  value is*, and the gap shows as an audience** — the screens it refuses are the ones
+  needing the other question, so a fix that works on two sites can be unreachable on the
+  third for a reason that is not about its code (#218 from the other side). (#215)
 - **A reference no foreign key can express is the one a `RESTRICT` doctrine leaves dangling** — a
   polymorphic column carries no constraint to raise, so there the hand-written *is anything pointing
   at this* check is the right one, and its licence is bounded by the column having no constraint

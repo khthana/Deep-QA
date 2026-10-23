@@ -58,6 +58,21 @@ const grantsTable = page =>
     .filter({ has: page.getByRole('columnheader', { name: 'ผู้กำหนด' }) });
 
 /**
+ * The scope cell that belongs to one code, in both shapes it can take.
+ *
+ * Since #215 the cell reads `ชนิด · ชื่อ (รหัส)`, and the bare code where the
+ * reader does not reach the scope and so has no name for it. The code is
+ * therefore matched where the cell can hold it - as the whole cell, or as the
+ * bracketed code that ends it - and never as a substring of either: `05` sits
+ * inside `(0501)`, and a row found that loosely would answer about the
+ * department when it was asked about the programme (#118, #116).
+ */
+const scopeCell = scopeId => {
+  const code = scopeId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^${code}|\\(${code}\\))$`);
+};
+
+/**
  * One grant, found by both of the things that identify it.
  *
  * A role alone is not enough: the same role held at two scopes is two rows,
@@ -67,7 +82,7 @@ const grantRow = (page, roleLabel, scopeId) =>
   grantsTable(page)
     .getByRole('row')
     .filter({ has: page.getByRole('cell', { name: roleLabel, exact: true }) })
-    .filter({ has: page.getByRole('cell', { name: scopeId, exact: true }) });
+    .filter({ has: page.getByRole('cell', { name: scopeCell(scopeId) }) });
 
 /** One cell of a grant's row, by the column header above it. */
 const COLUMNS = { บทบาท: 0, ขอบเขต: 1, ผู้กำหนด: 2, เมื่อ: 3 };

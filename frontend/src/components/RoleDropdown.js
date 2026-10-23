@@ -61,6 +61,28 @@ function RoleDropdown({ setAlert, onStayedPut }) {
 
   if (!acting) return null
 
+  /**
+   * Why this one still says the code — #215, measured 23 October 2569.
+   *
+   * #90 gave the two administration screens the words `ชนิด · ชื่อ (รหัส)`,
+   * and #215 asked whether the three places that draw a scope for reading get
+   * them too. The other two now do, from the list their own pickers are drawn
+   * from. This one cannot, for two reasons that are independent of each other:
+   * what it draws comes from `/api/me`, whose `allRoles` answers `role_id`,
+   * `role_name`, `priority` and `scope_id` and no name or kind at all; and the
+   * readers of this label are exactly the two roles `GET /users/grantable`
+   * refuses, so borrowing that list would answer 403 and leave the bare code
+   * anyway.
+   *
+   * What would make it reachable is the server carrying the name and the kind
+   * on `/api/me`, resolved by `scopeChain`'s own precedence so that the word
+   * cannot disagree with the guard — which is a change to an answer every
+   * request reads, and the owner's to take. It is
+   * [#231](https://github.com/khthana/Deep-QA/issues/231), opened the same
+   * day. The delivered screen drew the name and no code, so the wording goes
+   * with it (`docs/06` §Out of Scope); its year half is unreachable whatever
+   * the answer, a grant holding no academic year (ADR-0003).
+   */
   const label = grant =>
     grant.role_id === 'PROG_MANAGER' || grant.role_id === 'EXT_ASSESSOR'
       ? `${roleName(grant.role_id)} ${grant.scope_id}`

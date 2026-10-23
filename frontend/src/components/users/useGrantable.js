@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { listGrantable } from '../../api/users'
+import { useScreenGeneration } from '../../context/ScreenGeneration'
 
 /**
  * The roles and scopes the signed-in administrator may hand out — #12.
@@ -21,6 +22,16 @@ import { listGrantable } from '../../api/users'
 export default function useGrantable() {
   const [grantable, setGrantable] = useState({ roles: [], scopes: [] })
 
+  // #198's second half, which #215 made reachable here. What may be offered is
+  // a property of the grant the reader is wearing, and since #215 it is also
+  // what names the scopes the accounts list *draws* - on a screen that is a
+  // landing and is re-read rather than remounted when a hat is switched in
+  // place. Without this dependency the list would carry the old hat's names,
+  // which is `Rubrics`'s and `Programs`'s second read one screen along. The
+  // two callers inside the editor's form are unmounted with it either way, so
+  // for them this changes nothing.
+  const generation = useScreenGeneration()
+
   useEffect(() => {
     let live = true
     listGrantable()
@@ -32,7 +43,10 @@ export default function useGrantable() {
     return () => {
       live = false
     }
-  }, [])
+    // `generation` is read nowhere in the body on purpose: what it changes is
+    // *when* this read happens, not what is asked for - #198.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generation])
 
   return grantable
 }

@@ -8,6 +8,8 @@ import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
+import { scopeNamed } from '../components/users/scopeLabel'
+import useGrantable from '../components/users/useGrantable'
 import { roleName } from '../components/MapRole'
 import { useAuth } from '../context/AuthContext'
 import { useScreenGeneration } from '../context/ScreenGeneration'
@@ -203,6 +205,13 @@ export default function Users() {
   // survive the switch.
   // `context/ScreenGeneration.js` carries why #155's remount was narrowed.
   const generation = useScreenGeneration()
+
+  // #215 - the role column names each grant's scope by kind and name and not
+  // by its code alone, in `GrantPicker`'s wording. The names come from the same
+  // answer the form's pickers are drawn from, which this screen was not asking
+  // for until now; `scopeNamed` says what a code outside that answer reads as,
+  // and the hook reads the generation above for the same reason `load` does.
+  const grantable = useGrantable()
 
   /**
    * #68 - the answer that is drawn is the answer to the request the screen is
@@ -513,7 +522,13 @@ export default function Users() {
                       <td className="px-4 py-3">{user.email}</td>
                       <td className="px-4 py-3">
                         {(user.roles ?? [])
-                          .map(grant => `${roleName(grant.role_id)} (${grant.scope_id})`)
+                          .map(
+                            grant =>
+                              `${roleName(grant.role_id)} (${scopeNamed(
+                                grantable.scopes,
+                                grant.scope_id,
+                              )})`,
+                          )
                           .join(', ') || '—'}
                       </td>
                       <td className="px-4 py-3">{windowOf(user)}</td>

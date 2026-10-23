@@ -13612,3 +13612,95 @@ departments and got the same dependency the same hour; which screen *proves* a r
 many screens hold is still the census's answer and not the subject's (#68, #171) — so
 #230 now carries two questions rather than one: does a new landing read the generation,
 **and** does a landing's second read read it.
+
+## #215 — the endpoint that answered a different question, and the audience that said so
+
+#90 gave the scope picker the kind word — *ภาควิชา · วิศวกรรมคอมพิวเตอร์ (05)* — and closed with a debt
+it had measured itself: three more places draw a scope for somebody to **read**, and all
+three say only the code. The owner answered on 23 October 2569 that the two
+administration screens take the picker's wording letter for letter, with no change to the
+server, and that the third is a question of its own.
+
+**An endpoint that answers *what may be offered* is not one that answers *what this value
+is*, and the gap shows as an audience.** `GET /api/users/grantable` is the only answer in
+the system carrying a scope's name and kind, so all four sites that want the words want
+it. The two that could have it were the two already holding it for their own pickers:
+`GrantsPanel` draws the table above its picker and `Users` draws the role column on the
+screen that opens that panel, so the fix was a lookup in a list already on the screen, no
+new request and nothing added to the server. `RoleDropdown` could not be fixed that way at
+all, and the reason is not that it lacks a call — it is that its readers are the people the
+endpoint refuses. The hat picker is drawn for everybody with two roles; `grantable` is for
+administrators. Asking it from there would answer 403 for a teacher, which is the shape
+#218 names from the other side: a matcher two questions share cannot be narrowed for one of
+them. So the third site is not a smaller version of the first two. It needs `/api/me` to
+carry what it draws, which is a server change and a ticket of its own — #231, with the
+reason and the date written on `10-application-shell.md` beside a ☐ row rather than left in
+this prose (#119, #125).
+
+**The wording moved into a module and the proof did not move with it.** `scopeLabel` had
+lived inside `GrantPicker`; three screens now share it, so it went into
+`frontend/src/components/users/scopeLabel.js` — and every one of #90's five mutants was
+re-aimed there and re-swept, because the file a mutant edits changed name even though the
+code it edits did not. That re-aim cost the proof nothing exactly because the mutants stay
+where they are: the shared function is the **premise** of all four rows and each screen's
+*use* of it is still that screen's own claim (#104). What the re-sweep then showed is the
+other half of #202: `nokind` and `swapsthewords` now kill two rows more than their sheet
+credited them with, not because anybody edited them but because a spec gained rows they can
+reach. No instrument says so — the anchor is exact and the code untouched — only running
+them again.
+
+**The sweep is what said to split a row, and it said so by killing it at the wrong
+assertion.** Row 3 began as one row holding both halves of the fallback: the accounts
+column keeps the bare code, and so does the panel cell, with the picker's own options read
+beside it to prove *why*. `dashwhenunknown` — the dash this ticket declined, made to run
+(#48) — died at the first of those, so the panel's claim sat under a red line and was
+proved by nothing (#88). The split is #198's shape rather than a tidying: the editor
+**replaces** the accounts table, so the two readings cannot be taken in one state. Row 4
+then needed `grantable`'s options waited for by what the answer carries, because
+`openEditor` waits for the panel's own read and the picker's second call has not drawn yet
+when it returns (#132).
+
+**And one mutant's row list was decided by the fixture's arithmetic.** `anyscopewilldo`
+takes the first scope in the list instead of the matching one, and it kills row 1 at its
+**second** assertion: the first scope a 05 administrator may offer *is* department 05, so
+the faithful copy of half the defect makes the row's first claim true (#206). Rows 1 and 2
+were run against the unfixed code before their mutants were written and died at their
+claims; rows 3 and 4 passed there — what both of them claim is the bare code, which is
+what the two screens already drew — so those two were bought for free and it is
+`dashwhenunknown`, not a red, that makes them measure anything (#203).
+
+**And two of the four rows were killed at the row they were looking for rather than at the
+cell they were reading, which the review found and only a re-sweep could have.** Rows 1 and
+4 read the panel's scope cell through `grantCell`, which finds a grant by its role **and**
+its scope code — so on those rows the code was both the locator and the claim, and every
+mutant that rewrote the cell left the row unfindable: the red was a timeout and the
+assertion under it was never read, which is #139's wait in place of an assertion and the
+half of #213 that says to be wrong on the side the row reads and right on the side it
+presses. Here no mutant can be wrong on one side only, because one function writes both,
+so the repair is the **reader**: find the row by the role alone, assert that the role gives
+one row (#51), and read the column by its header (#173). Row 3 came out of the same reading
+with a settle point it had been missing — `grantable` draws nothing of its own on the
+accounts list, so before it lands every scope reads as a bare code and the row would have
+passed on a screen that never asked (#132); the fence is another account's row, which puts
+`userscode` and #90's two mutants on row 3 as well, dying at the precondition rather than
+at the claim. The third sweep then shows every claim dying at its own line.
+
+**And the clean suite's one red was not this ticket's, which five runs said and three did
+not.** The full browser suite ended 843 passed and one failed: `198a` row 1, the row #198
+closed the day before, asserting that a form typed and not saved survives a switch of hats
+that stays put. The row reproduced on its own, it went green with `HEAD`'s
+`useGrantable.js` put back, it went red again with mine, and it went red with the
+dependency taken out and only the hook call left — three reproductions against a control,
+pointing at a file that is not in `Rubrics`'s import graph at all. The probe built from the
+row itself then refused to go green on **either** side, which is the tell: a red is not a
+measurement until the same read has been seen green (#171). `--repeat-each=5` at `HEAD`
+answered ✘ ✓ ✓ ✘ ✘, and the row's own copy in a second file failed beside the original in
+one invocation. So the row is red about three times in five whatever is in the tree, and
+what the first three runs measured was the coincidence #150 names in as many words. The
+mechanism is a real defect and it is not intermittent: `RubricForm` resets its draft in an
+effect whose dependency list holds `onlyOne`, derived from `programs.filter(...)` and so a
+new identity every time the second read #198 added sets `programs` — the form is thrown
+away by its own effect, and the row is green only when it reads before that answer lands
+(#152's seventh reading). It is [#232](https://github.com/khthana/Deep-QA/issues/232), with
+the sheet's own cell dated beside the ⚙ it still carries, because the mark is that
+ticket's to move.

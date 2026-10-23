@@ -4,6 +4,7 @@ import ContentMotionDIV from '../ContentMotionDIV'
 import GrantPicker from './GrantPicker'
 import Notice from '../Notice'
 import useGrantable from './useGrantable'
+import { scopeNamed } from './scopeLabel'
 import { roleName } from '../MapRole'
 import { useAuth } from '../../context/AuthContext'
 import { grantRole, listGrants, revokeGrant } from '../../api/users'
@@ -244,7 +245,17 @@ export default function GrantsPanel({ user, onError }) {
             {grants.map(grant => (
               <tr key={`${grant.role_id}-${grant.scope_id}`}>
                 <td className="px-4 py-2">{roleName(grant.role_id)}</td>
-                <td className="px-4 py-2">{grant.scope_id}</td>
+                {/*
+                  #215 - the same words the picker below this table uses. This
+                  column is where an administrator checks that a grant went
+                  where it was meant to, and `05` and `0501` are one digit
+                  apart here and one level of authority apart in the guard.
+                  The name is looked up in the list the picker is already
+                  holding; `scopeNamed` says what a code outside it reads as.
+                */}
+                <td className="px-4 py-2">
+                  {scopeNamed(grantable.scopes, grant.scope_id)}
+                </td>
                 <td className="px-4 py-2">{grant.assigned_by ?? '—'}</td>
                 <td className="px-4 py-2">{madeOn(grant.assigned_at)}</td>
                 <td className="px-4 py-2 text-right">

@@ -45,17 +45,28 @@
 มันงอก (#173, #130) · อยู่ที่ [#215](https://github.com/khthana/Deep-QA/issues/215) แล้ว เปิดเมื่อ 17 ต.ค. 2569 และถ้อยคำของ
 *ทั้งมหาวิทยาลัย (FULL_ADMIN)* อยู่ที่ [#216](https://github.com/khthana/Deep-QA/issues/216) (#119, #125)
 
+**อ่านย่อหน้าข้างบนตามวันที่ของมัน** เจ้าของงานตอบ #215 เมื่อ 23 ต.ค. 2569 ว่าสองจุดฝั่งผู้ดูแล
+ได้ถ้อยคำนี้ทุกตัวอักษร จึงเหลือ `RoleDropdown.js` ซึ่งแก้ที่จอไม่ได้เลย เพราะ `/api/me` ไม่ส่งชื่อ
+ของขอบเขตมา และคนที่อ่านป้ายนั้นคือสองบทบาทที่ `grantable` ปฏิเสธ — อยู่ที่
+[#231](https://github.com/khthana/Deep-QA/issues/231) · ถ้อยคำของ *ทั้งมหาวิทยาลัย (FULL_ADMIN)*
+ที่ #216 ถามถึงนั้น ตอนนี้ไปถึงสองจอนั้นด้วย
+
 ## วิธีรัน
 
     python mutation/90-the-scope-says-which-kind-it-is.py save
     python mutation/90-the-scope-says-which-kind-it-is.py <mutant>
     python mutation/90-the-scope-says-which-kind-it-is.py restore
-    cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test tests/90a
+    cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test tests/90a tests/215a
 """
 from harness import main
 
 FILES = {
-    'picker': 'frontend/src/components/users/GrantPicker.js',
+    # เล็งใหม่เมื่อ 23 ต.ค. 2569 ถ้อยคำย้ายออกจาก `GrantPicker` ไปอยู่แฟ้มของตัวเองตอน #215
+    # ให้อีกสองจอใช้คำเดียวกัน โค้ดที่มัตแตนต์แก้เป็นข้อความเดียวกันทุกตัวอักษร ยกเว้นคำ `export`
+    # ที่โมดูลต้องมี — และสิ่งที่ขยับจริงคือ **ประชากรของแถวที่มันเอื้อมถึง** ไม่ใช่โค้ด
+    # เพราะ `215a` มีแถวที่อ่านถ้อยคำเดียวกันนี้แล้ว ซึ่งไม่มีเครื่องมือไหนรายงาน (#202)
+    # จึงกวาดซ้ำทั้งห้าตัวกับทั้งสองไฟล์วันเดียวกัน
+    'wording': 'frontend/src/components/users/scopeLabel.js',
 }
 
 MUTANTS = {
@@ -64,34 +75,34 @@ MUTANTS = {
     # leaving one declared and unreferenced is a mutant that can stop the
     # application rather than fail a row (#101).
     'nokind': [
-        ('picker', "const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }\n", ''),
-        ('picker',
-        'const scopeLabel = scope => {\n'
+        ('wording', "const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }\n", ''),
+        ('wording',
+        'export const scopeLabel = scope => {\n'
         '  const kind = KINDS[scope.kind]\n'
         '  return kind && !scope.label.startsWith(kind)\n'
         '    ? `${kind} \u00b7 ${scope.label} (${scope.scope_id})`\n'
         '    : `${scope.label} (${scope.scope_id})`\n'
         '}\n',
-        'const scopeLabel = scope => `${scope.label} (${scope.scope_id})`\n'),
+        'export const scopeLabel = scope => `${scope.label} (${scope.scope_id})`\n'),
     ],
     # The words are all there and still two different words; they point at the
     # wrong kinds, which no digit count and no drawing could catch (#145).
-    'swapsthewords': ('picker',
+    'swapsthewords': ('wording',
         "const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }\n",
         "const KINDS = { faculty: 'คณะ', department: 'หลักสูตร', program: 'ภาควิชา' }\n"),
     # The map loses the kind whose entry only ever suppresses a word with the
     # seeded name, which is why its row is the renamed one (#117).
-    'nofaculty': ('picker',
+    'nofaculty': ('wording',
         "const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }\n",
         "const KINDS = { department: 'ภาควิชา', program: 'หลักสูตร' }\n"),
     # The wording the owner declined on 17 October 2569, made to run (#48):
     # every kind in the map is prefixed, whatever its label already says.
-    'saysthekindtwice': ('picker',
+    'saysthekindtwice': ('wording',
         '  return kind && !scope.label.startsWith(kind)\n',
         '  return kind\n'),
     # A word for the grant confined to nothing, whose label already holds the
     # whole of the organisation.
-    'namestheunconfined': ('picker',
+    'namestheunconfined': ('wording',
         "const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }\n",
         "const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร', global: 'ทั้งระบบ' }\n"),
 }
