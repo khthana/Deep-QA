@@ -13448,3 +13448,76 @@ clean control of **22 passed**. Each kills its own rows and no more, which is th
 ticket's second criterion. The sheets' own kill tables were counted against one file
 each and stay as the dated records they are (#54), with a note saying what was
 re-measured and that the 388 in #20's borrowed-mutant paragraph was not.
+
+## #197 — the reason for not deciding, and the fourth row the question did not contain
+
+The ticket was an owner's question, and it gave two reasons for being one rather than
+a task. Three ⚙ rows of `38-learning-detail-heatmap.md` assert colour; the colour was
+hand-walked twice, in ☑ rows two lines below them; no row mentions the other. Fill in
+a cross-reference, or leave it? The reasons not to decide alone were that **editing
+those cells moves the sheet's line numbers under the tickets that cite them**, naming
+#141, and that if the answer is *fill* it is a question about all 161 such rows and
+not about the three somebody happened to walk past.
+
+**A ticket's reason for not deciding itself is a claim like its numbers, and the first
+one was false.** #141's table is *sheet → component file → line*, and the line beside
+this sheet's name is `frontend/src/pages/LearningDetails.js:79` — a line in the
+component, not in the sheet. `grep -rn "38-learning-detail-heatmap.md:"` over the
+repository returns nothing but the three sentences that quote the command itself, in
+this sheet, in the handoff and here: **no citation of this sheet by line number
+exists**, so
+the edit the reason was protecting against costs nothing. The rule the reason
+invoked is real (*a citation by line number ages the day anything above it grows*),
+and what it licenses is the one-minute grep, not the conclusion. Half of an owner's
+question was therefore not the owner's: the reason for asking it had expired, or had
+never been true.
+
+**The second reason was the right species and the wrong grain.** 161 is #194's
+figure for every ⚙ row naming any of fourteen drawn properties; this ticket's three
+rows assert **colour**, which is one of the fourteen. Re-running #194's selection
+through `mutation/anchors.py`'s own traversal (#194: a counter that disagrees with the
+instrument the figures came from is the counter's bug) gave 188 word-hits, of which
+**27 already carried an annotation** and 161 did not, and of those **47 named a
+colour**. Forty-seven rows is a hand read, and the hand read is what the question
+needed: it found what #194 found at 65, that nearly all of them **mention** colour
+rather than claim it — a *แถบเขียว* used as the address of a sentence, `15-programs.md`
+writing on its own face that it keeps colour in a row of its own *so this row does not
+claim it*, `40-clo-assessment-report.md` claiming the verdict is a **word** and not
+only a red cell, which is the opposite of an appearance claim, and ten #149 rows
+already annotated with *the wording and the position of that line are not claimed*.
+
+**And two sheets had already written the annotation the owner was being asked for.**
+`16-subjects.md` and `18-program-subjects.md` both claim a field *is grey*, and both
+say in the cell that the greyness is what the browser draws **from** the `disabled`
+attribute, so the seam asserts the cause. The answer to *should we write this down*
+was already in the corpus in the house's own words, which is #86's shape read for a
+wording instead of for a control: the question had a precedent before it had an owner.
+
+**The hand read also returned a finding the question did not contain.**
+`24-teacher-dashboard.md`'s criterion 2 claims *a white box, not a red band*, is
+marked ⚙, and says itself that `24a` row 2 asserts the sentence names the term —
+which the spec confirms: its two assertions on the screen are that `getByText` and a
+`toHaveCount(0)` over the section cards, and neither touches the colour. And unlike this sheet's three rows, **nothing walked it
+either**: that sheet's walk record says *every row that is not ⚙ was walked*, which
+puts a ⚙ row outside the walk by construction. The same species, one step worse: here
+the walk happened and the cross-reference was missing, there the walk never happened.
+That is a walk-queue finding rather than a documentation one, so it went to the owner
+as its own question and became [#229](https://github.com/khthana/Deep-QA/issues/229),
+`ready-for-human` because the claim is *does a person read this as an explanation and
+not as an error*, which is answered by an eye. **A population re-derived to price a
+question answers the question and surveys its neighbours in the same pass** (#223 from
+the other side), and what the neighbours return need not be the same kind of thing the
+ticket was about.
+
+What was changed is four cells and nothing else. The three on this sheet now name the
+rows below them with their dates, say which half each spec actually asserts — row 2
+pins the five **tokens** in order, row 3 reads only the `!` and the label and never
+the redness — and the third of them says it does not claim colour at all, its claim
+being the label's text, with the half a person would add being *whether anybody hears
+it*, which it never claimed (#163). The fourth, on `24`, says the colour half is
+asserted by nobody and walked by nobody, and points at #229. No mark moved, which is
+what the ticket asked for; the figures it published did move, and they are dated
+rather than corrected: ☑ 499 · ⚙ 731 · ◐ 23 · ☐ 14 was 8–21 October's, and on 23
+October `anchors.py` prints `marks 1417`, which the census reusing its traversal
+splits ☑ 517 · ⚙ 847 · ◐ 26 · ☐ 27 —
+the tree grew, and a survey of the store has a date on it (#50, #85, #172).

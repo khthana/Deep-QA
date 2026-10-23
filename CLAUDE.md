@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 23 October 2569 that is
-`2026-10-23-the-file-that-had-already-chosen.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-23-the-reason-for-not-deciding.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -71,6 +71,9 @@ citation.
   reopening a founding decision is a thumb on the scale for the others (#77). (#54, #153)
 - **A ticket's reason for being *untestable* is a claim like its numbers** — measure whether the
   situation can be built; do not reason about it. (#141)
+- **A ticket's reason for *not deciding itself* is a claim like its numbers** — the sentence that
+  makes it an owner's question rather than a task, and the rule such a reason invokes is usually
+  real: what it licenses is the measurement, not the conclusion. (#197)
 - **A half that needs a human sense to answer has a layer under it an instrument can reach** —
   *does anybody hear it* needs a voice, while *is the sentence in the accessibility tree, on a node
   the browser does not mark ignored* needs only the browser and decides the same price. The layer is
