@@ -9,7 +9,6 @@ const { hold } = require('../support/hold');
 const { BACKEND_URL } = require('../support/env');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const {
-  API,
   PROGRAM,
   OTHER_PROGRAM,
   openMapping,
@@ -19,6 +18,7 @@ const {
   choose,
   listedCodes,
   askFor,
+  withInjectedGrid,
   exportPdf,
 } = require('../support/plo-mapping-screen');
 const { isReadable, linesOf, cellsOf, overflows } = require('../support/pdf-text');
@@ -354,30 +354,26 @@ test('a curriculum with twenty outcomes still fits a code in every column', asyn
   // 8's move on this same screen. Growing the seed would put twenty ข้อหลัก in
   // front of every row in the suite that counts anything, to prove a property of
   // one constant.
-  await page.route(
-    address => new URL(address).pathname === API,
-    async route => {
-      if (route.request().method() !== 'GET') return route.fallback();
-      const answer = await route.fetch();
-      const grid = await answer.json();
-      // The seeded ids are untouched, so the real columns keep their cells; the
-      // added ones carry ids nothing can collide with and no mappings, which is
-      // the state a curriculum is in before anybody has filled the grid in.
-      const from = grid.outcomes.length;
-      for (let i = from; i < WIDE_OUTCOMES; i += 1) {
-        grid.outcomes.push({
-          outcome_id: 900000 + i,
-          outcome_code: `PLO-${i + 1}`,
-          outcome_title: `ผลการเรียนรู้ที่ ${i + 1}`,
-          outcome_type: 'PLO',
-          parent_outcome_id: null,
-          sequence_order: i + 1,
-          level_depth: 1,
-        });
-      }
-      await route.fulfill({ response: answer, json: grid });
-    },
-  );
+  // The pipe is shared with #117 row 8 and lives in the screen's support file
+  // (#196), the method guard included - this row chooses no level, but the pipe
+  // is installed on the path a choice writes to.
+  await withInjectedGrid(page, grid => {
+    // The seeded ids are untouched, so the real columns keep their cells; the
+    // added ones carry ids nothing can collide with and no mappings, which is
+    // the state a curriculum is in before anybody has filled the grid in.
+    const from = grid.outcomes.length;
+    for (let i = from; i < WIDE_OUTCOMES; i += 1) {
+      grid.outcomes.push({
+        outcome_id: 900000 + i,
+        outcome_code: `PLO-${i + 1}`,
+        outcome_title: `ผลการเรียนรู้ที่ ${i + 1}`,
+        outcome_type: 'PLO',
+        parent_outcome_id: null,
+        sequence_order: i + 1,
+        level_depth: 1,
+      });
+    }
+  });
 
   await signIn(page, ACCOUNTS.committee0501);
   await openMapping(page);

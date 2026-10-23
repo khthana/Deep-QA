@@ -13390,3 +13390,61 @@ it stays and the new section says which of its sentences read differently today
 can tell them apart* is no longer true of the first two copies. The third number
 was already wrong when written — the copy was at `:111` — which is why the new
 rows and the new section cite the code by **name** and not by line (#173).
+
+## #196 — the two rules that pointed opposite ways, and the file that had already chosen
+
+The ticket was a `question`, and it asked it well. The pipe that injects into the
+`/api/plo-mapping` answer — fetch the real one, rewrite a field of the body, fulfil
+with the rewritten body — was written out twice, in `117a` for a long รายวิชา name
+and in `20a` for a curriculum with twenty outcomes, and what was duplicated was the
+pipe and not what either row injects. Then it quoted `CLAUDE.md` against itself:
+*an instrument is not an assertion — a fixture a second file needs is shared,
+because no row's claim lives in it* (#171), so the merge is free; and *a ticket that
+offers to de-duplicate is answered with what the merge costs the proof* (#68), so
+the price is a closed ticket's spec reopened. **Both sentences are about this case,
+and they point opposite ways.**
+
+**What settled it was neither sentence but a file.** `e2e/support/late-answer.js`
+already holds a shared route instrument for the same endpoint, and it already
+carries a section headed *Why it is here rather than in a spec* — the same question
+asked of the same screen, answered in writing, with the shape of the answer in the
+code: the pipe is shared, and the precondition that the pipe fired stays in each
+row (#51), which is what `wentThroughTheWindow` is. A rule that is met again is a
+sentence in this ticket's story and not a second line in the index; a rule that was
+**already applied to this very endpoint** is not even that — it is a decision, and
+the work was to find it before writing the owner a question nobody needed to answer.
+
+**The price was then measurable rather than arguable, and it was zero.** #68 says to
+price the merge against the proof, so the question is which mutants are anchored in
+the two files being changed. None are, and the census says so with a number: of the
+**369 `FILES` entries** across `mutation/*.py` on 23 October 2569, **none** names
+anything under `e2e/`, and exactly **one** names a test file at all —
+`backend/test/auth.test.js`, whose `fromusesdbclock` and `untilusesdbclock` edit that
+file's own SQL (#187). So *every entry is production code* is false while the
+conclusion holds, which is the premise shape that expires on the wrong day (#141):
+the right sentence is the dated census, not the law about the seam, **and it has to
+be dated because a support file has held a mutant before** — `mutation/README.md`
+records `e2e/support/auth.js` in `66`'s `FILES`, where it no longer is. What would
+expire the figure is a leaf that takes a path under `e2e/`. Against that, moving a
+route handler out of two spec files re-aims nothing, which is the difference between
+extracting test code and extracting the shared string of #104, where the mutants had
+to move to the call sites to keep the extraction free.
+
+**The measurement that mattered was not the mutants, though.** Both rows were green
+before the merge and green after, which proves nothing at all: a `page.route` that
+is never installed reads perfectly. So the pipe was deliberately broken — one
+`return route.fallback();` at the top of `withInjectedGrid` — and the run came back
+**2 failed / 20 passed**, exactly those two rows, each dying on its own
+*the injection landed* read. That is the row-level answer to the ticket's first
+acceptance criterion, and it is the one *22 passed* cannot give. The probe was
+deleted once the fix was measured (#207), being an instrument and no sheet's claim.
+
+The three mutants that hold the two rows were then re-run over `117a 20a` together,
+one at a time and never two harnesses at once, because `117` and `20` share
+`frontend/src/components/ploMapping/exportPdf.js` (#125): `117:notwrappedgrid`
+**1 failed / 21 passed** at row 8, `117:bycharacter` **2 failed / 20 passed** at rows
+2 and 8, `20:narrowpage` **1 failed / 21 passed** at the twenty-outcome row, and a
+clean control of **22 passed**. Each kills its own rows and no more, which is the
+ticket's second criterion. The sheets' own kill tables were counted against one file
+each and stay as the dated records they are (#54), with a note saying what was
+re-measured and that the 388 in #20's borrowed-mutant paragraph was not.

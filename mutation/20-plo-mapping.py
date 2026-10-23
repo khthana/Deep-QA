@@ -227,6 +227,11 @@ MUTANTS = {
     # #195's. The wide-curriculum row injects twenty outcomes, where
     # 9mm gives 9.42mm columns against a code that needs 11.11mm and cuts all
     # twenty in half, and 14mm gives 12.87mm and cuts none.
+    # Re-swept on 23 Oct 2569 when #196 moved the injection pipe into
+    # `withInjectedGrid` in `e2e/support/plo-mapping-screen.js`, which this row now
+    # shares with row 8 of `117a`: run over `117a 20a` together, 22 rows, clean
+    # 22 passed, this mutant 1 failed / 21 passed, still dying at its own row's
+    # assertion - and no row of `117a` moved.
     "narrowpage": ("export",
                    "const OUTCOME_WIDTH = 14",
                    "const OUTCOME_WIDTH = 9"),

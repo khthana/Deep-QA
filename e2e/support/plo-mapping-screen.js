@@ -145,6 +145,74 @@ const listedCodes = page =>
 const askFor = (page, programId) =>
   page.request.get(`${BACKEND_URL}${API}?program_id=${programId}`);
 
+/**
+ * Injects into the grid answer the screen is about to draw from — #196.
+ *
+ * Two rows need this and they are in two files: #117's row 8 lengthens a
+ * รายวิชา name, and #195's row adds outcomes until there are twenty. The pipe
+ * either of them needs is the same pipe whole — fetch the real answer, rewrite a
+ * field of the body, fulfil with the rewritten body — and only what each injects
+ * differs. `late-answer.js` answered this same question in writing for the same
+ * endpoint: it is an **instrument and not an assertion**, so #68's rule about a
+ * hook behind many claims does not bite, because no row's claim lives in here
+ * (#171). What lives in here is the pipe.
+ *
+ * Measured on 23 October 2569, the merge costs the proof nothing, and that is a
+ * census with a date on it rather than a law about the seam: of the 369 `FILES`
+ * entries across `mutation/*.py` that day, **none** names a path under `e2e/` —
+ * `117:notwrappedgrid` and `20:narrowpage` both edit
+ * `frontend/src/components/ploMapping/exportPdf.js` — so there is nothing to
+ * re-aim. One names a test file at all (`backend/test/auth.test.js`, #187's), and
+ * `mutation/README.md` records that `e2e/support/auth.js` was once in `66`'s
+ * `FILES`, so a support file holding a mutant is not impossible, only absent
+ * today. What would expire the figure is a leaf taking a path under `e2e/`.
+ *
+ * Both rows keep asserting, each in its own file, that the injection landed:
+ * #117's that the long name reached the document whole, and #195's that the
+ * header drew twenty columns. That is `late-answer.js`'s `wentThroughTheWindow`
+ * in the shape this instrument needs: **the precondition stays where it is used**
+ * (#51), because a route that never fired reads perfectly and proves nothing —
+ * measured by breaking this pipe on purpose, which turned both rows red and
+ * nothing else (2 failed / 20 passed, 23 October 2569).
+ *
+ * ## Why the method guard is here although neither caller presses a square
+ *
+ * The same path takes the PUT a level choice writes, so a row that chooses a
+ * level with this installed would have its write answered out of a rewritten GET
+ * body. Measured on 23 October 2569, no caller of this helper writes a level, so
+ * the clause is reached by nothing today; it is conserved from `20a`, where it
+ * was written, and costs #117's row 8 nothing.
+ *
+ * ## The three other places this shape appears, and why they are not callers
+ *
+ * A census by the mechanism — `route.fetch()` under `e2e/`, 23 October 2569 —
+ * finds four sites: this one, `tests/139a-superseded-row-detail.spec.js`,
+ * `tests/152a-the-refusal-wins.spec.js` and `support/gate.js`. The other three
+ * **hold** an answer and release it, at other endpoints, for claims about
+ * ordering rather than about what an answer carries. Making one instrument of all
+ * four is a different question with a different price (#68), not this merge.
+ *
+ * ## What this cannot do
+ *
+ * Open the window between an answer and its drawing. A fulfilled route is
+ * answered all at once, which is `late-answer.js`'s own reason for existing
+ * (#170); a row about that race wants `holdBack`, not this.
+ *
+ * @param edit called with the parsed grid, which it changes in place.
+ */
+async function withInjectedGrid(page, edit) {
+  await page.route(
+    address => new URL(address).pathname === API,
+    async route => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      const answer = await route.fetch();
+      const grid = await answer.json();
+      await edit(grid);
+      await route.fulfill({ response: answer, json: grid });
+    },
+  );
+}
+
 /** Presses *ส่งออก PDF* and hands back the file the browser was given. */
 async function exportPdf(page) {
   const [download] = await Promise.all([
@@ -169,5 +237,6 @@ module.exports = {
   rowLevels,
   listedCodes,
   askFor,
+  withInjectedGrid,
   exportPdf,
 };

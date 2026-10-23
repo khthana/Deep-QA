@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 23 October 2569 that is
-`2026-10-23-the-claim-nobody-was-holding.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-23-the-file-that-had-already-chosen.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -419,6 +419,14 @@ citation.
   off a command like that is two sheets' rows counted as one. Every such command was right the day
   it was written and expired by a file somewhere else; `python mutation/anchors.py` counts them now.
   (#154, #158)
+- **A ticket citing two of this file's rules against each other is answered by the repo's own
+  earlier answer to the same species** — a rule already applied to this very screen or endpoint is
+  a decision, not a precedent to weigh, so look for the file that chose before writing the owner a
+  question. And where the duplication is in **test** code the merge's price is a census with a
+  date on it rather than a law about the seam — ask which leaves hold a path under `e2e/`, because
+  one has before. What still has to be measured is that each row goes through the shared
+  instrument, which is read by **breaking** it and not by the rows staying green (#203, #207).
+  (#196)
 - **A ticket that offers to de-duplicate is answered with what the merge costs the proof**, not only
   with what it saves the code — one hook behind fifteen screens turns fifteen claims into one no
   mutant can measure apart. And when a rule holds on many screens, the screen that proves it is

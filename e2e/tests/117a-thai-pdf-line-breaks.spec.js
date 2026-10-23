@@ -12,7 +12,7 @@ const { mySectionIds } = require('../support/enrolment-screen');
 const { openReport, exportPdf } = require('../support/clo-assessment-screen');
 const {
   openMapping,
-  API: MAPPING_API,
+  withInjectedGrid,
   exportPdf: exportGrid,
 } = require('../support/plo-mapping-screen');
 const {
@@ -376,15 +376,13 @@ test('row 8: #20 grid wraps a long รายวิชา name at a word boundary
   // width, so the injection is what gives this row something to measure. It
   // replaces a field of the answer the screen is about to draw from, and writes
   // nothing: the export builds the PDF in the browser out of exactly this.
-  await page.route(
-    address => new URL(address).pathname === MAPPING_API,
-    async route => {
-      const answer = await route.fetch();
-      const grid = await answer.json();
-      grid.subjects[0].subject_name_th = LONG_SUBJECT_NAME;
-      await route.fulfill({ response: answer, json: grid });
-    },
-  );
+  // The pipe is shared with #195's row and lives in the screen's support file
+  // (#196); what this row injects is the one line below. The assertion that it
+  // landed stays here, two reads down - a route that never fired would read
+  // perfectly and prove nothing (#51).
+  await withInjectedGrid(page, grid => {
+    grid.subjects[0].subject_name_th = LONG_SUBJECT_NAME;
+  });
 
   // `committee0501` and not the teacher the other rows use: the grid is a
   // curriculum screen, and #20's own rows are all this account.
