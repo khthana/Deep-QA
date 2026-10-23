@@ -5,6 +5,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import RubricForm from '../components/rubrics/RubricForm'
+import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
   createRubric,
   deleteRubric,
@@ -91,6 +92,14 @@ export default function Rubrics() {
    */
   const waiting = useRef(null)
 
+  // Which generation of its data this screen is drawn from - #198. A switch of
+  // hats that lands where the router already is raises it in `MainPage`, and
+  // this screen reads its list again instead of being unmounted, so the page,
+  // the curriculum filter and a rubric typed into the form but not yet saved
+  // all survive the switch.
+  // `context/ScreenGeneration.js` carries why #155's remount was narrowed.
+  const generation = useScreenGeneration()
+
   /**
    * #68 - the answer that is drawn is the answer to the request the screen is
    * still on; without the flag the answer that **arrives** last wins rather
@@ -154,7 +163,11 @@ export default function Rubrics() {
         if (!handedOn) waiting.current = null
       }
     }
-  }, [page, program, report])
+    // `generation` is in this list and read nowhere in the body on purpose:
+    // what it changes is *when* this read happens, not what is asked for, so
+    // the rule below sees a dependency it cannot account for - #198.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, program, report, generation])
 
   useEffect(() => {
     let current = true
@@ -205,8 +218,13 @@ export default function Rubrics() {
    * is (#206).
    */
 
-  // The curricula in reach, fetched once: what this account covers is a
-  // property of the grant and does not change with the page being looked at.
+  // The curricula in reach: what this account covers is a property of the
+  // grant and does not change with the page being looked at - but it does
+  // change with the grant, so this read names the generation as well as the
+  // list below does (#198). Until 23 ตุลาคม 2569 it was fetched once, which was
+  // true while a switch that stayed put remounted the screen; with the remount
+  // gone, the statement of which curriculum this screen is in and the pool the
+  // form's picker draws from would have stayed the old hat's until a reload.
   useEffect(() => {
     let cancelled = false
     listReachablePrograms()
@@ -217,7 +235,11 @@ export default function Rubrics() {
     return () => {
       cancelled = true
     }
-  }, [report])
+    // `generation` is not read in the body, so the rule calls it unnecessary;
+    // it is the reason to ask again, and `context/ScreenGeneration.js` says
+    // why that is a dependency here rather than an effect of its own.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [report, generation])
 
   const nameOf = programId =>
     programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId

@@ -5,6 +5,7 @@ import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import { listMySections } from '../api/teaching'
 import { semesterLabel } from '../components/offerings/terms'
+import { useScreenGeneration } from '../context/ScreenGeneration'
 
 /**
  * รายวิชาที่สอน — ticket #24, the first screen a ผู้สอน sees.
@@ -49,6 +50,15 @@ export default function TeacherDashboard() {
   const [notice, setNotice] = useState(null)
   const navigate = useNavigate()
 
+  // Which generation of its data this screen is drawn from - #198. A switch of
+  // hats that lands where the router already is raises it in `MainPage`, and
+  // this screen reads its list again instead of being unmounted. There is
+  // nothing on this screen for a remount to throw away - no filter, no form -
+  // so what the generation buys here is only the read, which is what #155
+  // wanted from the remount in the first place.
+  // `context/ScreenGeneration.js` carries why #155's remount was narrowed.
+  const generation = useScreenGeneration()
+
   /**
    * superseded-answer: `listMySections()` is handed nothing, so there is no
    * second request for this answer to be the wrong one of - the register at
@@ -69,7 +79,11 @@ export default function TeacherDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [])
+    // `generation` is in this list and read nowhere in the body on purpose:
+    // what it changes is *when* this read happens, not what is asked for, so
+    // the rule below sees a dependency it cannot account for - #198.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generation])
 
   useEffect(() => {
     load()

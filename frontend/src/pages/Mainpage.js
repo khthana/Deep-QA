@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar'
 import Navber from '../components/Navbar'
 import Breadcrumb from '../components/Breadcrumb'
 import { useAuth } from '../context/AuthContext'
+import { ScreenGenerationProvider } from '../context/ScreenGeneration'
 import { Outlet, useLocation } from 'react-router-dom'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import {
@@ -167,22 +168,28 @@ export default function MainPage() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [sectionLabel, setSectionLabel] = useState(null)
   /**
-   * What the open screen is keyed on - #155.
+   * Which generation of its data the open screen is drawn from - #155, as
+   * #198 narrowed it on 23 October 2569.
    *
    * A switch that moves carries the open screen away with it and the next one
    * mounts asking for its data under the new grant. A switch that lands where
    * the router already is moves nothing, and the screen would go on showing
    * another scope's rows under a picker that now reads this one. `RoleDropdown`
    * is where that case is told apart, because it is where the landing is
-   * resolved; this is the generation the screen is drawn at, and raising it
-   * is what remounts it. A remount and not a re-fetch: what the screen was
-   * holding - a filter, a page, a field typed and not saved - goes with it,
-   * which is wider than #155's option 1 and is the price of keying one
-   * outlet instead of fifteen loads.
+   * resolved; this is the generation the screen is drawn at, and raising it is
+   * what makes it read again.
    *
-   * On the outlet rather than on the shell, because the shell is what says
-   * which hat is on: remounting it would take the picker, the sidebar and the
-   * breadcrumb down with the screen.
+   * It was a key on the outlet until #198, which asked what a remount took
+   * with it and measured the answer: the page, the filter and a form typed and
+   * not saved. The owner chose the re-read without the remount, so the number
+   * is handed down - `context/ScreenGeneration.js` says what reads it and why
+   * only the landings do - and the two halves of #155 are still decided in one
+   * place, which is `RoleDropdown`.
+   *
+   * Around the outlet rather than around the shell, because the shell is what
+   * says which hat is on: a provider above the picker, the sidebar and the
+   * breadcrumb would be no wider in effect, but it would read as though those
+   * were drawn from the screen's generation too.
    */
   const [screenEpoch, setScreenEpoch] = useState(0)
   const [deepLabel, setDeepLabel] = useState(null)
@@ -433,7 +440,9 @@ export default function MainPage() {
           {/* Page Content: พื้นที่แสดงผลหลัก */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 lg:px-8">
             <div className="animate-in fade-in mx-auto w-full max-w-[1920px] duration-500">
-              <Outlet key={screenEpoch} />
+              <ScreenGenerationProvider value={screenEpoch}>
+                <Outlet />
+              </ScreenGenerationProvider>
             </div>
           </div>
         </main>

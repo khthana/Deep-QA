@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { listIntakes, listResultPrograms } from '../../api/programResults'
+import { useScreenGeneration } from '../../context/ScreenGeneration'
 
 /**
  * The curriculum and the intake, for every screen that reports on a cohort.
@@ -40,6 +41,17 @@ export function useCohortPickers(onError) {
    */
   const [maxSpan, setMaxSpan] = useState(0)
   const [asked, setAsked] = useState(false)
+  // Which generation of the list the pickers are drawn from - #198. What an
+  // account reaches is the server's answer (ADR-0002), so the curricula a
+  // person may report on are a different list under a different hat; a switch
+  // that stays put no longer unmounts this screen, so without this the list
+  // would be the old grant's until a reload. The intakes are not read again
+  // on it: they belong to a curriculum rather than to a grant, and the effect
+  // below re-asks for them whenever the curriculum this one chooses moves.
+  // `context/ScreenGeneration.js` says why this is a dependency rather than an
+  // effect of its own, and why reading it in a hook three screens that are
+  // nobody's landing also use costs those three nothing.
+  const generation = useScreenGeneration()
 
   useEffect(() => {
     let cancelled = false
@@ -57,11 +69,12 @@ export function useCohortPickers(onError) {
     return () => {
       cancelled = true
     }
-    // Asked once, on mount. `onError` is the screen's own reporter and is
-    // rebuilt on every render, so depending on it would re-ask the server for
-    // the same list on every keystroke anywhere on the page.
+    // Asked on mount, and again when the generation moves (#198). `onError` is
+    // the screen's own reporter and is rebuilt on every render, so depending on
+    // it would re-ask the server for the same list on every keystroke anywhere
+    // on the page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [generation])
 
   useEffect(() => {
     if (!program) return undefined

@@ -5,6 +5,7 @@ import DepartmentForm from '../components/departments/DepartmentForm'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
+import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
   createDepartment,
   deleteDepartment,
@@ -181,6 +182,14 @@ export default function Departments() {
    */
   const waiting = useRef(null)
 
+  // Which generation of its data this screen is drawn from - #198. A switch of
+  // hats that lands where the router already is raises it in `MainPage`, and
+  // this screen reads its list again instead of being unmounted, so the page
+  // and a department typed into the form but not yet saved both survive the
+  // switch.
+  // `context/ScreenGeneration.js` carries why #155's remount was narrowed.
+  const generation = useScreenGeneration()
+
   /**
    * #68 - the answer that is drawn is the answer to the request the screen is
    * still on; without the flag the answer that **arrives** last wins rather
@@ -251,7 +260,11 @@ export default function Departments() {
         if (!handedOn) waiting.current = null
       }
     }
-  }, [page])
+    // `generation` is in this list and read nowhere in the body on purpose:
+    // what it changes is *when* this read happens, not what is asked for, so
+    // the rule below sees a dependency it cannot account for - #198.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, generation])
 
   useEffect(() => {
     let current = true

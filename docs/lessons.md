@@ -13521,3 +13521,94 @@ rather than corrected: ☑ 499 · ⚙ 731 · ◐ 23 · ☐ 14 was 8–21 October
 October `anchors.py` prints `marks 1417`, which the census reusing its traversal
 splits ☑ 517 · ⚙ 847 · ◐ 26 · ☐ 27 —
 the tree grew, and a survey of the store has a date on it (#50, #85, #172).
+
+## #198 — the re-read that was a remount, and the rule that came back out of the structure
+
+#155 settled *re-read when the address does not move, and only then*. The way it was
+built was a key on the shell's `<Outlet />`, and #198 asked what else a remount takes
+with it. The ticket offered three options: accept it, put the acting grant into each
+panel's load dependencies, or lift the typed draft above the outlet.
+
+**The ticket's own count of what is at stake was wrong in two places, and the
+population was not six.** It wrote that all six landings hold an add form of their
+own. Four do; `/teacher/teacherDashboard` has neither a filter nor a form, which its
+own docstring says on purpose, and `/main/programLevelByIntake` has no form, holding
+instead a drill-down and two pickers. And the shape the whole ticket needs — two
+grants of one role code at different scopes, because `landingPath` is keyed on
+`role_id` alone — cannot exist for `FULL_ADMIN` at all: `user_roles`' primary key is
+`(user_id, role_id, scope_id)` and that role's scope is the literal string
+`'FULL_ADMIN'`, so a second grant is the same row. `FACULTY_ADMIN` needs a second
+faculty, which the seed does not have. Five landings are reachable and one of those
+needs SQL.
+
+**The delivered UI answered the Out-of-Scope question before the owner could.**
+`DEEP-QA-FRONTEND/src/components/RoleDropdown.js` calls `window.location.reload()` on
+every switch, so what was delivered threw away the page, the filter and the draft on
+*every* switch and not only on the one that stays put. Option 1 is therefore narrower
+than the delivered behaviour rather than equal to it, and every option in the ticket
+moves a number the **rebuild** chose in #155, not one the student's code chose — none
+of them is a divergence (#156). That is what made all four options allowed, and the
+fourth is the one the measurement produced: hand the generation *down* and let each
+landing name it as a dependency of its own read.
+
+**Option 2 as the ticket wrote it is red, and one row said so in forty seconds.**
+Putting the acting grant into `ProgramSubjects`' load dependencies fails `155a` row 2
+— the screen a moving switch is leaving asks `/api/program-subjects` again on its way
+out, under a hat that may not be able to read it. The probe for option 4 passed both
+`155a` rows and a draft-survival row written against `HEAD`, where it fails with
+`element(s) not found`: at `HEAD` the dialog is not wrong, it is gone. Both probes were
+deleted once they had answered (#207).
+
+**What landed is three sites, not two.** `RoleDropdown` says the switch stayed put,
+the shell hands the number down through `context/ScreenGeneration.js`, and each landing
+reads it in its `load`'s dependency list. The number is read nowhere in any load's
+body, which is honest and which `react-hooks/exhaustive-deps` calls an unnecessary
+dependency: the tree is otherwise warning-free, so each of the six carries the repo's
+own idiom, a disable line with the reason written above it. `useCohortPickers` reads
+it too, for the list of curricula an account may report on — the intakes do not,
+because they belong to a curriculum and not to a grant.
+
+**A row can be blocked from reading its second claim by the screen it is standing
+on.** The first draft of `198a` row 1 asserted the draft survived *and* that the table
+had become the new grant's rows. The table is not in the document while the add form
+is open — the dialog replaces the list rather than sitting over it — so the poll read
+`[]` for fifteen seconds on a screen that was behaving. Two claims that cannot be
+observed in the same state are two rows: the drawing stays `155a` row 1's claim, and
+this row pairs the draft with the **request**, which is observable with the form open.
+
+**A fix that moves a rule from one structural point into each caller gives back the
+census question the earlier ticket closed by construction.** #155's sheet says in so
+many words that the ticket's instruction to let a census choose the screen was made
+moot, because one key on one outlet covered every panel structurally. After #198 the
+rule is six identical lines, and nothing asks whether the seventh landing has it. That
+is [#230](https://github.com/khthana/Deep-QA/issues/230), opened the same day, and it
+is the price of the owner's answer rather than a defect in it.
+
+**And when the mechanism moves, a mutant's kill moves with it.** `nokey` quoted
+`<Outlet key={screenEpoch} />`, which no longer exists; it was re-aimed at the
+dependency it has become — the same claim, that the second site is necessary, not a
+different mistake (#203) — and renamed `noscreendep`, because a mutant's name is part
+of what the sheet claims about it. `alwaysreread` is the sharper case: it still
+reproduces the declined option faithfully, but `155a` row 2 leaves
+`/main/course-in-program`, which is nobody's landing and now reads the generation
+never, so that row no longer dies under it. The kill moved to `198a` row 2, which
+leaves the committee's own landing, and `155a` row 2's claim **for screens that are not
+landings** became structurally unreachable rather than unproved (#179): no mutant can
+make a screen re-read a generation it does not read. The situation of both rows is
+still held by `81:staysput`, re-swept the same day, which kills them both.
+
+**Narrowing a remount to a re-fetch owes every read the mount made, and the one it
+misses is the read somebody wrote *fetched once* above.** A remount re-read everything
+the screen asks for on mount; a dependency re-reads one list. `Rubrics` asks for two —
+its own rows, and the curricula this grant may place a rubric in — and the second was
+fetched once under a comment that said itself it was a property of the grant, which was
+true exactly while a new grant meant a new mount. The review of 23 October 2569 found
+it: after the fix the sentence saying which curricula the form may choose from was the
+old hat's until a reload, which is #155's defect read **backwards** — the rows changed
+scope and the control over them did not. The dependency was added because of the row
+that caught it, and that row was run against the unfixed code first, where it died at
+its claim and not at its precondition (#203). `Programs` holds the same pair for
+departments and got the same dependency the same hour; which screen *proves* a rule
+many screens hold is still the census's answer and not the subject's (#68, #171) — so
+#230 now carries two questions rather than one: does a new landing read the generation,
+**and** does a landing's second read read it.

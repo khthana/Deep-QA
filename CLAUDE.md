@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 23 October 2569 that is
-`2026-10-23-the-reason-for-not-deciding.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-23-the-rule-that-came-back.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -495,6 +495,11 @@ citation.
   company where a second file's rows press the same handler**, so the withdrawal question is asked
   per mutant and not per row; and reading that re-sweep against the total says nothing when the row
   that lost its proof is in another file (#83). (#210, #223)
+- **When the mechanism moves, a faithful mutant's kill moves with it** — a mutant nobody re-aimed
+  can stop killing the row it was written for, because that row's way in no longer reaches the code
+  it edits, and then the row's claim is structurally unreachable rather than unproved (#179). Read
+  the re-sweep against the row each mutant is *for*, and re-aim the one whose anchor the move
+  deleted, keeping the claim and not the line (#203). (#198)
 
 ### Tests and fixtures
 
@@ -726,6 +731,10 @@ citation.
   *an intended consequence of the decision* and *a behaviour no row holds* are three different
   things to say about one hunk, and only a row run on **both** sides of the change tells them
   apart. (#205)
+- **Two claims that cannot be observed in the same state are two rows** — the screen decides, not
+  the sheet: a dialog that *replaces* the list leaves no table to read while the form is open, so
+  the row pairs what it opened with the **request** and the drawing stays with the row that reads
+  it with the form shut. (#198)
 
 ### Guards and code
 
@@ -928,6 +937,16 @@ citation.
   about these refs is about *what the value is of* (#201, #185, #207, #211), and none of them makes a
   matching key a guarantee: *live* is the count of the list that is **drawn**, which a second writer
   makes stale against the database with no race, no move and nothing for a reload to clear. (#209)
+- **A fix that moves a rule from one structural point into each caller hands back the census
+  question the earlier ticket closed by construction** — what a key on one outlet covered for every
+  screen becomes a line each landing has to carry, and nothing asks whether the next one carries
+  it. That is the price of the narrower mechanism, not a defect in it: open the census ticket in the
+  same breath (#119). (#198)
+- **And narrowing a remount to a re-fetch owes every read the mount made** — the line above one
+  layer in, since the census question it hands back is asked of each *read* and not only of each
+  screen. A list left out is the old grant's drawn over the new grant's rows, which is the ticket's
+  own defect backwards, and the read you will miss is the one somebody wrote *fetched once* above
+  on a premise the fix has just falsified (#68, #171). (#198)
 
 ### Walks
 

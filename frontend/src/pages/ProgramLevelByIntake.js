@@ -9,6 +9,7 @@ import { OUTCOME_TYPES } from '../lib/outcomes'
 import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/results/CohortPickers'
 import { getEvidenceFile, showPdf } from '../api/evidence'
 import { getOutcomeContributions, getResultsByIntake } from '../api/programResults'
+import { useScreenGeneration } from '../context/ScreenGeneration'
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า — #42.
@@ -111,6 +112,19 @@ export default function ProgramLevelByIntake() {
   const { programs, program, setProgram, intakes, intake, setIntake, asked } =
     useCohortPickers(report)
 
+  // Which generation of its data this screen is drawn from - #198. A switch of
+  // hats that lands where the router already is raises it in `MainPage`, and
+  // this screen reads its report again instead of being unmounted.
+  // `context/ScreenGeneration.js` carries why #155's remount was narrowed.
+  //
+  // What that does *not* buy here is a filter that survives, measured
+  // 23 ตุลาคม 2569: the curricula in reach are a different list under the new
+  // hat, so `useCohortPickers` picks the first of the new one and the intake
+  // resets with it, and `load` below closes the drill-down on every read. The
+  // screens #198's narrowing keeps something for are the ones holding a filter
+  // of their own and a form - this one holds neither.
+  const generation = useScreenGeneration()
+
   /**
    * #68 - the report that is drawn is the report the pickers are still on.
    * Pressing a picker again while its answer is out leaves two requests in
@@ -143,7 +157,11 @@ export default function ProgramLevelByIntake() {
     } finally {
       if (isCurrent()) setLoading(false)
     }
-  }, [program, intake])
+    // `generation` is in this list and read nowhere in the body on purpose:
+    // what it changes is *when* this read happens, not what is asked for, so
+    // the rule below sees a dependency it cannot account for - #198.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [program, intake, generation])
 
   useEffect(() => {
     let current = true

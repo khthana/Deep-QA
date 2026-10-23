@@ -5,6 +5,7 @@ import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import ProgramForm from '../components/programs/ProgramForm'
+import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
   createProgram,
   deleteProgram,
@@ -83,6 +84,14 @@ export default function Programs() {
    */
   const waiting = useRef(null)
 
+  // Which generation of its data this screen is drawn from - #198. A switch of
+  // hats that lands where the router already is raises it in `MainPage`, and
+  // this screen reads its list again instead of being unmounted, so the page
+  // and a curriculum typed into the form but not yet saved both survive the
+  // switch.
+  // `context/ScreenGeneration.js` carries why #155's remount was narrowed.
+  const generation = useScreenGeneration()
+
   /**
    * #68 - the answer that is drawn is the answer to the request the screen is
    * still on; without the flag the answer that **arrives** last wins rather
@@ -146,7 +155,11 @@ export default function Programs() {
         if (!handedOn) waiting.current = null
       }
     }
-  }, [page, report])
+    // `generation` is in this list and read nowhere in the body on purpose:
+    // what it changes is *when* this read happens, not what is asked for, so
+    // the rule below sees a dependency it cannot account for - #198.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, report, generation])
 
   useEffect(() => {
     let current = true
@@ -197,10 +210,13 @@ export default function Programs() {
    * is (#206).
    */
 
-  // The departments in reach, fetched once: what this account covers is a
-  // property of the grant and does not change with the page being looked at.
-  // Used twice - to name the department each row sits in, and as the pool the
-  // form's picker draws from.
+  // The departments in reach: what this account covers is a property of the
+  // grant and does not change with the page being looked at - but it does
+  // change with the grant, so this read names the generation too (#198). Used
+  // twice - to name the department each row sits in, and as the pool the form's
+  // picker draws from - so a list left at the old hat's names rows wrongly as
+  // well as offering the wrong choice. `Rubrics.js` carries the same pair for
+  // curricula and is where the browser seam proves it (#68, #171).
   useEffect(() => {
     let cancelled = false
     listReachableDepartments()
@@ -211,7 +227,11 @@ export default function Programs() {
     return () => {
       cancelled = true
     }
-  }, [report])
+    // `generation` is not read in the body, so the rule calls it unnecessary;
+    // it is the reason to ask again, and `context/ScreenGeneration.js` says
+    // why that is a dependency here rather than an effect of its own.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [report, generation])
 
   const nameOf = departmentId =>
     departments.find(department => department.department_id === departmentId)
