@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 22 October 2569 that is
-`2026-10-22-the-prop-nothing-could-require.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 23 October 2569 that is
+`2026-10-23-the-claim-nobody-was-holding.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -306,6 +306,12 @@ citation.
   the names for a leak. (#52)
 - **Two places holding one opinion is not a safety margin; it is a claim neither of them can be
   shown to hold.** (#97)
+- **A ticket that asks whether to de-duplicate a claim has not said how many rows hold it, and the
+  answer can be none** — #97's line read from the other side: the copies are what a grep counts and
+  the proof is what breaking each one separately measures. Where two of three are held by nothing
+  the merge *buys* proof rather than costing it (#68 from the other side too), and the order that
+  keeps all three claims provable is rows first, merge second — which makes the owner's answer an
+  order rather than a yes or a no. (#192)
 - **An attribute a locator is built on stops being provable by mutation** — it is the premise of
   those rows; an attribute read off a located element is a claim. The trap is using it in the
   locator every other row shares. (#85, #111)

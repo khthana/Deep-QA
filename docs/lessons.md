@@ -13291,3 +13291,102 @@ again: a second-pass parse failure swallowed by a bare `catch { continue }`, the
 `not code` count the three newest siblings print missing, and a blind-spot list
 that said nothing about `export { REQUIRED_PROPS }`, a re-export, or a second
 declaration in one file silently winning.
+
+## #192 — the claim that was written in three places and held in one
+
+`Mainpage.js` asked *is this segment all digits* with the same `/^\d+$/` written
+out three times, one per crumb resolver: `teacherSectionCrumb` (#116),
+`labelledIdCrumb`'s `numeric` (#185) and `wordCrumbLabel` (#189). #189 raised it
+rather than merging it, because two of the three copies predated that ticket, and
+the question cited #97 — *two places holding one opinion is a claim neither of
+them can be shown to hold.* The ticket offered three options: consolidate and
+move the mutants to the call sites, priced as *re-anchoring two sheets' mutants
+and re-sweeping*; keep three and write the reason; or consolidate without moving
+the mutants, which the ticket itself named as the trap.
+
+**The cost line was refuted before anything was built**, which matters because
+that is the one claim a ticket makes about the *fix* and so the one that decides
+which option gets built (#77). Reading every file's `MUTANTS` in `mutation/` with
+seven needles: **no mutant was anchored on any of the three lines.** The only file
+that quotes a #192 site at all is #185's, and it quotes
+`wordCrumbLabel(decodedNames, index)` — the **call**, not the expression inside.
+So option 1's price was **zero re-aims**, not two sheets' worth, and the sweep it
+owed was the one any new mutant owes.
+
+**Then the question underneath the ticket's question: how many rows held the
+claim?** The copies are what a grep counts; what the rows hold is what breaking
+each copy separately measures. Widening one copy at a time so every segment reads
+as an id, against `116a 185a 188a 10a` (baseline 22 passed):
+
+| copy | widened | what went red |
+|---|---|---|
+| `teacherSectionCrumb` | 22 passed | **nothing** |
+| `labelledIdCrumb` | 22 passed | **nothing** |
+| `wordCrumbLabel` | 1 failed / 21 passed | `185a` row 1 |
+
+One of three, and not because the situation is unreachable: `:sectionId` matches
+any segment, `rubrics/:rubricId/criteria` matches a word, and
+`courseOutcomes/:cloId/criteria` matches a word at the fifth segment. What no spec
+did was *type* such an address — a grep of `e2e/` found five, all `:id` inside a
+comment. **Untested, not structurally unreachable** (#102, #107), which is the
+sentence a merge would have made unwritable.
+
+**So the answer to *should these be merged* was an order, not a yes or a no**, and
+it was the owner's: write the rows first, merge second. While the three copies
+still stand, each row holds its own copy, and that is the only arrangement in
+which #97's three claims are ever separately proved. Merge first and the three
+become one claim with nobody able to say whether two of its three ways in reach
+it. **In that order the merge buys proof rather than costing it** — the opposite
+of what the ticket priced, and the opposite of #68's warning about one hook behind
+fifteen screens, because there the merge removed rows that existed and here it
+followed rows written for the purpose.
+
+**The two rows assert the request and not the drawing**, because on a word at an
+id's position the crumb reads the word either way: with the guard because nothing
+was asked, and without it because the answer is a 404 and a refusal is left to say
+nothing — #116's fourth reading, where a row cites the right mutant and never
+states its claim. The drawing cannot tell the two apart; the absence of
+`GET /api/teaching/sections/1a` can. The matcher had to be the resolver's **own
+exact pathname**: the screen under each address asks for its own data under the
+same prefix, so a prefix matcher would have answered *the shell asked* about the
+screen's own request (#218). Measured rather than assumed — of the seventeen
+screens under that id only `TeacherSection`, the index, fetches the Section for
+itself, and `RubricCriteria` reads `/api/rubrics/:id/criteria` and never the
+rubric. The fixture is `1a` rather than `abc` because a fixture is built where two
+implementations **disagree**, not where one is missing (#117): `parseInt('1a')` is
+`1`, which is the shape a consolidated helper is most likely to be written as.
+Each row was run against the three unwidened copies first — both green, which is
+what says a row measures nothing (#203) — and then against each copy widened in
+turn: row 1 red only under the first, row 2 red only under the second.
+
+**The merged helper took no bound, and that is a claim about what the caller
+means.** `backend/lib/fields.js`'s `integerId` refuses anything above
+`INT4_MAX`, and the obvious reading of a consolidation is that the frontend
+should match it. It should not: a digits-only segment too big for the column is
+still **what a person meant as a key**, so asking is right, the server answers
+*not found* on its own, and the crumb drawing that segment literally says nothing
+untrue. *A guard that greps the same is not the same guard — read what it does
+with its `null`* (#107), here with the two guards' **callers** rather than their
+bodies.
+
+**The mutants went to the three call sites**, which is what keeps the extraction
+free (#104): `isIdSegment` became a premise, like an attribute a locator is built
+on, and each caller's *use* of it stayed a claim. Aiming them at the helper is
+what would have turned three claims into one — a choice, not a consequence of the
+merge. After the merge each kill is a **reachability** claim for that way in
+(#191). Two of the three are the same shape, weakening one call site to `/^\d/`;
+the third is not, and that is a measurement rather than a style: every id in the
+addresses `185a` walks is all digits, so `/^\d/` is skipped on both sides there
+and kills nothing. Only *no guard at all* reaches that call site's claim (#96).
+The full suite, one run per mutant, because the mutants live in the shell all 837
+rows share: `sectionsegmentloose` **1 failed / 836 passed**, `deepersegmentloose`
+**1 failed / 836 passed**, each dying on its own row's `not.toContain` and taking
+no bystander with it.
+
+**And the sheet's own record of all this was already there to be aged.** #189's
+paragraph names the three copies at `:39 :64 :101`, and it is a dated record, so
+it stays and the new section says which of its sentences read differently today
+(#54). Two of them do: the expression is no longer in three places, and *no mutant
+can tell them apart* is no longer true of the first two copies. The third number
+was already wrong when written — the copy was at `:111` — which is why the new
+rows and the new section cite the code by **name** and not by line (#173).

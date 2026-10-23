@@ -17,6 +17,34 @@ import Alert from '@mui/material/Alert'
 import Snackbar from '@mui/material/Snackbar'
 
 /**
+ * Whether a segment of the address is a value rather than a word — #192.
+ *
+ * Every key this router puts in an address is a surrogate integer (ADR-0001),
+ * so *all digits* is what tells a value from a word, and each of the three
+ * functions below needs that same test: #116's Section id, #185's three deeper
+ * ids, and #189's walk up past them to the nearest word. It was written out
+ * three times until #192 asked — and the answer was to extract it at the third
+ * copy, which is where `backend/lib/fields.js` extracted `integerId` for the
+ * same reason one seam over.
+ *
+ * It is not that guard, though, and the difference is the bound. `integerId`
+ * refuses `2147483648` because the column is an `integer` and the database
+ * would answer 22003 where the caller is owed a 404. Here a segment of digits
+ * too big to be a key is still a segment somebody meant as a key: asking is
+ * right, the server answers 404, and the crumb keeps the number and says
+ * nothing untrue (#116). A guard that greps the same is not the same guard.
+ *
+ * Extracting it costs the proof nothing, because the mutants are at the call
+ * sites and not here (#104): this is the premise, and each caller's *use* of it
+ * is still a claim. `mutation/192-a-segment-that-cannot-be-a-key.py` has one
+ * mutant per call, which is also what says each of the three ways in arrives
+ * here (#191).
+ */
+function isIdSegment(segment) {
+  return /^\d+$/.test(segment || '')
+}
+
+/**
  * Where the Section's id sits in a Teacher address, if it is there at all — #116.
  *
  * `breadcrumbNameMap` turns a segment that is a *word* into a sentence. A
@@ -36,7 +64,7 @@ export function teacherSectionCrumb(pathname) {
   const segments = pathname.split('/').filter(Boolean)
 
   if (segments[0] !== 'teacher' || segments[1] !== 'teacherDashboard') return null
-  if (!/^\d+$/.test(segments[2] || '')) return null
+  if (!isIdSegment(segments[2])) return null
 
   return { id: segments[2], index: 2 }
 }
@@ -61,7 +89,7 @@ export function teacherSectionCrumb(pathname) {
  */
 export function labelledIdCrumb(pathname) {
   const segments = pathname.split('/').filter(Boolean)
-  const numeric = index => /^\d+$/.test(segments[index] || '')
+  const numeric = index => isIdSegment(segments[index])
 
   if (segments[0] === 'main' && segments[1] === 'rubrics' && numeric(2)) {
     return { kind: 'rubric', id: segments[2], index: 2 }
@@ -108,7 +136,7 @@ export function wordCrumbLabel(segments, index) {
   const above = segments
     .slice(0, index)
     .reverse()
-    .find(segment => !/^\d+$/.test(segment))
+    .find(segment => !isIdSegment(segment))
 
   return breadcrumbNameByParent[`${above}/${segments[index]}`]
 }
