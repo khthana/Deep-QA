@@ -6,8 +6,12 @@ const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { linesOf, bare, splitOf, seamsInsideAToken, overflowOf } = require('../support/line-breaks');
 // The locators, but deliberately not `saidBy` - taking the joiners out is
-// what this file is here to measure.
-const { panel, messageOf } = require('../support/confirm-dialog');
+// what this file is here to measure. `dismiss` is the shared one since #219
+// (24 ตุลาคม 2569): this file wrote its own, which pressed an unscoped
+// `ยกเลิก` and returned without waiting for the box to leave, and rows 3 and 4
+// open a second confirmation in their `finally` - the one place in the suite
+// where that missing wait has a race to lose.
+const { panel, messageOf, dismiss } = require('../support/confirm-dialog');
 const improvement = require('../support/improvement-screen');
 const offerings = require('../support/offerings-screen');
 const rubrics = require('../support/rubrics-screen');
@@ -60,8 +64,6 @@ const rubrics = require('../support/rubrics-screen');
  * prose expires without anybody noticing. No mutant can kill it, for the same
  * reason no mutant can kill an attribute a locator is built on (#85).
  */
-
-const dismiss = page => page.getByRole('button', { name: 'ยกเลิก', exact: true }).click();
 
 /** Reads the drawn lines and reports them whichever way the row fails. */
 async function drawn(page) {

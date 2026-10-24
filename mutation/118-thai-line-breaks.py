@@ -69,12 +69,29 @@ U+2060 WORD JOINER ระหว่างตัวอักษรไทยทุ�
 ใช้ร่วมกัน เป็น 19 กล่อง** (`Offerings.js` มีสองกล่อง) ใบรับรองใบนั้นจึงเป็น**หนึ่งในที่ที่
 มัตแตนต์ฆ่า ไม่ใช่รายการทั้งหมด** (#123)
 
+## กวาดใหม่เมื่อ 24 ต.ค. 2569 (#219)
+
+#219 ให้ `118a` เลิกใช้ `dismiss` ที่มันเขียนเอง แล้วไปใช้ตัวร่วมของ `confirm-dialog.js` ซึ่งผูก
+ขอบเขตกับกล่องและรอให้กล่องหลุดออกจากเอกสาร กวาดสามตัวใหม่ทีละตัวบนพอร์ต 3400/5310
+**จำนวนฆ่าและชุดแถวที่ตายตรงกับตารางข้างบนทุกตัว** (ไม่ใส่: ผ่าน 5 · `notglued` ล้ม 2 ·
+`nobreakwords` ล้ม 2 · `nowrapinstead` ล้ม 1)
+
+**สิ่งที่ขยับคือเวลา และเวลาคือตัวบอก** (#146) รอบสะอาด 26.2 วินาที · `notglued` 58.4 วินาที ·
+`nobreakwords` 2.4 นาที · `nowrapinstead` 1.4 นาที เพราะแถว 3 กับแถว 4 ตายที่ timeout ไม่ใช่
+ที่ข้ออ้าง ของนี้มีมาตั้งแต่ 24 ก.ย. 2569 ไม่ใช่ของ #219 — อยู่ที่
+[#235](https://github.com/khthana/Deep-QA/issues/235) และกลไกเขียนไว้ที่
+`docs/acceptance/41-continuous-improvement-plan.md` §#219 ไม่ซ้ำไว้ที่นี่ (#130)
+
 ## วิธีรัน
 
     python mutation/118-thai-line-breaks.py save
     python mutation/118-thai-line-breaks.py <mutant>
-    cd e2e && E2E_FRONTEND_PORT=5300 npx playwright test 118a-thai-line-breaks
+    cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test 118a-thai-line-breaks
     python mutation/118-thai-line-breaks.py restore
+
+พอร์ตคู่นั้นคือคู่ที่เครื่องนี้ใช้ได้เมื่อ 24 ต.ค. 2569 — 3100/5100 ซึ่งเป็นค่าตั้งต้นของ `env.js`
+อยู่ในช่วงที่ Windows จองไว้ ก่อนเลือกคู่ใหม่ให้อ่าน `netsh interface ipv4 show excludedportrange
+protocol=tcp` อย่าหยิบคู่นี้ไปใช้ต่อโดยไม่อ่าน
 
 แถวอยู่ใน `e2e/tests/118a-thai-line-breaks.spec.js`
 """

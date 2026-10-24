@@ -64,11 +64,14 @@ async function saidBy(page) {
  * the hole #204 described and #217 closed; what they measure is unchanged, and
  * only the way in moved (#203).
  *
- * An instrument and not an assertion, which is why it is shared by the five
+ * An instrument and not an assertion, which is why it is shared by the eight
  * files that need it (#171): no row's claim lives in getting out of the box.
+ * Five on 18 ตุลาคม 2569 when #217 wrote this paragraph, seven by the time #219
+ * counted on 24 ตุลาคม 2569, and eight with `118a`, which #219 moved off a copy
+ * of its own that waited for nothing.
  * The box is waited for by `panel` and not by `getByRole('dialog')` for the
  * reason `204a` gives: the role is a claim of that file's own rows, and a
- * locator five files share would make it their premise instead (#85, #111).
+ * locator eight files share would make it their premise instead (#85, #111).
  */
 async function dismiss(page) {
   await panel(page).getByRole('button', { name: 'ยกเลิก', exact: true }).click();

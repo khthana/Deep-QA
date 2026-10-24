@@ -13839,3 +13839,111 @@ code made to run (#115), which dies at the third line with the two above it pass
 honestly, because the code before #90 bracketed every scope's code, the sentinel included.
 A re-aimed mutant's kill is read against the row it is *for* and not against the total
 (#203): `nokind` went from killing three rows of one file to killing eight of two.
+
+## #219 — the census that had to run, and the shape that was already gone
+
+#219 was a `question` with three parts, all of them about test code: merge `pressPager` and
+`stepBack` into `support/pager.js` (shape one), make every confirm-box `ยกเลิก` press use the
+scoped, detachment-waiting `dismiss` (shape two), give form `ยกเลิก` presses a form-scoped
+helper or leave them (shape three). The owner answered on 24 October 2569: shape one **void**,
+shape two **`118a` only**, shape three **left, with what would break it written down**.
+
+**Where one name is on two controls, which one a row presses is a runtime property.** `ยกเลิก`
+is the word on the confirm box's button and on every form's. 37 of the 45 sites that name it
+build their locator on a bare `page`, and nothing in the text of those files says which of the
+two is on the screen at that moment — the answer is a property of the run. So the ticket's
+first closing criterion, *classify every press by instrument and not by reading*, could not be
+met by a census of the source at all. It took three instruments: one that holds the
+**population** by parsing (`e2e/probes/219-cancel-sites.js`), one that patches
+`Locator.prototype.click` inside the worker and asks the element itself
+(`219-cancel-presses.js`), `el.closest('.max-w-sm')` against `el.closest('form')`, and one that
+**joins** them (`219-join.js`), because without it the per-site table would have been a hand
+pairing — a reading, which is the thing the criterion refuses. Over a full
+run of 849 rows it recorded **108 presses, 48 on the box and 60 on a form, with no `neither`
+and no `both`** — the two selectors separate every press in the suite. Attributed back to the
+sites: 20 the box's, 25 a form's. The ticket's own hand reading, which it dated and called a
+claim, had said 7 and 13.
+
+**A red ends a runtime census, and it reads exactly like a suite that stopped pressing**
+(#208's tell one layer along). Playwright tears the worker down after a failing test and the
+next one starts unpatched, with nothing to install the patch again. The second measuring run
+recorded **12** presses against the first's 108, over a single red at `142a` — and no
+instrument says so, because the file it writes is simply shorter. The count is the tell, not
+the exit code. The repair was to make the probe cheap enough not to cause the red: the stack is
+captured before the first `await` but **formatted** after the press, because some of these rows
+are racing a write and the formatting is the expensive half.
+
+**A stack cannot cross an `await`, so the question *which row is pressing* is asked of the
+runner.** 56 of one run's 108 presses came back with no `e2e/` frame at all, and the nine
+`remove*` helpers reported only themselves: an `async` function's stack holds its synchronous
+callers and loses everything across a tick. `test.info()` is answered by the worker and is the
+same answer wherever it is asked from, which closed the gap to zero. Joining the two
+instruments then went by frame, by test title, and by file; the last site to resolve,
+`142a:302`, sits inside a title written as a template, which matches the runtime titles by the
+literal halves of that template in order and never by equality. **And a press log is dated against
+the tree it was taken from**: the frame reader keys on `file:line`, so re-running the join against
+#219's own log now reports `? 1` for `confirm-dialog.js:77`, which the log names at `:74` because
+the fix grew three lines of docblock above it — a citation by line number ages the day anything
+above it grows (#173), and here the instrument saying so is the right answer rather than a failure.
+
+**And the census counted itself** (#173). Its own `CANCEL` comparisons — the mechanism it
+classifies other sites *with* — are call expressions whose arguments hold the word, so its
+first run returned 47 sites where the suite has 45. It leaves itself out by `__filename`, which
+is identity: a list of names would have been a thing a new file makes lie (#126).
+
+**Shape one was void, and not because it was wrong when it was written.** `96f076b` (#210)
+deleted all fifteen lines that named `pressPager`, `stepBack` and `awayAndBack` on 19 October
+2569 — **the day after the ticket was filed** — and added none; the three specs now call `next`,
+`previous`, `untilDrawn` and `toLastPage` from `pager.js`, which is what the ticket asked for.
+A ticket's *what is wrong* is a claim from the day it was written (#66), and this is a species
+the catalogue did not have: not aged, not generalised, not never true, but **already carried
+out by a later ticket**, leaving the ticket's subject absent from the tree. What stands in its
+place is a different triple — `askToRemove` in `206a`, `207a` and `208a`, where 207a's body is
+208a's plus one `dismiss(page)` line — which went out as #236 rather than being carried in prose
+here (#119, #125). Shape one's own reopen condition is on the sheet, because a shape closed as void
+still owes one: the day a spec writes its own pager stepper again instead of calling `pager.js`.
+
+**Shape two's own figures had aged in the other direction.** The shared `dismiss` was imported
+by five files when #217 wrote the paragraph saying so, seven when #219 counted, and eight once
+`118a` came over: a claim written in prose expires like a number (#130), and the fix to the
+prose is dated rather than rewritten. `118a` was the one site worth moving, and the reason is
+not that its copy was unscoped but **where its calls sit**: rows 3 and 4 dismiss the box and
+then open a second confirmation in their `finally`, which is the one place in the suite where
+not waiting for the first box to leave has a race to lose.
+
+**The other ten box presses are instruments of their own screens, not copies racing the shared
+one.** Nine live in `support/*-screen.js` inside `remove*(page, …, { confirm = true })`, where
+the `confirm: false` path *is* the dismissal, and each has exactly one caller taking that path
+— nine callers, nine single presses in the runtime table. Merging them would not delete a copy;
+it would move the press one layer down and make the shared helper's wait a premise of every
+caller it already has (#81), which is a price no row asked for. The condition that would
+reopen it is written beside the answer: the day one of those helpers is called with a form open
+as well, or a screen draws its confirmation with something other than `.max-w-sm`.
+
+**Leaving shape three was an answer with a measurement under it.** The non-ambiguity of 25
+unscoped form presses is accidental (#93) — box and form are never on the screen together in
+those rows — and the measurement is that **no press of the 108 answered `both`**. What would
+break it is a screen that draws a confirmation over an open form, or two forms on one screen,
+which `146a` nearly has already. The lucky half of this accident is that a click is strict: the
+day a row resolves two `ยกเลิก` buttons it fails, rather than pressing the wrong one quietly.
+
+**The re-sweep's kill counts were right and its durations were the finding.** Criterion 3 asked
+for the mutants of the files that changed; only `118a` changed, and only
+`mutation/118-thai-line-breaks.py` runs it. All three mutants reproduced their documented kills
+exactly — 2, 2 and 1, at the documented rows. What moved was time: a clean run takes 26.2
+seconds and `nobreakwords` took 2.4 minutes, because rows 3 and 4 die at a **timeout** and not
+at an assertion. Their body throws before reaching `dismiss`, the box stays, and the `finally`
+presses *ลบ* underneath its cover until the test times out; and a throwing `finally` replaces
+the body's error (#181), so the report names `rubrics-screen.js` and the `lines drawn:` message
+the row wrote for a person to read appears nowhere. A kill count cannot tell a row that died at
+its claim from a row that died at a timeout — **the duration can** (#146). It is not #219's
+defect: `dismiss` is the last statement of the `try` and the clean run passes five rows in 26.2
+seconds, so it dates to the day the file was written, 24 September 2569. It went out as #235
+rather than being fixed here (#119, #125).
+
+**The answer to a de-duplication question can be one copy.** #192's answer was *rows first,
+merge second*; #196's was *merge, and the price is a census with a date on it*; this one's is
+*move the single site where the duplication can cost something, and write down why the others
+are not copies*. What made that answerable was pricing each shape separately, which the ticket
+itself demanded — `dismiss` is shared because no row's claim lives in getting out of a box
+(#171), and that reason has to be asked of each shape rather than of the three at once.

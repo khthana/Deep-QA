@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 24 October 2569 that is
-`2026-10-24-the-code-that-was-not-a-code.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-24-the-word-on-two-controls.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -61,9 +61,10 @@ citation.
   from the symptom or from the fix, a mechanism that does not exist, already decided the other way
   in the file it proposes to change, filed under the wrong half of its own table, a name read as a
   claim, an inference from a correct measurement, a count inflated by the runner's output shape,
-  right in its species and wrong in the route it names — and the sheet itself asking for the
+  right in its species and wrong in the route it names, already carried out by a later ticket's
+  fix, which leaves the subject absent from the tree — and the sheet itself asking for the
   defect. (#66, #111, #55, #155, #102, #122, #67, #101, #48, #133, #127, #185, #165, #186, #58,
-  #187, #218, #89)
+  #187, #218, #219, #89)
 - **A ticket's supporting identifiers are a claim like its numbers** — ask `CREATE TABLE` before
   pasting a list of names, because a wrong list gets pasted more than once. **And a *decision* a
   cost line cites is the same kind of claim**: grep the corpus before believing it was ever taken,
@@ -606,6 +607,12 @@ citation.
   a finding about a closed ticket as much as a check on the new one. When that finding is a red
   gate the instrument is committed unwired with a ticket for the gap, rather than wired with the gap
   marked. (#200)
+- **Where one name is on two controls, which one a row presses is a property of the run** — a
+  census of the suite's text holds the population and no more, so the classifier is an instrument
+  *inside* the run, patched onto the press and asking the element itself. A red ends such a
+  measurement, which reads exactly like a tree that stopped pressing, so the count is the tell
+  (#208); and *which row is pressing* is asked of the runner, a stack having lost its caller
+  across the first `await`. (#219)
 - **A census is evidence about the property it counted** — count by the mechanism, not by what the
   screen draws: the species is *is there a settle point between the request and the read*, not
   *which kind of screen is it*. The line that looks like it belongs to another helper may be the
@@ -1008,6 +1015,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Six censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219). Not rows and not gates — nothing in the repository runs them, and one of them is a spec the runner only sees when it is copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|
