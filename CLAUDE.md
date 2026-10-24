@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 24 October 2569 that is
-`2026-10-24-the-word-on-two-controls.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+`2026-10-24-the-cleanup-locked-out-by-its-own-row.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -480,6 +480,12 @@ citation.
   goes through the code under test cannot land while a mutant is applied, so the next row dies on
   its own precondition and the kill count is about the row before. Restore below the seam, say
   nothing about state, report your own failure where a later hook can fail the file. (#181)
+- **The third way is that the row's own failure builds the obstacle** — a teardown through the
+  screen is reached through whatever state a failing row left, which is the only state where a
+  teardown matters, so price it against the failing path and not the passing one, and no mutant is
+  needed to meet it. **And what a run reports is a claim to measure like its kill count**: the
+  instrument is a count, over the saved output, of where the report's code frame points, because a
+  right number can sit over a sentence that names the housekeeping. (#235)
 - Report the measured number, not the ticket's — and notice when one number is two (killed and
   hardened). (#102, #48)
 - **A mutant that reads state from outside its function's dependency list measures the closure,

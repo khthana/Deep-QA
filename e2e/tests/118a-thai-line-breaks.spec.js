@@ -8,9 +8,16 @@ const { linesOf, bare, splitOf, seamsInsideAToken, overflowOf } = require('../su
 // The locators, but deliberately not `saidBy` - taking the joiners out is
 // what this file is here to measure. `dismiss` is the shared one since #219
 // (24 ตุลาคม 2569): this file wrote its own, which pressed an unscoped
-// `ยกเลิก` and returned without waiting for the box to leave, and rows 3 and 4
-// open a second confirmation in their `finally` - the one place in the suite
-// where that missing wait has a race to lose.
+// `ยกเลิก` and returned without waiting for the box to leave.
+//
+// The reason #219 gave for it was that rows 3 and 4 opened a second
+// confirmation in their `finally`, which made this the one place in the suite
+// where the missing wait had a race to lose. #235 took those second
+// confirmations out the same day, so that race is gone. The shared `dismiss`
+// is kept for what is left of the reason - it is scoped to the box rather than
+// to a name the screen's own form also carries, and it does not return until
+// the box has left the document - and because a copy of it here would be a
+// second place to keep that right.
 const { panel, messageOf, dismiss } = require('../support/confirm-dialog');
 const improvement = require('../support/improvement-screen');
 const offerings = require('../support/offerings-screen');
@@ -71,11 +78,49 @@ async function drawn(page) {
   return { lines, text: bare(lines).join(''), shown: bare(lines).join('\n') };
 }
 
+/**
+ * Puts a rubric a row made back, and says nothing about it here (#235, #181).
+ *
+ * Rows 3 and 4 used to tidy up by pressing *ลบ* a second time and confirming
+ * it. When an assertion in the row failed, `dismiss` was never reached, so the
+ * confirmation from the first press was still over the table and the second
+ * press retried into its backdrop until the file ran out of time — and a
+ * `finally` that throws replaces the error it is cleaning up after, so what the
+ * report named was `rubrics-screen.js:123` and not the claim that had just
+ * failed. The `lines drawn:` message both rows carry for whoever reads the
+ * failure appeared nowhere at all.
+ *
+ * So the teardown goes under the seam the rows press, over HTTP, where neither
+ * an open dialog nor an applied mutant can stop it, and its own trouble is
+ * carried to the hook at the bottom of this block instead of being thrown over
+ * the row.
+ */
+const teardownTrouble = [];
+async function putRubricBack(page, rubricId, code) {
+  try {
+    const gone = await rubrics.clearRubric(page, rubricId);
+    if (gone.status() !== 200) {
+      teardownTrouble.push(`${code} was answered ${gone.status()} on the way out`);
+    }
+  } catch (error) {
+    teardownTrouble.push(`${code} could not be removed: ${error.message}`);
+  }
+}
+
 let release;
 test.beforeAll(async () => {
   release = await hold();
 });
 test.afterAll(() => release());
+
+// Last, so a teardown that was refused is said out loud rather than fixed
+// silently: `hold()` takes out whatever rows appeared when it releases, so
+// `leftovers` would report nothing and this file would pass with its
+// housekeeping broken. And last also so it fails the file without speaking over
+// a row, which is the half of #181 this ticket is about.
+test.afterAll(() => {
+  if (teardownTrouble.length) throw new Error(teardownTrouble.join('; '));
+});
 
 test('row 1: the sentence the ticket was written about keeps ปีการศึกษา whole', async ({
   page,
@@ -153,6 +198,7 @@ test('row 3: a name with nowhere to break still breaks rather than leaving the d
 
   const made = await rubrics.addRubric(page, { code: CODE, th: NAME, en: 'Long name', order: 0 });
   expect(made.status()).toBe(201);
+  const { rubric } = await made.json();
 
   try {
     await rubrics.startRemoval(page, CODE);
@@ -167,9 +213,7 @@ test('row 3: a name with nowhere to break still breaks rather than leaving the d
 
     await dismiss(page);
   } finally {
-    await rubrics.startRemoval(page, CODE);
-    await rubrics.confirmRemoval(page);
-    await expect(rubrics.rubricRow(page, CODE)).toHaveCount(0);
+    await putRubricBack(page, rubric.id, CODE);
   }
 });
 
@@ -192,6 +236,7 @@ test('row 4: a Thai run with nowhere to break breaks too, rather than leaving th
 
   const made = await rubrics.addRubric(page, { code: CODE, th: NAME, en: 'Long Thai', order: 0 });
   expect(made.status()).toBe(201);
+  const { rubric } = await made.json();
 
   try {
     await rubrics.startRemoval(page, CODE);
@@ -204,9 +249,7 @@ test('row 4: a Thai run with nowhere to break breaks too, rather than leaving th
 
     await dismiss(page);
   } finally {
-    await rubrics.startRemoval(page, CODE);
-    await rubrics.confirmRemoval(page);
-    await expect(rubrics.rubricRow(page, CODE)).toHaveCount(0);
+    await putRubricBack(page, rubric.id, CODE);
   }
 });
 

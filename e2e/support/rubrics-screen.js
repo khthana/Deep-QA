@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { BACKEND_URL } = require('./env');
 const { untilDrawn } = require('./pager');
 const { openAt } = require('./navigation');
 
@@ -126,6 +127,18 @@ const startRemoval = (page, code) =>
 const confirmRemoval = page =>
   page.getByRole('button', { name: 'ลบ Rubric', exact: true }).click();
 
+/**
+ * Removes a rubric over HTTP, for a teardown rather than for a claim (#235).
+ *
+ * Below the seam the browser rows are about, so it lands while a mutant has the
+ * frontend broken, and it cannot be stopped by a dialog a failed row left open
+ * (#181). It asserts nothing and hands the answer back: whether a teardown that
+ * was refused should fail the file is the caller's to decide, in a hook that
+ * cannot speak over the row that has just failed.
+ */
+const clearRubric = (page, rubricId) =>
+  page.request.delete(`${BACKEND_URL}${API}/${rubricId}`);
+
 /** The codes the table is showing, in the order it draws them. */
 const listedCodes = page =>
   page
@@ -156,6 +169,7 @@ module.exports = {
   save,
   startRemoval,
   confirmRemoval,
+  clearRubric,
   listedCodes,
   filterTo,
   criteriaLink,

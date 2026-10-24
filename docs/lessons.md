@@ -13909,7 +13909,10 @@ by five files when #217 wrote the paragraph saying so, seven when #219 counted, 
 prose is dated rather than rewritten. `118a` was the one site worth moving, and the reason is
 not that its copy was unscoped but **where its calls sit**: rows 3 and 4 dismiss the box and
 then open a second confirmation in their `finally`, which is the one place in the suite where
-not waiting for the first box to leave has a race to lose.
+not waiting for the first box to leave has a race to lose. That reason lasted eight hours:
+#235 took those second confirmations out the same evening, which leaves the move right for the
+other half of its reason — the scope — and is why the comment in `118a` is dated rather than
+deleted (#54, and #235's story below).
 
 **The other ten box presses are instruments of their own screens, not copies racing the shared
 one.** Nine live in `support/*-screen.js` inside `remove*(page, …, { confirm = true })`, where
@@ -13947,3 +13950,63 @@ merge second*; #196's was *merge, and the price is a census with a date on it*; 
 are not copies*. What made that answerable was pricing each shape separately, which the ticket
 itself demanded — `dismiss` is shared because no row's claim lives in getting out of a box
 (#171), and that reason has to be asked of each shape rather than of the three at once.
+
+## #235 — the cleanup the row's own failure had locked out
+
+The ticket was #219's own by-catch, filed rather than written into prose (#119, #125) and not
+#219's defect: `dismiss` was already the last statement of the `try`, and the clean run passed
+five rows in 26.2 seconds. It dated to the day `118a` was written, 24 September 2569, and what
+made it visible a month later was a sweep's **durations** rather than its kill count (#146).
+
+**A teardown through the screen is reached through whatever state the row's failure left.** Rows
+3 and 4 made a rubric, read the confirmation dialog it drew, and tidied up by pressing *ลบ* a
+second time and confirming it. That works on every passing run and on no failing one: the body
+throws at its claim *before* `dismiss`, so the first box is still over the table, and the second
+press retries into `<div class="fixed inset-0 z-[9998] …">` until the file runs out of time. The
+teardown's obstacle was built by the only event that makes a teardown interesting. This is a
+third way a cleanup speaks over the claim, beside #181's two: no mutant is needed, and a genuine
+regression caught by a clean suite would have been reported the same way.
+
+**And the report is a claim to measure, not to reason about.** The kill count was right — 2, 2
+and 1, the rows the sheet names — while what came out named `support/rubrics-screen.js:123` and
+a timeout. The cheap instrument is where the report's own code frame points: Playwright prints the
+source around the dying assertion, so `grep -c 'lines drawn'` over the saved output counts the
+frames that stopped at the rows' own claim rather than counting any sentence the run wrote. It
+answered **0** before the fix, which is the whole defect in one number, and **4** and **2** after
+it, for the two mutants. A sweep has two halves to check, the number and the sentence, and only
+the first has an instrument built for it.
+
+**The fix was the repo's own answer, found by asking for it.** #181's story had already settled
+this shape in `155a`: the restore goes below the seam over HTTP, it asserts nothing, it records
+its own trouble in a module-level variable, and a last `afterAll` throws if anything was recorded
+— last, so that it fails the file without speaking over a row. What it is *not* there for is to
+catch a leftover: `hold()` takes out whatever rows appeared when it releases, so the suite's own
+`leftovers` report would stay clean with this file's housekeeping broken, which is why the
+refusal has to be carried by hand. `rubrics-screen.js` gained a `clearRubric` that answers with
+the response rather than asserting on it, which is what makes *whether a refused teardown fails
+the file* the caller's decision and not the helper's.
+
+The ticket's second option — close the box as the first statement of the `finally` — was declined
+with a date: it is still a teardown through the code under test, so the day the failure is in
+*opening* the box, `dismiss` is the call that times out and the ticket comes back. An instrument
+is not an assertion (#171), and a teardown is an instrument. **Its third option was not a rival
+to the first and was taken as well**: a ticket can write its options as a list to choose from
+while two of them answer different questions — *where does the teardown go* and *who speaks when
+the teardown itself is refused* — and here the second is what keeps the first from being silent,
+because a helper that asserts nothing refuses in silence by design.
+
+**What the fix falsified was a sentence eight hours old.** #219 had just written into `118a` that
+the shared `dismiss` mattered there because rows 3 and 4 open a second confirmation in their
+`finally` — the one place in the suite where not waiting has a race to lose. Those second
+confirmations are what this ticket removed. The comment was rewritten with both dates rather
+than deleted, the move staying right for the other half of its reason, and #219's story in this
+file got a clause instead of an edit, because a story is a record of a day (#54).
+
+The sweep's own numbers moved the way the mechanism predicts and no further: the two mutants that
+kill rows 3 and 4 came down to twenty-five and twenty-four seconds, where the timeout used to be,
+and the clean run and `notglued` came down a little because the housekeeping stopped pressing two
+buttons. What they fell *from* is two figures with two provenances, which is worth saying rather
+than averaging: the 3.0 minutes for `nobreakwords` is the one this ticket measured on the unfixed
+code, and #219's own sweep table reads 2.4 for that same mutant and 1.4 for `nowrapinstead`, which
+nothing re-measured here. A duration is a sample (#102, #146), so the claim this story makes is
+the direction and the floor, not the difference.
