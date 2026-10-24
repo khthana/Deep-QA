@@ -8,7 +8,8 @@ const { openUsers, search, listTable, userRow } = require('../support/users-scre
 const { ROLE_NAMES, openEditor, grantsTable } = require('../support/grants-panel');
 
 /**
- * docs/acceptance/12-role-grants.md and 11-user-accounts.md §#215 - the two
+ * docs/acceptance/12-role-grants.md and 11-user-accounts.md §#215 and §#216 -
+ * the two
  * administration screens that draw a scope for somebody to **read** say it the
  * way the picker says it.
  *
@@ -38,6 +39,13 @@ const { ROLE_NAMES, openEditor, grantsTable } = require('../support/grants-panel
  * `dashwhenunknown` killed it at the column and left the panel's cell under the
  * red line, proved by nothing (#88).
  *
+ * Rows 5 and 6 are #216's, added on 24 October 2569 when the owner took the
+ * brackets off the one entry whose stored value is not a code. They are a pair
+ * for the same reason rows 1 and 2 are: one function writes the words and no
+ * mutant inside it can tell the accounts list from the held-roles table, so
+ * what each adds is its own way in arriving (#191). Both are signed in as the
+ * Central Admin, who is the only reader either way - see row 5.
+ *
  * No row here writes anything. `multi01` holds the colliding pair by seed and
  * `cross01` is the account #130 added for exactly this asymmetry: the person is
  * inside department 05 and the grant is over 01, so a 05 administrator reaches
@@ -52,6 +60,13 @@ const { ROLE_NAMES, openEditor, grantsTable } = require('../support/grants-panel
  * that renamed a kind fails a row rather than agreeing with itself.
  */
 const KIND = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' };
+
+/**
+ * The unconfined entry's label, which `backend/routes/grants.js` decides and
+ * only that file holds. Written out here as `90a` writes it out, for the
+ * reason the kind words above are.
+ */
+const UNCONFINED = 'ทั้งมหาวิทยาลัย';
 
 const scopeOf = (list, id) => list.find(entry => entry.id === id);
 
@@ -205,4 +220,56 @@ test('row 4: the held-roles table keeps it, and the picker says why', async ({ p
   expect(offered.filter(text => text.endsWith(`(${outOfReach.id})`))).toHaveLength(0);
 
   await expect(await panelScopeCell(page, ROLE_NAMES.TEACHER)).toHaveText(outOfReach.id);
+});
+
+/**
+ * #216 - the unconfined grant, which is the one scope whose code is not a code
+ * (`CONTEXT.md` §Scope). The owner answered on 24 October 2569 that its
+ * brackets go, and because the wording is one function the answer arrives at
+ * all three sites at once; what this row adds is that it arrives **here**
+ * (#191), where the role column put the scope's own brackets inside its own
+ * and the cell read `ผู้ดูแลระบบกลาง (ทั้งมหาวิทยาลัย (FULL_ADMIN))`.
+ *
+ * Its reader is the one administrator who can get to it, which is measured
+ * rather than assumed: a 05 and a faculty administrator searching for this
+ * account on 24 October 2569 were each shown 0 rows. `backend/routes/users.js`
+ * filters the list by `COALESCE(SENIORITY, 99) >= $2`, which excludes every
+ * holder of a grant confined to nothing, and by `OWN_SCOPE = ANY($1)`, which
+ * excludes this account again because it has neither a department nor a
+ * programme. So the fallback to a bare code that rows 3 and 4 are about cannot
+ * be reached for this scope at all: whoever may read it is offered it.
+ */
+test('row 5: the scope whose code is not a code says itself and nothing else', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.systemAdmin);
+  await openUsers(page);
+  await search(page, ACCOUNTS.systemAdmin);
+
+  await expect(await roleCell(page, ACCOUNTS.systemAdmin)).toHaveText(
+    `${ROLE_NAMES.FULL_ADMIN} (${UNCONFINED})`,
+  );
+});
+
+/**
+ * #216 at the third site, which is the one the two rows above do not reach.
+ * The held-roles table of `GrantsPanel` drew `ทั้งมหาวิทยาลัย (FULL_ADMIN)` in
+ * its scope column, and that it now draws the name alone is this screen's own
+ * claim rather than row 5's (#191, #50 - a gap explained in prose is not a gap
+ * marked).
+ *
+ * The account is the reader's own: nothing on this screen refuses a person
+ * their own editor - only the status toggle is disabled for oneself - and the
+ * Central Admin is the only account holding the grant, so their own panel is
+ * the one place in the system this cell exists.
+ */
+test('row 6: the held-roles table says the unconfined scope the same way', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.systemAdmin);
+  await openUsers(page);
+  await search(page, ACCOUNTS.systemAdmin);
+  await openEditor(page, ACCOUNTS.systemAdmin);
+
+  await expect(await panelScopeCell(page, ROLE_NAMES.FULL_ADMIN)).toHaveText(UNCONFINED);
 });

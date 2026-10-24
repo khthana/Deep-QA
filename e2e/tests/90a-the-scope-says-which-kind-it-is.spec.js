@@ -30,9 +30,15 @@ const { E2E_SCHEMA } = require('../support/env');
  * arrives there (#191).
  *
  * Five rows for five claims: the two colliding kinds, the faculty saying its
- * word once, the entry deliberately left without a word, and the faculty
+ * word once, the entry that says nothing but its own name, and the faculty
  * renamed so that the word is owed. Each is one mutant's target, which is why
  * they are not one row with five assertions in it (#88).
+ *
+ * Row 4 holds three of those claims rather than one, since #216 on 24 October
+ * 2569 took the brackets off the unconfined entry: there is one such entry, it
+ * carries no kind word, and it carries no code either. The third sits below
+ * the other two, so it is only worth having because two mutants die at its own
+ * line - `216:bracketsthesentinel` and the re-aimed `90:nokind` (#88).
  *
  * The owner answered a second question on 17 October 2569. The seed names the
  * faculty `คณะวิศวกรรมศาสตร์`, so a word in front of it said `คณะ` twice,
@@ -79,6 +85,15 @@ const scopePicker = page => page.getByRole('combobox', { name: 'ขอบเข�
 
 /** What the picker offers, as a person reads it. */
 const offered = page => scopePicker(page).locator('option').allTextContents();
+
+/**
+ * The unconfined entry's label, which `backend/routes/grants.js` decides and
+ * only that file holds - `{ scope_id: GLOBAL_SCOPE, label: 'ทั้งมหาวิทยาลัย',
+ * kind: 'global' }`. Written out here rather than imported from the server,
+ * the way `KIND` above is written out: a copy that drifts fails the rows that
+ * look for it rather than agreeing with whatever the screen now says.
+ */
+const UNCONFINED = 'ทั้งมหาวิทยาลัย';
 
 /** The entry for one scope, as the screen writes it. */
 const entry = (kind, scope) => `${kind} · ${scope.th} (${scope.id})`;
@@ -157,7 +172,9 @@ test('row 3: the faculty says its kind once, because its name already says it', 
   expect(options).not.toContain(entry(KIND.faculty, { th: FACULTY.th, id: FACULTY.id }));
 });
 
-test('row 4: the grant confined to nothing is left as it was', async ({ page }) => {
+test('row 4: the grant confined to nothing says itself and nothing else', async ({
+  page,
+}) => {
   const options = await offeredToTheCentralAdmin(page);
 
   // Its own label already names the whole of the organisation, so a word in
@@ -167,9 +184,21 @@ test('row 4: the grant confined to nothing is left as it was', async ({ page }) 
   //
   // Measured on 17 October 2569. What would re-date it is a second unconfined
   // entry, which one `GLOBAL_SCOPE` sentinel makes impossible today.
-  const unconfined = options.filter(text => text.includes('ทั้งมหาวิทยาลัย'));
+  const unconfined = options.filter(text => text.includes(UNCONFINED));
   expect(unconfined).toHaveLength(1);
   expect(unconfined[0]).not.toContain(' · ');
+
+  // And the owner's answer to #216 on 24 October 2569: the brackets go with
+  // the word. Every other entry's brackets hold a code the organisation uses
+  // - `05`, `0501`, `ENG` - while `FULL_ADMIN` is the sentinel `CONTEXT.md`
+  // §Scope chose in place of a null, so the field that teaches *brackets hold
+  // this thing's code* was teaching a code that is nowhere else in it.
+  //
+  // The whole string rather than the absence of one substring: what is owed is
+  // one sentence, and a code could come back in any shape. It sits below the
+  // two assertions above because each of the three has its own mutant - the
+  // claim under a red line is the one nothing reads (#88).
+  expect(unconfined[0]).toBe(UNCONFINED);
 });
 
 /**

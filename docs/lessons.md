@@ -13769,3 +13769,73 @@ curriculum off through the faculty administrator's route, open the editor, put i
 and what tells them apart is the file that defines the pool's own population — the reasoning named
 `programs` and the code reads `usable`. Row 5 holds the branch, `movesanexistingrubric` kills it,
 and the first draft of the sheet is the kind of overclaim that reads as modest (#116).
+
+## #216 — the code that was not a code, and the audience of one
+
+#90 gave the scope picker the kind word and the stored code in brackets —
+*ภาควิชา · วิศวกรรมคอมพิวเตอร์ (05)*, *คณะวิศวกรรมศาสตร์ (ENG)* — and one entry in that
+field read *ทั้งมหาวิทยาลัย (FULL_ADMIN)*. `FULL_ADMIN` is not a code anybody in this
+organisation says. It is the sentinel `CONTEXT.md` §Scope chose in place of a null so that
+`user_roles.scope_id` could stay `NOT NULL`. The owner answered on 24 October 2569 that
+the brackets go with it, which was option 1 of the three the ticket offered.
+
+**A value the schema chose is not a value anybody says.** The field teaches *brackets hold
+this thing's code*, so the day it prints the stored value for every entry it publishes the
+one entry whose stored value exists only to keep a column non-null. Nothing was wrong in
+the data and nothing was wrong in the picker's rule: what was wrong is that a storage
+decision had become wording. And because it is wording, who may change it is settled by
+who chose it (#156) — which is the next measurement, not an argument.
+
+**The delivered screen answered that one before the owner did.** `AddRoleDialog.js` drew
+its entries as `{scope_id} - {nameTH} - {year}` and `user_rolesController.getScope` never
+returned an entry for `FULL_ADMIN` at all, so the delivered system never showed the
+sentinel as a scope. There is no delivered number or word being diverged from here: the
+string is the rebuild's own, start to finish, which makes the ticket an owner's question
+rather than a regression (#86, #166). Had the control been there and dropped, the wording
+would have been decided already.
+
+**#215 had widened the population, and the ticket was written before it.** The ticket was
+opened on 17 October 2569, when the picker was the only site; #215 landed on 23 October and
+gave two more screens the same words. On the day the question was asked the picker and the
+held-roles table read `ทั้งมหาวิทยาลัย (FULL_ADMIN)` and the accounts list read
+`ผู้ดูแลระบบกลาง (ทั้งมหาวิทยาลัย (FULL_ADMIN))` — brackets inside brackets, which no row had
+ever read, and which is the third site's own version of the defect. A ticket's claim is
+dated by the day it was written (#66); here the population was.
+
+**And the audience is one person, which is #215's rule met from the other side.** The
+fallback `scopeNamed` keeps for a code it cannot name — the one rows 3 and 4 of §#215 are
+about — cannot be reached for this scope at all, and the clause that does it is not about
+scope alone. `backend/routes/users.js` filters the accounts list with
+`COALESCE(SENIORITY, 99) >= $2` beside `OWN_SCOPE = ANY($1)`, both built from the
+expressions `backend/auth/administration.js` defines - its own single-account read numbers
+the same clause `$3`. Seniority is the half that excludes **every** holder of a grant
+confined to nothing, whatever their place; the account actually measured, `admin01`, is
+outside the scope half too, having neither a department nor a programme, which `OWN_SCOPE`'s
+own comment calls the intended answer. Either way a faculty or a department administrator
+searching for it is shown **0 rows**. Whoever may read that grant is offered it, and so has
+its name. That measurement came out of a probe that failed: the first version granted
+`FULL_ADMIN` through the screen and then signed in as a `05` administrator to read the row,
+which timed out and left a grant behind in `deep_core_e2e`. Rewriting the arrangement below
+the seam with SQL and a `finally` (#181) did not fix it, because the row was not slow — the
+account was gone from the list. The failing probe was the measurement.
+
+**The ticket's cost line was a claim like its numbers, and it was the wrong way round
+(#77).** It said row 4 of `90a` — *the grant confined to nothing is left as it was* — would
+have to change. Both of that row's assertions (there is exactly one such entry; it carries
+no kind word) are **true on both sides of option 1**, so nothing had to change: what was
+owed was a new assertion, one new mutant, and one re-aim. Option 3, *keep it as it is*, was
+not free either, for the same reason in reverse: a decision taken needs the declined option
+made to run (#48). The price is read off the mount points, not off the ticket.
+
+**Three claims in one row, and the third one needed its own mutant.** The new assertion
+reads the whole string with `toBe` rather than the absence of a substring, because what is
+owed is one sentence and a code could come back in any shape — which is also why the
+declined option 2, Thai words inside the brackets, needs no mutant of its own: anything
+back inside the brackets fails both rows. It sits **below** the two older assertions, so
+`namestheunconfined` still dies at the second and the third would be proved by nothing
+(#88) if it had no killer of its own. It has two: `216:bracketsthesentinel`, the pre-ticket
+code made to run (#115), which dies at the third line with the two above it passing; and
+`90:nokind`, which the fix re-aimed to three edits and which reaches the third claim
+honestly, because the code before #90 bracketed every scope's code, the sentinel included.
+A re-aimed mutant's kill is read against the row it is *for* and not against the total
+(#203): `nokind` went from killing three rows of one file to killing eight of two.

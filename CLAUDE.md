@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 23 October 2569 that is
-`2026-10-23-the-form-its-own-effect-threw-away.md`. Read it before taking work. Each handoff names the one it supersedes for state,
+will cost time — as of 24 October 2569 that is
+`2026-10-24-the-code-that-was-not-a-code.md`. Read it before taking work. Each handoff names the one it supersedes for state,
 so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -851,6 +851,10 @@ citation.
 - When a client must tell two refusals apart, have the server say which at the point of deciding.
   A guard that says *only once* has to say once per what. (#52)
 - A number copied from a sibling screen is a decision, not an inheritance. (#45)
+- **A value the schema chose is not a value anybody says** — a sentinel that kept a column
+  `NOT NULL` becomes wording the day a field prints the stored value, and a field that teaches
+  *brackets hold this thing's code* then teaches one the organisation never uses. Who chose it
+  decides whose question it is (#156), and the delivered screen is where that is asked (#86). (#216)
 - An accessibility fix does not get to change layout on the way past, and a rule about layout is
   checked with numbers. (#111, #122)
 - **A contrast ratio is a claim about a glyph against its background, not about whether the glyph

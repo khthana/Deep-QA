@@ -19,8 +19,27 @@
 const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }
 
 /**
- * The scope as a person reads it: which kind of thing it is, its name, and the
- * code that is stored.
+ * The name with the stored code after it, except where the code is not a code.
+ *
+ * Every scope's brackets hold an identifier the organisation uses - `05`,
+ * `0501`, `ENG` - and the grant confined to nothing holds `FULL_ADMIN`, which
+ * `CONTEXT.md` §Scope chose in place of a null so that the column could stay
+ * `NOT NULL`. The field teaches *brackets hold this thing's code*, so that one
+ * entry was teaching a code nobody in the organisation says; #216 asked, and
+ * the owner answered on 24 October 2569 that the brackets go with it.
+ *
+ * Asked of the kind the server sends rather than of the code's own spelling,
+ * because what the rule is about is the one scope that is not a record. There
+ * is one such kind today: a second sentinel would be owed this clause too, and
+ * `KINDS` above has no `global` entry for the same reason the label needs no
+ * word in front of it.
+ */
+const withCode = scope =>
+  scope.kind === 'global' ? scope.label : `${scope.label} (${scope.scope_id})`
+
+/**
+ * The scope as a person reads it: which kind of thing it is, its name, and -
+ * where the stored value is a code at all - that code.
  *
  * The kind comes from the server - `GET /api/users/grantable` has answered it
  * all along - because the alternative is the screen inferring it from the
@@ -46,8 +65,8 @@ const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', progr
 export const scopeLabel = scope => {
   const kind = KINDS[scope.kind]
   return kind && !scope.label.startsWith(kind)
-    ? `${kind} · ${scope.label} (${scope.scope_id})`
-    : `${scope.label} (${scope.scope_id})`
+    ? `${kind} · ${withCode(scope)}`
+    : withCode(scope)
 }
 
 /**
@@ -69,6 +88,14 @@ export const scopeLabel = scope => {
  *
  * `215a` row 3 is that reading, and asserts the mechanism beside it: the scope
  * it reads a bare code for is one the picker on the same screen does not offer.
+ *
+ * The sentinel is the one scope this fallback cannot be reached for, measured
+ * on 24 October 2569 for #216: a faculty and a department administrator
+ * searching for the account that holds a grant confined to nothing were each
+ * shown no rows at all. `backend/routes/users.js` filters the accounts list by
+ * seniority as well as by scope, and the seniority half excludes every holder
+ * of that grant wherever they sit. Whoever may read it is offered it, and so
+ * has its name.
  */
 export const scopeNamed = (scopes, scopeId) => {
   const scope = scopes.find(entry => entry.scope_id === scopeId)
