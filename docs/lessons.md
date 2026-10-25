@@ -14143,3 +14143,85 @@ construction*. The reading is three numbers instead of one, and they say `1 · 1
 and `0 · 0 · 0` on `Students.js`: everything left on the screen belongs to the history panel. The
 window is buildable at **สถานะ**, where `ConfirmDialog` covers the list rather than replacing it,
 and both of #199's sequences were measured there.
+
+## #222 — the owner's answer that reached seven of eleven, and the person who needed nobody's help
+
+#222 is a question ticket: should `backend/lib/paging.js` put a ceiling on `page`, refuse past the
+end, or keep today's behaviour and write the reason at the file with a date on it? Nothing in it is
+a task, so what there was to do was measure its claims before writing the owner's question down.
+Three were true - `Math.max(1, ...)` floors `page` with no ceiling anywhere near it, eleven route
+files call `pageOf`, and nothing at `paging.js` writes a word about a page past the end.
+
+The claim that decided all three options was the one about why it does not hurt yet: *every
+paginated screen corrects the server on the client since #209*. That is a reason with a date on it
+(#81), and the first census I ran to check it was blind - it counted the spelling `Math.ceil`, which
+is evidence about the property it counted and not about the claim I wanted (#174, #208). Re-run by
+the mechanism - `lastPage`, `handedOn`, `HANDED_ON`, `answer.page >` - and narrowed to the eleven
+mount points of `<Pager>`, it says **seven**. The four without the rule are `Students.js`,
+`Users.js`, `components/users/HistoryPanel.js` and `components/groups/GroupHistory.js`: the same
+four #221's caller table had named a day earlier, found again without reading it.
+
+Why #209 stopped at seven is not a mistake of #209's. Its population was the screens with a
+page-stepping delete handler, because a page-stepping delete handler was the thing it was fixing, and
+a census whose population is *the things that carry X* cannot find the thing that carries no X
+(#141); a ticket written from another ticket's sweep inherits that sweep's population (#223). What
+is new here is the half one layer along: **the owner's answer reached that population too.** The
+owner chose option ก for the departments screen and gave a reason - *"the person who manages the
+departments page is probably the only one"* - which is still true of that screen and was never a
+sentence about any other.
+
+So the probe asked the screen rather than reasoning about it. `Users.js` is the only one of the four
+with a write that shortens the list it is drawing: the *active* status filter plus ระงับ. Signed in
+as the system administrator, filtering to active gives `ทั้งหมด 13` over two pages with three rows on
+the last; suspending those three one at a time, waiting for each reload, walks the pager line from
+`หน้า 2 จาก 2` to `หน้า 2 จาก 2` to **`ทั้งหมด 10 รายการ · หน้า 2 จาก 1`**, with
+*ไม่พบผู้ใช้งานตามเงื่อนไขที่เลือก* in the table on a page the screen is standing on. One person, one
+filter, one press at a time: no second actor, no race, nothing held. A reload does take it away, the
+page number being `useState(1)` rather than part of the URL - which is a way out the person has, and
+#153 says to ask what they can do about it, because the recovery may move the price rather than end
+it. What is left of the price is that the screen tells them the filter found nobody while the filter
+found ten.
+
+The probe's own first prediction was wrong, and for a reason this file already holds one species of:
+it counted the drawn rows and expected 0, but the empty state **is** a row (#164). The repair is to
+read what the table holds rather than how many rows it has. It is kept rather than deleted (#169),
+because nothing else can read this answer again, and its docblock says what it cannot say (#123) -
+above all that it says nothing about the other three mount points, where no press shortens the
+screen's own list and a second actor is a different question.
+
+Re-pricing the three options then moved two of them. Option 3's paragraph was costed at one
+paragraph, but the paragraph would have to say something: *the client corrects it everywhere* is a
+sentence the code makes false at four of eleven mount points, and a marker outlives the gap it
+documents, which turns it into an exemption (#141). Option 2 proposes refusing, in a file whose own
+docblock has already decided the other way - *"A page number is navigation, not data"*, so `page=abc`
+gets the first page rather than a refusal - which is the species of a ticket that proposes to change
+the file that already decided against it (#102). Option 1 changes what closed tickets recorded, and
+the hunt for those is by value and not by name (#145): `หน้า N จาก M` with `N > M` finds three
+`หน้า 3 จาก 2` and one `หน้า 4 จาก 2`, all in §#209 of the departments sheet, and the same hunt
+collides with a `หน้า 2 จาก 2` on the user-accounts sheet which is not past the end at all - a false
+positive of hunting by value, and the walked row the probe's own writes would have expired had
+`hold()` not put the three accounts back. That restoration is measured rather than assumed: the
+probe's second run arrived at `ทั้งหมด 13` exactly as the first did.
+
+And the measurement produced a fourth option the ticket does not list: extend #209's rule to the
+four remaining mount points. It changes no API contract, touches no sheet's record, applies a
+decision the owner has already taken to a population that day's census could not see (#196), and is
+the only one of the four that takes what the probe measured off the screen. It does not answer #222
+- the server still answers a page that does not exist - which is exactly why it belongs in a ticket
+of its own (#119) rather than in the owner's question: #239, filed as a `bug` and not a `question`,
+because one person alone reaching it is not a preference anybody chose.
+
+What the hunt by value also found is that the repository had already answered this species once. Two
+of the three `หน้า 1 จาก 0` in the tree are a row and a mutant: `57a-pager.spec.js` row 9 holds *an
+empty list reads `หน้า 1 จาก 1`, not `จาก 0`*, calling `จาก 0` "a page count that says the page the
+reader is on does not exist", and `57:nofloor` removes `Pager.js`'s floor of one so that the row can
+die. That is the same sentence as `หน้า 2 จาก 1` read from the other end: the claim is held where the
+page **count** would say the reader's page does not exist, and held by nothing where the page the
+reader is **on** exceeds the count. An answer the repo has already given to the same species is a
+decision rather than a precedent to weigh (#196), which is what makes the fourth option a question
+about the reach of a rule already chosen rather than a new question for the owner.
+
+Today's contract, meanwhile, is held at one route of eleven: `backend/test/history.test.js` has the
+only row in the backend suite that asks for a page past the end. If the owner picks option 1 or 2,
+the mutant of the rejected option (#48) has exactly one place to stand, and the other ten routes
+hold nothing at all - a number that belongs in the question rather than in the fix.

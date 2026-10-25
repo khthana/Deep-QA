@@ -85,6 +85,12 @@ citation.
 - **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. (#81)
+- **An owner's answer reaches the population the ticket's census had** — the census that found the
+  screens to fix also chose the screens the decision landed on, and the reason the owner gave is a
+  sentence about those screens and silent about their siblings (#141, #223 one layer along). Census
+  by the mechanism, then ask which of the population carries a write that shortens its own list:
+  where one does, the sibling's way in can need no second actor at all, which makes it a defect and
+  not the owner's question. (#222)
 - **A blocker's own expiry condition is a claim about which way in its author had in mind** — the
   date is right for that way in and blind to any other, and a *reason* that names a way in has
   named a way in, not the population. **And the blocker landing is not the way in closing**:
