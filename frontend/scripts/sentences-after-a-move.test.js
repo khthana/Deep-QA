@@ -270,3 +270,176 @@ test('a marker directly above the declaration counts - where this tree writes re
     true
   )
 })
+
+/**
+ * #226 - what the ref it found can tell apart.
+ *
+ * `enclosed (ref)` says a guard is there; it never said the ref could tell one
+ * subject from another. These rows are the two shapes this tree writes and the
+ * two it does not, so the label is read off the writes rather than off a list
+ * of ref names (#126).
+ */
+
+test('a ref written only where something opens says *something opened*', () => {
+  const site = one(`
+    function Screen() {
+      const showing = useRef(null)
+      const remove = async () => {
+        const sent = showing.current
+        await removeIt(id)
+        if (showing.current === sent) setNotice({ error: false, message: 'done' })
+      }
+      return <button onClick={() => { showing.current = {} }}>แก้ไข</button>
+    }
+  `)
+  assert.equal(site.guard, 'ref')
+  assert.equal(site.tells, 'opened')
+})
+
+test('a ref written with the loader can tell one question from another', () => {
+  const site = one(`
+    function Screen() {
+      const onScreen = useRef(load)
+      useEffect(() => {
+        onScreen.current = load
+      }, [load])
+      const add = async () => {
+        const sent = onScreen.current
+        const reloaded = await reload(said)
+        if (reloaded && onScreen.current === sent) setNotice({ error: false, message: 'done' })
+      }
+    }
+  `)
+  assert.equal(site.guard, 'ref')
+  assert.equal(site.tells, 'position')
+})
+
+test('a name bound to a fresh object is the same sentinel, one line along', () => {
+  assert.equal(
+    one(`
+      function Screen() {
+        const showing = useRef(null)
+        const openEditor = async plo => {
+          const ask = {}
+          showing.current = ask
+          await getPlo(plo.id)
+        }
+        const confirmRemoval = async () => {
+          const sent = showing.current
+          await deleteIt(id)
+          if (showing.current === sent) setNotice({ error: false, message: 'done' })
+        }
+      }
+    `).tells,
+    'opened'
+  )
+})
+
+test('a ref written both ways is neither, and the instrument says so', () => {
+  assert.equal(
+    one(`
+      function Screen() {
+        const showing = useRef(null)
+        const openEditor = () => {
+          showing.current = {}
+        }
+        const onPage = next => {
+          showing.current = next
+        }
+        const remove = async () => {
+          const sent = showing.current
+          await removeIt(id)
+          if (showing.current === sent) setNotice({ error: false, message: 'done' })
+        }
+      }
+    `).tells,
+    'mixed'
+  )
+})
+
+test('a ref nothing in the file writes cannot be read either way', () => {
+  assert.equal(
+    one(`
+      async function remove() {
+        const sent = showing.current
+        await removeIt(id)
+        if (showing.current === sent) setNotice({ error: false, message: 'done' })
+      }
+    `).tells,
+    'unwritten'
+  )
+})
+
+test('the comparison bound to a name carries the same question about its ref', () => {
+  const site = one(`
+    function Screen() {
+      const showing = useRef(null)
+      const open = () => {
+        showing.current = {}
+      }
+      const save = async draft => {
+        const sent = showing.current
+        const { offering } = await createOffering(draft)
+        const mine = showing.current === sent
+        if (mine) setNotice({ error: false, message: 'created' })
+      }
+    }
+  `)
+  assert.equal(site.guard, 'ref by name')
+  assert.equal(site.tells, 'opened')
+})
+
+test('a predicate the function is handed is not a ref, so there is nothing to classify', () => {
+  const site = one(`
+    async function after(isCurrent) {
+      await writeIt()
+      if (isCurrent()) setNotice({ error: false, message: 'done' })
+    }
+  `)
+  assert.equal(site.guard, 'flag')
+  assert.equal(site.tells, undefined)
+})
+
+
+/**
+ * #226's own species, found by the review of #226 - a ref born empty in a shape
+ * `isSentinel` did not list read as a value, which is the strongest label.
+ *
+ * `useRef()` is the commonest of them and the one that would have arrived
+ * silently: nothing in the tree is written that way today, which is why the
+ * figures did not move when this was repaired, and the fixtures are what says
+ * the repair is there (#141).
+ */
+
+const bornEmpty = init => `
+  function Screen() {
+    const showing = useRef(${init})
+    const remove = async () => {
+      const sent = showing.current
+      await removeIt(id)
+      if (showing.current === sent) setNotice({ error: false, message: 'done' })
+    }
+  }
+`
+
+test('a ref born with no argument at all carries no position', () => {
+  assert.equal(one(bornEmpty('')).tells, 'opened')
+})
+
+test('a ref born false, zero or empty carries no position either', () => {
+  for (const init of ['false', 'true', '0', "''", '``']) {
+    assert.equal(one(bornEmpty(init)).tells, 'opened', init)
+  }
+})
+
+test('a ref born holding a fresh empty collection is the species of `{}`', () => {
+  for (const init of ['new Map()', 'new Set()', 'new WeakMap()']) {
+    assert.equal(one(bornEmpty(init)).tells, 'opened', init)
+  }
+})
+
+test('a ref born holding a value that is not empty still carries one', () => {
+  for (const init of ['1', "'page-2'", 'new Map(rows)', 'load']) {
+    assert.equal(one(bornEmpty(init)).tells, 'position', init)
+  }
+})

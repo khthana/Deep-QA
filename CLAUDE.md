@@ -645,6 +645,13 @@ citation.
 - **A census built around a cause is read against its control group, not on its own** — the
   population *where the cause is absent* has a rate too, and when that rate is the lower one the
   cause was not the cause. (#194)
+- **An instrument that finds a guard has not asked what that guard can tell apart** — #208's
+  blind spot one layer along: not *it cannot find the guard* but *it found one and counted it as
+  enough*, which leaves the report reading as a stronger claim than the instrument made. Label
+  the thing by what it is **written with**, a reading an instrument can do where a hand list
+  lies the day a file arrives (#126), and write beside it the questions the label does not
+  reach: whether the screen even has the move, whether that move is reachable, and whether
+  anybody should be silent after it (#123, #132). (#226)
 - **An instrument can be red in the right place and wrong about what to do** — the exit code, the
   file and the line are right, and what is wrong is the sentence or the blast radius: a call it
   cannot read reported as one it had read, or one mistake in a declaration reported once at the
@@ -1047,7 +1054,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 |---|---|
 | `superseded-answers.js` | draws an answer with no guard and no written reason (#133's family) |
 | `label-codes.js` | draws a label with a code in front of the name and no written reason (#93's) |
-| `sentences-after-a-move.js` | says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family). It asks about **enclosure**, not about a window of lines, and it finds the guard by the ref without asking what that ref can tell apart — [#226](https://github.com/khthana/Deep-QA/issues/226), opened 21 October 2569 |
+| `sentences-after-a-move.js` | says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family). It asks about **enclosure**, not about a window of lines, and since #226 (25 October 2569) it also says what the ref it found can tell apart — `opened` for a ref written only with a fresh sentinel (`{}`, `[]`, `null`, `undefined`, a boolean, `0`, `''`, an empty `Map` or `Set`, or a name bound to one), `position` for one written with a value such as the loader, plus `mixed` and `unwritten`. On that date: `opened 19 .. position 3`. The six things it still cannot measure are in its docblock |
 | `swallowed-refusals.js` | redraws from a loader without reading whether it drew (#152's family). Built by #200 and left unwired while the twenty administration sites it found were still red; #203 fixed those and wired it in on 12 October 2569 |
 | `dead-loaders.js` | reads a list again with the loader a handler closed over instead of the one the ref holds (#208's family). It finds its loaders **by the ref** and so cannot see a ref holding a coordinate |
 | `required-props.js` | leaves out a prop the component it draws declares it must have (#179's `target`, by #182's answer on 22 October 2569). Its population is every file exporting `REQUIRED_PROPS`, so it is a rule about a declaration and not about a component's name; it cannot read a spread, a wrapper, or a named import |

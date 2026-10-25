@@ -50,6 +50,25 @@
  * 4. If it is not enclosed, the site must carry a marker saying why, with a
  *    reason and a ticket number. A marker is a claim like any other, so every
  *    one is counted and printed.
+ * 5. For a guard that reads a ref: what can that ref tell apart? #226 asked it
+ *    after #143, where `showing.current === sent` on `Offerings` was counted
+ *    `enclosed (ref)` and is a ref meaning *the last thing that opened on this
+ *    screen* (#146) - it cannot tell one Offering's panel from another's,
+ *    neither of them having opened anything. The report said `(ref)` and
+ *    anybody reading it as *this site knows where the person went* read it
+ *    wrongly, which is #208's blind spot one layer along: not *it cannot find
+ *    the guard* but *it found one and counted it as enough*.
+ *
+ *    The label is read off the ref's **writes**, never off a list of ref names
+ *    (#126): `opened` when every write is a fresh sentinel - `{}`, `[]`, `null`,
+ *    `undefined`, a boolean, `0`, `''`, a zero-argument `Map`, `Set`, `WeakMap`
+ *    or `WeakSet`, or a name bound to one of those - because such a value
+ *    carries no position and can only answer *has anything opened since*; `position` when a write carries a
+ *    value, as `onScreen.current = load` does, a loader being rebuilt on its own
+ *    dependencies and so changing the moment the question changes; `mixed` when
+ *    both, which nothing in this tree is today; and `unwritten` when nothing in
+ *    the file writes it. Where a test reads two refs the strongest answer wins,
+ *    because the guard can tell apart whatever any of its refs can.
  *
  * The marker, in a comment inside the function or directly above it:
  *
@@ -64,6 +83,38 @@
  * It is deliberately not a list in this file. A tool that skips things by name
  * lies the day a file is added (#126); the population being *every sentence
  * after an await* is what makes a new site arrive seen.
+ *
+ * What it cannot measure, written down because a tool that cannot say what it
+ * did not look at is the species of the hand-kept numbers it replaces (#123,
+ * #126, #132):
+ *
+ * - Whether the screen **has** a move the ref cannot see. It reads the ref's
+ *   writes, not the screen's controls. The loader's own dependency list is where
+ *   that is read, and on 25 October 2569 it said: of the 19 `opened` sites, 15
+ *   are on screens whose loader is keyed on route parameters alone, where a move
+ *   away is a route change; 4 are on screens that set a dependency themselves -
+ *   `Offerings.js:567` (pager, curriculum, year, semester), `Plos.js:354`
+ *   (curriculum) and `Users.js:293` and `:386` (filters, pager).
+ * - Whether such a move is **reachable while the write is out**, which is a
+ *   question about `disabled` and about what a dialog covers, and only the
+ *   browser can answer it. #210 gave six administration pagers the flag; #238
+ *   measured that no screen's filter has it.
+ * - Whether the sentence **should** be silent after a move. That is the owner's
+ *   (`docs/06` §Out of Scope): answered for `Offerings` on 21 October 2569
+ *   (#143 - the banner is about the write and says which Offering it is of), and
+ *   open for `Users` as #238's first question.
+ * - A ref born `React.useRef(...)`, or through an aliased import, which reads as
+ *   no birth at all: the label is then `unwritten` while something did write it.
+ *   Nothing in the tree is written that way on 25 October 2569.
+ * - A ref written with a **non-empty** literal - `showing.current = 'page-2'` -
+ *   which reads as a value and so takes `position`. That is the cautious
+ *   direction and it may be an overclaim, a constant being the same every time.
+ *   Nothing in the tree writes one.
+ * - Which **function** a name was bound in. The name-to-value map is read over
+ *   the whole file, so a `const ask = {}` in one handler answers for another
+ *   handler's `ask`. That direction understates - it can only turn a `position`
+ *   into an `opened` - and the shape it would need is two handlers binding one
+ *   name to different kinds of thing.
  *
  * Run: `npm run census` in `frontend/`. Its own fixtures: `npm run census:test`.
  *
@@ -211,13 +262,38 @@ const comparesARef = node => {
  * read the test would report that screen bare.
  */
 function namesHoldingTheQuestion(fn) {
-  const names = new Set()
+  const names = new Map()
   walk(fn.body, node => {
     if (node.type !== 'VariableDeclarator' || node.id.type !== 'Identifier') return
     if (node.init && node.init.type !== 'AwaitExpression' && comparesARef(node.init))
-      names.add(node.id.name)
+      names.set(node.id.name, node.init)
   })
   return names
+}
+
+/**
+ * The `x` of every `x.current` in this node - the refs a guard is asking.
+ *
+ * A name bound to the comparison is followed into its own expression, because
+ * `const mine = showing.current === sent` is the same question about the same
+ * ref, written in two lines.
+ */
+function refsRead(node, named) {
+  const refs = new Set()
+  const collect = where =>
+    walk(where, inner => {
+      if (
+        inner.type === 'MemberExpression' &&
+        !inner.computed &&
+        inner.property.type === 'Identifier' &&
+        inner.property.name === 'current' &&
+        inner.object.type === 'Identifier'
+      )
+        refs.add(inner.object.name)
+      if (inner.type === 'Identifier' && named.has(inner.name)) collect(named.get(inner.name))
+    })
+  collect(node)
+  return [...refs]
 }
 
 const identifiersIn = node => {
@@ -239,7 +315,7 @@ function asksTheQuestion(test, fn, parameters, named) {
   if (!test) return null
   if (comparesARef(test)) return 'ref'
   const read = identifiersIn(test)
-  for (const name of named) if (read.has(name)) return 'ref by name'
+  for (const name of named.keys()) if (read.has(name)) return 'ref by name'
   let flag = null
   walk(test, node => {
     if (flag) return
@@ -277,20 +353,21 @@ const leaves = node => {
 function enclosure(sentence, parents, fn) {
   const parameters = new Set(fn.params.flatMap(parameter => boundNames(parameter)))
   const named = namesHoldingTheQuestion(fn)
+  const found = (shape, test) => ({ shape, refs: refsRead(test, named) })
   let child = sentence
   for (let index = parents.length - 1; index >= 0; index--) {
     const parent = parents[index]
     if (parent === fn) break
     if (parent.type === 'IfStatement' && parent.consequent === child) {
       const shape = asksTheQuestion(parent.test, fn, parameters, named)
-      if (shape) return shape
+      if (shape) return found(shape, parent.test)
     }
     if (
       parent.type === 'ConditionalExpression' &&
       (parent.consequent === child || parent.alternate === child)
     ) {
       const shape = asksTheQuestion(parent.test, fn, parameters, named)
-      if (shape) return shape
+      if (shape) return found(shape, parent.test)
     }
     if (parent.type === 'BlockStatement' || parent.type === 'Program') {
       for (const statement of parent.body) {
@@ -298,12 +375,125 @@ function enclosure(sentence, parents, fn) {
         if (statement.type !== 'IfStatement' || statement.alternate) continue
         if (!leaves(statement.consequent)) continue
         const shape = asksTheQuestion(statement.test, fn, parameters, named)
-        if (shape) return shape === 'flag' ? 'flag by leaving' : shape + ' by leaving'
+        if (shape)
+          return found(shape === 'flag' ? 'flag by leaving' : shape + ' by leaving', statement.test)
       }
     }
     child = parent
   }
   return null
+}
+
+/** Whose zero-argument constructor is a fresh, position-free box. */
+const EMPTY_BOXES = new Set(['Map', 'Set', 'WeakMap', 'WeakSet'])
+
+/**
+ * Does this expression carry no position at all - a fresh sentinel?
+ *
+ * Both reviews of #226 found this listing `{}`, `[]` and `null` only, which made
+ * `useRef()`, `useRef(false)`, `useRef(0)` and `useRef('')` read as values -
+ * `position` where nothing else writes the ref, and `mixed` where something
+ * does, both of them stronger than the truth. This instrument's own species of
+ * mistake, reversed. Nothing in the tree is written any of those ways today, so
+ * the figures did not move; what says the repair is there is the fixtures (#141)
+ * and the measurement in `docs/acceptance/23-offerings.md` §#226, not the
+ * report.
+ *
+ * `useRef()` passes nothing, so an absent node arrives here. It is the one
+ * caller that can, every other passing a node it already has, and `undefined`
+ * carries no position - hence `true` rather than the old `false`.
+ */
+function isSentinel(node, bound) {
+  if (!node) return true
+  if (node.type === 'ObjectExpression') return node.properties.length === 0
+  if (node.type === 'ArrayExpression') return node.elements.length === 0
+  if (node.type === 'NullLiteral') return true
+  if (node.type === 'BooleanLiteral') return true
+  if (node.type === 'NumericLiteral') return node.value === 0
+  if (node.type === 'StringLiteral') return node.value === ''
+  if (node.type === 'TemplateLiteral')
+    return !node.expressions.length && node.quasis.every(part => !part.value.cooked)
+  if (node.type === 'Identifier' && node.name === 'undefined') return true
+  if (node.type === 'NewExpression')
+    return (
+      node.callee.type === 'Identifier' &&
+      EMPTY_BOXES.has(node.callee.name) &&
+      !node.arguments.length
+    )
+  // One hop: a name bound to a sentinel is one. The empty `Map` stops the walk
+  // there, a chain of names being a shape nothing in this tree has.
+  if (node.type === 'Identifier' && bound.has(node.name))
+    return isSentinel(bound.get(node.name), new Map())
+  return false
+}
+
+/**
+ * Every write to a ref in this file, by ref name.
+ *
+ * `useRef(x)` counts as one: a ref handed a value at birth and never reassigned
+ * is written, and reading only the assignments would call it `unwritten`.
+ */
+function refWrites(program) {
+  const bound = new Map()
+  walk(program, node => {
+    if (node.type !== 'VariableDeclarator' || node.id.type !== 'Identifier' || !node.init) return
+    bound.set(node.id.name, node.init)
+  })
+
+  const writes = new Map()
+  const note = (name, value) => {
+    if (!writes.has(name)) writes.set(name, [])
+    writes.get(name).push(isSentinel(value, bound) ? 'sentinel' : 'value')
+  }
+  walk(program, node => {
+    if (
+      node.type === 'AssignmentExpression' &&
+      node.operator === '=' &&
+      node.left.type === 'MemberExpression' &&
+      !node.left.computed &&
+      node.left.property.type === 'Identifier' &&
+      node.left.property.name === 'current' &&
+      node.left.object.type === 'Identifier'
+    )
+      note(node.left.object.name, node.right)
+    if (
+      node.type === 'VariableDeclarator' &&
+      node.id.type === 'Identifier' &&
+      node.init &&
+      node.init.type === 'CallExpression' &&
+      node.init.callee.type === 'Identifier' &&
+      node.init.callee.name === 'useRef'
+    )
+      note(node.id.name, node.init.arguments[0])
+  })
+  return writes
+}
+
+/**
+ * How much a ref can tell apart, weakest first.
+ *
+ * A guard can tell apart whatever any of its refs can, so where a test reads
+ * two refs the strongest label wins - which is this order read as a ladder
+ * rather than as prose.
+ */
+const STRENGTH = ['unwritten', 'opened', 'mixed', 'position']
+
+/** What one ref's writes say it can tell apart. */
+function labelFor(kinds) {
+  if (!kinds || !kinds.length) return 'unwritten'
+  const sentinels = kinds.filter(kind => kind === 'sentinel').length
+  if (sentinels === kinds.length) return 'opened'
+  return sentinels ? 'mixed' : 'position'
+}
+
+/** What the refs this guard reads can tell apart. */
+function tellsApart(refs, writes) {
+  let seen = null
+  for (const name of refs) {
+    const label = labelFor(writes.get(name))
+    if (seen === null || STRENGTH.indexOf(label) > STRENGTH.indexOf(seen)) seen = label
+  }
+  return seen
 }
 
 /**
@@ -368,6 +558,7 @@ function markerFor(fn, statement, comments, code) {
 function examine(code) {
   const ast = parser.parse(code, { sourceType: 'module', plugins: ['jsx'] })
   const comments = ast.comments || []
+  const writes = refWrites(ast.program)
   const sites = []
   let sentences = 0
 
@@ -396,7 +587,12 @@ function examine(code) {
     if (sites.some(site => site.line === line)) return
     const guard = enclosure(node, parents, fn)
     if (guard) {
-      sites.push({ line, guard })
+      const site = { line, guard: guard.shape }
+      if (guard.refs.length) {
+        site.refs = guard.refs
+        site.tells = tellsApart(guard.refs, writes)
+      }
+      sites.push(site)
       return
     }
     const statement = [...parents]
@@ -426,6 +622,7 @@ function main() {
   let sentences = 0
   let after = 0
   const guarded = []
+  const tells = new Map()
   const marked = []
   const problems = []
 
@@ -445,7 +642,11 @@ function main() {
     for (const site of found.sites) {
       const at = where + ':' + site.line
       if (site.guard) {
-        guarded.push(at + ' (' + site.guard + ')')
+        const label = site.tells || 'no ref'
+        tells.set(label, (tells.get(label) || 0) + 1)
+        guarded.push(
+          at + ' (' + site.guard + (site.refs ? ', ' + label + ': ' + site.refs.join(' ') : '') + ')'
+        )
       } else if (!site.marker) {
         problems.push({
           where,
@@ -499,7 +700,12 @@ function main() {
       after +
       ' .. enclosed ' +
       guarded.length +
-      ' .. marked ' +
+      ' (' +
+      [...tells.entries()]
+        .sort()
+        .map(([label, count]) => label + ' ' + count)
+        .join(' .. ') +
+      ') .. marked ' +
       marked.length +
       ' .. problems ' +
       problems.length

@@ -14281,3 +14281,87 @@ wait #225 took out of `140a`: it moves the press instead of failing the row. Bot
 `isDisabled()` once. The review that found it quoted my own docblock citing #209 as the reason to
 assert the precondition, which is true, and the instrument I had reached for was the one #209 and
 #225 had removed.
+
+## #226 — the guard it found, and the question that guard could not answer
+
+`sentences-after-a-move.js` asks whether a success sentence said after an `await` is enclosed by
+something asking whether the screen is still the one that asked, and it counted a site as answered
+when a `.current` comparison enclosed it. #143 had found the hole from the other side: on
+`Offerings` the removal's sentence sits inside `showing.current === sent`, and `showing` means *the
+last thing that opened on this screen* (#146), which cannot tell one Offering's panel from another's
+because neither of them opens anything. The census reported that site green, and it was right about
+the question it asked — but anybody reading `(ref)` as *this site knows where the person went* read
+a stronger claim than the instrument had made. That is #208's blind spot one layer along: not *it
+cannot find the guard* but *it found one and counted it as enough*.
+
+The ticket asked for a measurement rather than a fix, and named two possible criteria for a split:
+read what the ref is **written with**, which it called a reading an instrument does with difficulty,
+or keep a hand-written list with a reason per site. The measurement answered the question of which:
+the first is forty lines. A value that carries no position at all is a fresh `{}`, `[]`, `null`, or
+a name bound to one of those, and a ref written only with those can answer *has anything opened
+since* and nothing else. So `opened` is every write being one of those, `position` is a write that
+carries a value — `onScreen.current = load`, a loader rebuilt on its own dependencies and so
+changing the moment the question changes — `mixed` is both, and `unwritten` is nothing in the file
+writing it. The hand list was refused for the reason this file has never held one: a tool that skips
+things by name lies the day a file is added (#126).
+
+What the tree said on 25 October 2569: of 22 sites counted `enclosed (ref)`, **19 read `showing`**
+and **3 read `onScreen`**. `useRef(load)` had to count as a write for the second three to read
+`position`, which is also what stops a ref born with a value and never reassigned from reading
+`unwritten`.
+
+Then the second layer, because the label says what the ref *can* tell apart and not whether the
+screen has a move it cannot see. That is read off the loader's own dependency list, a dependency the
+screen sets itself being a control on that screen: 15 of the 19 are on screens whose loader is keyed
+on route parameters alone, where moving away is a route change that takes the screen down, and **4
+are not** — `Offerings.js:567`, `Plos.js:354`, `Users.js:293` and `:386`, where a pager or a filter
+rebuilds the loader and writes nothing the guard reads. Three of those four were already somebody's
+question: `Offerings` was answered on 21 October 2569 (#143 — the sentence names its Offering), and
+`Users` is #238's first question. `Plos.js:354` was nobody's, and reading the handler says why: the
+confirmation box closes before the reload is awaited, so the curriculum filter is on the screen and
+not disabled while the read is out. That paragraph is read from the code and not measured in the
+browser, so it went into the sheet and a ticket of its own rather than into this change.
+
+The three questions the instrument still cannot reach are now written in its docblock, with the
+date and the figures: whether the screen has a move the ref cannot see, whether that move is
+reachable while the write is out (a question about `disabled` and about what a dialog covers, which
+only the browser answers), and whether the sentence *should* be silent after a move, which is the
+owner's. A tool that cannot say what it did not look at is the species of the hand-kept numbers it
+replaces (#123, #126, #132).
+
+Two smaller things. The instrument's own seven new fixtures pass either way (#141), so the run that
+decided was breaking two real sites: `Plos.js`'s open-the-editor write made to carry the curriculum
+moved the report to `mixed 1 .. opened 18 .. position 3`, and `StudentGroups`'s `onScreen.current =
+load` made `{}` moved it to `mixed 1 .. opened 19 .. position 2` — `mixed` and not `opened`, because
+`useRef(load)` is the write that is still carrying a value. And the first green run was not the
+first run: turning `namesHoldingTheQuestion` from a `Set` into a `Map`, so the refs inside a named
+comparison could be followed, broke `ref by name` — `for (const name of named)` over a Map hands
+over pairs. An existing fixture said so in the same second, which is the whole reason the file has
+one per shape.
+
+And then the review of this very change found the rule loose in the other direction, both axes
+finding it without seeing each other. `isSentinel` listed `{}`, `[]` and `null`, so a ref born empty
+in any other shape — `useRef()`, `useRef(false)`, `useRef(0)`, `useRef('')`, `useRef(new Map())` —
+read as a value and took a label stronger than the truth. That is this ticket's own species reversed:
+not *it cannot find the guard* but *it found one and said it knows where the person went*. #174 had
+the line already — a rule that is too loose fails the other way, and only breaking a real site shows
+it — and the shape that would have arrived silently is the commonest idiom React has.
+
+What settled it was the same instrument read on both sides, which cost one temporary copy of the
+script with the old three-type body: `Plos.js`'s `useRef(null)`, read by three of the 22 sites, put
+into each of the four shapes. The unrepaired instrument answered `mixed 1 .. opened 18 .. position 3`
+for `useRef(false)`, `useRef()` and `useRef(new Map())` alike; the repaired one holds `opened 19 ..
+position 3` for all three and still answers `mixed` for `useRef(1)`, which is the control that says
+the repair did not become *accept anything*. `mixed` rather than `position` on that site because
+`showing.current = {}` writes it elsewhere too, so the per-ref label and the merged one are not the
+same sentence — worth saying, because the review's wording was right about the mechanism and one
+step strong about this site.
+
+The tree's figures did not move, before or after. That is what makes it a latent gap rather than a
+wrong number, and it is also why the fixtures and that table are the whole proof: a report that
+reads the same either way proves nothing (#141). Two of the review's remaining findings were
+writing-down rather than fixing — a ref born through `React.useRef` or an aliased import reads as
+`unwritten`, and the name-to-value map is read over the whole file rather than per function, which
+can only understate — and both went into the docblock's list beside the three that were already
+there. The ladder in `tellsApart`, which had stated its ordering in prose and implemented it in
+three branches, became a `STRENGTH` array read with `indexOf`.
