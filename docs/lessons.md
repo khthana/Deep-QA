@@ -14377,12 +14377,13 @@ which its own comment says means *the read was not refused* and never *it drew* 
 is a claim from the day it was written (#66, #111), and what the ticket asked for first was the
 measurement.
 
-Three sequences at the browser seam, on `dept.admin.05@kmitl.ac.th`, who reaches `0501` and `0503`,
+Six sequences at the browser seam, on `dept.admin.05@kmitl.ac.th`, who reaches `0501` and `0503`,
 each arm carrying its prediction as an assertion (#205) because the sampler is built from the
 sentence's own text and a wording change would print `0 of n` and exit 0 — the probe's answer
-inverted with nothing saying so (#208, #171). The control said the sentence 209 frames of 225 over
-`0501`'s own 51 rows. The two moved arms said it 222 of 360 and 216 of 351, both over `0503`'s four.
-Twice, with the same answers.
+inverted with nothing saying so (#208, #171). The control said the sentence 211 frames of 225 over
+`0501`'s own 51 rows. The filter moved while the DELETE was held said it 222 of 360, and moved while
+the *reload* was held 213 of 347, both over `0503`'s four. Three runs, the same answers to within a
+few frames.
 
 **The paragraph read from the code was right, and the measurement confirmed it rather than refuting
 it** — the rarer side of #66. And what the measurement adds is not in the code reading: of the two
@@ -14391,10 +14392,39 @@ DELETE is out the box is still up, under a cover that eats a click (#199) and, s
 trap, so the filter is reached by pressing ยกเลิก first, which is the way a person has. While the
 *reload* is out the box has closed itself: 0 covers, 0 confirm buttons, filter not disabled. So the
 argument that nobody can reach the window — the argument the file's own `onScreen` docblock makes
-about the box being up — is dated by **where in the handler the close runs**, not by the box
-existing (#220). Three sequences, one behaviour, no clock choosing: that puts this screen on
-`Users.js`'s side and not `Students.js`'s, which makes it the owner's question of #238's first kind
-rather than #52's defect, asked now for three screens instead of two.
+about the box being up, in the sentence *"the dialog behind ลบ leaves it drawn"* — is dated by
+**where in the handler the close runs**, not by the box existing (#220).
+
+Those first arms, though, cannot answer the ticket's second ask, and that is the lesson. All four of
+them press **inside** a held window, so between them they say what happens when a press lands in the
+window and nothing about whether that is what decided the outcome. #52's defect and #199's are a
+system holding *two* behaviours with an invisible clock choosing, and the thing that tells that apart
+from one behaviour reached two ways is **the same press outside the window**. So each control was
+measured on both sides and the four cells read as a grid (#148, #149): a fifth arm moved the filter
+after the sentence had landed with nothing held at all, and a sixth pressed
+เพิ่มผลการเรียนรู้ there.
+
+Both columns agreed. The filter's cells are the same sentence over the same new curriculum, standing
+in one banner, because **nothing takes the notice away when the filter moves**: `setNotice(null)` is
+called by the controls that write the ref and by nothing else. The `เพิ่มผลการเรียนรู้` cells differ
+only in *when* — never said inside the window because the guard works, said and then taken away by
+the person's own press outside it — and leave the person with the same screen either way. One
+behaviour, no clock choosing, so the ticket's second ask is answered: the owner's question of #238's
+first kind, asked now for three screens instead of two, and not #52's defect.
+
+**Whether a system holds one behaviour or two is decided by the same press outside the window, not
+by more presses inside it.** Four arms inside a window look thorough and are one cell of a grid. And
+the fifth arm did something else to the ticket: if the sentence stands with nothing held, the
+sequence needs no window, no second actor and no particular moment — only that somebody moves the
+filter after pressing ลบ. The ticket's own wording, *in the window*, named a window where the
+population of ways in is *any time afterwards* (#179 met again). What the two windows decide is the
+`เพิ่มผลการเรียนรู้` column, not the filter's.
+
+The last two arms also read something the sampler cannot: whether the banner is still **standing**
+after the press. The fifth reads it once, at a settle point, because nothing in that arm calls
+`setNotice(null)` and a retrying read there would be an assertion that cannot fail (#50); the sixth
+retries, because there the code under test is itself the remover, which is #214's exception to that
+rule. Both halves of one rule, in one file, ten lines apart.
 
 The other finding is the instrument. The ticket named `e2e/support/late-answer.js`, and that file's
 own docblock says what it is for: the window between an **answer** and its **drawing**, 400ms, by

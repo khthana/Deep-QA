@@ -618,6 +618,11 @@ citation.
   inside the unseen state can all pass over a change that happens in front of the person. The
   question is not whether the thing still goes away but whether it still goes away at the same
   speed while being watched. (#169)
+- **Whether a system holds one behaviour or two is decided by the same press *outside* the window,
+  not by more presses inside it** — #169's shape for the #52 and #199 question, and the arms inside
+  a window look thorough while being one cell of a grid (#148, #149). Measure each control on both
+  sides: where a column's cells agree the clock is not choosing, and a column that agrees because
+  nothing clears the state says the sequence never needed the window at all (#179). (#241)
 - **An in-page override is a claim, and the cheapest check on it is the property it was meant to
   change** — an `!important` that does not land prints the old value beside the variant's name and
   reads exactly like a candidate that buys nothing, which is an answer somebody will act on.
