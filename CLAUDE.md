@@ -34,9 +34,9 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 24 October 2569 that is
-`2026-10-24-the-cleanup-locked-out-by-its-own-row.md`. Read it before taking work. Each handoff names the one it supersedes for state,
-so follow that chain rather than the filenames.
+will cost time — as of 25 October 2569 that is
+`2026-10-25-the-mount-point-nobody-had-counted.md`. Read it before taking work. Each handoff
+names the one it supersedes for state, so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
 
@@ -196,6 +196,10 @@ citation.
 - **A guard written for one caller is a claim about every caller** — find the others before
   writing the comment that says they are safe, because that comment is the claim, and a caller
   passed by reference is invisible to a grep for the call. (#68, #133)
+- **An *unreachable* that rests on a prop is a claim about every place the component is
+  mounted** — the reason that closes the way in is usually written about one screen's JSX, while
+  what it holds up is a claim about a component, so census the mount points; *one mount point* is
+  then a dated claim like any other. (#220)
 
 ### Marks on the sheets
 

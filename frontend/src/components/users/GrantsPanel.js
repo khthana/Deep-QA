@@ -80,6 +80,13 @@ export default function GrantsPanel({ user, onError }) {
   // the screen offers a roll beside the form, it is what stops one person's
   // roles being drawn under another's name. `141c` row 4 counts the controls
   // that would make it reachable; the sheet says ยังไม่ได้ทดสอบ, not ไม่ต้องมี.
+  // Re-measured on 25 October 2569 (#220): this panel has a single mount
+  // point - `Users.js` draws it in the branch the form occupies, and
+  // `listGrants`, `grantRole` and `revokeGrant` are imported nowhere else
+  // in `src/` - so the sentence above is about every caller and not only
+  // about this screen (#68). The day anything draws this panel where a
+  // prop can change under it, that sentence expires and these three
+  // claims need rows; until then ยังไม่ได้ทดสอบ, re-measured 8 ม.ค. 2570.
   const load = useCallback(async isCurrent => {
     try {
       const { roles } = await listGrants(user.user_id)

@@ -14010,3 +14010,55 @@ than averaging: the 3.0 minutes for `nobreakwords` is the one this ticket measur
 code, and #219's own sweep table reads 2.4 for that same mutant and 1.4 for `nowrapinstead`, which
 nothing re-measured here. A duration is a sample (#102, #146), so the claim this story makes is
 the direction and the floor, not the difference.
+
+## #220 — the sentence that closed the way in, and the mount point nobody had counted
+
+A tracker rather than a defect. #141 closed with fifteen of its sixteen sites proved and one left:
+`GrantsPanel`, which carries three claims — `load`'s flag and the answers of `add` and `remove`.
+What a tracker owes each visit is not a fix but the measurement that could expire it, and this
+visit two of the ticket's own sentences moved.
+
+**A ticket's line numbers are a claim with a date, and two readings minutes apart say whose line
+it was.** The ticket's table, written on 19 October 2569, gave `:84` `:128` `:168`. The census run
+before anything was touched gave `:85` `:129` `:169`, and the one run after this ticket added a
+seven-line comment to `load` gave `:92` `:136` `:176`. Eight lines, of which exactly one belonged
+to somebody else's work in the six days between — and only the first of those two readings can
+say so. That is why the ticket's own first criterion is *measure with `--guarded`, not by reading
+the paragraph above*: a hand-kept number in a file that grows every ticket is already wrong
+(#130), including when the file is the ticket.
+
+**An *unreachable* that rests on a prop is a claim about every place the component is mounted.**
+The sentence that has closed this way in since #133 describes one screen's JSX: the form replaces
+the table, so a second account can only be opened once this panel has come down. That is a reason
+about a screen, and the thing it holds up is a claim about a component — every mount point is a
+place where a prop could change without an unmount. Measured on 25 October 2569: `GrantsPanel` is
+imported and drawn in exactly one file, and `listGrants`, `grantRole` and `revokeGrant` are
+imported nowhere else in `src/`. So the reason covers the population and not only the screen it
+was written on, which nobody had established in the three months the three sites have been
+waiting. It is #68's rule — *a guard written for one caller is a claim about every caller* — in
+the direction of the way in rather than of the guard, and it cuts both ways: the day anything
+draws this panel beside a list, three claims become reachable and nothing in the suite would say
+so (#131). *One mount point* is a dated claim like the line numbers, and the census that found it
+is a grep for `import`, blind to a dynamic import, a re-export or a wrapper that passes the prop
+on — the shape `required-props.js` writes down about itself (#182).
+
+The rest was the ticket's own list, measured rather than re-read (criterion 3): `setEditing` still
+has four sites in `Users.js` and the two reachable while the form is open both write `null`;
+`users` is still mounted without an `:id`; and `141c` ran 4 of 4 in 57.9 seconds with row 4 — the
+net that counts the controls while the panel is open — green. All three sites therefore end as
+**ยังไม่ได้ทดสอบ** with 8 January 2570 as the date to measure again, which is what the ticket
+allows and what *ไม่ต้องมี* is not. No mark moved, and what holds that sentence up is that the
+diff touches no criteria row at all.
+
+**An instrument that cannot run is not a measurement, and the reason can be the machine rather
+than the code.** Three attempts at `141c` died with `Process from config.webServer exited early.`
+and nothing above it, which reads as a crash in the backend. It was the port: 3400 ran the whole
+suite on 24 October, and the morning after a reboot it was inside Hyper-V's `3324-3423`. Inside an
+excluded range the bind does not raise — `server.js` printed `Server running on
+http://localhost:3400`, printed its environment banner, and ended on its own with status 0 about
+300ms later, which is a second symptom beside the `EACCES` one `e2e/support/env.js` already
+documented. Running `node server.js` by hand on that port and on 3600 is what told them apart, in
+two commands. The comment now carries both; the twelve `mutation/` run blocks that hand-carry
+`E2E_BACKEND_PORT=3400` are #237 rather than a sentence here, for #119's reason — twelve and
+not the thirteen a grep for the variable name returns, because the thirteenth writes `3110` and
+still runs today. A census by the mechanism counts the value, not the variable (#174).

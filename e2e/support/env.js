@@ -19,6 +19,19 @@ const path = require('node:path');
  * whoever reads it hunting for a process that does not exist.
  * `netsh interface ipv4 show excludedportrange protocol=tcp` is what says so.
  *
+ * That is one of two symptoms, and the quieter one cost three runs on
+ * 25 October 2569 (#220). With the backend on a port inside an excluded range
+ * the bind does not raise: `server.js` printed `Server running on
+ * http://localhost:3400` and `Environment: test`, and then the process ended
+ * on its own with status 0 about 300ms later. Playwright reports that as
+ * `Process from config.webServer exited early.` with no error above it, which
+ * reads as a crash in the server and sends you to the application. What tells
+ * the two apart is running `node server.js` by hand on that port and on one
+ * outside the ranges: the second stays up. So read `excludedportrange` before
+ * reading the stack, and never carry a port forward from a note — the blocks
+ * are re-randomised on every boot, and 3400 ran the whole suite on
+ * 24 October 2569 and was inside 3324-3423 the next morning.
+ *
  * The defaults do not move: a suite whose ports drifted per machine would make
  * every "it works here" less informative. What the override buys is a run on a
  * machine that has temporarily lost a port, without a config change committed
