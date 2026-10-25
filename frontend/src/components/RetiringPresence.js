@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 
 /**
@@ -82,6 +82,19 @@ function RetiringPresence({ at, mode, children }) {
 
   const drawn = children != null
 
+  // The rule itself, written once because both arms below are the same rule
+  // reached two ways: if something may still be on its way out and there are
+  // no frames to fade it with, retire it now by mounting a fresh presence.
+  // Two copies of it is how a later fix comes to repair one arm and not the
+  // other, which is the species both this wrapper's first versions met (#169,
+  // #227).
+  const dropWhatCannotFade = useCallback(() => {
+    if (document.hidden && leavingFrom.current != null) {
+      leavingFrom.current = null
+      setGeneration(count => count + 1)
+    }
+  }, [])
+
   useEffect(() => {
     // Only a change of `at` starts a removal, and only something that was
     // drawn before it can be left behind. The comparison is what keeps this
@@ -109,11 +122,8 @@ function RetiringPresence({ at, mode, children }) {
     }
     atBefore.current = at
     drawnBefore.current = drawn
-    if (leavingFrom.current != null && document.hidden) {
-      leavingFrom.current = null
-      setGeneration(count => count + 1)
-    }
-  }, [at, drawn])
+    dropWhatCannotFade()
+  }, [at, drawn, dropWhatCannotFade])
 
   // The other half: taken away while the tab was in front, and the tab
   // backgrounded inside the 180ms the fade needs. Armed only while something
@@ -122,16 +132,10 @@ function RetiringPresence({ at, mode, children }) {
   // somebody had typed into it, and, on the way back, a node disappearing in
   // front of them rather than fading.
   useEffect(() => {
-    const dropWhatCannotFade = () => {
-      if (document.hidden && leavingFrom.current != null) {
-        leavingFrom.current = null
-        setGeneration(count => count + 1)
-      }
-    }
     document.addEventListener('visibilitychange', dropWhatCannotFade)
     return () =>
       document.removeEventListener('visibilitychange', dropWhatCannotFade)
-  }, [])
+  }, [dropWhatCannotFade])
 
   return (
     <AnimatePresence

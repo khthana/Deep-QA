@@ -62,6 +62,18 @@
  * `docs/acceptance/50-sign-in-screens.md`. Like the three above them they are
  * instruments and not rows: no seam can build the condition.
  *
+ * What it cannot say, found on 25 October 2569 while #227 was being fixed:
+ * every reading here is taken of the node carrying `MARK`, so **it cannot tell
+ * a node that was removed from one that was replaced**. A remount makes a new
+ * node without the attribute, and the report then reads as a clean
+ * disappearance with every number agreeing - `stillOpenOnReturn: 0`,
+ * `framesStillDrawingIt: 0`, `opacityCameDown: false` - which is what #227's
+ * first version printed while it was remounting a whole screen. Both answers
+ * are bad there, so it did not decide anything; on a question where only one
+ * of the two is a defect, read the code the mark cannot see, or count the
+ * unmarked siblings beside the marked one (#164's blind sampler, one species
+ * along).
+ *
  * It signs in through the real endpoint as a seeded account, changes nothing
  * but that account's own password (to the same value) in the `save` run, and
  * writes its report and screenshots to a directory under the system temp -
@@ -84,6 +96,8 @@ const APP = FRONTEND_URL;
 const API = BACKEND_URL;
 const EMAIL = 'faculty.admin@kmitl.ac.th';
 const PASSWORD = 'deep-core-local';
+// Every reading below is of the node this is put on, so a remount reads as a
+// removal: see *What it cannot say* above before believing a report of zeroes.
 const MARK = 'data-probe169';
 
 const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'probe169-out-'));

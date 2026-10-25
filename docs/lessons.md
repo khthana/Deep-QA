@@ -12912,7 +12912,9 @@ either way, the last at 186ms at `HEAD` and 192ms on the fix, opacity coming dow
 gone at the end both times.
 
 **What holds the new behaviour is nothing in either suite, and that is written down rather than
-left to be discovered.** `DialogPresence.js` says so in its own header, and the probe is committed
+left to be discovered.** `DialogPresence.js` says so in its own header (renamed to
+`RetiringPresence.js` by #227 on 25 October 2569, which generalised the wrapper; the head comment
+and this reason moved with it), and the probe is committed
 at `e2e/probes/169-presence-without-frames.js` instead of being deleted with the measurement
 (#207), because it is the only thing that can read this behaviour again — the seam that would
 normally hold it is the seam that cannot build the condition. A claim no seam can put at risk is
