@@ -7,6 +7,7 @@ import { post } from '../api/client'
 import LoginGoogle from '../components/LoginGoogle'
 import LoginForm from '../components/LoginForm'
 import ContentMotionDIV from '../components/ContentMotionDIV'
+import RetiringPresence from '../components/RetiringPresence'
 
 /**
  * What the Google path refuses with.
@@ -230,7 +231,7 @@ export default function Login() {
             </p>
           </div>
 
-          <AnimatePresence mode="wait">
+          <RetiringPresence at={LoadLogin ? 'loading' : 'content'} mode="wait">
             {!LoadLogin ? (
               <ContentMotionDIV className="space-y-8 " key="content">
                 <div className="transition-all duration-300 hover:translate-y-[-1px]">
@@ -249,6 +250,25 @@ export default function Login() {
                   </div>
                 </div>
 
+                {/* The refusal keeps `AnimatePresence` while the swap
+                    above it does not - #227, measured on 25 October 2569 with
+                    `e2e/probes/169-presence-without-frames.js sites`. It holds
+                    a closed node just the same: dismissed with the tab
+                    backgrounded the box was in the document at 0.5, 1 and 3
+                    seconds, at `opacity: 1`, `pointer-events: auto`, 0
+                    controls focusable, 4 accessibility nodes with 3 exposed.
+
+                    What it has not got is an answer that can close it.
+                    `errorMessage` is cleared by `clearRefusalAndSet`, which
+                    needs a keystroke, and by the next submit - and that submit
+                    unmounts this whole subtree through the swap above, which
+                    retires its node rather than holding one. So the state
+                    needs the tab put away inside the 198ms fade (195ms
+                    after an earlier hide); that is the accepted price, and at
+                    the far end one fade is paid at most - the tween resumed on
+                    the first frame after the return either jumps straight to
+                    its end (gone in 4-6ms, 1 sampled frame) or runs it out,
+                    both read on this code on 25 October 2569. */}
                 <AnimatePresence>
                   {errorMessage && (
                     <ContentMotionDIV
@@ -302,7 +322,7 @@ export default function Login() {
                 </div>
               </ContentMotionDIV>
             )}
-          </AnimatePresence>
+          </RetiringPresence>
         </div>
       </div>
     </ContentMotionDIV>

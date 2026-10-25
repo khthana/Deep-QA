@@ -48,7 +48,8 @@ itself and nothing cleared it on the way out, which is provable at this seam - a
 is closed: every dialog now clears its own state on the way out. **The presence was
 #169, and it was answered on 21 October 2569**: the owner chose to drop a closed box
 from the document at once when the tab is getting no frames, which is what
-`frontend/src/components/DialogPresence.js` now does for both boxes of the navbar.
+`frontend/src/components/RetiringPresence.js` now does for both boxes of the
+navbar - renamed by #227, which took the same wrapper to `pages/Login.js`'s swap.
 It was measured with `e2e/probes/169-presence-without-frames.js`, outside both seams,
 because Playwright is what suppresses the condition - a page another tab is in front
 of still reports `visible` and counts 60 frames a second. Both things #169 asked for

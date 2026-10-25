@@ -162,6 +162,24 @@ function RoleDropdown({ setAlert, onStayedPut }) {
         </svg>
       </button>
 
+      {/* `AnimatePresence` and not `RetiringPresence` - #227, measured on
+          25 October 2569 with
+          `e2e/probes/169-presence-without-frames.js sites`. Closed with the
+          tab backgrounded the list was still in the document at 0.5, 1 and 3
+          seconds, at `opacity: 1` (0.999788 on one of the two runs, the
+          enter's own last frame frozen by the same absence of frames),
+          `pointer-events: auto`, 1 control focusable, 6 accessibility nodes
+          and none of them ignored. The way in
+          is what it lacks: `open` is written by the trigger and by `choose`,
+          which lowers it **before** awaiting `switchRole`, so no answer can
+          ever close this list - reaching the state means backgrounding the tab
+          inside the 183ms fade (186ms after an earlier hide). The accepted
+          price is those 183ms, and what is paid at the far end is one fade at
+          most: the tween resumed on the first frame after the return either
+          jumps straight to its end (gone in 4-8ms, 1 sampled frame) or runs
+          the fade out (13 frames of 62, the last at 192ms) - both were read on
+          this same code on 25 October 2569, which makes it a property of the
+          resumed tween and not of the site. */}
       <AnimatePresence>
         {open && (
           <ContentMotionDIV className="absolute z-10 mt-2 w-auto divide-y divide-gray-200 overflow-hidden rounded-lg border border-gray-100 bg-white shadow-lg">

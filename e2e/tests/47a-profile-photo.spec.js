@@ -173,7 +173,7 @@ test('a dialog reopened after a refusal remembers nothing', async ({ page }) => 
   // animation that never gets a frame leaves `AnimatePresence` holding the child,
   // and reopening hands the same instance back. #169 closed that way in on
   // 21 October 2569: a box closed while the tab is getting no frames is now
-  // dropped from the document at once (`components/DialogPresence.js`). So the
+  // dropped from the document at once (`components/RetiringPresence.js`). So the
   // hand-walk's own cause is gone, and the row stays a net anyway - this browser
   // never had it.
   //

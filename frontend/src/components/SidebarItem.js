@@ -168,6 +168,30 @@ function SidebarItem({
                   </li>
 
                   {/* Submenu */}
+                  {/* `AnimatePresence` and not `RetiringPresence` -
+                      #227, measured on 25 October 2569 with
+                      `e2e/probes/169-presence-without-frames.js sites`. Closed
+                      with the tab backgrounded the submenu was still in the
+                      document at 0.5, 1 and 3 seconds, at `opacity: 1`,
+                      `pointer-events: auto`, 2 links focusable and 11
+                      accessibility nodes with 7 exposed.
+
+                      Two things have to be true for a way in, and only one is:
+                      `openMenu` is written by presses, and the one close the
+                      route drives - the effect above, which puts this item's
+                      key in or out as `menuData` gains or loses the row -
+                      takes the item out of the array in the same render, so
+                      this `AnimatePresence` unmounts with it and holds
+                      nothing. The accepted price is therefore the fade itself,
+                      318ms here because the exit also tweens `height`
+                      (314ms watched after an earlier hide) - the longest of
+                      the five, and still an act of the person's own hand away.
+                      At the far end one fade is paid at most: the tween
+                      resumed on the first frame after the return either jumps
+                      straight to its end (gone in 5ms, 1 sampled frame) or
+                      runs it out (20 frames of 62, the last at 308ms), both
+                      read on this same code on 25 October 2569, so it is a
+                      property of the resumed tween and not of the site. */}
                   <AnimatePresence>
                     {!isCollapsed && item.sub && isMenuOpen && (
                       <motion.ul

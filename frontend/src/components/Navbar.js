@@ -6,7 +6,7 @@ import { RiLockPasswordFill } from 'react-icons/ri'
 import ProfilePhotoDialog from './ProfilePhotoDialog'
 import { getProfilePhoto } from '../api/profile'
 import ContentMotionDIV from './ContentMotionDIV'
-import DialogPresence from './DialogPresence'
+import RetiringPresence from './RetiringPresence'
 import { AnimatePresence } from 'framer-motion'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 
@@ -271,6 +271,29 @@ function Navber({ setAlert, onStayedPut }) {
               )}
             </button>
 
+            {/* This one keeps `AnimatePresence`, and what decides that is a
+                measurement and not a difference in the mechanism: it holds a
+                closed node exactly as the two boxes below it did. Measured on
+                25 October 2569 with
+                `e2e/probes/169-presence-without-frames.js sites` - closed with
+                the tab already backgrounded, the menu was still in the
+                document at 0.5, 1 and 3 seconds, at `opacity: 1`,
+                `pointer-events: auto`, 3 controls still focusable and 19 nodes
+                in the accessibility tree, 15 of them exposed.
+
+                What it has not got is a way in that does not race the
+                person's own hand: `isOpen` is written only by presses, on the
+                avatar and on the items, so the state needs the tab put to the
+                background inside the 198ms the fade takes (196ms watched after
+                an earlier hide) - one hand, two acts, inside a fifth of a
+                second. That fifth of a second is the accepted price, and
+                what is paid at the far end is one fade at most: the tween
+                resumed on the first frame after the return either jumps
+                straight to its end (gone in 4-8ms, 1 sampled frame) or runs
+                the fade out (13 to 20 frames of about 60, the last at 192 to
+                308ms) - both were read on this same code on 25 October 2569,
+                which makes it a property of the resumed tween and not of the
+                site. #227. */}
             <AnimatePresence>
               {isOpen && (
                 <ContentMotionDIV className="animate-in fade-in zoom-in absolute right-0 z-[100] mt-2 w-64 origin-top-right rounded-xl bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 duration-150 focus:outline-none">
@@ -322,22 +345,28 @@ function Navber({ setAlert, onStayedPut }) {
                 </ContentMotionDIV>
               )}
             </AnimatePresence>
-            {/* `DialogPresence` rather than `AnimatePresence` on the two
-                boxes - #169. Both close themselves after an awaited request,
-                so the close can land in a tab that is getting no frames, and
-                an exit tween that never runs leaves the whole box in the
-                document until the person comes back and watches it fade. The
-                menu above keeps `AnimatePresence`: it is closed by a press,
-                which needs a tab that is in front. */}
-            <DialogPresence show={showPhotoDialog}>
-              <ProfilePhotoDialog
-                maxBytes={photo?.max_bytes ?? null}
-                currentUrl={photoUrl}
-                onClose={() => setShowPhotoDialog(false)}
-                onSaved={photoSaved}
-              />
-            </DialogPresence>
-            <DialogPresence show={showChangePwd}>
+            {/* `RetiringPresence` rather than `AnimatePresence` on the two
+                boxes - #169, renamed by #227 when the same wrapper took
+                `pages/Login.js`'s swap, which is not a dialog. Both boxes
+                close themselves after an awaited request, so the close can
+                land in a tab that is getting no frames, and an exit tween
+                that never runs leaves the whole box in the document until the
+                person comes back and watches it fade. The menu above keeps
+                `AnimatePresence`: it is closed by a press, which needs a tab
+                that is in front - measured site by site in #227, and the
+                reason is written on the menu itself. */}
+            <RetiringPresence at={showPhotoDialog ? 'open' : 'shut'}>
+              {showPhotoDialog ? (
+                <ProfilePhotoDialog
+                  maxBytes={photo?.max_bytes ?? null}
+                  currentUrl={photoUrl}
+                  onClose={() => setShowPhotoDialog(false)}
+                  onSaved={photoSaved}
+                />
+              ) : null}
+            </RetiringPresence>
+            <RetiringPresence at={showChangePwd ? 'open' : 'shut'}>
+              {showChangePwd ? (
               <ContentMotionDIV
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -502,7 +531,8 @@ function Navber({ setAlert, onStayedPut }) {
                     </form>
                   </ContentMotionDIV>
                 </ContentMotionDIV>
-            </DialogPresence>
+              ) : null}
+            </RetiringPresence>
           </div>
         </div>
       </div>

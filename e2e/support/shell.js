@@ -186,7 +186,7 @@ const avatarImage = page => avatarButton(page).locator('img');
  * `opacity: 0` and is removed never. Measured, in a tab that is getting frames it
  * is removed when the tween ends, about 190ms after the close; in a tab that is
  * getting none the tween never started, so it did not fade either - it stayed at
- * `opacity: 1` until the person came back, which is what `DialogPresence` now
+ * `opacity: 1` until the person came back, which is what `RetiringPresence` now
  * prevents. Neither half changes this helper: a window of 190ms is enough to make
  * a row that looks inside it fail, and this seam cannot build the other half at
  * all.

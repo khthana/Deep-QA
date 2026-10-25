@@ -536,6 +536,11 @@ citation.
   code under test is the only thing that removes the element** — so the question is *who else
   removes this*, not *is it retrying*, and the mutant that leaves the element in the document
   for ever is what answers it. (#50, #214)
+- **A reader built on a mark cannot tell a node that was removed from one that was replaced** —
+  a remount makes a new node without the attribute the sampler was pointed at, so it reads as a
+  disappearance with every number agreeing: nothing there, no frames, no opacity coming down.
+  Count the unmarked siblings as well as the marked one, which is #164's blind sampler one species
+  along. (#227)
 - **A renderer that normalises what you are counting is a third assertion that cannot fail** — GFM
   truncates a row to its header width, so a count of the drawn cells is right whether the row is
   broken or fixed. Count the **source** to find it, and prove the render by reading the cell's
@@ -797,6 +802,12 @@ citation.
 - **A control on the screen is a way in only if it feeds what the request asks for** — read the
   dependency list, not the JSX; and a guard that compares what those dependencies rebuild answers for
   every control at once, which is also why no mutant at the site can tell them apart. (#140)
+- **A flag that says *something may still be on its way out* has to come down where the removal
+  is reversed, not only where it completes** — the shared-flag rule below it one layer in, and the
+  reason such a flag cannot be a boolean: an exit that is undone before it finishes fires no
+  completion, so the flag stays up for ever and the next thing that reads it acts on a removal
+  nobody made. Hold what the thing in flight *is* - the value whose child may still be leaving -
+  and clear it when that value comes back. (#227)
 - **Before counting who puts a shared flag down, ask which holders can start while it is up** —
   then give each kind of work its own flag. A counter that changes what the screen disables is a
   question, not a fix, and so is a release more careful than the one it replaced; the clause no

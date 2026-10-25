@@ -14448,3 +14448,86 @@ reload can leave before the route is in place — a flag paired with a later eve
 (#168). And the moved arm does not use `filterTo`, whose `waitForList` matches any `/api/plos` GET
 including the held one, so it waits on `0503`'s own answer instead: a matcher two questions share
 cannot be narrowed for one of them (#218).
+## #227 — the five sites, the one way in, and the exit that was reversed
+
+#169 had asked whether a box that was closed leaves the document in a tab that is being given no
+frames, measured that it does not, and had the owner answer, on 21 October 2569, that it must.
+#227 asked the same question of the other five places in `frontend/src/` that still mount
+`AnimatePresence` themselves, and it asked for the measurement **first**: per site, is there a
+close that can land in a frameless tab *without racing the person's own hand*. Only then the fix,
+and only at the sites with such a way in.
+
+The census that decides is by mechanism — **who writes the state the presence is keyed on** — and
+not by what the screen draws. Four of the five are written by presses and nothing else: the user
+menu's `isOpen`, `RoleDropdown`'s `open` (whose `choose` lowers it *before* awaiting
+`switchRole`, so no answer can ever close it), `SidebarItem`'s `openMenu`, and `Login.js`'s
+`errorMessage`, cleared by a keystroke or by the next submit. The fifth is `Login.js`'s
+`mode="wait"` swap, and `LoadLogin` comes down in a `finally` after an awaited request: press,
+switch tabs, and the close lands with nobody watching. One of five, which is the narrower way in
+the ticket's own title had predicted.
+
+**The harm at that one site is not the harm #169 fixed, and it is worse.** With `mode="wait"` the
+child being held is the one on its way **out**, so the one waiting to come in never mounts at all.
+Measured on 25 October 2569: the spinner was still in the document 500ms and 2500ms after the 401
+had landed, at `opacity: 1`, `pointer-events: auto`, its *กำลังเข้าสู่ระบบ* still in the
+accessibility tree — and the form and the refusal were **not in the document at all**. #169's boxes
+left something extra on the screen; this one left the screen unable to say the thing the person was
+waiting for. A sentence they are owed and cannot be given is a different species from a node nobody
+can see (#153), and it is why this site was fixed and the other four were not.
+
+The four that were not each carry the price on themselves, in numbers rather than in the words
+*node ที่มองไม่เห็น* which #169 disproved: present at 0.5, 1 and 3 seconds, at `opacity: 1`,
+`pointer-events: auto`, 0/3/1/2 controls still focusable, 4/19/6/11 nodes in the accessibility
+tree, and a window to be hit that is the fade itself — 198, 198, 183 and 318ms, the last of them
+longer because the exit tweens `height` too. The instrument reached those windows at 6 to 13ms,
+which is the speed of an instrument and not of a hand.
+
+**The fix is a generation counter, not a flag, and that is what `mode="wait"` costs.** #169's
+wrapper stopped rendering `AnimatePresence` while a flag was up; with a swap there is always a
+child to draw, so what goes in is a counter used as the presence's `key`: mounting a new
+`AnimatePresence` takes whatever the old one was holding with it, and whatever is to be drawn now
+mounts in the new one. The prop that names what is being drawn is `at`, and it is required
+(`REQUIRED_PROPS`, #182) because a caller that forgets it gets a wrapper that silently never
+retires anything. `mode="wait"` is passed through rather than dropped, which is what kept this a
+task: the ticket said that a fix needing a change to what a watching person sees becomes the
+owner's question, and the watching measurement did not move (106 of 157 frames ending at 1764ms
+against 1765 before; 37 of 157 at 617 against 40 at 665). The wrapper is no longer a dialog's, so
+it is `RetiringPresence` now, and the rename was part of the ticket.
+
+**And the first version failed #169's fourth mode again, by a route #169 did not have.** That mode
+— away and back while the thing is still open, then close it in front of the person — exists
+because the owner's answer is only an answer if somebody looking at the screen sees no difference.
+#169's first version failed it with a listener that had no dependency. This one failed it with a
+flag that was raised correctly and could never come down: under `mode="wait"`, when the answer
+arrives faster than the 180ms the form takes to leave, the form's exit is **reversed**, and a
+reversed exit never fires `onExitComplete`. Measured with nothing emulated, the answer landed at
+79ms, so the spinner was never drawn at all — the ordinary case, not a corner. The flag therefore
+stayed up for ever, and the next time the tab went away the whole sign-in screen was remounted
+under somebody who had closed nothing: **0 of 44 frames** drawing the refusal they were watching,
+where the measurement wants 13. So: **a flag that says something may still be on its way out has
+to come down where the removal is reversed, and not only where it completes** — which means it
+cannot be a boolean. It holds the `at` whose child may still be leaving, and it is cleared when
+`at` comes back to that value. After the change, 13 of 44 ending at 195ms, which is what the
+unfixed code read.
+
+**That failure was reported as a disappearance, and it was a replacement.** The instrument marks
+the node it is about with an attribute and then reads the mark per frame — so a remount, which
+makes a new node without the mark, reads exactly like a node dropped with no fade:
+`stillOpenOnReturn: 0`, `framesStillDrawingIt: 0`, `opacityCameDown: false`. **A reader built on a mark cannot tell a node
+that was removed from one that was replaced.** Here it did not matter, because both answers are
+bad for the same reason and the mechanism was findable by reading the code the mark could not see;
+on a ticket where only one of the two is a defect it would decide the answer, and the repair is to
+count the unmarked siblings as well as the marked one (#164's blind sampler, one species along).
+
+One more reading, this one about the numbers rather than the mechanism. The on-return figures for
+the four untouched sites **flipped between two runs of the same code**: in the first the role
+dropdown was gone in one frame and the submenu faded for 308ms; in the second, exactly the other
+way round. A tween resumed after a pause of seconds either jumps to its end or runs itself out, and
+which one happens is a property of the resumed tween and not of the site. So the reasons on those
+four sites carry both readings, not the one this session happened to get — the measured number, and
+all of it (#102, #52).
+
+**There is no row and no mutant**, and that is written in the wrapper's own head comment as #169
+wrote it there: the condition cannot be built at either seam, which is the whole reason the probe
+exists. Nor does bringing three call sites under one wrapper cost the proof anything, because
+nothing was proving them in the first place (#68, #171).
