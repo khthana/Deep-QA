@@ -220,7 +220,8 @@ e2e/
 │   ├── students-screen.js │
 │   └── program-subjects-screen.js ┘
 ├── probes/                instruments, not rows: nothing measures them and no gate runs them,
-│                          kept because nothing else can read their answer again — #169, #219
+│                          kept because nothing else can read their answer again — #169, #219,
+│                          #221, #222
 └── tests/                 named for the rows they cover
 ```
 

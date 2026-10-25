@@ -48,7 +48,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
-const { reading, keysOn, toLastPage, pagerLine } = require('../support/pager');
+const { reading, keysOn, toLastPage } = require('../support/pager');
 const users = require('../support/users-screen');
 
 const EMAIL = /[^\s]+@[^\s]+/;
@@ -112,12 +112,19 @@ test('Users.js: one person suspends the last page out from under themselves', as
 
   // Suspend them one at a time, as a person does: ask, confirm, wait for the
   // list the screen reloads. Nothing is held and nothing races.
-  const lines = [];
+  //
+  // The pager is read through `reading`, never with a bare `innerText`:
+  // `waitForList` waits for the *answer* and the screen redraws a moment later
+  // (#132), and `pager.js` says nothing reads the pager without `settled`. A
+  // bare read here would log the page before.
   for (const address of addresses) {
     await users.startStatusChange(page, address, 'ระงับ');
     await Promise.all([users.waitForList(page), users.confirmStatusChange(page)]);
-    lines.push(await pagerLine(page).innerText());
-    console.log(`#222 · ระงับ ${address} → ${lines[lines.length - 1]}`);
+    const step = await reading(page, table);
+    console.log(
+      `#222 · ระงับ ${address} → ทั้งหมด ${step.total} รายการ · ` +
+        `หน้า ${step.shown} จาก ${step.pages}`,
+    );
   }
 
   const after = await reading(page, table);

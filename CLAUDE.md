@@ -85,12 +85,11 @@ citation.
 - **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. (#81)
-- **An owner's answer reaches the population the ticket's census had** — the census that found the
-  screens to fix also chose the screens the decision landed on, and the reason the owner gave is a
-  sentence about those screens and silent about their siblings (#141, #223 one layer along). Census
-  by the mechanism, then ask which of the population carries a write that shortens its own list:
-  where one does, the sibling's way in can need no second actor at all, which makes it a defect and
-  not the owner's question. (#222)
+- **An owner's answer reaches the population the ticket's census had, and the reason the owner gave
+  is a sentence about those screens and silent about their siblings** — so census the siblings by
+  the mechanism and ask which of them carries a write that shortens its own list: that one's way in
+  can need no second actor, which makes it a defect and not the owner's question. (#141, #223,
+  #222)
 - **A blocker's own expiry condition is a claim about which way in its author had in mind** — the
   date is right for that way in and blind to any other, and a *reason* that names a way in has
   named a way in, not the population. **And the blocker landing is not the way in closing**:
@@ -1037,7 +1036,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Six censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221). Not rows and not gates — nothing in the repository runs them, and two of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222). Not rows and not gates — nothing in the repository runs them, and three of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|

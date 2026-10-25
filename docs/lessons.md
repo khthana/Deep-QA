@@ -14174,7 +14174,8 @@ So the probe asked the screen rather than reasoning about it. `Users.js` is the 
 with a write that shortens the list it is drawing: the *active* status filter plus ระงับ. Signed in
 as the system administrator, filtering to active gives `ทั้งหมด 13` over two pages with three rows on
 the last; suspending those three one at a time, waiting for each reload, walks the pager line from
-`หน้า 2 จาก 2` to `หน้า 2 จาก 2` to **`ทั้งหมด 10 รายการ · หน้า 2 จาก 1`**, with
+`ทั้งหมด 12 รายการ · หน้า 2 จาก 2` to `ทั้งหมด 11 รายการ · หน้า 2 จาก 2` to
+**`ทั้งหมด 10 รายการ · หน้า 2 จาก 1`**, with
 *ไม่พบผู้ใช้งานตามเงื่อนไขที่เลือก* in the table on a page the screen is standing on. One person, one
 filter, one press at a time: no second actor, no race, nothing held. A reload does take it away, the
 page number being `useState(1)` rather than part of the URL - which is a way out the person has, and
