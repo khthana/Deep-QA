@@ -12,7 +12,7 @@ that survived a reload for the wrong reason - is asked in
     python mutation/24-teacher-dashboard.py <mutant>
     cd backend && node --test test/teaching.test.js
     # or, for the browser ones:
-    cd e2e && npx playwright test 24a
+    cd e2e && npx playwright test tests/24a-teacher-dashboard.spec.js
     python mutation/24-teacher-dashboard.py restore
 
 `notoken`, `termlessempty`, `rememberedsection`, `staydashboard` and

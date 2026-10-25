@@ -6,7 +6,6 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
 const { hold } = require('../support/hold');
-const { csv, downloadTemplate, headerOf } = require('../support/import-panel');
 const { keysOn, reading, toLastPage } = require('../support/pager');
 const departments = require('../support/departments-screen');
 
@@ -58,6 +57,15 @@ const departments = require('../support/departments-screen');
  * there, each at its own assertion. The numbers are on
  * `docs/acceptance/14-departments.md` §#209.
  *
+ * ## Where this file's fixtures now live, 25 ตุลาคม 2569
+ *
+ * `removeAsSecondActor` and `aFourthPage` were written here and moved to
+ * `support/departments-screen.js` by #224, which needs the same situation one
+ * press further along: a fixture built inside one test file is one no other file
+ * has (#96), and neither holds any claim of this file's (#171). The rows are
+ * unchanged, and this file's mutants are anchored in `Departments.js` rather
+ * than here - what proves the move is `209a` running green beside `224a`.
+ *
  * `mode: 'serial'` and a `hold()`: the rows share the departments this file
  * imports, each row taking its own prefix so no row's import is another's
  * duplicate, and the schema is put back when the file ends (#134).
@@ -74,67 +82,6 @@ test.afterAll(() => release());
 const REMOVED = 'ลบภาควิชาเรียบร้อยแล้ว';
 
 const pageOf = request => new URL(request.url()).searchParams.get('page');
-
-/**
- * The second actor: the browser's own cookie, which is this account's (`12a`).
- *
- * It writes through the API rather than through a second screen, because what
- * the rows are about is a list the person is looking at being changed by
- * somebody else - and a second browser context would be the same claim with a
- * second sign-in in front of it.
- */
-async function removeAsSecondActor(page, { below, count }) {
-  const list = await page.request.get(
-    `${BACKEND_URL}${departments.API}?page=1&per_page=100`,
-  );
-  expect(list.status(), 'the second actor reading the whole list').toBe(200);
-  const { departments: all } = await list.json();
-  let gone = 0;
-  for (const row of all) {
-    if (gone === count) break;
-    if (below.includes(row.department_id)) continue;
-    // A department something still points at is refused (`RESTRICT`), which is
-    // what the two seeded ones are - so the refusals are skipped rather than
-    // asserted away, and the count below is what says enough rows went.
-    //
-    // `ok()` and not `=== 200`: this route answers a real removal with **204**
-    // (`docs/acceptance/14-departments.md` §#209 counted the seven routes'
-    // shapes while pricing the options), and a status read as a refusal made
-    // the first run of this file fail at the line below with 0 of 11.
-    const answer = await page.request.delete(
-      `${BACKEND_URL}${departments.API}/${row.department_id}`,
-    );
-    if (answer.ok()) gone += 1;
-  }
-  expect(gone, 'the rows the second actor took out from the pages below').toBe(count);
-}
-
-/**
- * A fourth page, on top of the three the shared fixture makes.
- *
- * Four because the row below has to tell three candidate pages apart - the last
- * page that exists, one page back, and page one - and with three pages two of
- * them are the same number. Ten more rows in one import, with two letters after
- * the prefix so none of them can be a duplicate of the shared fixture's own
- * codes, which are one letter (`206a`'s convention).
- *
- * Asserts the shape the row needs rather than a total: what the files before
- * this one left decides the number (#132), so a hard-coded 32 would be a claim
- * about today's seed. Answers the total the pager reads afterwards.
- */
-async function aFourthPage(page, { prefix, note }) {
-  const table = departments.listTable(page);
-  const header = headerOf(await downloadTemplate(page));
-  const codes = Array.from({ length: 10 }, (unused, i) => `${prefix}Z${departments.ALPHABET[i]}`);
-  await departments.importDepartments(
-    page,
-    csv(header, ...codes.map((code, i) => `${code},ภาควิชาทดสอบหน้าที่สี่ ${i},${note} ${i}`)),
-  );
-  const seen = await reading(page, table);
-  expect(seen.pages, 'a fourth page, which is what makes three answers differ').toBeGreaterThan(3);
-  expect(seen.total % 10, 'two rows on the page the person will stand on').toBe(2);
-  return seen.total;
-}
 
 /** The second actor, writing instead: two codes that sort onto the last page. */
 async function addAsSecondActor(page, after) {
@@ -197,7 +144,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
   }) => {
     const table = departments.listTable(page);
     await departments.threePagesEndingIn(page, { rows: 2, prefix: 'W9', note: 'Row 209' });
-    const total = await aFourthPage(page, { prefix: 'W9', note: 'Row 209' });
+    const total = await departments.aFourthPage(page, { prefix: 'W9', note: 'Row 209' });
     const pages = await toLastPage(page, table, departments.waitForList);
     expect(pages, 'the page the person is standing on').toBeGreaterThan(3);
     const last = await keysOn(table);
@@ -206,7 +153,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     // Down to twenty rows, the person's own removal making it nineteen: the
     // last page that exists is then page two, and they are standing on page
     // four or further out.
-    await removeAsSecondActor(page, { below: last, count: total - 20 });
+    await departments.removeAsSecondActor(page, { below: last, count: total - 20 });
 
     const walk = [];
     page.on('request', request => {
@@ -284,13 +231,13 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
   test('the sentence is said on the page the person was handed', async ({ page }) => {
     const table = departments.listTable(page);
     await departments.threePagesEndingIn(page, { rows: 2, prefix: 'W7', note: 'Row 209' });
-    const total = await aFourthPage(page, { prefix: 'W7', note: 'Row 209' });
+    const total = await departments.aFourthPage(page, { prefix: 'W7', note: 'Row 209' });
     const pages = await toLastPage(page, table, departments.waitForList);
     expect(pages, 'the page the person is standing on').toBeGreaterThan(3);
     const last = await keysOn(table);
     expect(last, 'two rows on the last page').toHaveLength(2);
 
-    await removeAsSecondActor(page, { below: last, count: total - 20 });
+    await departments.removeAsSecondActor(page, { below: last, count: total - 20 });
     await remove(page, last[0]);
 
     await expect

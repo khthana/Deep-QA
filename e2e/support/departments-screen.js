@@ -4,6 +4,7 @@ const { expect } = require('@playwright/test');
 const { importCsv, downloadTemplate, headerOf, csv } = require('./import-panel');
 const { untilDrawn, reading } = require('./pager');
 const { openAt } = require('./navigation');
+const { BACKEND_URL } = require('./env');
 
 const DEPARTMENTS = '/main/departments';
 const API = '/api/departments';
@@ -197,6 +198,68 @@ async function importOneRow(page, { code, name, note }) {
   return answer;
 }
 
+/**
+ * The second actor: the browser's own cookie, which is this account's (`12a`).
+ *
+ * It writes through the API rather than through a second screen, because what
+ * the rows need is a list the person is looking at being changed by somebody
+ * else - and a second browser context would be the same situation with a second
+ * sign-in in front of it.
+ *
+ * Here rather than in `209a`, which is where it was written on 19 ตุลาคม 2569:
+ * `224a` needs the same situation, and a fixture built inside one test file is
+ * one no other file has (#96). It is an instrument and not an assertion, so
+ * nothing any row claims lives in it (#171, #85).
+ */
+async function removeAsSecondActor(page, { below, count }) {
+  const list = await page.request.get(`${BACKEND_URL}${API}?page=1&per_page=100`);
+  expect(list.status(), 'the second actor reading the whole list').toBe(200);
+  const { departments: all } = await list.json();
+  let gone = 0;
+  for (const row of all) {
+    if (gone === count) break;
+    if (below.includes(row.department_id)) continue;
+    // A department something still points at is refused (`RESTRICT`), which is
+    // what the two seeded ones are - so the refusals are skipped rather than
+    // asserted away, and the count below is what says enough rows went.
+    //
+    // `ok()` and not `=== 200`: this route answers a real removal with **204**
+    // (`docs/acceptance/14-departments.md` §#209 counted the seven routes'
+    // shapes while pricing the options), and a status read as a refusal made
+    // the first run of `209a` fail at the line below with 0 of 11.
+    const answer = await page.request.delete(`${BACKEND_URL}${API}/${row.department_id}`);
+    if (answer.ok()) gone += 1;
+  }
+  expect(gone, 'the rows the second actor took out from the pages below').toBe(count);
+}
+
+/**
+ * A fourth page, on top of the three `threePagesEndingIn` makes.
+ *
+ * Four because a row that has to tell three candidate pages apart - the last
+ * page that exists, one page back, and page one - has two of them at the same
+ * number when there are only three pages. Ten more rows in one import, with two
+ * letters after the prefix so none of them can be a duplicate of the shared
+ * fixture's own codes, which are one letter (`206a`'s convention).
+ *
+ * Asserts the shape the caller needs rather than a total: what the files before
+ * it left decides the number (#132), so a hard-coded 32 would be a claim about
+ * today's seed. Answers the total the pager reads afterwards.
+ */
+async function aFourthPage(page, { prefix, note }) {
+  const table = listTable(page);
+  const header = headerOf(await downloadTemplate(page));
+  const codes = Array.from({ length: 10 }, (unused, i) => `${prefix}Z${ALPHABET[i]}`);
+  await importDepartments(
+    page,
+    csv(header, ...codes.map((code, i) => `${code},ภาควิชาทดสอบหน้าที่สี่ ${i},${note} ${i}`)),
+  );
+  const seen = await reading(page, table);
+  expect(seen.pages, 'a fourth page, which is what makes three answers differ').toBeGreaterThan(3);
+  expect(seen.total % 10, 'two rows on the page the person will stand on').toBe(2);
+  return seen.total;
+}
+
 module.exports = {
   DEPARTMENTS,
   API,
@@ -213,4 +276,6 @@ module.exports = {
   ALPHABET,
   threePagesEndingIn,
   importOneRow,
+  removeAsSecondActor,
+  aFourthPage,
 };

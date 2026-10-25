@@ -14226,3 +14226,58 @@ Today's contract, meanwhile, is held at one route of eleven: `backend/test/histo
 only row in the backend suite that asks for a page past the end. If the owner picks option 1 or 2,
 the mutant of the rejected option (#48) has exactly one place to stand, and the other ten routes
 hold nothing at all - a number that belongs in the question rather than in the fix.
+
+## #224 — the two behaviours an invisible number was choosing between
+
+#224 is a question ticket out of #209's two-axis review: since #209 `load` re-keys a waiting
+sentence only when `waiting.current.of === key`, and its `finally` clears one only when the read did
+not hand the page on, so a sentence belonging to some *other* read is neither re-keyed nor cleared.
+Before #209 the `finally` cleared it every time. The ticket's own first step is the one that decided
+the answer: **measure whether the situation can be reached before deciding what is right** (#141),
+by the mechanism rather than by the buttons' names (#174, #139).
+
+The census found the way in one press past #209's own. Eighteen sites on the paged screens give a
+sentence to a read — thirteen keyed on `readOf(onPage.current, …)` and five on the read of page one —
+and all eighteen hold `writing`, so with the six administration pagers carrying `busy` since #210
+the pager cannot move the page *while* a sentence is being handed over. What it can do is move it
+**after a hand-on**: a read that hands on has drawn nothing, so `data` still carries the total of the
+page before, `Pager` computes its page count from that total, and ถัดไป is live and offers a page the
+list no longer has. One person, one removal, a second actor who shortened the list — no race, and no
+second defect.
+
+That census's first version said *ten*, counting screens and sites in one column, which is the
+species of a census being evidence about the property it counted (#174) — and the thing that caught
+it was a one-line grep, because a count published in a sheet is a claim a grep can check (#55, #96).
+The behavioural conclusion did not turn on the number; the next paragraph is what turned it.
+
+**The ticket's harm is unreachable, and the reason is the half of the clause nobody had read.** On a
+read that *draws*, the `finally` clears the waiting sentence whatever its key. Every hand-on is
+followed by exactly one drawing read — the read of the page it handed to — so a stranded sentence is
+thrown away there, and no later read of the keyed page can arrive first. The sentence therefore
+never turns up late over a fresher list, which is what the ticket said it would do.
+
+But that same line is why the answer is not *the clause is right* either. The two rows are one
+situation with one number moved: when the hand-on lands **on** the keyed page the sentence is said,
+and when it lands anywhere else the sentence is dropped and nobody hears it. One person doing the
+same thing twice gets the sentence once and silence the other time, and what differs is how far a
+second actor shortened the list — an invisible number choosing between two defensible behaviours,
+which is a defect rather than a preference (#199), and the shape of #152's *an "as today" option is
+a claim that today is one thing*. So which single behaviour the person should get is the owner's
+question, and both of the ticket's options are now the mutant of a row: option 1 made to run kills
+row 1, option 2 made to run kills row 2 (#48).
+
+Two things about where a mutant goes. The ticket's prose points at `if (!handedOn) waiting.current =
+null`, and option 1 written there killed `224a` **and** `209a` row 3 — a mutant that kills too much
+(#97), because by the time the `finally` runs the re-key has already changed `waiting.current.of`, so
+a sentence re-keyed *successfully* reads at that point as one whose key does not match. The site is
+chosen by which line has to go red, not by which line the ticket discusses (#193). And the two new
+rows expired four mutants nobody had edited: re-swept, `209:stepsbackinstead` kills `224a` row 2,
+`209:handsontopageone` kills both, `209:clearedonthehandon` kills row 1 — a spec that gains a row a
+mutant can reach expires its count with the anchor still exact and nothing to report it (#202, #48).
+
+The last of it is an instrument. Row 1's first draft waited for ถัดไป with a retrying
+`toBeEnabled()` — in front of a press that has to land inside a held window, which is exactly the
+wait #225 took out of `140a`: it moves the press instead of failing the row. Both rows now read
+`isDisabled()` once. The review that found it quoted my own docblock citing #209 as the reason to
+assert the precondition, which is true, and the instrument I had reached for was the one #209 and
+#225 had removed.

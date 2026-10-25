@@ -62,9 +62,10 @@ citation.
   in the file it proposes to change, filed under the wrong half of its own table, a name read as a
   claim, an inference from a correct measurement, a count inflated by the runner's output shape,
   right in its species and wrong in the route it names, already carried out by a later ticket's
-  fix, which leaves the subject absent from the tree — and the sheet itself asking for the
-  defect. (#66, #111, #55, #155, #102, #122, #67, #101, #48, #133, #127, #185, #165, #186, #58,
-  #187, #218, #219, #89)
+  fix, which leaves the subject absent from the tree, the sheet itself asking for the
+  defect — and a diagnosis that describes one behaviour where the code holds two, an invisible
+  number choosing between them. (#66, #111, #55, #155, #102, #122, #67, #101, #48, #133, #127,
+  #185, #165, #186, #58, #187, #218, #219, #89, #224)
 - **A ticket's supporting identifiers are a claim like its numbers** — ask `CREATE TABLE` before
   pasting a list of names, because a wrong list gets pasted more than once. **And a *decision* a
   cost line cites is the same kind of claim**: grep the corpus before believing it was ever taken,
@@ -120,7 +121,9 @@ citation.
   dates it, so a premise that is false while the conclusion holds is the hardest kind to notice:
   nothing it predicts is wrong yet. (#141)
 - **A ticket's *as today* option is a claim that today is one thing** — measure it, because the
-  answer can be *keep two behaviours*, which is the sentence the owner needs. (#152)
+  answer can be *keep two behaviours*, which is the sentence the owner needs. A ticket that
+  offers only fixes makes the same claim silently, and there the measurement turns two proposed
+  remedies into the two mutants of two rows (#48, #199). (#152, #224)
 - **A placeholder menu is a claim about the menu, not about the routes** — so a ticket priced off
   one has priced the drawing and not the reach: ask what the guard already admits. A criterion then
   true in substance is not *proved*, and what is owed is the row, not a fix. (#49)
@@ -317,7 +320,9 @@ citation.
 - **A ticket's proposed shape for a mutant is a claim, and what the claim is about is not always
   where the mutant goes** — the site is chosen by which line has to go red, because a mutant that
   kills at an assertion *before* the target leaves the target exactly as unproved, behind a red
-  row. (#193)
+  row — and where a ticket names a line, the state that line reads may have been
+  changed by the fix's own earlier line, which makes the named site a mutant that kills too
+  much. (#193, #224)
 - Before reading a kill count that looks like the suite as a mutant that stops everything, read
   the names for a leak. (#52)
 - **Two places holding one opinion is not a safety margin; it is a claim neither of them can be
