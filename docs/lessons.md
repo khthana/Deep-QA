@@ -14365,3 +14365,56 @@ writing-down rather than fixing — a ref born through `React.useRef` or an alia
 can only understate — and both went into the docblock's list beside the three that were already
 there. The ladder in `tellsApart`, which had stated its ordering in prose and implemented it in
 three branches, became a `STRENGTH` array read with `indexOf`.
+
+## #241 — the window with nothing in the way, and the instrument the ticket named
+
+#226's closing paragraph read `Plos.js:354` out of the code and said so: the confirmation box closes
+with `setRemoving(null)` **before** the reload is awaited, so the curriculum filter is on the screen
+and not disabled while the read is out, and neither clause of
+`if (reloaded && showing.current === sent)` can see a move — `reloaded` is `load`'s `return true`,
+which its own comment says means *the read was not refused* and never *it drew* (#152, #203), and
+`showing` is *the last thing that opened on this screen* (#146), which a filter does not write. That
+is a claim from the day it was written (#66, #111), and what the ticket asked for first was the
+measurement.
+
+Three sequences at the browser seam, on `dept.admin.05@kmitl.ac.th`, who reaches `0501` and `0503`,
+each arm carrying its prediction as an assertion (#205) because the sampler is built from the
+sentence's own text and a wording change would print `0 of n` and exit 0 — the probe's answer
+inverted with nothing saying so (#208, #171). The control said the sentence 209 frames of 225 over
+`0501`'s own 51 rows. The two moved arms said it 222 of 360 and 216 of 351, both over `0503`'s four.
+Twice, with the same answers.
+
+**The paragraph read from the code was right, and the measurement confirmed it rather than refuting
+it** — the rarer side of #66. And what the measurement adds is not in the code reading: of the two
+windows this handler has, the second one needs **nobody's help and nothing dismissed**. While the
+DELETE is out the box is still up, under a cover that eats a click (#199) and, since #217, a focus
+trap, so the filter is reached by pressing ยกเลิก first, which is the way a person has. While the
+*reload* is out the box has closed itself: 0 covers, 0 confirm buttons, filter not disabled. So the
+argument that nobody can reach the window — the argument the file's own `onScreen` docblock makes
+about the box being up — is dated by **where in the handler the close runs**, not by the box
+existing (#220). Three sequences, one behaviour, no clock choosing: that puts this screen on
+`Users.js`'s side and not `Students.js`'s, which makes it the owner's question of #238's first kind
+rather than #52's defect, asked now for three screens instead of two.
+
+The other finding is the instrument. The ticket named `e2e/support/late-answer.js`, and that file's
+own docblock says what it is for: the window between an **answer** and its **drawing**, 400ms, by
+wrapping `fetch` inside the document — and says `page.route` cannot do it, a fulfilled route being
+answered all at once. What this ticket needs is the inverse: the answer itself held for seconds
+while the person acts, which is a held `route.continue` and exactly the shape #221's probe already
+uses. **A ticket's named instrument is a claim like its numbers, and the instrument's own docblock
+is where it is checked** — #133 and #145 one species along, from a file list that is somebody
+else's grep to a tool that is somebody else's measurement. Reading it cost a minute; believing it
+would have cost the measurement.
+
+Two probes now hold that held-route shape and it stays in both, because they identify the held
+request by different things — #221 by the method, this one by the `program_id` in the query, which
+is what identifies the request on a screen whose every read has the same path (#160, #185). That
+is the price of not merging, priced as a census with a date on it rather than argued as a law about
+the seam (#196); the day a third file needs it is the day it is shared (#171).
+
+Two details the arms had to get right, and both are old rules. The held route goes on **before** the
+press, not when the DELETE's response event fires: the handler runs on that same event, so the
+reload can leave before the route is in place — a flag paired with a later event is not identity
+(#168). And the moved arm does not use `filterTo`, whose `waitForList` matches any `/api/plos` GET
+including the held one, so it waits on `0503`'s own answer instead: a matcher two questions share
+cannot be narrowed for one of them (#218).

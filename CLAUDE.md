@@ -71,6 +71,10 @@ citation.
   cost line cites is the same kind of claim**: grep the corpus before believing it was ever taken,
   because an inherited mechanism is not a decision, and a citation that prices one option as
   reopening a founding decision is a thumb on the scale for the others (#77). (#54, #153)
+- **A ticket's named instrument is a claim like its numbers** — read that instrument's own
+  docblock for which window it opens, because the one a ticket names can be the inverse of the
+  one it needs, and the docblock usually says so itself. #133 and #145 one species along, from
+  somebody else's grep to somebody else's measurement. (#241)
 - **A ticket's reason for being *untestable* is a claim like its numbers** — measure whether the
   situation can be built; do not reason about it. (#141)
 - **A ticket's reason for *not deciding itself* is a claim like its numbers** — the sentence that
@@ -1048,7 +1052,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Six censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222). Not rows and not gates — nothing in the repository runs them, and three of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #241). Not rows and not gates — nothing in the repository runs them, and four of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|
