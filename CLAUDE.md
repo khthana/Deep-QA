@@ -676,7 +676,8 @@ citation.
   word it adds, not one for the word the first red named. (#93, #116)
 - **A fix that disables a control is a change to every row that presses it, including the rows
   that press it as an instrument** — a hand estimate counts the rows that are *about* the control
-  and misses the rows that use it to arrange something. Census the press, not the claim. (#199)
+  and misses the rows that use it to arrange something. Census the press, not the claim. (#199,
+  #221)
 - **And a fix that puts a dialog in front of a control re-dates every other ticket's claim about
   how that control is reached** — the rows keep their claims and their marks, because `fill()`
   focuses a field rather than clicking it, which is a way in the tool has and a person does not
@@ -898,6 +899,11 @@ citation.
 - **A measured cost of almost nothing is not a reason to close the ticket** — read what the
   measurement says is *holding* it to almost nothing, because that may be a property of today's
   data flow with a ticket already open to change it. (#120)
+- **An option that disables one control is priced by every other control that changes what the
+  read is of** — a filter beside the pager rebuilds the same loader, so closing the pager narrows
+  the window instead of closing it, and what says so is moving that other control inside the same
+  held window. Ask it of the screens that already took the option, too: there the decision can
+  still be right for a reason the option's own wording does not carry. (#221)
 - **An owner's decision is about what the person reads, not about the diff that occurs to you
   first** — and the cheapest implementation of it can break a closed ticket. Which closed tickets
   the cheap reading touches is a measurement: run their suites against it before building it, and if
@@ -1025,7 +1031,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Six censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219). Not rows and not gates — nothing in the repository runs them, and one of them is a spec the runner only sees when it is copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221). Not rows and not gates — nothing in the repository runs them, and two of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|

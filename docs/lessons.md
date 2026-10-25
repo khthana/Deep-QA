@@ -14062,3 +14062,84 @@ two commands. The comment now carries both; the twelve `mutation/` run blocks th
 `E2E_BACKEND_PORT=3400` are #237 rather than a sentence here, for #119's reason — twelve and
 not the thirteen a grep for the variable name returns, because the thirteenth writes `3110` and
 still runs today. A census by the mechanism counts the value, not the variable (#174).
+
+## #221 — the two screens that were not one question, and the control beside the one being closed
+
+A `question` ticket that forbids its own implementation: #210's second owner's question is
+unanswered, and the ticket says in its own words that the answer to that one is the answer here
+too. So what was owed was the measurement, and the measurement moved the question twice.
+
+**A ticket that pairs two screens has paired them by the mechanism it could count.** #221's table
+held `Students.js` and `Users.js` in one cell, because what could be counted from the code was
+identical: each holds a `busy` flag, each passes it to other components, neither passes it to its
+`<Pager>`. Nine arms on the screen said they are on opposite sides. `Users.js` says the sentence
+in all six of its sequences — one behaviour, no fork, the state #210 measured on the six
+administration screens. `Students.js` says it 210 frames of 229 when nobody presses and **0 of
+360** when somebody does: #199's two-way split, alive. The mechanism is one line each.
+`Students.save` hands the sentence over keyed on `readOf(1, program)` and `load` says it only when
+`waiting.current.of === key`, so the read of page two does not match and the `finally` then clears
+the ref — which is #205's own clearing, now **inside** `if (isCurrent())` and correct, so the 0 of
+360 is the key mismatch alone and not #205's defect walked into again; `Users.save` keys nothing but `showing.current`,
+which holds *what is open on the screen* rather than the list's coordinates, and reads `load`'s
+`return true` as *it drew* when it only says *nothing refused the read* (#202). So the ticket's one
+question is two: `Users.js` asks #210's question word for word, and `Students.js` asks a different
+one, because there the clock picks what the person reads (#52, #199) and that is a defect rather
+than a preference. It is #122's rule — *a ticket that generalises across screens has usually
+generalised the symptom* — met where the generalisation was in the owner's question itself.
+
+**An option that disables one control is priced by every other control that changes what the read
+is of.** The option in front of the owner is #210's: give `<Pager>` the flag. Two arms moved the
+screen's **filter** instead of its pager, inside the same held window: `Students.js` went silent
+again, 0 of 356 frames, and `Users.js` said the sentence again, 212 of 360. The filter rebuilds the
+same `load` — it calls `setPage(1)` and then sets its own value, so the key changes while the page
+does not — and **no screen's filter is `disabled={busy}`**, including the ปีการศึกษา input on
+`Offerings.js`, a screen
+whose pager has carried the flag since #210. That last one is not a reading of the JSX: `140a`'s
+*ยกเลิกการเปิด* row has used that filter as its way in since #223. So `busy={busy}` closes a
+control and narrows a window; it does not close one. Nothing about #210's own record becomes
+false — there the fork was already gone and there is nothing for a clock to pick — but the sentence
+*the way in is closed* was never the sentence, and on `Students.js` it would be wrong. This is #217
+read from inside the mechanism: the price of closing a way in is measurable only once you know what
+the person can still do, and here the answer moves the price rather than ending it (#153).
+
+**A census of a control counts reads as presses unless it is told the difference.** Criterion 4
+asked for a census by the **press** and not by the claim (#199, #217). `pager.js` writes
+`const next = page => page.getByRole('button', { name: 'ถัดไป' })`, which makes `next`
+and `previous` locators, so `expect(previous(page)).toBeDisabled()` is a read of the control, and
+the first draft of the instrument counted it — which pulled in `208a`'s first row, whose only
+mention of the pager is that assertion. The population is 48 blocks under `e2e/tests` that press a
+pager, 11 of them on these two screens, and **3** that `busy={busy}` would actually re-aim:
+`140a`'s *บันทึก* and *ระงับ* on `Users.js` and *บันทึก* on `Students.js`. The ticket had already
+reached 3 from the other side on 20 ตุลาคม 2569, with `140:usersbusypager` and
+`140:studentsbusypager` — the ticket's own proposal made to run (#48) — so two instruments agree,
+which is worth more than either. The eight that are not re-aimed are not re-aimed for four
+different reasons, and that is what a census by the claim cannot see: two press with no write out
+at all, two press in a `beforeEach` before the write starts, two press while a **read** is held
+rather than a write, and two go through `ImportPanel`, which keeps its own flag and never raises
+the screen's: both screens raise the flag at exactly three sites — `setBusy(true)` in `Users.save`,
+in `Users.confirmSwitch` and in `Students.save` — and a grep for `setBusy(` answers **six**, the
+other three being the `setBusy(false)` in each one's `finally`. The count that matters is the one
+by the call's own argument, which is the species of #174: a census is evidence about the property
+it counted.
+
+**An instrument that finds a block by its first delimiter has made a claim about the syntax between
+them, and the tell is a count of zero rather than an error.** Brace-matching a `test(` block from
+its first `{` closes on the destructured `{ page }` of
+`test('...', async ({ page }) => {`, which made every block two words long and every press
+invisible: the run printed `0` and exited `0`. The count is the tell, not the exit code (#208).
+The repair matches the `test(` from its own paren. Two more readings of the same species were
+repaired on the way: a helper's declaration reads exactly like a call to itself, so taking a file's
+preamble whole attributed every row of `140a` to every screen one of its helpers opens; and an
+indented `beforeEach` belongs to its own `describe`, so taking them all gave every row of `57a` the
+screen the first `describe` opens.
+
+The first window — press the pager while the write is still out — is not buildable at `บันทึก` on
+either screen, and not by a person either: the form and the table are the two halves of one
+ternary, so while the save is out there is no list and no pager in the document. Reading that is
+where the probe's own first run was wrong, and it is #85 and #111 from the other end. A bare count
+of `ถัดไป` answers **1** on `Users.js`, because `HistoryPanel` is drawn in the branch the form
+occupies and has a `<Pager>` of its own — one of the two callers #221's own table calls *safe by
+construction*. The reading is three numbers instead of one, and they say `1 · 1 · 2` on `Users.js`
+and `0 · 0 · 0` on `Students.js`: everything left on the screen belongs to the history panel. The
+window is buildable at **สถานะ**, where `ConfirmDialog` covers the list rather than replacing it,
+and both of #199's sequences were measured there.
