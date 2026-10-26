@@ -34,6 +34,19 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * Every field is sent on every save, blank ones included, because the server
  * reads a PUT as a replacement: an emptied year is an intentionally emptied
  * year, and the form is the thing that knows the person emptied it.
+ *
+ * #228, answered by the owner on 26 October 2569: every **field** here is
+ * closed while this form's own save is out - the form's flag and not the page's
+ * `busy`, and *ยกเลิก* keeps none - and the status field carries a `hint`.
+ * `DepartmentForm.js`'s head comment has the measurement, the 19 rows that
+ * decided the shape, and why its own hint had to be a different sentence from
+ * this one. Here the sentence follows the **pattern of the two forms that
+ * already had a hint** - `PloForm.js:265` and `ProgramSubjectForm.js:176`,
+ * which were the only two carrying that tail before this change - with this
+ * screen's noun: its removal really is turned into a deactivation by
+ * `lib/removal`, so *จะถูกปิดการใช้งานแทนการลบ* is literally what happens.
+ * `Programs.js:322` already says the same fact at the moment of the refusal,
+ * which is why nothing new had to be decided for this screen.
  */
 
 const EMPTY = {
@@ -49,17 +62,19 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-function Field({ label, children }) {
+function Field({ label, children, hint }) {
   return (
     <label className="block">
       <span className={labelling}>{label}</span>
       {children}
+      {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
   )
 }
 
 export default function ProgramForm({ value, departments, busy, onSave, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
   const editing = Boolean(value?.program_id)
 
   // The one department there is to file under, when there is only one. Retired
@@ -87,8 +102,23 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
     department => department.is_active !== false || department.department_id === draft.department_id,
   )
 
+  // `sending` is put up here and down in the `finally` below, rather than being
+  // read from `busy` - #228. `DepartmentForm.js`'s head comment has the reason
+  // and the 19 rows that decided it; in one line, `busy` belongs to the page, so
+  // a form opened after this one was closed would be frozen by a save it did not
+  // send. `.finally` always lands, because `onSave` is the page's own `save`,
+  // which is `async` and catches its own errors. One mount point, measured on
+  // 26 October 2569 - `Programs.js:360` - which is what makes that a claim
+  // about every place this is mounted (#220).
+  //
+  // `.finally` lands when the page's `save` resolves, which is *after* its
+  // list re-read, not when the answer arrives - so where the form stays open
+  // (a refusal) the fields stay closed through that read as well. Wider than
+  // the decision's words by one read, and in the direction the decision was
+  // about: nothing can be typed into a value that is still being settled.
   const submit = event => {
     event.preventDefault()
+    setSending(true)
     onSave({
       // Sent on an edit as well, and ignored there: the server reads the
       // identifier from the path, so the two cannot disagree.
@@ -98,7 +128,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
       department_id: draft.department_id,
       revision_year: draft.revision_year.trim(),
       is_active: draft.is_active,
-    })
+    }).finally(() => setSending(false))
   }
 
   return (
@@ -114,7 +144,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.program_id}
               onChange={set('program_id')}
-              disabled={editing}
+              disabled={sending || editing}
               maxLength={10}
               required
             />
@@ -124,6 +154,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.department_id}
               onChange={set('department_id')}
+              disabled={sending}
               required
             >
               <option value="">เลือกภาควิชา</option>
@@ -144,6 +175,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.program_name_th}
               onChange={set('program_name_th')}
+              disabled={sending}
               maxLength={200}
               required
             />
@@ -153,6 +185,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.program_name_en ?? ''}
               onChange={set('program_name_en')}
+              disabled={sending}
               maxLength={200}
             />
           </Field>
@@ -161,6 +194,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.revision_year ?? ''}
               onChange={set('revision_year')}
+              disabled={sending}
               inputMode="numeric"
               pattern="\d{4}"
               maxLength={4}
@@ -175,7 +209,10 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
             field was a checkbox reading *เปิดใช้งาน* on three of the five forms
             and a select reading *ใช้งานอยู่ / ปิดใช้งาน* on the other two. */}
         {editing && (
-          <Field label="สถานะ">
+          <Field
+            label="สถานะ"
+            hint="หลักสูตรที่มีข้อมูลอื่นอ้างอิงอยู่จะถูกปิดการใช้งานแทนการลบ และเปิดกลับได้จากที่นี่"
+          >
             <select
               className={field}
               value={draft.is_active ? 'active' : 'inactive'}
@@ -185,6 +222,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
                   is_active: event.target.value === 'active',
                 }))
               }
+              disabled={sending}
             >
               <option value="active">ใช้งานอยู่</option>
               <option value="inactive">ปิดใช้งาน</option>

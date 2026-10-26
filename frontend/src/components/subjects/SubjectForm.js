@@ -33,6 +33,17 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * reads a PUT as a replacement: an emptied description is an intentionally
  * emptied description, and the form is the thing that knows the person emptied
  * it.
+ *
+ * #228, answered by the owner on 26 October 2569: every **field** here is
+ * closed while this form's own save is out - the form's flag and not the page's
+ * `busy`, and *ยกเลิก* keeps none - and the status field carries a `hint`.
+ * `DepartmentForm.js`'s head comment has the measurement, the 19 rows that
+ * decided the shape, and the reasoning for both halves. The sentence follows
+ * the pattern of the two forms that already had a hint - `PloForm.js:265` and
+ * `ProgramSubjectForm.js:176` - with this screen's noun, as #15's form does:
+ * this screen's removal is turned into a deactivation by `lib/removal`, so the
+ * hint describes what happens rather than what to do instead, and
+ * `Subjects.js:313` already says the same fact at the moment of the refusal.
  */
 
 const EMPTY = {
@@ -50,17 +61,19 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-function Field({ label, children }) {
+function Field({ label, children, hint }) {
   return (
     <label className="block">
       <span className={labelling}>{label}</span>
       {children}
+      {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
   )
 }
 
 export default function SubjectForm({ value, departments, busy, onSave, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
   const editing = Boolean(value?.subject_id)
 
   // The one department there is to file under, when there is only one. Retired
@@ -90,8 +103,23 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
     department => department.is_active !== false || department.department_id === draft.department_id,
   )
 
+  // `sending` is put up here and down in the `finally` below, rather than being
+  // read from `busy` - #228. `DepartmentForm.js`'s head comment has the reason
+  // and the 19 rows that decided it; in one line, `busy` belongs to the page, so
+  // a form opened after this one was closed would be frozen by a save it did not
+  // send. `.finally` always lands, because `onSave` is the page's own `save`,
+  // which is `async` and catches its own errors. One mount point, measured on
+  // 26 October 2569 - `Subjects.js:361` - which is what makes that a claim
+  // about every place this is mounted (#220).
+  //
+  // `.finally` lands when the page's `save` resolves, which is *after* its
+  // list re-read, not when the answer arrives - so where the form stays open
+  // (a refusal) the fields stay closed through that read as well. Wider than
+  // the decision's words by one read, and in the direction the decision was
+  // about: nothing can be typed into a value that is still being settled.
   const submit = event => {
     event.preventDefault()
+    setSending(true)
     onSave({
       // Sent on an edit as well, and ignored there: the server reads the code
       // from the path, so the two cannot disagree.
@@ -103,7 +131,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
       description_en: draft.description_en?.trim() ?? '',
       department_id: draft.department_id,
       is_active: draft.is_active,
-    })
+    }).finally(() => setSending(false))
   }
 
   return (
@@ -119,7 +147,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.subject_id}
               onChange={set('subject_id')}
-              disabled={editing}
+              disabled={sending || editing}
               maxLength={8}
               placeholder="01076105"
               required
@@ -130,6 +158,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.department_id}
               onChange={set('department_id')}
+              disabled={sending}
               required
             >
               <option value="">เลือกภาควิชา</option>
@@ -150,6 +179,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.subject_name_th}
               onChange={set('subject_name_th')}
+              disabled={sending}
               maxLength={200}
               required
             />
@@ -159,6 +189,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.subject_name_en}
               onChange={set('subject_name_en')}
+              disabled={sending}
               maxLength={200}
               required
             />
@@ -168,6 +199,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
               className={field}
               value={draft.credits}
               onChange={set('credits')}
+              disabled={sending}
               inputMode="numeric"
               pattern="\d{1,2}"
               maxLength={2}
@@ -182,6 +214,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
             className={field}
             value={draft.description_th ?? ''}
             onChange={set('description_th')}
+            disabled={sending}
             rows={3}
           />
         </Field>
@@ -190,6 +223,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
             className={field}
             value={draft.description_en ?? ''}
             onChange={set('description_en')}
+            disabled={sending}
             rows={3}
           />
         </Field>
@@ -200,7 +234,10 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
         {/* A select since #180, in the words the table's own badge uses - the
             same change as on the ภาควิชา and หลักสูตร forms. */}
         {editing && (
-          <Field label="สถานะ">
+          <Field
+            label="สถานะ"
+            hint="รายวิชาที่มีข้อมูลอื่นอ้างอิงอยู่จะถูกปิดการใช้งานแทนการลบ และเปิดกลับได้จากที่นี่"
+          >
             <select
               className={field}
               value={draft.is_active ? 'active' : 'inactive'}
@@ -210,6 +247,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
                   is_active: event.target.value === 'active',
                 }))
               }
+              disabled={sending}
             >
               <option value="active">ใช้งานอยู่</option>
               <option value="inactive">ปิดใช้งาน</option>

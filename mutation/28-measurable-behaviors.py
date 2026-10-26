@@ -28,7 +28,7 @@ over, as #25 recorded `noinsert`.
 
 Killing them:
 
-    cd e2e && npx playwright test 28a
+    cd e2e && npx playwright test tests/28a-measurable-behaviors.spec.js
 """
 
 from harness import main

@@ -945,6 +945,12 @@ citation.
   first** — and the cheapest implementation of it can break a closed ticket. Which closed tickets
   the cheap reading touches is a measurement: run their suites against it before building it, and if
   it breaks one, implement the decision the other way up so both tickets hold. (#152)
+- **An owner's answer is a claim like a ticket's, and its price is measured before it is built** —
+  #152 one step along: where the price is paid in what the person can still *do* rather than in how
+  the diff is written, the measurement goes back to the owner instead of into whichever
+  implementation keeps the closed tickets green. The census that finds it is of the **press**
+  (#199, #221), which counts the rows using the control as an instrument and not the rows it is
+  about. (#228)
 - **A behaviour that depends on which of two invisible windows a press landed in is a defect,
   not a preference** — #52 met in the product rather than in a fixture. Both behaviours can be
   defensible, so what is wrong is that the system holds both and the clock picks: the owner's

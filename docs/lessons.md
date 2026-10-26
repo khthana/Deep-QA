@@ -14533,3 +14533,77 @@ all of it (#102, #52).
 wrote it there: the condition cannot be built at either seam, which is the whole reason the probe
 exists. Nor does bringing three call sites under one wrapper cost the proof anything, because
 nothing was proving them in the first place (#68, #171).
+
+## #228 — the answer that was priced before it was built
+
+#180 had asked, and the owner had answered on 22 October 2569, that all five forms carry the same
+two-option `select` for a record's status. #228 is what that answer left behind: three of the five —
+`DepartmentForm.js`, `ProgramForm.js`, `SubjectForm.js` — had neither a sentence under the field nor
+any sign that a save was in flight, where `ProgramSubjectForm.js` and `PloForm.js` had both. Two
+halves, and the ticket was right that both were the owner's: the **wording** of a sentence that does
+not exist yet, and the **behaviour** of the controls while a save is out.
+
+Three of the ticket's claims were measured first. The one about the delivered tree held, and it is
+what made every option allowed rather than a change to a delivered screen: `is_active` appears **0
+times** in `DEEP-QA-FRONTEND`, so all five of these fields are the rebuild's own and none of them is
+a number somebody else chose (#156). The other two were wrong. *One line per file* was a count of
+the files and not of the sites: `busy` reached the *บันทึก* button and nothing else in all three, so
+matching the upper two forms was **21 lines at 21 sites** — the same species the sheet had already
+recorded against #180's own prediction two days before (#52). And the owner had **one** sentence to
+settle rather than three: the programme's and the subject's follow the pattern of the two forms that
+already carried a hint — `PloForm.js:265` and `ProgramSubjectForm.js:176`, the only two with that
+tail before this change — with the noun changed, and both of those screens already say the same fact
+at the moment of the refusal (`Programs.js:322`, `Subjects.js:313`). The department's comes from
+`REFUSALS.departmentInUse`, and no pattern fitted it, because a department with anything pointing at it is **refused**, where a programme, a
+subject, a mapping, an outcome and a rubric are closed for you by `lib/removal`'s
+`deleteOrDeactivate` — so a sentence copied from `PloForm.js` would have been wrong on exactly the
+screen the ticket was filed from, and it is the only control that performs the sentence the server
+already says (#178).
+
+**The owner's first answer was sent back, and that is this ticket's rule.** The answer was `busy` on
+every control, as the upper two forms have always had it. What priced it was a census of the
+**press** rather than of the claim (#199, #221): **19 rows in two closed tickets arrange their
+situation by pressing *ยกเลิก* while a save is out on these three screens** — `142a`'s
+`cancelDuringSave` marks exactly these three, and `146a`'s `saveAndCancel` is the whole
+administration block's arrangement, six rows for ภาควิชา, five for หลักสูตร, five for รายวิชา.
+Three of the 19 go one further and type into a **second** form while the first write is still out,
+which `busy` on the fields alone would have broken too, `busy` being the page's flag and not the
+form's. #146's whole subject is that window: a person may move on while a save is out.
+
+#152 says to run the closed tickets' suites against the cheapest reading of a decision and, if one
+breaks, to implement the decision the other way up so both hold. Here the price was not in how the
+diff is written but in **what the person can still do** — abandon a form whose write has not landed,
+and start another — so it went back to the owner rather than into whichever implementation kept the
+suites green. The second answer, the same day, was the form's own flag: `sending`, raised in
+`submit` and lowered in `.finally`, on every **field**, with *ยกเลิก* holding nothing at all. What
+that leaves unguarded is written on the three sheets in plain words rather than left to be
+discovered: *ยกเลิก* is still pressable while the save is out, which is what #142 and #146 measured
+and is not a gap this ticket left.
+
+The locator question was measured rather than reasoned about (#121). The hint goes **inside** the
+`<label>`, where the other four forms put theirs, so it lands in the control's accessible name:
+measured on 26 October 2569 against `PloForm.js`'s own hinted box, `{ exact: true }` finds 0 and the
+form the three screen helpers actually use — a string `name` with no `exact`, which Playwright
+matches as a substring — finds 1. `getByRole('combobox', { name: 'สถานะ' })` therefore kept working
+in all three helpers with no re-aim, and the probe was deleted once that number was written into the
+sheet and into `DepartmentForm.js`'s head comment (#207). A census of the words the sentences add,
+one query per word (#93, #116), found no loose locator they collide with.
+
+Nine mutants, three per file, because each screen's row reads three claims in order and a row
+reports the **first** assertion that dies, so a claim written under another is proved by nothing
+without a mutant of its own (#88). Per file: the status field left live, which is the code the
+ticket diagnosed (#115); the Thai-name box left live; and that box reading `busy` instead of
+`sending`, which is the declined option made to run (#48) and the only thing that can tell the
+form's flag from the page's. All nine came back fail 1 pass 2 at the assertion the table predicted
+before the sweep, read by the dying assertion's name and not by the count (#201). There is **no
+mutant for *ยกเลิก***: the one that would prove it is `disabled={busy}` on that button, which would
+kill 19 rows in two other files, and a mutant has to be able to fail one row and leave the rest
+standing (#97). That claim is therefore a check that the price above is still unpaid, not a claim of
+this ticket's own — and what it buys is that the three rows reach the fourth claim at all.
+
+One thing expired that nothing in this ticket touched. A test-file argument is matched as a
+substring, so the day `228a-the-form-that-sent-the-save.spec.js` landed, `npx playwright test 28a`
+began running two files and `28a:224` in `docs/acceptance/41-continuous-improvement-plan.md` named
+two specs (#154, #158). `python mutation/anchors.py` is what said so, in the same breath as the
+missing `mutation/README.md` row — three sentences written full-length by a file that was never
+about them.
