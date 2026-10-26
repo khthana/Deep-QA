@@ -48,7 +48,8 @@ mount ใหม่ #198 ถามว่าการ mount ใหม่พาอ�
 
     python mutation/155-a-switch-that-did-not-move.py save
     python mutation/155-a-switch-that-did-not-move.py noreread
-    cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test 155a-a-switch-that-did-not-move --reporter=line
+    cd e2e && npx playwright test 155a-a-switch-that-did-not-move --reporter=line
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
     python mutation/155-a-switch-that-did-not-move.py restore
 """
 

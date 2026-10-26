@@ -14,15 +14,14 @@
  * ## How to run it
  *
  *     cp e2e/probes/221-the-two-windows.spec.js e2e/tests/000-probe-221.spec.js
- *     cd e2e && E2E_BACKEND_PORT=3600 E2E_FRONTEND_PORT=5310 \
- *       npx playwright test tests/000-probe-221.spec.js
+ *     cd e2e && npx playwright test tests/000-probe-221.spec.js
  *     rm e2e/tests/000-probe-221.spec.js
  *
  * The runner only sees it inside `tests/`, which is the convention
- * `probes/219-first.spec.js` carries. Read the ports off
- * `netsh interface ipv4 show excludedportrange protocol=tcp` first: a port
- * inside a reserved range does not raise on bind, so the backend prints its
- * banner and exits 0 (#237).
+ * `probes/219-first.spec.js` carries. No port is written above: `e2e/README.md`
+ * §Ports is the one statement of that rule, and it says which of the two
+ * symptoms is which. Read it before a run on a machine that has just rebooted
+ * (#237, 26 October 2569).
  *
  * ## What each arm does
  *

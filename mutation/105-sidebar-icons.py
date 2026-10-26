@@ -50,7 +50,8 @@ retry จึงเติม `expect(menuLink(page, first)).toBeVisible()` ไว
 
     python mutation/105-sidebar-icons.py save
     python mutation/105-sidebar-icons.py dots
-    cd e2e && E2E_FRONTEND_PORT=5300 npx playwright test 105a --reporter=line
+    cd e2e && npx playwright test 105a --reporter=line
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
     python mutation/105-sidebar-icons.py restore
 """
 

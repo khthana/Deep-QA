@@ -48,12 +48,43 @@ Playwright's `reuseExistingServer` defaults to true off CI, so on the usual port
 whatever `npm start` is already serving, and the import specs would write students into the database somebody is
 working in. Dedicated ports and an explicit `reuseExistingServer: false` are what close that.
 
+### Ports
+
+**This is the one statement of the port *rule*.** Which ports this suite uses is in `support/env.js` and in the root
+`CLAUDE.md`; what is here is why a run may need them overridden and how to tell the two failures apart. Twenty-three
+run blocks in `mutation/`, the three docblocks in `probes/`, and `support/env.js` point here instead of carrying a
+number of their own — a port typed into twenty-six places is a number that is already wrong (#237,
+26 October 2569).
+
+**A number read here is a measurement of its own day, this one included.** On 26 October 2569 the reserved ranges
+were `3024-3123` · `3124-3223` · `3324-3423` · `3424-3523` · `4261-4360` · `4361-4460` · `4561-4660` · `4661-4760` ·
+`5357` · `11938-12037` · `12038-12137` · `50000-50060`, which puts the **backend default 3100 inside a reserved
+range** while 5100 is free. So a run that morning needed `E2E_BACKEND_PORT` set to a port outside those ranges, and
+the next reboot moves the answer again. What the pointers buy is not a command that always works: it is a command
+with no number in it to go stale, and one place to read before a run.
+
 Both ports may be overridden for one run — `E2E_BACKEND_PORT` and `E2E_FRONTEND_PORT` — and the reason is Windows
-rather than preference. Hyper-V reserves blocks of ephemeral ports and re-randomises them on every boot, so a machine
-can wake up with 5100 inside an excluded range; the symptom is not a port in use but `EACCES` on bind, which CRA
-reports as *Something is already running on port 5100* and which sends whoever reads it hunting for a process that
-does not exist. `netsh interface ipv4 show excludedportrange protocol=tcp` is what says so. The defaults do not move:
-a suite whose ports drifted per machine would make every *it works here* less informative.
+rather than preference. Hyper-V reserves blocks of ephemeral ports and **re-randomises them on every boot**, so a
+machine can wake up with one of this suite's ports inside an excluded range. Never carry a port forward from a note
+or from a command written down on another day: 3400 ran the whole suite on 24 October 2569 and was inside 3324-3423
+the next morning. `netsh interface ipv4 show excludedportrange protocol=tcp` is what says which ranges are reserved
+right now, and it is what to read **before** reading a stack.
+
+It has two symptoms, and they look like different faults:
+
+* **The frontend.** `EACCES` on bind, which CRA reports as *Something is already running on port 5100* — so whoever
+  reads it hunts for a process that does not exist. Nothing is listening and `netstat` shows nothing.
+* **The backend.** The bind does not raise at all. `server.js` prints `Server running on http://localhost:3400` and
+  `Environment: test`, and then the process ends on its own with status 0 about 300ms later. Playwright reports that
+  as `Process from config.webServer exited early.` **with no error above it**, which reads as a crash in the server
+  and sends you to the application. It cost three runs on 25 October 2569 (#220).
+
+What tells the second apart from a real crash is running `node server.js` by hand on that port and then on a port
+outside the ranges: the second stays up.
+
+The defaults do not move: a suite whose ports drifted per machine would make every *it works here* less informative.
+What the override buys is a run on a machine that has temporarily lost a port, with no config change committed for a
+condition that clears on the next reboot.
 
 The schema is dropped, migrated and seeded in `support/global-setup.js` at the **start** of a run rather than the end,
 so a failed run leaves its data behind to be looked at.

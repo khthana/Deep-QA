@@ -54,7 +54,8 @@ assertion ของมันเลย (#139, #213) สองแถวนั้�
     python mutation/215-the-scope-the-reader-is-shown.py save
     python mutation/215-the-scope-the-reader-is-shown.py <mutant>
     python mutation/215-the-scope-the-reader-is-shown.py restore
-    cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test tests/215a
+    cd e2e && npx playwright test tests/215a
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
 """
 from harness import main
 

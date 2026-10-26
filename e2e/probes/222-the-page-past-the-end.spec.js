@@ -17,12 +17,12 @@
  * the person presses something themselves. A reload does take it away, the
  * page number being `useState(1)` on the screen rather than part of the URL.
  *
- * Run it (the ports are this machine's today - read `netsh interface ipv4
- * show excludedportrange protocol=tcp` before trusting any number here, #237):
+ * Run it (no port is written here: `e2e/README.md` §Ports is the one statement
+ * of that rule, and reading it is what a rebooted machine needs — #237,
+ * 26 October 2569):
  *
  *   cp e2e/probes/222-the-page-past-the-end.spec.js e2e/tests/000-probe-222.spec.js
- *   cd e2e && E2E_BACKEND_PORT=3600 E2E_FRONTEND_PORT=5310 \
- *     npx playwright test tests/000-probe-222.spec.js --reporter=line
+ *   cd e2e && npx playwright test tests/000-probe-222.spec.js --reporter=line
  *   rm e2e/tests/000-probe-222.spec.js
  *
  * What it cannot say (#123):

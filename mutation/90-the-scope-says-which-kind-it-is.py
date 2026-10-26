@@ -60,7 +60,8 @@
     python mutation/90-the-scope-says-which-kind-it-is.py save
     python mutation/90-the-scope-says-which-kind-it-is.py <mutant>
     python mutation/90-the-scope-says-which-kind-it-is.py restore
-    cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test tests/90a tests/215a
+    cd e2e && npx playwright test tests/90a tests/215a
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
 """
 from harness import main
 

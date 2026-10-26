@@ -10,32 +10,20 @@ const path = require('node:path');
  * students, and a suite that could land on the ports and schema a person is
  * developing against would eventually write them into that person's database.
  *
- * The two ports may be overridden by the environment, and the reason is
- * Windows rather than preference: Hyper-V reserves blocks of ephemeral ports
- * and re-randomises them on every boot, so a machine can wake up with 5100
- * inside an excluded range. The symptom is not a port in use — nothing is
- * listening and `netstat` shows nothing — but `EACCES` on bind, which CRA
- * reports as *Something is already running on port 5100* and which sends
- * whoever reads it hunting for a process that does not exist.
- * `netsh interface ipv4 show excludedportrange protocol=tcp` is what says so.
+ * The two ports may be overridden by the environment — `E2E_BACKEND_PORT` and
+ * `E2E_FRONTEND_PORT` — and the reason is Windows rather than preference:
+ * Hyper-V reserves blocks of ephemeral ports and re-randomises them on every
+ * boot, so a machine can wake up with one of these inside an excluded range.
+ * The defaults themselves do not move: a suite whose ports drifted per machine
+ * would make every "it works here" less informative.
  *
- * That is one of two symptoms, and the quieter one cost three runs on
- * 25 October 2569 (#220). With the backend on a port inside an excluded range
- * the bind does not raise: `server.js` printed `Server running on
- * http://localhost:3400` and `Environment: test`, and then the process ended
- * on its own with status 0 about 300ms later. Playwright reports that as
- * `Process from config.webServer exited early.` with no error above it, which
- * reads as a crash in the server and sends you to the application. What tells
- * the two apart is running `node server.js` by hand on that port and on one
- * outside the ranges: the second stays up. So read `excludedportrange` before
- * reading the stack, and never carry a port forward from a note — the blocks
- * are re-randomised on every boot, and 3400 ran the whole suite on
- * 24 October 2569 and was inside 3324-3423 the next morning.
- *
- * The defaults do not move: a suite whose ports drifted per machine would make
- * every "it works here" less informative. What the override buys is a run on a
- * machine that has temporarily lost a port, without a config change committed
- * for a condition that clears on the next reboot.
+ * **The two symptoms this has, and how to tell the quiet one from a crash, are
+ * in `e2e/README.md` §Ports.** This comment held a second copy of them until
+ * 26 October 2569 (#237), and two places holding one opinion is a claim
+ * neither of them can be shown to hold (#97) — and #237 made the README's
+ * copy the one every `mutation/` run block points at, so this side is a
+ * pointer and not a summary. What stays here is the mechanism a reader of
+ * *this* function needs: the override exists, and it is read below.
  */
 
 /** A port from the environment, or the suite's own. */

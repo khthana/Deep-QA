@@ -110,7 +110,8 @@ Playwright จับ `121a` (1 แถว) กับ `122a` (2 แถว) ด้�
 ```
 python mutation/142-busy-outlives-a-superseded-read.py save
 python mutation/142-busy-outlives-a-superseded-read.py departmentssupersededletsgo
-cd e2e && E2E_FRONTEND_PORT=5300 npx playwright test 142a --grep "Departments.js"
+cd e2e && npx playwright test 142a --grep "Departments.js"
+# พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
 python mutation/142-busy-outlives-a-superseded-read.py restore
 ```
 """

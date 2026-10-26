@@ -220,7 +220,8 @@ UAX #29 ห้ามตัดหน้ามัน ถามเมื่อ 25 �
 
     python mutation/117-thai-pdf-line-breaks.py save
     python mutation/117-thai-pdf-line-breaks.py <mutant>
-    cd e2e && E2E_FRONTEND_PORT=5300 npx playwright test 117a-thai-pdf-line-breaks
+    cd e2e && npx playwright test 117a-thai-pdf-line-breaks
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
     python mutation/117-thai-pdf-line-breaks.py restore
 
 แถวอยู่ใน `e2e/tests/117a-thai-pdf-line-breaks.spec.js`

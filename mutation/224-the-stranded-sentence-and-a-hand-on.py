@@ -40,11 +40,12 @@
     python mutation/224-the-stranded-sentence-and-a-hand-on.py <mutant>
     python mutation/224-the-stranded-sentence-and-a-hand-on.py restore
 
-พอร์ตของเครื่องนี้อ่านจาก `netsh interface ipv4 show excludedportrange protocol=tcp` ก่อนเชื่อ
-ตัวเลขใด (#237) — 25 ต.ค. 2569 คือ 3600 กับ 5310
+กฎเรื่องพอร์ตอยู่ที่ย่อหน้า Ports ของ `e2e/README.md` ที่เดียว (#237, 26 ต.ค. 2569) — บันทึกไว้ว่า
+คู่ที่เครื่องนี้ใช้ได้เมื่อ 25 ต.ค. 2569 คือ 3600 กับ 5310
 
-    cd e2e && E2E_BACKEND_PORT=3600 E2E_FRONTEND_PORT=5310 \
+    cd e2e && \
       npx playwright test tests/224a-the-stranded-sentence-and-a-hand-on.spec.js
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
 """
 from harness import main
 

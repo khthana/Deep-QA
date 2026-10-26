@@ -448,6 +448,12 @@ citation.
   off a command like that is two sheets' rows counted as one. Every such command was right the day
   it was written and expired by a file somewhere else; `python mutation/anchors.py` counts them now.
   (#154, #158)
+- **A documented command that pins an environment value expires on a schedule nothing in the
+  repository controls** — so its population is the **value** and not the variable name, and the fix
+  is a pointer to the one rule rather than a fresher number (#154 and #158's command, expired by the
+  machine instead of by a file). What separates such a command from a **dated record** of the same
+  command is what the line says and not the heading it sits under, and a pointer inserted *into* a
+  command can stop it running. (#237)
 - **A ticket citing two of this file's rules against each other is answered by the repo's own
   earlier answer to the same species** — a rule already applied to this very screen or endpoint is
   a decision, not a precedent to weigh, so look for the file that chose before writing the owner a

@@ -80,7 +80,8 @@ sheet re-counted (#202).
 
     python mutation/49-the-external-assessors-screens.py save
     python mutation/49-the-external-assessors-screens.py assessormenuiscommittee
-    cd e2e && E2E_FRONTEND_PORT=5300 npx playwright test tests/49a tests/52a tests/66a tests/42a --reporter=line
+    cd e2e && npx playwright test tests/49a tests/52a tests/66a tests/42a --reporter=line
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
     python mutation/49-the-external-assessors-screens.py restore
 
     python mutation/49-the-external-assessors-screens.py assessorreadsthecurriculum

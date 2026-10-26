@@ -55,7 +55,8 @@ React Router เทียบได้เป็น route เดิมทั้ง
 
 ## การกวาด
 
-`cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test tests/141a`
+`cd e2e && npx playwright test tests/141a`
+(เรื่องพอร์ต: ย่อหน้า Ports ของ `e2e/README.md` — ตั้ง `E2E_BACKEND_PORT` หรือ `E2E_FRONTEND_PORT` เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง)
 สำหรับแถวเดียว และชุดเต็มสำหรับคำถามว่ามันฆ่าเกินไหม ตารางนี้บันทึก**สิ่งที่มัตแตนต์ฆ่าได้จริง**
 ไม่ใช่สิ่งที่ควรจะฆ่าได้ — ตัวเลขเติมหลังกวาด
 

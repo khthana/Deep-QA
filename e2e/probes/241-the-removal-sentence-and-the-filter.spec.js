@@ -18,15 +18,14 @@
  *
  *     cp e2e/probes/241-the-removal-sentence-and-the-filter.spec.js \
  *        e2e/tests/000-probe-241.spec.js
- *     cd e2e && E2E_BACKEND_PORT=3600 E2E_FRONTEND_PORT=5310 \
- *       npx playwright test tests/000-probe-241.spec.js --workers=1
+ *     cd e2e && npx playwright test tests/000-probe-241.spec.js --workers=1
  *     rm e2e/tests/000-probe-241.spec.js
  *
  * The runner only sees it inside `tests/`, which is the convention
  * `probes/219-first.spec.js` and `probes/221-the-two-windows.spec.js` carry.
- * Read the ports off `netsh interface ipv4 show excludedportrange protocol=tcp`
- * first: a port inside a reserved range does not raise on bind, so the backend
- * prints its banner and exits 0 (#237).
+ * No port is written above: `e2e/README.md` §Ports is the one statement of that
+ * rule, and it says which of the two symptoms is which (#237,
+ * 26 October 2569).
  *
  * ## Why this screen is not the one #221 measured
  *

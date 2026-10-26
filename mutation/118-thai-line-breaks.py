@@ -97,10 +97,12 @@ U+2060 WORD JOINER ระหว่างตัวอักษรไทยทุ�
 
     python mutation/118-thai-line-breaks.py save
     python mutation/118-thai-line-breaks.py <mutant>
-    cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test 118a-thai-line-breaks
+    cd e2e && npx playwright test 118a-thai-line-breaks
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
     python mutation/118-thai-line-breaks.py restore
 
-พอร์ตคู่นั้นคือคู่ที่เครื่องนี้ใช้ได้เมื่อ 24 ต.ค. 2569 — 3100/5100 ซึ่งเป็นค่าตั้งต้นของ `env.js`
+คำสั่งนี้เคยเขียน `E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310` ไว้ จนถึง 26 ต.ค. 2569 (#237)
+คู่นั้นคือคู่ที่เครื่องนี้ใช้ได้เมื่อ 24 ต.ค. 2569 — 3100/5100 ซึ่งเป็นค่าตั้งต้นของ `env.js`
 อยู่ในช่วงที่ Windows จองไว้ ก่อนเลือกคู่ใหม่ให้อ่าน `netsh interface ipv4 show excludedportrange
 protocol=tcp` อย่าหยิบคู่นี้ไปใช้ต่อโดยไม่อ่าน
 

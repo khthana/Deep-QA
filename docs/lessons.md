@@ -14778,3 +14778,93 @@ the table now records the reordering of row 2 — because the next person to rea
 it instead of running it. The same sweep covered the re-aim of `18:noautoprogram`, whose line this
 fix moved out of the effect and into `starting`: a re-aim is faithful when it preserves the mistake
 rather than the line (#203), and it still kills `18a` row 1.
+
+## #237 — the twelve that were thirty-three, and the instrument figure that had already expired
+
+#220 lost three runs to a port: `E2E_BACKEND_PORT=3400`, written into the *วิธีรัน* block of
+mutation files on a day it worked, and inside Hyper-V's reserved range `3324-3423` the morning
+somebody read it. The ticket's own first sentence said twelve files, listed them, and said the
+twelve were by value rather than by variable name — one more file names `E2E_BACKEND_PORT` and was
+still runnable that morning, because its number was outside the ranges of that particular boot.
+
+**The ticket counted by the symptom, and the mechanism's population is two and a half times as
+large.** A grep of the *values* on 26 October 2569 found five numbers across two variables —
+`E2E_FRONTEND_PORT=5300` × 19, `=5310` × 14, `E2E_BACKEND_PORT=3400` × 12, `=3600` × 2 and
+`=3110` × 1 — in 33 files of `mutation/`, which is 23 run blocks once the ten dated records and the
+one fixture are taken out, and three more docblocks in `e2e/probes/` that this first grep never
+reached. The twelve are
+exactly the files holding the number that was reserved on the morning of the 25th: a census by the
+value that hurt rather than by the value that can hurt (#174). It is also the ticket's own evidence
+for its fix, read one step further: five numbers in two variables is a population that was never
+consistent, so there was never one number to correct.
+
+**The three-way split is what decides which of them are edited at all.** *Commands somebody will
+type* are the 23 run blocks and the three probe docblocks, and they were edited. *Dated records* are
+ten lines in `mutation/` — `52:102` `68:58` `83:54` `84:48` `89:80` `118:104` `129:48` `133:106`
+`146:82` `149:64` — plus `docs/acceptance/11-user-accounts.md:492` and `:985` and every file in
+`docs/handoff/`: they say what one measurement returned on one day and are not edited (#54).
+*The rule* is the paragraph itself, in two copies. And there is a fourth kind the ticket did not
+name: `mutation/anchors_test.py` writes a command down in order to have something for `anchors.py`
+to read, which is the same reason `_store()` counts it out loud (#126) — a fixture, not a command.
+
+**The cheap option is the one that removes the mechanism rather than the one that automates it.**
+The prefix came off entirely; what replaced it is one line per place pointing at `e2e/README.md`
+§Ports. The ticket's second option — a script in `e2e/package.json` that reads `excludedportrange`
+itself — buys the same thing and costs a mechanism inside the running suite in order to fix
+documentation, and it would still leave a number in front of anybody *reading* the file rather than
+running it. The pointer needed the README to have something to name: the port paragraph had no
+heading, so it got `### Ports`, which is what the twenty-six places cite.
+
+**What that buys is not a command that works; it is a command with no number in it to go stale.**
+The first draft of this record said the commands now run on the defaults with nothing to set,
+having read `env.js` and found it returns 3100 and 5100. That is what the module returns, which is
+not what the machine will bind: `netsh interface ipv4 show excludedportrange protocol=tcp` on
+26 October 2569 put **3100 inside `3024-3123`**, so a run that morning still needed
+`E2E_BACKEND_PORT`. #118's own dated paragraph had said the same thing about 24 October and was
+sitting two lines under the command being edited. A default is a value somebody chose; whether it
+can be bound is a measurement of the day.
+
+**The line between a command and a dated record is what the line says, not the heading it sits
+under.** Seven files keep their port because the sentence holding it states a measurement — a row
+count and a date, `(376 แถว) วัดเมื่อ 11 ก.ย. 2569` — and those are not edited (#54). All seven sit
+under `## การกวาด`, beside sentences that say what to run and *are* commands, which is why a script
+keyed on the heading would have got them wrong in both directions. The first pass edited all seven;
+the spec review found them against this ticket's own census table, and they were restored from
+`HEAD`.
+
+**A pointer inserted into a command is a command that no longer runs.** One of the thirty blocks
+wrote `cd e2e && \` and continued on the next line, and the pointer went in between, so the
+continuation swallowed it: pasting the block would `cd` and then run the suite in the wrong
+directory. A census that finds *the line carrying the value* cannot see that the line below it is
+part of the same command, and nothing in the diff is red — the standards review read it. Eleven
+more pointers had landed in Thai prose rather than in a command block, where a leading `#` is an
+H1 and not a comment (#93, #233): seven of those were the records above, and the remaining four
+were rewritten as prose.
+
+**And the first census was evidence about the files it globbed.** It asked `mutation/*.py` and so
+could not see `e2e/probes/221`, `222` and `241`, whose *How to run it* docblocks carried the same
+prefix — commands somebody types, by `CLAUDE.md`'s own description of that directory. They also
+each held a paragraph of the rule, which is #97 again; those are pointers now too. What the grep by
+value could not have found at all is the root `CLAUDE.md`'s bare `ports 3100/5100`, which carries no
+`E2E_*_PORT=` to match: a census is evidence about the property it counted (#174), and this one
+counted an assignment.
+
+**A pointer is only as good as the copy it points at, so the second copy went the other way.**
+#220 had written the second symptom into `e2e/support/env.js` and not into the README, which is
+#97's shape: two places holding one opinion, one of them already wrong. The README now carries both
+symptoms — the frontend's `EACCES` reported by CRA as *Something is already running on port 5100*,
+and the backend's bind that does not raise at all, printing its banner and ending with status 0 in
+about 300ms, which Playwright reports as `Process from config.webServer exited early.` with no
+error above it — and `env.js` is reduced to a pointer with its reason and the date it stopped being
+a summary.
+
+**And the instrument figure the ticket told us to watch had expired before the ticket was read.**
+Criterion 4 asked that `anchors.py`'s `commands` section still read `arguments 107`, as it had on
+25 October 2569. It reads **110**, and it read 110 at `HEAD` too — measured by running the
+instrument in a separate worktree at the commit, which is the only thing that settles an instrument
+against a hand-kept figure (#141). What moved it was #233's own mutation file, three commands added
+after the number was written down. This ticket's edit moved it by **zero**: `COMMAND` matches from
+the words `playwright test` onward, so an environment prefix in front of `npx` was never inside
+what it counts, and `UNTIL` stops at `#`, so the pointer line is not read either. A ticket's
+expected instrument reading is a claim with a date like all its others — and the edit a criterion
+warns you about can be invisible to the instrument it warns you with.

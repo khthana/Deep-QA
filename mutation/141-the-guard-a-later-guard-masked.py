@@ -69,7 +69,8 @@
 
 ## การรัน
 
-`cd e2e && E2E_BACKEND_PORT=3400 E2E_FRONTEND_PORT=5310 npx playwright test tests/141c`
+`cd e2e && npx playwright test tests/141c`
+(เรื่องพอร์ต: ย่อหน้า Ports ของ `e2e/README.md` — ตั้ง `E2E_BACKEND_PORT` หรือ `E2E_FRONTEND_PORT` เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง)
 สำหรับแถวของไฟล์นี้เอง และเพิ่ม `tests/179a` เมื่ออ่านว่ามัตแตนต์ไปถึงแถวของ #179 ด้วย
 
 """

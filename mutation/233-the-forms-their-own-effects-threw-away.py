@@ -53,7 +53,8 @@
     python mutation/233-the-forms-their-own-effects-threw-away.py save
     python mutation/233-the-forms-their-own-effects-threw-away.py <mutant>
     python mutation/233-the-forms-their-own-effects-threw-away.py restore
-    cd e2e && E2E_BACKEND_PORT=3600 E2E_FRONTEND_PORT=5310 npx playwright test tests/233a
+    cd e2e && npx playwright test tests/233a
+    # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
 """
 from harness import main
 
