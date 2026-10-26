@@ -14607,3 +14607,86 @@ began running two files and `28a:224` in `docs/acceptance/41-continuous-improvem
 two specs (#154, #158). `python mutation/anchors.py` is what said so, in the same breath as the
 missing `mutation/README.md` row — three sentences written full-length by a file that was never
 about them.
+
+## #230 — the population that was derived, and the instrument proved by moving it
+
+#155's defect was a screen left drawing one scope's rows under a picker that had already changed
+hat, and it was closed with a key on the `<Outlet />` in `Mainpage.js`: one structural point, every
+screen under it covered by construction — which is why #155's own instruction to let a census choose
+the screen was recorded as having *lapsed*. #198 asked what a remount took with it, measured the
+answer — the page, the filter, and a form typed and not saved — and the owner chose, on 23 October
+2569, the re-read without the remount. The rule moved out of the outlet and into the dependency list
+of each landing's own `load`, and the census question came back with it. That is the price of the
+narrower mechanism and not a defect in it, which is how `docs/acceptance/10-application-shell.md`
+records it, and #230 is the ticket opened in the same breath (#119).
+
+**The ticket's own table of the reads was out of date on the day it was written.** It lists six
+landings and, inside the sixth, `components/results/CohortPickers.js` — seven **files**. The tree had
+eight: `components/users/useGrantable.js` gained the dependency in #215's commit `d7ebf84`, the same
+23 October (#66, and #223 — a ticket written from another ticket's day inherits that day's
+population). Counted as **reads** rather than as files it had ten, because `Programs.js:234` and
+`Rubrics.js:242` are the second reads #198 itself added — which the ticket's comment names and its
+table does not count. The eighth read is the one that made the ticket's own comment right about there being
+**two** questions rather than one, because it is a read question 1 cannot see: it is not in a
+landing's file at all.
+
+So the census asks two questions over two populations:
+
+1. **Does each landing read the number in its own reads?** The population is derived, not listed
+   (#123): `components/SidebarItem/menus.js` says which menu a role gets and `landingPath` says the
+   role lands on its first entry, so the landings are a property of the menus and move when they do;
+   `routes/AppRoutes.js` turns the path into a component and the component's own import turns it into
+   a file. Nothing in the script holds the name `Users.js`.
+2. **Does a landing's second read ask too?** `Rubrics` and `Programs` each ask for two different
+   lists — their own rows, and the curricula or departments this grant reaches — and the same kind of
+   read lives one hop out, in `useGrantable.js` and `CohortPickers.js`. The population is every
+   module a landing **reaches** by import, and the calls asked about are the ones an api module has
+   declared grant-scoped: `export const GRANT_SCOPED = ['listGrantable']`, #182's shape, a
+   declaration the subject makes in code and that the census checks against what the module exports,
+   rather than a list of names in the script. Eleven functions in ten api modules declare it. What
+   makes a read one of those is measurable rather than a feeling: it takes **no argument** saying
+   which rows it means, so there is no prop a landing could hand down to move it, where a row list
+   the screen filters (`listUsers`, `listPrograms`) takes `params` and moves with the landing's own
+   dependency list. Nine of the eleven are consulted by nothing today, two being all a landing
+   reaches: that is the net for the next landing, and declaring only what is reached would make the
+   declaration a property of today's import graph instead of a property of the module.
+
+**Question 2 is narrow on purpose, and that is the #141 half of this ticket.** *Every api read in
+every component a landing reaches* would be the rule too loose: a panel's read is usually keyed on a
+prop the landing hands it, and the landing's own dependency list is what moves that prop. What has
+no prop to move is a list the **server** scopes to the acting grant. The same question decided why
+only landings are the population at all: the number is raised by `onStayedPut` in `Mainpage.js`,
+which fires when a switch lands where the router already is, so a screen that is nobody's landing is
+carried away by any switch that moves and never sees the number change.
+
+**Question 1 is deliberately loose, which is the other half of the same choice.** It asks about
+*every* api read in a landing's own file and not only the grant-scoped ones, because a landing's
+`load` is what the number is for and the screens are six; a read in a landing that is legitimately
+keyed on something else says so with the marker. Outside the landings, where the files are a hundred
+and forty, a rule that wide is the one too loose — which is the sentence the script's own docblock
+owed a future author, and did not carry until the review asked for it.
+
+Nine reads are measured in question 1 and two more in question 2, eleven in all, and one is exempt. `loadDrill` in `pages/ProgramLevelByIntake.js` reads
+`getOutcomeContributions` and names no generation, correctly: the `load` above it closes the
+drill-down on every read, so a panel can only be open for the generation that is drawn. The reason
+was already written in that code; what the ticket added was the marker that makes the instrument
+read it — `// screen-generation: <why> (#NNN)`, the escape `label-codes.js` and `required-props.js`
+already carry, because a rule with no way to say *this one is deliberate* is a rule people route
+around by deleting it.
+
+**The proof is four real sites broken, and the fourth is the one worth keeping.** A landing's
+dependency list emptied (`Departments.js`), a landing's call to the hook replaced by the constant
+`0` (`TeacherDashboard.js`), and a second read's list emptied one hop out (`useGrantable.js`) each
+put the census red on the right line and green again when restored — three breakages inside the
+population. The fourth moved the **population**: `FULL_ADMIN`'s first menu entry was pointed at
+`/main/subjects`, and the census named `pages/Subjects.js`, a file nobody had touched, as a landing
+that never reads the number. No fixture can hold that row, because what it measures is that the
+population is derived rather than listed — which is the one claim the script's own twenty-three
+fixtures cannot make about themselves (#141, #124).
+
+What it cannot measure is on the script's own face rather than in a count: a read written as
+anything but `useCallback` or `useEffect`, a dependency forwarded through a prop, an api function
+reached through a binding a grep for the call misses too (#133), a menu whose first entry is
+computed, and `firstEntry`'s rule restated here — a restatement is a second place the rule can be
+wrong (#96), and what holds the real rule is `66a` rows 1–2, which read the landing off the sidebar
+rather than off a constant.

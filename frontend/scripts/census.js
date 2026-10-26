@@ -19,6 +19,7 @@ const CENSUSES = [
   'swallowed-refusals.js',
   'dead-loaders.js',
   'required-props.js',
+  'landing-generations.js',
 ]
 
 let worst = 0

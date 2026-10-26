@@ -187,6 +187,9 @@ export default function ProgramLevelByIntake() {
    * change and nothing else. `frontend/src/pages/Students.js` carries the rule;
    * `e2e/tests/133a-superseded-answer-on-one-screen.spec.js` carries the row.
    */
+  // screen-generation: `load` above closes the drill-down on every read, so a
+  // panel can only be open for the generation that is drawn - naming the number
+  // here would re-read a panel that has already been taken away (#230).
   const loadDrill = useCallback(async isCurrent => {
     if (open === null) return
     try {

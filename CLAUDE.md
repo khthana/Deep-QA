@@ -651,6 +651,11 @@ citation.
   screen draws: the species is *is there a settle point between the request and the read*, not
   *which kind of screen is it*. The line that looks like it belongs to another helper may be the
   settle point, or may only share its name. (#174)
+- **An instrument whose population is derived is proved by moving the population, not only by
+  breaking a site inside it** — #141's rule for the half a fixture cannot hold: breaking a member
+  shows the rule reads, while moving the rule's own input shows the instrument follows it, and the
+  tell is that it names a file nobody has touched. Where the population comes from a rule restated
+  in the script, say whose rows hold the real one. (#230)
 - **A census can be blinded by another ticket's fix and go on reporting green** — an instrument
   that classifies by a spelling stops seeing its population the day that spelling changes, and
   then reports a clean sweep of whatever is left. **The count is the tell, not the exit code.** Then
@@ -1073,7 +1078,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
-| `frontend/scripts/` | Six censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
+| `frontend/scripts/` | Seven censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
 | `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #241). Not rows and not gates — nothing in the repository runs them, and four of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
@@ -1084,6 +1089,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `swallowed-refusals.js` | redraws from a loader without reading whether it drew (#152's family). Built by #200 and left unwired while the twenty administration sites it found were still red; #203 fixed those and wired it in on 12 October 2569 |
 | `dead-loaders.js` | reads a list again with the loader a handler closed over instead of the one the ref holds (#208's family). It finds its loaders **by the ref** and so cannot see a ref holding a coordinate |
 | `required-props.js` | leaves out a prop the component it draws declares it must have (#179's `target`, by #182's answer on 22 October 2569). Its population is every file exporting `REQUIRED_PROPS`, so it is a rule about a declaration and not about a component's name; it cannot read a spread, a wrapper, or a named import |
+| `landing-generations.js` | lands a role on a screen that does not read the screen generation #198 moved into each landing (#230, 26 October 2569). Two questions over two populations: every api read in a landing's own file, and every read an api module declares `GRANT_SCOPED` in the modules a landing reaches by import. The landings are derived from `menus.js` and `AppRoutes.js`, so a menu reordered moves them; it cannot see a read written as anything but `useCallback` or `useEffect`, a dependency forwarded through a prop, or a binding a grep for the call would miss |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the

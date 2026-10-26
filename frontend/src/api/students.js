@@ -43,6 +43,17 @@ export const listReachablePrograms = () => get('/api/students/programs')
 /** The departments in reach, which is how a `department_id` becomes a name. */
 export const listReachableDepartments = () => get('/api/students/departments')
 
+/**
+ * What the server scopes to the acting grant, and what takes **no argument** to
+ * say which rows it means: a list of rows the screen filters is not this one,
+ * because that read moves with the landing's own dependency list, while this one
+ * has no prop a landing could hand down to move it. So a landing screen that
+ * draws it reads the screen generation itself -
+ * `frontend/scripts/landing-generations.js` says why, and goes red for a read
+ * that does not (#230).
+ */
+export const GRANT_SCOPED = ['listReachablePrograms', 'listReachableDepartments']
+
 export const createStudent = draft => post('/api/students', draft)
 
 /** The template, as its text, so the screen can hand it to the browser. */
