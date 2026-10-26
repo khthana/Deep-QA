@@ -14868,3 +14868,90 @@ the words `playwright test` onward, so an environment prefix in front of `npx` w
 what it counts, and `UNTIL` stops at `#`, so the pointer line is not read either. A ticket's
 expected instrument reading is a claim with a date like all its others — and the edit a criterion
 warns you about can be invisible to the instrument it warns you with.
+
+## #244 — the three copies, the account the way in came with, and the screen that made one of them unreachable
+
+#233 put `if (editing) return` into four forms. It is the half that leaves a record which already
+exists where it is, instead of letting the effect that picks a parent for a *new* record move it:
+the reach endpoints answer with retired parents too, the form keeps those out of the pool it may
+pick from, and a record filed under a retired parent therefore holds a value the pool does not
+contain — the one shape that separates the effect's two conditions. One of the four was held by a
+row (`233a` row 2, `233:movesanexistingprogramme`), and `RubricForm` had `198a` row 5 from #232.
+The other three had nothing, and the ticket priced them at three rows and three mutants, one each,
+each row retiring its own record's parent over HTTP and restoring in `finally` as `233a` row 2
+does.
+
+**Two of the three are rows. The third is a net, and the reason is the screen above the form.**
+
+`starting` is `defaultProgram || onlyOne?.program_id || ''` on both `PloForm` and
+`ProgramSubjectForm`, letter for letter, and `defaultProgram` is the parent screen's filter.
+`pages/Plos.js` has one mount point, and its list is *per curriculum*: `load` returns without asking
+while no curriculum is chosen, and the read is `listPlos({ program_id: program })`. So every outcome
+the table can offer an แก้ไข for belongs to the curriculum the filter is on, which is exactly the
+value `starting` holds — the two branches of the effect write the same `program_id`, and a faithful
+copy of the defect is a mutant nothing can see (#206, with the screen's arithmetic in place of the
+row's). `pages/ProgramSubjects.js` is the same shape with one difference: its filter starts at `''`
+and its list is **not** per programme, so a pair filed in a retired curriculum is listed while
+`starting` is the one curriculum still active. That difference is the whole of row 2, and the row
+asserts it as its own precondition (#51).
+
+That was measured and not argued (#141). `movesanexistingoutcome` was written, applied and run:
+**twenty rows green** — row 3 of `244a` and all seventeen of `19a-plos.spec.js`, which is every row
+that opens that form. Then the mutant came out, and the row was left holding the **mechanism**
+rather than the absence, with the condition that would make the claim readable again written beside
+it (#203's ninth reading): the day `PloForm` is mounted on a screen whose `defaultProgram` can
+differ from the curriculum of the outcome being edited. One mount point is a dated claim like any
+other (#220).
+
+So **#102's three answers are answers about a copy, not about a line.** The same line in two forms
+gets two different answers, and what decides is the **scope of the parent screen's list** — not the
+form, not the number of mount points, and not anything a grep for the line can see. A ticket that
+counts copies has counted copies; the price is per screen.
+
+**And the way in the ticket borrowed came with the account of the row it was borrowed from.**
+
+The ticket said the way in was *the same one `233a` row 2 already uses*, which is right about the
+mechanism and silent about the reader. The first draft of all three rows signed in as the faculty
+administrator, as that row does, and the run came back **403, 403 and a timeout**. The Subjects
+screen is not the faculty administrator's, to read or to write — #61 decided that, and
+`backend/routes/subjects.js` says `MAINTAINERS = ['DEPT_ADMIN']` with the reasoning above it — while
+`/api/plos` and `/api/program-subjects` both admit `PROG_MANAGER` and `DEPT_ADMIN` only. `233a` row
+2 stands on the Programmes screen, which is the one screen of the four that *is* the faculty
+administrator's. The three rows now sign in as `deptadm05`, which reaches all three screens, and the
+retirement is still made over HTTP with the faculty administrator's session, because the departments
+and programmes routes are his (`198a` row 5 had already measured that a system administrator is
+refused 403 there).
+
+**And this ticket expired #237's number the same day #237 was written.** `e2e/README.md` §Ports said
+*twenty-three run blocks in `mutation/`* and *a port typed into twenty-six places*; a mutation file
+with a run block in it makes that twenty-four and twenty-seven. The pointer #237 built is doing its
+job — nothing here had to learn a port number — and the sentence *around* the pointer is still a
+hand-kept count in a directory that grows every ticket, which is the rule it was written to obey.
+#237's own story keeps its figures, because a dated record is not a citation (#54).
+
+Two accounts in one row is not a complication to apologise for: it is the shape of the situation.
+The person who may switch a parent off and the person who maintains the records under it are
+different people, which is why a record can be sitting under a retired parent at all.
+
+**A last thing the rows inherited was an order — and only one of them inherited the claim it
+ordered.** `SubjectForm`'s `offered` draws a retired department only when it is the value the field
+holds, so a mutant that clears the field takes the option with it. Read the option count first and
+that read takes the red, leaving the row's own claim under a red line with nobody reading it (#88).
+`233a` row 2 had met this and written the order down; row 1 copies the order and the reason.
+
+Row 2's twin assertion was not a twin. `ProgramSubjectForm` does not filter: it maps **every**
+programme to an `<option>` and sets `disabled` on a retired one unless it is the value the field
+holds, so the count is 1 with the guard and without it — a claim nothing could put at risk (#97),
+bought for free at the end of a row whose first assertion was doing all the work, which is the shape
+that makes this kind of assertion easy to write and easy to believe. What the guard decides on that
+form is whether the person sees their own curriculum as a live choice rather than greyed out, which
+is `disabled`. So the sentence above about the copies has one more layer in it: **the guard is
+copied letter for letter and the drawing around it is not, so what is at risk is not either** — #83
+read from the other side, where what the copy does not carry is not the proof but the way the screen
+would show the defect.
+
+And that repair could not be made where the old assertion stood. A `disabled` read written under
+row 2's value read is a claim below a claim: the mutant kills the line above it and nobody reads the
+line below (#88). It is a row, so it was **appended** as row 4 rather than inserted after row 2,
+which keeps every citation to rows 1–3 where it was (#97, #85). `movesanexistingpair` then kills two
+rows, each at its own assertion — two reachability claims and not one claim counted twice (#191).

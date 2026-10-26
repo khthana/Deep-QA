@@ -212,6 +212,11 @@ citation.
 - **A guard written for one caller is a claim about every caller** — find the others before
   writing the comment that says they are safe, because that comment is the claim, and a caller
   passed by reference is invisible to a grep for the call. (#68, #133)
+- **#102's three answers are answers about a *copy*, not about a line** — the same guard in two
+  forms can be *untested* in one and *structurally unreachable* in the other, and what decides is
+  the **scope of the parent screen's list**: a list drawn per parent hands the form the very value
+  the record holds, which makes the two branches one. So a ticket that counted copies has counted
+  copies, and the price is measured per screen (#206). (#244)
 - **An *unreachable* that rests on a prop is a claim about every place the component is
   mounted** — the reason that closes the way in is usually written about one screen's JSX, while
   what it holds up is a claim about a component, so census the mount points; *one mount point* is
