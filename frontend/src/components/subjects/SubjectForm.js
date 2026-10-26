@@ -82,17 +82,46 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
   const usable = departments.filter(department => department.is_active !== false)
   const onlyOne = usable.length === 1 ? usable[0] : null
 
+  // A department to start on, so adding a subject in a faculty with a single
+  // department is not a choice the person has to make by hand. A string, so a
+  // re-read that returns the same answer moves nothing - #233. As on
+  // `ProgramForm`, there is no filter above this screen to start from instead.
+  const starting = onlyOne ? onlyOne.department_id : ''
+
+  // The pool as a value rather than as an array - #232's shape, whose reasons
+  // are in `rubrics/RubricForm.js`. `ProgramForm.js` carries this screen's own
+  // version of them; the difference here is `credits`, which belongs to the
+  // effect keyed on `value` because it is read out of the answer that opened
+  // the form and not out of the pool.
+  const pool = usable.map(department => department.department_id).join(' ')
+
+  // The subject changed, so the form starts again.
   useEffect(() => {
     setDraft(current => ({
       ...EMPTY,
-      // A department to start on, so adding a subject in a faculty with a
-      // single department is not a choice the person has to make by hand.
-      department_id: onlyOne ? onlyOne.department_id : current.department_id,
+      // Kept rather than emptied, for `ProgramForm.js`'s reason: with no
+      // filter above the screen, a department picked by hand is the only
+      // memory this form has of one.
+      department_id: current.department_id,
       ...value,
       // The server answers with a number and the boxes hold text.
       credits: value?.credits === undefined || value?.credits === null ? '' : String(value.credits),
     }))
-  }, [value, onlyOne])
+  }, [value])
+
+  // And the department follows the pool, which is the half a re-read may move.
+  // `ProgramForm.js` has the reasons, including why an existing subject is left
+  // where it is: `GET /api/subjects/departments` answers with retired
+  // departments too, so a subject filed in one holds a value the pool does not
+  // contain.
+  useEffect(() => {
+    if (editing) return
+    setDraft(current =>
+      current.department_id && pool.split(' ').includes(current.department_id)
+        ? current
+        : { ...current, department_id: starting },
+    )
+  }, [editing, pool, starting])
 
   const set = key => event => setDraft(current => ({ ...current, [key]: event.target.value }))
 

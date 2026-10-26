@@ -66,15 +66,34 @@ export default function ProgramSubjectForm({
   const usable = programs.filter(program => program.is_active !== false)
   const onlyOne = usable.length === 1 ? usable[0] : null
 
+  // A programme to start on: the one the list is filtered to, or the only one
+  // this account holds. A committee member never picks. A string, so a re-read
+  // handed the same programmes back moves nothing - #233.
+  const starting = defaultProgram || onlyOne?.program_id || ''
+
+  // The pool as a value rather than as an array - #232's shape, whose reasons
+  // are in `rubrics/RubricForm.js`. What this form holds beside the picker is a
+  // subject chosen out of the catalogue, which is a search of its own below and
+  // not part of the pool, so the two effects below divide this form the same
+  // way that one does.
+  const pool = usable.map(program => program.program_id).join(' ')
+
+  // The subject changed, so the form starts again.
   useEffect(() => {
-    setDraft({
-      ...EMPTY,
-      // A programme to start on: the one the list is filtered to, or the only
-      // one this account holds. A committee member never picks.
-      program_id: defaultProgram || onlyOne?.program_id || '',
-      ...value,
-    })
-  }, [value, defaultProgram, onlyOne])
+    setDraft({ ...EMPTY, ...value })
+  }, [value])
+
+  // And the programme follows the pool, which is the half a re-read may move.
+  // `rubrics/RubricForm.js` carries the reasons, including why a pair that
+  // already exists is left where it is.
+  useEffect(() => {
+    if (editing) return
+    setDraft(current =>
+      current.program_id && pool.split(' ').includes(current.program_id)
+        ? current
+        : { ...current, program_id: starting },
+    )
+  }, [editing, pool, starting])
 
   // The catalogue, searched as the person types. Debounced, because a request
   // per keystroke is a request per keystroke; skipped entirely on an edit,

@@ -95,12 +95,24 @@ export default function PloForm({
   const usable = programs.filter(program => program.is_active !== false)
   const onlyOne = usable.length === 1 ? usable[0] : null
 
+  // A curriculum to start on: the one the list is filtered to, or the only one
+  // this account holds. A กรรมการหลักสูตร never picks. A string, so that
+  // re-reading the pool and being handed the same curricula back moves nothing
+  // - #233.
+  const starting = defaultProgram || onlyOne?.program_id || ''
+
+  // The pool as a value rather than as an array - #232's shape, whose reasons
+  // are written out in `rubrics/RubricForm.js`. `programs` is a new array on
+  // every answer, so an effect that depended on anything derived from it by
+  // identity re-ran whenever the screen read the pool again, and threw away a
+  // form typed and not saved.
+  const pool = usable.map(program => program.program_id).join(' ')
+
+  // The subject changed, so the form starts again: another outcome is being
+  // edited, or the form was opened to add one.
   useEffect(() => {
     setDraft({
       ...EMPTY,
-      // A curriculum to start on: the one the list is filtered to, or the only
-      // one this account holds. A กรรมการหลักสูตร never picks.
-      program_id: defaultProgram || onlyOne?.program_id || '',
       ...value,
       // Both come back from the server as numbers or as null, and a select
       // holds strings. Left as they are, an outcome with no parent would show
@@ -108,7 +120,23 @@ export default function PloForm({
       parent_outcome_id: value?.parent_outcome_id ?? '',
       outcome_description: value?.outcome_description ?? '',
     })
-  }, [value, defaultProgram, onlyOne])
+  }, [value])
+
+  // And the curriculum follows the pool, which is the half a re-read may move.
+  // `rubrics/RubricForm.js` carries the reasons; this screen adds one of its
+  // own. The effect below reports `draft.program_id` upwards, and both effects
+  // are flushed from the same commit, so what it reports is the settled value
+  // rather than the `''` this one is about to replace - which is why the pair
+  // is not a copy of `RubricForm`'s but has to be read against that effect
+  // (#83).
+  useEffect(() => {
+    if (editing) return
+    setDraft(current =>
+      current.program_id && pool.split(' ').includes(current.program_id)
+        ? current
+        : { ...current, program_id: starting },
+    )
+  }, [editing, pool, starting])
 
   // The ข้อหลัก options have to come from the curriculum this form is on,
   // which the caller cannot know from `value` alone — a new outcome starts on

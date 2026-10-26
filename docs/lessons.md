@@ -14690,3 +14690,91 @@ reached through a binding a grep for the call misses too (#133), a menu whose fi
 computed, and `firstEntry`'s rule restated here — a restatement is a second place the rule can be
 wrong (#96), and what holds the real rule is `66a` rows 1–2, which read the landing off the sidebar
 rather than off a constant.
+
+## #233 — the four forms, the row read in the wrong order, and the marker the instrument could not read
+
+#232 found one form being cleared by its own effect: `onlyOne`, computed from an answer **by
+identity**, sitting in the dependency list of an effect that wrote the whole draft again, so every
+re-read of the pool threw away what somebody had typed — the one thing #198 narrowed its mechanism
+to keep. `grep -rln onlyOne frontend/src/components` found seven files; four of them wrote the draft
+the same way. #233 is those four, and it asked four things: `Programs.js` first because that is the
+way in a person meets today, the other three fixed with #232's shape but not copied whole (#83),
+dated reasons beside the two forms that are exempt (#141), and a census that asks the question of
+the code (#174).
+
+**The two ways in are not the same way in, and only one of them has a screen.** The second read of
+a pool happens where the screen names the generation in its own read's dependency list (#198), and
+of these four screens exactly one does — `Programs.js`, measured against `useScreenGeneration`
+across `frontend/src/pages` on 26 October 2569, where `Plos.js`, `ProgramSubjects.js` and
+`Subjects.js` all close the pool read with `}, [report])`. So the hat-switch way in exists on
+`/main/programs` and nowhere else, which is why the ticket said to do that one first. The other
+three have a way in that needs no second grant and no switch at all: the pool is read once per
+mount, and that answer alone moves `onlyOne` from `null` to an object once, so anybody who opens the
+form and types before the answer arrives loses what they typed. That one is not a race to wait for
+but a window to open, with `e2e/support/late-answer.js` (#170) — and the window had to be measured
+rather than guessed: at 3 seconds the hold had already elapsed before the add form was open, and the
+rows only went red at their own claims once it was 15.
+
+**A precondition read above the claim takes the mutant's red, and the claim is never read.** This is
+#88 one layer along. Row 2 holds the half of the fix that leaves an existing programme alone
+(`if (editing) return`), and it was written the way a row about a retired department wants to be
+written: first the precondition that the retired option is still drawn, then the claim that the
+field still says which department the programme is in. `movesanexistingprogramme` then died at the
+**precondition** — because the option is drawn only while the field holds it, so a mutant that
+clears the field takes the option with it. The kill count was right, the mutant was credited, and
+the row's own claim sat under the red line unread. The repair is the order, not the assertion: the
+claim first, the picker's count second. #88 says a claim written below another claim is proved by
+nothing; what this adds is that a *precondition* is another claim for that purpose, and that the
+ones derived from the claim are exactly the ones to read afterwards.
+
+**Row 2 passes against the unfixed code, which is what its mutant is for.** All five rows were run
+against `HEAD` before the mutants were written (#203): four failed at their own claims, and row 2
+passed, because the code before the fix already wrote the whole draft from `value`, which carries
+that programme's own department with it. `if (editing) return` is a **new** clause rather than
+something the old code got wrong, so the only thing that can measure it is the mutant. Its three
+other copies — `PloForm`, `ProgramSubjectForm`, `SubjectForm` — have no row at all, which is
+*untested* and not *structurally unreachable* (#102's three answers), and that went to the tracker
+as #244 rather than staying a paragraph in the mutation file (#119, #125).
+
+**An instrument that reads a marker has to read it in the shape people write markers.** The census
+#233 asked for lets a form off with a written reason, in the family's usual syntax —
+`// form-identity: <why> (#NNN)` — and the two exempt forms carry one, because a reason only a
+person can read is a paragraph the instrument cannot count. Both of them were then rejected by the
+census as *markers naming no ticket*. Babel hands back **one comment per `//` line**, and the ticket
+number was two lines down from the word `form-identity:`, so the first version of the script read a
+marker whose reason was the first line of a paragraph. That is #93 from the other side: there, a
+marker written in a syntax the instrument does not read ended up drawn on the screen; here, a marker
+written in the shape every reason in this repo is written in was invisible to the instrument built
+to read it. The fix is to join consecutive comments into the paragraph they are, and the rows that
+hold it are the two fixtures that put the ticket number on a line of its own.
+
+**The census asks what state a person types into, which is readable, rather than what a form is,
+which is not.** `setDraft` is a name and a list of names lies the day a file arrives (#126), so the
+population is derived in three questions: which `useState` has its value handed to a controlled
+`value=` or `checked=` anywhere in the file; which effects call that state's own setter and have a
+dependency list; and what each dependency's initialiser is compared by — `primitive`, `reference`,
+or `unclassified` for a prop, a hook's return or a name after a dot. `usable[0]` and `.find(…)` are
+`reference` because an element of a fresh answer is a fresh object; `.map(…).join(' ')` is
+`primitive`, which is exactly what #232's fix turned the pool into. A `reference` dependency is green
+only behind an updater with a branch that returns what it was given, or behind a marker. On 26
+October 2569: `typed-into states 65 · by value 28 · guarded 0 · marked 2 · unclassified 32`.
+
+**Its proof is the ticket's own mutant, applied to the tree** (#141, #124): with
+`233:programmearrayidentity` in place the census goes red at `components/programs/ProgramForm.js`
+and green again on `restore`, which is the diagnosed code read at a real site rather than in a
+fixture. And the count has a hole worth saying out loud: **`guarded 0`** — a fix that keeps the
+identity dependency and guards the write would be green, and all five forms of #232 and #233 took
+the other road and are `by value`, so that branch is held by the script's own fixtures and by
+nothing in `src/`. `unclassified` is the wide blind spot, `useMemo` inside it: `recorded` in
+`ActivityScores.js` is rebuilt whenever its own dependencies move, which is this family's mechanism
+wearing a hook, and nothing here can say whether it reaches a field.
+
+**A fixture undone through the seam is not a fixture removed.** The full run reported `user_roles: +1 deptadm05/DEPT_ADMIN/01` although `233a`'s `afterAll` had revoked that grant and been answered 200. The revoke route is `UPDATE user_roles SET is_active = false`, on purpose: the grant stops being honoured and the record that it existed stays. `155a` and `198a` make the same kind of fixture and have never appeared in that report, because the key they ask for is one the seed already holds, so a soft revoke puts it back as it was; this one asked for a key nothing held, and no call through the seam can ever take that row out again. So the cleanup has two halves - the revoke above the seam, which is the behaviour, and a `DELETE ... AND NOT is_active` below it, which is the row - and what says the second half landed is running the file alone and reading the report again (#132). What is left is the `acting_epoch` a hat switch writes, which is the leftover two earlier tickets accepted for `multi01` for the same reason: nothing but the switch writes it and no seam puts it back.
+
+**A mutation file's own table is a claim like a ticket's numbers.** This one said
+`movesanexistingprogramme` kills at an assertion it does not kill, and gave two of the six mutants
+an edit count the harness does not report. The sweep is what corrected both, and the paragraph under
+the table now records the reordering of row 2 — because the next person to read that table will read
+it instead of running it. The same sweep covered the re-aim of `18:noautoprogram`, whose line this
+fix moved out of the effect and into `starting`: a re-aim is faithful when it preserves the mistake
+rather than the line (#203), and it still kills `18a` row 1.

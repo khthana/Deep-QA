@@ -20,6 +20,7 @@ const CENSUSES = [
   'dead-loaders.js',
   'required-props.js',
   'landing-generations.js',
+  'forms-cleared-by-identity.js',
 ]
 
 let worst = 0

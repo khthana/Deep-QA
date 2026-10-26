@@ -24,10 +24,21 @@ FILES = {
 }
 
 MUTANTS = {
-    # 18a row 1: the one programme in reach is chosen for the person
-    "noautoprogram": ("form",
-                      "program_id: defaultProgram || onlyOne?.program_id || '',",
-                      "program_id: defaultProgram || '',"),
+    # 18a row 1: the one programme in reach is chosen for the person.
+    #
+    # Re-aimed by #233 on 26 ตุลาคม 2569, and it is the *mistake* that is
+    # preserved rather than the line (#203): the value this mutant was written
+    # against moved out of the effect and into `starting`, so the auto-pick is
+    # taken away where the pick is now written. `onlyOne` goes with it, because
+    # nothing else in the form reads it and `CI=true` turns an unused binding
+    # into a compile failure - which would be a mutant that stops the
+    # application rather than one that fails a row (#101).
+    "noautoprogram": [
+        ("form", "  const onlyOne = usable.length === 1 ? usable[0] : null\n", ""),
+        ("form",
+         "  const starting = defaultProgram || onlyOne?.program_id || ''\n",
+         "  const starting = defaultProgram || ''\n"),
+    ],
     # 18a row 1: one programme is stated, not offered as a choice of one
     "alwaysfilter": ("page", "{programs.length > 1 ? (", "{programs.length > 0 ? ("),
     # 18a row 1 / 18c row 8: the label names the curriculum, and the mutant

@@ -83,15 +83,61 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
   const usable = departments.filter(department => department.is_active !== false)
   const onlyOne = usable.length === 1 ? usable[0] : null
 
+  // A department to start on, so adding one to a faculty with a single
+  // department is not a choice the person has to make by hand. A string, so
+  // that re-reading the pool and getting the same answer back moves nothing -
+  // which is the whole of #233 in one line. There is no filter above this
+  // screen, so unlike `RubricForm`'s there is nothing else to start from: a
+  // faculty with several departments is one where nobody picks for the person.
+  const starting = onlyOne ? onlyOne.department_id : ''
+
+  // The pool as a value rather than as an array - #232's shape, and its
+  // reasons are written out in `rubrics/RubricForm.js`. `departments` is a new
+  // array on every answer, so an effect depending on it, or on anything
+  // derived from it by identity, re-ran whenever the screen read the pool
+  // again. On this screen that read is the one `Programs.js` names the
+  // generation in, which is how a form typed and not saved was thrown away by
+  // its own effect on a switch of hats that stays put - the one thing #198
+  // narrowed the remount in order to keep.
+  const pool = usable.map(department => department.department_id).join(' ')
+
+  // The subject changed, so the form starts again: another programme is being
+  // edited, or the form was opened to add one. `value` is state in the screen
+  // above and is not derived from any answer here, so a re-read cannot move it.
   useEffect(() => {
     setDraft(current => ({
       ...EMPTY,
-      // A department to start on, so adding one to a faculty with a single
-      // department is not a choice the person has to make by hand.
-      department_id: onlyOne ? onlyOne.department_id : current.department_id,
+      // Kept rather than emptied, which is where this parts company with
+      // `RubricForm`: with no filter above the screen, a department picked by
+      // hand is the only memory this form has of one, and `value` changing
+      // means another programme rather than another pool.
+      department_id: current.department_id,
       ...value,
     }))
-  }, [value, onlyOne])
+  }, [value])
+
+  // And the department follows the pool, which is the half a re-read may move.
+  // The field is left alone while it names something still in reach, and
+  // re-picked when it does not: the pool is what this hat may file a programme
+  // under, so a value outside it is one the server refuses (ADR-0002), and
+  // nothing here may pick a retired one - that would put the form in a refused
+  // state before the person had touched anything.
+  //
+  // An existing programme is not moved at all. That branch is not decoration:
+  // `GET /api/programs/departments` answers with retired departments too
+  // (`reachableDepartments`), the pool keeps them out, and a programme filed in
+  // one therefore holds a `department_id` the pool does not contain - so
+  // without it the form would say the programme sits somewhere it does not, and
+  // a save would move it. `233a` row 2 holds that, and
+  // `233:movesanexistingprogramme` is the mutant.
+  useEffect(() => {
+    if (editing) return
+    setDraft(current =>
+      current.department_id && pool.split(' ').includes(current.department_id)
+        ? current
+        : { ...current, department_id: starting },
+    )
+  }, [editing, pool, starting])
 
   const set = key => event => setDraft(current => ({ ...current, [key]: event.target.value }))
 

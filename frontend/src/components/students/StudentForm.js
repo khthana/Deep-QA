@@ -67,6 +67,15 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
   const offered = programs.filter(program => program.is_active !== false)
   const onlyOne = offered.length === 1 ? offered[0] : null
 
+  // form-identity: `onlyOne` is derived from an answer by identity, so this
+  // effect re-runs every time the screen reads the programmes again - which is
+  // what #232 and #233 are about. It is left as it is, and the reason is in the two lines
+  // below rather than in the dependency: the updater reads `current` and fills
+  // one field only when that field is empty, so a re-run with the same answer
+  // writes the same value and a re-run with a different one cannot reach a
+  // field anybody has typed into. Measured 26 October 2569, with
+  // `offerings/OfferingForm.js` the other of the two exempt by this shape. The
+  // day this writes a field it has not first found empty, it owes #232's split.
   useEffect(() => {
     // A หลักสูตร to start on when there is only one, so a department with a
     // single programme is not a choice anybody has to make by hand.

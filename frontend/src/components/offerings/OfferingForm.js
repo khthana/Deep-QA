@@ -66,6 +66,13 @@ export default function OfferingForm({
   const [subjects, setSubjects] = useState([])
   const [loading, setLoading] = useState(false)
 
+  // form-identity: `onlyOne` is derived from an answer by identity, so this
+  // effect re-runs every time the screen reads the programmes again - #232's
+  // and #233's subject. It is left as it is for the reason `students/StudentForm.js`
+  // gives: every line below fills a field only when it is empty, so no re-read
+  // can reach what anybody has typed. Measured 26 October 2569; these two are
+  // the only forms of the seven carrying `onlyOne` that are exempt by that
+  // shape, and the exemption ends the day one of these lines drops its `||`.
   useEffect(() => {
     setDraft(current => ({
       ...current,

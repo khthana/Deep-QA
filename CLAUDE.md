@@ -188,6 +188,10 @@ citation.
   two JSX tags is `JSXText`, so the parser sees no comment and the browser draws the words on the
   screen. **And a marker outlives the gap it documented, which turns it into an exemption.** (#93,
   #141)
+- **And an instrument that reads a marker has to read it in the shape markers are written** — a
+  paragraph of `//` lines is one comment per line to the parser, so a reason whose ticket number is
+  two lines below the keyword reads as a marker naming none, and the census rejects the very markers
+  it was built for. (#233)
 - A ticket that says *unless X* has told you what to go and look for; one that asks you to
   *consider* something is answered by a measurement, and *no, and here is what it would cost* is
   a finished answer. (#101, #89)
@@ -488,6 +492,10 @@ citation.
   proved by nothing** — the `serial` rule one layer down, and it is invisible in a kill count:
   the row is red, the mutant is credited, and the claims under the red line were never read. Let
   where the mutants die decide how a spec's claims are split into rows. (#88)
+- **And a precondition read above the claim is one of those claims** — where what the precondition
+  reads is drawn only because the claim holds, the mutant kills it first, the kill count is right,
+  and the row's own claim is never read. Order the row by what the mutant takes away: the claim
+  first, the reading that follows from it second. (#233)
 - A `mode: 'serial'` spec reports the first dying row and skips the rest, so measure each row on
   its own; a top-level `node --test` test reads like a suite header in `not ok` lines, so read
   the names — including in a ticket's evidence, where it read as a second red row. (#67, #48, #187)
@@ -738,6 +746,11 @@ citation.
   attribute a table by running that file on its own. (#132)
 - **A teardown is a write like any other** — scope it to what the file wrote, not to who wrote it.
   (#134)
+- **And an undo through the seam is not always a removal** — a revoke that deactivates leaves the row,
+  so a fixture asking for a key nothing held is reported as a leftover although its own cleanup was
+  answered 200. The sibling fixtures that never showed in that report asked for a key the seed
+  already holds, which is what made a soft undo enough for them: the row comes out below the seam,
+  and running the file alone is what says so. (#233)
 - **A comparison by key cannot see a rewrite** — a report that reads tidy has only said nothing was
   added or removed; measure the values too, then put them back. What nothing measures, nothing
   cleans. (#137)
@@ -1078,7 +1091,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
-| `frontend/scripts/` | Seven censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
+| `frontend/scripts/` | Eight censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
 | `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #241). Not rows and not gates — nothing in the repository runs them, and four of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
@@ -1090,6 +1103,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `dead-loaders.js` | reads a list again with the loader a handler closed over instead of the one the ref holds (#208's family). It finds its loaders **by the ref** and so cannot see a ref holding a coordinate |
 | `required-props.js` | leaves out a prop the component it draws declares it must have (#179's `target`, by #182's answer on 22 October 2569). Its population is every file exporting `REQUIRED_PROPS`, so it is a rule about a declaration and not about a component's name; it cannot read a spread, a wrapper, or a named import |
 | `landing-generations.js` | lands a role on a screen that does not read the screen generation #198 moved into each landing (#230, 26 October 2569). Two questions over two populations: every api read in a landing's own file, and every read an api module declares `GRANT_SCOPED` in the modules a landing reaches by import. The landings are derived from `menus.js` and `AppRoutes.js`, so a menu reordered moves them; it cannot see a read written as anything but `useCallback` or `useEffect`, a dependency forwarded through a prop, or a binding a grep for the call would miss |
+| `forms-cleared-by-identity.js` | writes state a person types into from an effect that has a value computed from an answer **by identity** in its dependency list, with no guard and no written reason (#232's family, by #233 on 26 October 2569). The pair to the row above: its population is read from the code in three questions — which `useState` a controlled `value=` or `checked=` is handed, which effects call that state's own setter, and what each dependency's initialiser is compared by (`primitive`, `reference`, or `unclassified` for a prop, a hook's return or a name after a dot). A `reference` dependency is green only behind an updater with a branch that returns what it was given, or a `// form-identity: <why> (#NNN)` marker; `students/StudentForm.js` and `offerings/OfferingForm.js` carry one. On that date: `by value 28 · guarded 0 · marked 2 · unclassified 32`. The six things it cannot measure are in its docblock, the guarded branch among them — nothing in `src/` takes it |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the
