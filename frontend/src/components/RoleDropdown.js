@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 
 import { useAuth } from '../context/AuthContext'
 import { roleName } from './MapRole'
+import { scopeCoded } from './users/scopeLabel'
 import { landingPath } from './SidebarItem/menus'
 import ContentMotionDIV from './ContentMotionDIV'
 
@@ -62,34 +63,86 @@ function RoleDropdown({ setAlert, onStayedPut }) {
   if (!acting) return null
 
   /**
-   * Why this one still says the code — #215, measured 23 October 2569.
+   * The scope this grant is over, as the person reads it — #215, #231.
    *
    * #90 gave the two administration screens the words `ชนิด · ชื่อ (รหัส)`,
    * and #215 asked whether the three places that draw a scope for reading get
-   * them too. The other two now do, from the list their own pickers are drawn
-   * from. This one cannot, for two reasons that are independent of each other:
-   * what it draws comes from `/api/me`, whose `allRoles` answers `role_id`,
-   * `role_name`, `priority` and `scope_id` and no name or kind at all; and the
-   * readers of this label are exactly the two roles `GET /users/grantable`
-   * refuses, so borrowing that list would answer 403 and leave the bare code
-   * anyway.
+   * them too. The other two did at once, from the list their own pickers are
+   * drawn from; this one could not, for two reasons independent of each other.
+   * What it draws comes from `/api/me`, whose `allRoles` answered `role_id`,
+   * `role_name`, `priority` and `scope_id` and no name or kind at all — and
+   * the readers of this label are exactly the two roles
+   * `GET /users/grantable` refuses, so borrowing that list would have answered
+   * 403 and left the bare code anyway. #231 is the server carrying the name,
+   * resolved by `scopeChain`'s own precedence so the word cannot disagree with
+   * the guard.
    *
-   * What would make it reachable is the server carrying the name and the kind
-   * on `/api/me`, resolved by `scopeChain`'s own precedence so that the word
-   * cannot disagree with the guard — which is a change to an answer every
-   * request reads, and the owner's to take. It is
-   * [#231](https://github.com/khthana/Deep-QA/issues/231), opened the same
-   * day. The delivered screen drew the name and no code, so the wording goes
-   * with it (`docs/06` §Out of Scope); its year half is unreachable whatever
-   * the answer, a grant holding no academic year (ADR-0003).
+   * The wording is the owner's, answered 27 October 2569: the name with the
+   * code after it, and **not** the kind word the administration screens carry,
+   * this label's own role name already saying which tier it is over. The
+   * delivered screen drew `ชื่อ - ปี` and no code at all, so dropping the name
+   * was a divergence of the rebuild's rather than something the screen never
+   * had (#86) - and its year half is unreachable whatever anyone chooses, a
+   * grant holding no academic year (ADR-0003).
+   *
+   * A scope with no name keeps the stored code, which is `scopeNamed`'s rule
+   * for the same case and reaches two states: the grant confined to nothing,
+   * whose `FULL_ADMIN` is no organisation unit and which this label draws no
+   * scope for anyway, and a `scope_id` naming nothing in the three tables -
+   * `assignable` refuses to write one, so a grant that holds one was written
+   * before that guard or around it, and the code is then the only true thing
+   * there is to say.
+   *
+   * `kind` is handed on although nothing it can hold today changes what is
+   * drawn: `scopeCoded` reads it only to spare the sentinel its brackets, and
+   * the sentinel never reaches that call, having no name to arrive with. It is
+   * passed because it is the server's answer to *which tier is this*, and the
+   * alternative is a call that says the tier is unknown - which would be a
+   * wrong answer the day a scope outside the three tables gains a name. The
+   * three rows in `shell.test.js` hold that the server sends it; no row here
+   * can, there being nothing for it to change (review, 27 October 2569).
    */
+  const scopeOf = grant =>
+    grant.scope_name
+      ? scopeCoded({
+          kind: grant.scope_kind,
+          label: grant.scope_name,
+          scope_id: grant.scope_id,
+        })
+      : grant.scope_id
+
   const label = grant =>
     grant.role_id === 'PROG_MANAGER' || grant.role_id === 'EXT_ASSESSOR'
-      ? `${roleName(grant.role_id)} ${grant.scope_id}`
+      ? `${roleName(grant.role_id)} ${scopeOf(grant)}`
       : roleName(grant.role_id)
 
   const isActing = grant =>
     grant.role_id === acting.role_id && grant.scope_id === acting.scope_id
+
+  /**
+   * The grant being worn, read out of the list rather than off the pointer.
+   *
+   * `acting` is `{ role_id, scope_id }` and nothing else, by design on both
+   * sides: `shellState` in `backend/routes/me.js` sends the pointer, and
+   * `carryGrants` puts the same two fields on every answer's header. It is a
+   * selection and never an authority - what the person holds is `roles`, which
+   * is where #231 put the scope's name.
+   *
+   * So the trigger reads the held grant the pointer points at. Carrying the
+   * name in both places instead would be two places holding one opinion, which
+   * is a claim neither of them can be shown to hold (#97) - and they could
+   * come apart, the header's pointer being built from the cookie as the
+   * request carried it.
+   *
+   * The pointer itself is the fallback, and the label for it is the bare code
+   * the picker drew before #231. `actingFrom` chooses from the rows it has just
+   * read, so the two agree by construction on every answer; what is left is a
+   * list this side has replaced without the pointer catching up, which
+   * `onGrantsChanged` in `context/AuthContext.js` holds to the one case of the
+   * worn grant having been revoked - and there the server's own pointer names a
+   * grant that is in the new list.
+   */
+  const worn = roles.find(isActing) ?? acting
 
   const choose = async grant => {
     setOpen(false)
@@ -144,7 +197,7 @@ function RoleDropdown({ setAlert, onStayedPut }) {
         className="flex w-auto items-center justify-between rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
         type="button"
       >
-        {label(acting)}
+        {label(worn)}
         <svg
           className="ms-3 h-2.5 w-2.5"
           aria-hidden="true"

@@ -33,8 +33,14 @@ const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', progr
  * is one such kind today: a second sentinel would be owed this clause too, and
  * `KINDS` above has no `global` entry for the same reason the label needs no
  * word in front of it.
+ *
+ * Exported since #231, which is the one place that wants this half without the
+ * kind word in front: the role picker, whose own label already says which kind
+ * of thing the grant is over - `กรรมการหลักสูตร` of a `หลักสูตร` - and where
+ * the owner chose `name (code)` on 27 October 2569. The text being shared costs
+ * the proof nothing while the mutants stay at the call sites (#104).
  */
-const withCode = scope =>
+export const scopeCoded = scope =>
   scope.kind === 'global' ? scope.label : `${scope.label} (${scope.scope_id})`
 
 /**
@@ -65,8 +71,8 @@ const withCode = scope =>
 export const scopeLabel = scope => {
   const kind = KINDS[scope.kind]
   return kind && !scope.label.startsWith(kind)
-    ? `${kind} · ${withCode(scope)}`
-    : withCode(scope)
+    ? `${kind} · ${scopeCoded(scope)}`
+    : scopeCoded(scope)
 }
 
 /**

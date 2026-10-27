@@ -7,6 +7,7 @@ const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const {
   PROGRAM_SUBJECTS,
+  committeeLabel,
   actingButton,
   switchTo,
 } = require('../support/shell');
@@ -110,7 +111,7 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-const PROGRAM_MANAGER_0501 = 'กรรมการหลักสูตร 0501';
+const PROGRAM_MANAGER_0501 = committeeLabel('0501');
 const TEACHER = 'อาจารย์ผู้สอน';
 
 /**
@@ -138,11 +139,16 @@ async function firstMenuHref(page) {
  * `/api/me/acting-role`, and the sidebar is redrawn from the state that answer
  * sets — so reading the menu straight after the response can read the menu of
  * the hat being taken off (#170, one seam over).
+ *
+ * `label` is read as text and never as a pattern: since #231 a committee label
+ * carries the curriculum's name and its code in brackets, and interpolating
+ * that into a `RegExp` makes `(0501)` a capture group, so the assertion fails
+ * against a string that reads identical to the one it was given.
  */
 async function wearing(page, label) {
   const answer = await switchTo(page, label);
   expect(answer.status(), `the switch to ${label}`).toBe(200);
-  await expect(actingButton(page)).toHaveText(new RegExp(label));
+  await expect(actingButton(page)).toHaveText(label);
   return firstMenuHref(page);
 }
 

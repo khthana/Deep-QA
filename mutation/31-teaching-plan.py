@@ -34,7 +34,7 @@ backend suite's crafted-refusals loop; what the browser row proves - and
 
 Killing them:
 
-    cd e2e && npx playwright test 31a
+    cd e2e && npx playwright test tests/31a-teaching-plan.spec.js
 """
 
 from harness import main

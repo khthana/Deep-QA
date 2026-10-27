@@ -15085,3 +15085,153 @@ checked by grepping `mutation/` for both the anchors and the **replacement strin
 there — #196, #166, #174, #102, #119, #203, #107, #121, #154, #233's marker convention, and, from
 the review, #48, #68, #139, #202, #89, #132, #181 and #140 — and a rule met again is a sentence in
 this story, not a second line in a file that grows every ticket.
+
+## #231 — the name that reached the record and not the button, and the half of the question that was mine
+
+The role picker read `กรรมการหลักสูตร 0501`: the role's name and a bare code. #215 had written the debt
+itself when it closed, because the two administration screens that draw a scope's name get it from
+the list `GET /api/users/grantable` answers, and the readers of *this* label are the two roles that
+endpoint refuses — #215's own rule from the other side, an endpoint that answers *what may be
+offered* standing in for one that answers *what this value is*, with the gap showing as an audience.
+So the picker could not be closed by that mechanism at all. The ticket offered three options: have
+the server send name and kind, decline and write the reason, or the wording is the owner's.
+
+**The three options were two questions, and only one of them was the owner's.**
+
+Where a value is resolved on the server is mechanism; what the person reads is wording. Read as
+alternatives, the three options either send the owner a question about plumbing or send me off to
+pick words. So they were split: the wording went to the owner, and the mechanism was decided by
+measurement. #204 is this rule's parent — a ticket that proposes one fix can be proposing two — met
+one layer along, where the split is not between two fixes but between two answerers.
+
+The mechanism half had a cost line to refute first. The ticket priced option 1 as *extra tables on
+every request*, and `attachRoles` already runs that query on every request: resolving `scope_id` is
+three `LEFT JOIN`s on a query that was being sent anyway, not a round trip. #77's rule — a ticket's
+cost line is a claim about the shape its author pictured, not about the option — and it is the one
+claim in a ticket that is about the *fix*, so it is what chooses which option gets built.
+
+Then the question was where the names go, and the answer was not `/api/me`. `X-Deep-Grants` carries
+the same grant set with **every** answer, so a grant given mid-session reaches the screen through
+that header and never through `/api/me`. Putting the names in `/api/me` alone would draw a new grant
+as a bare code in front of the person who had just been given it — which is row 3 of the new spec.
+The names went into `allRoles`, which both channels read. The resolution walks `scopeChain`'s own
+order, curriculum then department then faculty, because that is the order the server's guard already
+walks; `is_active` is deliberately not asked of the scope tables, since a grant whose scope has been
+retired is still a grant somebody holds and a label that vanishes is worse than one that still
+reads; and `FULL_ADMIN`, a value the schema chose rather than one anybody says (#216), stays
+unnamed.
+
+The owner answered the wording on 27 October 2569: **name and code, no kind word** —
+`กรรมการหลักสูตร วิศวกรรมคอมพิวเตอร์ (0501)` — because this label's role name already says which kind of
+scope it is, unlike `scopeLabel` on the administration screens, where `หลักสูตร ·` is the only
+thing that says it. The criterion row #215 had left behind said *the option says the kind of scope
+in words*, which was #215 guessing at the answer while writing the debt down, so the criterion's own
+wording changed with the mark.
+
+**A value added to a record does not reach a screen that draws a pointer to it.**
+
+With the server sending names, rows 1 and 2 of the new spec were still red while row 3 passed. That
+is not the shape of a fix that does not work, so rather than argue with it I wrote a throwaway probe
+spec that printed the sign-in body and the trigger's text side by side: the body carried
+`scope_name` for every grant, and the button still read `กรรมการหลักสูตร 0501`. The trigger
+draws `label(acting)`, and `acting` — in `shellState` and in the `X-Deep-Grants` header alike — is a
+two-column **pointer**, `role_id` with `scope_id`, which is what the switch is keyed on. The name had
+reached the record and not the thing drawing it.
+
+The tell was the subset. Row 3 arrives at its claim through the menu, which is built from the list,
+so it passed; rows 1 and 2 read the worn label, which is built from the pointer, so they failed.
+Read without the probe, a fix that works for one row of three looks like a fix that half-works,
+when it is a fix that landed somewhere else entirely. The repair is at the drawing —
+`const worn = roles.find(isActing) ?? acting` — finding the record the pointer names, rather than
+fattening the pointer so the server sends the name twice: two places holding one opinion is a claim
+neither of them can be shown to hold (#97). The ticket never mentioned this half, and it is the half
+that made the server fix invisible on the screen.
+
+**The shared text cost the proof nothing, because the mutants went to the call sites.**
+
+`withCode` in `components/users/scopeLabel.js` became an exported `scopeCoded`, since #231 is the
+first caller that wants that half without the kind word, and `scopeLabel` calls it. #104: extracting
+shared text costs the proof nothing if the mutants move to the call sites. So `nokind` (#90) and
+`bracketsthesentinel` (#216) were re-aimed onto `scopeCoded` and onto the `scopeLabel = scopeCoded`
+line rather than merged upward into one mutant, and each killed exactly the rows its own sheet
+records — nine and three — with the new spec standing in both sweeps. `stalelabel` on this sheet was
+re-aimed onto `{label(worn)}` and still kills `10a` row 3 at the same assertion. An anchor check says
+a mutant no longer applies; only a sweep says it no longer proves anything (#107, #68), and a mutant
+nobody re-aimed can stop killing the row it was written for without anything going red (#198).
+
+On the spec side, the pinned label text became `committeeLabel(scopeId)` in `e2e/support/shell.js`,
+which reads the names out of `db/seed` instead of retyping them (#118) and is an instrument rather
+than any row's claim, so it is shared (#171). No `RegExp` anywhere, because `0503`'s name has
+brackets in it.
+
+**And the ticket's count of what it would change was wrong by a factor of four.** It said *four
+places in two files*; the label was pinned on 17 lines in 5 spec files, and the ticket also named a
+spec file that does not exist. A ticket that states how many places it changes has published a claim
+a one-minute grep can check (#55, #96, #107), and a grep is evidence for the pattern you typed
+rather than for the claim you wanted (#111, #124).
+
+The three mutants of the new file are the three claims. `namelessresolver` is the diagnosed code made
+to run (#115) and kills all three rows. `triggerreadsthepointer` is the half the ticket did not
+report, and kills rows 1 and 2 while row 3 stands — which is what makes row 3 a claim of its own
+rather than a copy of row 1. `kindwordinfront` is the owner's declined wording made to run (#48),
+killing all three with
+`Received: "กรรมการหลักสูตร หลักสูตร · วิศวกรรมคอมพิวเตอร์ (0501)"` — the only thing that turns *we chose
+otherwise* from a sentence on a sheet into a claim the suite holds.
+
+What the new spec cannot say is how the longer label **looks**, so sheet 10 gained a ☐ row beside the
+⚙ one: the spec reads the label's characters, not the width of the button or whether the button is
+still in the bar. The account to walk it with is `prog.manager.0503@`, whose scope has the longest
+name in the seed and brackets inside it, so the drawn label ends with two bracketed groups.
+
+**And the clean suite found two rows this change had broken, both of them lines the census could
+not see.**
+
+866 passed, 2 failed, and both reds were mine — which is what the clean run is for, since no sweep
+can see the row your own fix breaks (#83, #96, #107). The census that found 17 pinned lines had
+asked for the label's **text**, and neither of these two is written as text. `12a:431` built it from
+two constants, ``new RegExp(`^${COMMITTEE} ${PROGRAM}`)``, so a grep for the words could not find it:
+#111 and #124 one layer along, where what the pattern cannot find is not a different spelling but a
+string that does not exist in the file at all.
+
+`81a:146` is the better one. It passed the label into `new RegExp(label)`, and the label now ends in
+`(0501)` — brackets, which a regular expression reads as a capture group, so the pattern requires
+the code without them and fails against text that is character for character what it was given:
+
+    Expected pattern: /กรรมการหลักสูตร วิศวกรรมคอมพิวเตอร์ (0501)/
+    Received string:  "กรรมการหลักสูตร วิศวกรรมคอมพิวเตอร์ (0501)"
+
+A value interpolated into a `RegExp` is a claim that the value holds no metacharacters, and the
+failure it produces is the one that reads as no failure at all — the two lines in the report are
+identical, so the eye goes looking for whitespace or a zero-width character rather than for the
+brackets it can see. `e2e/support/shell.js` had this written down already, in the reason
+`committeeLabel` is built without a `RegExp`; what it had not done was reach the caller that builds
+its own. Both sites are plain-text `toHaveText` now, and the reason lives in `wearing`'s docblock,
+which is where the mechanism is (#168).
+
+**And the review found the name and the kind being resolved by two different precedences.**
+
+Both axes landed on the same line. `scope_kind` is resolved by which row exists, which is
+`scopeChain`'s walk; `scope_name` was a `COALESCE` over the three name columns, which is resolved by
+which name is not null. `programs.program_name_th` and `departments.department_name_th` are both
+nullable, so a programme with no Thai name and a department sharing its id would answer
+`scope_kind: 'program'` with the **department's** words — one tier's name over another tier's
+authority, which is exactly what the paragraph four lines above it calls worse than a bare code. The
+docblock had written the failure down and the query produced it the other way round.
+
+Two columns that describe one row are read off that row, both of them. The repair is one `CASE` on
+the same three ids, so a tier with nothing to say answers `null` and the screen keeps the code,
+which `scopeNamed` already has a rule for. It is cheap, it is strictly better, and nothing in the
+suite held it: the collision row above builds two *named* rows, so neither resolver could fail it.
+
+What the finding cost is a row and a mutant. The row builds its own tiers — a nameless programme
+`0599`, a named department `0599`, a grant over it — rather than emptying a name the seed handed
+out, because a suite that shares one database is a world every other file is handed too (#132), and
+takes all three out below the seam (#134). `nameofanothertier` is that `COALESCE` made to run
+(#115), and it is the only mutant in this file proved at the HTTP seam rather than in the browser.
+`namelessresolver` was re-aimed onto the `CASE` that replaced its line, keeping the mistake and not
+the line (#203).
+
+It is also the second finding this ticket owes to a reader rather than to a run, and both were of
+the same species: a claim the code made about itself that no row could fail. The first was the
+ticket's own count of the places it would change; this one was a docblock's promise about what the
+resolver could not do.

@@ -65,8 +65,11 @@ MUTANTS = {
     "lump403": ("client",
                 "if (response.status === 401) sessionExpiredListener?.(payload.reason)",
                 "if (response.status === 401 || response.status === 403) sessionExpiredListener?.(payload.reason)"),
-    # row 3b: the trigger reads the grant being worn, not the senior one held
-    "stalelabel": ("dropdown", "{label(acting)}", "{label(roles[0])}"),
+    # row 3b: the trigger reads the grant being worn, not the senior one held.
+    # Re-aimed at #231, which made the trigger read the held grant the pointer
+    # points at - `worn` - so that the scope's name reaches it. What the mutant
+    # says is unchanged (#203): the senior grant held, in place of the worn one.
+    "stalelabel": ("dropdown", "{label(worn)}", "{label(roles[0])}"),
     # row 8: a teacher is not an administrator of accounts
     "adminteacher": ("admin",
                      "const ADMIN_ROLES = ['FULL_ADMIN', 'FACULTY_ADMIN', 'DEPT_ADMIN'];",

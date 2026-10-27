@@ -15,7 +15,7 @@ const {
   addGrant,
   revoke,
 } = require('../support/grants-panel');
-const { actingButton, roleOption, menuLink } = require('../support/shell');
+const { committeeLabel, actingButton, roleOption, menuLink } = require('../support/shell');
 const { DASHBOARD, openDashboard, chooseSection } = require('../support/teaching-screen');
 
 /**
@@ -188,9 +188,7 @@ test('rows 2 and 3: the grantee gains and loses the access on their next request
   // because the session never recorded a choice - `actingFrom` falls back to
   // the most senior grant held, and the new one outranks the old.
   await grantee.reload();
-  await expect(
-    grantee.getByRole('button', { name: `${COMMITTEE} ${PROGRAM}` }),
-  ).toBeVisible();
+  await expect(actingButton(grantee)).toContainText(committeeLabel(PROGRAM));
   expect(await reachProgramSubjects(grantee)).toBe(200);
 
   // Criterion 3, revoked in the other browser while the grantee's session is
@@ -353,7 +351,7 @@ test('row 8 (#77): a grant given reaches the picker on a menu press, with no rel
   // (#129): one grant on offer, and the picker showing it.
   await actingButton(grantee).click();
   await expect(roleOption(grantee, ROLE_NAMES.TEACHER)).toBeVisible();
-  await expect(roleOption(grantee, `${COMMITTEE} ${PROGRAM}`)).toHaveCount(0);
+  await expect(roleOption(grantee, committeeLabel(PROGRAM))).toHaveCount(0);
 
   await addGrant(page, { role: 'PROG_MANAGER', scope: PROGRAM });
 
@@ -371,7 +369,7 @@ test('row 8 (#77): a grant given reaches the picker on a menu press, with no rel
 
   await expect(actingButton(grantee)).toBeVisible();
   await actingButton(grantee).click();
-  await expect(roleOption(grantee, `${COMMITTEE} ${PROGRAM}`)).toBeVisible();
+  await expect(roleOption(grantee, committeeLabel(PROGRAM))).toBeVisible();
 
   // And the hat they are wearing is not changed under them. The header's own
   // `acting` says the committee here - it is the most senior grant held and the
@@ -430,9 +428,7 @@ test('row 9 (#77): a grant revoked leaves the picker, and the hat worn falls bac
   // most senior grant held, which the new one is. Asserted where it is used
   // rather than arranged - the first attempt at this row arranged a `switchTo`
   // and hung, because the switch it asked for had already happened.
-  await expect(actingButton(grantee)).toHaveText(
-    new RegExp(`^${COMMITTEE} ${PROGRAM}`),
-  );
+  await expect(actingButton(grantee)).toHaveText(committeeLabel(PROGRAM));
 
   const removed = await revoke(page, COMMITTEE, PROGRAM);
   expect(removed.status()).toBe(200);
@@ -459,7 +455,7 @@ test('row 9 (#77): a grant revoked leaves the picker, and the hat worn falls bac
     new RegExp(`^${ROLE_NAMES.TEACHER}`),
   );
   await actingButton(grantee).click();
-  await expect(roleOption(grantee, `${COMMITTEE} ${PROGRAM}`)).toHaveCount(0);
+  await expect(roleOption(grantee, committeeLabel(PROGRAM))).toHaveCount(0);
 
   expect(await grantee.evaluate(() => window.__pressedNotReloaded === true)).toBe(true);
 

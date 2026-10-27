@@ -9,6 +9,7 @@ const { BACKEND_URL } = require('../support/env');
 const {
   PROGRAM_SUBJECTS,
   PROGRAM_SUBJECTS_API,
+  committeeLabel,
   actingButton,
   switchTo,
 } = require('../support/shell');
@@ -59,7 +60,6 @@ const { RUBRICS, API, listedCodes, openRubrics } = require('../support/rubrics-s
  * drawn for the moment it takes the navigation to land.
  */
 
-const COMMITTEE = 'กรรมการหลักสูตร';
 const FIRST_SCOPE = '0501';
 const SECOND_SCOPE = '0503';
 
@@ -136,11 +136,11 @@ test('a switch that leaves the address where it is re-reads the screen under the
   const before = await listedCodes(page);
   expect(before, 'the first curriculum’s rubrics are what is drawn').toContain('RUB-01');
 
-  await switchTo(page, `${COMMITTEE} ${SECOND_SCOPE}`);
+  await switchTo(page, committeeLabel(SECOND_SCOPE));
 
   // The situation, said out loud: the hat changed and the address did not, so
   // nothing but the fix this row is about can have re-read anything.
-  await expect(actingButton(page)).toHaveText(new RegExp(`${COMMITTEE} ${SECOND_SCOPE}`));
+  await expect(actingButton(page)).toContainText(committeeLabel(SECOND_SCOPE));
   expect(new URL(page.url()).pathname, 'the switch moved nobody').toBe(RUBRICS);
 
   // What this grant is owed, asked of the server through the page's own cookie
@@ -182,7 +182,7 @@ test('and a switch that moves does not re-read the screen it is leaving', async 
   const asked = [];
   page.on('request', call => asked.push(new URL(call.url()).pathname));
 
-  await switchTo(page, `${COMMITTEE} ${SECOND_SCOPE}`);
+  await switchTo(page, committeeLabel(SECOND_SCOPE));
 
   // The situation: this switch moves, which is what makes it the other half.
   await expect.poll(() => new URL(page.url()).pathname).toBe(RUBRICS);

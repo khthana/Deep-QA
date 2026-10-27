@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { PROGRAMS: SEEDED_PROGRAMS } = require('../../db/seed');
 
 /**
  * The shell itself - #10. The role picker, the user menu and the two dialogs
@@ -38,6 +39,34 @@ const ROLE_NAMES = [
   'อาจารย์ผู้สอน',
   'ผู้ประเมินภายนอก',
 ];
+
+/**
+ * The picker's label for a grant over a curriculum, as #231 made the shell
+ * draw it: the role's name, then the curriculum's name with its code after it.
+ *
+ * The name is read out of `db/seed.js` rather than retyped, the way the
+ * password and the seeded accounts are. A locator built out of a source string
+ * holds only while the two are the same text (#118), and the two scopes these
+ * rows use are told apart by their names as much as by their codes - the
+ * international curriculum's name *contains* the other's.
+ *
+ * That containment is also why nothing here hands the label to a `RegExp`. The
+ * name of `0503` holds brackets of its own, which a pattern would read as a
+ * group rather than as two characters on the screen, so the rows below compare
+ * text with text.
+ *
+ * This is an instrument and not a claim. The rows that are *about* the wording
+ * are `231a`'s, which read the sentence off the trigger and off the open
+ * option; the four files that call this one use the picker to arrange a
+ * situation, and what they need is whatever the label says today (#171, #104).
+ */
+const committeeLabel = scopeId => {
+  const program = SEEDED_PROGRAMS.find(entry => entry.id === scopeId);
+  if (!program) {
+    throw new Error(`no seeded curriculum ${scopeId}`);
+  }
+  return `กรรมการหลักสูตร ${program.th} (${scopeId})`;
+};
 
 /** The picker's trigger, which shows the grant the server says is being worn. */
 const actingButton = page =>
@@ -305,6 +334,7 @@ module.exports = {
   PROGRAM_SUBJECTS,
   PROGRAM_SUBJECTS_API,
   USERS_MENU,
+  committeeLabel,
   actingButton,
   roleOption,
   switchTo,

@@ -86,17 +86,17 @@ MUTANTS = {
     'nokind': [
         ('wording', "const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }\n", ''),
         ('wording',
-        'const withCode = scope =>\n'
+        'export const scopeCoded = scope =>\n'
         "  scope.kind === 'global' ? scope.label : `${scope.label} (${scope.scope_id})`\n",
-        'const withCode = scope => `${scope.label} (${scope.scope_id})`\n'),
+        'export const scopeCoded = scope => `${scope.label} (${scope.scope_id})`\n'),
         ('wording',
         'export const scopeLabel = scope => {\n'
         '  const kind = KINDS[scope.kind]\n'
         '  return kind && !scope.label.startsWith(kind)\n'
-        '    ? `${kind} \u00b7 ${withCode(scope)}`\n'
-        '    : withCode(scope)\n'
+        '    ? `${kind} \u00b7 ${scopeCoded(scope)}`\n'
+        '    : scopeCoded(scope)\n'
         '}\n',
-        'export const scopeLabel = withCode\n'),
+        'export const scopeLabel = scopeCoded\n'),
     ],
     # The words are all there and still two different words; they point at the
     # wrong kinds, which no digit count and no drawing could catch (#145).

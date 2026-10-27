@@ -56,10 +56,13 @@ MUTANTS = {
     # The brackets back on the one scope whose stored value is not a code: the
     # code before this ticket made to run (#115), which is also the ticket's
     # own declined option 3 made to run (#48).
+    # Re-aimed at #231, which exported this helper under the name the picker
+    # asks for it by. The mutant is the same mistake on the same expression
+    # (#203); only the name it quotes has moved.
     'bracketsthesentinel': ('wording',
-        'const withCode = scope =>\n'
+        'export const scopeCoded = scope =>\n'
         "  scope.kind === 'global' ? scope.label : `${scope.label} (${scope.scope_id})`\n",
-        'const withCode = scope => `${scope.label} (${scope.scope_id})`\n'),
+        'export const scopeCoded = scope => `${scope.label} (${scope.scope_id})`\n'),
 }
 
 main(FILES, MUTANTS)

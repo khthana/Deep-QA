@@ -157,6 +157,12 @@ citation.
 - **A ticket that proposes one fix can be proposing two, and the split is the fourth option** —
   price the halves before writing the owner's question, and say which reader each half is for.
   (#204)
+- **And a ticket's options can be two *questions*, one of which is not yours** — #204's split
+  between two answerers rather than two fixes: where an option says *the wording is the owner's*,
+  its siblings are about mechanism, so reading the three as alternatives either sends the owner a
+  question about plumbing or sends you off to pick words. Ask the owner what the person reads and
+  decide the mechanism by measurement — starting with the cost line, which is the claim that picks
+  the option (#77). (#231)
 - **Which of a ticket's options are *allowed* is decided by who chose each value, which is not
   what an option does to the screen** — under `docs/06` §Out of Scope an option that moves a
   delivered number is a divergence and one that moves a number the rebuild chose is not, however
@@ -564,6 +570,12 @@ citation.
   truncates a row to its header width, so a count of the drawn cells is right whether the row is
   broken or fixed. Count the **source** to find it, and prove the render by reading the cell's
   **content** back. (#175)
+- **A value interpolated into a `RegExp` is a claim that the value holds no metacharacters** — a
+  name that ends in `(0501)` turns the code into a capture group, and the row then fails against
+  text that is character for character what it was given, the report printing the pattern and the
+  string identically. Assert such a value as **text**. Its twin is the pinned string built from two
+  constants, which a grep for the words cannot find at all (#111, #124), so a census of a label's
+  text is a census of the places somebody typed it. (#231)
 - **A matcher two questions share cannot be narrowed for one of them** — a prefix that answers
   *any request this screen makes* is the wrong instrument for *which answer is this screen's own
   read*, so the repair is a second, anchored matcher beside it, and the loose one's remaining
@@ -1053,6 +1065,19 @@ citation.
   screen. A list left out is the old grant's drawn over the new grant's rows, which is the ticket's
   own defect backwards, and the read you will miss is the one somebody wrote *fetched once* above
   on a premise the fix has just falsified (#68, #171). (#198)
+- **A value added to a record does not reach a screen that draws a *pointer* to that record** —
+  the server can send the name with every answer and the button still read the bare code, because
+  what it drew was the two-column pointer the switch is keyed on. The tell is a **subset**: the row
+  arriving through the list passes while the rows reading the worn label fail, which looks like a
+  fix that half-works and is a fix that landed somewhere else — a probe printing both ends says so
+  in one run, where argument does not. Repair it at the drawing, by finding the record the pointer
+  names, rather than fattening the pointer (#97). (#231)
+- **Two columns that describe one row are read off that row, both of them** — resolving the name
+  with a `COALESCE` over three tiers while the kind is resolved by the walk makes the two disagree
+  wherever the walked tier's name is **nullable**, which hands one tier's words to another tier's
+  authority: the very mismatch the docblock beside it called worse than a bare code. Ask
+  `CREATE TABLE` which columns may be null before writing a fallback over them (#54), and let a
+  tier with nothing to say answer `null`, which the screen already has a rule for. (#231)
 
 ### Walks
 

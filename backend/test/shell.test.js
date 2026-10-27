@@ -21,7 +21,14 @@ const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
 
-const { PASSWORD, ACCOUNTS, byAlias, DEPARTMENTS, PROGRAMS } = require('../../db/seed');
+const {
+  PASSWORD,
+  ACCOUNTS,
+  byAlias,
+  DEPARTMENTS,
+  FACULTY,
+  PROGRAMS,
+} = require('../../db/seed');
 const { actingEpoch } = require('../auth/accounts');
 const { attachRoles, GRANTS_HEADER, requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
@@ -35,6 +42,16 @@ const { startApi, guardedApp } = require('./helpers');
 const [DEPT_COMPUTER] = DEPARTMENTS.map((department) => department.id);
 const [PROGRAM_THAI] = PROGRAMS.map((program) => program.id);
 
+// #231's rows read the scopes' own names, out of the seed rather than typed
+// here: a name retyped in a spec is a second opinion about what the seed holds.
+const [DEPT_COMPUTER_NAME] = DEPARTMENTS.map((department) => department.th);
+const [PROGRAM_THAI_NAME] = PROGRAMS.map((program) => program.th);
+const FACULTY_ID = FACULTY.id;
+const FACULTY_NAME = FACULTY.th;
+
+/** The name of the department #231's precedence row files at a programme's id. */
+const COLLIDING_DEPARTMENT = 'ภาควิชาที่ใช้รหัสเดียวกับหลักสูตร';
+
 let api;
 before(async () => {
   api = await startApi('shell', { withSeed: true });
@@ -42,6 +59,7 @@ before(async () => {
 after(() => api.close());
 
 const emailOf = (alias) => ACCOUNTS.find((account) => account.alias === alias).email;
+const idOf = (alias) => ACCOUNTS.find((account) => account.alias === alias).id;
 
 async function signIn(alias, password = PASSWORD) {
   return request(api.app).post('/api/auth/login').send({ email: emailOf(alias), password });
@@ -138,6 +156,174 @@ test('the signed-in caller asking who they are', async (t) => {
       response.body.roles.map((grant) => grant.role_id),
       ['PROG_MANAGER', 'TEACHER'],
     );
+  });
+
+  /**
+   * #231. The role picker draws each grant's scope, and until this it drew the
+   * bare `scope_id` because this answer carried nothing else: `allRoles` read
+   * `role_id`, `role_name`, `priority` and `scope_id`, and no name or kind at
+   * all. The two administration screens that draw a scope for reading got the
+   * words from `GET /users/grantable`, which this caller is refused - the
+   * readers of the picker's label are exactly the two roles that endpoint keeps
+   * out (#215, #231).
+   *
+   * Both of U_MULTI's grants are asserted, and the pair is the point: the
+   * programme `0501` and the department `05` carry **the same Thai name** in
+   * this organisation, so the kind is not decoration. It is what the screen
+   * needs to not say one scope's words about another's authority, which is #90
+   * met on a third screen.
+   */
+  await t.test("carries each grant's scope by name and by kind", async () => {
+    const cookie = await signInAs('U_MULTI');
+
+    const { body } = await me(cookie);
+
+    assert.deepEqual(
+      body.roles.map(({ role_id, scope_id, scope_name, scope_kind }) => ({
+        role_id,
+        scope_id,
+        scope_name,
+        scope_kind,
+      })),
+      [
+        {
+          role_id: 'PROG_MANAGER',
+          scope_id: PROGRAM_THAI,
+          scope_name: PROGRAM_THAI_NAME,
+          scope_kind: 'program',
+        },
+        {
+          role_id: 'TEACHER',
+          scope_id: DEPT_COMPUTER,
+          scope_name: DEPT_COMPUTER_NAME,
+          scope_kind: 'department',
+        },
+      ],
+    );
+    // The reason the kind has to be sent rather than inferred, asserted rather
+    // than written in a comment: these two scopes are different tiers of the
+    // organisation and are called the same thing.
+    assert.equal(PROGRAM_THAI_NAME, DEPT_COMPUTER_NAME);
+  });
+
+  /**
+   * The faculty tier, and the one grant whose scope is not a record at all.
+   *
+   * `CONTEXT.md` §Scope chose the literal `FULL_ADMIN` in place of a null so
+   * the column could stay `NOT NULL`, so there is nothing in `faculty`,
+   * `departments` or `programs` to name - the resolver answers `null` to both
+   * questions and the screen keeps the bare value, which is `scopeNamed`'s own
+   * rule for a code it cannot find a name for. A sentinel resolved to a
+   * *name* would be this answer inventing an organisation unit.
+   */
+  await t.test('names a faculty grant, and leaves the sentinel unnamed', async () => {
+    const faculty = await me(await signInAs('U_FAC'));
+    const global = await me(await signInAs('U_ADMIN'));
+
+    assert.deepEqual(
+      faculty.body.roles.map(({ scope_id, scope_name, scope_kind }) => ({
+        scope_id,
+        scope_name,
+        scope_kind,
+      })),
+      [{ scope_id: FACULTY_ID, scope_name: FACULTY_NAME, scope_kind: 'faculty' }],
+    );
+    assert.deepEqual(
+      global.body.roles.map(({ scope_id, scope_name, scope_kind }) => ({
+        scope_id,
+        scope_name,
+        scope_kind,
+      })),
+      [{ scope_id: 'FULL_ADMIN', scope_name: null, scope_kind: null }],
+    );
+  });
+
+  /**
+   * The resolver's precedence is the guard's, measured by building the one
+   * situation where the two could disagree.
+   *
+   * `scope_id` carries no foreign key (`CONTEXT.md`), the three tables have
+   * three primary keys, and nothing refuses a department whose id is already a
+   * programme's - `readDepartment` checks a length and nothing else. So one
+   * value can name two tiers, and then *which* of them a grant at that value
+   * is over is decided by precedence. `scopeChain` walks programme, then
+   * department, then faculty, and stops at the first table that answers; a
+   * resolver that walked the other way would name a kind the guard disagrees
+   * with, which is worse than the bare code the picker used to draw, because
+   * the bare code claims nothing.
+   *
+   * The collision is built below the seam and taken out below it, the row
+   * owning every write it makes (#132, #134).
+   */
+  await t.test("resolves a colliding id the way the guard's own walk does", async (sub) => {
+    await api.pool.query(
+      `INSERT INTO departments (department_id, department_name_th, faculty_id)
+       VALUES ($1, $2, $3)`,
+      [PROGRAM_THAI, COLLIDING_DEPARTMENT, FACULTY_ID],
+    );
+    sub.after(() =>
+      api.pool.query(`DELETE FROM departments WHERE department_id = $1`, [PROGRAM_THAI]),
+    );
+
+    const { body } = await me(await signInAs('U_MULTI'));
+    const committee = body.roles.find((grant) => grant.role_id === 'PROG_MANAGER');
+
+    assert.equal(committee.scope_id, PROGRAM_THAI);
+    assert.equal(committee.scope_kind, 'program');
+    assert.equal(committee.scope_name, PROGRAM_THAI_NAME);
+  });
+
+  /**
+   * #231, found in review. The row above proves the *kind* is the guard's own
+   * walk; this one proves the **name** is read off the same row rather than
+   * off the first tier that has one. Both name columns are nullable, so a
+   * `COALESCE` over the three passes a nameless programme's label down to the
+   * department sharing its id - one tier's words over another's authority,
+   * which is the mismatch `allRoles`'s own paragraph calls worse than a bare
+   * code.
+   *
+   * The situation is built out of rows nothing else holds rather than by
+   * emptying a seeded name, so no other file is handed a world it did not
+   * expect (#132); all three come out again below the seam (#134).
+   */
+  await t.test('keeps the code where the tier the walk stopped at has no name', async (sub) => {
+    const NAMELESS = '0599';
+
+    await api.pool.query(
+      `INSERT INTO departments (department_id, department_name_th, faculty_id)
+       VALUES ($1, $2, $3)`,
+      [NAMELESS, COLLIDING_DEPARTMENT, FACULTY_ID],
+    );
+    await api.pool.query(`INSERT INTO programs (program_id, program_name_th) VALUES ($1, NULL)`, [
+      NAMELESS,
+    ]);
+    await api.pool.query(
+      `INSERT INTO user_roles (user_id, role_id, scope_id) VALUES ($1, 'PROG_MANAGER', $2)`,
+      [idOf('U_MULTI'), NAMELESS],
+    );
+    sub.after(async () => {
+      await api.pool.query(`DELETE FROM user_roles WHERE scope_id = $1`, [NAMELESS]);
+      await api.pool.query(`DELETE FROM programs WHERE program_id = $1`, [NAMELESS]);
+      await api.pool.query(`DELETE FROM departments WHERE department_id = $1`, [NAMELESS]);
+    });
+
+    const { body } = await me(await signInAs('U_MULTI'));
+    const nameless = body.roles.find((grant) => grant.scope_id === NAMELESS);
+
+    assert.equal(nameless.scope_kind, 'program');
+    assert.equal(
+      nameless.scope_name,
+      null,
+      'the department sharing the id must not lend the programme its name',
+    );
+
+    // Asserted where it is used: the department beneath it has a name, or this
+    // row would pass with the defect in (#51).
+    const { rows } = await api.pool.query(
+      `SELECT department_name_th FROM departments WHERE department_id = $1`,
+      [NAMELESS],
+    );
+    assert.equal(rows[0].department_name_th, COLLIDING_DEPARTMENT);
   });
 
   // The third criterion. Priority is ascending seniority in `roles`, so the

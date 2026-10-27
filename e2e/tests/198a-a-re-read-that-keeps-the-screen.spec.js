@@ -6,7 +6,7 @@ const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { BACKEND_URL } = require('../support/env');
-const { actingButton, switchTo } = require('../support/shell');
+const { committeeLabel, actingButton, switchTo } = require('../support/shell');
 const {
   RUBRICS,
   API,
@@ -73,7 +73,6 @@ const { DASHBOARD, API: TEACHING_API } = require('../support/teaching-screen');
  * owed.
  */
 
-const COMMITTEE = 'กรรมการหลักสูตร';
 const TEACHER = 'อาจารย์ผู้สอน';
 const SECOND_SCOPE = '0503';
 
@@ -182,10 +181,10 @@ test('a switch that leaves the address where it is re-reads the list without tak
       answer.request().method() === 'GET' && new URL(answer.url()).pathname === REACHABLE,
   );
 
-  await switchTo(page, `${COMMITTEE} ${SECOND_SCOPE}`);
+  await switchTo(page, committeeLabel(SECOND_SCOPE));
 
   // The situation, said out loud: the hat changed and the address did not.
-  await expect(actingButton(page)).toHaveText(new RegExp(`${COMMITTEE} ${SECOND_SCOPE}`));
+  await expect(actingButton(page)).toContainText(committeeLabel(SECOND_SCOPE));
   expect(new URL(page.url()).pathname, 'the switch moved nobody').toBe(RUBRICS);
 
   // The settle point is what the answer carries rather than the answer itself
@@ -269,9 +268,9 @@ test('and the curricula the screen may place a rubric in are read again too', as
     if (call.method() === 'GET' && new URL(call.url()).pathname === REACHABLE) asked.push(call.url());
   });
 
-  await switchTo(page, `${COMMITTEE} ${SECOND_SCOPE}`);
+  await switchTo(page, committeeLabel(SECOND_SCOPE));
 
-  await expect(actingButton(page)).toHaveText(new RegExp(`${COMMITTEE} ${SECOND_SCOPE}`));
+  await expect(actingButton(page)).toContainText(committeeLabel(SECOND_SCOPE));
   expect(new URL(page.url()).pathname, 'the switch moved nobody').toBe(RUBRICS);
 
   // The claim: the pool is the new grant's. Both halves are read, because a
@@ -313,8 +312,8 @@ test('and the curriculum the form starts on is the new hat\'s, not the old one\'
       answer.request().method() === 'GET' && new URL(answer.url()).pathname === REACHABLE,
   );
 
-  await switchTo(page, `${COMMITTEE} ${SECOND_SCOPE}`);
-  await expect(actingButton(page)).toHaveText(new RegExp(`${COMMITTEE} ${SECOND_SCOPE}`));
+  await switchTo(page, committeeLabel(SECOND_SCOPE));
+  await expect(actingButton(page)).toContainText(committeeLabel(SECOND_SCOPE));
   await pool;
 
   // The claim #232 added: what the person typed is kept and the curriculum

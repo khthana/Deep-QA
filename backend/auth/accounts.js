@@ -112,11 +112,69 @@ async function bumpActingEpoch(db, userId) {
  *
  * `is_active` is checked on both the grant and the role: a role switched off
  * centrally should stop granting without anyone having to walk the grants.
+ *
+ * ## The scope's name and kind — #231
+ *
+ * Each row carries what its `scope_id` *is*, because the role picker draws a
+ * scope for somebody to read and had nothing but the stored code to draw. The
+ * two administration screens that draw one take the words from
+ * `GET /users/grantable`; this caller cannot, that endpoint being refused to
+ * the two roles whose labels carry a scope at all (#215, #231). The delivered
+ * screen drew the name, so the words are a divergence the rebuild made rather
+ * than something it never had (#86); the owner chose on 27 October 2569 that
+ * the picker reads `name (code)`, without the kind word the two
+ * administration screens carry.
+ *
+ * **In this query and not beside it.** Three LEFT JOINs on a read that already
+ * runs add no round trip, and this read runs on every request - `attachRoles`
+ * re-reads the grants so a revoked one stops being honoured at once. Resolving
+ * the names anywhere else would have been a second query per request, or the
+ * names only on `/api/me`, which is the one answer the picker does *not* get
+ * after a grant changes mid-session: `X-Deep-Grants` carries these rows on
+ * every response for exactly that case (#77), and a nameless header would put
+ * the bare code back for a scope granted while somebody was working.
+ *
+ * **The precedence is `scopeChain`'s**, programme then department then faculty,
+ * stopping at the first that answers. `scope_id` carries no foreign key
+ * (`CONTEXT.md`) and the three tables have three primary keys, so one value can
+ * be a department's id and a programme's at once; a resolver that walked the
+ * other way would name a kind the guard disagrees with, which is worse than
+ * the bare code, a bare code claiming nothing. `shell.test.js` builds that
+ * collision rather than trusting this paragraph.
+ *
+ * **Both columns are read off the row the walk stopped at**, which is why the
+ * name is a `CASE` and not a `COALESCE` over the three name columns.
+ * `program_name_th` and `department_name_th` are nullable
+ * (`db/migrations/0001_identity_and_organisation.sql`), so a `COALESCE` would
+ * fall through a nameless programme to the department sharing its id and hand
+ * one tier's words to another tier's authority - the mismatch the paragraph
+ * above calls worse than a bare code, built the other way round. A tier with
+ * no name answers `null` here and the screen keeps the code, which is what a
+ * scope with no name is owed. Found in review on 27 October 2569 and held by
+ * the row beneath the collision row.
+ *
+ * `is_active` is deliberately *not* asked of the three scope tables, which is
+ * what `scopeChain` does and `known` does not: a grant over a retired
+ * programme is still a grant, and the picker naming it is how its holder reads
+ * what they are wearing. Nothing names the sentinel `FULL_ADMIN`, which is no
+ * organisation unit; both columns answer `null` there and the screen keeps the
+ * stored value, which is `scopeNamed`'s own rule for a code with no name.
  */
 async function allRoles(pool, userId) {
   const { rows } = await pool.query(
-    `SELECT r.role_id, r.role_name, r.priority, ur.scope_id
+    `SELECT r.role_id, r.role_name, r.priority, ur.scope_id,
+            CASE WHEN p.program_id IS NOT NULL THEN p.program_name_th
+                 WHEN d.department_id IS NOT NULL THEN d.department_name_th
+                 WHEN f.faculty_id IS NOT NULL THEN f.faculty_name_th
+                 END AS scope_name,
+            CASE WHEN p.program_id IS NOT NULL THEN 'program'
+                 WHEN d.department_id IS NOT NULL THEN 'department'
+                 WHEN f.faculty_id IS NOT NULL THEN 'faculty'
+                 END AS scope_kind
      FROM user_roles ur JOIN roles r ON r.role_id = ur.role_id
+     LEFT JOIN programs p ON p.program_id = ur.scope_id
+     LEFT JOIN departments d ON d.department_id = ur.scope_id
+     LEFT JOIN faculty f ON f.faculty_id = ur.scope_id
      WHERE ur.user_id = $1 AND ur.is_active AND r.is_active
      ORDER BY r.priority ASC, ur.scope_id ASC`,
     [userId],
