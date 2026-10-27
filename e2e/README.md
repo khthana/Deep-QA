@@ -51,11 +51,12 @@ working in. Dedicated ports and an explicit `reuseExistingServer: false` are wha
 ### Ports
 
 **This is the one statement of the port *rule*.** Which ports this suite uses is in `support/env.js` and in the root
-`CLAUDE.md`; what is here is why a run may need them overridden and how to tell the two failures apart. Twenty-four
+`CLAUDE.md`; what is here is why a run may need them overridden and how to tell the two failures apart. Twenty-five
 run blocks in `mutation/`, the three docblocks in `probes/`, and `support/env.js` point here instead of carrying a
-number of their own — a port typed into twenty-seven places is a number that is already wrong (#237,
-26 October 2569; #244 added the twenty-fourth run block on the same day, which is what a hand-kept
-number in a directory that grows every ticket does).
+number of their own — a port typed into twenty-eight places is a number that is already wrong (#237,
+26 October 2569; #244 added the twenty-fourth run block on the same day and #234 the twenty-fifth on
+27 October 2569, which is what a hand-kept number in a directory that grows every ticket does — the
+count here is `grep -rl Ports mutation/*.py`, which is how these two were taken).
 
 **A number read here is a measurement of its own day, this one included.** On 26 October 2569 the reserved ranges
 were `3024-3123` · `3124-3223` · `3324-3423` · `3424-3523` · `4261-4360` · `4361-4460` · `4561-4660` · `4661-4760` ·

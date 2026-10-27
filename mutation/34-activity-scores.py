@@ -38,7 +38,7 @@ list route, which this screen reads first, and mutating that would be mutating
 
 Killing them:
 
-    cd e2e && npx playwright test 34a
+    cd e2e && npx playwright test tests/34a
 """
 
 from harness import main

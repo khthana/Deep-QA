@@ -32,6 +32,13 @@
 ของผู้ดูแลคณะ แล้วเปิดฟอร์มแก้ไข — แถว 5 ทำอย่างนั้น และ `movesanexistingrubric`
 คือสิ่งที่พิสูจน์ว่าข้อนั้นทำงานจริง (#141 · #102 สามคำตอบ: พิสูจน์แล้ว · ไปถึงไม่ได้เชิงโครงสร้าง · ไม่ได้ทดสอบ)
 
+**`arrayidentity` ถูกเล็งใหม่เมื่อ 27 ต.ค. 2569** เพราะการแก้ของ #234 เขียนบรรทัดที่มันยึดอยู่ใหม่
+ทั้งที่ `starting` และที่นิพจน์ซึ่งมันเขียนกลับเข้าไปใน effect — และย่อหน้าที่มันเคยอ้างทั้งก้อน
+ก็ถูกเขียนใหม่ด้วย ฉะนั้นตัวยึดตอนนี้เป็นบรรทัดเดียวไม่ใช่ย่อหน้า ข้อ pool ของ #234
+(`const filtered`) ถูกปล่อยยืนไว้ในทุกการแก้ เพื่อให้มัตแตนต์นี้ทำผิดของ #232 ตัวเดียว
+ไม่ใช่ของ #234 ด้วย — การเล็งใหม่ซื่อตรงเมื่อมันรักษาความผิดไว้ ไม่ใช่เมื่อมันหาบรรทัดเจอ (#203)
+กวาดซ้ำวันเดียวกัน: `198a` 2 ตก 3 ผ่าน คือแถว 1 กับแถว 4 ซึ่งเป็นสองแถวที่ตารางข้างบนบอกไว้
+
 ## วิธีรัน
 
     python mutation/232-the-form-the-second-read-kept.py save
@@ -76,10 +83,11 @@ TWO_EFFECTS = """  // The subject changed, so the form starts again: a different
   }, [editing, pool, starting])
 """
 
-STARTING = """  // A curriculum to start on: the one the list is filtered to, or the only one
-  // this account holds. A กรรมการหลักสูตร never picks.
-  const starting = defaultProgram || onlyOne?.program_id || ''
-
+# The line alone and not the paragraph above it: #234 rewrote that comment,
+# which re-aimed this mutant with its anchor still exact (#203). `const
+# filtered` is left standing on purpose - this mutant reproduces #232's mistake
+# and not #234's, so the expression written inline below keeps the pool clause.
+STARTING = """  const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''
 """
 
 POOL = """  // The pool as a value rather than as an array - #232. `programs` is a new
@@ -119,10 +127,10 @@ MUTANTS = {
         '  useEffect(() => {\n'
         '    setDraft({\n'
         '      ...EMPTY,\n'
-        "      program_id: defaultProgram || onlyOne?.program_id || '',\n"
+        "      program_id: (filtered ? defaultProgram : onlyOne?.program_id) || '',\n"
         '      ...value,\n'
         '    })\n'
-        '  }, [value, defaultProgram, onlyOne])\n'),
+        '  }, [value, filtered, onlyOne])\n'),
     ],
     'movesanexistingrubric': [
         ('form', GUARD, NOGUARD),

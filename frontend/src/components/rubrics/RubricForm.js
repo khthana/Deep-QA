@@ -60,7 +60,18 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
 
   // A curriculum to start on: the one the list is filtered to, or the only one
   // this account holds. A กรรมการหลักสูตร never picks.
-  const starting = defaultProgram || onlyOne?.program_id || ''
+  //
+  // The filter counts only while what it names is still in the pool - #234. The
+  // screen draws its own filter from every curriculum in reach, retired ones
+  // included (`backend/lib/reach.js`: *Retired ones come too*), because that is
+  // how the rubrics of a closed curriculum are read; the pool is the narrower
+  // list of what may be written into. A filter pointed at a retired curriculum
+  // would otherwise open this form on a value the server refuses (ADR-0002)
+  // with its option drawn and *enabled* - the clause below is written for the
+  // rubric that is already filed in one - so nothing on the screen said the
+  // form could not be saved until บันทึก was pressed.
+  const filtered = usable.some(program => program.program_id === defaultProgram)
+  const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''
 
   // The pool as a value rather than as an array - #232. `programs` is a new
   // array on every answer, so an effect that depended on it, or on anything

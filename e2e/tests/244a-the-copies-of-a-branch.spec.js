@@ -2,10 +2,10 @@
 
 const { test, expect } = require('@playwright/test');
 
-const { ACCOUNTS, PASSWORD } = require('../support/accounts');
+const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
-const { BACKEND_URL } = require('../support/env');
+const { facultyContext, switchOff } = require('../support/retiring');
 const { openSubjects, subjectRow, departmentPicker } = require('../support/subjects-screen');
 const {
   openProgramSubjects,
@@ -135,61 +135,14 @@ test.afterAll(() => {
   if (cleanupFailure) throw new Error(cleanupFailure);
 });
 
-/**
- * Signs in the administrator who may switch a department or a curriculum off.
- *
- * `backend/routes/programs` and `backend/routes/departments` name
- * `FACULTY_ADMIN` and `DEPT_ADMIN` and answer anybody else 403, which is what
- * `198a` row 5 measured: the system administrator who makes other files'
- * fixtures may not make this one.
- */
-async function facultyContext(playwright) {
-  const faculty = await playwright.request.newContext();
-  const inn = await faculty.post(`${BACKEND_URL}/api/auth/login`, {
-    data: { email: ACCOUNTS.facultyAdmin, password: PASSWORD },
-  });
-  expect(inn.status(), 'the administrator who may switch a parent off').toBe(200);
-  return faculty;
-}
-
-/**
- * Switches one record's `is_active` off and hands back what puts it on again.
- *
- * The whole record is read first and written back with one field changed,
- * because these are `PUT`s and not patches. An instrument rather than a claim
- * (#171), and the seed has neither a retired department nor a retired
- * curriculum (measured 26 ตุลาคม 2569), so every row here builds its own.
- */
-async function switchOff(faculty, path, key) {
-  const read = await faculty.get(`${BACKEND_URL}${path}`);
-  expect(read.status(), `the ${key} this row switches off for a moment`).toBe(200);
-  const body = await read.json();
-  const record = body[key];
-
-  const off = await faculty.put(`${BACKEND_URL}${path}`, {
-    data: { ...record, is_active: false },
-  });
-  expect(off.status(), `switching the ${key} off`).toBe(200);
-  const retired = await off.json();
-  expect(retired[key].is_active, 'the situation this row is about').toBe(false);
-
-  return async () => {
-    const on = await faculty.put(`${BACKEND_URL}${path}`, {
-      data: { ...record, is_active: true },
-    });
-    if (on.status() !== 200) {
-      report(`the ${key} was answered ${on.status()} when switched back on`);
-    }
-    await faculty.dispose();
-  };
-}
-
 test('an existing subject keeps its own department even when that department is retired', async ({
   page,
   playwright,
 }) => {
   const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/departments/${DEPT_05}`, 'department');
+  const switchBackOn = await switchOff(faculty, `/api/departments/${DEPT_05}`, 'department', {
+    onFailure: report,
+  });
 
   try {
     await signIn(page, ACCOUNTS.departmentAdmin05);
@@ -243,7 +196,9 @@ test('an existing pair keeps its own curriculum even when that curriculum is ret
   playwright,
 }) => {
   const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program');
+  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program', {
+    onFailure: report,
+  });
 
   try {
     await signIn(page, ACCOUNTS.departmentAdmin05);
@@ -280,7 +235,9 @@ test('the outcome form is handed its own curriculum by the filter, which is why 
   playwright,
 }) => {
   const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program');
+  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program', {
+    onFailure: report,
+  });
 
   try {
     await signIn(page, ACCOUNTS.departmentAdmin05);
@@ -346,7 +303,9 @@ test('an existing pair still offers its own retired curriculum as a live choice'
   playwright,
 }) => {
   const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program');
+  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program', {
+    onFailure: report,
+  });
 
   try {
     await signIn(page, ACCOUNTS.departmentAdmin05);

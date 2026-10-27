@@ -66,10 +66,14 @@ export default function ProgramSubjectForm({
   const usable = programs.filter(program => program.is_active !== false)
   const onlyOne = usable.length === 1 ? usable[0] : null
 
-  // A programme to start on: the one the list is filtered to, or the only one
-  // this account holds. A committee member never picks. A string, so a re-read
-  // handed the same programmes back moves nothing - #233.
-  const starting = defaultProgram || onlyOne?.program_id || ''
+  // A programme to start on: the one the list is filtered to while that is
+  // still in the pool, or the only one this account holds. A committee member
+  // never picks. A string, so a re-read handed the same programmes back moves
+  // nothing - #233.
+  //
+  // `rubrics/RubricForm.js` carries the reasons for the pool clause (#234).
+  const filtered = usable.some(program => program.program_id === defaultProgram)
+  const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''
 
   // The pool as a value rather than as an array - #232's shape, whose reasons
   // are in `rubrics/RubricForm.js`. What this form holds beside the picker is a

@@ -14955,3 +14955,133 @@ row 2's value read is a claim below a claim: the mutant kills the line above it 
 line below (#88). It is a row, so it was **appended** as row 4 rather than inserted after row 2,
 which keeps every citation to rows 1–3 where it was (#97, #85). `movesanexistingpair` then kills two
 rows, each at its own assertion — two reachability claims and not one claim counted twice (#191).
+
+## #234 — the filter that was wider than the pool, and the owner's question a comment had already answered
+
+Four screens draw a curriculum filter from `reachablePrograms`, which answers with retired curricula
+too — the comment in `backend/lib/reach.js` says *Retired ones come too*, and that is the whole
+reason somebody can read the rubrics, the pairs and the outcomes of a curriculum that has been
+closed. The forms under those screens pick from `usable`, which filters the retired ones out,
+because `programInReach` requires `is_active` and a value outside the pool is one the server refuses
+(ADR-0002). Three of the four forms then started on the filter's value anyway:
+`const starting = defaultProgram || onlyOne?.program_id || ''`. Filter by a closed curriculum, press
+เพิ่ม, and the form opens already set to a value no save can carry, with its option drawn and
+*enabled* — the clause #232 wrote for the record that is already filed in one. A form that reads as
+complete, and a refusal at บันทึก.
+
+**The ticket's second option was an owner's question until a comment in the product code answered
+it.**
+
+Option 1 was *pin `starting` to the pool*, a fix. Option 2 was *stop drawing retired curricula in
+the filter*, which takes a capability away and is therefore `docs/06` §Out of Scope's question and
+not mine. What settled it was not an argument but a file that had already chosen: `Plos.js:180-192`
+lands the screen on the first curriculum **still running**, with the reason spelled out — *a retired
+one is a poor thing to open on, and is landed on only when it is all there is*. That is this very
+screen, deciding this very species, which makes it a decision rather than a precedent to weigh
+(#196). What the decision had not covered is the curriculum a person picks **by hand** afterwards,
+which is every row of this ticket. And the witness is new in kind: #196's earlier witnesses were
+other tickets' files, while here the repo's earlier answer was a comment beside the code the fix
+lands next to.
+
+Option 2 also failed on its own terms. `GET /api/rubrics` filters by scope and serves the list of a
+retired curriculum with a 200 — so the thing option 2 proposed to remove is a capability the server
+still offers, which makes it a change to a user story rather than a change to a screen (#166).
+
+And the two witnesses hold two different halves, which is what the review separated. `Plos.js`'s
+comment decides **where a screen lands**, which is option 1's species exactly; it says nothing about
+**what a filter lists**, which is the mechanism option 2 would change. So #196 carries option 1 and
+#166 is what closes option 2. Reading one witness as the answer to both halves is reading an
+analogy as a decision — the failure #196 was written to prevent, met from the inside.
+
+**The census was by the mechanism, and it found four sites in two shapes.**
+
+The ticket named three forms. Asking *which form starts on `defaultProgram` while its own pool is
+narrower than the list the screen's filter is drawn from* found four — and the fourth does not look
+like the other three on the screen. `RubricForm`, `PloForm` and `ProgramSubjectForm` draw the retired
+option and leave it enabled while the field holds it, so the person sees a form that is ready. The
+`OfferingForm` picker is drawn from `usable` alone, so the retired value is one **no option can show
+at all**: the field read as the curriculum still running while the draft held the closed one, and
+`listOfferableSubjects` was called for a curriculum the server refuses. #174's rule gave the
+population; #244's — what the copy does not carry is not the proof but the way the screen would show
+the defect — gave the shapes.
+
+The fix lands at all four, because it is one line, and leaving a copy unfixed is what #244 was
+opened to repair. The row for the fourth is at #245: it is *untested* and not *structurally
+unreachable* (#102's three answers), because the Offerings screen is `PROG_MANAGER`'s alone and a
+committee grant's scope is one curriculum, so no account in the seed sees that filter and the
+situation needs a second grant made over HTTP as `198a`'s fixture does. A deferral written into
+prose and not into the tracker is a decision nobody can find (#119).
+
+**The clause had to choose a side of a marker.**
+
+`OfferingForm` carries a `// form-identity:` marker, which `forms-cleared-by-identity.js` reads as
+the comment **immediately above** the effect it exempts. The first draft put `const filtered`
+between the two, and the census would have stopped seeing the marker. It says so out loud, which is
+the whole point of the convention #233 settled — and the lesson for a fix is that a marker is part
+of the code's shape: a line inserted near one has to pick a side, and the side is decided by what
+the instrument reads rather than by what the code reads better.
+
+**Rewriting a line is a change to every mutant anchored on it, and the anchor check is not the
+proof.**
+
+`anchors.py` came back with `problems 4` immediately: `18:noautoprogram`, `232:arrayidentity`,
+`233:outcomearrayidentity` and `233:pairarrayidentity` all quoted the `starting` line this fix
+rewrote. Each was re-aimed by preserving the **mistake** and not by finding the line (#203): the new
+pool clause is left standing in every edit, so each mutant goes on reproducing its own ticket's
+defect alone. A mutant that also undid #234's clause would be a mutant of two tickets and would
+prove neither cleanly.
+
+`232:arrayidentity`'s anchor had quoted the comment paragraph along with the line, and this fix
+rewrote that paragraph — so the repair was to **shrink** the anchor to the bare line rather than
+retype the prose, which is #121 and #123 enforced a ticket late rather than discovered.
+
+Then all four were run again against the rows their own sheets name — `18a` row 1, `198a` rows 1 and
+4, `233a` rows 4 and 5 — and all four still kill them. An anchor check tells you a mutant no longer
+applies; only a sweep tells you it no longer proves anything (#107, #68).
+
+**A new file name expired another file's command.** `mutation/34-activity-scores.py` documented
+`npx playwright test 34a`, which was exact the day it was written; `234a` arriving made it match two
+files, because a test-file argument is matched as a **substring** (#154, #158). `anchors.py` caught
+it in the same run. The fix is `tests/34a`, which is the convention every file written since uses.
+
+**The review found the mutant the rules already owed, and its first draft killed at a timeout.**
+
+The first draft of this ticket declined option 2 and stopped. That breaks the repo's own rule: when
+a ticket's proposal is declined, the mutant to write is that proposal made to run (#48), because
+otherwise *a closed curriculum's rubrics are still listed* is asserted on a sheet and held by
+nothing. `234:rubricfilterhidestheretired` is that option — aimed at `pages/Rubrics.js` and not at a
+form, because what option 2 takes away is the **reading**. The screen that proves the rule is chosen
+by the census and not by the subject (#68), which is why one of the three screens carries it.
+
+Written and run, it killed row 1 inside `filterTo`'s `waitForList`, at the timeout rather than at a
+claim (#139): the capability was being held as the row's **premise** — `filterTo` selecting the
+closed curriculum — and a filter that no longer offers that option leaves `selectOption` with
+nothing to pick. So row 1 gained one assertion, that the option is **offered**, read *above* the
+filtering. The order is necessity and not taste, which is #233's rule from the other side: there a
+precondition read above the claim was the mistake, because the mutant killed it first and the claim
+below was never read; here the reading that follows from the claim is the filtering itself, so the
+claim has to come first. Then the mutant dies at that claim with `Received: 0`.
+
+And `rubricfollowstheretiredfilter` was run again afterwards, because a row that gains an assertion
+expires the kill count of a mutant nobody edited, with the anchor still exact and the code it edits
+untouched (#202). It still kills at its own claim and not at the new one above it.
+
+**The review's other three findings were all about the new instrument.** `e2e/support/retiring.js`
+was extracted at its second caller, and `onFailure` was **optional** in the first draft — a caller
+that forgot it would drop a failed restore on the floor and leave a curriculum switched off for the
+next file, with nothing red to say so (#89, #132). It is required now, and throws when absent, which
+is safe because that line is the row's arrangement and not its `finally`. The restore itself only
+guarded a non-200: a transport error threw out of `finally` and **replaced** the row's own error,
+which is the failure #181 is about, so both paths go to `onFailure` now and the dispose is in
+`finally`. And *one `switchOff` per context* went into the docblock, the restore being what closes
+the context.
+
+The last one is a name. Three forms use `filtered` for a **boolean**; `OfferingForm` needed the
+curriculum code itself, and calling that `filtered` too is the thing a fifth copy misreads — so it
+is `filteredProgram` there, with the asymmetry written beside it. No mutant held the line, which was
+checked by grepping `mutation/` for both the anchors and the **replacement strings** (#140).
+
+**Nothing new went into `CLAUDE.md`'s index.** Every rule this ticket leaned on was already
+there — #196, #166, #174, #102, #119, #203, #107, #121, #154, #233's marker convention, and, from
+the review, #48, #68, #139, #202, #89, #132, #181 and #140 — and a rule met again is a sentence in
+this story, not a second line in a file that grows every ticket.

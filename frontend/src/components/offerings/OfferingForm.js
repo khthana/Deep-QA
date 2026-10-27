@@ -66,6 +66,21 @@ export default function OfferingForm({
   const [subjects, setSubjects] = useState([])
   const [loading, setLoading] = useState(false)
 
+  // The curriculum the list is filtered to, while that is still one this
+  // account may open a subject in - #234, whose reasons are in
+  // `rubrics/RubricForm.js`. This form draws its picker from `usable` alone, so
+  // a retired curriculum arriving here was a value with no option to show it:
+  // the picker read as the one still running while the draft held the closed
+  // one, and the subjects were read for a curriculum the server refuses.
+  //
+  // The name says `Program` because this one is a **curriculum code** while the
+  // `filtered` in the three sibling forms is a boolean; the effect below reads
+  // the value, where theirs read the condition. One name for two types across
+  // four copies is what the fifth copy would get wrong.
+  const filteredProgram = usable.some(program => program.program_id === defaultProgram)
+    ? defaultProgram
+    : ''
+
   // form-identity: `onlyOne` is derived from an answer by identity, so this
   // effect re-runs every time the screen reads the programmes again - #232's
   // and #233's subject. It is left as it is for the reason `students/StudentForm.js`
@@ -78,11 +93,11 @@ export default function OfferingForm({
       ...current,
       // Whatever the list is being read at: opening a subject is almost always
       // the next thing after looking at the term it belongs to.
-      program_id: current.program_id || defaultProgram || onlyOne?.program_id || '',
+      program_id: current.program_id || filteredProgram || onlyOne?.program_id || '',
       academic_year: current.academic_year || defaultYear || '',
       semester: current.semester || defaultSemester || 1,
     }))
-  }, [defaultProgram, defaultYear, defaultSemester, onlyOne])
+  }, [filteredProgram, defaultYear, defaultSemester, onlyOne])
 
   useEffect(() => {
     if (!draft.program_id) {

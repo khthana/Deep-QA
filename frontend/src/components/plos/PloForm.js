@@ -95,11 +95,16 @@ export default function PloForm({
   const usable = programs.filter(program => program.is_active !== false)
   const onlyOne = usable.length === 1 ? usable[0] : null
 
-  // A curriculum to start on: the one the list is filtered to, or the only one
-  // this account holds. A กรรมการหลักสูตร never picks. A string, so that
-  // re-reading the pool and being handed the same curricula back moves nothing
-  // - #233.
-  const starting = defaultProgram || onlyOne?.program_id || ''
+  // A curriculum to start on: the one the list is filtered to while that is
+  // still in the pool, or the only one this account holds. A กรรมการหลักสูตร
+  // never picks. A string, so that re-reading the pool and being handed the
+  // same curricula back moves nothing - #233.
+  //
+  // `rubrics/RubricForm.js` carries the reasons for the pool clause (#234).
+  // `pages/Plos.js` lands on a curriculum still running when it opens; this is
+  // the other half, for the retired one a person picks by hand afterwards.
+  const filtered = usable.some(program => program.program_id === defaultProgram)
+  const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''
 
   // The pool as a value rather than as an array - #232's shape, whose reasons
   // are written out in `rubrics/RubricForm.js`. `programs` is a new array on

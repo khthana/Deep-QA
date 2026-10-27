@@ -48,6 +48,12 @@
 (ปิดหลักสูตรหรือภาควิชาที่แถวเดิมอยู่) จึงเป็น *ไม่ได้ทดสอบ* ไม่ใช่ *ไปถึงไม่ได้เชิงโครงสร้าง*
 (#102 สามคำตอบ) และอยู่ในตัวติดตามแล้วที่ #244 ไม่ได้อยู่แค่ในย่อหน้านี้
 
+**`outcomearrayidentity` กับ `pairarrayidentity` ถูกเล็งใหม่เมื่อ 27 ต.ค. 2569** เพราะการแก้
+ของ #234 เขียนบรรทัด `starting` ของสองฟอร์มนั้นใหม่ ส่วนอีกสี่ตัวไม่ขยับ ข้อ pool ของ #234
+(`const filtered`) ถูกปล่อยยืนไว้ในทุกการแก้ เพื่อให้สองตัวนี้ทำผิดของ #233 ตัวเดียว
+ไม่ใช่ของ #234 ด้วย — การเล็งใหม่ซื่อตรงเมื่อมันรักษาความผิดไว้ ไม่ใช่เมื่อมันหาบรรทัดเจอ (#203)
+กวาดซ้ำวันเดียวกัน: ตัวละ 1 ตก 4 ผ่าน คือแถว 4 และแถว 5 ตามลำดับ ซึ่งเป็นแถวที่ตารางบอกไว้
+
 ## วิธีรัน
 
     python mutation/233-the-forms-their-own-effects-threw-away.py save
@@ -91,7 +97,16 @@ DEPARTMENT_NO_GUARD = """  useEffect(() => {
   }, [pool, starting])
 """
 
-PROGRAM_STARTING = "  const starting = defaultProgram || onlyOne?.program_id || ''\n"
+# #234 put a pool clause above this line, and the line now reads the value it
+# computes. The anchor follows the code (#203) and `const filtered` is left
+# standing, so both programme mutants below go on reproducing #233's mistake
+# alone: what they write inline is what `HEAD` had, pool clause included.
+PROGRAM_STARTING = (
+    "  const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''\n"
+)
+PROGRAM_PICK = (
+    "      program_id: (filtered ? defaultProgram : onlyOne?.program_id) || '',\n"
+)
 PROGRAM_POOL = "  const pool = usable.map(program => program.program_id).join(' ')\n"
 PROGRAM_GUARD = """  useEffect(() => {
     if (editing) return
@@ -145,10 +160,8 @@ MUTANTS = {
         ('outcome', PROGRAM_POOL, ''),
         ('outcome', PROGRAM_GUARD, ''),
         ('outcome', '      ...EMPTY,\n      ...value,\n',
-         '      ...EMPTY,\n'
-         "      program_id: defaultProgram || onlyOne?.program_id || '',\n"
-         '      ...value,\n'),
-        ('outcome', ON_VALUE, '  }, [value, defaultProgram, onlyOne])\n'),
+         '      ...EMPTY,\n' + PROGRAM_PICK + '      ...value,\n'),
+        ('outcome', ON_VALUE, '  }, [value, filtered, onlyOne])\n'),
     ],
     'pairarrayidentity': [
         ('pair', PROGRAM_STARTING, ''),
@@ -156,11 +169,9 @@ MUTANTS = {
         ('pair', PROGRAM_GUARD, ''),
         ('pair', '    setDraft({ ...EMPTY, ...value })\n' + ON_VALUE,
          '    setDraft({\n'
-         '      ...EMPTY,\n'
-         "      program_id: defaultProgram || onlyOne?.program_id || '',\n"
-         '      ...value,\n'
+         '      ...EMPTY,\n' + PROGRAM_PICK + '      ...value,\n'
          '    })\n'
-         '  }, [value, defaultProgram, onlyOne])\n'),
+         '  }, [value, filtered, onlyOne])\n'),
     ],
 }
 

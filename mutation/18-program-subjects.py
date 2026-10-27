@@ -33,11 +33,17 @@ MUTANTS = {
     # nothing else in the form reads it and `CI=true` turns an unused binding
     # into a compile failure - which would be a mutant that stops the
     # application rather than one that fails a row (#101).
+    #
+    # Re-aimed again by #234 on 27 ตุลาคม 2569, which rewrote the same line a
+    # second time: the pick now reads `filtered` rather than `defaultProgram`.
+    # That clause is left standing in both edits, so this mutant goes on
+    # reproducing #18's mistake alone and not #234's (#203). Re-swept the same
+    # day: `18a` 1 failed, 10 did not run - row 1, which is the row it is for.
     "noautoprogram": [
         ("form", "  const onlyOne = usable.length === 1 ? usable[0] : null\n", ""),
         ("form",
-         "  const starting = defaultProgram || onlyOne?.program_id || ''\n",
-         "  const starting = defaultProgram || ''\n"),
+         "  const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''\n",
+         "  const starting = filtered ? defaultProgram : ''\n"),
     ],
     # 18a row 1: one programme is stated, not offered as a choice of one
     "alwaysfilter": ("page", "{programs.length > 1 ? (", "{programs.length > 0 ? ("),
