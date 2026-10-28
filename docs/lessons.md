@@ -15613,4 +15613,6 @@ with its price, and no row presses the sequence today, so whichever answer comes
 
 Both of those questions are tickets rather than paragraphs (#119), which is the finding the spec
 axis made about this very sheet: §#238 of the `19` sheet had written *this has to become a ticket*
-about #241's reversed fourth arm, and no such ticket existed when the reviewer looked.
+about #241's reversed fourth arm, and no such ticket existed when the reviewer looked. Both were
+opened on 28 October 2026, the hour this ticket closed: #246 for the sentence over a form just
+opened, #247 for the save into a curriculum the table is not on.
