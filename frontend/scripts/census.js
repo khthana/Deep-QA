@@ -21,6 +21,7 @@ const CENSUSES = [
   'required-props.js',
   'landing-generations.js',
   'forms-cleared-by-identity.js',
+  'pager-last-page.js',
 ]
 
 let worst = 0

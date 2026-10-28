@@ -136,27 +136,41 @@ MUTANTS = {
         '              const drawing = onScreen.current\n              if (page === 1) drawing(() => onScreen.current === drawing)\n',
         '              const drawing = onScreen.current\n              if (page === 1) drawing(() => true)\n'),
     # ข้อมูลผู้ใช้งาน: บันทึก
+    # #239 - the sentence it quotes is three lines since 28 ต.ค. 2569: the handler
+    # hands its sentence over to the read `load` names when the page asked for
+    # has gone. The mistake is unchanged and so is the row it kills (140a ล้ม 1 ผ่าน 31).
     'userssavestalewins': ('users',
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (reloaded?.handedTo) {\n'
+        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
+        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      if (showing.current === sent) report(error)\n',
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (reloaded?.handedTo) {\n'
+        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
+        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      if (showing.current === sent) report(error)\n'),
     # ข้อมูลผู้ใช้งาน: ระงับ
     # #202 wrapped this handler's sentence in a guard, so the line above the
     # reload is now the guard's `}` and `save` carries the same pair. The tail
     # tells them apart: `toggle` has no `finally`.
+    # #239 - the sentence it quotes is three lines since 28 ต.ค. 2569: the handler
+    # hands its sentence over to the read `load` names when the page asked for
+    # has gone. The mistake is unchanged and so is the row it kills (140a ล้ม 1 ผ่าน 31).
     'userstogglestalewins': ('users',
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (reloaded?.handedTo) {\n'
+        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
+        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n',
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (reloaded?.handedTo) {\n'
+        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
+        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n'),

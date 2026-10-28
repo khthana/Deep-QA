@@ -15235,3 +15235,112 @@ It is also the second finding this ticket owes to a reader rather than to a run,
 the same species: a claim the code made about itself that no row could fail. The first was the
 ticket's own count of the places it would change; this one was a docblock's promise about what the
 resolver could not do.
+
+## #239 — the fourth mount point, the sentence that had to cross a hand-on, and the instrument that asks the next one
+
+#209's owner answered on 19 October 2569 that the server says how many pages there are and a
+person whose page has gone is handed to the last one that has not. That answer went into the
+`load` of the seven screens #209's census could see. `<Pager>` had eleven mount points.
+
+The ticket's numbers were measured before they were believed, by the mechanism rather than by a
+spelling: seven files hold a comparison of the answer's page against a bound and move the pager's
+own state to it, four do not, and eleven elements are mounted. Of the four, `Users.js` is the one
+a single person reaches alone — the filter *ใช้งานอยู่* and the button *ระงับ* are a read and a
+write of one list, so suspending the last page's only row leaves the person standing past the end,
+reading *ไม่พบผู้ใช้งานตามเงื่อนไขที่เลือก* over a filter that has just found ten people. No second
+actor, no race, nothing held. That is not a new rule to decide but a decision already taken,
+applied to a population the census of the day could not see.
+
+### The shape the seven screens use does not fit a screen whose callers listen
+
+`Departments.js` §`HANDED_ON` had written down, on 20 October 2569, that no caller on those six
+screens reads what `load` answers, and that the day one did the shape would have to change. On
+`Users.js` both writers read it: `save` and `confirmSwitch` ask whether the reload drew before
+saying what they did. So the third answer could not be a bare *I handed on*. A caller that hears
+only that keys its sentence to the read it sent, which is the read that has just been superseded —
+the sentence is then held for a page nobody will ask for again, and nothing says it.
+
+The answer carries the read it handed to, and the caller files its sentence under that read. The
+target travels in the **answer** and not in a ref, for the reason #207 and #211 both found from
+their own side: a ref is read a turn later, by which time the hand-on has rewritten it, so a ref
+can answer *is this still the page I was sent from* and cannot hand the caller the thing it has to
+pick. Every rule in this family is about what a value is **of**.
+
+### The row had to hold a window, because nothing clears a notice
+
+The first draft of the sentence row read the finished screen: the handed page arrives, the sentence
+is on it, green. It was green against the unfixed code too. Nothing on this screen clears a notice,
+so a sentence said on the truthy answer is still on the screen when the handed page lands — the end
+state is identical under both behaviours, and the mutant written for that claim would have survived
+for free. What tells them apart is *when*. The row now holds the handed read at the route and reads
+the negative inside that window, at a named settle point: the held request having reached the route.
+In that window the correct screen says nothing, because the sentence is a key in a ref; the only
+thing that can put it there is the code the row is about.
+
+The first draft also failed in the #233 way: it polled for the landing *above* its own claim, so the
+mutant killed the precondition and the claim under the red line was never read. The row is ordered
+by what the mutant takes away.
+
+Run against the unfixed code first (#203), row one went red at its own poll with `shown` 2 against
+`pages` 1 — `หน้า 2 จาก 1`, the ticket's diagnosis measured rather than believed. The two sentence
+rows went red there too, but at the gate's timeout rather than at their claim, the handed read never
+happening at all; that is a kill at a wait (#139), which is why the sentence claims are measured by
+their own two mutants and not by the unfixed run.
+
+### A sentence line that became three lines, and the seven anchors that quoted it
+
+`python mutation/anchors.py`, run while the work was being finished, reported seven mutants of five
+closed tickets with no match: #140's two, #202's one, #203's two, #208's one and #86's. All seven
+had quoted the handler block whole, and the fix turned its sentence line into three. The anchor
+check says a mutant still applies; only a sweep says it still proves anything, so all seven were
+re-aimed and all seven were re-swept. Each still kills exactly the row it was written for.
+
+Two of the re-aims were not mechanical. #202's claim is the comparison `showing.current === sent`,
+and the fix writes that comparison **twice** in the handler, so the faithful mutant is wrong in both
+places: a re-aim is faithful when it preserves the mistake, not when it finds one line. And #203's
+two mutants are built from `SAVE_READS`/`SAVE_ANYWAY`, which has a byte-identical twin in the same
+file, `PLOS_REMOVAL_READS`, belonging to a screen this fix does not touch — so the restatement went
+into the named constant and not into every block that looks like it (#202's tenth reading, a shared
+constant edited to move one mutant moving others in files the ticket never opened).
+
+The fix then moved its own comments above the block, so that what those anchors quote is contiguous
+code with no comment inside it. An anchor is built from the code a mutant breaks, never from the
+comment beside it, and a comment inserted into the middle of a quoted block makes every anchor over
+it depend on prose.
+
+### The instrument that asks the next mount point
+
+#198 had already written down the price of moving a rule from one structural point into each caller:
+the census question comes back, and nothing asks whether the next landing carries it. That price was
+paid here. `frontend/scripts/pager-last-page.js` asks by the mechanism — which files mount `<Pager>`
+and what each hands `onPage`, and whether the file holds an `if` comparing something's `.page` with
+`>` against a bound whose body hands that same setter the same bound. Nothing about `Math.ceil`,
+`total`, `lastPage` or `HANDED_ON`: a screen that computes the bound another way and moves the person
+is green, and a screen that writes all four names and moves nobody is not. Its first run read
+`corrected 8 · marked 3 · unclassified 0 · problems 0`, the eight being #209's seven plus this
+screen — the same population the ticket's hand census found, which is evidence that the instrument
+reads the mechanism and not a memory of it.
+
+Its own fixtures pass whether or not it can see anything, so it was proved by breaking a real site
+and by moving the population: `Departments.js` made to hand the person to page one instead of the
+last page went red, and a `<Pager>` planted in `pages/Plos.js` made it name a file nobody had
+touched. The second of those is the half a fixture cannot hold — an instrument whose population is
+derived is proved by moving the population, not only by breaking a member of it.
+
+The three mount points with no rule carry a dated marker instead, each in its own words, because
+nothing a person can press on those screens makes the list it is drawing shorter: `Students.js` has
+only *เพิ่มนักศึกษา* and the import, both of which can only add rows, and its program filter calls
+`setPage(1)` in the same handler that changes the filter; the two history panels write nothing and
+have no filter. A marker is a claim like a ticket's numbers, and the day one of those screens gains
+a write that takes a row out of what the pager asked for the marker is an exemption with nothing to
+say so — which is written inside the marker, since the census asks whether a guard is there and
+cannot ask whether the screen has the move.
+
+### The probe was dated, not deleted
+
+`e2e/probes/222-the-page-past-the-end.spec.js` measured the defect on 25 October 2569 and its
+predictions are now false. It stays, because it is the only thing that reads this sequence as a
+person walks it, with a first paragraph saying what landed and when; its table is the record of a
+measurement and not a prediction about today. #222 itself is untouched: the ceiling at
+`backend/lib/paging.js`, which would reach all eleven callers, is still the owner's question, and
+closing a ticket does not answer one.

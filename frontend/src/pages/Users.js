@@ -169,6 +169,44 @@ const windowOf = user => {
   return `${user.valid_from} ถึง ${user.valid_until}`
 }
 
+/**
+ * Which read a sentence is waiting for - #205, on this screen since #239.
+ *
+ * The page and the whole filter, because the same page of a different filter is
+ * a different list: this screen's loader depends on both, and what makes the
+ * situation below reachable at all is one filter and one write of the same list
+ * (`docs/acceptance/11-user-accounts.md` §#239). `Departments.js` carries why
+ * the seven screens keep one and what the key is for.
+ */
+const readOf = (page, filters) =>
+  `${page}:${filters.q}:${filters.role}:${filters.status}`
+
+/**
+ * `load`'s third answer, which here carries the read it handed to - #209, #239.
+ *
+ * The owner's answer to #209 on 19 ตุลาคม 2569 - *let the server say how many
+ * pages there are, and if the page the person is on no longer exists, take them
+ * to the last page that does* - went into the `load` of the seven screens that
+ * ticket's census could see. `<Pager>` has eleven mount points, and this is the
+ * one of the four left out that a person can reach alone: the filter *ใช้งานอยู่*
+ * and the button *ระงับ* are a read and a write of one list, so suspending the
+ * last row of the last page leaves the screen drawing a page the list no longer
+ * has. Measured on 25 ตุลาคม 2569, with no second actor and nothing held
+ * (#239; `docs/acceptance/57-pager.md` §#222 has the readings).
+ *
+ * The seven screens answer the third case with a bare string, because no caller
+ * of theirs reads it: the sentence a handler has to say is left in `waiting` and
+ * said by the read that draws. **Here the callers do read it** - `save` and
+ * `confirmSwitch` await their reload and say their own sentence behind it, which
+ * is `Departments.js` §`HANDED_ON`'s *the day a caller reads this answer on a
+ * page it did not choose* - so the answer has to say **which read** it handed
+ * to, and the caller hands its sentence to that read rather than saying it over
+ * a page about to be replaced. Carried in the answer and not in a ref, because a
+ * ref is read a turn later, where a second read in flight could have written it
+ * (#207, #211: what a value is *of* is the whole question).
+ */
+const handedTo = of => ({ handedTo: of })
+
 export default function Users() {
   const { profile } = useAuth()
   const [page, setPage] = useState(1)
@@ -198,6 +236,23 @@ export default function Users() {
    */
   const [busy, setBusy] = useState(false)
 
+  /**
+   * A sentence waiting for the read that will draw what it is about - #205, on
+   * this screen since #239.
+   *
+   * Only the handed-on case leaves one here. A reload that draws is still
+   * awaited by the handler that started it and the sentence is still said there,
+   * which is what every row written about this screen's banner since #146
+   * measures; what a handler cannot do is say it over a read that drew nothing
+   * and handed the page on, so that one sentence is left here, keyed for the
+   * read it was handed to, and `load` says it when that read draws.
+   *
+   * `Departments.js` carries the shape and the two clauses #205 put on it: the
+   * key decides whether the sentence is about the list that just landed, and the
+   * `finally` leaves a handed-over sentence alone rather than clearing it.
+   */
+  const waiting = useRef(null)
+
   // Which generation of its data this screen is drawn from - #198. A switch of
   // hats that lands where the router already is raises it in `MainPage`, and
   // this screen reads its list again instead of being unmounted, so the page,
@@ -221,10 +276,46 @@ export default function Users() {
    * `frontend/src/pages/Students.js`.
    */
   const load = useCallback(async isCurrent => {
+    // Which read this is, for the sentence that may be waiting for it - #205.
+    const key = readOf(page, filters)
     setLoading(true)
+    // Whether this read handed the page on rather than drawing it - #209. The
+    // sentence that was waiting for it belongs to the read that follows, so the
+    // `finally` below must not clear it.
+    let handedOn = false
     try {
       const answer = await listUsers({ ...filters, page, per_page: PAGE_SIZE })
-      if (isCurrent()) setData(answer)
+      if (isCurrent()) {
+        // #209's rule, on the fourth kind of mount point - #239. Whether the
+        // page the person is on still exists is the server's to say: the answer
+        // carries `total`, so the last page that exists is known here with no
+        // second request, and the page asked for can be past it because
+        // `backend/lib/paging.js` floors `page` at 1 and sets no ceiling (#222
+        // is the ticket that asks whether it should). Nothing is drawn in that
+        // case - drawing it would paint an empty table reading *ไม่พบผู้ใช้งาน*
+        // over a list the filter has just found ten people in.
+        //
+        // Paged by the size the server says it used and not by `PAGE_SIZE`: the
+        // two agree today, and a mutant that swaps one for the other is
+        // invisible wherever they do (#117).
+        const size = answer.per_page || PAGE_SIZE
+        const lastPage = Math.max(1, Math.ceil(answer.total / size))
+        if (answer.page > lastPage) {
+          handedOn = true
+          const to = readOf(lastPage, filters)
+          if (waiting.current && waiting.current.of === key) {
+            waiting.current = { of: to, said: waiting.current.said }
+          }
+          setPage(lastPage)
+          return handedTo(to)
+        }
+        setData(answer)
+        // A sentence handed over by the read this one replaced, now that the
+        // list it is about is on the screen - #205.
+        if (waiting.current && waiting.current.of === key) {
+          setNotice(waiting.current.said)
+        }
+      }
       // Whether it drew, for a handler that has a sentence to say - #203. It
       // answers *the read was not refused* and not *the screen is still the one
       // that asked*, which is the caller's own second clause (#202).
@@ -235,7 +326,16 @@ export default function Users() {
       if (isCurrent() && !error.expired) setNotice({ error: true, message: error.message })
       return false
     } finally {
-      if (isCurrent()) setLoading(false)
+      if (isCurrent()) {
+        setLoading(false)
+        // A read the screen still wants has landed, so whatever was waiting has
+        // either just been said above or is about a list that is no longer on
+        // the screen. A read that handed the page on is that case one step
+        // along: the sentence it was given has just been re-keyed for the read
+        // it handed to, so clearing here would throw away a sentence nothing
+        // else will say - #209.
+        if (!handedOn) waiting.current = null
+      }
     }
     // `generation` is in this list and read nowhere in the body on purpose:
     // what it changes is *when* this read happens, not what is asked for, so
@@ -288,9 +388,16 @@ export default function Users() {
       if (showing.current === sent) setEditing(null)
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
+      // #239 - the third answer, handed over rather than said. An edit can move
+      // a row out of the list it was read from (a name out of the search term, a
+      // role out of the role filter), so a save on the last page can be told its
+      // page has gone; the read that drew nothing is not the read this sentence
+      // is about.
       const drawing = onScreen.current
       const reloaded = await drawing(() => onScreen.current === drawing)
-      if (reloaded && showing.current === sent) setNotice(said)
+      if (reloaded?.handedTo) {
+        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }
+      } else if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       if (showing.current === sent) report(error)
     } finally {
@@ -381,9 +488,16 @@ export default function Users() {
       }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
+      // #239 - the way in the ticket was measured through: the status filter
+      // narrows the list and this write moves a row out of it, so the page the
+      // switch was pressed on can be past the end by the time the reload lands.
+      // The sentence belongs to the read that draws the page the person is
+      // handed to, which is the one `load` names here.
       const drawing = onScreen.current
       const reloaded = await drawing(() => onScreen.current === drawing)
-      if (reloaded && showing.current === sent) setNotice(said)
+      if (reloaded?.handedTo) {
+        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }
+      } else if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       setSwitching(null)
       report(error)

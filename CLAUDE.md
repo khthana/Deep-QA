@@ -1051,6 +1051,12 @@ citation.
   That reader then refuses itself, which is correct, and the placeholder it raised is left standing
   for ever. The fix is to hold in the ref the thing the caller has to **pick**, not the thing it has
   to compare. (#211)
+- **A loader that hands the person on owes its caller the read it handed them to, where that
+  caller has a sentence to say** — a bare *I handed on* leaves the caller keying its sentence
+  to a read that no longer exists, and the target travels in the **answer** rather than in a
+  ref, because the ref is read a turn later, after the hand-on has rewritten it. The screens
+  whose callers ignore the answer can say less, which dates their shape rather than settling
+  it (#205, #207, #211). (#239)
 - **A key that matches says a reading is of the right page, not that it is still true** — every rule
   about these refs is about *what the value is of* (#201, #185, #207, #211), and none of them makes a
   matching key a guarantee: *live* is the count of the list that is **drawn**, which a second writer
@@ -1127,7 +1133,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
-| `frontend/scripts/` | Eight censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
+| `frontend/scripts/` | Nine censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
 | `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #241). Not rows and not gates — nothing in the repository runs them, and four of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
@@ -1140,6 +1146,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `required-props.js` | leaves out a prop the component it draws declares it must have (#179's `target`, by #182's answer on 22 October 2569). Its population is every file exporting `REQUIRED_PROPS`, so it is a rule about a declaration and not about a component's name; it cannot read a spread, a wrapper, or a named import |
 | `landing-generations.js` | lands a role on a screen that does not read the screen generation #198 moved into each landing (#230, 26 October 2569). Two questions over two populations: every api read in a landing's own file, and every read an api module declares `GRANT_SCOPED` in the modules a landing reaches by import. The landings are derived from `menus.js` and `AppRoutes.js`, so a menu reordered moves them; it cannot see a read written as anything but `useCallback` or `useEffect`, a dependency forwarded through a prop, or a binding a grep for the call would miss |
 | `forms-cleared-by-identity.js` | writes state a person types into from an effect that has a value computed from an answer **by identity** in its dependency list, with no guard and no written reason (#232's family, by #233 on 26 October 2569). The pair to the row above: its population is read from the code in three questions — which `useState` a controlled `value=` or `checked=` is handed, which effects call that state's own setter, and what each dependency's initialiser is compared by (`primitive`, `reference`, or `unclassified` for a prop, a hook's return or a name after a dot). A `reference` dependency is green only behind an updater with a branch that returns what it was given, or a `// form-identity: <why> (#NNN)` marker; `students/StudentForm.js` and `offerings/OfferingForm.js` carry one. On that date: `by value 28 · guarded 0 · marked 2 · unclassified 32`. The six things it cannot measure are in its docblock, the guarded branch among them — nothing in `src/` takes it |
+| `pager-last-page.js` | mounts `<Pager>` with nothing asking whether the page it is drawing still exists (#209's answer ก of 19 October 2569, by #239 on 28 October 2569). Two questions by **mechanism** and not by a spelling: which files mount the pager and what each hands `onPage`, and whether the file holds an `if` comparing something's `.page` with `>` against a bound whose body hands that same setter that same bound — no `Math.ceil`, `total` or `lastPage` in the question. A mount with no correction is green only behind a `// pager-last-page: <why> (#NNN)` marker; `pages/Students.js`, `components/users/HistoryPanel.js` and `components/groups/GroupHistory.js` carry one. On that date: `corrected 8 · marked 3 · unclassified 0`. The six things it cannot measure are in its docblock, chief among them whether the screen even has a press that shortens its own list, which is what the marker's prose is for |
 
 Four decisions govern most of the work and are easy to violate by accident:
 keys follow the three tiers of ADR-0001; authorisation is derived server-side from the

@@ -1,6 +1,19 @@
 /*
  * #222 - can one person, alone, reach a page the list no longer has?
  *
+ * **On `Users.js`, since 28 ตุลาคม 2569, no.** #239 put #209's correction in
+ * this screen's `load`, so what the sequence below reaches now is the person
+ * being handed to the last page that exists, with the suspension's sentence
+ * said over it. Everything written here was true when it was measured on
+ * 25 ตุลาคม 2569 and the table it produced is the record of that measurement,
+ * not a prediction about today (#54, #85) - the arms are kept because they are
+ * the only thing that reads this sequence *as a person walks it*, and a run of
+ * them now reads the corrected screen rather than the defect. What holds the
+ * correction as a claim is `e2e/tests/239a-the-page-the-press-took-away.spec.js`
+ * with its three mutants; what #222 itself still asks - whether
+ * `backend/lib/paging.js` should put the ceiling on `page` at the server, where
+ * every caller would get it - is untouched by that fix and still the owner's.
+ *
  * A probe and not a row. #222 asks whether `backend/lib/paging.js` should put
  * a ceiling on `page`, and its reason for *not hurting yet* is that every
  * paginated screen corrects the server on the client since #209's answer ก.

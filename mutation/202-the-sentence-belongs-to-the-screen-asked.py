@@ -139,14 +139,21 @@ MUTANTS = {
         '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
         '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n'),
     # ผู้ใช้งาน: สวิตช์สถานะ ซึ่งไม่ถามอะไรก่อน รายการจึงยังมีชีวิตอยู่ทั้งเวลา
+    # #239 - three lines since 28 ต.ค. 2569, and the comparison this mutant
+    # is about is now written twice in the handler, so it is wrong in both: the
+    # claim is the comparison, not the line it used to sit on (202a ล้ม 2 ผ่าน 8).
     'userssaysanyway': ('users',
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (reloaded?.handedTo) {\n'
+        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
+        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n',
         '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current !== null) setNotice(said)\n'
+        '      if (reloaded?.handedTo) {\n'
+        '        if (showing.current !== null) waiting.current = { of: reloaded.handedTo, said }\n'
+        '      } else if (reloaded && showing.current !== null) setNotice(said)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n'),

@@ -130,6 +130,14 @@ const happenedAt = value =>
  * its first page from its first render, rather than asking for the page number
  * the last one was left on and correcting itself afterwards.
  */
+// pager-last-page: the rule the owner settled on 19 ตุลาคม 2569 (#209) is not
+// here, because this panel writes nothing at all and the list it draws is a
+// log: an account's history only ever gains entries, so no press of its own
+// can take away the page it is standing on. It has no filter either, which is
+// the other way a list narrows under a pager. Measured 28 ตุลาคม 2569 (#239).
+// A second actor acting on the same account is a different question and this
+// marker says nothing about it (#222) - what it claims is that one person
+// alone cannot reach the state #239 fixed on `Users.js`.
 export default function HistoryPanel({ user, onError }) {
   const [page, setPage] = useState(1)
   const [history, setHistory] = useState({ entries: [], total: 0 })

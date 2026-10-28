@@ -68,6 +68,15 @@ const readsAs = entry => {
   }
 }
 
+// pager-last-page: the rule the owner settled on 19 ตุลาคม 2569 (#209) is not
+// here either, and for the same reason as `users/HistoryPanel`: this panel
+// writes nothing, and a group's log gains an entry for every move and every
+// removal without ever losing one - an entry naming a group that has since
+// been deleted stays and reads *กลุ่มที่ถูกลบแล้ว* rather than going away. So
+// the actions beside it lengthen the list this pager is on and cannot shorten
+// it, and it has no filter. Measured 28 ตุลาคม 2569 (#239); `fetchPage` is
+// handed in by the screen above, so if a caller ever pages something that can
+// lose rows, the rule belongs in this panel's own `load` (#68's census shape).
 export default function GroupHistory({ fetchPage, onError }) {
   const [page, setPage] = useState(1)
   const [history, setHistory] = useState({ entries: [], total: 0 })

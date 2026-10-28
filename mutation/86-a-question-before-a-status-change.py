@@ -118,13 +118,20 @@ MUTANTS = {
         '      setSwitching(null)\n',
         '      await setUserStatus(user.user_id, next)\n'),
     # พูดประโยคโดยไม่อ่านรายการอีกครั้ง - ช่องสถานะกับปุ่มของแถวจะค้าง
+    # #239 - the sentence it quotes is three lines since 28 ต.ค. 2569: the handler
+    # hands its sentence over to the read `load` names when the page asked for
+    # has gone. The mistake is unchanged and so is the row it kills (86a ล้ม 2 ผ่าน 3).
     'togglenoreload': ('users',
         '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (reloaded?.handedTo) {\n'
+        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
+        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n',
         '      const reloaded = Boolean(drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (reloaded?.handedTo) {\n'
+        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
+        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'),
     # ประโยคในกล่องเป็นของการระงับเสมอ ส่วนการเขียนยังถูกทิศ

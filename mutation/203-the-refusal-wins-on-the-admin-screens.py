@@ -77,13 +77,21 @@ FILES = {
 
 # `|| true` แทนการลบการอ่านทิ้ง เพื่อให้ `reloaded` ยังถูกใช้อยู่: มิวแทนต์ตัวหนึ่งควรอ้างอะไร
 # อย่างเดียว และข้อนี้คือ *ไม่สนใจคำตอบของการอ่าน* ไม่ใช่ *ตัวแปรที่ไม่มีใครใช้* (#152 ใช้รูปนี้)
+# #239 - `SAVE_READS` is three lines longer since 28 ต.ค. 2569. Nothing but the
+# two `Users.js` mutants reads it (`PLOS_REMOVAL_READS` is a byte-identical twin
+# of its own), so the restatement reaches no other screen's mutant - #202's tenth
+# reading. Both rows were re-swept: 203a ล้ม 1 ผ่าน 21, each at its own site.
 SAVE_READS = (
     "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
-    "      if (reloaded && showing.current === sent) setNotice(said)\n"
+    "      if (reloaded?.handedTo) {\n"
+    "        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n"
+    "      } else if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 SAVE_ANYWAY = (
     "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
-    "      if (reloaded && showing.current === sent) setNotice(said)\n"
+    "      if (reloaded?.handedTo) {\n"
+    "        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n"
+    "      } else if (reloaded && showing.current === sent) setNotice(said)\n"
 )
 
 # การลบที่ถอยหน้าได้: การอ่านอยู่ในสาขา `else` ของมัน

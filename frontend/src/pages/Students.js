@@ -56,6 +56,16 @@ const STATUS = {
  */
 const readOf = (page, program) => `${page}:${program}`
 
+// pager-last-page: the rule the owner settled on 19 ตุลาคม 2569 (#209) is not
+// here, because nothing a person can press on this screen makes the list it is
+// drawing shorter. The only writes are *เพิ่มนักศึกษา* and the import, and both
+// can only add rows; there is no *แก้ไข* and no *ลบ*. The program filter is the
+// other way a list narrows, and it calls `setPage(1)` in the same handler that
+// calls `setProgram`, so the pager is never left past the end by a filter.
+// Measured 28 ตุลาคม 2569 (#239). The day this screen gains a write that can
+// take a row out of what the pager asked for, this marker is an exemption and
+// nothing here will say so (#93) - the rule belongs in `load` then, in the
+// shape `Users.js` carries.
 export default function Students() {
   const [page, setPage] = useState(1)
   const [program, setProgram] = useState('')
