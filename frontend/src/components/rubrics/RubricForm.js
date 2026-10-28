@@ -51,6 +51,7 @@ function Field({ label, children, hint }) {
 
 export default function RubricForm({ value, programs, defaultProgram, busy, onSave, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
   const editing = Boolean(value?.id)
 
   // Retired curricula do not count: auto-picking one would put the form in a
@@ -112,15 +113,19 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
 
   const set = name => event => setDraft(current => ({ ...current, [name]: event.target.value }))
 
+  // The form's own flag and not the page's - #242. `plos/PloForm.js` carries the
+  // reasons; here the window is the same one, เพิ่ม Rubric being disabled by
+  // nothing while the list re-read a save ends with is out.
   const submit = event => {
     event.preventDefault()
+    setSending(true)
     onSave({
       program_id: draft.program_id,
       rubric_code: draft.rubric_code,
       rubric_name_th: draft.rubric_name_th,
       rubric_name_en: draft.rubric_name_en,
       display_order: draft.display_order,
-    })
+    }).finally(() => setSending(false))
   }
 
   return (
@@ -139,7 +144,7 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
               className={field}
               value={draft.program_id}
               onChange={set('program_id')}
-              disabled={busy || editing}
+              disabled={sending || editing}
               required
             >
               <option value="">เลือกหลักสูตร</option>
@@ -165,7 +170,7 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
               onChange={set('rubric_code')}
               placeholder="เช่น RUB-12"
               maxLength={20}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -179,7 +184,7 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
               onChange={set('rubric_name_th')}
               placeholder="เช่น การนำเสนอผลงาน"
               maxLength={255}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -191,7 +196,7 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
               onChange={set('rubric_name_en')}
               placeholder="เช่น Presentation"
               maxLength={255}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -206,7 +211,7 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
               onChange={set('display_order')}
               step={1}
               min={0}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -216,7 +221,6 @@ export default function RubricForm({ value, programs, defaultProgram, busy, onSa
           <button
             type="button"
             onClick={onCancel}
-            disabled={busy}
             className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
           >
             ยกเลิก

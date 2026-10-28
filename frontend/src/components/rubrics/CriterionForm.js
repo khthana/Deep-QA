@@ -62,6 +62,7 @@ function Field({ label, children, hint }) {
 
 export default function CriterionForm({ value, rubric, busy, onSave, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
   const editing = Boolean(value?.id)
 
   useEffect(() => {
@@ -70,8 +71,12 @@ export default function CriterionForm({ value, rubric, busy, onSave, onCancel })
 
   const set = name => event => setDraft(current => ({ ...current, [name]: event.target.value }))
 
+  // The form's own flag and not the page's - #242. `plos/PloForm.js` carries the
+  // reasons; here the window is the same one, เพิ่มเกณฑ์ being disabled by
+  // nothing while the list re-read a save ends with is out.
   const submit = event => {
     event.preventDefault()
+    setSending(true)
     onSave({
       criteria_name_th: draft.criteria_name_th,
       criteria_name_en: draft.criteria_name_en,
@@ -81,7 +86,7 @@ export default function CriterionForm({ value, rubric, busy, onSave, onCancel })
       level_3_description: draft.level_3_description,
       level_2_description: draft.level_2_description,
       level_1_description: draft.level_1_description,
-    })
+    }).finally(() => setSending(false))
   }
 
   return (
@@ -105,7 +110,7 @@ export default function CriterionForm({ value, rubric, busy, onSave, onCancel })
               onChange={set('criteria_name_th')}
               placeholder="เช่น ความถูกต้องของเนื้อหา"
               maxLength={255}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -117,7 +122,7 @@ export default function CriterionForm({ value, rubric, busy, onSave, onCancel })
               onChange={set('criteria_name_en')}
               placeholder="เช่น Accuracy of content"
               maxLength={255}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -133,7 +138,7 @@ export default function CriterionForm({ value, rubric, busy, onSave, onCancel })
               step="0.01"
               min="0.01"
               max="999.99"
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -146,7 +151,7 @@ export default function CriterionForm({ value, rubric, busy, onSave, onCancel })
               onChange={set('display_order')}
               step={1}
               min={0}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -164,7 +169,7 @@ export default function CriterionForm({ value, rubric, busy, onSave, onCancel })
                 onChange={set(band.key)}
                 rows={2}
                 placeholder="อธิบายลักษณะงานที่อยู่ในระดับนี้"
-                disabled={busy}
+                disabled={sending}
                 required
               />
             </Field>
@@ -175,7 +180,6 @@ export default function CriterionForm({ value, rubric, busy, onSave, onCancel })
           <button
             type="button"
             onClick={onCancel}
-            disabled={busy}
             className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
           >
             ยกเลิก

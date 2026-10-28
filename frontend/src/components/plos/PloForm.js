@@ -88,6 +88,7 @@ export default function PloForm({
   onCancel,
 }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
   const editing = Boolean(value?.outcome_id)
 
   // Retired curricula do not count: auto-picking one would put the form in a
@@ -157,8 +158,23 @@ export default function PloForm({
     plo => plo.program_id === draft.program_id && !excluded.has(plo.outcome_id)
   )
 
+  // `sending` is put up here and down in the `finally` below, rather than being
+  // read from `busy` - #242, which is #228's answer landing on this form. `busy`
+  // belongs to the page and is true while *any* read or write of it is out, so a
+  // form opened after this one was closed was frozen by a save it did not send:
+  // `save` puts `writing` down after its list re-read, and เพิ่มผลการเรียนรู้ is
+  // disabled by nothing, so that window needs no second actor and no clock
+  // (`242a`, first row). `.finally` always lands, because `onSave` is the page's
+  // own `save`, which is `async` and catches its own errors.
+  //
+  // `.finally` lands when that `save` resolves, which is *after* the list
+  // re-read and not when the answer arrives - so where the form stays open (a
+  // refusal) the fields stay closed through that read as well. Wider than the
+  // decision's words by one read, and in the direction the decision was about.
+  // `components/departments/DepartmentForm.js` carries the rest of the reasons.
   const submit = event => {
     event.preventDefault()
+    setSending(true)
     onSave({
       // The curriculum is sent on an edit as well and ignored there: the server
       // reads it from the row, so the two cannot disagree.
@@ -172,7 +188,7 @@ export default function PloForm({
       parent_outcome_id: draft.parent_outcome_id === '' ? null : draft.parent_outcome_id,
       sequence_order: draft.sequence_order,
       is_active: draft.is_active,
-    })
+    }).finally(() => setSending(false))
   }
 
   return (
@@ -191,7 +207,7 @@ export default function PloForm({
               className={field}
               value={draft.program_id}
               onChange={set('program_id')}
-              disabled={busy || editing}
+              disabled={sending || editing}
               required
             >
               <option value="">เลือกหลักสูตร</option>
@@ -217,7 +233,7 @@ export default function PloForm({
               onChange={set('outcome_code')}
               placeholder="เช่น PLO-1 หรือ PLO-1-2"
               maxLength={50}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -230,7 +246,7 @@ export default function PloForm({
             onChange={set('outcome_title')}
             placeholder="สิ่งที่ผู้สำเร็จการศึกษาทำได้"
             maxLength={500}
-            disabled={busy}
+            disabled={sending}
             required
           />
         </Field>
@@ -241,7 +257,7 @@ export default function PloForm({
             value={draft.outcome_description}
             onChange={set('outcome_description')}
             rows={3}
-            disabled={busy}
+            disabled={sending}
           />
         </Field>
 
@@ -251,7 +267,7 @@ export default function PloForm({
               className={field}
               value={draft.outcome_type}
               onChange={set('outcome_type')}
-              disabled={busy}
+              disabled={sending}
               required
             >
               {Object.entries(OUTCOME_TYPES).map(([code, label]) => (
@@ -267,7 +283,7 @@ export default function PloForm({
               className={field}
               value={draft.parent_outcome_id}
               onChange={set('parent_outcome_id')}
-              disabled={busy}
+              disabled={sending}
             >
               <option value="">ไม่มี — เป็นข้อหลัก</option>
               {candidates.map(plo => (
@@ -286,7 +302,7 @@ export default function PloForm({
               value={draft.sequence_order}
               onChange={set('sequence_order')}
               step={1}
-              disabled={busy}
+              disabled={sending}
               required
             />
           </Field>
@@ -306,7 +322,7 @@ export default function PloForm({
                   is_active: event.target.value === 'active',
                 }))
               }
-              disabled={busy}
+              disabled={sending}
             >
               <option value="active">ใช้งานอยู่</option>
               <option value="inactive">ปิดใช้งาน</option>
@@ -318,7 +334,6 @@ export default function PloForm({
           <button
             type="button"
             onClick={onCancel}
-            disabled={busy}
             className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
           >
             ยกเลิก

@@ -55,11 +55,15 @@ const { openOfferings } = require('../support/offerings-screen');
  *   the flag does not disable), and a read started from the table lands while
  *   the write is still out. The read was the one asked for; the flag it put
  *   down was the write's. There are two ยกเลิก to close with. The
- *   confirmation's is on every list screen: the second row. The form's is
- *   pressable during a save only on ข้อมูลภาควิชา, ข้อมูลหลักสูตร and
- *   ข้อมูลรายวิชา — the other four forms disable it with the flag — and there
- *   แก้ไข on the same row sent the same save a second time: the fourth row,
- *   measured red before the fix like the other two.
+ *   confirmation's is on every list screen: the second row. The form's was
+ *   pressable during a save on ข้อมูลภาควิชา, ข้อมูลหลักสูตร and ข้อมูลรายวิชา
+ *   alone when this file was written, the other four forms disabling it with
+ *   the flag; **since #242, on 28 ตุลาคม 2569, all seven leave it pressable**,
+ *   the flag that closes a form's fields being the form's own there too. On each
+ *   of them แก้ไข on the same row then sends the same save a second time: the
+ *   fourth row, measured red before #142's fix on the three screens that had
+ *   the way in, and green on the four that gained it — those four are a reach
+ *   claim about code #142 already proved, not a second proof of it (#191).
  *
  * ## The third row on each screen
  *
@@ -141,8 +145,9 @@ const button = (scope, name) => scope.getByRole('button', { name, exact: true })
 /**
  * The seven list screens. `detail` is the path a row is read, saved and
  * removed on; `edit` the form's heading; `remove` and `confirm` the row's
- * button and the confirmation's. `cancelDuringSave` marks the three whose
- * form leaves ยกเลิก pressable while a save is out.
+ * button and the confirmation's. `cancelDuringSave` marks the screens whose
+ * form leaves ยกเลิก pressable while a save is out — the three it was written
+ * for, and the four #242 brought in on 28 ตุลาคม 2569, which is all seven.
  */
 const LIST_SCREENS = [
   {
@@ -187,6 +192,7 @@ const LIST_SCREENS = [
     edit: 'แก้ไขรายวิชาในหลักสูตร',
     remove: 'นำออก',
     confirm: 'นำออกจากหลักสูตร',
+    cancelDuringSave: true,
   },
   {
     name: 'Rubric',
@@ -197,6 +203,7 @@ const LIST_SCREENS = [
     edit: 'แก้ไข Rubric',
     remove: 'ลบ',
     confirm: 'ลบ Rubric',
+    cancelDuringSave: true,
   },
   {
     name: 'เกณฑ์การให้คะแนน',
@@ -211,6 +218,7 @@ const LIST_SCREENS = [
     edit: 'แก้ไขเกณฑ์การให้คะแนน',
     remove: 'ลบ',
     confirm: 'ลบเกณฑ์',
+    cancelDuringSave: true,
   },
   {
     name: 'ผลการเรียนรู้ระดับหลักสูตร',
@@ -221,6 +229,7 @@ const LIST_SCREENS = [
     edit: 'แก้ไขผลการเรียนรู้ของหลักสูตร',
     remove: 'ลบ',
     confirm: 'ลบผลการเรียนรู้',
+    cancelDuringSave: true,
   },
 ];
 
@@ -302,8 +311,10 @@ for (const screen of LIST_SCREENS) {
       await button(page, 'ยกเลิก').click();
     });
 
-    // Only where the form's ยกเลิก is left pressable during a save: on the
-    // other four screens it takes the flag too, and this order cannot start.
+    // Only where the form's ยกเลิก is left pressable during a save, which since
+    // #242 is every one of the seven. The flag is read as a flag still, rather
+    // than deleted with the condition: it says which rows were written against
+    // the way in #142 measured and which arrived with #242 (#191).
     if (screen.cancelDuringSave) {
       test('a read of the same row after ยกเลิก leaves บันทึก disabled while its save is out', async ({
         page,

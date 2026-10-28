@@ -63,7 +63,9 @@ MUTANTS = {
     # 18a row 2: the edit changes the type
     "typeignored": ("route", "draft.values.subject_type,", "existing.subject_type,"),
     # 18a row 2: the programme half of the key is frozen on an edit
-    "nofreeze": ("form", "disabled={busy || editing}", "disabled={busy}"),
+    # #242 moved this form's flag from the page's to its own on 28 October
+    # 2569; the claim is the `|| editing` beside it, which is unchanged.
+    "nofreeze": ("form", "disabled={sending || editing}", "disabled={sending}"),
     # 18a row 2: and the form says why
     "nohint": ("form",
                "hint={editing ? '\u0e22\u0e49\u0e32\u0e22\u0e23\u0e32\u0e22\u0e27\u0e34\u0e0a\u0e32\u0e02\u0e49\u0e32\u0e21\u0e2b\u0e25\u0e31\u0e01\u0e2a\u0e39\u0e15\u0e23\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49 \u0e43\u0e2b\u0e49\u0e25\u0e1a\u0e2d\u0e2d\u0e01\u0e41\u0e25\u0e49\u0e27\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e43\u0e19\u0e2b\u0e25\u0e31\u0e01\u0e2a\u0e39\u0e15\u0e23\u0e43\u0e2b\u0e21\u0e48' : null}",

@@ -103,11 +103,16 @@ MUTANTS = {
     # Row 6, first half — the rubric that was added is there afterwards. The
     # POST still happens and still answers 201; what stops is the list being
     # read again, so the screen keeps showing the page it drew before the save.
+    # Re-aimed by #242 on 28 October 2569, which put the hand-over inside
+    # `showing.current === sent`. The replacement keeps that guard: this mutant
+    # is for the sentence being said before the read draws (#203).
     "staleafterasave": ("page",
-        "      waiting.current = { of: readOf(onPage.current, program), said }\n"
+        "      if (showing.current === sent) {\n"
+        "        waiting.current = { of: readOf(onPage.current, program), said }\n"
+        "      }\n"
         "      const drawing = onScreen.current\n"
         "      await drawing(() => onScreen.current === drawing)\n",
-        "      setNotice(said)\n"),
+        "      if (showing.current === sent) setNotice(said)\n"),
     # Row 6, second half — the edit is saved. Creation still writes the name, so
     # every row up to this one is untouched, and the add half of the row above
     # still passes; the edit is the first thing that notices.

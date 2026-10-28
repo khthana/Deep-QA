@@ -266,13 +266,15 @@ export default function ProgramSubjects() {
   }
 
   /**
-   * No `showing.current === sent` here, and that is measured rather than
-   * forgotten - #202, 11 October 2569. The form replaces the table and
-   * `ProgramSubjectForm` gives ยกเลิก `disabled={busy}`, so nothing can take the
-   * screen while a save is out and the guard would be a clause no row could
-   * reach (#97). `Plos.js` carries the note and what would re-date it.
+   * The same question `confirmRemoval` asks, and since #242 it is asked here
+   * too - 28 ตุลาคม 2569. Until this ticket `ProgramSubjectForm` gave ยกเลิก
+   * `disabled={busy}`, so nothing could take the screen while a save was out
+   * and the guard would have been a clause no row could reach (#97, measured
+   * 11 October 2569 for #202). `Plos.js` carries the reasons and the condition
+   * that expired.
    */
   const save = async draft => {
+    const sent = showing.current
     setWriting(true)
     try {
       if (editing?.subject_id) {
@@ -280,25 +282,30 @@ export default function ProgramSubjects() {
       } else {
         await createProgramSubject(draft)
       }
-      setEditing(null)
+      if (showing.current === sent) setEditing(null)
       // No marker for `sentences-after-a-move.js` any more: since #209 this
       // function says no sentence after its await to ask about, and a marker
-      // that outlives the gap it documented is an exemption (#141). The reason
-      // it carried still holds - the form replaces the table and gives every
-      // control `disabled={busy}`, so nothing can take the screen while this
-      // save is out and a guard would be a clause no row could reach (#97,
-      // measured 11 October 2569, #202).
+      // that outlives the gap it documented is an exemption (#141). What that
+      // marker claimed - that nothing can take the screen while this save is
+      // out - stopped being true on 28 ตุลาคม 2569, which is why the lines
+      // below ask (#242).
       const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
       // #203 - the sentence waits for the read that draws it, and #209 has it
       // handed over before the await: only `load` learns that the page has gone
       // past the end, and only `load` can re-key the sentence for the read it
       // hands to, which is what the read compares (#205). `Departments.js`
       // carries the reasons.
-      waiting.current = { of: readOf(onPage.current, program), said }
+      // #242 - and only if the screen is still the one that asked. The key
+      // answers *which page and which curriculum this sentence is about* and
+      // not *was this form replaced by another one*, both being the same on
+      // either side of a ยกเลิก (#205, #207).
+      if (showing.current === sent) {
+        waiting.current = { of: readOf(onPage.current, program), said }
+      }
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
     } catch (error) {
-      report(error)
+      if (showing.current === sent) report(error)
     } finally {
       setWriting(false)
     }

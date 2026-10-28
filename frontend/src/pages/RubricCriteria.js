@@ -166,30 +166,32 @@ export default function RubricCriteria() {
   }
 
   /**
-   * No `showing.current === sent` here, and that is measured rather than
-   * forgotten - #202, 11 October 2569. The form replaces the table and
-   * `CriterionForm` gives ยกเลิก `disabled={busy}`, so nothing can take the
-   * screen while a save is out and the guard would be a clause no row could
-   * reach (#97). `Plos.js` carries the note and what would re-date it.
+   * The same question `confirmRemoval` asks, and since #242 it is asked here
+   * too - 28 ตุลาคม 2569. Until this ticket `CriterionForm` gave ยกเลิก
+   * `disabled={busy}`, so nothing could take the screen while a save was out
+   * and the guard would have been a clause no row could reach (#97, measured
+   * 11 October 2569 for #202); the marker that said so stood where the
+   * sentence is said below. `Plos.js` carries the reasons and the condition
+   * that expired.
    */
   const save = async draft => {
+    const sent = showing.current
     setWriting(true)
     try {
       if (editing?.id) await updateCriterion(rubricId, editing.id, draft)
       else await createCriterion(rubricId, draft)
-      setEditing(null)
-      // sentence-after-a-move: the form replaces the table and gives every
-      // control `disabled={busy}`, so nothing can take the screen while this
-      // save is out and the guard would be a clause no row could reach (#97).
-      // Measured 11 October 2569 (#202)
+      if (showing.current === sent) setEditing(null)
       const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
-      // #203 - the sentence waits for the reload to draw. `Departments.js`
-      // carries the reasons.
+      // #203 - the sentence waits for the reload to draw, and #242 - for the
+      // screen still being the one that asked. `reloaded` answers *the read
+      // was not refused* and never *this form is the one that sent the save*,
+      // which is the second clause and not a narrowing of the first (#202).
+      // `Departments.js` carries the reasons.
       const drawing = onScreen.current
       const reloaded = await drawing(() => onScreen.current === drawing)
-      if (reloaded) setNotice(said)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
-      report(error)
+      if (showing.current === sent) report(error)
     } finally {
       setWriting(false)
     }

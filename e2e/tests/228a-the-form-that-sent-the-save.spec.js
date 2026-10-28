@@ -25,7 +25,9 @@ const subjects = require('../support/subjects-screen');
  * ## Why the flag is the form's, which is half of what each row claims
  *
  * The owner's first answer was `busy` on every control, as `ProgramSubjectForm.js`
- * and `PloForm.js` have always had it. What sent that back was a census of the
+ * and `PloForm.js` had it until #242 gave those two and two more this shape on
+ * 28 ตุลาคม 2569 — where `242a` holds the same claims these rows do. What sent
+ * that back was a census of the
  * press and not of the claim (#199, #221): **19 rows in two closed tickets
  * arrange their situation by pressing *ยกเลิก* while a save is out on these
  * three screens** — `142a`'s `cancelDuringSave` marks exactly these three, and

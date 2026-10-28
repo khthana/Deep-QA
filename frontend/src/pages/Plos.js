@@ -347,36 +347,40 @@ export default function Plos() {
   }
 
   /**
-   * No `showing.current === sent` here, and that is measured rather than
-   * forgotten - #202, 11 October 2569.
+   * The same question `confirmRemoval` asks, and since #242 it is asked here
+   * too - 28 ตุลาคม 2569.
    *
-   * The situation #146 is about cannot be built on this screen: the form
-   * replaces the table, so while a save is out the only controls drawn are the
-   * form's own, and `PloForm` gives ยกเลิก `disabled={busy}`. Nothing can take
-   * the screen, so the guard would be a clause no row and no mutant could reach
-   * (#97). The day ยกเลิก stops being disabled - or anything else is drawn
-   * beside the form while a save is out - this needs the three lines
-   * `confirmRemoval` below has. `Rubrics`, `RubricCriteria` and
-   * `ProgramSubjects` are the same shape and carry the same note.
+   * It was not, and that was measured rather than forgotten: until this ticket
+   * `PloForm` gave ยกเลิก `disabled={busy}`, so while a save was out the only
+   * controls drawn were the form's own and every one of them was closed.
+   * Nothing could take the screen, and the guard would have been a clause no row
+   * and no mutant could reach (#97, measured 11 October 2569 for #202). The
+   * note written then said what would re-date it - *the day ยกเลิก stops being
+   * disabled* - and #228's answer, landing here as #242, is that day. ยกเลิก
+   * now carries no flag, so the table can come back with this save still out
+   * and เพิ่มผลการเรียนรู้ or another row's แก้ไข can open a second form: that is
+   * #146's situation, and `242a`'s second row is what holds it.
+   *
+   * `Rubrics`, `RubricCriteria` and `ProgramSubjects` are the same shape and
+   * were changed in the same breath. `Departments.js` carries the reasons.
    */
   const save = async draft => {
+    const sent = showing.current
     setWriting(true)
     try {
       if (editing?.outcome_id) await updatePlo(editing.outcome_id, draft)
       else await createPlo(draft)
-      setEditing(null)
-      setFormProgram('')
+      if (showing.current === sent) {
+        setEditing(null)
+        setFormProgram('')
+      }
       // A marker for `frontend/scripts/sentences-after-a-move.js` stood here
-      // until 28 ตุลาคม 2569, saying that nothing can take this screen while a
-      // save is out and so the guard would be a clause no row could reach
-      // (#97, measured 11 October 2569 for #202). It is gone rather than kept:
-      // no sentence is said after this await any more, so that census stopped
-      // matching it the day #238 landed, and a marker the instrument no longer
-      // reads is an exemption rather than a reason (#93, #141). What it said is
-      // still true and is written in the docblock above, which is where the
-      // absent `showing.current === sent` is decided. Its keyword is left
-      // unwritten here on purpose, the census reading any comment that carries
-      // it as a marker.
+      // until 28 ตุลาคม 2569, saying that nothing could take this screen while a
+      // save was out and so the guard would be a clause no row could reach
+      // (#97, measured 11 October 2569 for #202). It came out that morning
+      // because no sentence is said after this await any more (#238), and what
+      // it claimed stopped being true that afternoon: #242 freed ยกเลิก, which
+      // is the condition the docblock above said would re-date it.
       const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
@@ -387,11 +391,20 @@ export default function Plos() {
       // another curriculum's outcomes. `load` says it when the list it is
       // about lands, and says nothing when a read of another curriculum lands
       // instead.
-      waiting.current = { of: program, said }
+      // #242, 28 ตุลาคม 2569 - and only if the screen is still the one that
+      // asked. The key answers *which curriculum this sentence is about*; it
+      // cannot answer *was this form replaced by another one*, the curriculum
+      // being the same on both sides of a ยกเลิก (#205, #207). Written as a
+      // block where `confirmRemoval` writes one line, so the two are not the
+      // same text: four closed tickets' mutants quote this neighbourhood and a
+      // guard copied from the sibling makes every one of them ambiguous (#202).
+      if (showing.current === sent) {
+        waiting.current = { of: program, said }
+      }
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
     } catch (error) {
-      report(error)
+      if (showing.current === sent) report(error)
     } finally {
       setWriting(false)
     }

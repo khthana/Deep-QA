@@ -56,6 +56,7 @@ export default function ProgramSubjectForm({
   onCancel,
 }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
   const [term, setTerm] = useState('')
   const [found, setFound] = useState([])
   const [searching, setSearching] = useState(false)
@@ -126,8 +127,12 @@ export default function ProgramSubjectForm({
 
   const set = key => event => setDraft(current => ({ ...current, [key]: event.target.value }))
 
+  // The form's own flag and not the page's - #242. `plos/PloForm.js` carries the
+  // reasons; here the window is the same one, เพิ่มรายวิชาเข้าหลักสูตร being
+  // disabled by nothing while the list re-read a save ends with is out.
   const submit = event => {
     event.preventDefault()
+    setSending(true)
     onSave({
       // Both halves are sent on an edit as well, and ignored there: the server
       // reads the key from the path, so the two cannot disagree.
@@ -135,7 +140,7 @@ export default function ProgramSubjectForm({
       subject_id: draft.subject_id,
       subject_type: draft.subject_type,
       is_active: draft.is_active,
-    })
+    }).finally(() => setSending(false))
   }
 
   return (
@@ -154,7 +159,7 @@ export default function ProgramSubjectForm({
               className={field}
               value={draft.program_id}
               onChange={set('program_id')}
-              disabled={busy || editing}
+              disabled={sending || editing}
               required
             >
               <option value="">เลือกหลักสูตร</option>
@@ -175,7 +180,7 @@ export default function ProgramSubjectForm({
               className={field}
               value={draft.subject_type}
               onChange={set('subject_type')}
-              disabled={busy}
+              disabled={sending}
               required
             >
               <option value="required">วิชาบังคับ</option>
@@ -207,7 +212,7 @@ export default function ProgramSubjectForm({
                     is_active: event.target.value === 'active',
                   }))
                 }
-                disabled={busy}
+                disabled={sending}
               >
                 <option value="active">ใช้งานอยู่</option>
                 <option value="inactive">ปิดใช้งาน</option>
@@ -225,7 +230,7 @@ export default function ProgramSubjectForm({
                 value={term}
                 onChange={event => setTerm(event.target.value)}
                 placeholder="เช่น 01076105 หรือ การเขียนโปรแกรม"
-                disabled={busy}
+                disabled={sending}
               />
             </Field>
 
@@ -234,7 +239,7 @@ export default function ProgramSubjectForm({
                 className={field}
                 value={draft.subject_id}
                 onChange={set('subject_id')}
-                disabled={busy}
+                disabled={sending}
                 size={6}
                 required
               >
@@ -260,7 +265,6 @@ export default function ProgramSubjectForm({
           <button
             type="button"
             onClick={onCancel}
-            disabled={busy}
             className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
           >
             ยกเลิก

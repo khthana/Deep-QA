@@ -37,7 +37,8 @@ import ContentMotionDIV from '../ContentMotionDIV'
  *
  * **The flag is the form's and not the page's, and *ยกเลิก* keeps none.** The
  * first answer that day was the other one - every control, `busy`, as
- * `ProgramSubjectForm.js` and `PloForm.js` have always had it - and what sent
+ * `ProgramSubjectForm.js` and `PloForm.js` had it until #242 landed on
+ * 28 ตุลาคม 2569 and gave those two and two more this form's shape - and what sent
  * it back was the price, measured before anything was written: **19 rows in two
  * closed tickets arrange their situation by pressing *ยกเลิก* while a save is
  * out on these three screens**, `142a`'s `cancelDuringSave` marking exactly

@@ -124,14 +124,20 @@ MODAL_ANYWAY = (
 # #238, 28 ต.ค. 2569 - รูปใหม่ของทั้งสองจุด เหมือน `SAVE_ANYWAY` ข้างบน · กุญแจของจอนี้
 # คือ **หลักสูตร** เพราะ `load` ถาม `listPlos({ program_id: program })` อย่างเดียว ไม่มีหน้า
 # และไม่มีตัวกรองอื่น (#185)
+# Re-aimed by #242 on 28 October 2569, which put the hand-over inside
+# `showing.current === sent` on these three saves. The replacement keeps that
+# guard, as the removal constants below have always kept it: what each of these
+# mutants is for is the sentence being said before the read draws, and a
+# replacement that also dropped #242's guard would kill that ticket's rows too.
 PLOS_MODAL_READS = (
-    "      waiting.current = { of: program, said }\n"
+    "      if (showing.current === sent) {\n"
+    "        waiting.current = { of: program, said }\n"
+    "      }\n"
     "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
 )
 PLOS_MODAL_ANYWAY = (
-    "      waiting.current = { of: program, said }\n"
     "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
-    "      setNotice(said)\n"
+    "      if (showing.current === sent) setNotice(said)\n"
 )
 PLOS_REMOVAL_READS = (
     "      if (showing.current === sent) waiting.current = { of: program, said }\n"
@@ -250,12 +256,14 @@ MUTANTS = {
         '      await reader(() => onScreen.current === reader)\n'
         '      if (showing.current === sent) setNotice(said)\n'),
     'pairssaveanyway': ('pairs',
-        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n'
-        '      setNotice(said)\n'),
+        '      if (showing.current === sent) setNotice(said)\n'),
     'pairsremovalanyway': ('pairs',
         '      if (showing.current === sent) {\n'
         '        waiting.current = { of: readOf(onPage.current, program), said }\n'
@@ -266,12 +274,14 @@ MUTANTS = {
         '      await reader(() => onScreen.current === reader)\n'
         '      if (showing.current === sent) setNotice(said)\n'),
     'rubricssaveanyway': ('rubrics',
-        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n'
-        '      setNotice(said)\n'),
+        '      if (showing.current === sent) setNotice(said)\n'),
     'rubricsremovalanyway': ('rubrics',
         '      if (showing.current === sent) {\n'
         '        waiting.current = { of: readOf(onPage.current, program), said }\n'

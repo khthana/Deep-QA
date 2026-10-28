@@ -150,6 +150,17 @@ function waitForReload(page, list) {
  * a save is out — the three #142's fourth row measured, and ข้อมูลผู้ใช้งาน,
  * whose ยกเลิก carries no `disabled` either.
  *
+ * Four more screens joined that population on 28 ตุลาคม 2569, when #242 moved
+ * รายวิชาในหลักสูตร, ผลการเรียนรู้ระดับหลักสูตร, Rubric and เกณฑ์การให้คะแนน to
+ * the form's own flag: their ยกเลิก carries no `disabled` either now, and each
+ * of their `save`s gained the three lines this file is about. They are **not**
+ * added to this list, and that is a decision rather than an omission: their rows
+ * are `242a`'s second row, one per screen, which builds the same situation and
+ * asserts the same three things. Adding them here would be eighteen more rows
+ * for the same claims (#68 — what a merge or a copy costs the proof is measured,
+ * not assumed), and this file's `SCREENS` is what its mutants' kill counts were
+ * read against (#202).
+ *
  * `detail` is the path a row is saved on, `list` the one the save reloads,
  * `edit` and `add` the two forms' headings (`add` is also the button's own
  * label, told apart by role), and `named` a field both forms carry.
@@ -229,7 +240,7 @@ async function saveAndCancel(page, screen, answer) {
   await button(page, 'บันทึก').click();
   await write.sent;
 
-  // Not disabled by the flag on these three screens — #142 measured which.
+  // Not disabled by the flag on these four screens — #142 measured which.
   await button(page, 'ยกเลิก').click();
   await expect(heading(page, screen.edit)).toBeHidden();
   return { write, second };

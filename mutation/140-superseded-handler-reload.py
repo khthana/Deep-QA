@@ -276,11 +276,18 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # รายวิชาในหลักสูตร: บันทึก
+    # Re-aimed by #242 on 28 October 2569 - the hand-over is inside
+    # `showing.current === sent` now, and what this mutant is for is the
+    # comparison below it (#203).
     'pairssavestalewins': ('pairs',
-        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
-        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => true)\n'),
     # รายวิชาในหลักสูตร: ลบ / นำออก
@@ -304,11 +311,18 @@ MUTANTS = {
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),
     # Rubric: บันทึก
+    # Re-aimed by #242 on 28 October 2569 - the hand-over is inside
+    # `showing.current === sent` now, and what this mutant is for is the
+    # comparison below it (#203).
     'rubricssavestalewins': ('rubrics',
-        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
-        '      waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: readOf(onPage.current, program), said }\n'
+        '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => true)\n'),
     # Rubric: ลบ / นำออก

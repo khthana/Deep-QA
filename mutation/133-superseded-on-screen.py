@@ -237,11 +237,19 @@ MUTANTS = {
     # ความผิดเดิมคงไว้ทั้งก้อน: `isCurrent` ตอบจริงทุกครั้ง คำตอบเก่าจึงชนะ
     # #238, 28 ต.ค. 2569 - `save` ส่งประโยคต่อก่อนการอ่านแล้ว บล็อกจึงเป็นสามบรรทัดนี้
     # และยึดอยู่ที่บรรทัด `waiting.current` ซึ่งไม่มี `if` นำ ต่างจากของการลบ ความผิดคงเดิม
+    # Re-aimed by #242 on 28 October 2569, which put `showing.current === sent`
+    # around the hand-over: the anchor is the block now, and the mistake this
+    # mutant is for - a settled read comparing against nothing - is unchanged
+    # (#203, a faithful re-aim preserves the mistake and not the line).
     "ploshandlerstalewins": ("plos",
-        '      waiting.current = { of: program, said }\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: program, said }\n'
+        '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
-        '      waiting.current = { of: program, said }\n'
+        '      if (showing.current === sent) {\n'
+        '        waiting.current = { of: program, said }\n'
+        '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => true)\n'),
 }
