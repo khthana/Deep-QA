@@ -194,9 +194,20 @@ MUTANTS = {
         "      if (isCurrent()) setGrid(answer)\n",
         "      setGrid(answer)\n"),
     # รายการของหลักสูตรที่ตัวกรองย้ายไปแล้ว วาดทับรายการของหลักสูตรที่กำลังดูอยู่
+    # #238, 28 ต.ค. 2569 - ยามเป็นบล็อกแล้ว เพราะประโยคที่การเขียนส่งต่อมาถูกพูดใต้
+    # `setPlos` ตามคำตอบของเจ้าของงาน รูปเดียวกับ `scoresstalewins` ข้างล่าง ข้อเดิม:
+    # คำตอบเก่าต้องไม่ชนะ · `isCurrent` ยังถูกอ้างถึงที่ `catch` กับ `finally`
     "plosstalewins": ("plos",
-        "      if (isCurrent()) setPlos(rows)\n",
-        "      setPlos(rows)\n"),
+        "      if (isCurrent()) {\n"
+        "        setPlos(rows)\n"
+        "        if (waiting.current && waiting.current.of === program) {\n"
+        "          setNotice(waiting.current.said)\n"
+        "        }\n"
+        "      }\n",
+        "      setPlos(rows)\n"
+        "      if (waiting.current && waiting.current.of === program) {\n"
+        "        setNotice(waiting.current.said)\n"
+        "      }\n"),
     # แผงที่มาของ PLO ที่ถูกกดแทนที่ไปแล้ว มาถึงทีหลังแล้วชนะ
     "intakedrillstalewins": ("intake",
         "      if (isCurrent()) setDrill(answer)\n",
@@ -224,13 +235,15 @@ MUTANTS = {
     # ยึดกับบรรทัด setNotice ข้างบนด้วย เพราะ `await drawing(…)` บรรทัดเดียวกันนี้มีสามที่
     # #211 ย้าย ref ไปถือตัว loader แทนหลักสูตร มัตแตนต์จึงเขียนด้วยรูปใหม่
     # ความผิดเดิมคงไว้ทั้งก้อน: `isCurrent` ตอบจริงทุกครั้ง คำตอบเก่าจึงชนะ
+    # #238, 28 ต.ค. 2569 - `save` ส่งประโยคต่อก่อนการอ่านแล้ว บล็อกจึงเป็นสามบรรทัดนี้
+    # และยึดอยู่ที่บรรทัด `waiting.current` ซึ่งไม่มี `if` นำ ต่างจากของการลบ ความผิดคงเดิม
     "ploshandlerstalewins": ("plos",
+        '      waiting.current = { of: program, said }\n'
         '      const drawing = onScreen.current\n'
-        '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded) setNotice(said)\n',
+        '      await drawing(() => onScreen.current === drawing)\n',
+        '      waiting.current = { of: program, said }\n'
         '      const drawing = onScreen.current\n'
-        '      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded) setNotice(said)\n'),
+        '      await drawing(() => true)\n'),
 }
 
 main(FILES, MUTANTS)

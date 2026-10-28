@@ -139,17 +139,17 @@ MUTANTS = {
     # #239 - the sentence it quotes is three lines since 28 ต.ค. 2569: the handler
     # hands its sentence over to the read `load` names when the page asked for
     # has gone. The mistake is unchanged and so is the row it kills (140a ล้ม 1 ผ่าน 31).
+    # #238 - เล็งใหม่ในวันเดียวกัน หลังคำตอบของเจ้าของงาน: ผู้เรียกไม่อ่านคำตอบของ `load`
+    # อีกแล้ว มันส่งประโยคต่อก่อนการอ่าน ฉะนั้นข้อที่มัตแตนต์นี้ถืออยู่เหลือสามบรรทัด และ
+    # ความผิดคงเดิมคือยามของการอ่าน (`isCurrent` จริงตลอด) · ส่วน `catch` ยังเป็นสิ่งที่
+    # แยกจุดนี้ออกจากสวิตช์สถานะ (#202)
     'userssavestalewins': ('users',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
+        '      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n'
         '    } catch (error) {\n'
         '      if (showing.current === sent) report(error)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
+        '      const drawing = onScreen.current\n      await drawing(() => true)\n'
         '    } catch (error) {\n'
         '      if (showing.current === sent) report(error)\n'),
     # ข้อมูลผู้ใช้งาน: ระงับ
@@ -159,18 +159,15 @@ MUTANTS = {
     # #239 - the sentence it quotes is three lines since 28 ต.ค. 2569: the handler
     # hands its sentence over to the read `load` names when the page asked for
     # has gone. The mistake is unchanged and so is the row it kills (140a ล้ม 1 ผ่าน 31).
+    # #238 - เล็งใหม่ในวันเดียวกัน เหมือนตัวข้างบน
     'userstogglestalewins': ('users',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
+        '      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => true)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
+        '      const drawing = onScreen.current\n      await drawing(() => true)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n'),

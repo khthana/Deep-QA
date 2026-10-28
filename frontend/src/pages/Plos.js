@@ -87,6 +87,33 @@ export default function Plos() {
   }, [])
 
   /**
+   * A sentence waiting for the read that will draw what it is about - #205,
+   * on this screen since the owner's answer to #238 on 28 ตุลาคม 2569.
+   *
+   * Until that day `save` and `confirmRemoval` said their own sentence behind
+   * their reload, and #241 measured what that does here: this screen says the
+   * sentence on every sequence, including one that needs no window at all -
+   * nothing held anything, the curriculum picker moved, and
+   * *บันทึกข้อมูลเรียบร้อยแล้ว* stood over the outcomes of a curriculum the
+   * save had not talked about. That is #210's second question, and the owner's
+   * answer is that a sentence belongs to the read that draws what it is about,
+   * on every screen (#221's nine arms, #238).
+   *
+   * What identifies a read here is the **curriculum** and nothing else:
+   * `load` asks `listPlos({ program_id: program })` and takes no page and no
+   * other filter, so the whole coordinate of a read is that one value (#185).
+   * It is held here as what the sentence is *of* and never read as a loader -
+   * #211's rule is about which loader does the reading, which `onScreen`
+   * below answers and this ref must not be asked.
+   *
+   * `Departments.js` carries the shape and the two clauses #205 put on it: the
+   * key decides whether the sentence is about the list that just landed, and
+   * the clearing is inside `isCurrent()` so that a read the screen has already
+   * replaced cannot throw away a sentence handed over after it was sent.
+   */
+  const waiting = useRef(null)
+
+  /**
    * The outcomes of the หลักสูตร the picker is on now - #133.
    *
    * #68's shape, reached by asking what that ticket's grep could not have
@@ -115,16 +142,41 @@ export default function Plos() {
     setLoading(true)
     try {
       const { plos: rows } = await listPlos({ program_id: program })
-      if (isCurrent()) setPlos(rows)
+      // Drawn, and then the sentence a write handed over - now that the list it
+      // is about is on the screen (#205, #238). The key is the curriculum,
+      // which is the whole coordinate of a read here. The comment is above the
+      // block and not inside it so that a mutant can quote the block without
+      // quoting a comment (#121).
+      if (isCurrent()) {
+        setPlos(rows)
+        if (waiting.current && waiting.current.of === program) {
+          setNotice(waiting.current.said)
+        }
+      }
       // Whether it drew, for a handler that has a sentence to say - #203. It
       // answers *the read was not refused* and not *the screen is still the one
       // that asked*, which is the caller's own second clause (#202).
+      //
+      // 28 ตุลาคม 2569, #238 - no handler on this screen reads it any more.
+      // `load` says the sentence itself now, so `save` and `confirmRemoval`
+      // ignore the answer and the only caller left is the effect below, which
+      // discards it. Both answers are **structurally unreachable** here rather
+      // than untested (#102); `Users.js` carries the same note and the longer
+      // reason.
       return true
     } catch (error) {
       if (isCurrent()) report(error)
       return false
     } finally {
-      if (isCurrent()) setLoading(false)
+      if (isCurrent()) {
+        setLoading(false)
+        // A read the screen still wants has landed, so whatever was waiting has
+        // either just been said above or is about a curriculum that is no
+        // longer the one on the screen - #205. Inside `isCurrent()` on purpose:
+        // a read the screen has already replaced must not throw away a sentence
+        // handed over after it was sent.
+        waiting.current = null
+      }
     }
   }, [program, report])
 
@@ -314,16 +366,30 @@ export default function Plos() {
       else await createPlo(draft)
       setEditing(null)
       setFormProgram('')
-      // sentence-after-a-move: the form replaces the table and gives every
-      // control `disabled={busy}`, so nothing can take the screen while this
-      // save is out and the guard would be a clause no row could reach (#97).
-      // Measured 11 October 2569 (#202)
+      // A marker for `frontend/scripts/sentences-after-a-move.js` stood here
+      // until 28 ตุลาคม 2569, saying that nothing can take this screen while a
+      // save is out and so the guard would be a clause no row could reach
+      // (#97, measured 11 October 2569 for #202). It is gone rather than kept:
+      // no sentence is said after this await any more, so that census stopped
+      // matching it the day #238 landed, and a marker the instrument no longer
+      // reads is an exemption rather than a reason (#93, #141). What it said is
+      // still true and is written in the docblock above, which is where the
+      // absent `showing.current === sent` is decided. Its keyword is left
+      // unwritten here on purpose, the census reading any comment that carries
+      // it as a marker.
       const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
+      // #238, 28 ตุลาคม 2569 - handed over before the read and keyed for the
+      // curriculum this save was about, which is the owner's answer to #210's
+      // second question. The sequence #241 measured here needed no window at
+      // all: the picker moved, nothing was held, and this sentence stood over
+      // another curriculum's outcomes. `load` says it when the list it is
+      // about lands, and says nothing when a read of another curriculum lands
+      // instead.
+      waiting.current = { of: program, said }
       const drawing = onScreen.current
-      const reloaded = await drawing(() => onScreen.current === drawing)
-      if (reloaded) setNotice(said)
+      await drawing(() => onScreen.current === drawing)
     } catch (error) {
       report(error)
     } finally {
@@ -349,9 +415,14 @@ export default function Plos() {
       }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
+      // #238, 28 ตุลาคม 2569 - handed over before the read and keyed for the
+      // curriculum this removal was about, the same way `save` above does it.
+      // The dialog leaves the table and the picker drawn and neither is
+      // disabled, so the window a person reaches here is real (#199, #204,
+      // #217) - and #241 found the sequence that needs no window at all.
+      if (showing.current === sent) waiting.current = { of: program, said }
       const drawing = onScreen.current
-      const reloaded = await drawing(() => onScreen.current === drawing)
-      if (reloaded && showing.current === sent) setNotice(said)
+      await drawing(() => onScreen.current === drawing)
     } catch (error) {
       // A ข้อหลัก that still has ข้อย่อย is refused outright, and the sentence
       // the server sends says what to do about it. The dialog closes either

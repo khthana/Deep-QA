@@ -121,17 +121,19 @@ MUTANTS = {
     # #239 - the sentence it quotes is three lines since 28 ต.ค. 2569: the handler
     # hands its sentence over to the read `load` names when the page asked for
     # has gone. The mistake is unchanged and so is the row it kills (86a ล้ม 2 ผ่าน 3).
+    # #238 - วันเดียวกัน หลังคำตอบของเจ้าของงาน ประโยคไม่ถูกพูดโดย handler อีกแล้ว
+    # ความผิดที่ตัวนี้ถืออยู่คือ *พูดโดยไม่อ่านรายการใหม่* ฉะนั้นมัตแตนต์พูดเองตรงนั้นแทนการ
+    # ส่งต่อ และไม่เรียกการอ่าน — `drawing` ยังถูกอ้างถึง เพราะ const ที่ไม่มีใครใช้
+    # ทำให้ `CI=true` แดง ซึ่งเป็นมัตแตนต์ที่หยุดแอปและไม่พิสูจน์อะไร (#101)
     'togglenoreload': ('users',
-        '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
+        '      const drawing = onScreen.current\n'
+        '      await drawing(() => onScreen.current === drawing)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n',
-        '      const reloaded = Boolean(drawing)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) setNotice(said)\n'
+        '      const drawing = onScreen.current\n'
+        '      Boolean(drawing)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'),
     # ประโยคในกล่องเป็นของการระงับเสมอ ส่วนการเขียนยังถูกทิศ

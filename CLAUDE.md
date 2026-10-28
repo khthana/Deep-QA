@@ -88,6 +88,11 @@ citation.
 - **An owner's question is void where one of its answers names a state the system cannot carry** —
   a value the server would refuse is not a preference anybody can choose, so measure what each
   option would put in front of the person before writing the question down. (#232)
+- **An owner's rule reaches the cases its own mechanism can reach, and the one it cannot is a
+  question it does not answer** — #232's twin: where a rule binds a sentence to *the read it
+  talks about*, a write whose read the screen never orders leaves the rule's letter choosing
+  silence after a success. Measure what each form field can move out of what the loader asks for
+  before reporting the rule as applied, and say which option the owner is being handed. (#238)
 - **A half that needs a human sense to answer has a layer under it an instrument can reach** —
   *does anybody hear it* needs a voice, while *is the sentence in the accessibility tree, on a node
   the browser does not mark ignored* needs only the browser and decides the same price. The layer is
@@ -761,6 +766,12 @@ citation.
   focuses a field rather than clicking it, which is a way in the tool has and a person does not
   (#47). What expires is the prose, and each of those paragraphs is dated rather than deleted (#54):
   grep the sentences, not only the presses. (#86)
+- **And an owner's rule about *who says* a sentence expires another ticket's assertion, not
+  its prose** — #86 from the other side, and the only one of the two that goes red: the
+  bystander row fails and nothing says why, the anchors still applying and the census still
+  reading the code. Keep that row's own claim and turn the stranded assertion negative at the
+  same settle point; the positive claim travels to the rows of the ticket that now owns the
+  behaviour, and the constant holding the wording travels with it. (#238)
 - **A criterion answered *no* needs a row as much as one answered *yes*** — and the row has to
   assert what is still there, or it is measuring the other refusal that reaches the same status
   code. Between two fixture shapes, take the one the code already draws and nothing has ever made
@@ -1145,13 +1156,13 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Nine censuses, as instruments. `npm run census` runs them all; their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #241). Not rows and not gates — nothing in the repository runs them, and four of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241). Not rows and not gates — nothing in the repository runs them, and five of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|
 | `superseded-answers.js` | draws an answer with no guard and no written reason (#133's family) |
 | `label-codes.js` | draws a label with a code in front of the name and no written reason (#93's) |
-| `sentences-after-a-move.js` | says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family). It asks about **enclosure**, not about a window of lines, and since #226 (25 October 2569) it also says what the ref it found can tell apart — `opened` for a ref written only with a fresh sentinel (`{}`, `[]`, `null`, `undefined`, a boolean, `0`, `''`, an empty `Map` or `Set`, or a name bound to one), `position` for one written with a value such as the loader, plus `mixed` and `unwritten`. On that date: `opened 19 .. position 3`. The six things it still cannot measure are in its docblock |
+| `sentences-after-a-move.js` | says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family). It asks about **enclosure**, not about a window of lines, and since #226 (25 October 2569) it also says what the ref it found can tell apart — `opened` for a ref written only with a fresh sentinel (`{}`, `[]`, `null`, `undefined`, a boolean, `0`, `''`, an empty `Map` or `Set`, or a name bound to one), `position` for one written with a value such as the loader, plus `mixed` and `unwritten`. On that date: `opened 19 .. position 3`; on 28 October 2569, after #238 bound two more screens' sentences to the read that draws them, `enclosed 19 (opened 16 .. position 3) .. marked 5` — three sites stopped saying anything after their `await` and `Plos.js`'s marker came out, a marker the instrument no longer reads being an exemption (#93, #141). The six things it still cannot measure are in its docblock |
 | `swallowed-refusals.js` | redraws from a loader without reading whether it drew (#152's family). Built by #200 and left unwired while the twenty administration sites it found were still red; #203 fixed those and wired it in on 12 October 2569 |
 | `dead-loaders.js` | reads a list again with the loader a handler closed over instead of the one the ref holds (#208's family). It finds its loaders **by the ref** and so cannot see a ref holding a coordinate |
 | `required-props.js` | leaves out a prop the component it draws declares it must have (#179's `target`, by #182's answer on 22 October 2569). Its population is every file exporting `REQUIRED_PROPS`, so it is a rule about a declaration and not about a component's name; it cannot read a spread, a wrapper, or a named import |

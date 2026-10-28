@@ -194,18 +194,19 @@ const readOf = (page, filters) =>
  * has. Measured on 25 ตุลาคม 2569, with no second actor and nothing held
  * (#239; `docs/acceptance/57-pager.md` §#222 has the readings).
  *
- * The seven screens answer the third case with a bare string, because no caller
- * of theirs reads it: the sentence a handler has to say is left in `waiting` and
- * said by the read that draws. **Here the callers do read it** - `save` and
- * `confirmSwitch` await their reload and say their own sentence behind it, which
- * is `Departments.js` §`HANDED_ON`'s *the day a caller reads this answer on a
- * page it did not choose* - so the answer has to say **which read** it handed
- * to, and the caller hands its sentence to that read rather than saying it over
- * a page about to be replaced. Carried in the answer and not in a ref, because a
- * ref is read a turn later, where a second read in flight could have written it
- * (#207, #211: what a value is *of* is the whole question).
+ * **Until 28 ตุลาคม 2569 this was `handedTo = of => ({ handedTo: of })`, and the
+ * paragraph here read that the callers of this screen do read the answer** -
+ * `save` and `confirmSwitch` awaited their reload and said their own sentence
+ * behind it, so the answer had to carry **which read** it handed to. The owner's
+ * answer to #238 took that reader away: both handlers now hand their sentence
+ * over *before* the read, keyed for the list the write was about, and `load`
+ * re-keys it here when it hands the page on - which is the shape the seven
+ * screens carry and the reason their third answer is a bare string. The
+ * reasoning the payload carried is not lost: a value read a turn later is a
+ * value of whatever has happened since (#207, #211), which is why the re-keying
+ * is done by `load` and not by a caller reading a ref.
  */
-const handedTo = of => ({ handedTo: of })
+const HANDED_ON = 'handed-on'
 
 export default function Users() {
   const { profile } = useAuth()
@@ -240,12 +241,16 @@ export default function Users() {
    * A sentence waiting for the read that will draw what it is about - #205, on
    * this screen since #239.
    *
-   * Only the handed-on case leaves one here. A reload that draws is still
-   * awaited by the handler that started it and the sentence is still said there,
-   * which is what every row written about this screen's banner since #146
-   * measures; what a handler cannot do is say it over a read that drew nothing
-   * and handed the page on, so that one sentence is left here, keyed for the
-   * read it was handed to, and `load` says it when that read draws.
+   * **Until 28 ตุลาคม 2569 only the handed-on case left one here**, and this
+   * paragraph said that a reload which draws is awaited by the handler that
+   * started it and the sentence said there. The owner's answer to #238 on that
+   * date made every sentence this screen says go through here: both handlers
+   * hand it over before their read, keyed for the list the write was about, and
+   * `load` is the only thing that says it. What that buys is the sentence not
+   * being said over a list the write did not talk about - a page or a filter
+   * moved while the write was out leaves nothing to say it, which is what the
+   * nine arms of `e2e/probes/221-the-two-windows.spec.js` measured as this
+   * screen's old behaviour (#210's second question, #221, #238).
    *
    * `Departments.js` carries the shape and the two clauses #205 put on it: the
    * key decides whether the sentence is about the list that just landed, and the
@@ -307,7 +312,7 @@ export default function Users() {
             waiting.current = { of: to, said: waiting.current.said }
           }
           setPage(lastPage)
-          return handedTo(to)
+          return HANDED_ON
         }
         setData(answer)
         // A sentence handed over by the read this one replaced, now that the
@@ -319,6 +324,17 @@ export default function Users() {
       // Whether it drew, for a handler that has a sentence to say - #203. It
       // answers *the read was not refused* and not *the screen is still the one
       // that asked*, which is the caller's own second clause (#202).
+      //
+      // 28 ตุลาคม 2569, #238 - no handler on this screen reads it any more.
+      // `load` says the sentence itself now, so `save` and `confirmSwitch`
+      // ignore the answer and the only caller left is the effect below, which
+      // discards it. All three answers - `true`, `false` and `HANDED_ON` - are
+      // **structurally unreachable** here rather than untested (#102): nothing
+      // observes them, so no mutant can put them at risk. The shape is kept
+      // because it is the ten administration screens' own and because
+      // `SubjectStudents.js` does read it, its `reload` comparing the answer
+      // with `HANDED_ON`. The day a handler here reads it, this is a claim
+      // again.
       return true
     } catch (error) {
       // A 401 already raises the shell's dialog; saying it again here would
@@ -393,11 +409,26 @@ export default function Users() {
       // role out of the role filter), so a save on the last page can be told its
       // page has gone; the read that drew nothing is not the read this sentence
       // is about.
+      // #238, 28 ตุลาคม 2569 - the owner's rule, which is the rule the seven
+      // administration screens carry: the sentence is handed over **before** the
+      // read, keyed for the list this save was about, and `load` is the only
+      // thing that says it. **The key is read differently here, and that is
+      // measured rather than copied.** Those screens key on the live ref
+      // (`readOf(onPage.current, ...)`), which is the same value as this one
+      // there, because each of them hands `<Pager>` `busy={busy}` and
+      // `components/Pager.js` turns that into `disabled`: nothing can move the
+      // page while a write is out. This screen does not hand it over - whether
+      // it should is #210's first question, still open - so the live ref would
+      // move, and the render's own coordinates are the only reading of the list
+      // this save was about (#207). The key is the page and the filter this
+      // handler was sent from and not where the person now is: a pager or a
+      // filter moved while the write was out makes the read that lands a read
+      // of another list, and *บันทึกข้อมูลเรียบร้อยแล้ว* over that list is the sentence
+      // #210's second question asked about. `load` re-keys this for the read it
+      // hands to, so the hand-on above needs nothing here.
+      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }
       const drawing = onScreen.current
-      const reloaded = await drawing(() => onScreen.current === drawing)
-      if (reloaded?.handedTo) {
-        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }
-      } else if (reloaded && showing.current === sent) setNotice(said)
+      await drawing(() => onScreen.current === drawing)
     } catch (error) {
       if (showing.current === sent) report(error)
     } finally {
@@ -493,11 +524,17 @@ export default function Users() {
       // switch was pressed on can be past the end by the time the reload lands.
       // The sentence belongs to the read that draws the page the person is
       // handed to, which is the one `load` names here.
+      // #238, 28 ตุลาคม 2569 - handed over before the read and keyed for the
+      // list this switch was pressed on, the same way `save` above does it -
+      // including why the key is read from the render here and from the live ref
+      // on the seven administration screens, which `save` measures: a filter
+      // moved while the write was out makes the read that lands a read of
+      // another list, and this sentence is not about that one. The owner's answer of 28 ตุลาคม 2569 is that the
+      // sentence belongs to the read that draws what it talks about, on every
+      // screen (#210's second question, #221's nine arms, #238).
+      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }
       const drawing = onScreen.current
-      const reloaded = await drawing(() => onScreen.current === drawing)
-      if (reloaded?.handedTo) {
-        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }
-      } else if (reloaded && showing.current === sent) setNotice(said)
+      await drawing(() => onScreen.current === drawing)
     } catch (error) {
       setSwitching(null)
       report(error)

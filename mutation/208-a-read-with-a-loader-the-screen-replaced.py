@@ -66,12 +66,13 @@ DEPARTMENTS_ELSE = (
 # #239 - three lines longer since 28 ต.ค. 2569. The replacement moves with it,
 # because it writes the block out rather than editing one line (#140 - grep the
 # replacement strings too). Re-swept: 208a ล้ม 1 ผ่าน 1.
+# #238 - วันเดียวกัน หลังคำตอบของเจ้าของงาน: ประโยคถูกส่งต่อก่อนการอ่าน ฉะนั้นบล็อกเหลือ
+# สามบรรทัด ความผิดคงเดิมคืออ่านซ้ำด้วย loader ที่ handler ปิดทับไว้ และ `drawing` หายไป
+# จากตัวแทน เพราะ const ที่ไม่มีใครใช้ทำให้ `CI=true` แดง ซึ่งเป็นมัตแตนต์ที่หยุดแอป (#101)
 USERS_TOGGLE = (
+    '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
     '      const drawing = onScreen.current\n'
-    '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-    '      if (reloaded?.handedTo) {\n'
-    '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-    '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+    '      await drawing(() => onScreen.current === drawing)\n'
     '    } catch (error) {\n'
     '      setSwitching(null)\n'
     '      report(error)\n'
@@ -91,10 +92,8 @@ MUTANTS = {
         '      await load(() => onScreen.current === load)\n'),
     # อย่างเดียวกันที่จอบัญชีผู้ใช้ ซึ่งทางเข้าไม่ใช่การแข่งกันของสองช่วงเวลา (ดูหมายเหตุ #86 ข้างบน)
     'usersstaleloader': ('users', USERS_TOGGLE,
-        '      const reloaded = await load(() => onScreen.current === load)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
+        '      await load(() => onScreen.current === load)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n'),

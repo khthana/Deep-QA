@@ -60,24 +60,33 @@ ASKS_THE_SERVER = """        if (answer.page > lastPage) {
 ASKS_NOTHING = """        if (answer.page > answer.page) {
 """
 
-SWITCH_HANDS_IT_OVER = """      if (reloaded?.handedTo) {
-        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }
-      } else if (reloaded && showing.current === sent) setNotice(said)
+# เล็งใหม่เมื่อ 28 ต.ค. 2569 (#238) — คำตอบของเจ้าของงานเอาผู้อ่านคำตอบของ `load` ออกไป
+# ทั้งสองจุด: ผู้เรียกส่งประโยคต่อ *ก่อน* การอ่าน โดยติดกุญแจของรายการที่คำสั่งเขียนพูดถึง
+# แล้ว `load` เป็นคนเดียวที่พูด · ความผิดที่สองตัวนี้ถืออยู่คงเดิมคือ **พูดเองหลังการอ่าน**
+# ซึ่งเป็นรูปของจอนี้ก่อน #239 เป๊ะ ๆ (#203 — การเล็งใหม่ที่ซื่อสัตย์คือตัวที่รักษาความผิดไว้
+# ไม่ใช่ตัวที่หาบรรทัดเจอ) · ตั้งแต่วันนั้นมันฆ่าแถวลบของ `238a` ด้วย ซึ่งเขียนไว้ที่ตารางข้างบน
+SWITCH_HANDS_IT_OVER = """      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
     } catch (error) {
       setSwitching(null)
 """
-SWITCH_SAYS_IT = """      if (reloaded && showing.current === sent) setNotice(said)
+SWITCH_SAYS_IT = """      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       setSwitching(null)
 """
 
-SAVE_HANDS_IT_OVER = """      if (reloaded?.handedTo) {
-        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }
-      } else if (reloaded && showing.current === sent) setNotice(said)
+SAVE_HANDS_IT_OVER = """      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
     } catch (error) {
       if (showing.current === sent) report(error)
 """
-SAVE_SAYS_IT = """      if (reloaded && showing.current === sent) setNotice(said)
+SAVE_SAYS_IT = """      const drawing = onScreen.current
+      const reloaded = await drawing(() => onScreen.current === drawing)
+      if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
       if (showing.current === sent) report(error)
 """

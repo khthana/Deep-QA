@@ -81,17 +81,22 @@ FILES = {
 # two `Users.js` mutants reads it (`PLOS_REMOVAL_READS` is a byte-identical twin
 # of its own), so the restatement reaches no other screen's mutant - #202's tenth
 # reading. Both rows were re-swept: 203a ล้ม 1 ผ่าน 21, each at its own site.
+#
+# #238, 28 ต.ค. 2569 - คำตอบของเจ้าของงานเอา `|| true` ออกจากที่นี่ไปเลย เพราะผู้เรียก
+# ไม่อ่านคำตอบของการอ่านอีกต่อไป มันส่งประโยคต่อก่อนการอ่าน แล้ว `load` พูดเมื่อวาดได้
+# ข้อของตั๋วนี้ไม่ได้หายไป: *ประโยคไม่ถูกพูดถ้าการอ่านถูกปฏิเสธ* ยังเป็นข้อที่วัดได้ และ
+# ความผิดที่เขียนได้ที่จุดนี้คือ **พูดมันหลังการอ่าน ไม่ว่าการอ่านจะตอบอะไร** ซึ่งเป็นรูปของ
+# `studentssaveanyway` ในแฟ้มนี้อยู่แล้ว (#203 — การเล็งใหม่ที่ซื่อสัตย์คือตัวที่รักษา
+# ความผิดไว้ ไม่ใช่ตัวที่หาบรรทัดเจอ) · มัตแตนต์สี่ตัวของ `Users.js` กับ `Plos.js` จึงย้าย
+# มาอยู่รูปนี้ และข้อที่ว่ากุญแจของประโยคเป็นของรายการไหนอยู่ที่ `mutation/238-*.py`
 SAVE_READS = (
-    "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
-    "      if (reloaded?.handedTo) {\n"
-    "        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n"
-    "      } else if (reloaded && showing.current === sent) setNotice(said)\n"
+    "      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n"
+    "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
 )
 SAVE_ANYWAY = (
-    "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
-    "      if (reloaded?.handedTo) {\n"
-    "        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n"
-    "      } else if (reloaded && showing.current === sent) setNotice(said)\n"
+    "      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n"
+    "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
+    "      if (showing.current === sent) setNotice(said)\n"
 )
 
 # การลบที่ถอยหน้าได้: การอ่านอยู่ในสาขา `else` ของมัน
@@ -116,21 +121,26 @@ MODAL_ANYWAY = (
 
 # `Plos.js` ถาม `onScreen` ด้วยหลักสูตรอยู่จน #211 ย้าย ref ไปถือตัว loader
 # รูปข้างล่างจึงตรงกับ `Users.js` แล้ว ความผิดของมัตแตนต์คงเดิม: `|| true`
+# #238, 28 ต.ค. 2569 - รูปใหม่ของทั้งสองจุด เหมือน `SAVE_ANYWAY` ข้างบน · กุญแจของจอนี้
+# คือ **หลักสูตร** เพราะ `load` ถาม `listPlos({ program_id: program })` อย่างเดียว ไม่มีหน้า
+# และไม่มีตัวกรองอื่น (#185)
 PLOS_MODAL_READS = (
-    "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
-    "      if (reloaded) setNotice(said)\n"
+    "      waiting.current = { of: program, said }\n"
+    "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
 )
 PLOS_MODAL_ANYWAY = (
-    "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
-    "      if (reloaded) setNotice(said)\n"
+    "      waiting.current = { of: program, said }\n"
+    "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
+    "      setNotice(said)\n"
 )
 PLOS_REMOVAL_READS = (
-    "      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n"
-    "      if (reloaded && showing.current === sent) setNotice(said)\n"
+    "      if (showing.current === sent) waiting.current = { of: program, said }\n"
+    "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
 )
 PLOS_REMOVAL_ANYWAY = (
-    "      const drawing = onScreen.current\n      const reloaded = (await drawing(() => onScreen.current === drawing)) || true\n"
-    "      if (reloaded && showing.current === sent) setNotice(said)\n"
+    "      if (showing.current === sent) waiting.current = { of: program, said }\n"
+    "      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n"
+    "      if (showing.current === sent) setNotice(said)\n"
 )
 
 # `Users.js` มีสองจุดที่หน้าตาเหมือนกันทั้งบรรทัด - `save` กับสวิตช์สถานะ สิ่งที่แยกสองจุดนี้

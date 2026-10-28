@@ -63,7 +63,7 @@ module is shared, so this file is one of the places they kill, not the list:
 
 Killing them:
 
-    cd e2e && npx playwright test 38a
+    cd e2e && npx playwright test tests/38a-learning-details
 """
 
 from harness import main

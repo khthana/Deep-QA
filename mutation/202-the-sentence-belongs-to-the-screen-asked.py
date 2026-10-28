@@ -126,13 +126,12 @@ MUTANTS = {
         '  const confirmRemoval = async () => {\n    const sent = showing.current\n',
         '  const confirmRemoval = async () => {\n    const sent = {}\n'),
     # ผลการเรียนรู้ระดับหลักสูตร: จอที่ ref มาถึงพร้อมตั๋วนี้
+    # #238, 28 ต.ค. 2569 - การลบไม่พูดประโยคเองอีกแล้ว มันส่งต่อให้การอ่านที่วาด ฉะนั้น
+    # การเปรียบเทียบที่มัตแตนต์นี้ถืออยู่ย้ายไปอยู่บนบรรทัดของการส่งต่อ ความผิดคงเดิม:
+    # `!== null` พูดทับฟอร์มที่เปิดขึ้นมาแทน (202a ล้ม 1 ผ่าน 9)
     'plossaysanyway': ('plos',
-        '      const drawing = onScreen.current\n'
-        '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n',
-        '      const drawing = onScreen.current\n'
-        '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded && showing.current !== null) setNotice(said)\n'),
+        '      if (showing.current === sent) waiting.current = { of: program, said }\n',
+        '      if (showing.current !== null) waiting.current = { of: program, said }\n'),
     # ผลการเรียนรู้ระดับหลักสูตร: ref มีอยู่ แต่ปุ่มเพิ่มไม่เขียนมัน guard จึงเทียบ
     # `null === null` แล้วพูดทับฟอร์มที่เพิ่งเปิด
     'plosnorefatadd': ('plos',
@@ -142,18 +141,16 @@ MUTANTS = {
     # #239 - three lines since 28 ต.ค. 2569, and the comparison this mutant
     # is about is now written twice in the handler, so it is wrong in both: the
     # claim is the comparison, not the line it used to sit on (202a ล้ม 2 ผ่าน 8).
+    # #238 - วันเดียวกัน หลังคำตอบของเจ้าของงาน การเปรียบเทียบกลับมาเหลือที่เดียว คือ
+    # บรรทัดที่ส่งประโยคต่อ ข้อที่มัตแตนต์ถืออยู่คือการเปรียบเทียบนั้น ไม่ใช่บรรทัดที่มันเคยอยู่
     'userssaysanyway': ('users',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current === sent) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current === sent) setNotice(said)\n'
+        '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
+        '      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n',
-        '      const drawing = onScreen.current\n      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-        '      if (reloaded?.handedTo) {\n'
-        '        if (showing.current !== null) waiting.current = { of: reloaded.handedTo, said }\n'
-        '      } else if (reloaded && showing.current !== null) setNotice(said)\n'
+        '      if (showing.current !== null) waiting.current = { of: readOf(page, filters), said }\n'
+        '      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n'
         '    } catch (error) {\n'
         '      setSwitching(null)\n'
         '      report(error)\n'),

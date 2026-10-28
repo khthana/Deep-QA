@@ -56,10 +56,14 @@ FILES = {
     'plos': 'frontend/src/pages/Plos.js',
 }
 
+# #238, 28 ต.ค. 2569 - การลบส่งประโยคต่อก่อนการอ่าน แล้ว `load` เป็นคนพูดเมื่อวาดได้
+# ตามคำตอบของเจ้าของงาน ความผิดที่สองตัวข้างล่างถืออยู่ไม่ได้ขยับ: มันเป็นเรื่องของ **loader
+# ตัวไหนอ่าน** ไม่ใช่เรื่องของประโยค และแถวที่มันฆ่าก็ยังเป็นแถวเดิม — สิ่งที่หายไปจากแถวนั้น
+# คือการอ่านประโยคบวก ซึ่งย้ายไปเป็นข้ออ้างของ #238 (`211a` บรรทัดนั้นเขียนวันกำกับไว้)
 REMOVAL = (
+    '      if (showing.current === sent) waiting.current = { of: program, said }\n'
     '      const drawing = onScreen.current\n'
-    '      const reloaded = await drawing(() => onScreen.current === drawing)\n'
-    '      if (reloaded && showing.current === sent) setNotice(said)\n'
+    '      await drawing(() => onScreen.current === drawing)\n'
 )
 
 REFUSED = (
@@ -72,8 +76,8 @@ MUTANTS = {
     # ยามของ #208 กลายเป็นพิกัดอีกครั้ง: handler อ่านด้วย loader ที่มันปิดทับไว้ และ
     # loader นั้นปฏิเสธตัวเอง ที่ว่างจึงค้างใต้ประโยคของการลบ
     'plosremovalstaleloader': ('plos', REMOVAL,
-        '      const reloaded = await load(() => onScreen.current === load)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      if (showing.current === sent) waiting.current = { of: program, said }\n'
+        '      await load(() => onScreen.current === load)\n'),
     # ที่เดียวกันในทางปฏิเสธ: อ่านรายละเอียดไม่ผ่าน ฟอร์มไม่เปิด จอจึงอ่านรายการซ้ำ
     # ด้วย loader ของหลักสูตรที่ออกมาแล้ว
     'plosrefusedstaleloader': ('plos', REFUSED,
@@ -84,9 +88,9 @@ MUTANTS = {
     # แรกของแถวผ่าน แต่ isCurrent() เป็นเท่า setLoading(false) จึงไม่เกิด
     # ที่ว่าง *กำลังหลด…* ค้าง แถวจึงตายที่ข้อเรียกร้องของที่ว่าง ไม่ใช่ข้อแรก (#88)
     'plosremovalstaleguard': ('plos', REMOVAL,
+        '      if (showing.current === sent) waiting.current = { of: program, said }\n'
         '      const drawing = onScreen.current\n'
-        '      const reloaded = await drawing(() => onScreen.current === load)\n'
-        '      if (reloaded && showing.current === sent) setNotice(said)\n'),
+        '      await drawing(() => onScreen.current === load)\n'),
     'plosrefusedstaleguard': ('plos', REFUSED,
         '      if (asked.current === ask) report(error)\n'
         '      const drawing = onScreen.current\n'

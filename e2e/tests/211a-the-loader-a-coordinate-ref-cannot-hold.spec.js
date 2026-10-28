@@ -100,9 +100,8 @@ test.afterAll(() => release());
 /** The row the table draws between asking and answering — what both rows are about. */
 const LOADING = 'กำลังโหลด…';
 
-/** What the first row presses, and what the screen says when the removal lands. */
+/** What the first row presses. */
 const CONFIRM = 'ลบผลการเรียนรู้';
-const REMOVED = 'ลบผลการเรียนรู้เรียบร้อยแล้ว';
 
 /** What the second row's refusal says. Made up, like `139a`'s, and for its reason. */
 const REFUSED = 'ไม่พบผลการเรียนรู้ที่ต้องการ';
@@ -193,7 +192,21 @@ test('a removal reads the list of the หลักสูตร the filter has mo
     .not.toEqual(here);
 
   await handlerReads(page, write, there);
-  await expect(page.getByRole('status'), 'the banner of the removal').toHaveText(REMOVED);
+  // **Until 28 ตุลาคม 2569 this line read `toHaveText('ลบผลการเรียนรู้เรียบร้อยแล้ว')`** - the banner
+  // of the removal, said over the list of the curriculum the filter had moved
+  // to. That reading was a bystander of this row and the subject of #210's
+  // second question, which #241 measured on this screen and the owner answered
+  // on that date: a sentence belongs to the read that draws what it is about,
+  // so a removal whose list the person has left says nothing. The claim of this
+  // row is untouched - it is `handlerReads` above, which asks which loader did
+  // the reading - and the positive sentence is held by `205a` and by `238a`'s
+  // rows, where this screen's own now live (#238).
+  //
+  // Read once, at the settle point `handlerReads` just reached: the drawing of
+  // the handler's own list is the commit a sentence would have been said in, so
+  // nothing here is waiting for a banner that is on its way (#50, #214).
+  await expect(page.getByRole('status'), 'no sentence over a list the removal is not about')
+    .toHaveCount(0);
 });
 
 test('a refused แก้ไข reads the list of the หลักสูตร the filter has moved to', async ({ page }) => {

@@ -15476,3 +15476,141 @@ still exact and the code it edits untouched, so only running it again speaks (#2
 kill their own row alone; what moved is the number that passed, two to three, which is the
 population and not the measurement. Row 4 stands under all four, which is what four copies should do
 (#83).
+
+## #238 — the owner's rule on two more screens, and the bystander assertion it turned negative
+
+#238 was a `question` ticket, not a fix. It carried the second of #210's two questions, which #221
+had measured in full on 25 October 2569 and could not answer: when a write's sentence and the read
+that draws its result come apart, **who says the sentence, and over which list**. #221's own
+nine-arm table is what made the question answerable: `Users.js` says *บันทึกข้อมูลเรียบร้อยแล้ว*
+in all six of its sequences, including over the rows of a page the saved account was never on,
+while `Students.js` says nothing at all once the person has moved, because #205 had keyed its
+sentence to the read that would draw it. #241 then measured `Plos.js` on 25 October 2569 and put it
+on the `Users.js` side with a sequence neither of the other two has: there the sentence stands over
+another curriculum's outcomes with **no window held at all**.
+
+The owner answered on 28 October 2569: rule **ก** — *the sentence is bound to the read it talks
+about* — and, to the second question, *do all of it in this ticket*. So the work was #205's
+mechanism written into `Users.js` and `Plos.js`, and nothing at all in `Students.js`, which already
+was the answer. That absence is the answer to a question, and the acceptance sheets say so rather
+than leaving the screen unmentioned.
+
+### The mechanism is two halves, and only one of them was new code
+
+The caller hands the sentence over **before** the read, keyed to the list the write is about
+(`waiting.current = { of: readOf(page, filters), said }`), and `load` says it only when
+`waiting.current.of === key`, clearing the ref in `finally` inside `isCurrent()` unless it handed
+the page on. On `Users.js` the first half already existed on one of the two paths: #239 had landed
+that morning and built the keyed hand-on for the case where the write takes the person's page away.
+What #238 changed is that the keyed path became the **only** path — the `reloaded` branch that said
+the sentence whatever the person had done meanwhile is gone.
+
+That matters for the mutants more than for the code. The caller half's mistake — *say it yourself
+after the read* — is exactly what `239:savesaysitovertheoldpage`,
+`239:switchsaysitovertheoldpage`, `203:plossaveanyway` and `203:plosremovalanyway` restore, and all
+four were re-aimed the same day. So `mutation/238-…py` writes no mutant for it: a mutant that
+quietly becomes a twin of another leaves its own assertion as unrun as it was before (#201). Its
+four mutants hold the **second** half, the key, two per screen: one that drops the comparison and
+says the pending sentence over any read that draws, and one that removes the sentence altogether,
+which asks what holds the positive row.
+
+### A bystander assertion, not a bystander row
+
+`211a` row 1 ended by reading *ลบผลการเรียนรู้เรียบร้อยแล้ว* over the list, and after the fix that
+sentence is not said: the row moves the filter inside the window, which is the whole point of
+#211's row, so the key no longer matches and nothing says it. The row went red.
+
+This is #86 one layer in. #86 says a fix that puts a dialog in front of a control re-dates every
+other ticket's **prose** about how that control is reached; here an owner's rule about *who speaks*
+re-dates another ticket's **assertion**, and no instrument reports it — `anchors.py` is about
+mutants, the census is about the code, and the row simply fails. The repair is not to delete the
+row: its claim is `handlerReads`, which is untouched. The last assertion turns negative —
+`expect(page.getByRole('status')).toHaveCount(0)` with the sentence quoted in the comment beside
+it — and the positive claim travels to #238's own rows, which is where the behaviour now lives.
+The constant that held the wording went with it, because a constant nothing reads is a claim
+nobody checks.
+
+### Sixteen re-aims, and a sweep that measured nothing
+
+The fix rewrote the sentence line of four handlers across two screens into three lines each, which
+re-aimed sixteen mutants in eight closed tickets' files. `python mutation/anchors.py` says they
+still apply; only a sweep says they still prove anything (#107, #68), so all sixteen were run
+against their own spec files, each read against the row it was written *for* and not against a
+total (#203).
+
+The first attempt at that sweep is the lesson. A PowerShell loop applied each mutant, ran
+Playwright, restored, and exited 0 with a tidy log — twenty blocks, each one `saved 2 files`,
+`applied <mutant>`, `restored`. What it did not contain was a single line of test output: `& npx`
+inside the loop produced nothing that reached the log, so twenty mutants had been applied and taken
+out again with no suite ever run. Exit code 0, a log that reads like a record, and nothing measured.
+**The count is the tell, not the exit code** (#208) — here the count was of the lines the runner
+prints, which is the same question asked of a sweep rather than of a census. The repair was to run
+each one through `cmd /c "npx playwright test … >> log 2>&1"`, and the control that proved the
+repair was the clean run of `238a` itself.
+
+### What the rows had to be told about frames and pages
+
+Two smaller things cost a reading each. `238a` row 1 first failed because `teacher.one@kmitl.ac.th`
+is on the second page of the account list: the row searched for nothing and read a table the
+account was not in. The repair is a search in `beforeEach`, which also makes the three accounts the
+row's own arrival assertion (#129).
+
+The negative rows then failed with `frames sampled … Received: 1`. A sentence that is never said
+cannot be waited for, so the row has to **watch** rather than wait, and a sampler needs frames to
+sample: `WATCHING_MS = 1_500` is there so the sampler has something to count, and the comment beside
+it says what #52 requires — the wait decides nothing, because `neverSaid` asserts the frame count
+and would be red if the window were empty.
+
+### The census the fix was measured against
+
+`frontend/scripts/sentences-after-a-move.js` reads `success sentences 24 · after an await 24 ·
+enclosed 19 (opened 16 · position 3) · marked 5` after the fix, where before it read
+`opened 19 · position 3`. The orphaned `// sentence-after-a-move:` marker in `Plos.save` came out:
+the gap it documented was closed by this ticket, and a marker that outlives its gap is an exemption
+(#93, #141). The five sites that keep their markers are earlier decisions, each dated at its own
+site — `Offerings.js` is the owner's answer of 1 October 2026 that the sentence belongs to the
+command the person gave and not to the panel they are now looking at (#143), which is **another
+question**, not this one (#196).
+
+### What the review found, and what each finding turned out to be
+
+Two reviewers read the change. Three of their five findings held, and the two that did not held
+something else.
+
+The standards axis saw that the comment beside the hand-over said *the shape the seven
+administration screens carry* while those screens key on the live ref — `readOf(onPage.current)` —
+and this one keys on the render's own `readOf(page, filters)`. That difference is real, and the
+conclusion drawn from it — that the seven screens therefore hold the defect this ticket just
+fixed — is not: each of them hands `<Pager>` `busy={busy}`, and `components/Pager.js` turns that
+into `disabled` on both buttons, so the page cannot move while a write is out and the live ref is
+the render's value there. `Users.js` does not hand it over, which is #210's **first** question,
+still open, and that is exactly why the render's coordinates are the only reading of the list this
+save was about (#207). So the finding bought a correction to the prose and not to the code (#130),
+and the prose now says which reader each screen uses and what decides it. **A reviewer's finding
+can be right about the difference and wrong about its consequence** — #205's rule for a
+reviewer's name met one layer along, where what settles it is a third file neither screen
+mentions.
+
+The same axis found `// Whether it drew, for a handler that has a sentence to say - #203` left
+standing above `return true` on both screens, and it was right: `load(() => current)` inside the
+effect is the only caller left, and it discards the answer, so `true`, `false` and `HANDED_ON` are
+**structurally unreachable** here rather than untested — the second of #102's three answers, and
+the comment now says so. The shape stays because it is the ten administration screens' own and
+because `SubjectStudents.js`'s `reload` really does compare the answer with `HANDED_ON`.
+
+The spec axis found the thing worth a ticket. `PloForm` closes its หลักสูตร field with
+`disabled={busy || editing}`, so on **add** it is open and `draft.program_id` need not be the
+curriculum the table is on — a shape `parentPool` was built for on purpose. `load` asks
+`listPlos({ program_id: program })`, so after a save into another curriculum the key matches, the
+read lands, and *บันทึกข้อมูลเรียบร้อยแล้ว* stands over a list that does not hold the row just
+saved. It is not a regression — the sentence stood over that same list before this ticket, said
+unconditionally — and **the owner's rule cannot answer it, because the read the sentence talks
+about is never ordered**: the screen does not read the other curriculum, so keying on
+`draft.program_id` to the letter would leave a successful save silent. That is a state the system
+can carry, so it is a question and not a void one (#232), and it is the owner's: four options, each
+with its price, and no row presses the sequence today, so whichever answer comes back owes one
+(#48 for *keep it as today*).
+
+Both of those questions are tickets rather than paragraphs (#119), which is the finding the spec
+axis made about this very sheet: §#238 of the `19` sheet had written *this has to become a ticket*
+about #241's reversed fourth arm, and no such ticket existed when the reviewer looked.
