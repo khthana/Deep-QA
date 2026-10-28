@@ -15344,3 +15344,65 @@ person walks it, with a first paragraph saying what landed and when; its table i
 measurement and not a prediction about today. #222 itself is untouched: the ceiling at
 `backend/lib/paging.js`, which would reach all eleven callers, is still the owner's question, and
 closing a ticket does not answer one.
+
+## #236 — the two differences that were one difference and one convention, and the record a serial run had written short
+
+#219 asked on 24 October 2569 whether `pressPager`, `stepBack` and `awayAndBack`, written out in
+three spec files, should be merged. #210 had deleted all three the day after that ticket was
+written, so the question was closed void — and what stood in that place instead was
+`askToRemove`, the same three files, letter for letter apart from two things. The ticket named
+them: the dismissal of the box, and what `gate` is told to do with the answer. Its own cost line
+was the sweep of five mutation files.
+
+### The ticket's two differences, measured
+
+The repo had already answered the species. #219's own second shape merged `dismiss` because no
+row's claim lives in the leaving of a box (#171), and #196 says a rule already applied to this very
+screen is a decision rather than a precedent to weigh. So the question was not *may this be
+merged* but *which of the two differences is the instrument's and which is the row's* — and that
+is read off the files, not argued.
+
+There is no `expect` anywhere in the three copies. Every claim the five calling rows make is read
+after the hold is opened or beside it. So the asking is an arrangement, and `removeDepartment`,
+already in `e2e/support/departments-screen.js`, is a different instrument rather than the same one:
+it asserts `status() === 200` and waits for the list, which is a claim it holds itself.
+
+The first of the two differences then dissolved. `dismiss` was not a property of three
+implementations: **three of the five rows already wrote it at their own call site**, `207a` had
+folded it inside, and the fifth never dismisses at all — so after the merge four of the five do. Moving that one line out to its one caller leaves the shared asking with no
+wait of its own, which is exactly what #81 is about — a wait put in a shared helper stops being
+one row's claim and becomes every caller's premise. The option nobody had listed was to take the
+convention the majority of the call sites already used.
+
+The second difference is real and is the row's: it is `gate`'s own fourth argument, so it is passed
+through under `gate`'s own name rather than renamed. `206a`'s inverted `{ writes = false }`, which
+had to be read twice to see which way round it went, is gone; the file holds `ANSWERED_HERE` for
+the two rows that answer at the route, and the row that lets the write through passes nothing. The
+long dated #209 note that explained why that one row is the exception went to **that row's call
+site**, because it is a fact about one row's fixture and not about the instrument (#124).
+
+### The merge is read by breaking it, not by the rows staying green
+
+Three green files prove that nothing fell over. What has to be measured is that each row's way in
+really goes through the shared instrument (#196, #203, #207). Removing the confirm press from the
+helper turned **all five calling rows red** — three in the combined run and the other two run
+one at a time, because `mode: 'serial'` skips what follows a red (#67). The `Users.js` row of `208a`
+stayed green, correctly: it does not ask to remove a department.
+
+### The record of a serial run is short by the rows it skipped
+
+The ticket's price was six mutants, not seven: `207:refnevermoves` is `SUPERSEDED`, a withdrawn
+record the harness refuses to apply, so the file the ticket counted has nothing live in it. A
+ticket's cost line is a claim like its numbers (#77), and this one was measurable before it was
+paid.
+
+Reading the six per row rather than against a total (#203) found something that was not about this
+ticket at all. `206:sentenceofthepagetheyleft` killed `206a` row 1 **and row 3**, where the sweep
+record of 19 October 2569 lists only the first row. The probe that dates it is #103's and #207's:
+stash the merge out of the tree with the mutant still applied, run that row by its title — red
+there too, so the kill is pre-existing. The reason the record is short is `serial` again: row 1 died
+first, rows 2 and 3 were skipped and never run alone, and row 3 had arrived on 14 October 2569,
+five days before that sweep. **A sweep record written off a `serial` run names the rows that ran,
+and reads exactly like a list of the rows the mutant kills.** The old table was not edited, being
+the record of what was measured that day; a dated paragraph beside it says what a run today returns
+(#54).

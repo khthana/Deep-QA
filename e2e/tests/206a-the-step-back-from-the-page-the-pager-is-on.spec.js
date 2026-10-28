@@ -5,8 +5,8 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
-const { gate, isGet, isWrite } = require('../support/gate');
-const { dismiss, panel } = require('../support/confirm-dialog');
+const { gate, isGet } = require('../support/gate');
+const { dismiss } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const { keysOn, next, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
 const departments = require('../support/departments-screen');
@@ -130,45 +130,18 @@ test.afterEach(async ({ page }) => {
   }
 });
 
-/** What the row presses, and what the screen says when the removal lands. */
-const REMOVE = 'ลบ';
-const CONFIRM = 'ลบภาควิชา';
+/** What the screen says when the removal lands. */
 const REMOVED = 'ลบภาควิชาเรียบร้อยแล้ว';
 
 const pageOf = request => new URL(request.url()).searchParams.get('page');
 
 /**
- * Asks to remove the one row of the last page, with the answer held at the
- * route so it reaches no database - what the rows are about is what the screen
- * does when a removal succeeds, not what it removed (#146), and nothing has to
- * be put back.
- *
- * 19 ตุลาคม 2569, #209 - `writes` is the exception that sentence cannot
- * cover. Since the owner's answer the step back is the server's to decide, from
- * the `total` of the read that follows, so a removal answered by this file
- * leaves the page exactly as full as it was and the screen is right not to move
- * anybody. That is #209's own second reading met in this fixture: the behaviour
- * the old code gave here came from the count of the list *drawn*. The row whose
- * claim is the step back therefore lets the write through - `gate` with neither
- * `success` nor `refusal` fulfils with the server's own answer - and puts
- * nothing back, because `threePagesEndingIn` counts what is in the table and
- * tops it up with the codes it has written before (#132).
+ * The answer two of these three rows hold the removal with: fulfilled by the
+ * route, so it reaches no database - what those rows are about is what the
+ * screen does when a removal succeeds, not what it removed (#146), and nothing
+ * has to be put back. The asking itself is shared (#236).
  */
-async function askToRemove(page, code, { writes = false } = {}) {
-  await departments.departmentRow(page, code).getByRole('button', { name: REMOVE }).click();
-  // The hold names the one id: `^.../[^/]+$` would take the import panel's own
-  // `POST .../import` as well, and the way in both rows use is an import
-  // (measured on 19 ตุลาคม 2569, the read it starts never arriving).
-  const write = await gate(
-    page,
-    new RegExp(`^${departments.API}/${code}$`),
-    isWrite,
-    writes ? {} : { success: {} },
-  );
-  await panel(page).getByRole('button', { name: CONFIRM }).click();
-  await write.sent;
-  return write;
-}
+const ANSWERED_AT_THE_ROUTE = { answer: { success: {} } };
 
 /**
  * The move that survives #210, made while the removal is still out: a row
@@ -211,7 +184,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     const last = await keysOn(table);
     expect(last, 'one row on the last page, which is what a step back needs').toHaveLength(1);
 
-    const write = await askToRemove(page, last[0]);
+    const write = await departments.askToRemove(page, last[0], ANSWERED_AT_THE_ROUTE);
     await dismiss(page);
     // The premise, the other way up since #210: the pager is dead while the
     // removal is out, so the move below is not made with it. Asserted rather
@@ -261,7 +234,18 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     expect(last).toHaveLength(1);
 
     removed = last[0];
-    const write = await askToRemove(page, last[0], { writes: true });
+    // 19 ตุลาคม 2569, #209 - the exception the paragraph above `ANSWERED_AT_THE_ROUTE`
+    // cannot cover, and the reason this row passes no answer. Since the owner's
+    // answer the step back is the server's to decide, from the `total` of the
+    // read that follows, so a removal answered at the route would leave the page
+    // exactly as full as it was and the screen would be right not to move
+    // anybody. That is #209's own second reading met in this fixture: the
+    // behaviour the old code gave here came from the count of the list *drawn*.
+    // The row whose claim is the step back therefore lets the write through -
+    // `gate` with neither `success` nor `refusal` fulfils with the server's own
+    // answer - and puts nothing back, because `threePagesEndingIn` counts what is
+    // in the table and tops it up with the codes it has written before (#132).
+    const write = await departments.askToRemove(page, last[0]);
     // 19 ตุลาคม 2569, #209 - two reads where this row used to see one, and the
     // claim below is untouched. The owner's answer took the step back off this
     // client: the removal re-reads the page the person is standing on, and the
@@ -325,7 +309,7 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
     const last = await keysOn(table);
     expect(last, 'one row on the last page, which is what a step back needs').toHaveLength(1);
 
-    const write = await askToRemove(page, last[0]);
+    const write = await departments.askToRemove(page, last[0], ANSWERED_AT_THE_ROUTE);
     await dismiss(page);
     // The move, with the list it asks for held: the screen has been moved to
     // page one and the rows in front of the person are still the last page's.

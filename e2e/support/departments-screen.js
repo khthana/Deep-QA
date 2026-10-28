@@ -1,6 +1,8 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
+const { panel } = require('./confirm-dialog');
+const { gate, isWrite } = require('./gate');
 const { importCsv, downloadTemplate, headerOf, csv } = require('./import-panel');
 const { untilDrawn, reading } = require('./pager');
 const { openAt } = require('./navigation');
@@ -117,6 +119,49 @@ async function removeDepartment(page, departmentId) {
   ]);
   expect(answer.status()).toBe(200);
   return answer;
+}
+
+/**
+ * Asks to remove one row with the write held at the route, and hands back the
+ * hold: presses the row's ลบ, holds the one `DELETE`, presses ลบภาควิชา in the
+ * box, and waits for the request to have left the browser.
+ *
+ * Three spec files wrote this out, letter for letter apart from two things
+ * (#236, 28 ตุลาคม 2569). It is shared for the reason `dismiss` is: no row's
+ * claim lives in the asking. There is no assertion in here, and every claim
+ * these rows make is read after the hold is opened or beside it (#171). What a
+ * caller is handed is the hold itself, so the window stays the caller's.
+ *
+ * `answer` is `gate`'s own fourth argument, passed through rather than renamed,
+ * because what it decides belongs to the row: left out, the server really
+ * removes the row; `{ success: {} }` answers the screen without the database
+ * being written, which is what a row whose page must stay exactly as full as it
+ * was needs - and nothing has to be put back (#146, #132).
+ *
+ * The id is interpolated into a `RegExp`, which is a claim that it holds no
+ * metacharacters (#231). Every code this screen can be given is drawn from
+ * `ALPHABET` below, letters and digits only, so the claim holds today; a code
+ * that could carry a `(` or a `.` would need this built with `escapeRegExp`.
+ *
+ * The pattern names the one id and ends with `$`. `^.../[^/]+$` would take the
+ * import panel's own `POST .../import` as well, and the way in several of these
+ * rows use is an import (measured 19 ตุลาคม 2569, the read it starts never
+ * arriving); naming the id also means a second actor's removal of another row
+ * is not routed at all.
+ *
+ * It does **not** put the question away. Four of the five rows that call it
+ * dismiss the box themselves right afterwards, with the answer still held -
+ * which is a press of their own, and dismissing cancels nothing that has left
+ * the browser (#217) - and the fifth reads what it reads with the box where it
+ * is. A wait put in here would be every caller's premise rather than one row's
+ * claim (#81).
+ */
+async function askToRemove(page, departmentId, { answer } = {}) {
+  await departmentRow(page, departmentId).getByRole('button', { name: 'ลบ' }).click();
+  const write = await gate(page, new RegExp(`^${API}/${departmentId}$`), isWrite, answer);
+  await panel(page).getByRole('button', { name: 'ลบภาควิชา' }).click();
+  await write.sent;
+  return write;
 }
 
 /**
@@ -273,6 +318,7 @@ module.exports = {
   statusOf,
   listTable,
   removeDepartment,
+  askToRemove,
   ALPHABET,
   threePagesEndingIn,
   importOneRow,

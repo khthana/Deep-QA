@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { gate, isWrite } = require('../support/gate');
-const { dismiss, panel } = require('../support/confirm-dialog');
+const { dismiss } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const { keysOn, next, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
 const departments = require('../support/departments-screen');
@@ -101,9 +101,7 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** What the first row presses, and what the screen says when the removal lands. */
-const REMOVE = 'ลบ';
-const CONFIRM = 'ลบภาควิชา';
+/** What the screen says when the removal lands. The asking is shared (#236). */
 const REMOVED = 'ลบภาควิชาเรียบร้อยแล้ว';
 
 /** The row the table draws between asking and answering - what row 1 is about. */
@@ -114,19 +112,6 @@ const SUSPEND = 'ระงับ';
 const RESTORE = 'เปิดใช้งาน';
 
 const pageOf = request => new URL(request.url()).searchParams.get('page');
-
-/**
- * Asks to remove one row, with the `DELETE` held at the route until the row
- * lets it go - and really answered, because what the row is about is the list
- * the screen draws after a removal that happened.
- */
-async function askToRemove(page, code) {
-  await departments.departmentRow(page, code).getByRole('button', { name: REMOVE }).click();
-  const write = await gate(page, new RegExp(`^${departments.API}/${code}$`), isWrite);
-  await panel(page).getByRole('button', { name: CONFIRM }).click();
-  await write.sent;
-  return write;
-}
 
 /**
  * The read the person can still start while the removal is out, which since
@@ -170,7 +155,7 @@ test.describe('ภาควิชา — the removal that moves nobody (Departme
       'three rows on the last page, which is what makes the removal take the branch that moves nobody',
     ).toHaveLength(3);
 
-    const write = await askToRemove(page, last[0]);
+    const write = await departments.askToRemove(page, last[0]);
     // The premise of the way in, asserted rather than assumed (#51) and the
     // other way up since #210: this screen's `Pager` is given `busy`, so the
     // control the row used until 19 ตุลาคม 2569 is dead for as long as the

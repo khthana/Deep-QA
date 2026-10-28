@@ -4,8 +4,7 @@ const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { gate, isWrite } = require('../support/gate');
-const { dismiss, panel } = require('../support/confirm-dialog');
+const { dismiss } = require('../support/confirm-dialog');
 const { hold } = require('../support/hold');
 const { keysOn, previous, reading, toLastPage, untilDrawn } = require('../support/pager');
 const departments = require('../support/departments-screen');
@@ -120,31 +119,7 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** What the net presses. The sentence the removal says is `206a`'s claim. */
-const REMOVE = 'ลบ';
-const CONFIRM = 'ลบภาควิชา';
-
 const pageOf = request => new URL(request.url()).searchParams.get('page');
-
-/**
- * Asks to remove one row, with the answer held at the route until the row lets
- * it go - and really answered, because what the rows are about is the page the
- * screen lands on after a removal that happened.
- *
- * The hold names the one id, so a second actor's removal of the other row is
- * not routed at all.
- */
-async function askToRemove(page, code) {
-  await departments.departmentRow(page, code).getByRole('button', { name: REMOVE }).click();
-  const write = await gate(page, new RegExp(`^${departments.API}/${code}$`), isWrite);
-  await panel(page).getByRole('button', { name: CONFIRM }).click();
-  await write.sent;
-  // The question is put away with the answer still held at the route - what
-  // the net needs and is not about: a person reads the pager with the box gone
-  // (#217), and dismissing cancels nothing that has left the browser.
-  await dismiss(page);
-  return write;
-}
 
 test.describe('ข้อมูลภาควิชา (Departments.js)', () => {
   test.beforeEach(async ({ page }) => {
@@ -185,7 +160,13 @@ test.describe('ข้อมูลภาควิชา (Departments.js)', () => 
       'the premise: the last page, so the end rule is quiet on ก่อนหน้า',
     ).toBeEnabled();
 
-    const write = await askToRemove(page, last[0]);
+    const write = await departments.askToRemove(page, last[0]);
+    // The question is put away with the answer still held at the route - what
+    // the net needs and is not about: a person reads the pager with the box gone
+    // (#217), and dismissing cancels nothing that has left the browser. It is
+    // written here and not inside the shared asking, where one row's press would
+    // be every caller's premise (#81, #236).
+    await dismiss(page);
 
     // The control the three rows used, read with the question already put away.
     await expect(previous(page), 'ก่อนหน้า while the removal is out').toBeDisabled();

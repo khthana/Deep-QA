@@ -678,6 +678,12 @@ citation.
   measurement, which reads exactly like a tree that stopped pressing, so the count is the tell
   (#208); and *which row is pressing* is asked of the runner, a stack having lost its caller
   across the first `await`. (#219)
+- **A ticket that names two differences between copies can be naming one difference and one
+  convention** — the convention is found by asking which callers already write that line at
+  their own call site, and where most of them do, taking it out of the shared instrument is what
+  makes the merge safe rather than a wait every caller inherits — while a sweep record written
+  off a `serial` run names the rows that *ran*, which reads exactly like the rows the mutant kills
+  (#67, #103, #203). (#81, #171, #196, #236)
 - **A census is evidence about the property it counted** — count by the mechanism, not by what the
   screen draws: the species is *is there a settle point between the request and the read*, not
   *which kind of screen is it*. The line that looks like it belongs to another helper may be the
