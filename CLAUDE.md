@@ -77,6 +77,11 @@ citation.
   somebody else's grep to somebody else's measurement. (#241)
 - **A ticket's reason for being *untestable* is a claim like its numbers** — measure whether the
   situation can be built; do not reason about it. (#141)
+- **And a ticket's prescribed *fixture* is one too** — #141 from the other side: a ticket that says
+  the situation can be built has named a way in, and the way it names can be one that builds
+  nothing while another, which it does not know about, works. The two cost differently — #141's
+  wrong reason leaves a situation unmeasured, this one leaves a row green for nothing — so measure
+  the arrangement before writing the row (#203). (#245)
 - **A ticket's reason for *not deciding itself* is a claim like its numbers** — the sentence that
   makes it an owner's question rather than a task, and the rule such a reason invokes is usually
   real: what it licenses is the measurement, not the conclusion. (#197)

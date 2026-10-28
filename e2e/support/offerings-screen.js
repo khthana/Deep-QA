@@ -58,6 +58,39 @@ const yearFilter = page => page.getByPlaceholder('ทุกปี');
 const semesterFilter = page => page.locator('select:has(option:text-is("ทุกภาค"))');
 
 /**
+ * The list's own curriculum filter, drawn only when more than one is reached.
+ *
+ * A committee grant's scope is one curriculum, so for every account the seed
+ * holds this control is a `<span>` and not a select — which is what `openSubject`
+ * below leans on. `234a` row 4 reaches the select by granting `PROG_MANAGER` at
+ * a **department**, a state `assignable` permits (28 ตุลาคม 2569).
+ *
+ * Located by `ทุกหลักสูตร`, the one option nothing else on the screen carries:
+ * the ภาคการศึกษา filter has a blank option too, so `option[value=""]` finds two.
+ */
+const programFilter = page => page.locator('select:has(option:text-is("ทุกหลักสูตร"))');
+
+/** Narrows the list to one curriculum through the screen's own filter. */
+async function filterToProgram(page, programId) {
+  await Promise.all([waitForList(page), programFilter(page).selectOption(programId)]);
+}
+
+/**
+ * Waits for the form's read of what may be opened in one curriculum.
+ *
+ * Matched by the request and never by what the answer turns out to be, so a row
+ * asking *which curriculum was this read about* fails at its own `expect` rather
+ * than at the timeout a value-filtered waiter would die at (#116).
+ */
+function waitForOfferable(page) {
+  return page.waitForResponse(
+    answer =>
+      new URL(answer.url()).pathname === `${API}/subjects` &&
+      answer.request().method() === 'GET',
+  );
+}
+
+/**
  * Narrows the list to one term.
  *
  * Both controls refetch, so both are awaited: setting the year and then reading
@@ -219,6 +252,9 @@ module.exports = {
   openOfferings,
   yearFilter,
   semesterFilter,
+  programFilter,
+  filterToProgram,
+  waitForOfferable,
   filterToTerm,
   offeringRow,
   openForm,

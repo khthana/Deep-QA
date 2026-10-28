@@ -15406,3 +15406,73 @@ five days before that sweep. **A sweep record written off a `serial` run names t
 and reads exactly like a list of the rows the mutant kills.** The old table was not edited, being
 the record of what was measured that day; a dated paragraph beside it says what a run today returns
 (#54).
+
+## #245 — the fourth copy's row, and the fixture the ticket prescribed that could not build the situation
+
+#234's fix landed in four forms on 27 October 2569 and its spec file held three rows. The fourth
+copy, `components/offerings/OfferingForm.js`, had no row and no mutant, which made it *untested*
+rather than *structurally unreachable* (#102's three answers) — and the deferral was written in the
+tracker rather than in a paragraph, which is what #119 is about. #245 was that ticket.
+
+It also prescribed its own fixture, in a sentence both the spec file's `§what this file does not
+measure` and the mutation file's header had copied: *reaching that form needs a second committee
+grant made over HTTP as `198a`'s fixture does, on top of the retirement*. The screen is
+`PROG_MANAGER`'s alone and a committee grant's scope is one curriculum, so no account the seed
+holds ever sees the screen's curriculum **filter** at all — `programs.length > 1` is never true,
+the field is drawn as a `<span>`, and #234's situation cannot be arranged.
+
+### The prescribed fixture builds nothing
+
+A probe measured it before a row was written. `GET /api/offerings/programs` is answered from
+`reachablePrograms(pool, req.auth.acting.scope_id)` — **the one grant being worn**, not the union
+of what the person holds. So a second committee grant at a second curriculum is a second shell
+showing one curriculum, the filter is still not drawn, and the fixture the ticket named would have
+produced a row that passes against the unfixed code: nothing to measure, bought for free (#203).
+
+What draws the filter is a `PROG_MANAGER` grant whose **scope is a department**. `assignable`
+permits it — it asks that the role be no more senior than the administrator's and that the scope
+exist, be live and be in reach, and it does not ask that the scope's kind match the role — so the
+probe got `201` and then two curricula back. And nothing has to be pressed to wear it: `allRoles`
+orders `BY r.priority ASC, ur.scope_id ASC`, both grants are `PROG_MANAGER`, so `05` sorts before
+`0501` and `actingFrom` wears the department grant by default. It is a state an administrator can
+put somebody in through the real screens, which is what separates it from a state only the seam can
+build (#47).
+
+So **a ticket's prescribed fixture is a claim like its numbers**, and it is #141's rule read from
+the other side. #141 says a ticket's reason for being *untestable* is a claim: measure whether the
+situation can be built. This is a ticket that said the situation *can* be built and named the way —
+and the way it named was one that cannot build it, while another, which the ticket did not know
+about, can. The two failures are not symmetric in what they cost: #141's wrong reason leaves a
+situation unmeasured, and this one leaves a row that is green for nothing.
+
+### The defect's shape there, and the direction the row had to reverse
+
+The three sibling forms draw the retired option and leave it **enabled** while the field holds it,
+so the person reads a form that looks complete and is refused at บันทึก. `OfferingForm` draws its
+picker from `usable` alone, so a retired curriculum there is a value **no option can show**: before
+the fix the field read out the name of a curriculum still running while the draft held the closed
+one, and `listOfferableSubjects` was called with a curriculum the server refuses. Two claims and
+not one (#66), ordered as the mutant leads (#88): the request first, the drawing that follows from
+it second.
+
+The row closes the **other** curriculum than its three siblings do. `db/seed.js` files its one
+`program_subjects` row under `0501`, so `0501` is the only curriculum whose subject picker can hold
+anything; closing `0503` instead lets the second claim read a subject that is there, rather than an
+empty picker, which is drawn identically whether the form asked about the right curriculum or was
+refused for asking about the wrong one (#164). The waiter is matched by the **request** and never by
+the answer's value, so the row fails at its own `expect` instead of at a timeout (#116).
+
+### What the mutant could not borrow
+
+`offeringfollowstheretiredfilter` is written with its own text rather than the `POOL_CLAUSE` the
+three siblings share: the fourth copy is one expression where they are two, and it holds a
+**curriculum code** where they hold a boolean — which is the rename #234's review had already asked
+for. The name stays referenced by the effect and by its dependency list, so `CI=true` still
+compiles (#101). It kills row 4 alone, at the row's first claim, `Received: "0503"`.
+
+And the four existing mutants were re-swept although nothing touched them: **a spec file that gains
+a row a mutant can reach expires that mutant's count with nothing to report it** — the anchor is
+still exact and the code it edits untouched, so only running it again speaks (#202). All four still
+kill their own row alone; what moved is the number that passed, two to three, which is the
+population and not the measurement. Row 4 stands under all four, which is what four copies should do
+(#83).
