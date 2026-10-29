@@ -192,10 +192,16 @@ MOVED_ANYWAY = (
 )
 
 # #205 - the sentence is said only by the read it is of.
+# #246, 29 ต.ค. 2569 - เล็งใหม่ เพราะคำตอบของเจ้าของงานวันนั้นแยกบล็อกของประโยค
+# เป็นสองกิ่ง ความผิดคงเดิมทั้งก้อน คือวาดแล้วไม่พูดอะไรเลย (#203)
 DREW_READS = (
     "        setData(answer)\n"
     "        if (waiting.current && waiting.current.of === key) {\n"
-    "          setNotice(waiting.current.said)\n"
+    "          if (formShown.current) {\n"
+    "            waiting.current = { ...waiting.current, held: true }\n"
+    "          } else {\n"
+    "            setNotice(waiting.current.said)\n"
+    "          }\n"
     "        }\n"
 )
 DREW_UNSAID = "        setData(answer)\n"

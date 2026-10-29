@@ -146,6 +146,15 @@ export default function SubjectStudents() {
           setPage(lastPage)
           return HANDED_ON
         }
+        // held-sentence: the deferral the owner settled on 29 ตุลาคม 2569 (#246) is
+        // not here, because no form is drawn in place of this list. The return draws the
+        // table under `{data && (` and nothing replaces it: the writes of this screen -
+        // *เพิ่มนักศึกษาเข้าตอนเรียน* and the removal - are a dialog **over** the list, so a read
+        // that lands while one is open has drawn the very thing its sentence is about.
+        // Measured 29 ตุลาคม 2569 (#246). The day this screen draws a form in place of
+        // the table, this marker is an exemption and nothing will say so (#93, #141):
+        // what it exempts is the sentence below, and the three parts of the deferral go
+        // in as they did on the other nine.
         setData(answer)
         if (waiting.current && waiting.current.of === key) {
           setNotice(waiting.current.said)

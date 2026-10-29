@@ -129,7 +129,11 @@ export default function Programs() {
         }
         setData(answer)
         if (waiting.current && waiting.current.of === key) {
-          setNotice(waiting.current.said)
+          if (formShown.current) {
+            waiting.current = { ...waiting.current, held: true }
+          } else {
+            setNotice(waiting.current.said)
+          }
         }
       }
       // Whether it drew, for a handler that has a sentence to say - #203. It
@@ -152,7 +156,10 @@ export default function Programs() {
         // sentence it was given has just been re-keyed for the read it handed
         // to, so clearing here would throw away a sentence nothing else will
         // say - #209.
-        if (!handedOn) waiting.current = null
+        // #246, 29 ตุลาคม 2569 - unless it is held for a form to close,
+        // the one case where a landed read has drawn nothing to put a sentence
+        // over. The effect beside `formShown` owns a held one from here on.
+        if (!handedOn && !waiting.current?.held) waiting.current = null
       }
     }
     // `generation` is in this list and read nowhere in the body on purpose:
@@ -179,6 +186,48 @@ export default function Programs() {
   useEffect(() => {
     onScreen.current = load
   }, [load])
+
+  /**
+   * Whether a form is drawn in place of the list, readable after an await -
+   * #246, 29 ตุลาคม 2569.
+   *
+   * The return below draws the form **or** the table and never both, so a read
+   * that lands while one is open has drawn nothing a waiting sentence is about,
+   * and the sentence waits for a list to be true of. `load` cannot read
+   * `editing` itself: in its dependency list it would rebuild the loader at
+   * every press of the opener and the effect above would fetch the list again
+   * for each one, and out of the list the closure would see the first render's
+   * value (#201). So it is mirrored into a ref the way `onScreen` mirrors
+   * `load` just above. `frontend/src/pages/Plos.js` carries the measurement the
+   * owner's answer rests on and what this ref is *of* (#185, #207).
+   */
+  const formShown = useRef(false)
+  useEffect(() => {
+    formShown.current = Boolean(editing)
+  }, [editing])
+
+  /**
+   * The held sentence, said when the list comes back - #246.
+   *
+   * A held sentence whose read is no longer the one the screen is on is owed to
+   * nobody and goes without being said, which is the same half of the key rule
+   * `load` applies above (#205). That clause is **structurally unreachable**
+   * here on 29 ตุลาคม 2569 and is written for the day it is not: the pager
+   * and the filters are drawn in the branch the form replaces, so nothing can
+   * move the key while a form is open. A control drawn outside that branch
+   * would move it, and that is the condition that re-dates this.
+   *
+   * The clearing here is the whole of it, the `finally` in `load` having stopped
+   * clearing a held one: a sentence nothing clears is not a sentence that is
+   * lost, it is one the next read says over a list it is not about (#205, #137).
+   */
+  useEffect(() => {
+    if (editing) return
+    const held = waiting.current
+    if (!held?.held) return
+    if (held.of === readOf(page)) setNotice(held.said)
+    waiting.current = null
+  }, [editing, page])
 
   /**
    * The page the pager is on now - #206. A removal steps the page back only

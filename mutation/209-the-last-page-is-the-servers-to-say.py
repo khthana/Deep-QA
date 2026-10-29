@@ -114,9 +114,12 @@ MUTANTS = {
         '      }\n'
         '      const reader = onScreen.current\n'),
     # ล้างประโยคที่เพิ่งถูกติดกุญแจใหม่ให้การอ่านที่กำลังจะวาด
+    # #246, 29 ต.ค. 2569 - เล็งใหม่ เพราะคำตอบของเจ้าของงานวันนั้นเพิ่มข้อที่สองเข้าไป
+    # ในบรรทัดนี้ ความผิดคงเดิมคือ **ล้างทั้งที่การอ่านส่งหน้าต่อ** จึงเก็บครึ่งของ `held`
+    # ไว้และถอดเฉพาะ `!handedOn` ออก การถอดทั้งบรรทัดจะเป็นมัตแตนต์คนละตัว (#203)
     'clearedonthehandon': ('departments',
-        '        if (!handedOn) waiting.current = null\n',
-        '        waiting.current = null\n'),
+        '        if (!handedOn && !waiting.current?.held) waiting.current = null\n',
+        '        if (!waiting.current?.held) waiting.current = null\n'),
 }
 
 main(FILES, MUTANTS)

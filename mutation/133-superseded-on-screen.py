@@ -197,16 +197,27 @@ MUTANTS = {
     # #238, 28 ต.ค. 2569 - ยามเป็นบล็อกแล้ว เพราะประโยคที่การเขียนส่งต่อมาถูกพูดใต้
     # `setPlos` ตามคำตอบของเจ้าของงาน รูปเดียวกับ `scoresstalewins` ข้างล่าง ข้อเดิม:
     # คำตอบเก่าต้องไม่ชนะ · `isCurrent` ยังถูกอ้างถึงที่ `catch` กับ `finally`
+    # #246, 29 ต.ค. 2569 - เล็งใหม่ เพราะคำตอบของเจ้าของงานวันนั้นแยกบล็อก
+    # ของกุญแจเป็นสองกิ่ง ความผิดคงเดิมทั้งก้อน คือถอด `isCurrent()` ออก คำตอบเก่าจึงชนะ
+    # (#203 - การเล็งใหม่ที่ซื่อสัตย์คือการรักษาความผิดไว้ ไม่ใช่การหาบรรทัดให้เจอ)
     "plosstalewins": ("plos",
         "      if (isCurrent()) {\n"
         "        setPlos(rows)\n"
         "        if (waiting.current && waiting.current.of === program) {\n"
-        "          setNotice(waiting.current.said)\n"
+        "          if (formShown.current) {\n"
+        "            waiting.current = { ...waiting.current, held: true }\n"
+        "          } else {\n"
+        "            setNotice(waiting.current.said)\n"
+        "          }\n"
         "        }\n"
         "      }\n",
         "      setPlos(rows)\n"
         "      if (waiting.current && waiting.current.of === program) {\n"
-        "        setNotice(waiting.current.said)\n"
+        "        if (formShown.current) {\n"
+        "          waiting.current = { ...waiting.current, held: true }\n"
+        "        } else {\n"
+        "          setNotice(waiting.current.said)\n"
+        "        }\n"
         "      }\n"),
     # แผงที่มาของ PLO ที่ถูกกดแทนที่ไปแล้ว มาถึงทีหลังแล้วชนะ
     "intakedrillstalewins": ("intake",

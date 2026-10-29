@@ -146,11 +146,24 @@ export default function Plos() {
       // is about is on the screen (#205, #238). The key is the curriculum,
       // which is the whole coordinate of a read here. The comment is above the
       // block and not inside it so that a mutant can quote the block without
-      // quoting a comment (#121).
+      // quoting a comment (#121) - which is why #246's paragraph is here too,
+      // and not beside the branch it is about.
+      //
+      // #246, 29 ตุลาคม 2569 - said now, or held until the list is drawn
+      // again. A form is drawn in place of the table, so a read that lands while
+      // one is open has drawn nothing this sentence is about; the owner's answer
+      // of that day is that the person reads it when the form closes, with the
+      // list under it. `held` is what stops the `finally` below throwing it
+      // away, and the effect beside `formShown` is what says it and what clears
+      // it.
       if (isCurrent()) {
         setPlos(rows)
         if (waiting.current && waiting.current.of === program) {
-          setNotice(waiting.current.said)
+          if (formShown.current) {
+            waiting.current = { ...waiting.current, held: true }
+          } else {
+            setNotice(waiting.current.said)
+          }
         }
       }
       // Whether it drew, for a handler that has a sentence to say - #203. It
@@ -175,7 +188,12 @@ export default function Plos() {
         // longer the one on the screen - #205. Inside `isCurrent()` on purpose:
         // a read the screen has already replaced must not throw away a sentence
         // handed over after it was sent.
-        waiting.current = null
+        //
+        // #246, 29 ตุลาคม 2569 - unless it is held for a form to close, the
+        // one case where a landed read has drawn nothing to put a sentence
+        // over. The effect beside `formShown` owns a held one from here on,
+        // including when the curriculum has moved and it is owed to nobody.
+        if (!waiting.current?.held) waiting.current = null
       }
     }
   }, [program, report])
@@ -219,6 +237,72 @@ export default function Plos() {
   useEffect(() => {
     onScreen.current = load
   }, [load])
+
+  /**
+   * Whether a form is drawn in place of the list, readable after an await -
+   * #246, 29 ตุลาคม 2569.
+   *
+   * `editing` is the whole truth about it: the return below draws `PloForm`
+   * **or** the table and never both. What `load` cannot do is read that state -
+   * in its dependency list it would rebuild the loader at every press of
+   * เพิ่มผลการเรียนรู้ and the effect above would fetch the list
+   * again for each one, and out of it the closure would see the first render's
+   * value (#201). So it is mirrored into a ref the way `onScreen` mirrors
+   * `load` just above (#133, #208).
+   *
+   * The mirror cannot be late for the question it is asked. A press of the
+   * opener commits before any answer it could be racing arrives, an answer
+   * being a round trip and a commit a task; and a mirror that was late would
+   * only say the sentence where it is said today, which is the behaviour this
+   * replaces rather than a new harm.
+   *
+   * What this ref is *of* is the screen and not a read, so none of #185's,
+   * #201's or #207's key rules reach it: it is asked *is anything drawn in
+   * place of the list now*, a question with no coordinate.
+   */
+  const formShown = useRef(false)
+  useEffect(() => {
+    formShown.current = Boolean(editing)
+  }, [editing])
+
+  /**
+   * The held sentence, said when the list comes back - #246, the owner's answer
+   * of 29 ตุลาคม 2569 to what #238's rule ก left behind here.
+   *
+   * Rule ก binds a sentence to the read that draws what it is about, and the
+   * curriculum is the whole coordinate of a read on this screen (#185), so a
+   * form opening changes nothing about *which* read that is: the letter of the
+   * rule said *say it*, and #241's fourth arm measured it being said over a
+   * form on 28 ตุลาคม 2569. Nothing in the mechanism was wrong (#196 - what
+   * used to silence it was `load` being called afresh and clearing the sentence
+   * on the way, an inherited mechanism and not a decision), and the question of
+   * what the person should read was the owner's (`docs/06` §Out of Scope).
+   *
+   * The owner's answer is that the letter is not enough, and the measurement
+   * that made it a question rather than a preference is that the form is drawn
+   * **in place of** the list on all nine screens of this family: the read
+   * landed and drew nothing the sentence is about, so there is no list behind
+   * the form for it to be true of. It waits for one.
+   *
+   * A held sentence whose curriculum is no longer the one on the screen is owed
+   * to nobody and goes without being said - the same half of the key rule
+   * `load` applies above (#205). That clause is **structurally unreachable**
+   * here on 29 ตุลาคม 2569, and is written for the day it is not: the
+   * curriculum filter is drawn in the branch the form replaces, so nothing can
+   * move `program` while the form is open and no row can build the situation. A
+   * filter drawn outside that branch would move it, and that is the condition
+   * that re-dates this. The clearing here is the whole of it, the
+   * `finally` in `load` having stopped clearing a held one: a sentence nothing
+   * clears is not a sentence that is lost, it is one the next read says over a
+   * list it is not about (#205, #137).
+   */
+  useEffect(() => {
+    if (editing) return
+    const held = waiting.current
+    if (!held?.held) return
+    if (held.of === program) setNotice(held.said)
+    waiting.current = null
+  }, [editing, program])
 
   // The curricula in reach, fetched once: what this account covers is a
   // property of the grant and does not change with what is being looked at.

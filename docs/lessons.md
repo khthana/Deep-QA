@@ -15927,3 +15927,83 @@ a record — so the fix is three lines in the evaluator rather than a ticket. `a
 The proof is not that the count reached zero. The instrument's 88 fixtures pass either way, so the
 reading was taken by **breaking a real anchor** — `show%s` to `shoq%s` — and watching three
 `ANCHOR ... 0 matches` lines and exit 1 come back before putting it straight (#141, #124).
+
+## #246 — the sentence that waits for the list it is about
+
+#238's rule ก binds a success sentence to the read that draws what it is about. It landed on
+`Plos.js` on 28 October 2569, and the next day the fourth arm of #241's probe read the other side
+of it: pressing *เพิ่มผลการเรียนรู้* while the removal's reload was still held used to say
+**nothing** — 0 of 345 frames — and now said the removal's sentence over the just-opened form, 216
+frames of it. The ticket was opened as a question, correctly: the mechanism was not wrong. The key
+of a read on that screen is the curriculum and nothing else (#185), so opening a form does not
+change *which* read lands, and the letter of rule ก said *say it*. What used to silence it was
+`load` being called afresh and clearing the sentence on the way — an inherited mechanism, not a
+decision (#196).
+
+**Both of the ticket's own claims were measurable, and both were false.** Its reason for option ก
+was *the sentence is true of the list behind the form* — there is no list behind the form: the
+return of all nine screens of this family is `{editing ? <Form/> : <table/>}`, so the form is drawn
+**in place of** the list and the read that landed drew nothing the sentence is about. The letter of
+the rule was satisfied by a read that drew nothing; what the rule was written for was not. And its
+price for option ข was *one line at every form-open point* — that line already exists at all
+sixteen of them, `setNotice(null)` beside `showing.current = …`, and cannot do the job, because at
+the moment of the press the sentence is in `waiting.current` and not in `notice` (#77: a rule's
+price is paid where the rule's own input is known, which is not always where the ticket asks the
+question).
+
+What the measurement added was a **fourth option the ticket did not list**: defer the sentence
+until the form closes, so that it finally has the list it talks about under it (#204, #128). The
+owner took it.
+
+### Three mutants, and the two that kill the same assertion for different reasons
+
+The two options the owner declined are what the first two mutants are: a declined proposal made to
+run is the only thing that turns *we chose otherwise* into a claim the suite holds (#48).
+`saysitovertheform` is the whole of option ก — the behaviour of the day before — and it is also
+the only way to run the row against unfixed code (#203), dying at `neverSaid` with 92 frames.
+`dropsitwhentheformopens` is option ข at the opener. `clearsaheldsentence` is the inner half of
+the fix, the `finally` clearing every time as it used to. The last two die at the *same*
+assertion, the `toHaveText` after *ยกเลิก*, and they are not one claim counted twice: one says
+*the owner's answer is not option ข* and the other says *the new condition in the `finally` works*
+(#97). No mutant was written for the `formShown` mirror, which would have been a silent twin of
+the first and so would have left its own assertion as unrun as before (#201), and none for the
+`held.of === program` clause, which is **structurally unreachable** on that screen today: the
+curriculum filter is drawn in the branch the form replaces, so nothing can move `program` while a
+form is open. That is said with a date and with the condition that would change it (#102).
+
+### A constraint binds every path, so the rule landed nine times and a census holds eight
+
+The owner's answer is a sentence about what a person reads, and nine screens hold the mechanism as
+nine copies rather than as one shared module (#83). So it landed at each of them in the same
+ticket — 51 identical lines per screen — and the thing that holds the eight with no row of their
+own is the census, not a mutant (#68: the screen that proves a rule is chosen by the census).
+`SubjectStudents.js` is the tenth screen holding such a sentence and is **outside** the
+population: its list is drawn under `{data && (` and nothing replaces it, so it carries a marker
+with a reason and a ticket number instead.
+
+`frontend/scripts/held-sentences.js` asks by the mechanism in three parts and names each missing
+part separately. Its own fixtures are written from the rule and pass either way (#141, #124), so
+it was proved by breaking real sites: the guard out of `Programs.js`, the `finally` of
+`Rubrics.js` clearing again, the later say out of `Users.js` — each reported at the right file and
+line with the right one of the three sentences — and then by **moving the population** rather than
+breaking a member of it (#230), renaming the ref in `Subjects.js` from `waiting` to `pending` and
+watching `held 9` stay 9, which is what says the instrument is not keyed on a spelling.
+
+### Seven mutants re-aimed, and one of them teaches what faithful means
+
+Splitting one block into two branches on nine screens re-aimed seven mutants in four other files,
+and `209:clearedonthehandon` is the one to read. Its line became
+`if (!handedOn && !waiting.current?.held) waiting.current = null`, and the lazy re-aim — drop the
+whole condition — would have been a **different mutant**: one that undoes #246 as well as #209's
+hand-on clearing. The faithful one keeps the `held` half and removes only `!handedOn`, which is the
+mistake its sheet says it is about (#203). It still kills row 3 of `209a` and leaves rows 1 and 2
+green, which is the sheet's own table.
+
+Two more, `152:enrolmentdrewunsaid` and `205:saysanyread`, lost their anchors without being
+re-aimed at all: the marker for `SubjectStudents.js` had been inserted *between* `setData(answer)`
+and the `if` below it, which is a block both of them quote whole. The marker moved above the
+drawing — an anchor quotes code and not the comment beside it, and a marker is read from the file
+and not from the line it sits on (#121, #123). And `238:plosneversays` came out of the re-sweep
+killing **two rows more** than its sheet credited it with, both rows of `246a`, because it removes
+the holding as well as the saying: one mutant killing several rows is several reachability claims,
+not one counted twice (#191).

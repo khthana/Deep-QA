@@ -55,26 +55,49 @@ FILES = {
 
 # สมอยึดกับโค้ดที่มัตแตนต์ทำให้พัง ไม่ใช่คอมเมนต์ข้างมัน (#121, #123) — คอมเมนต์ของ
 # `Plos.js` ถูกย้ายขึ้นไปอยู่เหนือบล็อกเมื่อ 28 ต.ค. 2569 ก็เพื่อข้อนี้
+# #246, 29 ต.ค. 2569 - เล็งใหม่ทั้งสองตัว เพราะคำตอบของเจ้าของงานวันนั้นแยกบล็อกนี้
+# เป็นสองกิ่งที่จอนี้ด้วย ข้ออ้างของทั้งสองตัวคงเดิม: สองแถวของ `Users.js` ใน `238a`
+# ไม่เปิดฟอร์ม กิ่งที่เดินจึงเป็นกิ่งที่พูด
 USERS_SAYS_ITS_OWN = (
     '        if (waiting.current && waiting.current.of === key) {\n'
-    '          setNotice(waiting.current.said)\n'
+    '          if (formShown.current) {\n'
+    '            waiting.current = { ...waiting.current, held: true }\n'
+    '          } else {\n'
+    '            setNotice(waiting.current.said)\n'
+    '          }\n'
     '        }\n'
 )
+# #246, 29 ต.ค. 2569 - เล็งใหม่ทั้งสองตัว เพราะคำตอบของเจ้าของงานวันนั้นแยกบล็อกนี้
+# เป็นสองกิ่ง ข้ออ้างของทั้งสองตัวคงเดิม — แถวลบของ `238a` ไม่เปิดฟอร์ม กิ่งที่เดินจึงเป็นกิ่งที่พูด
+# แต่ `plosneversays` เวลานี้เอาการเก็บประโยคไว้ออกด้วย มันจึงฆ่าแถวของ `246a` ด้วย
+# หนึ่งมัตแตนต์ฆ่าหลายแถวคือหลายข้ออ้างเรื่องการไปถึง ไม่ใช่ข้อเดียวนับซ้ำ (#191)
 PLOS_SAYS_ITS_OWN = (
     '        if (waiting.current && waiting.current.of === program) {\n'
-    '          setNotice(waiting.current.said)\n'
+    '          if (formShown.current) {\n'
+    '            waiting.current = { ...waiting.current, held: true }\n'
+    '          } else {\n'
+    '            setNotice(waiting.current.said)\n'
+    '          }\n'
     '        }\n'
 )
 
 MUTANTS = {
     'userssaysanyread': ('users', USERS_SAYS_ITS_OWN,
         '        if (waiting.current) {\n'
-        '          setNotice(waiting.current.said)\n'
+        '          if (formShown.current) {\n'
+        '            waiting.current = { ...waiting.current, held: true }\n'
+        '          } else {\n'
+        '            setNotice(waiting.current.said)\n'
+        '          }\n'
         '        }\n'),
     'usersneversays': ('users', USERS_SAYS_ITS_OWN, ''),
     'plossaysanyread': ('plos', PLOS_SAYS_ITS_OWN,
         '        if (waiting.current) {\n'
-        '          setNotice(waiting.current.said)\n'
+        '          if (formShown.current) {\n'
+        '            waiting.current = { ...waiting.current, held: true }\n'
+        '          } else {\n'
+        '            setNotice(waiting.current.said)\n'
+        '          }\n'
         '        }\n'),
     'plosneversays': ('plos', PLOS_SAYS_ITS_OWN, ''),
 }

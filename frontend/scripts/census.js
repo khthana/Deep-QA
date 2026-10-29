@@ -22,6 +22,7 @@ const CENSUSES = [
   'landing-generations.js',
   'forms-cleared-by-identity.js',
   'pager-last-page.js',
+  'held-sentences.js',
   // `save-window-fields.js` is deliberately not here. Its first run is a red
   // gate over a population no ticket has landed the shape on yet (`bare 57` on
   // 29 October 2569), and an instrument wired in while its population is red
