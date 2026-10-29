@@ -15866,17 +15866,25 @@ the rule's input. The first draft of this ticket's own docblock said thirteen si
 count corrected to eleven — a hand-kept number in a file that grows (#119), inside the very
 paragraph written to be the record.
 
-### And an answer that carries no body is priced by what the screens were going to read
+### And my own cost line for the other option was a claim, refuted the same day
 
-Option ข is worse than the ticket priced it, and for a reason the ticket could not see from the
-server. `total` is not decoration: the owner's answer to #209 on 19 October 2569 is that *the answer
-of the read says how many pages there are and the screen hands the person to the last one that
-exists*, and #239 built that at every mount point — `frontend/scripts/pager-last-page.js` reads
-`corrected 8 · marked 3 · unclassified 0`. A refusal travels as `ApiError`, which carries a status,
-a message and a reason **and no body**, so under ข the eight corrected screens would draw a banner
-and stay on a page that does not exist, with nothing to correct themselves from. The ticket priced
-ข as *rewrite the `load` of seven screens*. The measurement says it removes the number those loads
-were written around.
+Option ข is worse than the ticket priced it, but not for the reason I first wrote. `total` is what
+the screens correct themselves with — the owner's answer to #209 on 19 October 2569 is that *the
+answer of the read says how many pages there are and the screen hands the person to the last one
+that exists*, and #239 took it to the mount points that were left
+(`frontend/scripts/pager-last-page.js` reads `corrected 8 · marked 3 · unclassified 0` on
+28 October 2569). The first draft said a refusal **cannot** carry that number, because `ApiError`
+is built from a status, a message and a reason. The two-axis review of the same day found
+`frontend/src/api/client.js:218` hanging `error.details = payload.errors ?? null` on it for the
+per-row import report, with its own comment: the screen needs the rows, so the error carries them.
+A refusal *can* carry a body, by a mechanism this repo already chose (#196).
+
+So ข's real price is a second shape for the one number eight screens read, each of them reading it
+out of a refusal rather than out of an answer, plus a `REFUSALS` key and every site that turns that
+reason into a sentence (#125). The owner's answer does not move, because ก's eleven sites stand and
+ค is what was chosen — but the cost line that was going to be the standing record of **why** was
+false, written by the same hand that had just quoted #77 at the ticket. A cost line is a claim like
+any other, and that includes the one you write yourself to replace the ticket's.
 
 ### Who chose the number, measured, said no option was forbidden
 
@@ -15910,7 +15918,8 @@ Running `anchors.py` to close #240 printed `unreadable 3` and exited 1. Three of
 write their anchor as `FIELD_OPEN % 'Old'`, and `_value` reads `+` between strings but not `%`, so
 those three anchors had gone unchecked since #243 landed earlier the same day — the instrument said
 so in its own count, and nothing else did. `mutation/README.md` had written the prescription beside
-the condition years of tickets ago: *if it is not zero, extend `_value`, do not let it pass.* That
+the condition on 7 September 2569 (`2e07a8e`): *if it is not zero, extend `_value`, do not let it
+pass.* That
 is #242's rule paying back again — a dated reason that names its own remedy is a work item, not only
 a record — so the fix is three lines in the evaluator rather than a ticket. `anchors checked` went
 1173 to 1176 with `unreadable 0` and exit 0.

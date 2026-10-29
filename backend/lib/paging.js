@@ -28,14 +28,23 @@
  *   sites in 11 route files that build a paged body, because `total` is counted
  *   there and there is no shared responder - counted on 29 October 2569 by
  *   `pageOf(req)`, which eleven route files call once each.
- * - **A refusal carries no `total`.** That number is what the screens correct
- *   themselves with - the owner's answer to #209 on 19 October 2569 is that the
- *   answer of the read says how many pages there are and the screen hands the
- *   person to the last one that exists, and #239 built it at every mount point
+ * - **A refusal would carry `total` only in a shape one report uses.** That
+ *   number is what the screens correct themselves with - the owner's answer to
+ *   #209 on 19 October 2569 is that the answer of the read says how many pages
+ *   there are and the screen hands the person to the last one that exists, and
+ *   #239 took it to the mount points that were left
  *   (`frontend/scripts/pager-last-page.js` reads `corrected 8 · marked 3 ·
- *   unclassified 0` on 29 October 2569). `ApiError` carries a status, a message
- *   and a reason and no body, so under a refusal those screens would draw a
- *   banner and stay on a page that does not exist.
+ *   unclassified 0` on 29 October 2569). `frontend/src/api/client.js` builds
+ *   `ApiError` from a status, a message and a reason, and then hangs
+ *   `error.details = payload.errors ?? null` on it for the per-row import
+ *   report - so a refusal *can* carry a body, by a mechanism this repo has
+ *   already chosen (#196). What option ข costs is therefore not that `total`
+ *   cannot be sent: it is a second shape for the one number eight screens read,
+ *   each of those screens reading it out of a refusal rather than out of an
+ *   answer, and a new `REFUSALS` key with every site that turns a reason into a
+ *   sentence (#125). The first draft of this paragraph said a refusal carries no
+ *   body at all, which the review of 29 October 2569 refuted at
+ *   `client.js:218` - a cost line is a claim like any other (#77).
  *
  * The claim is held at the HTTP seam by `backend/test/history.test.js`, row
  * *and a page past the end is empty rather than an error*, which asserts that

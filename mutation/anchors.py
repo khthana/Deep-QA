@@ -212,9 +212,11 @@ def _value(node, env):
 
     Handles what the mutation files actually use: literals, the module-level
     constants a few of them lift out (`NEXT_PLAN`, `ROLL_QUERY`), tuples and
-    lists of those, `+` between strings, and `%` with a string or a tuple on
-    the right - which `243` writes, and which reported three of its mutants
-    `unreadable` until this read it (29 October 2569, #240).
+    lists of those, `+` between strings, and string formatting with `%` -
+    which `243` writes as `FIELD_OPEN % 'Old'`, and which reported three of its
+    mutants `unreadable` until this read it (29 October 2569, #240). The `%`
+    arm asks for a string on the left on purpose: arithmetic is not an anchor,
+    and reading `10 % 3` here would be answering a question nobody asked.
     """
     if isinstance(node, ast.Constant):
         return node.value
@@ -238,6 +240,8 @@ def _value(node, env):
     if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Mod)):
         left, right = _value(node.left, env), _value(node.right, env)
         if left is _UNREADABLE or right is _UNREADABLE:
+            return _UNREADABLE
+        if isinstance(node.op, ast.Mod) and not isinstance(left, str):
             return _UNREADABLE
         try:
             return left + right if isinstance(node.op, ast.Add) else left % right

@@ -1,6 +1,21 @@
 # -*- coding: utf-8 -*-
 """#240 — the two options the owner declined, made to run.
 
+    python mutation/240-the-page-past-the-last-one.py save
+    python mutation/240-the-page-past-the-last-one.py <mutant>
+    python mutation/240-the-page-past-the-last-one.py restore
+
+The row both of them kill is at the HTTP seam, not in the browser:
+
+    cd backend && node --test test/history.test.js
+
+one row - *and a page past the end is empty rather than an error* - on the sheet
+`docs/acceptance/57-pager.md` §#240.
+
+**Do not sweep this file beside `13-user-activity-history.py`**: that one's
+`FILES` holds `backend/routes/history.js` too, and a repeated path is what
+corrupts a sweep (#85, #87, #125). Compare `FILES`, not subject matter.
+
 The owner answered #240 on 29 October 2569 with option ค: a request for a page
 past the last one is answered, not refused, and the page comes back as asked.
 A decision taken that way is a sentence on a sheet until something breaks when
@@ -58,6 +73,13 @@ MUTANTS = {
     # row dies at its status assertion, the first one it holds, so the claims
     # below that line are not read while this is applied (#88) - they are
     # `clampedtolastpage`'s to kill.
+    #
+    # The message is a literal where every refusal in `backend/routes/` writes
+    # `REFUSALS[key]`, deliberately: the row reads the status and nothing else,
+    # and a mutant that edited `backend/auth/refusals.js` as well would add a
+    # second file for no kill. What that literal does say is a price the ticket
+    # did not list - option ข owes a new `REFUSALS` key, and every site that
+    # turns that reason into a sentence (#125).
     "refusedpastthelastpage": ("history",
         "      const counted = await pool.query(\n"
         "        'SELECT count(*)::int AS total FROM user_log WHERE user_id = $1',\n"
