@@ -95,6 +95,43 @@ function LoginForm({
           />
         </div>
       </div>
+      {/*
+        No flag here, and that is measured rather than assumed — #243,
+        29 ตุลาคม 2569.
+
+        This file is in #243's population by mechanism: two fields and a submit
+        button, none of them closed while the sign-in is out. #228's defect is
+        that what the person sees and what is being saved can part company
+        while a save is out, and its own argument that this is no worse than a
+        divergence rests on the submit button being disabled. Here it is not —
+        the `// disabled={loading}` below is the inherited markup's own
+        intention, left as it was found, and a comment is not an attribute
+        (reading it as one is what made this file's button read as flagged in
+        the first census of the population).
+
+        What closes the window is not a flag but the screen. `pages/Login.js`
+        draws this form inside `<RetiringPresence at={LoadLogin ? 'loading' :
+        'content'} mode="wait">`, and `LoadLogin` is raised before the POST and
+        let go in its `finally`: while the sign-in is out the form is not on
+        the screen at all, so there is no field to type into and no button to
+        press again. That is #203's ninth reading one layer along — a screen
+        that answers by replacing itself leaves the defect unreachable for the
+        person, not merely unproved.
+
+        It is a claim about frames, so it is read at the frames rather than
+        argued: `243a-the-form-that-sent-the-save-twice.spec.js` holds the
+        sign-in open and counts what is on the screen. What that row cannot see
+        is the exit animation's own frames, during which the leaving form is
+        still in the document (#212); what a press would reach there is the
+        same POST this screen is already waiting for, and the values it would
+        carry are the ones already sent. The day this screen stops replacing
+        itself — a refusal drawn beside a form that stays, say — the window
+        opens and this reason expires with it.
+
+        save-window: pages/Login.js replaces this whole form with a loading
+        state while the sign-in is out, so there is no field to type into and
+        no button to press a second time (#243)
+      */}
       <button
         type="submit"
         // disabled={loading}

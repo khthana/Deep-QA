@@ -20,6 +20,34 @@ function Navber({ setAlert, onStayedPut }) {
   const [showOld, setShowOld] = useState(false)
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  /**
+   * #228's shape, on the one screen in #243's population where its premise
+   * does not hold — 29 ตุลาคม 2569.
+   *
+   * #228 called its defect *what the person sees and what is being saved part
+   * company*, and argued it was no worse than that because *the บันทึก button
+   * of all five screens is `disabled={busy}` already, so moving a field in
+   * between does not cause a second send*. That is a claim about each screen
+   * (#133), and measured over #243's own population it is true of
+   * twenty-five submit buttons and false of two: this one, which held nothing
+   * at all, and `LoginForm.js`, whose reason is written in that file.
+   *
+   * So the window here was not only a divergence. Nothing stopped a second
+   * press of *บันทึกรหัสใหม่* while the first change was out, and the second
+   * request carries the old password that the first one has by then replaced:
+   * the person presses save twice and is told their current password is
+   * wrong, over a change that succeeded. `10a` row 7 holds that a refusal
+   * leaves this dialog open, so the divergence lasts until they look again.
+   *
+   * The flag is the form's own and not the page's `busy` — there is no page
+   * flag here to borrow, and the form's own is what the owner answered on
+   * 26 ตุลาคม 2569. It closes the three fields and the button that sends them.
+   * *ยกเลิก* holds nothing, by that same answer: a person who has given up on
+   * a save must be able to leave. The eyes are not fields and keep their
+   * press — revealing what was typed changes nothing about what is being
+   * sent, which is the whole of what this flag is about.
+   */
+  const [sending, setSending] = useState(false)
   const [pwdData, setPwdData] = useState({
     old_password: '',
     new_password: '',
@@ -185,6 +213,7 @@ function Navber({ setAlert, onStayedPut }) {
       return
     }
 
+    setSending(true)
     try {
       await changePassword(pwdData.old_password, pwdData.new_password)
       setAlert({
@@ -209,6 +238,8 @@ function Navber({ setAlert, onStayedPut }) {
         return
       }
       setError(err.message)
+    } finally {
+      setSending(false)
     }
   }
 
@@ -418,6 +449,7 @@ function Navber({ setAlert, onStayedPut }) {
                           <input
                             type={showOld ? 'text' : 'password'}
                             required
+                            disabled={sending}
                             className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={pwdData.old_password}
                             onChange={e =>
@@ -449,6 +481,7 @@ function Navber({ setAlert, onStayedPut }) {
                           <input
                             type={showNew ? 'text' : 'password'}
                             required
+                            disabled={sending}
                             className={`mt-1 w-full rounded-xl border px-4 py-3 pr-10 text-sm transition focus:outline-none focus:ring-2 ${
                               error &&
                               pwdData.new_password !== pwdData.confirm_password
@@ -485,6 +518,7 @@ function Navber({ setAlert, onStayedPut }) {
                           <input
                             type={showConfirm ? 'text' : 'password'}
                             required
+                            disabled={sending}
                             className={`mt-1 w-full rounded-xl border px-4 py-3 pr-10 text-sm transition focus:outline-none focus:ring-2 ${
                               error &&
                               pwdData.new_password !== pwdData.confirm_password
@@ -523,7 +557,8 @@ function Navber({ setAlert, onStayedPut }) {
                         </button>
                         <button
                           type="submit"
-                          className="rounded-lg bg-secondary px-4 py-2 font-medium text-white shadow-md transition hover:bg-secondary"
+                          disabled={sending}
+                          className="rounded-lg bg-secondary px-4 py-2 font-medium text-white shadow-md transition hover:bg-secondary disabled:opacity-60"
                         >
                           บันทึกรหัสใหม่
                         </button>

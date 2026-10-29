@@ -15724,3 +15724,115 @@ to go, the field the killing assertion reads belonging to the form opened afterw
 **two** rows, for #191's reason. There is no mutant for *ยกเลิก*: it would kill other files' rows,
 which breaks the rule that a mutant must fail one row and leave the rest standing (#97), so that
 claim is a net saying the price has not been paid.
+
+## #243 — the two buttons that held nothing, and the order the ticket prescribed that could not order anything
+
+#228's owner answer of 26 October 2569 reached three screens; #242 took it to four more, found by
+mechanism (#174). #243 is the rest: 61 fields in 15 forms holding no flag at all while their own
+save is out — the population the owner's reason was silent about, the same shape as #141, #223 and
+#222 one step further out. Its first item says, in so many words, **do not land #228's shape on 61
+fields at once**: prioritise first, by a question the ticket's own census did not ask — *which
+screens leave the form open after a refused save* — measuring the new population's window rather
+than inheriting #228's (#223).
+
+### The ticket's order was a claim like its numbers, and the measurement handed over another one
+
+That question was measured before anything was built, and it ordered nothing: the answer is **every
+screen**. All eleven parents write `setEditing(null)` **inside** the `try`, after the `await`, so a
+refusal skips it and the form stays open with values nobody sent. The window is everywhere, which
+makes the ticket's prescribed discriminator true and useless — #241's rule, one species along: a
+ticket's named instrument can be the inverse of the one it needs, and a ticket's named *ordering*
+can be a property the whole population shares.
+
+What did order it was the sentence #228 wrote to **excuse** its own defect: *the save button of all
+five screens is `disabled={busy}` already, so moving a field while the save is out does not send
+twice.* That is a claim about each screen (#133), and a census of the submit buttons on 29 October
+2569 answers it: of 27, **25 hold the page's flag and two hold nothing at all** — `components/Navbar.js`
+and `components/LoginForm.js`, which are exactly the two files the ticket's item 3 had singled out
+for a dated reason. The excuse is false on precisely two members of its own population, and those
+two are where the defect is a defect rather than a divergence. **So the thing that prioritised 61
+fields was not a property of the fields. It was the earlier ticket's self-exemption, read as a
+claim and measured.**
+
+### Two members of one population, and opposite answers
+
+`Navbar.js`'s change-password dialog stays on a refusal, and nothing stopped a second press. Row 2
+of `243a`, run against the unfixed code before any mutant was written (#203), reads `Expected: 1`
+and `Received: 2` — a second request, carrying the **old** password that the first request had just
+replaced, so the person is told their current password is wrong, over a change that had already
+succeeded. That is the measurement that makes #243 a defect and not only the divergence #228 named,
+and it is what bought this screen its place ahead of fifteen other files.
+
+`LoginForm.js` is in the same population by mechanism and gets the opposite answer. `pages/Login.js`
+draws the whole form inside `<RetiringPresence at={LoadLogin ? 'loading' : 'content'} mode="wait">`,
+and `LoadLogin` is raised before the POST and let go in its `finally`: while the sign-in is out
+there is no field to type into and no button to press again. That is #203's ninth reading one layer
+along — a screen that answers by replacing itself leaves the defect unreachable for the person, not
+merely unproved — so the file gets a reason with a date and an expiry condition (#141), not a flag.
+And the reason is a claim about frames, so it is read rather than argued (#169): row 3 holds the
+sign-in open and asserts `toHaveCount(0)`. Its mutant is **the accepted reason made to run**
+(`loginformstays` pins `at` to `'content'`), which is #48 the other way up — #115's rule reaching a
+reason rather than a diagnosis.
+
+### A comment read as the attribute it describes
+
+The first census of the population reported `LoginForm.js`'s submit button as **flagged**, because
+the line above it is `// disabled={loading}` — the inherited markup's own intention, left as it was
+found. The instrument was reading attributes out of text it had not stripped comments from, so a
+sentence *about* a flag counted as the flag. #93 is this trap from the other side, where a `//`
+written between two JSX tags is drawn on the screen; here a comment inside JSX props was read as
+code. The repair is three lines of stripping; the finding is that the number it produced was wrong
+in the safe-looking direction, and only the hand reading of the two named files caught it — which
+is what item 3 of the ticket was for.
+
+My own comment on the ticket carried a wrong sentence for the same species one layer along: *the
+population of fields holding the page's flag is now empty*, from a script that classified by a
+**hand-typed list** of flag names with no `loading` in it (#208 — the count is the tell, not the
+exit code). Two `<select>`s hold one, and both are read flags raised in a fetch effect and never in
+`submit`, so the conclusion about #228's shape stood while its reason did not (#141). The correction
+went where the wrong number had been pointed at somebody else (#225): a comment on #243, and a
+comment on the ticket whose table it shortens.
+
+### The price of the shape is not uniform, which is why the rest is a separate ticket
+
+Item 2 says: wherever the shape lands, census that screen's *ยกเลิก* **press** first (#199, #221).
+By mechanism — rows that hold a request open and then press or fill before releasing it — the suite
+has **126 such presses in 20 spec files, 29 of them fills**. For this dialog the answer is **zero**:
+five call sites in three spec files all go through one helper, `submitPasswordChange`, which fills
+all three fields and *then* presses, so no row types or presses while the save is out and the fix
+cost no re-aims. One site in the remaining population is not free — `142a:sectionNumber(page).fill('92')` fills
+`SectionsPanel.js`'s field inside a held window — so the work left over is uneven and goes screen by
+screen. That is what #249 is, and the ticket's own first item is what produced it.
+
+### The bystanders that gained a row
+
+`Navbar.js` and `pages/Login.js` are read by mutants of ten other files — 21 in all. Nothing was
+re-aimed, the fix adding lines rather than rewriting any, and `anchors.py` was clean. The question a
+clean anchor check cannot answer is whether the **new** spec's rows are rows those mutants can now
+reach (#48, #202), so all 21 were run against `243a` alone: twenty leave its three rows green, and
+`10-application-shell:ejectonrefusal` — `if (err.expired)` → `if (true)` — kills row 2, ejecting the
+person on the refusal that row arranges itself. That is one more reachability claim for row 2 (#191):
+a refused password change leaves the person on the screen. Nothing reports such a gain; the anchor
+is exact, the code it edits untouched, and only running it says so.
+
+### The instrument, and the ticket it landed with
+
+Item 4 left it open whether to write a census at all. `frontend/scripts/save-window-fields.js` asks
+two questions over the files holding `type="submit"` — does the submit button hold a `disabled`, and
+does every field — and its first run is a red gate over a population no ticket has yet fixed:
+`forms 27 · flagged 72 · always 1 · marked 3 · bare 57`. So it lands **unwired**, with #249 as the
+ticket for the gap, which is #200's shape exactly; wiring it green-by-marker would have taught the
+reader to ignore all nine of its siblings.
+
+Both proofs item 4 asked for were run (#230). Breaking a real site: `228/deptstatuslive` leaves
+`DepartmentForm.js`'s status field live and `bare` rises to 58, the report naming the line. Moving
+the population: flipping that file's `type="submit"` to `type="button"` takes `forms` from 27 to 26
+and `flagged` from 72 to 67, and the file leaves the report altogether — which is what shows the
+instrument following its own rule rather than a list of names, since its own fixtures pass either
+way (#141).
+
+And the first of its six printed limits was measured on a real site the same day, which is #226's
+rule met in my own instrument: *it has found a guard and not asked what the guard is for.*
+`offerings/OfferingForm.js:182` reads `flagged` while the flag it holds is a read flag that is down
+by the time anybody can press save. So `bare 57` is a **lower bound**, and the ticket that inherits
+it says so on its face.
