@@ -212,7 +212,9 @@ def _value(node, env):
 
     Handles what the mutation files actually use: literals, the module-level
     constants a few of them lift out (`NEXT_PLAN`, `ROLL_QUERY`), tuples and
-    lists of those, and `+` between strings.
+    lists of those, `+` between strings, and `%` with a string or a tuple on
+    the right - which `243` writes, and which reported three of its mutants
+    `unreadable` until this read it (29 October 2569, #240).
     """
     if isinstance(node, ast.Constant):
         return node.value
@@ -233,13 +235,13 @@ def _value(node, env):
                 return _UNREADABLE
             out[k] = v
         return out
-    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+    if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Mod)):
         left, right = _value(node.left, env), _value(node.right, env)
         if left is _UNREADABLE or right is _UNREADABLE:
             return _UNREADABLE
         try:
-            return left + right
-        except TypeError:
+            return left + right if isinstance(node.op, ast.Add) else left % right
+        except (TypeError, ValueError, KeyError):
             return _UNREADABLE
     return _UNREADABLE
 

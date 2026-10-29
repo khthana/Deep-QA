@@ -122,6 +122,13 @@ citation.
 - **A ticket's cost line is a claim about the shape its author pictured, not about the option** —
   and alone among its claims this one is about the *fix*, so it is what decides which option gets
   built. Re-derive each price from the mount points before choosing. (#77)
+- **A rule's price is paid where the rule's own input is known, which is not always where the
+  ticket asks the question** — #77 one species along: a ceiling proposed for the module that parses
+  the request cannot be written there at all, because that module runs before the count the ceiling
+  needs, so the option costs eleven edits at the callers that hold it and a rule with nowhere shared
+  to live. Then an option whose refusal carries **no body** is priced by what the screens were
+  going to read out of the answer, and the mutant for an option with no faithful site is what that
+  option would look like at one of the callers. (#240)
 - **An accepted price is a claim like a ticket's numbers, and measuring it can widen it** — the cost
   line's twin, for the cost of *not* fixing. Ask what the person can do about it, because the
   recovery they have may move the price rather than end it, and ask whether it reaches the work they

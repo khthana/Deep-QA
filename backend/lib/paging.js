@@ -13,6 +13,52 @@
  * number is navigation, not data: a client that sends `page=abc` gets the first
  * page, which is what the person in front of it wanted, and nothing is written
  * either way.
+ *
+ * ## A page past the last one is answered, not refused (29 October 2569, #240)
+ *
+ * `page` has a floor of 1 and no ceiling, so a request for a page past the end
+ * is a well-formed request, and the answer is an empty list carrying the `page`
+ * that was asked for beside the `total` it is past. The owner chose that on
+ * 29 October 2569 (#240, split out of #222) over a server-side ceiling and over
+ * a 400/404, and the two prices that decided it are not where the ticket put
+ * them:
+ *
+ * - **A ceiling cannot live here.** `pageOf` runs before the count, so it does
+ *   not know the last page; clamping would have to be written at each of the 11
+ *   sites in 11 route files that build a paged body, because `total` is counted
+ *   there and there is no shared responder - counted on 29 October 2569 by
+ *   `pageOf(req)`, which eleven route files call once each.
+ * - **A refusal carries no `total`.** That number is what the screens correct
+ *   themselves with - the owner's answer to #209 on 19 October 2569 is that the
+ *   answer of the read says how many pages there are and the screen hands the
+ *   person to the last one that exists, and #239 built it at every mount point
+ *   (`frontend/scripts/pager-last-page.js` reads `corrected 8 · marked 3 ·
+ *   unclassified 0` on 29 October 2569). `ApiError` carries a status, a message
+ *   and a reason and no body, so under a refusal those screens would draw a
+ *   banner and stay on a page that does not exist.
+ *
+ * The claim is held at the HTTP seam by `backend/test/history.test.js`, row
+ * *and a page past the end is empty rather than an error*, which asserts that
+ * the page asked for comes back as asked rather than clamped;
+ * `mutation/240-the-page-past-the-last-one.py` runs the two options the owner
+ * declined, which is what makes a decision something the suite holds (#48).
+ *
+ * **What expires this reason.** It rests on *every caller of a paged route is a
+ * screen*, measured on 29 October 2569: twelve files under `frontend/src` ask
+ * for a page and all of them are screens or panels, `pages/UserHistory.js`
+ * among them asking `page: 1` for a picker, which cannot go past the end; no
+ * script, report or export reads one (`backend/lib/csv.js` is import-side). The
+ * day a caller is not a screen - a script, a report, an export, an outside
+ * integration - it gets an empty list with nothing saying the page was past the
+ * end, and the rule that would have told it lives in each screen's own `load`
+ * and not here.
+ *
+ * **And the remedy, written beside the condition rather than left as *revisit
+ * this* (#242).** What such a caller needs is the answer *saying* the page is
+ * past the end - a field beside `total` - which is neither a ceiling nor a
+ * refusal, so it leaves this decision and the screens' own correction standing.
+ * It is not written today because it buys the person at a screen nothing and
+ * costs those same 11 sites.
  */
 
 const PAGE_SIZE = 10;

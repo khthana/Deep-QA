@@ -15840,3 +15840,81 @@ rule met in my own instrument: *it has found a guard and not asked what the guar
 `offerings/OfferingForm.js:182` reads `flagged` while the flag it holds is a read flag that is down
 by the time anybody can press save. So `bare 57` is a **lower bound**, and the ticket that inherits
 it says so on its face.
+
+## #240 — the ceiling that could not be written where the question was asked
+
+#222 asked whether `backend/lib/paging.js` should put a ceiling on `page`; #239 took away the half a
+person could reach, and #240 held the rest: **what should the server answer**. Three options — ก a
+server-side ceiling, ข a 400/404, ค keep today's behaviour and write the reason down. The owner
+answered ค on 29 October 2569. What is worth keeping is not the answer but what re-deriving the
+prices did to the question (#77).
+
+### A price is paid where the rule's own input is known
+
+The ticket, and #222 before it, put the question at `paging.js`, because that is where `page` is
+parsed and where the floor of 1 already lives: a ceiling *looks* like one more `Math.min` beside the
+`Math.max`. It cannot be written there at all. `pageOf(req)` runs before any count — it is handed a
+request, not a table — so the last page is not a number it has. Clamping has to be written where
+`total` is counted, which on 29 October 2569 is **eleven sites in eleven route files**, one
+`pageOf(req)` call each, with no shared responder between them. So option ก's price is not *change
+the API's contract*; it is eleven edits **and** a rule with nowhere shared to live, which is the
+thing that made the owner's cheapest option the one that was also the best argued.
+
+That is #77 one species along. The cost line is a claim about the shape its author pictured, and
+here the shape was pictured at the module the question is about rather than at the sites that hold
+the rule's input. The first draft of this ticket's own docblock said thirteen sites, which the
+count corrected to eleven — a hand-kept number in a file that grows (#119), inside the very
+paragraph written to be the record.
+
+### And an answer that carries no body is priced by what the screens were going to read
+
+Option ข is worse than the ticket priced it, and for a reason the ticket could not see from the
+server. `total` is not decoration: the owner's answer to #209 on 19 October 2569 is that *the answer
+of the read says how many pages there are and the screen hands the person to the last one that
+exists*, and #239 built that at every mount point — `frontend/scripts/pager-last-page.js` reads
+`corrected 8 · marked 3 · unclassified 0`. A refusal travels as `ApiError`, which carries a status,
+a message and a reason **and no body**, so under ข the eight corrected screens would draw a banner
+and stay on a page that does not exist, with nothing to correct themselves from. The ticket priced
+ข as *rewrite the `load` of seven screens*. The measurement says it removes the number those loads
+were written around.
+
+### Who chose the number, measured, said no option was forbidden
+
+#156's rule is that an option moving a delivered number is a divergence and one moving a number the
+rebuild chose is not, so the delivered code is asked who picked each. Here the answer is that
+**nobody did**: `DEEP-QA-BACKEND` has no `req.query.page` anywhere, and the delivered frontend paged
+in the browser with `totalPages`/`PageNumber`, fetching the table and slicing it. Server-side paging
+is wholly the rebuild's, so `docs/06` §Out of Scope binds none of the three — #156 read from the
+other side, where the measurement's answer is *none are forbidden* rather than *this one is*. What
+chose instead was #196: the repo had already answered the other end of the same sentence, in
+`Pager.js`'s floor of one and in #209, both saying the person must not be left on a page that does
+not exist **and the screen is what corrects it, out of the number the server sends**. Option ค is
+the only one that keeps sending it.
+
+### The mutants are the declined options, and one of them has no faithful site
+
+Both live at `backend/routes/history.js`, the one route of eleven whose suite asks for a page past
+the end. `clampedtolastpage` adds `lastPage` and answers `page: Math.min(page, lastPage)`; it dies
+at `2 !== 9`, the assertion added for this ticket, and at nothing else. `refusedpastthelastpage`
+answers 400 when `offset >= total`, below the count because the count is what says the page is past
+the end; it dies at the row's status assertion, the first one it holds, so the claims under that
+line are the first mutant's to kill (#88). And because option ก cannot be written at `paging.js`,
+its mutant is *what ก would look like at one of the eleven sites*, not a faithful copy of a one-line
+fix — the price above, read as a mutant. The ten other routes echo the page with nothing holding
+them, which the ticket itself called a number belonging in the question rather than in the fix, so
+it is recorded with its expiry condition rather than filed (#123).
+
+### A gate that was red before the ticket closed, and the remedy already written beside it
+
+Running `anchors.py` to close #240 printed `unreadable 3` and exited 1. Three of #243's mutants
+write their anchor as `FIELD_OPEN % 'Old'`, and `_value` reads `+` between strings but not `%`, so
+those three anchors had gone unchecked since #243 landed earlier the same day — the instrument said
+so in its own count, and nothing else did. `mutation/README.md` had written the prescription beside
+the condition years of tickets ago: *if it is not zero, extend `_value`, do not let it pass.* That
+is #242's rule paying back again — a dated reason that names its own remedy is a work item, not only
+a record — so the fix is three lines in the evaluator rather than a ticket. `anchors checked` went
+1173 to 1176 with `unreadable 0` and exit 0.
+
+The proof is not that the count reached zero. The instrument's 88 fixtures pass either way, so the
+reading was taken by **breaking a real anchor** — `show%s` to `shoq%s` — and watching three
+`ANCHOR ... 0 matches` lines and exit 1 come back before putting it straight (#141, #124).

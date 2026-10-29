@@ -156,6 +156,13 @@ test('a history longer than a page is paged', async (t) => {
     assert.equal(response.status, 200);
     assert.deepEqual(response.body.entries, []);
     assert.equal(response.body.total, 12);
+    // The page comes back as asked and is not clamped to the last one that
+    // exists - the owner's answer of 29 October 2569 (#240), and the number
+    // the screens' own correction is computed from: `total` beside the page
+    // asked for is what lets a screen say which page does exist (#209, #239).
+    // This is the one row in the backend suite that asks for a page past the
+    // end, so it is where the two declined options are made to run (#48).
+    assert.equal(response.body.page, 9);
   });
 });
 
