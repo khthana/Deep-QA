@@ -69,9 +69,13 @@
  *   whole subject, and what holds it is the fourth claim of each row of `228a`,
  *   `242a` and `243a` — a page-wide flag closes a form that sent nothing.
  *   Measured on a real site the day this landed (#226): the `<select>` at
- *   `components/offerings/OfferingForm.js:182` reads `flagged` behind a flag
- *   that is raised in a fetch effect and never in `submit`, so it is down
- *   before anybody can press save. `bare` is a lower bound.
+ *   `components/offerings/OfferingForm.js:178` reads `flagged` behind the flag
+ *   written on its line 182, which is raised in a fetch effect and never in
+ *   `submit`, so it is down before anybody can press save. `bare` is a lower
+ *   bound. The line cited is the one this script reports — the opening tag of
+ *   the control — and not the line the `disabled` is written on, which is four
+ *   below it here; the comment with the same measurement on it in
+ *   `save-window-fields.test.js` says 178 for that reason.
  * - **whether the save can be refused at all, and whether the parent closes
  *   the form on success.** Together they decide how long the window lasts, and
  *   neither is in this file: both are in the parent screen's handler, and the
@@ -271,6 +275,7 @@ function main() {
   const flagged = []
   const always = []
   const marked = []
+  const bare = []
   const problems = []
   let forms = 0
 
@@ -305,7 +310,7 @@ function main() {
           why: 'marker needs a reason of its own and a ticket number',
         })
       else
-        problems.push({
+        bare.push({
           where,
           line: control.line,
           why:
@@ -350,15 +355,18 @@ function main() {
       ' · marked ' +
       marked.length +
       ' · bare ' +
+      bare.length +
+      ' · problems ' +
       problems.length
   )
   if (process.argv.includes('--flagged')) for (const entry of flagged) console.log('  ' + entry)
   if (process.argv.includes('--marked')) for (const entry of marked) console.log('  ' + entry)
   if (process.argv.includes('--always')) for (const entry of always) console.log('  ' + entry)
+  for (const entry of bare) console.log('  ' + entry.where + ':' + entry.line + ' ' + entry.why)
   for (const problem of problems)
     console.log('  ' + problem.where + ':' + problem.line + ' ' + problem.why)
 
-  process.exitCode = problems.length ? 1 : 0
+  process.exitCode = bare.length + problems.length > 0 ? 1 : 0
 }
 
 if (require.main === module) main()

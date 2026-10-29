@@ -118,8 +118,13 @@ MUTANTS = {
 
     # 7 — the mechanism the sign-in screen's dated reason rests on, taken away:
     # the form is drawn through the round trip instead of being replaced. Both
-    # halves of the switch move, so `LoadLogin` stays referenced and the mutant
-    # is the screen behaving differently rather than a file that will not build.
+    # halves of the switch move, which is the screen behaving differently rather
+    # than a different screen - but it leaves `LoadLogin` written at three lines
+    # and read at none, which the development server this suite runs reports as
+    # a warning and not as an error, so the screen draws and this mutant kills
+    # its row (measured 29 October 2569). Under `CI=true` that same unread
+    # binding fails the build (#101), so a sweep run with `CI` set is the
+    # condition to re-aim this one on; nothing in the repository sets it.
     'loginformstays': ('login',
                        "          <RetiringPresence at={LoadLogin ? 'loading' : 'content'} mode=\"wait\">\n"
                        '            {!LoadLogin ? (\n',

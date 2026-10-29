@@ -15781,8 +15781,12 @@ the line above it is `// disabled={loading}` — the inherited markup's own inte
 found. The instrument was reading attributes out of text it had not stripped comments from, so a
 sentence *about* a flag counted as the flag. #93 is this trap from the other side, where a `//`
 written between two JSX tags is drawn on the screen; here a comment inside JSX props was read as
-code. The repair is three lines of stripping; the finding is that the number it produced was wrong
-in the safe-looking direction, and only the hand reading of the two named files caught it — which
+code. The instrument that read it that way was the throwaway script in `_local/`, which read
+attributes out of raw text and was repaired with three lines of stripping; the committed census,
+`frontend/scripts/save-window-fields.js`, never had the defect, because it parses the file with
+`@babel/parser` and strips nothing, so there a comment cannot be read as an attribute at all.
+The finding is that the number the unrepaired reading produced was wrong in the safe-looking
+direction, and only the hand reading of the two named files caught it — which
 is what item 3 of the ticket was for.
 
 My own comment on the ticket carried a wrong sentence for the same species one layer along: *the
@@ -15820,7 +15824,7 @@ is exact, the code it edits untouched, and only running it says so.
 Item 4 left it open whether to write a census at all. `frontend/scripts/save-window-fields.js` asks
 two questions over the files holding `type="submit"` — does the submit button hold a `disabled`, and
 does every field — and its first run is a red gate over a population no ticket has yet fixed:
-`forms 27 · flagged 72 · always 1 · marked 3 · bare 57`. So it lands **unwired**, with #249 as the
+`forms 27 · flagged 72 · always 1 · marked 3 · bare 57 · problems 0`. So it lands **unwired**, with #249 as the
 ticket for the gap, which is #200's shape exactly; wiring it green-by-marker would have taught the
 reader to ignore all nine of its siblings.
 
