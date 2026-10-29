@@ -225,6 +225,13 @@ citation.
 - Read a file's own comments for the rule before inventing one; a rule borrowed whole borrows its
   defect too — and what an instrument *means* is documented in the file that uses it on purpose,
   not in the one you are changing. (#83, #168)
+- **A dated reason that names its own expiry condition *and its own remedy* is a work item, not
+  only a record** — #54's *date it, do not delete it* paying back, and what pays is the remedy
+  being written beside the condition: the fix that fires the condition is the fix that owes the
+  prescription, so the pair lands together. Eight such reasons, written seventeen days earlier,
+  turned one ticket's four forms into four forms **and** four screens' guards; had they said only
+  *unreachable today*, the half they prescribed would have been left undone with nothing to say
+  so. (#242)
 - **A guard written for one caller is a claim about every caller** — find the others before
   writing the comment that says they are safe, because that comment is the claim, and a caller
   passed by reference is invisible to a grep for the call. (#68, #133)
@@ -1162,7 +1169,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 |---|---|
 | `superseded-answers.js` | draws an answer with no guard and no written reason (#133's family) |
 | `label-codes.js` | draws a label with a code in front of the name and no written reason (#93's) |
-| `sentences-after-a-move.js` | says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family). It asks about **enclosure**, not about a window of lines, and since #226 (25 October 2569) it also says what the ref it found can tell apart — `opened` for a ref written only with a fresh sentinel (`{}`, `[]`, `null`, `undefined`, a boolean, `0`, `''`, an empty `Map` or `Set`, or a name bound to one), `position` for one written with a value such as the loader, plus `mixed` and `unwritten`. On that date: `opened 19 .. position 3`; on 28 October 2569, after #238 bound two more screens' sentences to the read that draws them, `enclosed 19 (opened 16 .. position 3) .. marked 5` — three sites stopped saying anything after their `await` and `Plos.js`'s marker came out, a marker the instrument no longer reads being an exemption (#93, #141). The six things it still cannot measure are in its docblock |
+| `sentences-after-a-move.js` | says a success sentence after an `await` with nothing asking whether the screen is still the one that asked (#202's family). It asks about **enclosure**, not about a window of lines, and since #226 (25 October 2569) it also says what the ref it found can tell apart — `opened` for a ref written only with a fresh sentinel (`{}`, `[]`, `null`, `undefined`, a boolean, `0`, `''`, an empty `Map` or `Set`, or a name bound to one), `position` for one written with a value such as the loader, plus `mixed` and `unwritten`. On that date: `opened 19 .. position 3`; on 28 October 2569, after #238 bound two more screens' sentences to the read that draws them, `enclosed 19 (opened 16 .. position 3) .. marked 5` — three sites stopped saying anything after their `await` and `Plos.js`'s marker came out, a marker the instrument no longer reads being an exemption (#93, #141); on 29 October 2569, after #242 put #202's three guard lines into four more screens' `save`, `enclosed 20 (opened 17 .. position 3) .. marked 4` — one site, `RubricCriteria.js`, traded its marker for the guard that marker's own expiry condition named. The six things it still cannot measure are in its docblock |
 | `swallowed-refusals.js` | redraws from a loader without reading whether it drew (#152's family). Built by #200 and left unwired while the twenty administration sites it found were still red; #203 fixed those and wired it in on 12 October 2569 |
 | `dead-loaders.js` | reads a list again with the loader a handler closed over instead of the one the ref holds (#208's family). It finds its loaders **by the ref** and so cannot see a ref holding a coordinate |
 | `required-props.js` | leaves out a prop the component it draws declares it must have (#179's `target`, by #182's answer on 22 October 2569). Its population is every file exporting `REQUIRED_PROPS`, so it is a rule about a declaration and not about a component's name; it cannot read a spread, a wrapper, or a named import |

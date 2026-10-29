@@ -15616,3 +15616,111 @@ axis made about this very sheet: §#238 of the `19` sheet had written *this has 
 about #241's reversed fourth arm, and no such ticket existed when the reviewer looked. Both were
 opened on 28 October 2026, the hour this ticket closed: #246 for the sentence over a form just
 opened, #247 for the save into a curriculum the table is not on.
+
+## #242 — the four screens the owner's reason was silent about, and the eight reasons that named the day
+
+#228 asked whether a form's controls should be disabled while its save is out. The owner answered on
+26 October 2569: yes, with **the form's own flag**, and *ยกเลิก* holding no flag at all. That answer
+landed on three screens — departments, programs, subjects — and the reason the owner gave is a
+sentence about those three. A census by **mechanism** rather than by screen name (#174) — what flag
+does each field read — gives four more forms whose fields read `busy`, the page's flag, where
+`const busy = writing || reading` is written letter for letter the same in all four parents. That
+population is #242, and it is the same shape as #141, #223 and #222: an owner's answer reaches the
+population the ticket's census had.
+
+### The first order was to measure, and it decided what kind of ticket this is
+
+The ticket's own first item is #141's rule applied to itself: build the way in at the e2e seam
+before arguing about it. The eight rows the file then held, run against the unfixed code on 28 October 2569, came
+back **red eight of eight**, each dying at the assertion it is named for. (This sheet and
+four acceptance sheets first said *red eight of nine*, corrected on 29 October 2569: the
+ninth row, the PLO screen's refusal row, was written afterwards and never read against the
+unfixed code — `242:ploreported` is what measures it, which is a mutant's job and not a
+before-run's (#115). The wrong wording implied a row that was green against the unfixed
+code, which would be a row measuring nothing (#203), and there was none. Before the eight
+there was a four-row draft, one row per screen, red four of four.) So this is a defect people meet
+today and not a second owner's question: the shape was settled on 26 October, and what was left was
+the population. The window is one HTTP round trip — `save`'s `finally` releases `writing`
+**after** the `await` of the list re-read — so the sequence is *saved → form closes → press
+เพิ่ม… → the new form is drawn with every field disabled* until that read lands. No clock
+chooses (#199) and no second actor is needed.
+
+That run also redesigned the rows. The first draft read *ยกเลิก* in the middle of row 1, and all
+four first rows died there against the unfixed code — which means the step the ticket actually
+asked about, *can the form opened afterwards still be typed into*, **was never read at all**,
+because a row reports the first assertion that dies (#88). The claim moved to row 2, and it is
+**read as a claim before it is pressed**, because pressing a disabled control dies at the timeout
+rather than at the row's claim (#139). This is #203's rule paying for itself: running a new row
+against the unfixed code is what says which claim the row holds, hours before a sweep would.
+
+### Item 4 was a name read as a claim
+
+The ticket said `ProgramSubjectForm.js` holds an `<input>` with no flag either way, and asked for it
+in the same fix. The form has six controls. The five that can hold a flag held `busy` in full, and
+all five became `sending`; the sixth is the field that draws the chosen subject code, `disabled
+readOnly` with no condition at all, so nobody could type into it before the save or after it. The
+diagnosis read a **name** — a `disabled` with no condition — as a **claim** — holds no flag —
+and the measured number is the one that gets reported (#102, #48). The refutation goes in the
+closing comment as well as on the sheet, because the ticket's number was pointed at somebody else
+(#54, #225).
+
+### The eight reasons that named their own expiry condition
+
+The real find is in the four parent screens. #202 had left eight written reasons there, two per
+screen, saying that the `showing.current === sent` guard around `save`'s drawing was a sentence no
+row and no mutant could reach (#97) **because** *ยกเลิก* was disabled by `busy` — and each of them
+wrote down the condition that would end that: *the day ยกเลิก stops being disabled, this point needs
+the three lines `confirmRemoval` already has*. #242 is that day, and it is the fix itself that fires
+the condition.
+
+So the fix is not one change but a pair, and the second half was prescribed by a comment written
+seventeen days earlier: `setEditing(null)`, the sentence hand-over and `report(error)` all go under
+`if (showing.current === sent)` in all four screens. **A dated reason that names its own expiry
+condition and its own remedy is a work item, not only a record** — #54's *date it, do not delete it*
+paying back, and the reason it pays back is that the remedy was written beside the condition. Had
+those eight comments only said *unreachable today*, the four forms would have been freed and four
+screens would have been left saying *บันทึกข้อมูลเรียบร้อยแล้ว* over a form the person had meanwhile
+replaced, with nothing to say so.
+
+In `Plos.js` the hand-over is written as a block rather than as `confirmRemoval`'s one-liner, on
+purpose: four closed tickets' mutants quote that neighbourhood, and a guard copied in the sibling's
+exact spelling makes a one-line anchor find two sites (#202). The key answers *which curriculum this
+sentence is about* and cannot answer *was this form replaced*, the curriculum being the same on both
+sides of a *ยกเลิก* (#205, #207) — which is why the guard is a second clause beside #238's key and
+not a narrowing of it.
+
+### The price the ticket asked to be censused, and the kill count it expired
+
+Item 3 asked for a fresh census of the **presses** of #142 and #146 on these four screens, and for
+the answer to go back to the owner if the price changed. It did not change: `142a`'s
+`cancelDuringSave` arm is a marker for screens where the form's *ยกเลิก* can be pressed while a save
+is out, and it now marks **seven** screens instead of three. `146a` deliberately does not take the
+four, because its question on these screens **is** `242a`'s row 2, and both docblocks say so.
+
+What nothing reported is that the same arms expire the kill counts of `mutation/142-…py`. The
+anchors are exact and the code those mutants edit is untouched; the spec simply gained rows they can
+reach, so only re-running them speaks (#202, #107, #68). Two of the twelve were re-swept before the
+run was stopped, and one of them says it out loud: `142:pairscurrentletsgo` now kills **two** rows,
+its own and the fourth arm that has just arrived on that screen, which is one defect two rows reach
+and not two claims (#191).
+
+That re-sweep is also a reminder with a date on it. It was stopped by the system for low memory
+after ten of twenty mutants, with `142:pairsletgowhileasked` left applied in the tree: restore, read
+`git status`, clear the ports — and do not restart it unasked.
+
+### What the instruments said afterwards
+
+`frontend/scripts/sentences-after-a-move.js` reads `enclosed 20 (opened 17 · position 3) ·
+marked 4`, where before the fix it read `enclosed 19 (opened 16 · position 3) · marked 5`:
+`RubricCriteria.js` traded its `// sentence-after-a-move:` marker for the guard that marker's own
+expiry condition named, which is the census reading the same event the comments did. The other nine
+censuses are `problems 0`, `python mutation/anchors.py` is `problems 0` in six sections, and the
+backend suite is 850 pass, 0 fail.
+
+All twenty-one of this file's mutants are swept, eleven on 28 October and ten on 29 October 2569,
+each killing the row it was written for at the assertion the table named before the sweep (#201).
+The four `pagewide` mutants — the page's flag restored at the **declaration**, which is where it has
+to go, the field the killing assertion reads belonging to the form opened afterwards — each kill
+**two** rows, for #191's reason. There is no mutant for *ยกเลิก*: it would kill other files' rows,
+which breaks the rule that a mutant must fail one row and leave the rest standing (#97), so that
+claim is a net saying the price has not been paid.

@@ -34,8 +34,12 @@ const { openCriteriaVia } = require('../support/rubric-criteria-screen');
  * that re-read, which is what the ticket asked to be measured before anything
  * was written (#141).
  *
- * Read against the unfixed code on 28 ตุลาคม 2569, every row of this file was
- * red, each at the assertion it is named for.
+ * Read against the unfixed code on 28 ตุลาคม 2569, the **eight** rows this
+ * file then held were red, all eight, each at the assertion it is named for. The ninth row
+ * - the refusal row of the PLO screen, below - was written afterwards and has never been
+ * read against the unfixed code: `242:ploreported` is what measures it, which is what a
+ * mutant is for (#115). An earlier four-row draft, one row per screen, was red four of
+ * four, and splitting it is what #88 and #139 bought.
  *
  * ## What each row claims
  *
