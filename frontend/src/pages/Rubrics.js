@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import Notice from '../components/Notice'
+import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import RubricForm from '../components/rubrics/RubricForm'
 import { useScreenGeneration } from '../context/ScreenGeneration'
@@ -353,7 +354,12 @@ export default function Rubrics() {
       // marker claimed - that nothing can take the screen while this save is
       // out - stopped being true on 28 ตุลาคม 2569, which is why the lines
       // below ask (#242).
-      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The หลักสูตร field is open
+      // on an add, so a Rubric can be written into a curriculum the table is not
+      // filtered to and the sentence would stand over a list without it.
+      // `lib/outsideTheFilter.js` carries the measured population.
+      const outside = outsideFilter(program, draft.program_id)
+      const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       // #203 - the sentence waits for the read that draws it, and #209 has it
       // handed over before the await: only `load` learns that the page has gone
       // past the end, and only `load` can re-key the sentence for the read it

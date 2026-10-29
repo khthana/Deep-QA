@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import { OUTCOME_TYPES } from '../lib/outcomes'
+import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Notice from '../components/Notice'
 import PloForm from '../components/plos/PloForm'
 import {
@@ -465,7 +466,16 @@ export default function Plos() {
       // because no sentence is said after this await any more (#238), and what
       // it claimed stopped being true that afternoon: #242 freed ยกเลิก, which
       // is the condition the docblock above said would re-date it.
-      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The หลักสูตร field is open
+      // on an add (`PloForm` locks it only while editing), so `draft.program_id` can
+      // be any curriculum this person's grants reach, while `load` asks for the one
+      // the table is on. The read lands, the key matches and the sentence stands over
+      // a list without the row in it - so it says that, in the one sentence the seven
+      // screens of this species share. The comparison is made here, where the value
+      // the save wrote is known, and not inside `load`, which never sees the draft
+      // (#77). `lib/outsideTheFilter.js` carries the measured population.
+      const outside = outsideFilter(program, draft.program_id)
+      const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.
       // #238, 28 ตุลาคม 2569 - handed over before the read and keyed for the

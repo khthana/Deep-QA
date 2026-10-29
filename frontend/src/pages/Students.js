@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
+import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import StudentForm from '../components/students/StudentForm'
 import {
@@ -356,7 +357,18 @@ export default function Students() {
     setBusy(true)
     try {
       await createStudent(draft)
-      const said = { error: false, message: 'บันทึกข้อมูลนักศึกษาเรียบร้อยแล้ว' }
+      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The หลักสูตร picker here
+      // carries no `disabled` of any kind, and this screen has no แก้ไข at all
+      // (the docblock above says why), so the one way a row lands outside the
+      // register in front of the person is an **add** into another curriculum.
+      // The sentence is the same one the other six screens say: the row that was
+      // just saved is not in the list it is standing over.
+      // `lib/outsideTheFilter.js` carries the measured population of seven.
+      const outside = outsideFilter(program, draft.program_id)
+      const said = {
+        error: false,
+        message: alsoOutside('บันทึกข้อมูลนักศึกษาเรียบร้อยแล้ว', outside),
+      }
       if (showing.current === sent) setAdding(false)
       // Back to the first page, where the list's newest-first order puts a
       // student who has just been added. Setting the page is a change the

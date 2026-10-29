@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
+import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import ProgramSubjectForm from '../components/programSubjects/ProgramSubjectForm'
 import {
@@ -338,7 +339,13 @@ export default function ProgramSubjects() {
       // marker claimed - that nothing can take the screen while this save is
       // out - stopped being true on 28 ตุลาคม 2569, which is why the lines
       // below ask (#242).
-      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The หลักสูตร field is open
+      // on an add, so this save can write a row into a curriculum the table is not
+      // filtered to; the read that says the sentence is the table's, so it would
+      // stand over a list without the row. `lib/outsideTheFilter.js` carries the
+      // measured population of seven screens and why the sentence is shared.
+      const outside = outsideFilter(program, draft.program_id)
+      const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       // #203 - the sentence waits for the read that draws it, and #209 has it
       // handed over before the await: only `load` learns that the page has gone
       // past the end, and only `load` can re-key the sentence for the read it

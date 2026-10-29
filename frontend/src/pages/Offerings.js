@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import CopyTermPanel from '../components/offerings/CopyTermPanel'
 import Notice from '../components/Notice'
+import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import OfferingForm from '../components/offerings/OfferingForm'
 import Pager from '../components/Pager'
 import SectionsPanel from '../components/offerings/SectionsPanel'
@@ -497,11 +498,25 @@ export default function Offerings() {
       const { offering } = await createOffering(draft)
       const mine = showing.current === sent
       const ask = {}
+      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ, and this screen has three
+      // ways out of its own list rather than one: หลักสูตร, ปีการศึกษา and ภาค are all
+      // filters of the table and all fields of the form. One sentence answers all
+      // three, because what the person needs to know is that the row they just saved
+      // is not in the list in front of them, which is one fact however many of the
+      // three put it there. The year is compared as text: a `<select>` hands over a
+      // string and the answer carries a number (`lib/outsideTheFilter.js`).
+      const outside =
+        outsideFilter(program, offering.program_id) ||
+        outsideFilter(year, offering.academic_year) ||
+        outsideFilter(semester, offering.semester)
       const said = {
         error: false,
         // label-code: the notice says what was just created, and the next thing the person
         // does is find that offering by its code in the registrar's list (#93)
-        message: `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
+        message: alsoOutside(
+          `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
+          outside
+        ),
       }
       if (mine) {
         setOpening(false)
@@ -548,12 +563,29 @@ export default function Offerings() {
       }
       const answer = await copyTerm({ ...terms, program_id: target })
       setCopied(answer)
+      // #247 - the **second** save on this screen, and the one the census cannot
+      // tell from the first, because it asks the file and not each sentence
+      // (`frontend/scripts/rows-outside-the-filter.js` says so). *ไปยังภาค
+      // การศึกษา* writes two of the three filters the table reads, so a copy
+      // into 2/2569 while the list is on 1/2568 opened rows the person cannot
+      // see and the screen said it had copied them. The review of 29 ตุลาคม
+      // 2569 found it; `247c` holds it.
+      //
+      // The **programme** is never outside: `target` is the filter itself where
+      // one is set, and where none is set there is nothing to fall outside of.
+      // Only the branch that created something is wrapped - *ไม่มีรายวิชาใดถูก
+      // คัดลอก* is no row outside anything.
+      const outside =
+        outsideFilter(year, terms.academic_year) || outsideFilter(semester, terms.semester)
       const said = {
         error: false,
         message:
           answer.created.length === 0
             ? 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง'
-            : `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,
+            : alsoOutside(
+                `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,
+                outside
+              ),
       }
       // The same rule as the import below: page one is a change the effect
       // fetches, and asking `load` as well would race it from the page being

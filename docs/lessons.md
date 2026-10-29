@@ -16007,3 +16007,156 @@ and not from the line it sits on (#121, #123). And `238:plosneversays` came out 
 killing **two rows more** than its sheet credited it with, both rows of `246a`, because it removes
 the holding as well as the saying: one mutant killing several rows is several reachability claims,
 not one counted twice (#191).
+
+## #247 — the option a sibling screen could not carry, and the decision that answered another question
+
+Since #238 a success sentence is keyed on the read it is about, and on `Plos.js` the read is the
+table's: `load` asks `listPlos({ program_id: program })` and nothing else. The form's own
+หลักสูตร picker is open on an *add*, though — `PloForm` locks it with `sending || editing` — so a
+person filtered to 0501 can save an outcome into 0503, and then the read lands, the key matches,
+and *บันทึกข้อมูลเรียบร้อยแล้ว* stands over a list that does not hold the row they just saved,
+with nothing on the screen saying where it went. The mechanism is not wrong and #238 did not cause
+it: before that ticket the sentence stood over the same list unconditionally. What a person should
+read is `docs/06` §Out of Scope, so #247 was opened as a question.
+
+### Three of the ticket's claims, measured
+
+**The population.** The ticket said *one screen*, and reasoned about it in terms of *scope*: no
+other screen has a field that moves the write's scope out of the scope the table reads. Counted by
+the mechanism instead — each `load`'s keys, intersected with the form fields that write one of
+those keys and are not `disabled` — the answer is **seven**: `Plos`, `ProgramSubjects`, `Rubrics`,
+`Students` (whose field has no `disabled` at all, so an *edit* moves a row out too), `Subjects`,
+`Offerings` (three filters, so three ways) and `Users`. The species is wider than the word the
+ticket used: it is *a write whose row falls outside the table's own filter*, and `Users`'s filter
+is a search string, which is not a scope at all (#174, #223).
+
+**The decision behind option ค's price.** The ticket priced *move the table to the curriculum that
+was saved* as something *the owner has already refused in another form (17 September 2569)*, citing
+the docblock of `asked` in `Plos.js`. The decision is real and the date is right, and it answers a
+different question: what was put to the owner that day was whether a person moving the filter
+should cancel the form they asked for, and the owner said it should not. Nothing in it is about
+moving the table after a save. A decision a cost line cites is a claim like the ticket's numbers
+(#54, #153) — and this is the second way such a citation goes wrong: not *never taken*, but *taken,
+about something else*. Reading it as precedent would have struck an option off the owner's list for
+them.
+
+**The price of option ข.** *Say where the row went* was priced at *one sentence's wording, and
+`nameOf` already has the name, so the mechanism needs nothing*. True on this screen. False for the
+population the first measurement had just produced: on `Users` the filter a row falls outside of is
+the **search term**, which has no name to put in a sentence, and a status filter is answered by a
+value the insert can never produce. Option ข is not an option there at all (#128).
+
+**So the population decided which of the ticket's options existed, which is not what an option does
+to a screen.** What was left was a fifth option the ticket did not list: the screen says its own
+sentence and then one shared sentence — *แถวนี้อยู่นอกรายการที่กรองอยู่* — which all seven can
+write identically. The owner took it on 29 October 2569.
+
+### One constant, seven call sites, and where the mutants stay
+
+`frontend/src/lib/outsideTheFilter.js` holds the sentence, `outsideFilter(filter, saved)` and
+`alsoOutside(message, outside)`. The sentence is one constant because the same words typed seven
+times is a string a grep for the words cannot find (#111, #124); the *use* of it stays a claim of
+each screen, and each screen's mutant is written at its own `save`, which is what keeps extracting
+shared text free for the proof (#104). An empty filter is *ทุกหลักสูตร* on the five screens that
+offer that option, so the comparison only runs when a filter is set, and it compares as **text**,
+because a year arrives from a `<select>` as a string and from an answer as a number — `2569 !==
+'2569'` would have added the sentence to every save on `Offerings`.
+
+`Users` keeps its own `outsideTheFilters(filters, draft, creating)` beside `readOf`, because its
+three questions are not the other six's one.
+
+### Two files, six mutants, and why the second is not `serial`
+
+`247a` is two rows on `Plos`, `serial`, each adding an outcome and removing its own through the
+screen (#134). The positive row was run against unfixed code before its mutant was written and
+failed at `toHaveText` with the screen's bare sentence (#203). `plosnosuffix` is option ก made to
+run — the behaviour of the day before — and `plosalwayssays` appends every time, which is what the
+negative row is for: a criterion answered *no* needs a row as much as one answered *yes* (#48,
+#145). Both are written as `|| true` rather than `true` so that every name stays referenced, since
+an unused binding under `CI=true` is a mutant that stops the application instead of failing a row
+(#101).
+
+`247b` is four rows on `Users`, and it is **not** `serial`, against the family's habit. Each row
+signs in, sets its own filter and creates its own account; what hands the world back is the file's
+`hold()`, not the removal of a row that passed, because the user register has no delete through the
+screen (#134, #233). What `serial` would have taken away is the reading of which mutant kills which
+row — three of the four are blind to one branch each, and in a `serial` file the first red stops
+the rest from running, so a kill count would read as three claims where one was read (#67, #88).
+
+Two drafts of row 1 were wrong about the world rather than the code. The first created an account
+with no grant, and the route refuses that; the failure said *ข้อมูลบัญชีไม่ครบถ้วนหรือไม่ถูกต้อง*,
+which was in the saved snapshot rather than in the waiting stack (#160). Fixing it raised a second
+question — whether an account placed outside the creator's own scope is hidden from the list that
+created it — which was opened as #251 and **refuted within the hour**: `placeAllowed` refuses that
+placement with 403 in both directions, so the situation cannot be built from the screen and there
+is nothing on the screen to say it (#232). The refutation went into that ticket's comments and into
+the comment in `Users.js` that had cited it, because a ticket body stays standing as the record of
+what was claimed (#54, #225).
+
+### The census, and the two ways it was proved
+
+Five of the seven screens have no row, and what holds them is
+`frontend/scripts/rows-outside-the-filter.js`, wired into `npm run census`. It asks three questions
+by mechanism: which `list…({…})` calls are handed a value that came from `useState`, which of those
+files build an `error: false` object, and which call `alsoOutside`. Its first run reads `saying 7 ·
+marked 0 · unclassified 0 · problems 0`. Its own twelve fixtures are written from the rule and so
+pass either way (#141, #124); what proves it are real sites. Breaking `Rubrics.js` back to its bare
+sentence and **moving the population** — giving `Departments.js`, which was never in it, a list
+filtered by a `zzz_id` out of `useState` — both went red in the same run, `saying 6 · problems 2`,
+the second of them naming a file nobody had touched (#230). Both were put back and `git status`
+read clean for the screen that was not otherwise being changed.
+
+### And nothing was re-aimed, which is a measurement
+
+The fix adds a line above each save's sentence and rewrites that sentence's line, which is exactly
+the shape that leaves an anchor exact while changing what a mutant quotes whole (#203). So every
+file in `mutation/` whose `FILES` holds one of the seven was compared string by string against
+those screens at `HEAD` and in the tree. The only strings that moved were this ticket's own. That
+is what `anchors.py` cannot answer, and the reason the question was asked rather than assumed.
+
+### The limit that was written down, and the real site it named
+
+The two-axis review found six things and **all six were true when measured**, which is not the
+usual ratio: on #240 one of the six was a cost line I had written myself and it was false. Three
+changed code.
+
+The first is the one worth the index line. `Offerings` holds **two** saves, not one:
+`CopyTermPanel`'s *ไปยังภาคการศึกษา* writes `academic_year` and `semester`, two of the three keys
+the table filters by, and `runCopy` said its own report — *คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ N
+รายวิชา* — over a list that held none of what it had opened. That is the ticket's own sequence, on
+a screen the fix was already editing. The census was green on it, and it had **said in its own
+docblock that it would be**: the second thing it cannot measure is *which sentence*, because the
+question is asked of the **file** and not of each `error: false` object, so a screen that wraps one
+success sentence and leaves another bare passes. A limit written beside the number is not an
+apology for the instrument; it is the list of places to go and look, and this is what one of them
+looks like when somebody looks (#226, #123). `247c` is two rows on that second save, and the reason
+the first draft of its positive row was red is #118 all over: the subjects a copy opens are the
+subjects the **source** term already holds, so a reader keyed on a subject code finds the source
+term's own row and reads *the copy is in this list*. The fixture filters to an empty term of this
+file's own year and copies into another, which is a reason that was measured rather than guessed.
+
+The second is a defect in the fix itself, and the loud half of it. `matchesSearch` read the term as
+the person typed it while the route reads it through `blankToNull`, which trims first — so a term
+with a space around it made the screen append *แถวนี้อยู่นอกรายการที่กรองอยู่* over a list that
+**held** the row. A helper written to restate a rule independently has to restate it exactly
+(#96), and the quiet half — `%` and `_`, which `ILIKE` reads as wildcards and the screen reads as
+characters — stays unreadable at this seam with its condition written beside it. `247b` gained a
+fifth row and a `userssearchuntrimmed` for it, and because a spec that gains a row a mutant can
+reach expires that mutant's count with nothing to report, all five were swept again: the anchor was
+still exact and the code untouched, so only re-running said that `usersalwayssays` now kills two
+rows rather than one (#202, #191).
+
+The third was my own reason, not my own code. The population survey had written that `Students` is
+in the seven because *an edit moves a row out too* — and that screen has no *แก้ไข* at all,
+`StudentForm` being add-only. The verdict stands, the way in being the add; what was false was the
+reason, and a conclusion that is right for the wrong reason expires on the wrong day (#141), so it
+was corrected in `lib/outsideTheFilter.js` and in sheet 17.
+
+The other three were words. `CLAUDE.md` said the census had six limits where the docblock had
+seven. Three citations were by line number, which age the day anything above them grows (#173), and
+became text a grep can find. And the sixth limit — a read, or a sentence, in another module — had a
+real site too: `ImportPanel` says *นำเข้าสำเร็จ N รายการ* for itself on four of these seven
+screens, over rows a CSV can put outside the parent screen's filter, with no filter handed to the
+panel to compare against. Whether a child's own sentence is in this species, and who would tell the
+panel what the screen is filtered by, is the owner's (`docs/06` §Out of Scope), so it is #252 and
+not a line of code in this ticket.

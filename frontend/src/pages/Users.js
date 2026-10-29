@@ -5,6 +5,7 @@ import GrantsPanel from '../components/users/GrantsPanel'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
+import { alsoOutside } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
@@ -180,6 +181,79 @@ const windowOf = user => {
  */
 const readOf = (page, filters) =>
   `${page}:${filters.q}:${filters.role}:${filters.status}`
+
+/**
+ * Is the account this save wrote outside the list the table is filtered to? -
+ * #247, the owner's answer ข้อ จ of 29 ตุลาคม 2569.
+ *
+ * `lib/outsideTheFilter.js` carries the sentence and the measured population of
+ * seven screens. This is the one of the seven whose predicate cannot live
+ * there, and the reason is why the answer is one shared sentence rather than
+ * the name of where the row went (#128): the filters a row can fall outside of
+ * here are a **search term**, a role and a status, none of which the other six
+ * have and the first of which has no name to put in a sentence.
+ *
+ * Each filter is asked by the mechanism the server filters by and not by the
+ * field the form holds (#174), which is what makes the three answers differ:
+ *
+ * - **role** — `EXISTS` over `user_roles`, and the create body carries the one
+ *   grant the form offers (`components/users/UserForm.js` sends `role` on a
+ *   create and the details alone on an edit), so the question is whether *that*
+ *   role is the one the filter is on. It is never *no role*: the route refuses
+ *   a create that carries none at all, because an account without a grant
+ *   cannot sign in - `backend/routes/users.js`'s `if (!role)`. An **edit** cannot move a
+ *   row out this way: the grants of an account that exists are `GrantsPanel`'s, one
+ *   route at a time, and `backend/routes/users.js` ignores a role smuggled into
+ *   an edit body.
+ * - **status** — the insert writes `'active'` and nothing on this form can
+ *   choose otherwise (`backend/routes/users.js`), so a create lands outside
+ *   whenever the filter is some other status. An edit, again, cannot move it.
+ * - **q** — `ILIKE '%' || $3 || '%'` over `email`, `user_id` and each of the two
+ *   name pairs joined by a space. That one is asked of both a create and an
+ *   edit, because a typed name or email is exactly what an edit changes.
+ *
+ * What it cannot say is written where it is paid for: a `%` or a `_` in the
+ * search term is a wildcard to `ILIKE` and a literal character here, so a term
+ * holding one is answered *inside* and the sentence is not added — the quiet
+ * direction, which is the one a person can recover from by looking (#153). The
+ * term's **trimming** was the other direction and is not a limit any more: the
+ * route reads it through `blankToNull`, so a term with a space around it
+ * matched there and missed here, and the sentence stood over a list that did
+ * hold the row. `outsideTheFilters` trims as the route does, which is what
+ * makes this a restatement and not a second rule (#96).
+ *
+ * It says nothing about the server's own grant scoping either, and that one
+ * was opened as #251 and closed the same hour by measuring it: a list is also
+ * narrowed to `COALESCE(program_id, department_id) = ANY(scopes)`, so an
+ * account placed outside the administrator's scope would be invisible whatever
+ * the filters said — but `placeAllowed` in `backend/auth/administration.js`
+ * refuses that create with 403, and refuses one placed nowhere at all, both
+ * ends being `Boolean(own) && scopes.includes(own)`. The situation the sentence
+ * would have been for cannot be built from this screen, so there is nothing
+ * here to say (#141, and #203's survivor that had nowhere to say it).
+ */
+const matchesSearch = (term, draft) => {
+  if (term.includes('%') || term.includes('_')) return true
+  const named = (first, last) => `${first ?? ''} ${last ?? ''}`
+  return [
+    draft.email,
+    draft.user_id,
+    named(draft.first_name_th, draft.last_name_th),
+    named(draft.first_name_en, draft.last_name_en),
+  ].some(value => String(value ?? '').toLowerCase().includes(term))
+}
+
+const outsideTheFilters = (filters, draft, creating) => {
+  if (creating && filters.role && filters.role !== draft.role?.role_id) return true
+  if (creating && filters.status && filters.status !== 'active') return true
+  // The term as the route reads it: `blankToNull(req.query.q)` trims before
+  // it decides whether there is a filter at all, so a term of spaces is *no
+  // filter* there and the row is in the list. Restating it loosely here was the
+  // noisy direction - the sentence added over a list that does hold the row -
+  // and the review of 29 ตุลาคม 2569 found it. `247b`'s fifth row holds it.
+  const term = String(filters.q ?? '').trim()
+  return Boolean(term) && !matchesSearch(term.toLowerCase(), draft)
+}
 
 /**
  * `load`'s third answer, which here carries the read it handed to - #209, #239.
@@ -449,7 +523,16 @@ export default function Users() {
     try {
       if (editing?.user_id) await updateUser(editing.user_id, draft)
       else await createUser(draft)
-      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The filters here are a
+      // search term, a role and a status, so `outsideTheFilters` above asks each
+      // one by the mechanism the server filters by; the sentence it adds is the
+      // one all seven screens say (`lib/outsideTheFilter.js`). It is asked of
+      // the save and not of `confirmSwitch` below: ระงับ takes a row out of the
+      // *ใช้งานอยู่* list too, but the person pressed that button on that row and
+      // the row leaving is the thing they asked for - what #247 is about is a
+      // form writing somewhere the person is not looking.
+      const outside = outsideTheFilters(filters, draft, !editing?.user_id)
+      const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       if (showing.current === sent) setEditing(null)
       // #203 - the sentence waits for the reload to draw. `Departments.js`
       // carries the reasons.

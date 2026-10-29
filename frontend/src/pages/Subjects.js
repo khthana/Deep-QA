@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
+import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import SubjectForm from '../components/subjects/SubjectForm'
 import {
@@ -327,7 +328,12 @@ export default function Subjects() {
       } else {
         await createSubject(draft)
       }
-      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The ภาควิชา field is open
+      // on an add and on an edit (it carries only `sending`), so a subject can be
+      // written into a department the table is not filtered to.
+      // `lib/outsideTheFilter.js` carries the measured population.
+      const outside = outsideFilter(department, draft.department_id)
+      const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       if (showing.current === sent) setEditing(null)
       // #203 - the sentence waits for the read that draws it, and #209 has it
       // handed over before the await: only `load` learns that the page has gone
