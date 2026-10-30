@@ -223,7 +223,8 @@ const readOf = (page, filters) =>
  * makes this a restatement and not a second rule (#96).
  *
  * It says nothing about the server's own grant scoping either, and that one
- * was opened as #251 and closed the same hour by measuring it: a list is also
+ * was opened as #251, refuted the same hour by measuring it and closed on
+ * 30 October 2569: a list is also
  * narrowed to `COALESCE(program_id, department_id) = ANY(scopes)`, so an
  * account placed outside the administrator's scope would be invisible whatever
  * the filters said — but `placeAllowed` in `backend/auth/administration.js`
