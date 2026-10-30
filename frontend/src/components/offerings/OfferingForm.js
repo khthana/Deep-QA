@@ -23,6 +23,28 @@ import { listOfferableSubjects } from '../../api/offerings'
  *
  * It reloads whenever the programme changes, because it is a property of the
  * programme and not of the account.
+ *
+ * ## The four fields are closed while this form's own save is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this form:
+ * `components/users/UserForm.js` carries the reasons. The mount point is
+ * `pages/Offerings.js:763`, the only one on 30 ตุลาคม 2569 (#220), and two
+ * things here are this form's own.
+ *
+ * **Nothing clears the flag on a re-seed, on purpose** - the reason
+ * `students/StudentForm.js` gives: there is no edit half, the page draws this
+ * only while `adding`, so a later form is a remount, and the effect above
+ * cannot carry the line because it is keyed on `onlyOne`, which is derived by
+ * identity and re-runs whenever the programmes are read again (#232, #233).
+ * `146a:861` types into a form opened again after ยกเลิก, which is that
+ * remount, and stays green.
+ *
+ * **And the รายวิชา picker is where #249's own measurement of the census
+ * landed.** `save-window-fields.js` reads whether a `disabled` **exists**, not
+ * whose flag it is: that field counted as `flagged` behind `loading`, the flag
+ * of the *read* that fetches the offerable subjects, which is down long before
+ * anybody can press เปิดรายวิชา. So `bare` is a lower bound, and the fix is
+ * read per file rather than per number - the ticket says so from this line.
  */
 
 const field =
@@ -65,6 +87,7 @@ export default function OfferingForm({
   })
   const [subjects, setSubjects] = useState([])
   const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
 
   // The curriculum the list is filtered to, while that is still one this
   // account may open a subject in - #234, whose reasons are in
@@ -135,12 +158,13 @@ export default function OfferingForm({
 
   const submit = event => {
     event.preventDefault()
+    setSending(true)
     onSave({
       program_id: draft.program_id,
       subject_id: draft.subject_id,
       academic_year: String(draft.academic_year).trim(),
       semester: Number(draft.semester),
-    })
+    }).finally(() => setSending(false))
   }
 
   return (
@@ -155,6 +179,7 @@ export default function OfferingForm({
                 value={draft.program_id}
                 onChange={set('program_id')}
                 className={field}
+                disabled={sending}
                 required
               >
                 <option value="">เลือกหลักสูตร</option>
@@ -179,7 +204,7 @@ export default function OfferingForm({
               value={draft.subject_id}
               onChange={set('subject_id')}
               className={field}
-              disabled={!draft.program_id || loading}
+              disabled={sending || !draft.program_id || loading}
               required
             >
               <option value="">
@@ -198,6 +223,7 @@ export default function OfferingForm({
               value={draft.academic_year}
               onChange={set('academic_year')}
               className={field}
+              disabled={sending}
               inputMode="numeric"
               maxLength={4}
               required
@@ -205,7 +231,12 @@ export default function OfferingForm({
           </Field>
 
           <Field label="ภาคการศึกษา">
-            <select value={draft.semester} onChange={set('semester')} className={field}>
+            <select
+              value={draft.semester}
+              onChange={set('semester')}
+              className={field}
+              disabled={sending}
+            >
               {SEMESTERS.map(term => (
                 <option key={term.value} value={term.value}>
                   {term.value} — {term.label}

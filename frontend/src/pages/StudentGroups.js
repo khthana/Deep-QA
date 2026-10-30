@@ -63,6 +63,23 @@ import {
  * ungrouped panel carries its own count for the same reason in the other
  * direction: a grouping is finished when that number is nought, and nothing
  * else on the screen says so.
+ *
+ * ## Each form closes its own fields while its own write is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this screen:
+ * `components/users/UserForm.js` carries the reasons. What is this screen's own
+ * is that **there is no one form here**. สร้างกลุ่ม is one, every group's
+ * แก้ไขชื่อ is another, and each card's roll picker is a third - and the picker
+ * is not in a `<form>` at all, its two verbs being buttons. A single flag would
+ * therefore close fields belonging to forms that sent nothing, which is the
+ * page-wide `busy` this answer was written against.
+ *
+ * So `sending` holds **which** form has a write out rather than that one has:
+ * `create`, `rename`, or `place:<group_id>` for the card that is placing
+ * somebody. `write` below takes that key from its caller and puts it down in
+ * the same `finally` as `busy`, so nothing can outlive the request (#227). Two
+ * writes cannot be out at once - `busy` closes every sending button on the
+ * screen, which is #142's subject and stays exactly as it was.
  */
 export default function StudentGroups() {
   const { sectionId } = useParams()
@@ -74,6 +91,8 @@ export default function StudentGroups() {
   const [chosen, setChosen] = useState({})
   const [renaming, setRenaming] = useState(null)
   const [removingGroup, setRemovingGroup] = useState(null)
+  /** Which form has a write out — the docblock says why it is not a boolean. */
+  const [sending, setSending] = useState(null)
   const [showHistory, setShowHistory] = useState(false)
   const [writes, setWrites] = useState(0)
 
@@ -155,9 +174,16 @@ export default function StudentGroups() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }
 
-  /** One write, with the banner cleared first and the screen unlocked after. */
-  const write = async (action, succeeded) => {
+  /**
+   * One write, with the banner cleared first and the screen unlocked after.
+   *
+   * `form` is the key of the form that sent it, for #249's flag. A write with
+   * no form behind it - นำออกจากกลุ่ม is a button on a row - passes none and
+   * closes no field.
+   */
+  const write = async (action, succeeded, form = null) => {
     setBusy(true)
+    setSending(form)
     setNotice(null)
     const sent = onScreen.current
     try {
@@ -166,25 +192,34 @@ export default function StudentGroups() {
       failed(error)
     } finally {
       setBusy(false)
+      setSending(null)
     }
   }
 
   const create = async event => {
     event.preventDefault()
     const typed = name.trim()
-    await write(createGroup(sectionId, typed), () => {
-      setName('')
-      return `สร้างกลุ่ม ${typed} แล้ว`
-    })
+    await write(
+      createGroup(sectionId, typed),
+      () => {
+        setName('')
+        return `สร้างกลุ่ม ${typed} แล้ว`
+      },
+      'create',
+    )
   }
 
   const submitRename = async event => {
     event.preventDefault()
     const { group_id, value } = renaming
-    await write(renameGroup(sectionId, group_id, value.trim()), () => {
-      setRenaming(null)
-      return `เปลี่ยนชื่อกลุ่มเป็น ${value.trim()} แล้ว`
-    })
+    await write(
+      renameGroup(sectionId, group_id, value.trim()),
+      () => {
+        setRenaming(null)
+        return `เปลี่ยนชื่อกลุ่มเป็น ${value.trim()} แล้ว`
+      },
+      'rename',
+    )
   }
 
   const place = async (group, verb) => {
@@ -202,6 +237,7 @@ export default function StudentGroups() {
           ? `ย้าย ${student.full_name_th} จาก ${student.group_name} มาที่ ${group.group_name} แล้ว`
           : `เพิ่ม ${student.full_name_th} เข้ากลุ่ม ${group.group_name} แล้ว`
       },
+      `place:${group.group_id}`,
     )
   }
 
@@ -273,6 +309,7 @@ export default function StudentGroups() {
                 name="group_name"
                 value={name}
                 onChange={event => setName(event.target.value)}
+                disabled={sending === 'create'}
                 placeholder="ชื่อกลุ่มงาน"
                 className="w-64 rounded-lg border border-gray-300 px-4 py-2.5 text-sm"
               />
@@ -348,6 +385,7 @@ export default function StudentGroups() {
                       onChange={event =>
                         setRenaming({ ...renaming, value: event.target.value })
                       }
+                      disabled={sending === 'rename'}
                       className="w-48 rounded-lg border border-gray-300 px-3 py-2 text-sm"
                     />
                     <button
@@ -434,6 +472,7 @@ export default function StudentGroups() {
                     onChange={event =>
                       setChosen({ ...chosen, [group.group_id]: event.target.value })
                     }
+                    disabled={sending === `place:${group.group_id}`}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm sm:w-64"
                   >
                     <option value="">เลือกนักศึกษา…</option>

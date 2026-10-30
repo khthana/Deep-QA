@@ -23,6 +23,26 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * The sequence number is position and the server assigns it — the next free
  * number on add, closed up on delete. A form that offered the number would be
  * offering a field the server is going to ignore.
+ *
+ * ## The three fields are closed while this form's own save is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this form:
+ * `components/users/UserForm.js` carries the reasons for the fifteen files of
+ * that population, and the measurement that is this form's own is the mount
+ * point — `pages/AchievementCriteria.js:209`, the only one on 30 ตุลาคม 2569,
+ * which is what makes `sending` a claim about every place this is drawn (#220).
+ *
+ * This form is one of the five ผู้สอน card screens, whose ternary swaps the form
+ * with the button that opens it and leaves the card list, and its pencils,
+ * standing underneath. A pencil on another card therefore arrives **while this
+ * card's save is out**, re-rendering this component instead of remounting it,
+ * which is why the flag needs the way back in written at the effect the subject
+ * keys (#227). The row that reads it as a claim is `249a`'s fifth, on
+ * `clos/CloForm.js`; what holds it **here** is `149a` and `151a`, whose rows
+ * for this screen were red the evening this landed and die at a `fill` rather
+ * than at a claim (#139).
+ * `components/rubrics/CriterionForm.js` is a different component with the same
+ * name and had its own flag from #242.
  */
 
 /** The four bands of migration 0002's CHECK, best first. */
@@ -30,9 +50,16 @@ const ACHIEVEMENT_LEVELS = ['ดีเยี่ยม', 'ดี', 'พอใช�
 
 export default function CriterionForm({ criterion, busy, onSubmit, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     setDraft(criterion ? read(criterion) : EMPTY)
+    // The way back in, for the one state `.finally` cannot reach: this form is
+    // drawn above its list, so a pencil on another card arrives while this
+    // card's save is still out and the component is re-rendered rather than
+    // remounted (#220, #227). The subject changing is that arrival, so the flag
+    // comes down with the draft it was raised over.
+    setSending(false)
   }, [criterion])
 
   const set = (field, value) =>
@@ -50,11 +77,12 @@ export default function CriterionForm({ criterion, busy, onSubmit, onCancel }) {
       <form
         onSubmit={event => {
           event.preventDefault()
+          setSending(true)
           onSubmit({
             achievement_level: draft.achievement_level,
             criteria_detail: draft.criteria_detail.trim(),
             criteria_description: draft.criteria_description.trim(),
-          })
+          }).finally(() => setSending(false))
         }}
         className="mt-4 space-y-4"
       >
@@ -65,6 +93,7 @@ export default function CriterionForm({ criterion, busy, onSubmit, onCancel }) {
           <select
             value={draft.achievement_level}
             onChange={event => set('achievement_level', event.target.value)}
+            disabled={sending}
             aria-label="ระดับการบรรลุผล"
             className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
           >
@@ -86,6 +115,7 @@ export default function CriterionForm({ criterion, busy, onSubmit, onCancel }) {
           <textarea
             value={draft.criteria_detail}
             onChange={event => set('criteria_detail', event.target.value)}
+            disabled={sending}
             rows={2}
             placeholder="สิ่งที่งานระดับนี้ต้องแสดงให้เห็น เช่น ทำได้ครบถ้วนถูกต้องและอธิบายเหตุผลได้"
             aria-label="เกณฑ์การประเมิน"
@@ -100,6 +130,7 @@ export default function CriterionForm({ criterion, busy, onSubmit, onCancel }) {
           <textarea
             value={draft.criteria_description}
             onChange={event => set('criteria_description', event.target.value)}
+            disabled={sending}
             rows={2}
             placeholder="รายละเอียดเพิ่มเติมประกอบการตัดสิน"
             aria-label="คำอธิบาย"

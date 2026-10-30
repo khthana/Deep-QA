@@ -357,8 +357,16 @@ for (const screen of LIST_SCREENS) {
 /**
  * ข้อมูลการเปิดรายวิชา: the same three orders in its own words. The read is
  * ตอนเรียนและผู้สอน, the write the panel's เพิ่มตอนเรียน — whose button is
- * disabled by the flag once a number is typed — and the removal the list's
- * ยกเลิกการเปิด.
+ * disabled by the flag while the number it was sent with is still in the box —
+ * and the removal the list's ยกเลิกการเปิด.
+ *
+ * The first row typed the number a second time until 30 ตุลาคม 2569: the form
+ * emptied itself at the press, so `!adding.trim()` was what disabled the button
+ * and the flag could not be read on its own. #249 closed that box while its own
+ * save is out and clears it where the answer came back, so the number is still
+ * there and the second fill is both unnecessary and impossible - a fill against
+ * a disabled control dies at the timeout rather than at the row's claim (#139).
+ * The row keeps its claim and its mark; what moved is the instrument.
  */
 const OFFERINGS = {
   name: 'ข้อมูลการเปิดรายวิชา',
@@ -394,9 +402,13 @@ test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
     await sectionNumber(page).fill('91');
     await add.click();
     await write.sent;
-    // The form empties itself on submit; a number typed again is what leaves
-    // the flag as the only thing that can disable the button.
-    await sectionNumber(page).fill('92');
+    // The number is still in the box - #249 - so `!adding.trim()` is false and
+    // the flag is the only thing that can disable the button. Asserted rather
+    // than assumed, because it is the premise this row's claim rests on (#51).
+    expect(
+      await sectionNumber(page).inputValue(),
+      'the number the held save was sent with',
+    ).toBe('91');
 
     read.open();
     await read.answered;

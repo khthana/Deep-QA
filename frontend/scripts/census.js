@@ -24,13 +24,13 @@ const CENSUSES = [
   'pager-last-page.js',
   'held-sentences.js',
   'rows-outside-the-filter.js',
-  // `save-window-fields.js` is deliberately not here. Its first run is a red
-  // gate over a population no ticket has landed the shape on yet (`bare 57` on
-  // 29 October 2569), and an instrument wired in while its population is red
-  // teaches people to ignore the whole suite of them - #200 settled that shape:
-  // the instrument lands with the ticket for the gap, which is #249, instead of
-  // with the gap marked. It goes in this list the day #249 closes. An exemption
-  // with no reason beside it is one nobody after you can read (#141).
+  // Wired in on 30 October 2569, the day #249 closed the population it was a
+  // red gate over: `bare 57` on 29 October 2569, `bare 0` once the shape had
+  // landed on all fifteen files. It was committed unwired for #200's reason -
+  // an instrument wired in while its population is red teaches people to
+  // ignore the whole suite of them - and that reason expired with the ticket
+  // the instrument landed with rather than with an argument (#141, #200).
+  'save-window-fields.js',
 ]
 
 let worst = 0

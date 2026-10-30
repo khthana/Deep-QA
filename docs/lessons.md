@@ -16207,3 +16207,130 @@ claim written in prose expires like a number (#130), and this was the #240 speci
 sentence most likely to be wrong is the one I wrote myself to replace somebody else's. It is dated
 and corrected rather than deleted, and the September numbers stay where they are, as the record of
 what one measurement returned (#54).
+
+## #249 — the fifteen forms the owner's answer reached, and the box that had already emptied itself
+
+The owner answered #228 on 26 October 2569: **the form that sent a save closes its own fields with a
+flag of its own while the save is out, and *ยกเลิก* holds nothing.** #228 landed it on three screens
+and #242 on four more, and the instrument #243 built — `frontend/scripts/save-window-fields.js` —
+counted what was left: **57 controls in 15 files**, `bare 57` on 29 October 2569. That number is this
+ticket, and the ticket said in its own body that it was a lower bound and that the fifteen files were
+**not alike**. Both halves held.
+
+### The population was four mechanisms, and the suite found the fifth
+
+Fifteen files do not make fifteen rows. What the measurement found was four **mechanisms** — a form
+drawn in one branch of a ternary whose other branch is the list (nine of the fifteen); one card
+component drawn four times on a screen that never unmounts it; a page holding three forms with no
+component to put a flag in; and a form that emptied its own field at the press — and the rows went to
+one screen per mechanism, because a census chooses the screen that proves a rule and the subject does
+not (#68, #171). The other eleven files are held by the census and not by a mutant, which is the
+price of a mechanism that is copied rather than shared (#83) and the reason #200's shape is what
+closes this ticket rather than twelve more mutants.
+
+**Four was wrong, and what said so was the full suite.** Five of the nine ternary files are the
+ผู้สอน card screens, and their ternary swaps the form with *the button that opens it* rather than
+with the list, which leaves the card list — and its pencils — standing underneath the open form.
+That is a fifth mechanism, hiding inside the first because both are ternaries; the census counts
+controls and a count cannot see the shape of the branch beside them. It is a sixth row in `249a`
+and a section on sheet `27`, and the price of finding it late is in the next section.
+
+### The second way down I wrote six times, took out six times, and owed five of them
+
+The first draft gave six of the forms a second place to put the flag down — a clearing on the way
+back in, for the state `.finally` cannot reach (#227). The premise was that a form reopened while its
+own save is still out would come back with the flag up. Measured at the **mount points** that premise
+looked false for nine of the fifteen: closing the form takes the component out of the tree, so the
+next one's flag starts at `false` by construction, and an *unreachable* that rests on the shape of a
+parent's JSX is a claim about every place the component is mounted (#220). One file plainly could
+reach it — `improvement/EntrySection.js`, whose four cards the page keeps mounted — and there the
+clearing has a branch that does it (`!editing`, which `ContinuousImprovement.save` reaches the moment
+the write succeeds) and `249:entryclosed` to hold it. The other six went back out, because two places
+holding one opinion is a claim neither of them can be shown to hold (#97).
+
+**Five of those six were owed.** The full suite, run at the end, came back **10 failed, 898 passed**:
+five rows of `149a` and five of `151a`, one per ผู้สอน card screen, each dying at a `fill` with
+`element is not enabled` — a timeout and not a claim (#139), which is the shape a row takes when the
+thing it presses has gone quiet rather than wrong. The measurement I had trusted asked the right
+question of the wrong half of the JSX: I read *does closing the form unmount the component* and the
+ternary answered yes, while the list the pencil lives on is **outside** that ternary. A pencil on
+another card therefore arrives inside the held save, React re-renders rather than remounts, and the
+flag stands over a card that sent nothing. The clearing went into all five, in the effect the subject
+keys, because the subject changing **is** that arrival; `149a` and `151a` came back 43 passed.
+
+Three things this cost that nothing else would have said. A mount-point census answers *is the
+component remounted*, which is not *can this state be reached* — the second needs the control that
+reaches it, and that control was two levels up in a file the census never opened. The premise was
+right about nine files for a reason that was true of four of them, and a conclusion right for the
+wrong reason expires on the wrong day (#141). And the paragraph I had written into
+`components/users/UserForm.js` to hold the retraction named its own expiry condition — *the day a
+screen draws its form beside its table* — which was **already true** when I wrote it: a dated reason
+protects you against the future and says nothing about the sibling sitting in the same commit (#113).
+The sweep could not have found this one. A sweep cannot see the row your own fix breaks; only the
+clean suite can (#83, #96, #107, #209), which is what it is run at the end for.
+
+### A field that closes is half an answer where the value has already gone
+
+`offerings/SectionsPanel.js` cleared its own box **at the press**. Give that form a flag and the
+screen is correct by the rule's letter and still shows the person nothing: what is being saved is on
+nobody's screen, and a refusal leaves them without the number and without a way to send it again. The
+other half of the fix is to move the clearing to the **answer** and to clear only where the answer is
+not a refusal — which is the shape of `TeacherPicker.js` in the same file, so the screen already knew
+it — and it is a second claim, so it takes its own two mutants (`sectionclear` at the press,
+`sectionclearalways` for a clearing that does not ask what came back). A rule that closes a control
+says nothing about what the control is holding; ask what the person is left with when the refusal
+arrives.
+
+### A flag that says a save is out has to say whose
+
+`pages/StudentGroups.js` holds three forms — *สร้างกลุ่มงาน*, a rename on every group, and a student
+picker on every card, which is not in a `<form>` at all — and has no component to put a flag in,
+because all of them are written in the page's own file. A boolean there is the page-wide flag the
+owner refused, one layer in: a card placing a student closes the box somebody is typing a new group's
+name into. So `sending` holds **which** form has a request out — `create`, `rename`,
+`` `place:${group_id}` `` — which is #185's key written for a flag instead of for an answer, and
+`249:groupskeyless` is the boolean made to run (#48). It dies at *the สร้างกลุ่มงาน box while a card
+is placing*, `Expected: enabled · Received: disabled`, which is the whole of what the key buys.
+
+### What the fix re-dated in other people's files
+
+Three things, none of them red. `mutation/164-a-reopened-editor-painted-stale.py`'s
+`clearondraftclose` and `mutation/25-section-enrolment.py`'s `silentadd` quoted blocks that the fix
+writes a line into, so both anchors stopped being exact and `python mutation/anchors.py` said so
+while the change was being made, which is what it is run during one for (#202). And `142a`'s first
+row **types a number into a box that is now closed**, which would die at the timeout rather than at a
+claim (#139): the row keeps its claim and its mark, the instrument moved to
+`await sectionNumber(page).inputValue()`, and the citation that sheet `10` carried for it was dated
+rather than deleted (#54, #199, #221). A fix that disables a control is a change to every row that
+presses it, the rows that press it as an instrument included.
+
+### The deferral that cited the rule it was breaking
+
+The retraction paragraph said the four forms whose *ยกเลิก* still holds the page's flag were *a ticket of
+its own rather than a line in this one (#119, #125)* — and no such ticket existed. The rule it cited is
+the one that says a deferral written into prose and not into the tracker is a decision nobody can find,
+so citing #119 while breaking it is the whole of the finding; the same day's review round is what read
+the paragraph and asked for the number. It is **#253** now, and what it carries is not the fix but the
+measurement: the *four* is #202's count of a population of its own, so the ticket censuses by the
+mechanism (#174) instead of inheriting a number from the sweep that produced it (#223).
+
+### The census was wired in, and the shape paid back
+
+`save-window-fields.js` landed on 29 October 2569 **unwired**, because its first run was a red gate
+over a population no ticket had fixed, and an instrument wired in while its population is red teaches
+people to ignore the whole suite of them (#200). The sentence it landed with said it would go into
+`scripts/census.js` the day #249 closed **with nothing to change in the script**, and that is what
+happened: `forms 27 · flagged 127 · always 1 · marked 5 · bare 0 · problems 0`, twelve censuses green,
+and the exemption in `census.js` replaced by a dated reason rather than deleted (#54, #141). The two
+new markers are one per mechanism and not one per file — `SectionsPanel.js`'s rename form takes its
+own field off the screen at the press, which is `LoginForm.js`'s shape one grain in, and
+`ActivityScores.js`'s กิจกรรม picker is the screen's **read** control drawn outside the form that
+sends, which is the question #221 put to the owner and not a field of this form.
+
+And the instrument's own limit was measured on a real site again, which is where these limits get
+read (#226, #247): it asks whether a `disabled` **exists**, not whose flag it is. The witness it
+printed for that — `OfferingForm.js:178`, flagged behind a fetch flag that is down before anybody can
+press save — is a site this very fix gave a flag of its own, so the fix expired the **witness** and
+not the limit. `:203` now reads `sending || !draft.program_id || loading` and the script still cannot
+tell it from a condition holding the read's flag alone, so `bare 0` means nobody is bare and not that
+every flag is the right one.

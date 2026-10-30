@@ -26,12 +26,37 @@ import { COGNITIVE_LEVELS, LEARNING_ACTIVITIES } from './labels'
  * The sequence number is position and the server assigns it — the next free
  * number on add, closed up on delete. A form that offered the number would be
  * offering a field the server is going to ignore.
+ *
+ * ## The three fields are closed while this form's own save is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this form:
+ * `components/users/UserForm.js` carries the reasons for the fifteen files of
+ * that population, and the one measurement that is this form's own is the mount
+ * point — `pages/MeasurableBehaviors.js:205`, the only one on 30 ตุลาคม 2569,
+ * which is what makes `sending` a claim about every place this is drawn (#220).
+ *
+ * This form is one of the five ผู้สอน card screens, whose ternary swaps the form
+ * with the button that opens it and leaves the card list, and its pencils,
+ * standing underneath. A pencil on another card therefore arrives **while this
+ * card's save is out**, re-rendering this component instead of remounting it,
+ * which is why the flag needs the way back in written at the effect the subject
+ * keys (#227). The row that reads it as a claim is `249a`'s fifth, on
+ * `clos/CloForm.js`; what holds it **here** is `149a` and `151a`, whose rows
+ * for this screen were red the evening this landed and die at a `fill` rather
+ * than at a claim (#139).
  */
 export default function BehaviorForm({ behavior, busy, onSubmit, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     setDraft(behavior ? read(behavior) : EMPTY)
+    // The way back in, for the one state `.finally` cannot reach: this form is
+    // drawn above its list, so a pencil on another card arrives while this
+    // card's save is still out and the component is re-rendered rather than
+    // remounted (#220, #227). The subject changing is that arrival, so the flag
+    // comes down with the draft it was raised over.
+    setSending(false)
   }, [behavior])
 
   const set = (field, value) => setDraft(current => ({ ...current, [field]: value }))
@@ -47,11 +72,12 @@ export default function BehaviorForm({ behavior, busy, onSubmit, onCancel }) {
       <form
         onSubmit={event => {
           event.preventDefault()
+          setSending(true)
           onSubmit({
             behavior_detail: draft.behavior_detail.trim(),
             cognitive_level: draft.cognitive_level,
             learning_activity: draft.learning_activity,
-          })
+          }).finally(() => setSending(false))
         }}
         className="mt-4 space-y-4"
       >
@@ -60,6 +86,7 @@ export default function BehaviorForm({ behavior, busy, onSubmit, onCancel }) {
           <textarea
             value={draft.behavior_detail}
             onChange={event => set('behavior_detail', event.target.value)}
+            disabled={sending}
             rows={2}
             placeholder="สิ่งที่นักศึกษาทำให้เห็นได้ เช่น เขียนโปรแกรมจัดการข้อยกเว้นได้ถูกต้อง"
             aria-label="รายละเอียดพฤติกรรม"
@@ -73,6 +100,7 @@ export default function BehaviorForm({ behavior, busy, onSubmit, onCancel }) {
             <select
               value={draft.cognitive_level}
               onChange={event => set('cognitive_level', event.target.value)}
+              disabled={sending}
               aria-label="ระดับพุทธิพิสัย"
               className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
             >
@@ -92,6 +120,7 @@ export default function BehaviorForm({ behavior, busy, onSubmit, onCancel }) {
             <select
               value={draft.learning_activity}
               onChange={event => set('learning_activity', event.target.value)}
+              disabled={sending}
               aria-label="กิจกรรมการเรียนรู้"
               className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
             >

@@ -76,6 +76,7 @@ export default function SubjectStudents() {
   const [busy, setBusy] = useState(false)
   const [page, setPage] = useState(1)
   const [code, setCode] = useState('')
+  const [sending, setSending] = useState(false)
   const [removing, setRemoving] = useState(null)
 
   /**
@@ -293,9 +294,17 @@ export default function SubjectStudents() {
    * says (#152). So the handler asks #146's question itself, with the ref this
    * screen already has. Measured 11 October 2569 (#202)
    */
+  // #249's flag, which is #228's answer of 26 ตุลาคม 2569 reaching this
+  // screen - `components/users/UserForm.js` carries the reasons. It is the
+  // form's own and not the page's `busy`, which is up for every read this
+  // screen makes as well: the one field here is closed while the enrolment it
+  // was typed into is out, and the code is cleared where the answer came back.
+  // Nothing clears the flag anywhere else - this page holds one form, nothing
+  // re-seeds it, and the `finally` below always runs.
   const add = async event => {
     event.preventDefault()
     setBusy(true)
+    setSending(true)
     setNotice(null)
     const sent = onScreen.current
     try {
@@ -318,6 +327,7 @@ export default function SubjectStudents() {
     } catch (error) {
       if (!error.expired) setNotice({ error: true, message: error.message })
     } finally {
+      setSending(false)
       setBusy(false)
     }
   }
@@ -413,6 +423,7 @@ export default function SubjectStudents() {
                 name="student_id"
                 value={code}
                 onChange={event => setCode(event.target.value)}
+                disabled={sending}
                 placeholder="รหัสนักศึกษา"
                 className="w-56 rounded-lg border border-gray-300 px-4 py-2.5 text-sm"
               />

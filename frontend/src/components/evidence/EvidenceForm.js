@@ -23,6 +23,17 @@ import { useState } from 'react'
  * description are saved on their own, and the name of the file already there is
  * shown so a person can see what they are keeping.
  *
+ * ## The three fields are closed while this form's own save is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this form:
+ * `components/users/UserForm.js` carries the reasons. The mount point is
+ * `pages/ActivityEvidence.js:221`, the only one on 30 ตุลาคม 2569 (#220), and
+ * what is this form's own is that **the flag needs no second way down**: the
+ * mount is keyed on the file (the paragraph below), so another file's pencil
+ * builds a new form with `sending` false - which is what keeps `146a` and
+ * `149a` typing into the second file's box while the first file's save is
+ * still out.
+ *
  * ## One form per file
  *
  * The boxes are seeded once, when the form mounts. That is right only because
@@ -31,13 +42,15 @@ import { useState } from 'react'
  */
 export default function EvidenceForm({ evidence, types, maxBytes, busy, onSubmit, onCancel }) {
   const editing = Boolean(evidence)
+  const [sending, setSending] = useState(false)
   const [type, setType] = useState(evidence?.evidence_type ?? types[0]?.evidence_type ?? '')
   const [description, setDescription] = useState(evidence?.description ?? '')
   const [file, setFile] = useState(null)
 
   const submit = event => {
     event.preventDefault()
-    onSubmit({ evidence_type: type, description, file })
+    setSending(true)
+    onSubmit({ evidence_type: type, description, file }).finally(() => setSending(false))
   }
 
   const megabytes = Math.floor(maxBytes / (1024 * 1024))
@@ -53,6 +66,7 @@ export default function EvidenceForm({ evidence, types, maxBytes, busy, onSubmit
           <select
             value={type}
             onChange={event => setType(event.target.value)}
+            disabled={sending}
             className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
           >
             {types.map(entry => (
@@ -69,6 +83,7 @@ export default function EvidenceForm({ evidence, types, maxBytes, busy, onSubmit
             type="text"
             value={description}
             onChange={event => setDescription(event.target.value)}
+            disabled={sending}
             placeholder="เช่น โจทย์ที่แจกให้นักศึกษาในสัปดาห์ที่ 5"
             className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
           />
@@ -81,6 +96,7 @@ export default function EvidenceForm({ evidence, types, maxBytes, busy, onSubmit
           type="file"
           accept=".pdf,application/pdf"
           onChange={event => setFile(event.target.files?.[0] ?? null)}
+          disabled={sending}
           className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm text-gray-900 file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:text-gray-700"
         />
         <span className="mt-1 block text-xs text-slate-500">

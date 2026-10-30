@@ -112,6 +112,7 @@ export default function ActivityScores() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  const [sending, setSending] = useState(false)
   const [notice, setNotice] = useState(null)
   const [mode, setMode] = useState('activity')
   const [entry, setEntry] = useState('student')
@@ -335,9 +336,17 @@ export default function ActivityScores() {
         }))
   }, [data, entry])
 
+  // #249's flag, which is #228's answer of 26 ตุลาคม 2569 reaching this grid -
+  // `components/users/UserForm.js` carries the reasons. It is the form's own
+  // and not `busy`, which is up for every read this screen makes as well: the
+  // boxes of the grid that sent the save are closed until the answer lands,
+  // and the one `finally` puts both down. Nothing re-seeds the draft while a
+  // save is out - `setData(answer)` is this save's own answer, and a picker
+  // moved under it is #133's question and not this flag's.
   const save = async event => {
     event.preventDefault()
     setBusy(true)
+    setSending(true)
     setNotice(null)
     try {
       const marks = rows
@@ -369,6 +378,7 @@ export default function ActivityScores() {
     } catch (error) {
       failed(error)
     } finally {
+      setSending(false)
       setBusy(false)
     }
   }
@@ -416,6 +426,14 @@ export default function ActivityScores() {
               ยังไม่ให้คะแนน ไม่ใช่ศูนย์
             </p>
 
+            {/* save-window: the กิจกรรม picker below is not a field of the form
+                that sends - it is this screen's **read** control, drawn outside
+                that form, and what it changes is which activity's grid is on
+                the screen. #133's guard is what decides whether a save's answer
+                may redraw it (`onScreen.current === asked` in `save`), and
+                whether a read control should close while a write is out is the
+                question #221 put to the owner and not this ticket's to answer.
+                The grid's own boxes carry the flag (#249) */}
             <div className="flex flex-wrap items-center gap-3">
               <label className="sr-only" htmlFor="activity">
                 กิจกรรม
@@ -521,6 +539,7 @@ export default function ActivityScores() {
                                 onChange={event =>
                                   type(row.key, event.target.value, String(clo.clo_id))
                                 }
+                                disabled={sending}
                                 className="w-24 rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
                               />
                             </td>
@@ -531,6 +550,7 @@ export default function ActivityScores() {
                               aria-label={`คะแนนของ ${row.label}`}
                               value={draft[row.key] ?? ''}
                               onChange={event => type(row.key, event.target.value)}
+                              disabled={sending}
                               className="w-24 rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
                             />
                           </td>

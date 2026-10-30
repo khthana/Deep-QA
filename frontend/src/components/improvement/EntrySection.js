@@ -31,6 +31,27 @@ const CLOSED = Symbol('no editor open')
  * follows: this change was made in answer to that year's reflection. A section
  * with no earlier year to point at says nothing rather than saying ไม่มี — the
  * first cycle a รายวิชา ever has is not missing anything.
+ *
+ * ## The box is closed while this section's own save is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this card:
+ * `components/users/UserForm.js` carries the reasons. The mount point is
+ * `pages/ContinuousImprovement.js:348`, the only one on 30 ตุลาคม 2569 (#220),
+ * and it is drawn **four times on one screen** - once per section of the cycle.
+ * That is what makes the flag's grain the thing to say out loud here: it is one
+ * section's, so the three rows of `146a`, `149a` and `150a` that type while a
+ * save is out go on passing, because every one of them types into *another*
+ * section's box (`146a:706`, `149a:413` and its siblings) or into this one
+ * **after the editor was closed and opened again** (`150a:133`).
+ *
+ * The second of those is why the flag also comes down in the effect above, and
+ * this card is the one where that reading is not academic: `150a` holds the
+ * save's own reload at the route, so the page's handler has not resolved and
+ * the flag is still up while the person presses เขียน a second time. It comes
+ * down when the editor closes and when one opens - and **not** when an entry is
+ * replaced under an open editor, which is a write of somebody else's and says
+ * nothing about this save (#227's rule: a flag comes down where what it is
+ * about is reversed, not wherever its subject moves).
  */
 export default function EntrySection({
   cloNumber,
@@ -45,6 +66,7 @@ export default function EntrySection({
   onRemove,
 }) {
   const [draft, setDraft] = useState('')
+  const [sending, setSending] = useState(false)
   const entryId = entry?.entry_id
 
   // The id the open draft was seeded from, or CLOSED while nothing is open.
@@ -84,6 +106,14 @@ export default function EntrySection({
   // would paint the previous draft for a frame in the same way.
   useLayoutEffect(() => {
     if (!editing) {
+      // #249's line, and the second way down this card's flag needs: a
+      // closed editor has sent nothing, so the flag cannot outlive it. This is
+      // the branch the reopening goes through - `save` closes the editor as
+      // soon as the write succeeds and before the reload it ends with, so a
+      // person who presses the way back in while the save is out finds the box
+      // live. `components/users/UserForm.js` carries the reasons, and says why
+      // this card is the one of the fifteen that can reach the state at all.
+      setSending(false)
       seededFrom.current = CLOSED
       return
     }
@@ -140,13 +170,15 @@ export default function EntrySection({
         <form
           onSubmit={event => {
             event.preventDefault()
-            onSubmit(draft.trim())
+            setSending(true)
+            onSubmit(draft.trim()).finally(() => setSending(false))
           }}
           className="mt-3 space-y-3"
         >
           <textarea
             value={draft}
             onChange={event => setDraft(event.target.value)}
+            disabled={sending}
             rows={5}
             aria-label={label}
             placeholder={hint}

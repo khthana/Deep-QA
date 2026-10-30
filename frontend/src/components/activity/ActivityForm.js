@@ -38,12 +38,46 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * is a fact delivered only to people who can see two shades apart. #122 gave
  * each the sentence its own rule needs — and the rules are not the same one,
  * which is why the words are written here rather than shared with #30.
+ *
+ * ## The nine fields are closed while this form's own save is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this form:
+ * `components/users/UserForm.js` carries the reasons for the fifteen files of
+ * that population, and the measurement that is this form's own is the mount
+ * point — `pages/LearningActivities.js:202`, the only one on 30 ตุลาคม 2569,
+ * which is what makes `sending` a claim about every place this is drawn (#220).
+ *
+ * This form is one of the five ผู้สอน card screens, whose ternary swaps the form
+ * with the button that opens it and leaves the card list, and its pencils,
+ * standing underneath. A pencil on another card therefore arrives **while this
+ * card's save is out**, re-rendering this component instead of remounting it,
+ * which is why the flag needs the way back in written at the effect the subject
+ * keys (#227). The row that reads it as a claim is `249a`'s fifth, on
+ * `clos/CloForm.js`; what holds it **here** is `149a` and `151a`, whose rows
+ * for this screen were red the evening this landed and die at a `fill` rather
+ * than at a claim (#139).
+ *
+ * **Two of the controls closed here are buttons, which the census cannot see.**
+ * `เพิ่มผลการเรียนรู้` and `นำผลการเรียนรู้แถวที่ N ออก` add and remove a
+ * weighting row, so they move the very draft the save is carrying — the same
+ * parting of what the person sees from what is being saved that the decision is
+ * about, reached by a press rather than by typing. `save-window-fields.js` asks
+ * about `<input>`, `<select>`, `<textarea>` and the submit button and so counts
+ * neither of them; nothing in the suite presses either inside a held window,
+ * measured on 30 ตุลาคม 2569.
  */
 export default function ActivityForm({ activity, categories, clos, weeks, busy, onSubmit, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     setDraft(activity ? read(activity) : EMPTY)
+    // The way back in, for the one state `.finally` cannot reach: this form is
+    // drawn above its list, so a pencil on another card arrives while this
+    // card's save is still out and the component is re-rendered rather than
+    // remounted (#220, #227). The subject changing is that arrival, so the flag
+    // comes down with the draft it was raised over.
+    setSending(false)
   }, [activity])
 
   const set = (field, value) => setDraft(current => ({ ...current, [field]: value }))
@@ -79,6 +113,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
       <form
         onSubmit={event => {
           event.preventDefault()
+          setSending(true)
           onSubmit({
             activity_name: draft.activity_name.trim(),
             activity_type: draft.activity_type,
@@ -90,7 +125,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
             clo_rows: draft.clo_rows
               .filter(row => row.clo_id !== '')
               .map(row => ({ clo_id: Number(row.clo_id), weight: row.weight === '' ? 0 : Number(row.weight) })),
-          })
+          }).finally(() => setSending(false))
         }}
         className="mt-4 space-y-4"
       >
@@ -100,6 +135,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
             type="text"
             value={draft.activity_name}
             onChange={event => set('activity_name', event.target.value)}
+            disabled={sending}
             placeholder="เช่น โครงงานย่อยที่ 1 — คลาสและอ็อบเจกต์"
             aria-label="ชื่อกิจกรรม"
             className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"
@@ -112,6 +148,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
             <select
               value={draft.activity_type}
               onChange={event => set('activity_type', event.target.value)}
+              disabled={sending}
               aria-label="ประเภท"
               className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
             >
@@ -128,6 +165,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
               step="0.01"
               value={draft.score_number}
               onChange={event => set('score_number', event.target.value)}
+              disabled={sending}
               aria-label="คะแนนเต็ม"
               className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"
             />
@@ -138,6 +176,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
             <select
               value={draft.score_ratio_id}
               onChange={event => set('score_ratio_id', event.target.value)}
+              disabled={sending}
               aria-label="หมวดคะแนน"
               className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
             >
@@ -158,6 +197,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
               type="date"
               value={draft.announcement_date}
               onChange={event => set('announcement_date', event.target.value)}
+              disabled={sending}
               aria-label="วันที่ประกาศ"
               className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"
             />
@@ -169,6 +209,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
               type="date"
               value={draft.deadline_date}
               onChange={event => set('deadline_date', event.target.value)}
+              disabled={sending}
               aria-label="กำหนดส่ง"
               className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"
             />
@@ -179,6 +220,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
             <select
               value={draft.course_syllabus_id}
               onChange={event => set('course_syllabus_id', event.target.value)}
+              disabled={sending}
               aria-label="สัปดาห์ในแผนการสอน"
               className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
             >
@@ -240,6 +282,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
                   <select
                     value={row.clo_id}
                     onChange={event => setRow(index, 'clo_id', event.target.value)}
+                    disabled={sending}
                     aria-label={`ผลการเรียนรู้แถวที่ ${index + 1}`}
                     className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
                   >
@@ -259,6 +302,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
                     max="100"
                     value={row.weight}
                     onChange={event => setRow(index, 'weight', event.target.value)}
+                    disabled={sending}
                     aria-label={`น้ำหนักแถวที่ ${index + 1}`}
                     className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"
                   />
@@ -275,6 +319,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
                   <button
                     type="button"
                     onClick={() => dropRow(index)}
+                    disabled={sending}
                     aria-label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}
                     className="justify-self-start rounded-lg p-2 text-red-600 hover:bg-red-50"
                   >
@@ -288,7 +333,7 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
           <button
             type="button"
             onClick={addRow}
-            disabled={draft.clo_rows.length >= clos.length}
+            disabled={sending || draft.clo_rows.length >= clos.length}
             className="mt-3 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
           >
             เพิ่มผลการเรียนรู้

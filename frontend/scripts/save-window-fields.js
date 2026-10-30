@@ -44,18 +44,29 @@
  * replacing itself the marker is an exemption and nothing here will say so
  * (#93).
  *
- * ## It is red today, and committed unwired for that reason
+ * #249 added two more on 30 ตุลาคม 2569, which makes five marked controls in
+ * three files and one marker per **mechanism** rather than per file:
+ * `components/offerings/SectionsPanel.js`'s rename form takes its own field off
+ * the screen at the press, which is `LoginForm.js`'s shape one grain in, and
+ * `pages/ActivityScores.js`'s กิจกรรม picker is the screen's **read** control
+ * drawn outside the form that sends — whether a read control should close while
+ * a write is out is the question #221 put to the owner, not a field of this
+ * form.
  *
- * `npm run census` does not run this. Its first run is a red gate over the 57
- * controls in 15 files that no ticket has yet landed the shape on — its own
- * number, `bare 57` on 29 ตุลาคม 2569, and not the hand counts above, which
- * read fields only and read three of `CloForm.js`'s out of a docblock's prose
- * (#174) — and an
- * instrument wired in while its population is red teaches people to ignore the
- * whole suite of them; #200 settled that shape — the instrument lands with a
- * ticket for the gap rather than with the gap marked. The ticket is the one
- * #243 handed the rest of its population to, and the day it closes this goes
- * into `scripts/census.js` with nothing to change here.
+ * ## It was red, and it is wired in since 30 ตุลาคม 2569
+ *
+ * It landed unwired on 29 ตุลาคม 2569. Its first run was a red gate over the 57
+ * controls in 15 files no ticket had landed the shape on — its own number,
+ * `bare 57`, and not the hand counts above, which read fields only and read
+ * three of `CloForm.js`'s out of a docblock's prose (#174) — and an instrument
+ * wired in while its population is red teaches people to ignore the whole suite
+ * of them; #200 settled that shape, so it landed with the ticket for the gap
+ * rather than with the gap marked. That ticket was #249, which closed the
+ * population on 30 ตุลาคม 2569 — `forms 27 · flagged 127 · always 1 · marked 5
+ * · bare 0 · problems 0` — and wired this into `scripts/census.js` with nothing
+ * changed in the script, which is what the shape was for. The sentence that
+ * stood here until that day is kept above rather than deleted, because the
+ * reason it gave is what decided how the instrument landed (#54).
  *
  * Run it by name: `node scripts/save-window-fields.js` in `frontend/`, with
  * `--flagged` or `--marked` to list what it found rather than only what it did
@@ -68,14 +79,19 @@
  *   the flag is the form's own and not the page's is #228's answer and #242's
  *   whole subject, and what holds it is the fourth claim of each row of `228a`,
  *   `242a` and `243a` — a page-wide flag closes a form that sent nothing.
- *   Measured on a real site the day this landed (#226): the `<select>` at
- *   `components/offerings/OfferingForm.js:178` reads `flagged` behind the flag
- *   written on its line 182, which is raised in a fetch effect and never in
- *   `submit`, so it is down before anybody can press save. `bare` is a lower
- *   bound. The line cited is the one this script reports — the opening tag of
- *   the control — and not the line the `disabled` is written on, which is four
- *   below it here; the comment with the same measurement on it in
- *   `save-window-fields.test.js` says 178 for that reason.
+ *   Measured on a real site the day this landed (#226): the `<select>` then at
+ *   `components/offerings/OfferingForm.js:178` read `flagged` behind a flag
+ *   raised in a fetch effect and never in `submit`, so it was down before
+ *   anybody could press save, and `bare` was a lower bound. #249 gave that form
+ *   a flag of its own on 30 ตุลาคม 2569, which expired the witness and not the
+ *   limit: that picker is now `OfferingForm.js:203` and reads
+ *   `sending || !draft.program_id || loading`, which this script reports as one
+ *   `flagged` and cannot tell from a condition holding the read's flag alone.
+ *   Every submit button of the fifteen reads the **page's** `busy`, correctly
+ *   and by this rule's own wording, and is reported the same way as one reading
+ *   the form's. The line cited is the one this script reports — the opening tag
+ *   of the control — and not the line the `disabled` is written on, which is
+ *   four below it here.
  * - **whether the save can be refused at all, and whether the parent closes
  *   the form on success.** Together they decide how long the window lasts, and
  *   neither is in this file: both are in the parent screen's handler, and the

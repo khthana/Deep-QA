@@ -26,6 +26,19 @@ import { uploadProfilePhoto } from '../api/profile'
  * it: the browser will happily draw a `.png` this application refuses, and that
  * is the right order — the preview answers *is this the right photo*, the
  * refusal answers *is this a photo*.
+ *
+ * ## The chooser is closed while the upload is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this box:
+ * `components/users/UserForm.js` carries the reasons. Two things here are its
+ * own, and both make this the cheapest member of that population of fifteen.
+ *
+ * The flag is **already** the form's own: `busy` below is this component's
+ * state and not the shell's, raised in `submit` and put down in its `finally`,
+ * so the line the owner's answer asks for is one `disabled` and no new state.
+ * And nothing clears it on a re-seed because `close` does, which is the
+ * paragraph above - every way out of this box goes through it, and it sets
+ * `busy` false along with the choice and the input's own value.
  */
 /*
  * ## Closing is what clears this box, because closing it does not unmount it
@@ -183,6 +196,7 @@ export default function ProfilePhotoDialog({
               type="file"
               accept="image/png,image/jpeg"
               aria-label="ไฟล์รูปภาพ"
+              disabled={busy}
               onChange={event => {
                 setError('')
                 setFile(event.target.files?.[0] ?? null)

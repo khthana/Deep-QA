@@ -25,6 +25,17 @@ does belong to the Offering. This is the file where that difference bites.
 Killing them:
 
     cd e2e && npx playwright test 25a
+
+## เล็งใหม่และกวาดซ้ำเมื่อ 30 ต.ค. 2569 (#249)
+
+การแก้ของ #249 ใส่ `setSending(false)` ไว้เหนือ `setBusy(false)` ใน `finally` ของการเพิ่มนักศึกษา
+ของ `pages/SubjectStudents.js` สมอของ `silentadd` ซึ่งอ้างบล็อกนั้นทั้งก้อนจึงไม่ตรงอีก — ซึ่ง
+`python mutation/anchors.py` บอกตอนกำลังแก้ ซึ่งคือเหตุที่มันถูกรันระหว่างการแก้ (#202) — และสมอ
+ถูกเล็งใหม่ให้ยังอ้างความผิดอันเดิม ไม่ใช่ให้แค่หาบรรทัดเจอ (#203)
+
+กวาดซ้ำวันนั้นด้วย `25a` บวก `249a`: **ล้ม 2 ผ่าน 19** คือแถวที่ 3 กับแถวที่ 4 ที่
+`expect(locator).toBeVisible()` ซึ่งคือสองแถวที่ย่อหน้าของมันเองบอกไว้ว่ามันฆ่า และไม่มีแถวใดของ
+`249a` ตายใต้มัน
 """
 
 from harness import main
@@ -147,8 +158,11 @@ MUTANTS = {
     # dies with it: both refusals arrive down the same `catch`, so one swallow
     # silences both, and the two rows are one piece of evidence and not two.
     "silentadd": ("screen",
-                  "    } catch (error) {\n      if (!error.expired) setNotice({ error: true, message: error.message })\n    } finally {\n      setBusy(false)\n    }\n  }\n\n  const remove = async () => {",
-                  "    } catch (error) {\n      if (error.expired) setNotice({ error: true, message: error.message })\n    } finally {\n      setBusy(false)\n    }\n  }\n\n  const remove = async () => {"),
+                  # Re-aimed on 30 ตุลาคม 2569: #249 put `setSending(false)` in this
+    # `finally`, above `setBusy(false)`. The mutant still inverts the one
+    # condition and nothing else.
+    "    } catch (error) {\n      if (!error.expired) setNotice({ error: true, message: error.message })\n    } finally {\n      setSending(false)\n      setBusy(false)\n    }\n  }\n\n  const remove = async () => {",
+                  "    } catch (error) {\n      if (error.expired) setNotice({ error: true, message: error.message })\n    } finally {\n      setSending(false)\n      setBusy(false)\n    }\n  }\n\n  const remove = async () => {"),
     # ยกเลิก removes. The dialog still opens and still has two buttons, so
     # nothing about the screen looks different - the wrong one is wired. Kills
     # the first row 5 at the empty list of DELETEs sent while the dialog was up,

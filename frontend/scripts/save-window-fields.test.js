@@ -183,11 +183,14 @@ test('disabled written bare is always, not a window', () => {
 })
 
 test('a disabled whose expression names nothing this script knows is still flagged', () => {
-  // The too-loose direction, deliberately: `OfferingForm.js:178` closes its
+  // The too-loose direction, deliberately: `OfferingForm.js:203` closes its
   // subject picker until a หลักสูตร has been chosen, which is not a save
   // window at all. Reading what it names rather than judging it is what keeps
   // this census out of an argument it cannot settle; the report prints the
-  // expression so a person can see which it is.
+  // expression so a person can see which it is. That site reads
+  // `sending || !draft.program_id || loading` since #249 gave the form a flag of
+  // its own on 30 ตุลาคม 2569; the fixture below keeps the shape without one,
+  // which is the case this test is about.
   const verdict = field(
     form('<select value={draft.subject} onChange={set} disabled={!draft.program_id || loading} />')
   )

@@ -63,6 +63,17 @@ flush มันก่อนเบราว์เซอร์ paint เฟรม�
     cd e2e && npx playwright test 164a-a-reopened --reporter=line
     # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
     python mutation/164-a-reopened-editor-painted-stale.py restore
+
+## เล็งใหม่และกวาดซ้ำเมื่อ 30 ต.ค. 2569 (#249)
+
+การแก้ของ #249 เขียนบรรทัดลงในกิ่งที่ `clearondraftclose` อ้างอยู่ สมอจึงถูกเล็งใหม่ให้แคบลงเหลือ
+`seededFrom.current = CLOSED` กับ `return` ของมัน — เก็บความผิดเดิมไว้ ไม่ใช่เปลี่ยนเป็นมัตแตนต์
+ตัวอื่น (#203) — และ `249a` เป็นใบที่**แปด**ที่วาด `EntrySection` ขึ้นจอ ซึ่งเป็นอีกทางที่ทำให้
+จำนวนของมันหมดอายุ แม้ไม่มีใครแตะโค้ดที่มันแก้ (#248)
+
+กวาดซ้ำกว้างเท่าเดิมบวกใบที่แปด — `41a` `133a` `146a` `149a` `150a` `151a` `164a` `249a` —
+**117 ผ่าน ไม่ตายสักแถว** (6.1 นาที) **มันยังรอดอย่างที่มันมีไว้ให้รอด** และ 117 ของวันนี้คือ 111
+ของเดือน ก.ย. บวกหกแถวของ `249a` ซึ่งเป็นการเติบโตของใบ ไม่ใช่การขยับของข้ออ้าง
 """
 
 from harness import main
@@ -75,16 +86,17 @@ LAYOUT = "import { useLayoutEffect, useRef, useState } from 'react'\n"
 AFTER_PAINT = "import { useEffect, useRef, useState } from 'react'\n"
 CALL = "  useLayoutEffect(() => {\n"
 AFTER_PAINT_CALL = "  useEffect(() => {\n"
-CLOSE = """    if (!editing) {
-      seededFrom.current = CLOSED
+# Narrowed on 30 ตุลาคม 2569: #249 put a clearing of that card's own
+# `sending` at the top of this branch, so the block this quoted whole is no
+# longer the text in the file. The claim is unchanged - the draft is cleared
+# when the editor closes - and the two lines below are what the mutant is
+# about; `seededFrom.current = CLOSED` is written once in the file (#203).
+CLOSE = """      seededFrom.current = CLOSED
       return
-    }
 """
-CLOSE_CLEARS = """    if (!editing) {
-      seededFrom.current = CLOSED
+CLOSE_CLEARS = """      seededFrom.current = CLOSED
       setDraft('')
       return
-    }
 """
 
 MUTANTS = {

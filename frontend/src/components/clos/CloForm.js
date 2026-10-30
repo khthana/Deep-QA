@@ -43,12 +43,36 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * it, so a code with no digits in it is still reachable by a typing mistake and
  * has to land somewhere defined. **The fallback is a safety net now, not the
  * case the rule was written for.**
+ *
+ * ## The five fields are closed while this form's own save is out
+ *
+ * #249, which is #228's answer of 26 ตุลาคม 2569 reaching this form:
+ * `components/users/UserForm.js` carries the reasons for the fifteen files of
+ * that population, and the measurement that is this form's own is the mount
+ * point — `pages/CourseOutcomes.js:229`, the only one on 30 ตุลาคม 2569, which
+ * is what makes `sending` a claim about every place this is drawn (#220).
+ *
+ * This form is one of the five ผู้สอน card screens, whose ternary swaps the form
+ * with the button that opens it and leaves the card list, and its pencils,
+ * standing underneath. A pencil on another card therefore arrives **while this
+ * card's save is out**, re-rendering this component instead of remounting it,
+ * which is why the flag needs the way back in written at the effect the subject
+ * keys (#227). `249a`'s fifth row reads that here - the mutant is
+ * `249:cloflagstuck` - and the other four of the five are held by the ten rows
+ * of `149a` and `151a` that were red the evening this landed.
  */
 export default function CloForm({ clo, plos, busy, onSubmit, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     setDraft(clo ? read(clo) : EMPTY)
+    // The way back in, for the one state `.finally` cannot reach: this form is
+    // drawn above its list, so a pencil on another card arrives while this
+    // card's save is still out and the component is re-rendered rather than
+    // remounted (#220, #227). The subject changing is that arrival, so the flag
+    // comes down with the draft it was raised over.
+    setSending(false)
   }, [clo])
 
   const set = (field, value) => setDraft(current => ({ ...current, [field]: value }))
@@ -63,13 +87,14 @@ export default function CloForm({ clo, plos, busy, onSubmit, onCancel }) {
       <form
         onSubmit={event => {
           event.preventDefault()
+          setSending(true)
           onSubmit({
             clo_number: draft.clo_number.trim(),
             clo_detail: draft.clo_detail.trim(),
             teaching_method: draft.teaching_method.trim(),
             assessment_method: draft.assessment_method.trim(),
             plo_id: draft.plo_id === '' ? null : Number(draft.plo_id),
-          })
+          }).finally(() => setSending(false))
         }}
         className="mt-4 space-y-4"
       >
@@ -79,6 +104,7 @@ export default function CloForm({ clo, plos, busy, onSubmit, onCancel }) {
             <input
               value={draft.clo_number}
               onChange={event => set('clo_number', event.target.value)}
+              disabled={sending}
               placeholder="เช่น CLO-1"
               maxLength={50}
               aria-label="รหัสผลการเรียนรู้"
@@ -93,6 +119,7 @@ export default function CloForm({ clo, plos, busy, onSubmit, onCancel }) {
             <select
               value={draft.plo_id}
               onChange={event => set('plo_id', event.target.value)}
+              disabled={sending}
               aria-label="ผลการเรียนรู้ของหลักสูตรที่รองรับ"
               className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
             >
@@ -111,6 +138,7 @@ export default function CloForm({ clo, plos, busy, onSubmit, onCancel }) {
           <textarea
             value={draft.clo_detail}
             onChange={event => set('clo_detail', event.target.value)}
+            disabled={sending}
             rows={2}
             aria-label="รายละเอียดผลการเรียนรู้"
             className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"
@@ -123,6 +151,7 @@ export default function CloForm({ clo, plos, busy, onSubmit, onCancel }) {
             <textarea
               value={draft.teaching_method}
               onChange={event => set('teaching_method', event.target.value)}
+              disabled={sending}
               rows={2}
               aria-label="วิธีการสอน"
               className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"
@@ -134,6 +163,7 @@ export default function CloForm({ clo, plos, busy, onSubmit, onCancel }) {
             <textarea
               value={draft.assessment_method}
               onChange={event => set('assessment_method', event.target.value)}
+              disabled={sending}
               rows={2}
               aria-label="วิธีการวัดผล"
               className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"

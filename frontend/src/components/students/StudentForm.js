@@ -60,6 +60,7 @@ const admissionYearOf = studentId =>
 
 export default function StudentForm({ programs, departments, busy, onSave, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
+  const [sending, setSending] = useState(false)
 
   // Only programmes still being offered may be filed under; a retired one is
   // left out rather than shown disabled, because nothing here is ever opened on
@@ -92,14 +93,25 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
     ? departments.find(entry => entry.department_id === picked.department_id)
     : null
 
+  // #249 - the form's own flag, up here and down in the `finally`.
+  // `components/users/UserForm.js` carries the reasons; the mount point is
+  // `pages/Students.js:415`, the only one on 30 ตุลาคม 2569 (#220), and what is
+  // this form's own is that **nothing clears the flag on a re-seed here, on
+  // purpose**: this form is add-only - one heading, เพิ่มนักศึกษา, and no record
+  // handed to it - so a later form is a remount, the page drawing it only while
+  // `adding`. The effect above cannot carry the line either: it is keyed on
+  // `onlyOne`, which is derived from an answer by identity, so it re-runs every
+  // time the screen reads the programmes again - including while this save is
+  // out, which would put the flag down early (#232, #233).
   const submit = event => {
     event.preventDefault()
+    setSending(true)
     onSave({
       student_id: draft.student_id.trim(),
       first_name_th: draft.first_name_th.trim(),
       last_name_th: draft.last_name_th.trim(),
       program_id: draft.program_id,
-    })
+    }).finally(() => setSending(false))
   }
 
   return (
@@ -113,6 +125,7 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
               className={field}
               value={draft.student_id}
               onChange={set('student_id')}
+              disabled={sending}
               inputMode="numeric"
               pattern="\d{8}"
               maxLength={8}
@@ -132,6 +145,7 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
               className={field}
               value={draft.first_name_th}
               onChange={set('first_name_th')}
+              disabled={sending}
               maxLength={100}
               required
             />
@@ -141,6 +155,7 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
               className={field}
               value={draft.last_name_th}
               onChange={set('last_name_th')}
+              disabled={sending}
               maxLength={100}
               required
             />
@@ -150,6 +165,7 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
               className={field}
               value={draft.program_id}
               onChange={set('program_id')}
+              disabled={sending}
               required
             >
               <option value="">เลือกหลักสูตร</option>
