@@ -539,7 +539,7 @@ citation.
   re-sweep the ones you did not touch. **A spec that gains a row the mutant can reach expires it
   the same way**, and nothing reports that one: the anchor is still exact and the code untouched,
   so only re-running it says the mutant proves one claim more than its sheet credits it with.
-  (#48, #202)
+  (#48, #202, #248)
 - **What corrupts a sweep is a repeated path — compare `FILES`, not subject matter**, and ask the
   census script rather than your memory; the figure that decides is the group, not the total.
   (#85, #87, #125)

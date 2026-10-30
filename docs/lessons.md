@@ -16160,3 +16160,50 @@ screens, over rows a CSV can put outside the parent screen's filter, with no fil
 panel to compare against. Whether a child's own sentence is in this species, and who would tell the
 panel what the screen is filtered by, is the owner's (`docs/06` §Out of Scope), so it is #252 and
 not a line of code in this ticket.
+
+
+## #248 — the ten mutants another ticket's fix left unmeasured
+
+#242 unlocked *ยกเลิก* on four more forms, which made `142a`'s fourth arm — *a read of the same row
+after ยกเลิก leaves บันทึก disabled while its save is out* — start running on four more screens.
+Nothing in `mutation/` changed and nothing went red: every anchor stayed exact, the line each of the
+eight screens hands all twenty-four mutants of `142` was untouched, and the difference was in a spec file. What
+expired was the **kill count** of the twelve mutants belonging to those four screens, and only
+re-running them could say so (#202, #107, #68). #242 wrote that down in the docblock and in
+`mutation/README.md`, swept two of the twelve, and was stopped by the machine at the eleventh
+mutant of twenty. A deferral written in prose and not into the tracker is a decision nobody can
+find (#119), so the other ten became this ticket rather than a paragraph, the price being ten
+rounds of the harness.
+
+### What the re-sweep found, which was no defect, and why that is still the finding
+
+The baseline of `142a` whole — 31 rows, seven screens by four arms plus `Offerings`' three — read
+**31 of 31** in 2.9 minutes, and the ten ran one at a time at about two minutes each. The shape was predicted
+before the sweep and every one of the ten killed the row it was written for, read from the **name
+of the dying assertion** and not from the count (#201) — and read against that row rather than
+against the total (#203), because the count three of them did **not** match is September's, which
+is the finding the ticket exists for. `…supersededletsgo` killed the first row at its own
+`isDisabled`, `…letgowhileasked` the third at the confirmation's `toBeEnabled`, and each
+`…currentletsgo` killed **two** — its own second row and the fourth arm that had just arrived on
+that screen — because both are the one line putting down the one flag, which is one defect two rows
+reach and not two claims a mutant can tell apart (#191). Every kill died at a row's own assertion
+rather than at a timeout, and the tree was clean after each `restore`.
+
+So nothing was wrong, and that is what ten harness rounds buy: a count that has expired is not a
+count that is wrong, it is a count nobody knows. Before today the fourth-arm row on sheets `19`,
+`21` and `22` was green and cited the mutant that *probably* held it, with the reason written in the
+cell — a claim nobody had measured, which is a ☐ and not a ⚙ (#107, #68). The three cells are ⚙
+now, with the measured numbers and the #191 sentence in them, and the sweep re-proved the other two
+rows of each of those screens on the way past.
+
+### The sentence of my own that the sweep refuted
+
+The docblock said, in a paragraph I had written two days earlier, that the fourth arm's arrival left
+*every mutant's pass count in this file off by four*. That is true of a whole-file run and false of
+the record it sits above: September's sweep table is **per-screen groups** (`142a --grep "<screen>.js"`
+plus the screen's own specs), where `departments`, `programs`, `subjects` and `offerings` gained no
+new row at all and the four screens of this ticket gained exactly one each, their own fourth arm. A
+claim written in prose expires like a number (#130), and this was the #240 species once more: the
+sentence most likely to be wrong is the one I wrote myself to replace somebody else's. It is dated
+and corrected rather than deleted, and the September numbers stay where they are, as the record of
+what one measurement returned (#54).
