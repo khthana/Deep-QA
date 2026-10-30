@@ -77,7 +77,17 @@
  *   owner as [#250](https://github.com/khthana/Deep-QA/issues/250), because the
  *   same screen's `save` already takes the person into that panel with a
  *   list-keyed sentence standing, on purpose (#196). It is the coverage half of
- *   the limit above rather than an absence (#226).
+ *   the limit above rather than an absence (#226). **Answered on 30 ตุลาคม 2569
+ *   and the limit kept**: the ref there is now `listReplaced`, which tracks both
+ *   branches, and this script still cannot ask that of any screen — it reads
+ *   that a deferral is there, not how many of the screen's list-replacing
+ *   branches the ref follows. What the measurement of that day added is that the
+ *   window the gap left open was not reachable either: no row of the table is
+ *   drawn while the read that carries the sentence is out, so nothing a person
+ *   can press replaces the list inside it, and the widening went in as a net
+ *   (`e2e/tests/250a-the-window-that-draws-no-rows.spec.js`). A screen that
+ *   draws such a control outside its table would not be covered by that
+ *   accident, and this script would be as silent about it as it was here.
  * - **whether a marker's reason is still true**, which is #93's rule and the
  *   reason each reason carries a ticket number.
  *

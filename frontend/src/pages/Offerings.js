@@ -227,7 +227,7 @@ export default function Offerings() {
         }
         setData(answer)
         if (waiting.current && waiting.current.of === key) {
-          if (formShown.current) {
+          if (listReplaced.current) {
             waiting.current = { ...waiting.current, held: true }
           } else {
             setNotice(waiting.current.said)
@@ -256,7 +256,7 @@ export default function Offerings() {
         // say - #209.
         // #246, 29 ตุลาคม 2569 - unless it is held for a form to close,
         // the one case where a landed read has drawn nothing to put a sentence
-        // over. The effect beside `formShown` owns a held one from here on.
+        // over. The effect beside `listReplaced` owns a held one from here on.
         if (!handedOn && !waiting.current?.held) waiting.current = null
       }
     }
@@ -282,46 +282,95 @@ export default function Offerings() {
   }, [load])
 
   /**
-   * Whether a form is drawn in place of the list, readable after an await -
-   * #246, 29 ตุลาคม 2569.
+   * Whether **anything** is drawn in place of the list, readable after an await -
+   * #246, 29 ตุลาคม 2569, widened to this screen's second branch by the owner's
+   * two answers of 30 ตุลาคม 2569 (#250): ข, and then *keep it as a net* once
+   * the measurement below refuted the diagnosis ข had been given on.
    *
-   * The return below draws the form **or** the table and never both, so a read
-   * that lands while one is open has drawn nothing a waiting sentence is about,
-   * and the sentence waits for a list to be true of. `load` cannot read
-   * `opening` itself: in its dependency list it would rebuild the loader at
-   * every press of the opener and the effect above would fetch the list again
-   * for each one, and out of the list the closure would see the first render's
-   * value (#201). So it is mirrored into a ref the way `onScreen` mirrors
-   * `load` just above. `frontend/src/pages/Plos.js` carries the measurement the
-   * owner's answer rests on and what this ref is *of* (#185, #207).
+   * A read that lands while the list is replaced has drawn nothing a waiting
+   * sentence is about, and the sentence waits for a list to be true of. `load`
+   * cannot read `opening` or `viewing` itself: in its dependency list it would
+   * rebuild the loader at every press of the opener and the effect above would
+   * fetch the list again for each one, and out of the list the closure would see
+   * the first render's value (#201). So they are mirrored into a ref the way
+   * `onScreen` mirrors `load` just above. `frontend/src/pages/Plos.js` carries
+   * the measurement the owner's answer rests on and what this ref is *of*
+   * (#185, #207).
+   *
+   * The name is the whole of #250: the other **eight** screens of the family
+   * call this `formShown` and that is all theirs holds, while this one has
+   * **two** branches that return instead of the table — the form and
+   * `<SectionsPanel>` below. #246's mechanism read the first alone. (Eight and
+   * not nine: the family is nine screens including this one, and the tenth,
+   * `pages/SubjectStudents.js`, holds such a sentence over a list nothing
+   * replaces and so holds no such ref at all — `grep -rln 'formShown = useRef'`
+   * on 30 ตุลาคม 2569, after the two-axis review read *nine* as a claim.)
+   *
+   * **And the window that leaves open cannot be reached.** The ticket's way in
+   * was *press ตอนเรียนและผู้สอน while the read of a cancellation is still out*;
+   * a row written to build it died at the press, because the `<tbody>` draws
+   * `กำลังโหลด…` in place of every row while `loading`, and `load` raises that
+   * flag on its first line. Counted on 30 ตุลาคม 2569 with the read held at the
+   * route, which is what a slow server does: `ตอนเรียนและผู้สอน` 0,
+   * `ยกเลิกการเปิด` 0. So nothing a person can press sets `viewing` inside the
+   * window, and #199 does not reach this: the system does not hold two
+   * behaviours with the clock choosing, because the clock cannot choose. What is
+   * left is the gap between a commit and its passive effect at `setPage(1)`
+   * (`runCopy`, and `load`'s hand-on of #209), which is under one frame.
+   *
+   * The owner's answer that day, with that measurement in hand: **keep it, as a
+   * net.** The line below changes no reachable path and no seam can put it at
+   * risk (#203's ninth reading), so no mutant stands for it; what stands instead
+   * is `250a`, which holds the *mechanism that closes the window* and goes red
+   * the day `กำลังโหลด…` leaves the table or a way into the panel is drawn
+   * outside `<tbody>`. That is the condition that re-dates the whole of #250.
+   *
+   * **What this does not touch is `save`**, which the ticket read as the
+   * opposite decision already taken on this screen (#196). Measured on
+   * 30 ตุลาคม 2569: `save` hands its sentence over, awaits the list read - which
+   * is where `load` says it - and only then calls `refresh`, which is the line
+   * that sets `viewing`. The sentence is therefore out of `waiting` before this
+   * ref can be true of the panel, on that path and on `confirmRemoval`'s
+   * cancellation path, which clears `viewing` before it hands anything over. So
+   * the main path still takes the person into the panel with its sentence
+   * standing, on purpose - the sentence says *ขั้นต่อไปคือเพิ่มตอนเรียน* and the
+   * panel is that next step - and what the unreachable window would have
+   * produced is the same picture with a sentence about the **list** on it. The
+   * owner was given that difference before either answer: the two are two kinds
+   * of sentence, not two drawings, and *every sentence waits for the list* is
+   * void on this screen, `save` never returning to the list for it to be said on
+   * (#232).
    */
-  const formShown = useRef(false)
+  const listReplaced = useRef(false)
   useEffect(() => {
-    formShown.current = Boolean(opening)
-  }, [opening])
+    listReplaced.current = Boolean(opening || viewing)
+  }, [opening, viewing])
 
   /**
-   * The held sentence, said when the list comes back - #246.
+   * The held sentence, said when the list comes back - #246, and since the
+   * owner's answer ข of 30 ตุลาคม 2569 the panel closing is the other way back
+   * (#250).
    *
    * A held sentence whose read is no longer the one the screen is on is owed to
    * nobody and goes without being said, which is the same half of the key rule
    * `load` applies above (#205). That clause is **structurally unreachable**
-   * here on 29 ตุลาคม 2569 and is written for the day it is not: the pager
-   * and the filters are drawn in the branch the form replaces, so nothing can
-   * move the key while a form is open. A control drawn outside that branch
-   * would move it, and that is the condition that re-dates this.
+   * here on 30 ตุลาคม 2569 and is written for the day it is not: the pager
+   * and the filters are drawn in the branch the form replaces, and the panel's
+   * own branch returns before them too, so nothing can move the key while
+   * either is up. A control drawn outside both branches would move it, and that
+   * is the condition that re-dates this.
    *
    * The clearing here is the whole of it, the `finally` in `load` having stopped
    * clearing a held one: a sentence nothing clears is not a sentence that is
    * lost, it is one the next read says over a list it is not about (#205, #137).
    */
   useEffect(() => {
-    if (opening) return
+    if (opening || viewing) return
     const held = waiting.current
     if (!held?.held) return
     if (held.of === readOf(page, program, year, semester)) setNotice(held.said)
     waiting.current = null
-  }, [opening, page, program, year, semester])
+  }, [opening, viewing, page, program, year, semester])
 
   /**
    * The page the pager is on now, for a handler that has to know whether the

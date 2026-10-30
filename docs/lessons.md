@@ -16334,3 +16334,103 @@ press save — is a site this very fix gave a flag of its own, so the fix expire
 not the limit. `:203` now reads `sending || !draft.program_id || loading` and the script still cannot
 tell it from a condition holding the read's flag alone, so `bare 0` means nobody is bare and not that
 every flag is the right one.
+
+## #250 — the window that drew no rows, and the net standing where the fix cannot be proved
+
+[#250](https://github.com/khthana/Deep-QA/issues/250) was opened by the review of #246, by me, on
+29 October 2569: `pages/Offerings.js` is the one screen of #246's nine family members with **two**
+branches that `return` in place of the list — the offering form and `<SectionsPanel>` — and #246's
+ref watched only the first (`formShown.current = Boolean(opening)`). So a sentence deferred to the
+list read could be said over the panel, if *ตอนเรียนและผู้สอน* were pressed while the cancel's own
+read was still out. Three options: ก keep today, ข widen the ref to `Boolean(opening || viewing)`,
+ค defer by **what the read is of** rather than by what is drawn.
+
+### The ticket's objection to its own option was a claim, and it was false
+
+The ticket wrote, against ข, that it **reverses `save`'s own decision** — the one that takes the
+person into the panel carrying a sentence bound to the list, on purpose (#196). Measured on 30
+October 2569: `save` defers the sentence, then `await`s the list read, which is where `load` says
+it, and only then calls `refresh`, which is the line that sets `viewing`. The sentence has left
+`waiting` before the ref can be true of the panel at all, and `confirmRemoval`'s cancel path clears
+`viewing` before it defers. **ข touches no reachable path, and ค falls with it**, existing as it did
+to protect a decision ข cannot reach. The owner answered **ข** with that measurement in hand — a
+ticket's reason for *not* taking an option is a claim like its numbers (#114, #77).
+
+### Then the row written to build the ticket's situation refuted the whole diagnosis
+
+The row holds the cancel's read at the route with `gate`, and then presses *ตอนเรียนและผู้สอน*. It
+**died at the press.** The `<tbody>` draws `{loading && 'กำลังโหลด…'}` and then
+`{!loading && data.offerings.map(...)}`, and `load` sets `setLoading(true)` on its first line. Inside
+the window, counted: rows in the table 2 (the header and the loading line), *ตอนเรียนและผู้สอน*
+buttons **0**, *ยกเลิกการเปิด* buttons **0**. There is no control in the window to turn `viewing` on
+with.
+
+**And it is not a limit of the seam.** `gate` holds the request at the route, which is what a slow
+server does; `loading` is true for the whole window in the measurement and in life alike. What closes
+the way in is the screen, not the instrument (#141: measure whether the situation can be built, do
+not reason about it — and here the measurement says the product closes it). So **#199 does not reach
+this**: the system does not hold two behaviours with the clock choosing, because the clock cannot
+choose. The only window left is the gap between commit and the passive effect at `setPage(1)`
+(`runCopy`, and #209's hand-on), which is under one frame and cannot be built as a row (#188).
+
+This is #179 one species along. There the lesson was that a ticket naming a race has named a window
+and not the population of ways in; here the window itself holds **no control** the named way in
+needs. The catalogue of ways a *What is wrong* has been wrong did not have that species in it.
+
+### The measurement arrived after the owner had answered, so it went back to the owner
+
+The owner had already chosen ข. The honest thing was not to write the measurement into the commit
+message and keep the diff, and not to revert it silently either: **an owner's answer rests on the
+ticket's diagnosis, so a measurement that refutes the diagnosis after the answer is a question, not
+a finding** (#228 one step along — there the owner's *answer* was priced before it was built; here
+its *premise* expired after it was given). The answer, the same day: **keep the change, as a net.**
+`listReplaced.current = Boolean(opening || viewing)` stands in the tree, changes nothing on any
+reachable path, and no seam can prove it (#203's ninth reading of a survivor: take the mutant out,
+have the row assert the **mechanism** rather than the absence, and write beside it the condition
+that would make the claim reachable again).
+
+### The sheet has no criteria row, and the mutant is of the net's premise
+
+Sheet `23` gained a `## #250` section and **no criteria row** — a net for a premise is not a
+criterion of that sheet, so there is nothing on the sheet to mark (#141). What
+`e2e/tests/250a-the-window-that-draws-no-rows.spec.js` holds is *while the read carrying the
+sentence is out, the screen draws no control that could set `viewing`*. The day the loading line
+stops replacing the rows, or a way into the panel is drawn outside the `<tbody>`, that row goes red,
+and that is the condition that re-dates the whole of #250 (#131, #141). The reason in full is in the
+docblock of `listReplaced`.
+
+`250:rowswhileloading` draws `data.offerings` while `loading` is true — reopening #250's window — and
+dies `Expected: 0 · Received: 2` at the row's button count. It is a mutant of the net's **premise**,
+not of the claim the net stands in for: what it proves is that the net reads. There is **no mutant
+for `Boolean(opening)`**, which is option ก made to run (#48), because no row could kill it, and a
+mutant with no killer proves nothing while adding one to the sweep's total quietly.
+
+### What the census still cannot see
+
+`frontend/scripts/held-sentences.js` reports `Offerings.js` as `held` both before this ticket and
+after: it asks *is there a deferral*, not *how many of the branches that replace the list does the
+ref follow*. Its seventh limit — measured on a real site the day it landed (#226, #247) — was
+**answered and kept** on the same day, with what this measurement adds: the window that gap leaves
+open is unreachable too, and a screen that drew such a way in outside its own table would not have
+this accident to protect it, with the census just as silent.
+
+### What the two-axis review caught, and the one it was wrong about
+
+Three of its four findings were real, and all three were rules this file already holds. The net's
+third assertion — a count of `ยกเลิกการเปิด` — sat **below** the claim the file's only mutant kills,
+so nothing ever read it (#88), and `getByRole` matches a name as a substring, so the dialog's own
+`ยกเลิกการเปิดรายวิชา` was inside it: it was green partly because the dialog had closed, which is
+not what the line said (#118). It came out, with the reason left in its place, and the mutant was run
+again — **still dying at the same assertion with the same numbers**, which is the only thing that
+says an edited row still measures what it did (#146). The docblock's *the other **nine** screens call
+this `formShown`* was eight by `grep -rln`, the family being nine screens including this one and the
+tenth holding no such ref (#119). And the pair of documents the diff touched on one side only: the
+census script's docblock said the seventh limit was *answered and kept* while its own index entry in
+`CLAUDE.md` still presented the witness as a live gap owned by an open ticket (#154, #130) — dated
+rather than deleted (#54), as was the refuted record on sheet `19`, because that is where the wrong
+reason had been pointed at somebody else (#225).
+
+The fourth was wrong, and measuring it took one grep: *the control line reads `**1 ผ่าน 1**` where
+every sibling writes `ล้ม N ผ่าน N`*. The sheets' convention is `ล้ม N ผ่าน N` for a **mutant** line
+and `N ผ่าน N` for the **control** — #249's own `ตัวควบคุมจึงเป็น **6 ผ่าน 6**`, four sheets along.
+About one finding a round is wrong, which is why each is measured before it is acted on.
