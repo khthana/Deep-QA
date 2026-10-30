@@ -232,6 +232,27 @@ const readOf = (page, filters) =>
  * ends being `Boolean(own) && scopes.includes(own)`. The situation the sentence
  * would have been for cannot be built from this screen, so there is nothing
  * here to say (#141, and #203's survivor that had nowhere to say it).
+ *
+ * **And the half that measurement did not reach, measured on 30 October 2569**
+ * when #251 was closed: that ticket's own *where this came from* said the other
+ * six screens #247's sentence landed on had never been asked the same question,
+ * and `placeAllowed` has three callers, all three in `backend/routes/users.js`
+ * — which made the question look open because it was asked by the guard's
+ * **name**. Asked by the mechanism instead, all seven creates refuse a
+ * placement outside the acting grant's reach, each with its own name:
+ * `programRefusal` (`plos.js`, `rubrics.js`), `departmentRefusal`
+ * (`subjects.js`), `programRefusal` with `catalogueRefusal`
+ * (`programSubjects.js`), `programRefusal` with `placementRefusal`
+ * (`offerings.js`), and `refuseWrite` through `programInReach` (`students.js`),
+ * all of them deriving the reach from the grant rather than reading authority
+ * out of the body (ADR-0002). They refuse a blank placement too, which is the
+ * half #251 misread here. So the sentence is silent on all seven for one
+ * reason: the situation cannot be built on any of them.
+ *
+ * What this does **not** say, in the shape the measurement was made: it asked
+ * the **create** of those seven screens, not every route in the server, and not
+ * whether an **update** can move a record out of reach — `reachable(<an id that
+ * exists>)` answers half of that one, and nobody has asked the other half.
  */
 const matchesSearch = (term, draft) => {
   if (term.includes('%') || term.includes('_')) return true
