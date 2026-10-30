@@ -16434,3 +16434,135 @@ The fourth was wrong, and measuring it took one grep: *the control line reads `*
 every sibling writes `ล้ม N ผ่าน N`*. The sheets' convention is `ล้ม N ผ่าน N` for a **mutant** line
 and `N ผ่าน N` for the **control** — #249's own `ตัวควบคุมจึงเป็น **6 ผ่าน 6**`, four sheets along.
 About one finding a round is wrong, which is why each is measured before it is acted on.
+
+## #252 — the sentence that lived in another module, and the callback that was already being called
+
+[#252](https://github.com/khthana/Deep-QA/issues/252) was opened by the review of #247, by me, on
+29 October 2569, out of a limit that ticket's own census had written into its docblock: **a sentence
+in another module**. `ImportPanel` says *นำเข้าสำเร็จ N รายการ* for itself, it is mounted on four of
+#247's seven screens, and the rows a CSV writes take their keys from the file — so the panel's green
+line can stand over a list that holds none of them, and the census, which asks the page file, was
+green on all four. Three options: ก not in this species, close it with a dated reason; ข the parent
+says it, by handing the panel its filter as a prop; ค the panel says it, handed the question instead
+of the value.
+
+### The option that needed no measurement was the one whose reason was false
+
+#114 says to check the option against the ticket's own acceptance condition first, and here that was
+ก — *the import sentence is a report about a file, and the person is reading the report box under it
+anyway*. The reason is a claim about what the component draws, and it took one read of
+`ImportPanel.js` to refute: the per-row table is drawn **only for a refusal**. A successful import
+draws one green line and no list of rows at all, so there is no report box under it for anybody to be
+reading. A criterion met in the letter and not in the substance is measured, not argued (#66) — and
+ก's remaining half, *the sentence belongs to the file and not to a row*, is what made the owner's
+wording a **second** constant rather than #247's: *แถวนี้* cannot be said by a file of N rows.
+
+### The same read found the option the ticket had not listed
+
+Both of ข and ค were priced as a new prop on a shared component with ten mount points — #182's
+`REQUIRED_PROPS` for the cost, and #68 and #104 for what it does to the proof: a rule copied per
+screen becomes a rule shared, and four claims become one no mutant can tell apart. What the
+measurement added was that **the panel already calls `onImported?.()`, and all four screens already
+pass it**. The answer could travel in the callback's argument: no prop, no component contract, the
+rule still copied per screen, and the four claims still separable. That is **ง**, and it is the
+option none of the three listed — a ticket's cost line is a claim about the shape its author
+pictured (#77), and the cheaper shape here was one the seam already had.
+
+Two more things were measured before the question went up. The six other screens that mount the
+panel ignore the argument, as a callback's callers may, so ง costs them nothing where a required prop
+would have reached all ten. And the panel's own sentence is the rebuild's choice, not the delivered
+code's: `DEEP-QA-FRONTEND` says only *นำเข้าไฟล์ผู้ใช้งาน สำเร็จ* through `setAlert`, so adding a
+second sentence moves no number anybody handed over (`docs/06` §Out of Scope).
+
+The owner answered **ง** on 30 October 2569, with the wording *บางแถวที่นำเข้าอยู่นอกรายการที่กรองอยู่*.
+
+### One rule, two mechanisms, and the half that cannot be asked
+
+The rule landed on all four screens in one ticket, because a constraint binds every path (#166) and
+the mechanism is copied rather than shared (#83). But it is not one mechanism. Three screens filter
+on one key and ask `someImportedOutside(filter, values)`, which is #247's `outsideFilter` asked per
+row. `Users` has no filter of that shape at all: its filter is three questions, so it got
+`importedOutsideTheFilters` in its own file, the same way #247 gave it `outsideTheFilters`.
+
+Two of its three can be asked of a row an import wrote. **The third cannot.** The role a CSV row
+names is resolved on the server — `readRow` refuses a row whose role it cannot read — and then not
+published: `backend/auth/administration.js`' `COLUMNS` is a curated list whose own docblock says a
+column added later is not published until somebody says so, and it carries no role. So the rows
+`onImported` is handed have no role to compare, and the missing half is *a file that writes accounts
+whose role is not the one the table is filtered to says nothing*. It is **quiet, not wrong**: the
+sentence is still true every time it is said. Which half, with a date, rather than moving the mark
+(#119) — written into the helper's docblock and queued as
+[#256](https://github.com/khthana/Deep-QA/issues/256), because closing it means changing what that
+endpoint publishes, which is not this ticket's to decide.
+
+### The census's fourth question, and the anchor the fix made ambiguous
+
+The limit #252 came out of is the limit #252 answers, so the question went into the same script as a
+fourth: a file in the population that mounts `ImportPanel` and hands it `onImported` must name
+`SOME_IMPORTED_OUTSIDE` inside that callback. Asked at the **sentence** and not at any helper's
+name — three screens call the shared rule and `Users` writes its own, and the sentence is the one
+thing all four have in common. It was proved against the tree in both directions rather than on its
+own fixtures (#141, #230): a real site broken (`Subjects.js`'s constant taken out of its handler,
+`importing 3 · problems 1`) and the population **moved** (a filter added to `Departments.js`, which
+mounts the panel and says nothing: `importing 4 · problems 2`, one problem per rule).
+
+And the fix made a closed ticket's anchor ambiguous, which is #202 exactly. `importedOutsideTheFilters`
+asks its search question with the same line `outsideTheFilters` asks it with — same question, same
+spelling, same file — so `247:userssearchuntrimmed`'s one-line anchor found two sites and the harness
+refused it. The repair widened it by the line below, which differs by `draft` against `row`, and
+then the mutant was **run again**, because a re-aim is answered by a sweep and not by an anchor check
+(#107, #68): `247b` baseline 5 ผ่าน 5, the mutant ล้ม 1 ผ่าน 4 at the same fifth row its own file
+predicts.
+
+### What the rows hold
+
+`252a` is five rows and no criteria row moves, the rule being the owner's and not any sheet's
+criterion. Rows 1 and 2 are the single-key mechanism at `Students`; rows 3, 4 and 5 are `Users`'
+three questions, of which 3 is the search and 5 the status — two rows because a mutant that breaks
+one clause must leave the other standing (#97), which `usersterm` and `usersstatus` then showed by
+killing one row each. Rows 2 and 4 are the controls: a criterion answered *no* needs a row as much as
+one answered *yes* (#48), and they are what `importalways` and `usersalways` die at. The controls
+read the notice **after** the imported row has been drawn into the list, not after the panel's green
+line, because `load` calls `setData` and `setNotice` in one turn — so the drawn row is a settle point
+a single count can be read at (#50) — and the green line is read first, since a negative claim needs
+its own precondition or a refused import makes it true for nothing.
+
+The sixth mutant is at the **seam**: `panelkeepsanswer` restores `onImported?.()` and kills rows 1, 3
+and 5 across both mechanisms. One mutant killing several rows is several reachability claims, not one
+counted twice (#191): what each row adds is that its own way in arrives there, and a row that did not
+arrive would pass.
+
+### What the two-axis review caught
+
+Four things, of which the one worth the rule is the third.
+
+**A number inside the file whose own docblock numbers it.** The new question's comment said
+*the second question* in a script whose docblock now says four — the same species as a hand-kept
+figure in a file that grows every ticket (#119, #130), one unit smaller.
+
+**A guard that read as defensive and was the opposite.** `if (attribute.name && attribute.name.name
+!== HANDED) continue` cannot fire its first half — a spread is a `JSXSpreadAttribute` and the line
+above has already skipped it — and what the `&&` actually did was let a nameless attribute **fall
+through and be counted**. A guard that cannot fire is a claim about its callers (#68); this one was
+wrong in the direction nothing goes red in.
+
+**A reason that was false while the behaviour it justified was right.** `importedOutsideTheFilters`
+compares `filters.status` against `row.status` rather than against `'active'`, and the docblock said
+that was because a file can choose each account's status. It cannot: `IMPORT_COLUMNS` carries no
+status column and `insertAccount` writes `'active'` as a literal, so every row an import makes is
+active. The read is still the right code — the answer carries what the server wrote, and
+`!== 'active'` would be this screen restating the server's rule and having to keep restating it
+exactly (#96) — but the sentence underneath it was a premise, and the sheet had written the
+measurement and the false reason into **one bullet**, contradicting itself inside three lines. This
+is #141's hardest kind: a conclusion that is right for the wrong reason expires on the wrong day,
+and nothing it predicts is wrong yet. The false reason was dated rather than deleted (#54).
+
+**And a limit the census had not written down.** The marker keyword `// outside-the-filter:` is one
+keyword for two questions: a file carrying it is excused question 3 *and* question 4, because the
+mount loop reads the same verdict — so a marker written about a form's own save would silence the
+import question with it. Nothing in `src/` carries one today, so no site is excused; the limit went
+into the docblock with that date and the condition that would make it bite (#226, #141).
+
+The axis that found the third and fourth was **Spec**, and it found them by checking each claim
+against the code rather than against the diff — which is what the two axes are for: the Standards
+axis read the same docblock and had nothing to say about it, the sentence being well formed.

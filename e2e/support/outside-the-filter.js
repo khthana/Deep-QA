@@ -18,4 +18,14 @@
  */
 const OUTSIDE_THE_FILTER = 'แถวนี้อยู่นอกรายการที่กรองอยู่';
 
-module.exports = { OUTSIDE_THE_FILTER };
+/**
+ * The sentence the four screens that mount `ImportPanel` add when a file writes
+ * rows outside the filter their table is on — #252, the owner's answer of
+ * 30 ตุลาคม 2569 (ข้อ ง: the parent screen says it, through `onImported`).
+ *
+ * A second constant and not the one above, because that one says *แถวนี้* and a
+ * file of N rows cannot carry it.
+ */
+const SOME_IMPORTED_OUTSIDE = 'บางแถวที่นำเข้าอยู่นอกรายการที่กรองอยู่';
+
+module.exports = { OUTSIDE_THE_FILTER, SOME_IMPORTED_OUTSIDE };

@@ -177,7 +177,20 @@ export default function ImportPanel({
       const result = await send(await file.text())
       if (latest.current !== asked) return
       setReport({ ok: true, created: result.created })
-      onImported?.()
+      // The answer, not a bare *it happened* — #252, the owner's answer ข้อ ง of
+      // 30 ตุลาคม 2569. Four of the ten screens this panel is mounted on draw a
+      // filtered table, and a file writes rows from its own keys, so some of
+      // what was just imported can be outside the list the person is standing
+      // over. The sentence that says so belongs to the screen, which is the
+      // only place that knows what its table is filtered to, and the answer
+      // `backend/lib/importer.js` sends carries the created rows under a
+      // per-endpoint key as well as the count. Handing the whole body over
+      // costs no prop and no second request, and leaves the rule copied per
+      // screen, which is where its four mutants live (#68, #104).
+      //
+      // The six callers whose table is not filtered by state ignore the
+      // argument, as a callback's callers may.
+      onImported?.(result)
     } catch (error) {
       // `details` is the per-row report, which rides on the refusal because a
       // rejected import is one: nothing was written. A refusal without rows -

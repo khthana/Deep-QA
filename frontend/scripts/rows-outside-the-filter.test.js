@@ -20,11 +20,22 @@
  * `Departments.js`, which no ticket has ever touched for this rule) - #230's
  * pair. Both numbers are on
  * `docs/acceptance/19-programme-learning-outcomes.md` §#247.
+ *
+ * #252's fourth question - the import sentence the parent screen says - was
+ * added on 30 ตุลาคม 2569 and proved against the tree the same way: a real site
+ * broken (`Subjects.js`'s `SOME_IMPORTED_OUTSIDE` taken out of its
+ * `onImported`, `importing 3 · problems 1`) and the population moved (the same
+ * filter added to `Departments.js`, which mounts the panel and says nothing:
+ * `importing 4 · problems 2`, one for each rule). The rows below it are the
+ * shapes, both ways round.
  */
 const test = require('node:test')
 const assert = require('node:assert')
 
 const { examine, classify } = require('./rows-outside-the-filter')
+
+/** The mounts of the import panel a snippet holds, for #252's rows. */
+const imports = code => examine(code).imports
 
 /** What the census makes of one snippet. */
 const verdict = code => classify(examine(code)).kind
@@ -167,4 +178,79 @@ test('a screen that says the sentence needs no marker, and the marker is not rea
   const found = examine(screen(FILTERED, SAYS))
   assert.equal(classify(found).kind, 'saying')
   assert.deepEqual(found.adds.length, 1)
+})
+
+/**
+ * A screen in the shape the four that mount the shared import panel are written
+ * in - #252. The handler is the whole question: what is read is the attribute's
+ * own body, not what the panel does with it.
+ */
+const importing = handler => `
+  const Screen = () => {
+    const [program, setProgram] = useState('')
+    const [page, setPage] = useState(1)
+    const load = useCallback(async () => {
+      setData(await ${FILTERED})
+    }, [program, page])
+    const save = async draft => {
+      await createRow(draft)
+      ${SAYS}
+      setNotice(said)
+    }
+    return (
+      <>
+        <Table />
+        <ImportPanel kind="rows"${handler} />
+      </>
+    )
+  }
+`
+
+const SAYS_IMPORT = ` onImported={result => {
+          const outside = someImportedOutside(program, result?.rows?.map(row => row.program_id))
+          if (outside) waiting.current = { said: { error: false, message: SOME_IMPORTED_OUTSIDE } }
+          setPage(1)
+        }}`
+
+test('a mount whose handler names the import sentence is counted and clean (#252)', () => {
+  const found = examine(importing(SAYS_IMPORT))
+  assert.equal(found.imports.length, 1)
+  assert.equal(found.imports[0].says, true)
+})
+
+test('a mount whose handler says nothing is the defect, however much else it does', () => {
+  const code = importing(` onImported={() => setPage(1)}`)
+  assert.equal(imports(code).length, 1)
+  assert.equal(imports(code)[0].says, false)
+})
+
+test('the sentence is read inside the handler and not elsewhere in the file', () => {
+  // The constant imported at the top of a screen that stopped using it in the
+  // handler would be a green light for nothing: the question is asked of the
+  // attribute, which is why the file's own text is not what is searched.
+  const code = `
+    const SOME_IMPORTED_OUTSIDE = 'x'
+    ${importing(` onImported={() => setPage(1)}`)}
+  `
+  assert.equal(imports(code)[0].says, false)
+})
+
+test('a panel mounted with no finished-import callback is not in the question', () => {
+  assert.deepEqual(imports(importing('')), [])
+})
+
+test('another component handed an onImported is not this panel', () => {
+  const code = importing('').replace('ImportPanel', 'ExportPanel')
+  assert.deepEqual(imports(code), [])
+})
+
+test('a mount on a screen whose list is not filtered is outside the species', () => {
+  // The six other screens that mount the panel are here: `examine` stops at the
+  // first question, so there is no mount to report and nothing to excuse.
+  const code = importing(` onImported={() => setPage(1)}`).replace(
+    FILTERED,
+    'listRows({ page, per_page: PAGE_SIZE })'
+  )
+  assert.equal(verdict(code), 'outside')
+  assert.deepEqual(imports(code), [])
 })

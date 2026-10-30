@@ -2,7 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
-import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
+import {
+  alsoOutside,
+  outsideFilter,
+  someImportedOutside,
+  SOME_IMPORTED_OUTSIDE,
+} from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import StudentForm from '../components/students/StudentForm'
 import {
@@ -539,7 +544,27 @@ export default function Students() {
             target="students"
             fetchTemplate={importTemplate}
             send={importStudents}
-            onImported={() => {
+            onImported={result => {
+              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
+              // makes take their keys from the file, so an import writes outside
+              // this table's filter exactly as an *add* does, and the panel's own
+              // green line is in another module and says nothing about it. The
+              // screen is the only place that knows what its table is filtered
+              // to, so the screen says it, out of the answer the panel now hands
+              // over. Handed to `load` rather than said here, which is the rule
+              // the save above follows (#238, #203): the sentence is keyed for
+              // the list it is about - page one, where the reload is going - and
+              // `load` is the only thing that says it.
+              const outside = someImportedOutside(
+                program,
+                result?.students?.map(row => row.program_id),
+              )
+              if (outside) {
+                waiting.current = {
+                  of: readOf(1, program),
+                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
+                }
+              }
               // Going to page one is a change the effect fetches; asking `load`
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where

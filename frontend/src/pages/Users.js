@@ -5,7 +5,7 @@ import GrantsPanel from '../components/users/GrantsPanel'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
-import { alsoOutside } from '../lib/outsideTheFilter'
+import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
@@ -263,6 +263,49 @@ const matchesSearch = (term, draft) => {
     named(draft.first_name_th, draft.last_name_th),
     named(draft.first_name_en, draft.last_name_en),
   ].some(value => String(value ?? '').toLowerCase().includes(term))
+}
+
+/**
+ * The same question asked of a row an **import** wrote - #252, the owner's
+ * answer ข้อ ง of 30 ตุลาคม 2569.
+ *
+ * Two of the three, and the third is written down rather than guessed. `status`
+ * is compared against the row itself rather than against `'active'`, which is
+ * **not** because a file can choose it - `backend/routes/users.js`' own
+ * `IMPORT_COLUMNS` carries no status column and `insertAccount` writes
+ * `'active'` as a literal, so every row a file makes is active. It is because
+ * the answer carries the status the server wrote, and reading it is reading what
+ * happened where `!== 'active'` would be this screen restating the server's rule
+ * and having to keep restating it exactly (#96). The two agree today; the one
+ * that stays true if the literal ever moves is the read. (The first reason
+ * written here was the false one, and the review of 30 ตุลาคม 2569 found it -
+ * right behaviour, wrong premise, which is the kind that dates badly: #141.)
+ * The search term is the same question as the paragraph above, so it is the
+ * same call.
+ *
+ * The `trim()` line is repeated from `outsideTheFilters` below rather than
+ * extracted: those two lines are what `247:userssearchuntrimmed` is anchored
+ * on, and extracting them deletes the code that mutant edits - a second re-aim
+ * of one closed ticket's mutant inside one ticket (#202). Writing the copy down
+ * is the cheaper half; the day a third caller wants it, the extraction and the
+ * re-aim go together.
+ *
+ * **The role filter cannot be asked of an import's answer.** The role a CSV row
+ * names is resolved on the server - `backend/routes/users.js`' `readRow`
+ * refuses a row whose role it cannot read - and then not published:
+ * `backend/auth/administration.js`' `COLUMNS` is a curated list and carries no
+ * role, on purpose, so the created rows this handler is given have no role to
+ * compare. The half that is missing is *a file that writes accounts whose role
+ * is not the one the table is filtered to says nothing*, and it is quiet rather
+ * than wrong - #119: say which half, with a date, rather than moving the mark.
+ * [#256](https://github.com/khthana/Deep-QA/issues/256) is the queue for it,
+ * and what would close it is the answer carrying the role, which is a change to
+ * what that endpoint publishes and so not this ticket's to make.
+ */
+const importedOutsideTheFilters = (filters, row) => {
+  if (filters.status && filters.status !== row.status) return true
+  const term = String(filters.q ?? '').trim()
+  return Boolean(term) && !matchesSearch(term.toLowerCase(), row)
 }
 
 const outsideTheFilters = (filters, draft, creating) => {
@@ -890,7 +933,35 @@ export default function Users() {
             target="users"
             fetchTemplate={importTemplate}
             send={importUsers}
-            onImported={() => {
+            onImported={result => {
+              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
+              // makes take their keys from the file, so an import writes outside
+              // this table's filters exactly as an *add* does, and the panel's
+              // own green line is in another module and says nothing about it.
+              // Asked by this screen's own predicate rather than by
+              // `someImportedOutside`, because the filter here is three
+              // questions - and one of them, the role, an import's answer cannot
+              // be asked (`importedOutsideTheFilters` above says which half is
+              // quiet and names its ticket).
+              //
+              // Handed to `load` rather than said here, which is the rule the
+              // save above follows (#238, #203), and keyed on the render's
+              // filters for that save's own reason: this screen's pager is not
+              // disabled while a write is out, so the live ref is the page the
+              // person has since moved to and not the list this import was about.
+              // `Array.isArray` rather than `?? []`, which is the spelling
+              // `someImportedOutside` uses for the same question: a key that
+              // arrives as something other than a list answers *no* instead of
+              // throwing inside the handler.
+              const outside =
+                Array.isArray(result?.users) &&
+                result.users.some(row => importedOutsideTheFilters(filters, row))
+              if (outside) {
+                waiting.current = {
+                  of: readOf(1, filters),
+                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
+                }
+              }
               // Going to page one is a change the effect fetches; asking `load`
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where

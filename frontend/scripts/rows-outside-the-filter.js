@@ -14,7 +14,14 @@
  * `Plos` and `Users` - have rows, in `247a` and `247b`. **This holds the other
  * five**, which is what a census is for (#68).
  *
- * Asked by the mechanism and not by a spelling, in three questions:
+ * #252 then added the fourth question below, on 30 ตุลาคม 2569: the owner
+ * answered (ข้อ ง) that the **parent screen** says the same thing about a file
+ * an import wrote, out of the answer `ImportPanel` now hands back through the
+ * `onImported` it already called. That is the limit *a sentence in another
+ * module* below, answered rather than only written down - and it is answered on
+ * the parent's side of the seam, which is why this script can ask it at all.
+ *
+ * Asked by the mechanism and not by a spelling, in four questions:
  *
  * 1. **Does the file read a filtered list?** A call to a `listSomething(...)`
  *    with an object argument that hands it a value the file holds in `useState`
@@ -29,6 +36,14 @@
  * 3. **Does it add the shared sentence?** A call to `alsoOutside`. Not a search
  *    for the words: the sentence lives in one constant and a screen that typed
  *    it again would be a string a grep for the words cannot find (#111, #124).
+ *
+ * 4. **Does it say the import sentence?** For a file in the population that
+ *    mounts `ImportPanel` and hands it `onImported`, whether that attribute's
+ *    own body names `SOME_IMPORTED_OUTSIDE` - #252. Asked of the sentence and
+ *    not of any helper: three of the four ask their filter question with
+ *    `someImportedOutside` and `Users` with a predicate of its own, its filter
+ *    being three questions of which one cannot be asked of an import's answer
+ *    at all (#256). The sentence is the one thing all four have in common.
  *
  * A file in the population that calls `alsoOutside` nowhere is green only behind
  * a **marker**, in a comment anywhere in the same file:
@@ -77,8 +92,27 @@
  *   inside the panel, and it is mounted on four of these seven screens
  *   (`ProgramSubjects`, `Students`, `Subjects`, `Users`), over rows a CSV can
  *   put outside the parent's filter, with no filter handed to the panel to
- *   compare. Whether a child's sentence is in this species at all is the
- *   owner's, and it is #252.
+ *   compare. Whether a child's sentence is in this species at all was the
+ *   owner's, and it was #252: **answered on 30 ตุลาคม 2569** - the parent says
+ *   it, which is question 4 above. What is still true of this limit is the
+ *   general sentence: a loader or a success sentence a shared child says for
+ *   itself is invisible here, and the one that is read now is read on the
+ *   parent's side.
+ * - **which mount, and which of a file's imports.** Question 4 is asked once per
+ *   `ImportPanel` whose attribute is named `onImported`, so a mount that hands
+ *   the callback through a variable, a spread or a wrapper is not seen, and a
+ *   panel mounted with no `onImported` at all is not in the question - the six
+ *   other screens that mount it are outside the species for the earlier reason,
+ *   their lists not being filtered by state. That the handler asks the *right*
+ *   filter question of the *right* key is what `252a`'s rows hold; all this
+ *   reads is that the sentence is named inside it.
+ * - **one marker for two questions.** A file carrying `// outside-the-filter:`
+ *   is excused question 3 *and* question 4, because the mount loop reads the
+ *   same verdict - so a marker written about a form's own save silences the
+ *   import question with it, and nothing says so. Nothing in `src/` carries one
+ *   as of 30 ตุลาคม 2569, so no site is excused today; the day one is written,
+ *   its reason has to answer both or the second question needs a keyword of its
+ *   own (#141 - a marker outlives the gap it documented).
  * - **whether a marker's reason is still true**, which is #93's rule and the
  *   reason a marker carries a ticket number.
  *
@@ -114,6 +148,18 @@ const PAGINATION = new Set(['page', 'per_page'])
 
 /** The one spelling of the join, which is what makes this question answerable. */
 const ADDS = 'alsoOutside'
+
+// The fourth question, #252's - the shared panel whose own sentence this script
+// cannot see. Asked by **mechanism**: which files mount that panel and hand it
+// the callback it reports a finished import through, and whether that callback's
+// own body says the sentence. Not by the name of any helper: three screens ask
+// their filter question with `someImportedOutside` and `Users` with a predicate
+// of its own, because its filter is three questions (#83's copied mechanism
+// again). What makes a mount green is the **sentence**, which is the one thing
+// all four have in common.
+const PANEL = 'ImportPanel'
+const HANDED = 'onImported'
+const SAYS_IMPORTED = 'SOME_IMPORTED_OUTSIDE'
 
 /**
  * The shapes a filter could be hiding in that this script will not walk into.
@@ -251,6 +297,39 @@ function addsSentenceIn(ast) {
   return found
 }
 
+/**
+ * Every mount of the shared import panel that is handed a finished-import
+ * callback, and whether that callback's body says the import sentence - #252.
+ *
+ * The attribute is found rather than the component's props read, because the
+ * panel is a module away and a census that followed the import would be
+ * answering a different question. What it cannot see is in this file's docblock.
+ */
+function importsIn(ast) {
+  const found = []
+  walk(ast, node => {
+    if (node.type !== 'JSXElement') return
+    // `nameOf` answers for an `Identifier` and a component's tag is a
+    // `JSXIdentifier`, so this reads the tag itself rather than going through it.
+    const tag = node.openingElement.name
+    if (!tag || tag.type !== 'JSXIdentifier' || tag.name !== PANEL) return
+    for (const attribute of node.openingElement.attributes) {
+      // A spread is a `JSXSpreadAttribute` and is gone by the line above, so
+      // every attribute that reaches here has a name. The earlier
+      // `attribute.name && …` read as defensive and was the opposite: it let a
+      // nameless attribute fall through and be *counted*.
+      if (attribute.type !== 'JSXAttribute') continue
+      if (attribute.name.name !== HANDED) continue
+      let says = false
+      walk(attribute, inside => {
+        if (inside.type === 'Identifier' && inside.name === SAYS_IMPORTED) says = true
+      })
+      found.push({ line: node.loc.start.line, says })
+    }
+  })
+  return found
+}
+
 /** Runs of adjacent comments, merged: a `//` paragraph is one comment per line. */
 function paragraphs(comments, code) {
   const runs = []
@@ -291,11 +370,14 @@ function examine(code) {
     attachComment: true,
   })
   const reads = filteredReadsIn(ast, stateIn(ast))
-  if (reads.length === 0) return { reads: [], says: false, adds: [], marker: null }
+  if (reads.length === 0) {
+    return { reads: [], says: false, adds: [], imports: [], marker: null }
+  }
   return {
     reads,
     says: saysSuccess(ast),
     adds: addsSentenceIn(ast),
+    imports: importsIn(ast),
     marker: markerIn(ast.comments || [], code),
   }
 }
@@ -323,6 +405,7 @@ function main() {
   const sources = everything.filter(file => path.extname(file) === PARSED)
 
   const saying = []
+  const importing = []
   const marked = []
   const unclassified = []
   const problems = []
@@ -341,6 +424,43 @@ function main() {
     const verdict = classify(found)
     const first = found.reads[0]
     if (verdict.kind === 'outside') continue
+
+    // #252's question, asked of the files this one's population holds: a screen
+    // whose table is filtered and that mounts the shared import panel says the
+    // import sentence out of the panel's own callback, or carries the marker.
+    // One entry per mount and not per file, which is #247's own limit read on a
+    // real site the day it landed (#226): a screen with two of these would be
+    // green on the second.
+    for (const mount of found.imports || []) {
+      if (mount.says) {
+        importing.push(where + ':' + mount.line)
+        continue
+      }
+      if (verdict.kind === 'marked' && verdict.marker.ok) continue
+      problems.push({
+        where,
+        line: mount.line,
+        why:
+          'mounts <' +
+          PANEL +
+          '> on a list filtered by ' +
+          found.reads
+            .filter(one => one.by.length)
+            .flatMap(one => one.by)
+            .join(', ') +
+          ', and the ' +
+          HANDED +
+          ' it hands over says nothing when the file wrote rows outside that ' +
+          'list. The owner answered that on 30 ตุลาคม 2569 (#252, ข้อ ง): the ' +
+          'parent screen says it, out of the answer the panel hands back. Ask ' +
+          'this screen\'s own filter question of `result` and say ' +
+          '`' +
+          SAYS_IMPORTED +
+          '` from `lib/outsideTheFilter.js`, or write ' +
+          '`// outside-the-filter: <why an import on this screen cannot write ' +
+          "outside its own filter> (#NNN)` in this file",
+      })
+    }
     if (verdict.kind === 'saying') {
       saying.push(
         where +
@@ -417,11 +537,15 @@ function main() {
       marked.length +
       ' · unclassified ' +
       unclassified.length +
+      ' · importing ' +
+      importing.length +
       ' · problems ' +
       problems.length
   )
   if (process.argv.includes('--saying')) for (const entry of saying) console.log('  ' + entry)
   if (process.argv.includes('--marked')) for (const entry of marked) console.log('  ' + entry)
+  if (process.argv.includes('--importing'))
+    for (const entry of importing) console.log('  ' + entry)
   for (const entry of unclassified) console.log('  ' + entry)
   for (const problem of problems)
     console.log('  ' + problem.where + ':' + problem.line + ' ' + problem.why)

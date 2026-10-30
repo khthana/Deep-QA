@@ -87,7 +87,15 @@ USERS_STATUS = (
     "  if (creating && filters.status && filters.status !== 'active') return true\n"
 )
 USERS_SEARCH = "  return Boolean(term) && !matchesSearch(term.toLowerCase(), draft)\n"
-USERS_TRIM = "  const term = String(filters.q ?? '').trim()\n"
+# สองบรรทัด ไม่ใช่บรรทัดเดียว — #252 เขียน `importedOutsideTheFilters` ไว้เหนือ
+# `outsideTheFilters` ในแฟ้มเดียวกันเมื่อ 30 ต.ค. 2569 ด้วยคำถามเรื่องคำค้นอันเดียวกัน
+# ฉะนั้นบรรทัด `trim()` เดี่ยว ๆ เจอสองที่และ harness ปฏิเสธ สิ่งที่แยกสองที่นั้นคือบรรทัด
+# ถัดไป ซึ่งอ่าน `draft` ไม่ใช่ `row` (#202 — guard ที่คัดลอกมาทำให้สมอของตั๋วที่ปิดแล้ว
+# กำกวม) · การซ่อมนี้เล็งมัตแตนต์ตัวนี้ใหม่ ฉะนั้นมันถูกรันซ้ำเทียบ `247b` แถวที่ห้า
+USERS_TRIM = (
+    "  const term = String(filters.q ?? '').trim()\n"
+    '  return Boolean(term) && !matchesSearch(term.toLowerCase(), draft)\n'
+)
 
 # การบันทึกที่สองของ `Offerings` ที่รีวิวของ 29 ต.ค. 2569 พบ
 OFFERINGS_COPY_ASKS = (
@@ -118,7 +126,8 @@ MUTANTS = {
         '  return false && Boolean(term) && !matchesSearch(term.toLowerCase(), draft)\n'),
     # ข้อบกพร่องที่รีวิวจับได้ ทำให้รันได้: อ่านคำค้นแบบที่เซิร์ฟเวอร์ไม่ได้อ่าน (#96)
     'userssearchuntrimmed': ('users', USERS_TRIM,
-        "  const term = String(filters.q ?? '')\n"),
+        "  const term = String(filters.q ?? '')\n"
+        '  return Boolean(term) && !matchesSearch(term.toLowerCase(), draft)\n'),
     # การบันทึกที่สองของ `Offerings`: ข้อ ก และ *ต่อทุกครั้ง* ที่เส้นทางการคัดลอก
     'offeringscopyalwayssays': ('offerings', OFFERINGS_COPY_ASKS,
         '      const outside =\n'

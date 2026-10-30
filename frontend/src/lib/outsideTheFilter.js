@@ -64,3 +64,50 @@ export const outsideFilter = (filter, saved) =>
  */
 export const alsoOutside = (message, outside) =>
   outside ? `${message} ${OUTSIDE_THE_FILTER}` : message
+
+/**
+ * ## The same situation arriving as a file — #252, the owner's answer of
+ * 30 ตุลาคม 2569
+ *
+ * `components/ImportPanel.js` is mounted on ten screens and four of them are in
+ * the population above — `ProgramSubjects`, `Students`, `Subjects`, `Users`.
+ * The rows a CSV makes take their keys from the file, so they fall outside the
+ * list the person is looking at exactly as an *add* does, and the panel's own
+ * green line — *นำเข้าสำเร็จ N รายการ* — is in another module and says nothing
+ * about the filter. `scripts/rows-outside-the-filter.js` wrote that down as its
+ * own first limit and could not see it: the panel's sentence is not an
+ * `error: false` object in the screen's file.
+ *
+ * The owner answered **ข้อ ง**: the **parent screen** says it, through the
+ * `onImported` callback the panel already calls and all four screens already
+ * pass. No new prop on a component with ten mount points, nothing to add to its
+ * `REQUIRED_PROPS` (#182), and the rule stays copied per screen, which keeps
+ * four claims with four mutants rather than one that no mutant can tell apart
+ * (#68, #104). What made that option exist was measuring the panel rather than
+ * reading the ticket's three: it already hands the parent a callback, and
+ * `backend/lib/importer.js` already answers `{ created: N, [key]: rows }`, so
+ * the rows and their keys are in hand with no second request and no server
+ * change — the price the ticket put on ข and ค is paid by neither.
+ *
+ * The wording is the owner's too, and it had to be a second sentence: the one
+ * above says *แถวนี้*, which a file of N rows cannot carry (#232, #128).
+ */
+export const SOME_IMPORTED_OUTSIDE = 'บางแถวที่นำเข้าอยู่นอกรายการที่กรองอยู่'
+
+/**
+ * Did an import write any row outside what the table is filtered to?
+ *
+ * Takes the values off the created rows rather than the rows, because the three
+ * screens with one key each compare a different column — `program_id` twice and
+ * `department_id` once — and a helper that picked the column would be a helper
+ * that knows which screen called it. `Users` does not come here at all: its
+ * filter is three questions, one of which an import's answer cannot be asked
+ * (its `RETURNED` publishes no role), so that screen asks its own and says
+ * which half it is missing.
+ *
+ * Empty is *no*, for `outsideFilter`'s reason one level out: a refusal and a
+ * success with nothing in it both arrive here as no values, and neither is a
+ * row outside the list.
+ */
+export const someImportedOutside = (filter, values) =>
+  Array.isArray(values) && values.some(value => outsideFilter(filter, value))
