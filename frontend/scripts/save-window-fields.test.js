@@ -88,9 +88,12 @@ test('a <select> and a <textarea> are fields, and a hidden input is not', () => 
 })
 
 test('a bare submit button is its own finding, and the reason it is the priority', () => {
-  // `Navbar.js:524` before this ticket, and `LoginForm.js:98`, whose
-  // `// disabled={loading}` is a comment and not an attribute: the two the
-  // button question found and the field question could not have.
+  // `Navbar.js`' บันทึกรหัสใหม่, before #253 gave it a flag, and
+  // `LoginForm.js`' submit, whose `// disabled={loading}` is a comment and not
+  // an attribute: the two the button question found and the field question
+  // could not have. Cited by their text since 31 ตุลาคม 2569, because #254
+  // added lines above the first of them and a citation by line number ages
+  // the day anything above it grows (#173, #130).
   const verdicts = examine(`
     <form onSubmit={onSubmit}>
       <input value={draft.name} onChange={set} disabled={sending} />
@@ -298,9 +301,9 @@ test('a way out written as an arrow that calls the prop is read too', () => {
 
 test('a button whose handler calls no prop is not read as a way out', () => {
   // Two real shapes, and both of them ways out this question cannot see:
-  // `Navbar.js:551`, whose `closeChangePassword` sets the navbar's own state
-  // because the box's state lives in the file that draws it (#167), and
-  // `SectionsPanel.js:180`, which is `() => setRenaming(null)`. Both are free
+  // `Navbar.js`' ยกเลิก, whose `onClick={closeChangePassword}` sets the
+  // navbar's own state because the box's state lives in the file that draws it
+  // (#167), and `SectionsPanel.js`' `() => setRenaming(null)`. Both are free
   // today, which is how they could be read by hand at all; the day one is not,
   // this count is silent about it rather than wrong.
   const found = examine(
@@ -321,7 +324,8 @@ test('a button whose handler calls no prop is not read as a way out', () => {
 })
 
 test('a way out that is not a <button> is not read', () => {
-  // `ProfilePhotoDialog.js:153` - the backdrop, which never held a flag and is
+  // `ProfilePhotoDialog.js`' backdrop - the `onClick={close}` on its
+  // `absolute inset-0` div, which never held a flag and is
   // the reason the owner's question about that box was about what a person could
   // already do rather than about what this ticket opened (#217).
   const found = examine(

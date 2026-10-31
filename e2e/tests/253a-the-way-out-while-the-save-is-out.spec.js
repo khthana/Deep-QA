@@ -72,7 +72,8 @@ const {
  * reading that follows, and it has no mutant of its own.
  *
  * The question was priced by what the person could already do (#217): the
- * backdrop at `ProfilePhotoDialog.js:153` has never held a flag, so leaving
+ * backdrop in `ProfilePhotoDialog.js` - the `onClick={close}` on its
+ * `absolute inset-0` div - has never held a flag, so leaving
  * mid-upload was reachable before this ticket and the button was only stopping
  * the keyboard. That is why one box needed an owner's answer and the other
  * twenty-two ways out did not.

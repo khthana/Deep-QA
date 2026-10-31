@@ -122,13 +122,17 @@
  *   question this instrument cannot ask.
  * - **a way out that is not a `<button>`, or whose handler calls no prop.**
  *   Measured on a real site the day the third question landed (#226):
- *   `components/ProfilePhotoDialog.js:153` is a backdrop `<div onClick={close}>`
- *   and `components/Navbar.js:551` is a ยกเลิก whose `closeChangePassword` sets
- *   the navbar's own state rather than calling a prop, because the box's state
- *   lives in the file that draws it (#167). Both are ways out this question
- *   cannot see; both were already free, which is how they were read at all.
- *   `components/offerings/SectionsPanel.js:180` is the third shape -
- *   `() => setRenaming(null)`, a way out of a form in the same file.
+ *   `components/ProfilePhotoDialog.js`' backdrop - the `onClick={close}` on its
+ *   `absolute inset-0` div - and `components/Navbar.js`' ยกเลิก, whose
+ *   `onClick={closeChangePassword}` sets the navbar's own state rather than
+ *   calling a prop, because the box's state lives in the file that draws it
+ *   (#167). Both are ways out this question cannot see; both were already free,
+ *   which is how they were read at all. `components/offerings/SectionsPanel.js`'
+ *   `() => setRenaming(null)` is the third shape, a way out of a form in the
+ *   same file. The three were cited by line number until 31 ตุลาคม 2569, when
+ *   #254's fix moved the second one and the review found the first had moved
+ *   already: a citation by line number ages the day anything above it grows,
+ *   so these are cited by their text (#173).
  * - **whether a prop a button hands control to really takes the person out.**
  *   `onRemove` and `onRemoveSection` are props too, and a button that calls one
  *   sends a request rather than closing a form. Today every such button is

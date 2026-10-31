@@ -16660,3 +16660,101 @@ answered by a sample per frame and not by a longer wait (#164). **#257** carries
 and it carries the sentence that if the frame does paint, what the person sees contradicts the
 answer the owner gave — which goes back to the owner rather than into a commit message (#228).
 
+## #254 — the refusal that outlived the box, and the key the way out made necessary
+
+The diagnosis was true as written, which on this file's first rule is the uncommon case (#66). The
+`catch` of `handlePasswordSubmit` wrote `setError(err.message)` with nothing asking whether the box
+was still the one that had sent the request, and because **nothing unmounts `Navbar`** that state
+had nowhere to go: the dialog draws from `{error && <p role="alert">…}`, so the next opening drew
+the refusal of an opening the person had already left. #205's species met on a **box** instead of
+on a list. The ticket also said what not to do: the owner's question here is #253's, answered
+ก on 30 October 2569, and drawing that refusal on the next opening is not what either option
+said — so the guard lands without anybody being asked again (#231 from the other side, where the
+wording *is* the owner's).
+
+**The two ways in are what make the guard a key rather than a flag, and the reason is the owner's
+own answer to another ticket.** #228's answer of 26 October 2569 was that ยกเลิก holds nothing, and
+this box's backdrop holds nothing either, so the person can leave the box and open it again
+**inside one round trip**. The refusal therefore lands in two situations, not one: with no box on
+the screen, and with **another** box on the screen. A guard reading *is a box open* answers the
+first and is silent on the second, which is why `pwdOpening` holds a sentinel per opening and the
+spec has two rows (#185, #207 — every rule about these refs is about what the value is *of*). The
+ways in came from asking what the person can press, not from the ticket, which described one
+(#139).
+
+**The mutant written to prove the second half was refuted by its own sweep, and the table written
+before the sweep is what said so.** Its first shape read `showChangePwd` — a guard asking the
+coarser question, in the spelling the component already had. It killed **both** rows instead of the
+second, because the handler was created in the render that pressed the button and holds that
+render's `true` for as long as it runs (#143, #201): it read a constant, which made it a copy of
+the unguarded mutant rather than a weaker guard. Nothing about the kill count said so; what said
+so was the **name of the assertion it died at** not matching the row the mutant was written for,
+which is what that table is for. The second shape reads the ref, kills the second row alone, and
+the first shape stays in a comment beside it rather than being deleted (#54).
+
+**Two lines are outside the guard on purpose, and each carries the reason that puts it there.**
+`if (err.expired) { closeChangePassword(); return }` is **above** it, because a refusal with no
+rows in it belongs to the person and not to the box that asked (#179, #131); the cost — a box
+opened later is closed too, with whatever was typed in it — is written down as accepted.
+`finally { setSending(false) }` is **below** it, because a flag saying a write has not come back
+must come down on every path it went up, or it stays up for ever (#227). That one has a price, and
+the price is a window rather than a death: a probe inside the second row read
+`field0 disabled true | save disabled true | cancel disabled false` while the request was out and
+both `false` once the answer landed (#207). It is a different claim with a different fix and an
+owner's question #254 did not ask, so it went to the tracker as #258 and not into this ticket's
+prose (#119).
+
+**The sibling dialog that is immune is immune by its container, which is a dated claim and not a
+guard.** `ProfilePhotoDialog.js` holds a refusal in its own state and cannot show it twice, because
+`RetiringPresence` unmounts it when the exit tween ends — and at once in a tab that is given no
+frames — so a `setError` arriving later writes into an instance that is going or gone, and the next
+opening is a fresh mount. That is the whole of its protection: it has no `isCurrent`, no key, and
+nothing to clear. So the paragraph written into it names the mechanism, the date, and **the
+condition that would make it this ticket's defect** — the day that box stops being unmounted on
+close (#54) — and says why clearing in `close` would not cover it, which is the sentence this
+whole ticket rests on: a clearing at the press cannot reach a sentence that arrives after the
+press. #167's rule said where a dialog's state lives decides whether closing it **forgets**; this
+is the layer under it, where closing forgets and the answer arrives afterwards anyway.
+
+**The fix re-aimed two of other tickets' mutants, and the spec it added expired thirteen more
+without anything reporting it.** `anchors.py` named the two — `243:flagneverlowered`, whose anchor
+quoted the `catch` tail the guard now sits in, and `66:portfoliodoorreturns`, whose anchor quoted
+the button body the opening key is now written into. Both were re-aimed to keep the **mistake** and
+not the line (#203): the first empties the `finally` instead of deleting it, which is narrower and
+leaves `setError` and its new guard alone, and the second moved two lines up onto
+`className="py-1"`, the only one in the file. Both were re-swept, and each still dies at the
+assertion its own sheet names (#107, #68). The other thirteen are the ones nothing reports:
+`254a` is a spec the suite did not have when their kill counts were written, so the anchors are
+exact, the code they edit is untouched, and only running them speaks (#248, #202). Re-swept against
+it, eleven leave both rows green and **`243:cancelclosed` kills both** — two reachability claims
+more than its sheet credits it with, because the first row asserts ยกเลิก is pressable while the
+request is out and the second presses it to arrange its own situation (#191). The list of thirteen
+came from `grep -ln` over `mutation/`, not from memory: the draft paragraph written from memory
+named five files, one of which does not exist, and left out two that do (#126).
+
+**And writing a paragraph into a file is a change to every citation by line number in it.** The
+25 lines added to `ProfilePhotoDialog.js` pushed everything below them down, which is #173 met from
+the cheapest direction — and reading the citations showed that `:153` for the backdrop had been
+wrong **before** this ticket touched anything, the backdrop sitting at `:211` that morning, and
+that it was cited in five places. The four that are **live claims** were rewritten as text that can
+be found (`onClick={close}` on the `absolute inset-0` div, and the `catch`'s own
+`setError(err.message)`): two in the component, one in `253a`, one in the acceptance sheet for #47,
+and the three names in `save-window-fields.js`'s bullet. The two in `docs/lessons.md` and in the
+handoff of 31 October 2569 were left alone, because a dated record is not a citation (#54).
+
+**The review of the same day found two things in this ticket's own prose, and both are this
+file's rules met on the file I was writing them into.** The first: the guard went on the `catch`
+only, and the **success** branch still calls `setAlert` and `closeChangePassword()` over whatever
+box is on the screen — the ticket's own species, in the half nobody had read. The sentence is
+right to be unguarded, by the expiry's reason rather than the refusal's (#179, #131), and the
+close takes nothing from the person **only because of #258's window**: `sending` is still true
+while the change is out, so the later box's fields are disabled and there is nothing in them. That
+is a protection by accident, which CLAUDE.md already names from #249's side — a measurement can
+expire the *witness* and leave the limit standing — so the reason written beside it carries the
+date, the condition (#258's own fix) and the remedy (#242, #54). The second: the figure *cited in
+five places, four of them live* was wrong the hour it was written. One grep found the fifth live
+copy in `frontend/scripts/save-window-fields.test.js`, the census script's **own fixtures**, which
+also hold three more citations by line number of the same family, two of them moved by this very
+fix. That is #130 exactly — the copy you will miss is in the file you did not think you were
+changing — and #154, a changed pair read side by side: the script's bullet and the script's
+fixtures are one document in two files.

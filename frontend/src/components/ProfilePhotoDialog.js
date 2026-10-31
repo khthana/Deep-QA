@@ -47,7 +47,9 @@ import { uploadProfilePhoto } from '../api/profile'
  * sentence is that *ยกเลิก holds nothing*, whosever flag it is.
  *
  * This box is where that mattered least and was measured anyway. The
- * backdrop at `:153` is a way out that never held a flag, so a person could
+ * backdrop - the `onClick={close}` on the `absolute inset-0` div below, cited
+ * by its text because a line number ages the day anything above it grows
+ * (#173) - is a way out that never held a flag, so a person could
  * already leave while an upload was out, and the button was the only thing
  * stopping them doing it with the keyboard. Asked of the screen rather than
  * of the component (#217): what they could still do is what priced the
@@ -72,6 +74,47 @@ import { uploadProfilePhoto } from '../api/profile'
  * it is #257, with the measurement on it. `253a` reads past the tween and
  * says so, which is this seam's limit and not a settle point chosen for
  * comfort (#209).
+ *
+ * **Why no guard here, and the condition that would need one - #254,
+ * 31 ตุลาคม 2569.** #254 is the same answer landing on the change-password box
+ * in `Navbar.js`, and there it is a defect: the refusal stays in that navbar's
+ * own `error` state, nothing unmounts the navbar, and the next open draws the
+ * last open's sentence. The census of 30 ตุลาคม 2569 put this file in that
+ * population and read it by hand as **immune by lifecycle and not by a
+ * guard**: the box is a component, and the paragraph below measures that
+ * `RetiringPresence` drops it when its exit tween ends - and at once in a tab
+ * getting no frames - so a `setError` arriving after `close` writes to an
+ * instance that is going or gone, and the next open is a fresh mount reading
+ * `useState`'s initial values. #254's `pwdOpening` ref has no counterpart here
+ * because there is nothing to compare: the state it would protect does not
+ * outlive the box.
+ *
+ * That is a property of the container and not of this code, so it is dated
+ * rather than left as a sentence about today (#54). **The condition that would
+ * make it #254's defect**: the day this box stops being unmounted on the way
+ * out - `Navbar.js` rendering it always instead of as
+ * `{showPhotoDialog ? <ProfilePhotoDialog .../> : null}`, or
+ * `RetiringPresence` holding the child past the tween - its `error` would
+ * survive a cancel exactly as the navbar's does, and the fix would be #254's:
+ * a ref saying *which opening sent this*, read in the `catch`'s
+ * `setError(err.message)`. The reset in `close` is not that fix and does not
+ * cover it, for the reason #254 gives - a clearing at the press cannot reach a
+ * sentence that arrives after it.
+ *
+ * The first draft of that condition named a comparator - *as `ConfirmDialog`
+ * and the change-password box are kept mounted behind an `open` prop* - and the
+ * same day's review refuted it with one grep: **`Navbar.js` holds no `open={`
+ * anywhere**, and it renders both boxes conditionally inside
+ * `RetiringPresence`, this one at `{showPhotoDialog ? ... : null}` and the
+ * change-password box at `{showChangePwd ? ... : null}`. It was borrowed whole
+ * from the paragraph below - *which is why `ConfirmDialog` and that box carry
+ * an `open` prop* - and a rule borrowed whole borrows its defect (#83, #168).
+ * **That sentence is dated, not deleted (#54)**: it was written before #169's
+ * measurement of 21 October 2569, which is also what replaced its premise that
+ * closing does not unmount; whatever those two boxes carried when it was
+ * written, today neither does, and what keeps the change-password refusal alive
+ * is that its `error` lives in the navbar and not in the box - which is the
+ * property this file does not share, and the whole of its immunity.
  */
 /*
  * ## Closing is what clears this box, because closing it does not unmount it

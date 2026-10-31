@@ -181,8 +181,12 @@ MUTANTS = {
     # row 5.
     "portfoliodoorreturns": (
         "navbar",
-        "                  <div className=\"py-1\">\n                    <button\n                      onClick={() => {\n                        setIsOpen(false)\n                        setShowChangePwd(true)\n                      }}",
-        "                  <div className=\"py-1\">\n                    <button onClick={() => {}}>ไปที่ Deep Portfolio</button>\n                    <button\n                      onClick={() => {\n                        setIsOpen(false)\n                        setShowChangePwd(true)\n                      }}",
+        # Re-aimed on 31 October 2569 by #254, which wrote a line into
+        # the body this anchor used to quote whole. It now quotes the two
+        # lines above that body - `py-1` is the only one in the file - so
+        # the insertion is byte for byte the one it always made (#203).
+        "                  <div className=\"py-1\">\n                    <button\n",
+        "                  <div className=\"py-1\">\n                    <button onClick={() => {}}>ไปที่ Deep Portfolio</button>\n                    <button\n",
     ),
 }
 

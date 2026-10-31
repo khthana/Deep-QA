@@ -48,6 +48,19 @@ function Navber({ setAlert, onStayedPut }) {
    * sent, which is the whole of what this flag is about.
    */
   const [sending, setSending] = useState(false)
+
+  /**
+   * Which opening of the change-password box is on the screen - #254.
+   *
+   * A fresh sentinel per open and `null` while the box is shut, because the
+   * question a late answer has to be asked is not *is the box open* but *is
+   * this the box that sent me*: `ยกเลิก` and the backdrop hold no flag (the
+   * owner's answer of 26 ตุลาคม 2569 on #228), so the person can leave and come
+   * back inside one round trip, and a boolean cannot tell those two boxes apart
+   * (#185, #207). A ref and not state, because nothing tears this navbar down
+   * and the handler reads it a turn after it was written (#133).
+   */
+  const pwdOpening = useRef(null)
   const [pwdData, setPwdData] = useState({
     old_password: '',
     new_password: '',
@@ -182,6 +195,11 @@ function Navber({ setAlert, onStayedPut }) {
    */
   const closeChangePassword = () => {
     setShowChangePwd(false)
+    // The opening ends here, so an answer still on its way belongs to nobody
+    // on the screen - #254. Without this line the guard below would compare a
+    // sentinel with itself and the refusal of a box the person walked away from
+    // would be written into the state the next open is drawn from.
+    pwdOpening.current = null
     setError('')
     setPwdData({ old_password: '', new_password: '', confirm_password: '' })
     setShowOld(false)
@@ -213,9 +231,34 @@ function Navber({ setAlert, onStayedPut }) {
       return
     }
 
+    // Read before the await, so what comes back is compared with the opening
+    // that sent it and not with whatever is on the screen when it lands - #254.
+    const opening = pwdOpening.current
+
     setSending(true)
     try {
       await changePassword(pwdData.old_password, pwdData.new_password)
+      // Neither of the next two lines is behind the guard below, and each
+      // half has its own reason, measured on 31 ตุลาคม 2569.
+      //
+      // The sentence: the change happened, so it belongs to the person
+      // wherever they have since moved to - the expiry's reason above, not
+      // the refusal's (#179, #131) - and `setAlert` draws in the shell
+      // rather than in the box, so there is no box it needs to be about.
+      //
+      // The close: a success landing after this box was closed and another
+      // opened closes that later opening. **What keeps that from taking
+      // anything the person typed is #258's window, not this code** -
+      // `sending` is still true while the change is out, so the later box's
+      // fields are disabled and there is nothing in them (measured with a
+      // probe in `254a`'s second row: `field0 disabled true`). That is an
+      // accident of the flag being page-wide, which is #258's defect, so the
+      // day #258 gives each opening its own flag this close owes the guard
+      // the refusal below has, keyed on `opening` - the remedy is written
+      // beside the condition, because the fix that fires the condition is
+      // the fix that owes the prescription (#242, #54). Whether the later
+      // box should then close or stay open is what the person reads, which
+      // is the owner's (#152, `docs/06` §Out of Scope).
       setAlert({
         open: true,
         message: 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว',
@@ -233,12 +276,38 @@ function Navber({ setAlert, onStayedPut }) {
       // What is still needed is the close. A dialog drawn over an open modal
       // is not the same thing as a dialog, and the expiry box has to be the
       // only thing on the screen for its one button to be findable.
+      //
+      // The expiry stays **above** the guard below, and on purpose: a refusal
+      // with no rows in it belongs to the person wherever they have since moved
+      // to, where a sentence about this change belongs to the box that asked
+      // for it (#179, #131). So an expiry still closes whatever box is open -
+      // the expiry dialog has to be the only thing on the screen - even when
+      // that is a later opening whose typed fields it takes with it. They
+      // cannot be saved from an ended session anyway, and the dialog says why.
       if (err.expired) {
         closeChangePassword()
         return
       }
-      setError(err.message)
+
+      // And the sentence is said only to the box that sent the change - #254.
+      // `pwdOpening.current` is `null` once that box has been closed and a
+      // fresh sentinel once another has been opened, so either way this is not
+      // the opening the answer is about, and writing the refusal into `error`
+      // would leave it there for the next open to draw: #205's shape, met on a
+      // dialog instead of a list. The box that is still the one that asked
+      // reads it, which is `243a`'s second row and the control this guard must
+      // leave standing (#48).
+      if (pwdOpening.current === opening) setError(err.message)
     } finally {
+      // Outside the guard, and that is not an oversight: a flag that says *a
+      // change is still out* has to come down wherever it was raised, or it
+      // stays up for ever and the box is dead to everybody after it (#227).
+      // What that costs is a box opened inside the round trip whose fields are
+      // closed by an earlier opening's flag - measured on 31 ตุลาคม 2569 with a
+      // probe in `254a`'s second row and filed as **#258**, because the fix is a
+      // flag that says *whose* save is out (#185, #249) and the answer it needs
+      // is whether a second change may be sent while the first is out, which
+      // #243's second row decided for one box and not for two.
       setSending(false)
     }
   }
@@ -346,6 +415,9 @@ function Navber({ setAlert, onStayedPut }) {
                     <button
                       onClick={() => {
                         setIsOpen(false)
+                        // A new opening, which is what an answer from an
+                        // earlier one is compared against - #254.
+                        pwdOpening.current = {}
                         setShowChangePwd(true)
                       }}
                       className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50  hover:text-secondary"

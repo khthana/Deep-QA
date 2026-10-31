@@ -97,12 +97,15 @@ MUTANTS = {
     # 5 — the flag raised and never let go. Everything row 1 reads stays true
     # under this one; what goes red is the person being able to correct the
     # password they got wrong (#227).
+    # Re-aimed on 31 October 2569 by #254, which put a guard on the
+    # `setError` this anchor used to quote and three comment lines inside
+    # the `finally`. The claim is unchanged - the flag goes up and never
+    # comes down - and the mutant is narrower than the one it replaces:
+    # it empties the `finally` instead of deleting it, so `setError` and
+    # its guard are left alone (#203, #140).
     'flagneverlowered': ('navbar',
-                         '      setError(err.message)\n'
-                         '    } finally {\n'
                          '      setSending(false)\n'
                          '    }\n',
-                         '      setError(err.message)\n'
                          '    }\n'),
 
     # 6 — the declined option made to run (#48): *ยกเลิก* closed with the rest,

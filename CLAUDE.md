@@ -1060,6 +1060,13 @@ citation.
   component that never unmounts has no lifecycle to clear it, so every way out clears it by hand —
   and on the way **out**, because an effect keyed on the flag the box is drawn from runs after the
   fields have been drawn from the old values. (#167)
+- **But a clearing at the press cannot reach a sentence that arrives after it** — #167 one layer
+  in: the same box with no lifecycle keeps a refusal its own request brought back late, and draws
+  it on the next opening, so what the clearing needs beside it is a key for the **opening** the
+  request was sent from (#185, #207) — a flag saying a box is open is answered by a way out that
+  holds nothing, which lets the person be back inside one round trip. **And a sibling box that is
+  immune is immune by its container, which is a dated claim and not a guard**: say the mechanism,
+  the date, and the condition that would make it the same defect (#54). (#254)
 - **A notice is drawn by a component, so a call that re-mounts that component is a call the notice
   cannot cross** — a save that reloads the shell erases its own *saved* message, and what proves the
   save is then the thing the person was looking at. (#47)
