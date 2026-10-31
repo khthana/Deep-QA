@@ -111,11 +111,22 @@ export default function ActivityEvidence() {
    * different opening closes nothing and says nothing, neither its banner nor
    * its refusal.
    *
-   * ยกเลิก writes nothing, as on the other twelve - but this is the one screen
-   * where that cannot be reached: its ยกเลิก carries `disabled={busy}`, so no
-   * save can be out while it is pressed, and the row the other twelve have for
-   * *nothing took the form's place* is structurally unreachable here rather
-   * than untested (#102).
+   * ยกเลิก writes nothing, as on the other twelve - and until 31 ตุลาคม 2569
+   * this was the one screen where that could not be reached: its ยกเลิก carried
+   * `disabled={busy}`, so no save could be out while it was pressed, and the
+   * row the other twelve have for *nothing took the form's place* was
+   * structurally unreachable here rather than untested (#102).
+   *
+   * **Dated 31 ตุลาคม 2569 (#253).** The flag is off that button, which is the
+   * second half of the owner's answer of 26 ตุลาคม 2569 on #228 - a person who
+   * has given up on a save must be able to leave. So that reachability claim is
+   * no longer structurally unreachable here, and it has two rows of its own:
+   * `253a-the-way-out-while-the-save-is-out` presses ยกเลิก while this form's
+   * save is out and reads both the banner and the refusal, which are the two
+   * clauses below and so two rows (#88). What is written above about ยกเลิก
+   * writing nothing is now a claim the suite holds rather than a decision
+   * nothing could reach: `253:evidencecancelmoves` is that decision read the
+   * other way, made to run (#48).
    *
    * The reload that follows is a second window, and the question is asked
    * again when it lands. Since #149 the list stays drawn while a reload is out

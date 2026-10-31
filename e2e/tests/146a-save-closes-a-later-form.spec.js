@@ -542,10 +542,18 @@ for (const screen of CARD_SCREENS) {
 }
 
 /**
- * หลักฐานการประเมิน, whose form is the five teacher screens' shape with one
- * difference: its ยกเลิก *is* disabled while a write is out, so the only way in
- * is another file's pencil — which is the way in the five have as well, and the
- * reason no screen is safe for having disabled the obvious one.
+ * หลักฐานการประเมิน, whose form was the five teacher screens' shape with one
+ * difference: its ยกเลิก *was* disabled while a write is out, so the only way
+ * in was another file's pencil — which is the way in the five have as well, and
+ * the reason no screen is safe for having disabled the obvious one.
+ *
+ * **Dated 31 ตุลาคม 2569 (#253).** That difference is gone: this screen's
+ * ยกเลิก now holds nothing, as the other twelve do, which is the second half of
+ * the owner's answer of 26 ตุลาคม 2569 on #228. The rows below are unchanged
+ * and keep their marks, because another file's pencil is still a way in and
+ * still the one they press; what has expired is the sentence saying it is the
+ * **only** one. The way in this paragraph said was closed is read by the two
+ * รายการหลักฐาน rows of `253a-the-way-out-while-the-save-is-out`.
  *
  * The two files are attached by the rows themselves: `activity_evidence` is
  * deliberately not seeded, and a row that holds a defect builds its situation

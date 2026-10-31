@@ -16566,3 +16566,97 @@ into the docblock with that date and the condition that would make it bite (#226
 The axis that found the third and fourth was **Spec**, and it found them by checking each claim
 against the code rather than against the diff — which is what the two axes are for: the Standards
 axis read the same docblock and had nothing to say about it, the sentence being well formed.
+
+## #253 — the number a deferral carried, and the two buttons the mechanism found
+
+The owner's answer of 26 October 2569 on #228 had two halves: a form that sends a save closes its
+own fields with a flag of its own, **and ยกเลิก holds nothing**. #249 landed the first half on all
+fifteen forms on 30 October 2569 and wrote the second into §*What this does not close* of
+`components/users/UserForm.js` — prose, not the tracker, which is what the rule it cited in the
+same paragraph forbids (#119). The same day's review read that paragraph and asked for the number,
+so the deferral became #253. What the ticket turned out to carry was not the fix.
+
+**The number was wrong on the day it was written, and nothing in it was.** That paragraph said
+*four*, and *four* was exactly `202a`'s count of `save` sites whose form's ยกเลิก was
+`disabled={busy}`: `Plos`, `Rubrics`, `RubricCriteria` and `ProgramSubjects`. It named them
+correctly, cited the right docblock, and described the right mechanism. **#242 had freed all four
+two days earlier**, on 28 October 2569, putting #202's three guard lines into each of them, and
+`242a`'s second row holds each of them now. So the sentence was a dated reason that had been read
+as a claim about today, which is this file's first rule met from the most ordinary direction: the
+reason was right on the day it was written and expired by somebody else's fix, in a file the person
+writing the deferral was not editing (#66, #81, #54). Its own `202a` paragraph had never been
+re-dated either, which is what let the number be copied forward.
+
+**What replaced it was a census by the mechanism (#174), and it found a screen nobody had named.**
+The third question of `frontend/scripts/save-window-fields.js` asks which `<button>` that is not
+the submit hands control back to a **prop** — the prop itself, a local whose body calls one, or an
+arrow that calls either — and whether it holds any `disabled`. Measured on 31 October 2569 over the
+27 forms that send something: **23 ways out, of which two held a flag.** One was
+`components/evidence/EvidenceForm.js`, which the deferral had named. The other was
+`components/ProfilePhotoDialog.js`, holding a flag of its own, and it was not in the deferral's
+list at all, nor in `202a`'s, nor in #228's three or #242's four — a census whose population is
+*the things somebody wrote down* cannot find the thing nobody wrote down (#141). Neither of the two
+was one of the four.
+
+**The two screens needed opposite things, which is why the census chose them and not the ticket.**
+หลักฐานการประเมิน had already decided what happens when a save's answer lands on a form that has
+gone, and the decision is written at its `onCancel`: ยกเลิก writes nothing to `showing`, so a form
+closing is nobody taking the screen and the save is still owed its sentence (#146). The two rows
+there make that decision **reachable** rather than asking anybody — the mutant that reads it the
+other way (`evidencecancelmoves`) is that declined reading made to run (#48). รูปโปรไฟล์ could
+not say the second half at all: closing the box unmounts the component, so a refusal reaches
+`setError` on something nobody is drawing. That was the owner's question, and it was **priced by
+what the person could already do** (#217): the backdrop at `ProfilePhotoDialog.js:153` has never
+held a flag, so walking out mid-upload was reachable before this ticket and the button was only
+stopping the keyboard. Twenty-two ways out needed no question; one did, because of what its screen
+could not say, not because of what its button did.
+
+The owner answered **option ก** on 31 October 2569 — nothing is said, as today. A criterion
+answered *no* needs a row as much as one answered *yes* (#48), so the row asserts the silence, and
+it asserts what is still on the screen first, because a reader scoped to something that was never
+drawn reads empty either way (#171).
+
+**The row was written the wrong way up, and the mutant is what said so.** Its first version read
+*the box has gone* and then the silence. `photoboxstays` — `close()` returning early while `busy`,
+the shape the owner refused, made to run — fails the box-hidden read first, so the kill count would
+have been right and the row's own claim never read (#88, #233). The box going is what makes the
+silence true, so the silence is the claim and the box-hidden read is the reading that follows:
+reordered, the silence sits above it and has the mutant, and the reading below has none. That is
+#233's prescription applied to a row whose precondition is downstream of its claim rather than
+upstream of it.
+
+**One kill is at a timeout, and the file says so.** `photoquietsaved` drops `await onSaved()`, and
+the row it kills asserts that the shell is asked for the photo after the person has left. A request
+nobody makes can only be read as a wait, so the row dies at `waitForResponse`'s timeout, which is
+what a mutant that stopped the application would print too (#139). What says the application is
+running under it is the three rows of that same run which stayed green — a reading that costs a
+minute of clock per sweep, written into the mutation file's own table rather than left for the next
+person to wonder about.
+
+**The rows were run against the unfixed code before the mutants were written** (#203), both flags
+restored by a throwaway script, and all four died at the first assertion — `toBeEnabled` on ยกเลิก.
+The census was proved both ways on real sites as well, never on its own fixtures (#141, #230):
+breaking `EvidenceForm.js` and **moving the population** into `components/Pager.js` both went red
+in one run, and the move printed three ways out in Pager, two of them its ก่อนหน้า and ถัดไป —
+the too-loose direction of the question met live, a prop that sends a request reading as a way out.
+That limit is on the script's front page with the date, because a rule that is too loose fails the
+other way and only a real site shows it.
+
+**Three expired reasons, all of them re-dated and none deleted** (#54). `202a`'s paragraph about
+its five remaining sites, whose four had been freed; `146a:546`'s paragraph saying
+หลักฐานการประเมิน differs from the five teacher screens because its ยกเลิก *is* disabled, whose
+rows keep their marks because another file's pencil is still a way in and still the one they press
+— what expired is the word *only* (#86); and the screen's own docblock, which said the claim about
+*nothing took the form's place* was structurally unreachable here rather than untested (#102). Each
+carries the date and what moved it. The deferral in `UserForm.js` was answered in place rather than
+deleted too, and what the answer had to say was that its own population sentence was wrong in the
+sites it named while right in its species (#186).
+
+**And one frame is left unmeasured on purpose.** `RetiringPresence` keeps the photo box mounted for
+its exit tween, about 190ms (#169, 21 October 2569), so a refusal landing inside that window is
+drawn in a box that is fading rather than drawn nowhere. The row waits past it, which is a limit
+stated rather than a settle point chosen for comfort (#209), and *was it ever on the screen* is
+answered by a sample per frame and not by a longer wait (#164). **#257** carries that measurement,
+and it carries the sentence that if the frame does paint, what the person sees contradicts the
+answer the owner gave — which goes back to the owner rather than into a commit message (#228).
+

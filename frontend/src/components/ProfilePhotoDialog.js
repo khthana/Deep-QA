@@ -39,6 +39,39 @@ import { uploadProfilePhoto } from '../api/profile'
  * And nothing clears it on a re-seed because `close` does, which is the
  * paragraph above - every way out of this box goes through it, and it sets
  * `busy` false along with the choice and the input's own value.
+ *
+ * ## ยกเลิก holds nothing - #253, 31 ตุลาคม 2569
+ *
+ * The second half of the same answer, and here the flag it held was the
+ * form's own rather than the page's - which changes nothing: the owner's
+ * sentence is that *ยกเลิก holds nothing*, whosever flag it is.
+ *
+ * This box is where that mattered least and was measured anyway. The
+ * backdrop at `:153` is a way out that never held a flag, so a person could
+ * already leave while an upload was out, and the button was the only thing
+ * stopping them doing it with the keyboard. Asked of the screen rather than
+ * of the component (#217): what they could still do is what priced the
+ * owner's question, and it is why that question was about this box and not
+ * about the population.
+ *
+ * **What happens when the answer lands on a box that has gone.** The owner
+ * answered on 31 ตุลาคม 2569, option ก: nothing is said, as today. A
+ * refusal reaches `setError` on a component the navbar has stopped drawing,
+ * so it is drawn nowhere; a success still reaches `onSaved`, so the photo
+ * changes in the navbar, which is the confirmation `47a` already says this
+ * screen has instead of a sentence. `253a`'s third and fourth rows hold the
+ * pair, and the third asserts the silence, because a criterion answered *no*
+ * needs a row as much as one answered *yes* (#48).
+ *
+ * **The one frame that answer does not reach, written down rather than
+ * fixed.** `RetiringPresence` keeps this component mounted for its exit
+ * tween, about 190ms (measured 21 October 2569, the paragraph below), so a
+ * refusal that lands inside that window is `setError` on a box that is still
+ * in the document and fading. The person sees the sentence go out with the
+ * box. That is not *nothing*, and it is not what the owner was asked about:
+ * it is #257, with the measurement on it. `253a` reads past the tween and
+ * says so, which is this seam's limit and not a settle point chosen for
+ * comfort (#209).
  */
 /*
  * ## Closing is what clears this box, because closing it does not unmount it
@@ -213,7 +246,6 @@ export default function ProfilePhotoDialog({
             <button
               type="button"
               onClick={close}
-              disabled={busy}
               className="rounded-lg bg-gray-200 px-4 py-2 text-gray-800 transition hover:bg-gray-300 disabled:opacity-60"
             >
               ยกเลิก

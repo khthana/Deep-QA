@@ -34,6 +34,31 @@ import { useState } from 'react'
  * `149a` typing into the second file's box while the first file's save is
  * still out.
  *
+ * ## ยกเลิก holds nothing - #253, 31 ตุลาคม 2569
+ *
+ * It held `busy`, the page's flag. That it should hold nothing is the other
+ * half of #228's answer of 26 ตุลาคม 2569, and the half #249 left in its own
+ * prose instead of in the tracker, which is the thing the rule it cited
+ * forbids (#119).
+ *
+ * The number that deferral carried - *four* - was `202a`'s, and `202a`'s four
+ * were `Plos`, `Rubrics`, `RubricCriteria` and `ProgramSubjects`, freed by
+ * #242 on 28 ตุลาคม 2569, two days before the paragraph naming them was
+ * written. What replaced it is a census by the **mechanism** rather than by
+ * the word *screen* (#174) - `frontend/scripts/save-window-fields.js`' third
+ * question, *which button that hands the form back holds a flag while the
+ * form's own save is out*. Measured on 31 ตุลาคม 2569 over the 27 forms that
+ * send something: **two**, this one and `components/ProfilePhotoDialog.js`,
+ * and neither of them one of the four.
+ *
+ * What freeing it costs is a way in: a save can now be answered with this
+ * form gone. `pages/ActivityEvidence.js` had already decided what happens
+ * then and says so at its `onCancel` - ยกเลิก writes nothing to `showing`, so
+ * a form closing is nobody taking the screen and the save is still owed its
+ * sentence (#146). That is a decision in the code and not an owner's
+ * question, which is why only the box in the navbar needed one; `253a`'s
+ * first two rows hold it, one per answer.
+ *
  * ## One form per file
  *
  * The boxes are seeded once, when the form mounts. That is right only because
@@ -120,7 +145,6 @@ export default function EvidenceForm({ evidence, types, maxBytes, busy, onSubmit
         <button
           type="button"
           onClick={onCancel}
-          disabled={busy}
           className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
           ยกเลิก

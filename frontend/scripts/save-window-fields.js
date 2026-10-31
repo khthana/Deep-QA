@@ -30,6 +30,20 @@
  *    about: what the person sees and what is being saved part company, and on
  *    a refused save the form stays open holding a value nobody sent.
  *
+ * 3. **Is the button that hands the form back free?** The other half of the
+ *    owner's sentence, and the one #249 left in its own prose rather than in
+ *    the tracker - *ยกเลิก holds nothing*. Added on 31 ตุลาคม 2569 by #253,
+ *    whose first move was to replace the number that deferral carried: *four*
+ *    was `202a`'s count, and `202a`'s four had been freed by #242 on
+ *    28 ตุลาคม 2569, two days earlier. Asked by the mechanism (#174): a
+ *    `<button>` that is not the submit and whose `onClick` hands control to a
+ *    **prop** - the prop itself, a local whose body calls one, or an arrow
+ *    that calls either - is a way out of the form, and a way out holding any
+ *    `disabled` is a problem. Measured that day over this population: 23 ways
+ *    out, of which **two** held a flag - `evidence/EvidenceForm.js` on the
+ *    page's `busy` and `ProfilePhotoDialog.js` on its own - and neither of
+ *    them was one of the four.
+ *
  * Either answer is green behind a **marker**, in a comment anywhere in the same
  * file:
  *
@@ -106,9 +120,35 @@
  *   `components/offerings/TeacherPicker.js` write and are not counted, because
  *   the population is the submit button. Whether they belong in it is a
  *   question this instrument cannot ask.
+ * - **a way out that is not a `<button>`, or whose handler calls no prop.**
+ *   Measured on a real site the day the third question landed (#226):
+ *   `components/ProfilePhotoDialog.js:153` is a backdrop `<div onClick={close}>`
+ *   and `components/Navbar.js:551` is a ยกเลิก whose `closeChangePassword` sets
+ *   the navbar's own state rather than calling a prop, because the box's state
+ *   lives in the file that draws it (#167). Both are ways out this question
+ *   cannot see; both were already free, which is how they were read at all.
+ *   `components/offerings/SectionsPanel.js:180` is the third shape -
+ *   `() => setRenaming(null)`, a way out of a form in the same file.
+ * - **whether a prop a button hands control to really takes the person out.**
+ *   `onRemove` and `onRemoveSection` are props too, and a button that calls one
+ *   sends a request rather than closing a form. Today every such button is
+ *   free, so none is reported; the day one holds a flag this question will name
+ *   it wrongly, and that is what a marker's prose is for.
  * - **two forms in one file.** The marker is read from the file, so a file with
  *   a flagged form and a bare one is green on both — `components/Navbar.js`
  *   holds one form and `components/offerings/SectionsPanel.js` holds two.
+ * - **a destructured callback parameter counted as a prop.** `propsIn` walks
+ *   every `node.params`, so a name destructured inside a callback - say
+ *   `rows.map(({ onPick }) => …)` - joins the set a way out is recognised by,
+ *   and an in-row button calling it would read as a way out of the form.
+ *   Nothing in `src/` does that today; this is the mirror of the bullet above,
+ *   which is too loose about the prop's **meaning** rather than its origin.
+ * - **a marker written for a field silences this file's way out too.** The
+ *   marker is read from the file and now greens all three questions, so
+ *   `components/LoginForm.js`' marker, written for its two fields and its
+ *   button, would excuse a held way out in that file without anybody meaning
+ *   it. Found by the two-axis review on 31 ตุลาคม 2569; a way-out-specific
+ *   marker is cheaper than the next reader's census (#93, #141).
  * - **whether a marker's reason is still true**, which is #93's rule and why
  *   each reason carries a ticket number.
  *
@@ -203,6 +243,72 @@ function disabledIn(node, code) {
   return code.slice(attribute.value.expression.start, attribute.value.expression.end)
 }
 
+/**
+ * Every name a function parameter destructures: what a component is handed.
+ *
+ * Parameters only. A name destructured from a hook's return is a local, and the
+ * question below is about control going back to whoever drew this form.
+ */
+function propsIn(ast) {
+  const names = new Set()
+  walk(ast, node => {
+    if (!Array.isArray(node.params)) return
+    for (const param of node.params) {
+      if (!param || param.type !== 'ObjectPattern') continue
+      for (const property of param.properties || [])
+        if (property.type === 'ObjectProperty' && property.key && property.key.name)
+          names.add(property.key.name)
+    }
+  })
+  return names
+}
+
+/**
+ * Locals whose body calls one of those props: a way out written as a helper.
+ *
+ * One hop. A helper that calls a helper that calls the prop is the limit this
+ * cannot read, and it is on the front page with the others.
+ */
+function handlersIn(ast, props) {
+  const bodies = []
+  walk(ast, node => {
+    if (node.type === 'FunctionDeclaration' && node.id) bodies.push([node.id.name, node.body])
+    if (
+      node.type === 'VariableDeclarator' &&
+      node.id &&
+      node.id.type === 'Identifier' &&
+      node.init &&
+      (node.init.type === 'ArrowFunctionExpression' || node.init.type === 'FunctionExpression')
+    )
+      bodies.push([node.id.name, node.init.body])
+  })
+  const names = new Set()
+  for (const [name, body] of bodies) if (callsOneOf(body, props)) names.add(name)
+  return names
+}
+
+/** Whether anything under `node` calls one of `names` by that bare name. */
+function callsOneOf(node, names) {
+  let found = false
+  walk(node, inner => {
+    if (inner.type !== 'CallExpression') return
+    if (inner.callee && inner.callee.type === 'Identifier' && names.has(inner.callee.name))
+      found = true
+  })
+  return found
+}
+
+/** Whether a button's `onClick` hands control back to whoever drew the form. */
+function handsBack(node, names) {
+  const attribute = attributeOf(node, 'onClick')
+  if (!attribute || !attribute.value) return false
+  if (attribute.value.type !== 'JSXExpressionContainer') return false
+  const expression = attribute.value.expression
+  if (expression.type === 'Identifier') return names.has(expression.name)
+  if (expression.type !== 'ArrowFunctionExpression') return false
+  return callsOneOf(expression.body, names)
+}
+
 /** Runs of adjacent comments, merged: a `//` paragraph is one comment per line. */
 function paragraphs(comments, code) {
   const runs = []
@@ -251,11 +357,22 @@ function examine(code) {
 
   const buttons = []
   const fields = []
+  const waysOut = []
+  const handedTo = new Set(propsIn(ast))
+  for (const name of handlersIn(ast, handedTo)) handedTo.add(name)
   walk(ast, node => {
     if (node.type !== 'JSXOpeningElement') return
     const tag = tagOf(node)
     if (tag === 'button' && typeOf(node) === 'submit') {
       buttons.push({ line: node.loc.start.line, closedBy: disabledIn(node, code) })
+      return
+    }
+    if (tag === 'button') {
+      // The third question. A button that is neither the submit nor a way out -
+      // a row's pencil, an เพิ่ม inside the form - is neither asked about nor
+      // counted: #228's answer is about the fields, the send and the way out.
+      if (handsBack(node, handedTo))
+        waysOut.push({ line: node.loc.start.line, closedBy: disabledIn(node, code) })
       return
     }
     if (!FIELDS.has(tag)) return
@@ -266,8 +383,8 @@ function examine(code) {
     fields.push({ line: node.loc.start.line, tag, closedBy: disabledIn(node, code) })
   })
 
-  if (buttons.length === 0) return { buttons: [], fields: [], marker: null }
-  return { buttons, fields, marker: markerIn(ast.comments || [], code) }
+  if (buttons.length === 0) return { buttons: [], fields: [], waysOut: [], marker: null }
+  return { buttons, fields, waysOut, marker: markerIn(ast.comments || [], code) }
 }
 
 /** What one control is, given what else the file holds. */
@@ -276,6 +393,20 @@ function classify(control, found) {
   if (control.closedBy !== null) return { kind: 'flagged', by: control.closedBy }
   if (found.marker) return { kind: 'marked', marker: found.marker }
   return { kind: 'bare' }
+}
+
+/**
+ * What one way out is - the third question's rule, which is the inverse of the
+ * other two: a control that must hold **nothing**.
+ */
+function classifyWayOut(control, found) {
+  if (control.closedBy === null) return { kind: 'free' }
+  if (found.marker) return { kind: 'marked', marker: found.marker }
+  // A bare `disabled` is `always` for a field, where it is a control nobody
+  // can be in the window of - and the **worst** case here, where it is a way
+  // out nobody can ever take. So it stays a problem and says what it is,
+  // rather than naming a flag it does not have.
+  return { kind: 'held', by: control.closedBy === '' ? null : control.closedBy }
 }
 
 /** The one spelling of a path this report uses. */
@@ -293,7 +424,9 @@ function main() {
   const marked = []
   const bare = []
   const problems = []
+  const free = []
   let forms = 0
+  let waysOut = 0
 
   for (const file of sources) {
     const where = shown(file)
@@ -312,6 +445,34 @@ function main() {
       ...found.buttons.map(one => ({ ...one, what: 'the button that sends this form' })),
       ...found.fields.map(one => ({ ...one, what: 'this <' + one.tag + '>' })),
     ]
+    waysOut += found.waysOut.length
+    for (const control of found.waysOut) {
+      const at = where + ':' + control.line
+      const verdict = classifyWayOut(control, found)
+      if (verdict.kind === 'free') free.push(at)
+      else if (verdict.kind === 'marked' && verdict.marker.ok)
+        marked.push(at + ' — ' + verdict.marker.reason)
+      else if (verdict.kind === 'marked')
+        problems.push({
+          where,
+          line: verdict.marker.line,
+          why: 'marker needs a reason of its own and a ticket number',
+        })
+      else
+        problems.push({
+          where,
+          line: control.line,
+          why:
+            'the button that hands this form back is ' +
+            (verdict.by === null
+              ? 'disabled outright, so it can never be taken'
+              : 'closed by `' + verdict.by + '`') +
+            '. The owner answered that on 26 ตุลาคม 2569 (#228): ยกเลิก holds ' +
+            'nothing, whosever flag it is, so a person is never kept in a form ' +
+            'by a save of its own (#253). Either free it, or write ' +
+            '`// save-window: <why this way out holds a flag> (#NNN)` in this file',
+        })
+    }
     for (const control of controls) {
       const at = where + ':' + control.line
       const verdict = classify(control, found)
@@ -372,12 +533,17 @@ function main() {
       marked.length +
       ' · bare ' +
       bare.length +
+      ' · ways out ' +
+      waysOut +
+      ' · free ' +
+      free.length +
       ' · problems ' +
       problems.length
   )
   if (process.argv.includes('--flagged')) for (const entry of flagged) console.log('  ' + entry)
   if (process.argv.includes('--marked')) for (const entry of marked) console.log('  ' + entry)
   if (process.argv.includes('--always')) for (const entry of always) console.log('  ' + entry)
+  if (process.argv.includes('--free')) for (const entry of free) console.log('  ' + entry)
   for (const entry of bare) console.log('  ' + entry.where + ':' + entry.line + ' ' + entry.why)
   for (const problem of problems)
     console.log('  ' + problem.where + ':' + problem.line + ' ' + problem.why)
@@ -387,4 +553,4 @@ function main() {
 
 if (require.main === module) main()
 
-module.exports = { examine, classify }
+module.exports = { examine, classify, classifyWayOut }

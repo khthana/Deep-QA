@@ -140,10 +140,24 @@ import useGrantable from './useGrantable'
  * here, which is #202's count and a claim like any other. The owner's sentence of 26 ตุลาคม 2569 is about the form that
  * sent the save and says nothing that makes those four's prose wrong today.
  *
+ * **Closed on 31 ตุลาคม 2569 by #253, and the paragraph above was wrong about
+ * the population on the day it was written.** The census by the mechanism is
+ * `save-window-fields.js`' third question, which found 23 ways out of these
+ * forms and **two** holding a flag: `evidence/EvidenceForm.js`, as this said,
+ * and `components/ProfilePhotoDialog.js`, which it did not name. Of the four
+ * that #202's count carried, **none** was still holding one: #242 had put
+ * #202's three guard lines into all four on 28 ตุลาคม 2569, two days before
+ * this paragraph was written, so that number was a record left standing rather
+ * than work left undone (#66, #81). `202a`'s own docblock is re-dated in
+ * place. So the sentence above about *freeing them expires those dated reasons*
+ * was right in its species and wrong in the sites it named (#186): what was
+ * expired was `146a:546`'s paragraph and this screen's own, both of which name
+ * หลักฐานการประเมิน. The rows are `253a-the-way-out-while-the-save-is-out`.
+ *
  * And `save-window-fields.js` reads
  * whether a `disabled` **exists**, not whose flag it is or what for: that is the
- * first of the six limits on its own front page, and the one this ticket met on
- * a real site. The witness it printed on 29 ตุลาคม 2569 was
+ * first of the limits on its own front page - six of them that day, eight since
+ * 31 ตุลาคม 2569 (#253) - and the one this ticket met on a real site. The witness it printed on 29 ตุลาคม 2569 was
  * `components/offerings/OfferingForm.js:178`, `flagged` behind `loading`, which
  * is the flag of a *read* and is down before anybody can press *บันทึก*. This
  * ticket gave that form a flag of its own, which expired the **witness** and not

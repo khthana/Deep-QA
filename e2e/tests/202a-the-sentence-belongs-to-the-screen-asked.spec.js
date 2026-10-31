@@ -63,6 +63,18 @@ const plos = require('../support/plos-screen');
  * (#97) — and one is `Offerings.onSection`, decided on 1 October 2569 and
  * documented on itself.
  *
+ * **The four expired on 28 ตุลาคม 2569 and this paragraph was read as still
+ * true on 30 ตุลาคม 2569 (#253, 31 ตุลาคม 2569).** #242 put #202's three guard
+ * lines into `Plos`, `Rubrics`, `RubricCriteria` and `ProgramSubjects` that day,
+ * so all four now hold a guard rather than a reason, and `242a`'s second row is
+ * what holds each of them. Two days later #249's own prose carried the number
+ * *four* forward as the population of ยกเลิก buttons still holding a flag,
+ * which was this sentence read as a claim about today — the reason being right
+ * on the day it was written and dated by somebody else's fix (#66, #81). The
+ * census that replaced the number is `save-window-fields.js`' third question:
+ * 23 ways out on 31 ตุลาคม 2569, of which two held a flag and neither was one
+ * of these four. The rows are in `253a-the-way-out-while-the-save-is-out`.
+ *
  * **Fifteen sentences moved, not eleven**, and the extra four are what the
  * instrument sorted wrongly: it reads the eight lines above a sentence, so
  * `if (await reload(said))`, which sits *below* it, read as bare, and

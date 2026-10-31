@@ -129,7 +129,10 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 * `<จอ>showingatthelanding` สามตัว ย้ายการเขียน ref กลับไปไว้ตรงที่การอ่านลง - ฆ่าแถวหน้าต่าง
   แถวเดียว ซึ่งเป็นการแยกที่ `closewins` ทำไม่ได้ ตัวหนึ่งบอกว่ามีคนอ่าน ref อีกตัวบอกว่าอ่าน*ตอนกด*
 * หลักฐานการประเมิน ไม่มี `cancelclears` เพราะ ยกเลิก ของมันถือ `disabled={busy}` ไว้ -
-  โครงสร้างไปไม่ถึง ไม่ใช่ยังไม่ได้ทดสอบ (#102)
+  โครงสร้างไปไม่ถึง ไม่ใช่ยังไม่ได้ทดสอบ (#102) · **ลงวันที่ใหม่ 31 ต.ค. 2569 (#253)**:
+  ธงถูกถอดออก และตัวนั้นมีแล้วในชื่อ `253:evidencecancelmoves` ที่แฟ้มของ #253 คนละชื่อ
+  คนละแฟ้ม จึงไม่ชนกันในสารบัญ (#185) ย่อหน้านี้ไม่ถูกลบ เพราะมันบอกว่าทำไมใบนี้ถึงมี
+  สิบสองตัวไม่ใช่สิบสาม (#54)
 
 **หน่วยของเวลาขยับไปพร้อมไฟล์** รอบก่อน 2.6 นาทีคือสัญญาณของการรอ เทียบกับ 1.6 ของตัวปกติ
 รอบนี้ 2.6-3.0 คือความยาวของ baseline เอง สี่สิบเก้าแถวใช้เวลาเท่านั้น สิ่งที่อ่านได้จึงเป็น
@@ -288,6 +291,12 @@ MUTANTS = {
     # is what the code said before the advisor answered the question #146
     # parked. หลักฐานการประเมิน is not here - its ยกเลิก is disabled while a
     # write is out, so nothing can be pressed to reach the row.
+    # **Dated 31 ตุลาคม 2569 (#253).** The flag is off that button, so the
+    # row is reachable there now and the mutant exists, as
+    # `253:evidencecancelmoves` in that ticket's own file - a different name
+    # in a different file, so the catalogue sees two mutants and not one
+    # cited twice (#185). This comment stays as the record of why this file
+    # holds twelve and not thirteen (#54).
     'departmentscancelclears': ('departments',
         '            setNotice(null)\n'
         '            setEditing(null)\n'
