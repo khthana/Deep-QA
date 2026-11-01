@@ -191,7 +191,7 @@ wording, which diverges the same way and is a different ticket's blast radius
 (#119). And which *kind* of half-walked a row means - a person, a ticket, or
 nothing at all - which is written in the row and counted by hand.
 
-## The seventh question, unwired: does a mutant say beforehand what it kills?
+## The seventh question, wired 1 พ.ย. 2569: does a mutant say what it kills?
 
 `mutation/README.md` states the rule four times - a sweep is read by whether
 each mutant died **at the assertion its sheet's table named before the run** -
@@ -1312,8 +1312,9 @@ def predictions(paths=None):
     way to assert that a missing prediction is *found* rather than that today's
     store happens to hold one is to hand it a sheet missing one.
 
-    Not called by the run below. The module docstring says why, and what to run
-    when the population behind #259 is empty.
+    Called by the run below since 1 พ.ย. 2569, when #259 closed the population
+    it landed unwired over. The module docstring holds the dated record of the
+    day it landed and of the day it was wired (#54).
 
     **Seven things it does not look at**, written here beside the numbers it
     prints, because a found guard counted as enough reads as a stronger claim
@@ -1327,15 +1328,22 @@ def predictions(paths=None):
        owner was offered that day and did not take (#259 carries it).
        Remeasured when #259 closed the population later the same day, over all
        144 sheets: **142** have a third column and **139** have at least one row
-       naming a spec, a row or an assertion. That second figure is itself an
-       upper bound of the same kind - it is a grep for *แถว*, *spec*,
-       *assertion*, `toEqual`, `toHave` and `assert.` over the third column
-       (#174), and the rule it would stand for is still unwritten and still
-       #259's to carry. The five sheets short of it are
-       `116-a-breadcrumb-that-reads-the-section`, `119-google-landing`,
-       `68-superseded-answer`, `84-own-row-controls` and
-       `87-assessor-is-from-outside`, the middle one and `84-own-row-controls`
-       having no third column at all.
+       naming a spec, a row or an assertion **anywhere in the row**. That second
+       figure is itself an upper bound of the same kind - it is a grep for
+       *แถว*, *spec*, *assertion*, `toEqual`, `toHave` and `assert.`, and the
+       rule it would stand for is still unwritten and still #259's to carry.
+       Which cells the grep reads is part of the figure and not a detail of how
+       it was taken: the same words read over **the third cell alone** give
+       **136**, and the review of the same day refuted the first wording of this
+       very sentence, which said *over the third column* while quoting the
+       whole-row number (#174). The three sheets short of 139 are
+       `102-department-boundary`, `48-assessor-validity-window` and
+       `87-assessor-is-from-outside`. Three more -
+       `116-a-breadcrumb-that-reads-the-section`,
+       `141-superseded-across-a-section-jump` and `68-superseded-answer` - say
+       it only past the third cell, which is the difference between the two
+       figures; and `119-google-landing` and `84-own-row-controls` have no third
+       column at all, so they are outside the 142 rather than short of the 139.
     2. Whether the table was written **before** the sweep, which no static
        reading can say. 13 of the 14 newest sheets landed in the same commit as
        the acceptance sheet carrying their sweep's result, so `git` cannot tell
