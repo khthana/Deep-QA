@@ -957,9 +957,11 @@ export default function Users() {
               // own green line is in another module and says nothing about it.
               // Asked by this screen's own predicate rather than by
               // `someImportedOutside`, because the filter here is three
-              // questions - and one of them, the role, an import's answer cannot
-              // be asked (`importedOutsideTheFilters` above says which half is
-              // quiet and names its ticket).
+              // questions. Until 31 ตุลาคม 2569 these lines read *and one of
+              // them, the role, an import's answer cannot be asked*, which #256
+              // made false on 1 พฤศจิกายน 2569: the import answer carries each
+              // row's grant and `importedOutsideTheFilters` above asks all
+              // three.
               //
               // Handed to `load` rather than said here, which is the rule the
               // save above follows (#238, #203), and keyed on the render's

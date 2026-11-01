@@ -17,7 +17,7 @@
 | ชื่อ | สิ่งที่มันทำ | ข้ออ้างที่มันฆ่า |
 |---|---|---|
 | `rolequestionoff` | ข้อบทบาทของ `importedOutsideTheFilters` ตอบ `false` สองข้อที่เหลือยังอยู่ | `252a` แถว 6 ที่ `toHaveText(SOME_IMPORTED_OUTSIDE)` — แฟ้มเขียนอาจารย์ผู้สอนลงตารางที่กรองบทบาทอื่น แล้วจอไม่พูด · แถว 7 ผ่านใต้มัน เพราะแถวนั้นอ้างว่าจอ **ไม่** พูด |
-| `answerwithoutgrant` | ปลายทางนำเข้าคืน `written.user` เปล่า ๆ อย่างที่คืนถึง 31 ต.ค. 2569 คือโค้ดที่ตั๋ววินิจฉัย เขียนให้รันได้ (#115) | `252a` แถว 7 ที่ `notice(page)).toHaveCount(0)` — ไม่มีบทบาทมา `(row.roles ?? [])` ว่าง ข้อบทบาทจึงตอบ *อยู่นอกตัวกรอง* เหนือรายการที่ถือบัญชีนั้นอยู่ · และแถว `answers with each row's grant, in the shape the list publishes` ของ `backend/test/users.test.js` ที่ `deepStrictEqual` · แถว 6 ผ่านใต้มัน ซึ่งเป็นเหตุที่แถว 7 มีอยู่ (#145) |
+| `answerwithoutgrant` | ปลายทางนำเข้าคืน `written.user` เปล่า ๆ อย่างที่คืนถึง 31 ต.ค. 2569 คือโค้ดที่ตั๋ววินิจฉัย เขียนให้รันได้ (#115) | `252a` แถว 7 ที่ `notice(page).toHaveCount(0)` — ไม่มีบทบาทมา `(row.roles ?? [])` ว่าง ข้อบทบาทจึงตอบ *อยู่นอกตัวกรอง* เหนือรายการที่ถือบัญชีนั้นอยู่ · และแถว `answers with each row's grant, in the shape the list publishes` ของ `backend/test/users.test.js` ที่ `deepEqual` · แถว 6 ผ่านใต้มัน ซึ่งเป็นเหตุที่แถว 7 มีอยู่ (#145) |
 | `grantisaconstant` | คืนบทบาทมาจริง แต่เป็นค่าคงที่ `TEACHER` ไม่ใช่บทบาทของแถวที่อ่านจาก CSV | แถว `answers with each row's grant` **เท่านั้น** ที่คู่ `PROG_MANAGER` · ทั้งสองแถวของ `252a` ผ่านใต้มัน เพราะแฟ้มของทั้งคู่เขียนอาจารย์ผู้สอน — นี่คือตัวที่บอกว่าแถวฝั่งเบราว์เซอร์ปักค่าของวันนี้ ไม่ใช่ *คำตอบถือบทบาทของแถวนั้น* และเป็นเหตุที่แถวฝั่ง backend มีอยู่ |
 | `everywritepublishes` | ข้อที่เจ้าของงานไม่เลือก เขียนให้รันได้ (#48): `insertAccount` คืนบทบาทมาด้วย ฉะนั้น `POST /users` เผยแพร่มันเช่นกัน | แถวคุม `while the single-account answer still publishes no grant` **เท่านั้น** ทุกแถวที่เหลือผ่านใต้มัน เพราะการนำเข้าได้ค่าเดียวกันจากสองทาง — ซึ่งคือสิ่งที่ทำให้ *เลือกข้อ ก* เป็นคำตัดสิน ไม่ใช่ประโยคบนใบ |
 
@@ -28,7 +28,7 @@
   จึงเดินผ่านทางนั้นทุกครั้ง มัตแตนต์ที่เปลี่ยน `?? []` เป็น `?? undefined` จะฆ่าแถวเดียวกัน
   ด้วยเหตุเดียวกัน — สองที่ที่ถือความเห็นเดียวกันคือข้ออ้างที่ไม่มีที่ไหนพิสูจน์ได้ (#97)
 - **รูปของสิ่งที่เผยแพร่ (`roles` ไม่ใช่ `role`)** — ไม่มีมัตแตนต์ของชื่อคีย์ เพราะแถว
-  `deepStrictEqual` ฝั่ง backend อ่านรูปทั้งก้อน และ `answerwithoutgrant` ฆ่ามันอยู่แล้ว
+  `deepEqual` ฝั่ง backend อ่านรูปทั้งก้อน และ `answerwithoutgrant` ฆ่ามันอยู่แล้ว
   ชื่อคีย์เป็น **ข้อตั้ง** ของแถวนั้น อย่างเดียวกับ attribute ที่ locator สร้างขึ้นจาก (#85, #111)
 - **ปลายทางอื่นที่อ่านบัญชี** — `COLUMNS` ไม่ถูกแก้ ฉะนั้นไม่มีอะไรให้บิด และข้ออ้างว่า
   *มันไม่ถูกแก้* คือ `everywritepublishes` อ่านจากอีกด้าน
@@ -38,7 +38,7 @@
     python mutation/256-the-grant-the-answer-did-not-carry.py save
     python mutation/256-the-grant-the-answer-did-not-carry.py rolequestionoff
     python mutation/256-the-grant-the-answer-did-not-carry.py restore
-    cd e2e && npx playwright test tests/252a
+    cd e2e && npx playwright test tests/252a-the-file-outside-the-filter.spec.js
     npm --prefix backend test
     # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
 

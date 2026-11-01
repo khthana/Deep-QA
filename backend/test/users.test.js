@@ -1030,7 +1030,7 @@ test('importing a valid spreadsheet', async (t) => {
     });
 
     assert.equal(created.status, 201, created.body.message);
-    assert.equal(created.body.user.roles, undefined);
+    assert.strictEqual(created.body.user.roles, undefined);
   });
 
   await t.test('reads a quoted field containing a comma', async () => {
