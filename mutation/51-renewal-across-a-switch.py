@@ -95,6 +95,23 @@ that crosses a switch (#51)* เท่านั้น — แถวของก�
 
 ชื่อไฟล์เต็ม `51a-renewal` ไม่ใช่ `51a` เฉย ๆ - Playwright จับแบบ substring และ `51a` ลาก
 `151a-failed-reload-keeps-the-list.spec.js` มาด้วย
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `nobump` | `me` — `BUMP` → `const epoch = req.session.actingEpoch;` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a read still out when the grant changes cannot renew the session it left under* · ที่มา `docs/acceptance/10-application-shell.md:629` `docs/acceptance/10-application-shell.md:631` `docs/acceptance/10-application-shell.md:634` |
+| `bumpafterissue` | `me` — บล็อกที่ถูกแทน ท้ายของมัน `ISSUE` → `await bumpActingEpoch(pool, req.auth.userId);` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a read still out when the grant changes cannot renew the session it left under* · *a session inside its last ten minutes renews after a switch, keeping the new hat* · ที่มา `docs/acceptance/10-application-shell.md:629` `docs/acceptance/10-application-shell.md:630` `docs/acceptance/10-application-shell.md:633` |
+| `switchkeepsold` | `me` — `ISSUE` → `issueSession(res, req.auth.userId, epoch, req.session.acting);` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a read still out when the grant changes cannot renew the session it left under* · *a session inside its last ten minutes renews after a switch, keeping the new hat* · ที่มา `docs/acceptance/10-application-shell.md:629` `docs/acceptance/10-application-shell.md:630` `docs/acceptance/10-application-shell.md:633` |
+| `neverrenew` | `session` — `COMPARE` → `if (true) return;` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a session inside its last ten minutes renews after a switch, keeping the new hat* · ที่มา `docs/acceptance/10-application-shell.md:630` `docs/acceptance/10-application-shell.md:633` `docs/acceptance/10-application-shell.md:635` |
+| `noguard` | `session` — ตัด `COMPARE` ท้าย `` ออก | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a read still out when the grant changes cannot renew the session it left under* · ที่มา `docs/acceptance/10-application-shell.md:629` `docs/acceptance/10-application-shell.md:631` `docs/acceptance/10-application-shell.md:637` |
+| `missingiszero` | **ทำอะไร** อ่าน claim ที่ไม่มีว่าเป็นศูนย์ (`session.actingEpoch ?? 0`) คือทางที่ ADR-0006 เขียนไว้ว่าไม่เลือก | **ฆ่าที่** แถว HTTP ที่เจ็ดของ #154 **แถวเดียว** ไม่แตะ seam เบราว์เซอร์เลย ซึ่งถูก: token ที่ไม่มีตัวนับเกิดในเบราว์เซอร์ไม่ได้ · ที่มา บันทึกการกวาด 23 ก.ย. 2569 กับ 21 ต.ค. 2569 ในใบนี้ |
 """
 
 from harness import main

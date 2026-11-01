@@ -80,6 +80,38 @@ baseline **29 ผ่านทั้ง 29**
     python mutation/152-the-refusal-wins.py restore
 
 แถวอยู่ใน `e2e/tests/152a-the-refusal-wins.spec.js`
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `clossaveanyway` | `clos` — `SAVE_READS` → `SAVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:596` |
+| `closremovalanyway` | `clos` — `REMOVE_READS` → `REMOVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:597` |
+| `criteriasaveanyway` | `criteria` — `SAVE_READS` → `SAVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/29-achievement-criteria.md:454` |
+| `criteriaremovalanyway` | `criteria` — `REMOVE_READS` → `REMOVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/29-achievement-criteria.md:455` |
+| `behaviorssaveanyway` | `behaviors` — `SAVE_READS` → `SAVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/28-measurable-behaviors.md:454` |
+| `behaviorsremovalanyway` | `behaviors` — `REMOVE_READS` → `REMOVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/28-measurable-behaviors.md:455` |
+| `plansaveanyway` | `plan` — `SAVE_READS` → `SAVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/31-teaching-plan.md:457` |
+| `planremovalanyway` | `plan` — `REMOVE_READS` → `REMOVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/31-teaching-plan.md:458` |
+| `activitiessaveanyway` | `activities` — `SAVE_READS` → `SAVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/33-activity-editor.md:458` |
+| `activitiesremovalanyway` | `activities` — `REMOVE_READS` → `REMOVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/33-activity-editor.md:459` |
+| `evidencesaveanyway` | `evidence` — `SAVE_READS` → `SAVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/35-assessment-evidence.md:475` |
+| `evidenceremovalanyway` | `evidence` — `REMOVE_READS` → `REMOVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/35-assessment-evidence.md:476` |
+| `improvementsaveanyway` | `improvement` — `SAVE_READS` → `SAVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:613` |
+| `improvementremovalanyway` | `improvement` — `REMOVE_READS` → `REMOVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:614` |
+| `weightssaveanyway` | `weights` — `WEIGHTS_READS` → `WEIGHTS_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/30-weighting-scheme.md:429` |
+| `groupsafteranyway` | `groups` — `GROUPS_READS` → `GROUPS_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a write whose reload is refused says the refusal and not that it wrote* · ที่มา `docs/acceptance/26-work-groups.md:335` |
+| `enrolmentaddanyway` | `enrolment` — `ADD_READS` → `ADD_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *an enrolment whose reload is refused says the refusal and not that it enrolled* · ที่มา `docs/acceptance/25-section-enrolment.md:341` |
+| `enrolmentremovalanyway` | `enrolment` — บล็อกที่ถูกแทน ท้ายของมัน `await drawing(() => onScreen.current === drawing)` → `if (onScreen.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/14-departments.md:2169` `docs/acceptance/25-section-enrolment.md:342` |
+| `enrolmentmovedanyway` | `enrolment` — `MOVED_READS` → `MOVED_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *an enrolment from another page says the refusal of the first page and not that it enrolled* · ที่มา `docs/acceptance/25-section-enrolment.md:343` |
+| `enrolmentmovedremovalanyway` | `enrolment` — `if (onScreen.current === sent) { waiting.current = { of: readOf(sectionId, onPage.current)…` → `setNotice(said) const drawing = onScreen.current await drawing(() => onScreen.current === …` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal that empties a page says the refusal of the read of the page it is on and not that it removed* · ที่มา `docs/acceptance/14-departments.md:2170` `docs/acceptance/25-section-enrolment.md:345` |
+| `enrolmentdrewunsaid` | `enrolment` — `DREW_READS` → `DREW_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *an enrolment from another page says it enrolled once the first page is drawn* · ที่มา `docs/acceptance/25-section-enrolment.md:344` |
 """
 from harness import main
 

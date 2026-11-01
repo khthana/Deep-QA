@@ -30,6 +30,30 @@ where the decision lives. **Do not run this sweep while `27`'s is applied**, and
 Killing them:
 
     cd e2e && npx playwright test tests/41a-improvement-plan.spec.js
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `onlythreesections` | **แตะอะไร** screen · **ทำอะไร** ตัด *แนวทางพัฒนาครั้งถัดไป* ออกจากฟอร์ม | **แถวที่มันค้ำ · ตายที่** **แถว 1** · หัวข้อที่สี่ต้องมองเห็นได้ · **แถวอื่นที่ตายไปด้วย** 4 (ปนเปื้อน — แถว 4 เขียนลงหัวข้อที่หายไป) · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:236` `docs/acceptance/41-continuous-improvement-plan.md:86` |
+| `savesthelabel` | **แตะอะไร** screen · **ทำอะไร** บันทึกชื่อหัวข้อแทนสิ่งที่พิมพ์ | **แถวที่มันค้ำ · ตายที่** **แถว 2** · ข้อความบนการ์ดต้องเป็นประโยคที่พิมพ์ · **แถวอื่นที่ตายไปด้วย** 3 · 5 · 6 (ปนเปื้อน — ทุกแถวที่อ่านข้อความกลับมา) · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:237` `docs/acceptance/41-continuous-improvement-plan.md:86` |
+| `writesagainstthefirstoutcome` | **แตะอะไร** screen · **ทำอะไร** เขียนลง CLO ตัวแรกเสมอ ไม่ใช่ที่เลือก | **แถวที่มันค้ำ · ตายที่** **แถว 2** · `entries[0].clo_id` ต้องเป็นของ CLO-9 · **แถวอื่นที่ตายไปด้วย** 3 · 4 · 5 · 6 · 7 (ปนเปื้อน — ทุกแถวที่เขียนลง CLO อื่นที่ไม่ใช่ตัวแรก) · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:238` `docs/acceptance/41-continuous-improvement-plan.md:86` |
+| `editkeepstheoldwords` | **แตะอะไร** route · **ทำอะไร** upsert เก็บข้อความเดิมไว้ | **แถวที่มันค้ำ · ตายที่** **แถว 3** · บันทึกครั้งที่สองต้องได้ *ฉบับที่สอง* · **แถวอื่นที่ตายไปด้วย** 6 (ปนเปื้อน — การแก้ของอีกฝั่งไม่ถึงจอแรก) · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:239` `docs/acceptance/41-continuous-improvement-plan.md:90` |
+| `editorstartsempty` | **แตะอะไร** form · **ทำอะไร** เปิดแก้ไขแล้วได้กล่องเปล่า | **แถวที่มันค้ำ · ตายที่** **แถว 3** · `toHaveValue('ฉบับแรก')` · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:240` `docs/acceptance/41-continuous-improvement-plan.md:90` |
+| `cancelalsoremoves` | **แตะอะไร** screen · **ทำอะไร** *ยกเลิก* บนกล่องยืนยันลบทิ้งด้วย | **แถวที่มันค้ำ · ตายที่** **แถว 4** · รายการ DELETE ระหว่างที่กล่องเปิดต้องว่าง · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:241` `docs/acceptance/41-continuous-improvement-plan.md:90` |
+| `everyoutcomeshowseverything` | **แตะอะไร** screen · **ทำอะไร** สี่หัวข้อเลิกกรองตาม CLO | **แถวที่มันค้ำ · ตายที่** **แถว 5** · CLO-5 ต้องไม่มีข้อความของ CLO-4 · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:242` `docs/acceptance/41-continuous-improvement-plan.md:86` |
+| `referencejoinedbyid` | **แตะอะไร** screen · **ทำอะไร** แผงอ้างอิง join ด้วย `clo_id` | **แถวที่มันค้ำ · ตายที่** **แถว 7** · แผงต้องมีข้อความของปีก่อน · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:244` `docs/acceptance/41-continuous-improvement-plan.md:93` |
+| `panelignorestheoutcome` | **แตะอะไร** screen · **ทำอะไร** แผงอ้างอิงเลิกกรองตามเลขข้อ | **แถวที่มันค้ำ · ตายที่** **แถว 7** · CLO-8 ต้องไม่เห็นบันทึกของ CLO-7 · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:245` `docs/acceptance/41-continuous-improvement-plan.md:93` |
+| `improvementforgetstheyear` | **แตะอะไร** route · **ทำอะไร** การปรับปรุงไม่บันทึกปีที่อ้างถึง | **แถวที่มันค้ำ · ตายที่** **แถว 7** · การ์ดต้องมีปี 2568 อยู่ในนั้น · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:246` `docs/acceptance/41-continuous-improvement-plan.md:93` |
+| `panelopensontonothing` | **แตะอะไร** route · **ทำอะไร** ส่ง `previous` เสมอ แผงจึงเปิดบนความว่างเปล่า | **แถวที่มันค้ำ · ตายที่** **แถว 8** · `toHaveCount(0)` · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:247` `docs/acceptance/41-continuous-improvement-plan.md:94` |
+| `onesectionperoffering` | **แตะอะไร** register · **ทำอะไร** ทะเบียนรับเฉพาะตอนเรียนที่ 1 | **แถวที่มันค้ำ · ตายที่** **แถว 6** · `multi.role@` ต้องเปิดแผนของตัวเองได้ · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:243` `docs/acceptance/41-continuous-improvement-plan.md:97` |
+| `registerignored` | **แตะอะไร** register · **ทำอะไร** ทะเบียนเลิกถามว่าใครเรียก | **แถวที่มันค้ำ · ตายที่** **แถว 9** · `teacher.two@` ต้องได้ 404 · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:248` `docs/acceptance/41-continuous-improvement-plan.md:99` |
 """
 
 from harness import main

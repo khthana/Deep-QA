@@ -41,6 +41,40 @@ the row asserting `cloInUse` is asserting the sentence and not the status.
 `clo_course_cycle_detail_cloplan.clo_id` is ON DELETE CASCADE, so a CLO carrying
 a course-cycle reflection deletes cleanly and takes the reflection with it, and
 the only thing that ever knew is the row that asserts a 409.
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `anysection` | **ทำอะไร** เอา `cst.user_id = $2` ออกจากการแปลงตอนเรียนเป็นการเปิดสอน | **ตายที่** ข้อ 16 *a Section the caller does not teach hides its CLO set behind the section refusal* — ด่านบทบาทยังอยู่และยังตอบว่าใช่ ซึ่งเป็นประเด็นของ ADR-0002 ทั้งหมด · ที่มา `docs/acceptance/27-course-learning-outcomes.md:211` `docs/acceptance/27-course-learning-outcomes.md:235` |
+| `norolegate` | **ทำอะไร** เอา `requireRole(...TEACHING)` ออกจากการอ่านรายการ | **ตายที่** ข้อ 19 *a role that is not a teaching one does not reach these routes at all* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:212` |
+| `anyyear` | **ทำอะไร** เอาเงื่อนไขปีการศึกษาออกจากรายการ | **ตายที่** ข้อ 1, 3, 17 — สามแถวที่พูดเรื่องปีทั้งหมด สองปีรวมกันเป็นชุดสิบแปดแถว ซึ่งดูสมเหตุสมผลบนหน้าจอที่เคย seed ไว้ปีเดียว · ที่มา `docs/acceptance/27-course-learning-outcomes.md:213` `docs/acceptance/27-course-learning-outcomes.md:236` |
+| `bodygrain` | **ทำอะไร** อ่าน `program_id` `subject_id` `academic_year` จาก body ถ้ามีมา | **ตายที่** ข้อ 15 *the Offering is resolved from the Section and never taken from the body* — **ตัวเดียวในระบบที่ฆ่ามันได้** เพราะหน้าจอส่งกลับสิ่งที่เซิร์ฟเวอร์เพิ่งให้มา ทุกแถวเบราว์เซอร์จึงผ่านหมด · ที่มา `docs/acceptance/27-course-learning-outcomes.md:214` |
+| `anyclo` | **ทำอะไร** อ่าน CLO ด้วย id อย่างเดียว ไม่ตรวจว่าอยู่ในการเปิดสอนนี้ | **ตายที่** ข้อ 17 *a CLO of another year cannot be edited through this year Section* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:215` |
+| `allplos` | **ทำอะไร** สร้าง picker จาก `learning_outcomes` แทน `subject_plo_mapping` | **ตายที่** ข้อ 4 *only the PLOs this subject is mapped to are offered* — ตอบ PLO ทั้ง 52 ข้อรวมข้อย่อย · ที่มา `docs/acceptance/27-course-learning-outcomes.md:216` `docs/acceptance/27-course-learning-outcomes.md:241` `docs/acceptance/27-course-learning-outcomes.md:97` |
+| `noploguard` | **ทำอะไร** ยอมรับ `plo_id` ที่ส่งมาโดยไม่ถาม grid | **ตายที่** ข้อ 6 *a PLO outside this subject cannot be linked* — foreign key ยังกันของหลักสูตรอื่นไว้ แต่ของหลักสูตรเดียวกันที่ไม่ได้ map ผ่านฉลุย · ที่มา `docs/acceptance/27-course-learning-outcomes.md:217` |
+| `putnoploguard` | **ทำอะไร** เอาด่านนั้นออกเฉพาะตอนแก้ | **ตายที่** ข้อ 6 แถวเดียวกัน — หน้าจอที่เลือกได้แค่จากรายการที่ให้มาจะไม่มีวันส่งค่าอื่น มัตแตนต์นี้จึงมองไม่เห็นจากเบราว์เซอร์เลย · ที่มา `docs/acceptance/27-course-learning-outcomes.md:218` |
+| `noeditor` | **ทำอะไร** ตอนแก้ ไม่ขยับ `updated_by` และ `updated_at` | **ตายที่** ข้อ 9 *each CLO carries who last changed it, and an edit moves it to the editor* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:219` `docs/acceptance/27-course-learning-outcomes.md:239` |
+| `staletime` | **ทำอะไร** เขียน `updated_by` แต่ไม่ขยับ `updated_at` | **ตายที่** ข้อ 9 แถวเดียวกัน — ครึ่งหนึ่งของตัวบน และเป็นครึ่งที่แถวซึ่ง assert แค่ชื่อจะรอดไปได้ · ที่มา `docs/acceptance/27-course-learning-outcomes.md:220` |
+| `nodetail` | **ทำอะไร** ตอนแก้ ไม่เขียน `clo_detail` | **ตายที่** ข้อ 8 *an edit made from one Section is what the other Section reads* — คำขอตอบ **200** และการแก้ไม่ได้เกิดขึ้น · ที่มา `docs/acceptance/27-course-learning-outcomes.md:221` `docs/acceptance/27-course-learning-outcomes.md:238` `docs/acceptance/28-measurable-behaviors.md:156` |
+| `mineonly` | **ทำอะไร** กรองรายการด้วย `created_by = ผู้เรียก` | **ตายที่** ข้อ 2, 8, 9 รวมทั้ง *the set is identical from either Section of the same Offering* — คือการอ่านคำว่า *รายวิชาของฉัน* แบบตรงตัว ซึ่งเป็นสิ่งที่ ADR-0003 มีไว้เพื่อกัน · ที่มา `docs/acceptance/27-course-learning-outcomes.md:222` `docs/acceptance/27-course-learning-outcomes.md:237` |
+| `nomarksguard` | **ทำอะไร** เอาการตรวจคะแนนออกก่อนลบ | **ตายที่** ข้อ 10 *a CLO with marks against it is refused in words rather than raised* — foreign key ยังปฏิเสธ แต่ 23503 ไปถึง handler แล้วกลายเป็น *เกิดข้อผิดพลาดในระบบ* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:223` `docs/acceptance/27-course-learning-outcomes.md:245` |
+| `mappedasmarked` | **ทำอะไร** ตอบสถานะ *ผูกกับกิจกรรม* ด้วยประโยคของ *มีคะแนนแล้ว* | **ตายที่** ข้อ 11 *a CLO mapped to an Activity but never marked is refused with the other sentence* — สองในสามสถานะยังถูก ตัวนี้มีไว้พิสูจน์ว่าแถวนั้น assert ประโยค ไม่ใช่ status · ที่มา `docs/acceptance/27-course-learning-outcomes.md:224` |
+| `noplanguard` | **ทำอะไร** เอาการตรวจแผนรอบการสอนออก | **ตายที่** ข้อ 12 *a CLO named in the course-cycle plan is refused rather than cascaded away* — มัตแตนต์นี้ทำให้การลบ **สำเร็จ** และบันทึกทบทวนหายไปเงียบ ๆ ตาม `ON DELETE CASCADE` · ที่มา `docs/acceptance/27-course-learning-outcomes.md:227` |
+| `dupnotseen` | **ทำอะไร** `isDuplicate` ไม่รู้จัก 23505 อีกต่อไป | **ตายที่** ข้อ 7 *the code is unique within the year and free in another one* — ฐานข้อมูลยังปฏิเสธ ไม่มีอะไรถูกเขียน สิ่งที่หายคือ *ประโยค* และคำตอบกลายเป็น 500 · ที่มา `docs/acceptance/27-course-learning-outcomes.md:226` `docs/acceptance/27-course-learning-outcomes.md:243` |
+| `savenoreload` | **แตะอะไร** หน้าจอ · **ทำอะไร** บันทึกสำเร็จแล้วไม่โหลดรายการใหม่ | **ตายที่** แถว 8 บรรทัด 225 `await expect(cloCard(page, SPARE)).toHaveCount(1)` — และแถว 4 บรรทัด 155 ด้วยเหตุเดียวกัน คือการแก้ที่เกิดขึ้นจริงแต่ไม่ขึ้นบนจอ · ที่มา `docs/acceptance/27-course-learning-outcomes.md:247` |
+| `swallowdelete` | **ทำอะไร** ต่อ `AND FALSE` ท้าย `DELETE FROM subject_clo` — $1 ยังผูกอยู่ statement จึงถูกกฎหมาย transaction commit และ route ตอบ 204 | **ตายที่** ข้อ 13 *a CLO nothing points at is removed, and the removal is real* — คือรูปร่างของการลบที่ไม่ได้ลบ ซึ่งเทสต์ที่ดูแค่ status จะเรียกว่าผ่าน · ที่มา `docs/acceptance/27-course-learning-outcomes.md:225` `docs/acceptance/27-course-learning-outcomes.md:248` |
+| `cancelremoves` | **แตะอะไร** หน้าจอ · **ทำอะไร** ปุ่ม *ยกเลิก* ในกล่องยืนยันต่อไปที่การลบ | **ตายที่** แถว 8 บรรทัด 227 `expect(await removeClo(page, SPARE, { confirm: false })).toEqual([])` · ที่มา `docs/acceptance/27-course-learning-outcomes.md:249` |
+| `swallowremoval` | **แตะอะไร** หน้าจอ · **ทำอะไร** กลืนคำปฏิเสธตอนลบ | **ตายที่** แถว 7 บรรทัด 211 — แถบเดียวกันไม่ขึ้นเลย · ที่มา `docs/acceptance/27-course-learning-outcomes.md:246` |
+| `swallowsave` | **แตะอะไร** หน้าจอ · **ทำอะไร** กลืนคำปฏิเสธตอนบันทึก | **ตายที่** แถว 6 บรรทัด 197 — แถบ *รหัสผลการเรียนรู้นี้ถูกใช้แล้ว* ไม่ขึ้น · ที่มา `docs/acceptance/27-course-learning-outcomes.md:244` |
+| `noeditorline` | **แตะอะไร** หน้าจอ · **ทำอะไร** เอาบรรทัด *แก้ไขล่าสุดโดย* ออกจากการ์ด | **ตายที่** แถว 4 บรรทัด 147 — ข้อมูลถูกทั้งหมด สิ่งที่หายคือทางเดียวที่คนจะรู้ (เล็งใหม่ 7 ก.ย. 2569 ดูด้านล่าง) · ที่มา `docs/acceptance/27-course-learning-outcomes.md:240` |
+| `emptypicker` | **แตะอะไร** ฟอร์ม · **ทำอะไร** `<select>` ไม่วาดตัวเลือกที่ได้รับมาเลย | **ตายที่** แถว 5 บรรทัด 175 `toHaveCount(plos.length + 1)` · ที่มา `docs/acceptance/27-course-learning-outcomes.md:242` `docs/acceptance/27-course-learning-outcomes.md:97` |
 """
 
 from harness import main

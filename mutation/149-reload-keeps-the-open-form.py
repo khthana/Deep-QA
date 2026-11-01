@@ -103,6 +103,60 @@ cancelclears หก pickerkeepsshowing หนึ่ง กับ `146a`) เจ�
 
 แถวอยู่ใน `e2e/tests/149a-reload-keeps-the-open-form.spec.js` ผลการกวาดอยู่ท้าย docstring นี้
 และบนใบ acceptance ของแต่ละจอ
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `closgateback` | ผลการเรียนรู้รายวิชา — เติมท้าย `GATE` ด้วย `_BACK` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives the reload a save ends with* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:528` |
+| `closloadingline` | `clos` — เติมท้าย `LINE` ด้วย `_ALWAYS` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:529` |
+| `clossavebannerunasked` | `clos` — `SAVE_ASKED` → `SAVE_KEPT` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:530` |
+| `closremovalsentatthelanding` | `clos` — `REMOVE_TOP + REMOVE_ASKED` → `REMOVE_TOP_LATE + REMOVE_ASKED_LATE` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:531` |
+| `closremovalbannerunsaid` | `clos` — `REMOVE_ASKED` → `REMOVE_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal nothing took the place of says what it did* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:532` |
+| `clossavebannerunguarded` | `clos` — `SAVE_ASKED` → `SAVE_UNGUARDED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after another card's แก้ไข leaves that form open* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:467` |
+| `criteriagateback` | เกณฑ์การบรรลุผล — เติมท้าย `GATE` ด้วย `_BACK` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives the reload a save ends with* · ที่มา `docs/acceptance/29-achievement-criteria.md:386` |
+| `criterialoadingline` | `criteria` — เติมท้าย `LINE` ด้วย `_ALWAYS` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/29-achievement-criteria.md:387` |
+| `criteriasavebannerunasked` | `criteria` — `SAVE_ASKED` → `SAVE_KEPT` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/29-achievement-criteria.md:388` |
+| `criteriaremovalsentatthelanding` | `criteria` — `REMOVE_TOP + REMOVE_ASKED` → `REMOVE_TOP_LATE + REMOVE_ASKED_LATE` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/29-achievement-criteria.md:389` |
+| `criteriaremovalbannerunsaid` | `criteria` — `REMOVE_ASKED` → `REMOVE_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal nothing took the place of says what it did* · ที่มา `docs/acceptance/29-achievement-criteria.md:390` |
+| `criteriasavebannerunguarded` | `criteria` — `SAVE_ASKED` → `SAVE_UNGUARDED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after another card's แก้ไข leaves that form open* · ที่มา `docs/acceptance/29-achievement-criteria.md:323` |
+| `behaviorsgateback` | พฤติกรรมบ่งชี้ — เติมท้าย `GATE` ด้วย `_BACK` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives the reload a save ends with* · ที่มา `docs/acceptance/28-measurable-behaviors.md:386` |
+| `behaviorsloadingline` | `behaviors` — เติมท้าย `LINE` ด้วย `_ALWAYS` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/28-measurable-behaviors.md:387` |
+| `behaviorssavebannerunasked` | `behaviors` — `SAVE_ASKED` → `SAVE_KEPT` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/28-measurable-behaviors.md:388` |
+| `behaviorsremovalsentatthelanding` | `behaviors` — `REMOVE_TOP + REMOVE_ASKED` → `REMOVE_TOP_LATE + REMOVE_ASKED_LATE` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/28-measurable-behaviors.md:389` |
+| `behaviorsremovalbannerunsaid` | `behaviors` — `REMOVE_ASKED` → `REMOVE_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal nothing took the place of says what it did* · ที่มา `docs/acceptance/28-measurable-behaviors.md:390` |
+| `behaviorssavebannerunguarded` | `behaviors` — `SAVE_ASKED` → `SAVE_UNGUARDED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after another card's แก้ไข leaves that form open* · ที่มา `docs/acceptance/28-measurable-behaviors.md:323` |
+| `plangateback` | แผนการสอน — เติมท้าย `GATE` ด้วย `_BACK` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives the reload a save ends with* · ที่มา `docs/acceptance/31-teaching-plan.md:389` |
+| `planloadingline` | `plan` — เติมท้าย `LINE` ด้วย `_ALWAYS` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/31-teaching-plan.md:390` |
+| `plansavebannerunasked` | `plan` — `SAVE_ASKED` → `SAVE_KEPT` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/31-teaching-plan.md:391` |
+| `planremovalsentatthelanding` | `plan` — `REMOVE_TOP + REMOVE_ASKED` → `REMOVE_TOP_LATE + REMOVE_ASKED_LATE` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/31-teaching-plan.md:392` |
+| `planremovalbannerunsaid` | `plan` — `REMOVE_ASKED` → `REMOVE_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal nothing took the place of says what it did* · ที่มา `docs/acceptance/31-teaching-plan.md:393` |
+| `plansavebannerunguarded` | `plan` — `SAVE_ASKED` → `SAVE_UNGUARDED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after another card's แก้ไข leaves that form open* · ที่มา `docs/acceptance/31-teaching-plan.md:330` |
+| `activitiesgateback` | กิจกรรมการเรียนรู้ — เติมท้าย `GATE` ด้วย `_BACK` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives the reload a save ends with* · ที่มา `docs/acceptance/33-activity-editor.md:390` |
+| `activitiesloadingline` | `activities` — เติมท้าย `LINE` ด้วย `_ALWAYS` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/33-activity-editor.md:391` |
+| `activitiessavebannerunasked` | `activities` — `SAVE_ASKED` → `SAVE_KEPT` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/33-activity-editor.md:392` |
+| `activitiesremovalsentatthelanding` | `activities` — `REMOVE_TOP + REMOVE_ASKED` → `REMOVE_TOP_LATE + REMOVE_ASKED_LATE` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/33-activity-editor.md:393` |
+| `activitiesremovalbannerunsaid` | `activities` — `REMOVE_ASKED` → `REMOVE_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal nothing took the place of says what it did* · ที่มา `docs/acceptance/33-activity-editor.md:394` |
+| `activitiessavebannerunguarded` | `activities` — `SAVE_ASKED` → `SAVE_UNGUARDED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after another card's แก้ไข leaves that form open* · ที่มา `docs/acceptance/33-activity-editor.md:331` |
+| `evidencegateback` | หลักฐานการประเมิน — เติมท้าย `GATE` ด้วย `_BACK` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another file's form survives the reload a save ends with* · ที่มา `docs/acceptance/35-assessment-evidence.md:369` |
+| `evidenceloadingline` | `evidence` — เติมท้าย `LINE` ด้วย `_ALWAYS` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/35-assessment-evidence.md:370` |
+| `evidencesavebannerunasked` | `evidence` — `SAVE_ASKED` → `SAVE_KEPT` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/35-assessment-evidence.md:371` |
+| `evidenceremovalsentatthelanding` | `evidence` — `REMOVE_TOP + REMOVE_ASKED` → `REMOVE_TOP_LATE + REMOVE_ASKED_LATE` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload a pencil overtook says nothing over the form it opened* · ที่มา `docs/acceptance/35-assessment-evidence.md:372` |
+| `evidenceremovalbannerunsaid` | `evidence` — `REMOVE_ASKED` → `REMOVE_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal nothing took the place of says what it did* · ที่มา `docs/acceptance/35-assessment-evidence.md:373` |
+| `evidencesavebannerunguarded` | `evidence` — `SAVE_ASKED` → `SAVE_UNGUARDED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after another file's pencil leaves that form open* · ที่มา `docs/acceptance/35-assessment-evidence.md:309` |
+| `improvementgateback` | แผนพัฒนาต่อเนื่อง — เติมท้าย `GATE` ด้วย `_BACK` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into an unwritten section survives the reload a save ends with* · *what was typed into a written section survives the reload a save ends with* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:465` `docs/acceptance/41-continuous-improvement-plan.md:466` |
+| `improvementloadingline` | `improvement` — เติมท้าย `LINE` ด้วย `_ALWAYS` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload another section's เขียน overtook says nothing over it* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:467` |
+| `improvementsavebannerunasked` | `improvement` — `SAVE_ASKED` → `SAVE_KEPT` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload another section's เขียน overtook says nothing over it* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:468` |
+| `improvementremovalsentatthelanding` | `improvement` — `REMOVE_TOP + REMOVE_ASKED` → `REMOVE_TOP_LATE + REMOVE_ASKED_LATE` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload another section's เขียน overtook says nothing over it* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:469` |
+| `improvementremovalbannerunsaid` | `improvement` — `REMOVE_ASKED` → `REMOVE_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal nothing took the place of says what it did* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:470` |
+| `improvementsavebannerunguarded` | `improvement` — `SAVE_ASKED` → `SAVE_UNGUARDED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after another section's เขียน leaves that form open* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:377` |
+| `improvemententrybyobject` | แผนพัฒนาต่อเนื่อง: หัวข้อที่เขียนแล้วถูกตั้งค่าใหม่ทุกครั้งที่รายการส่ง object ใหม่มา — `}, [editing, entryId])` → `}, [editing, entry, entryId])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into an unwritten section survives the reload a save ends with* · *what was typed into a written section survives the reload a save ends with* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:465` `docs/acceptance/41-continuous-improvement-plan.md:466` |
 """
 from harness import main
 

@@ -51,6 +51,27 @@ Playwright จับ `111a` (5 แถว) กับ `121a` (1 แถว) ด้�
     python mutation/144-superseded-reload-by-filter.py save
     python mutation/144-superseded-reload-by-filter.py <mutant>
     python mutation/144-superseded-reload-by-filter.py restore
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `usersqnotfollowed` | ข้อมูลผู้ใช้งาน: ช่องค้นหา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, filters.role, filters.status])` | **ล้ม** 2 — แถวช่องค้นหา และ `11c` แถว 3 · **ผ่าน** 19 · แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list บันทึก reloads does not land on the search the box has moved to* · ที่มา `docs/acceptance/11-user-accounts.md:1172` `docs/acceptance/11-user-accounts.md:1154` |
+| `usersrolenotfollowed` | ข้อมูลผู้ใช้งาน: ตัวกรองบทบาท — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, filters.q, filters.status])` | **ล้ม** 1 — แถวตัวกรองบทบาท · **ผ่าน** 20 · แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list บันทึก reloads does not land on the บทบาท filter that has moved* · ที่มา `docs/acceptance/11-user-accounts.md:1173` `docs/acceptance/11-user-accounts.md:1155` |
+| `usersstatusnotfollowed` | ข้อมูลผู้ใช้งาน: ตัวกรองสถานะ — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, filters.q, filters.role])` | **ล้ม** 1 — แถวตัวกรองสถานะ · **ผ่าน** 20 · แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list บันทึก reloads does not land on the สถานะ filter that has moved* · ที่มา `docs/acceptance/11-user-accounts.md:1174` `docs/acceptance/11-user-accounts.md:1156` |
+| `subjectsdepartmentnotfollowed` | ข้อมูลรายวิชา: ตัวกรองภาควิชา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the ภาควิชา filter that has moved* · ที่มา `docs/acceptance/16-subjects.md:316` |
+| `pairsprogramnotfollowed` | รายวิชาในหลักสูตร: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/18-program-subjects.md:289` |
+| `rubricsprogramnotfollowed` | Rubric: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/21-rubrics.md:270` |
+| `offeringsprogramnotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, year, semester, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:490` |
+| `offeringsyearnotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองปีการศึกษา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, program, semester, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the ปีการศึกษา filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:491` |
+| `offeringssemesternotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองภาคการศึกษา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, program, year, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the ภาคการศึกษา filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:492` |
+| `studentsprogramnotfollowed` | ข้อมูลนักศึกษา: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list บันทึก reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/17-students.md:310` |
 """
 from harness import main
 

@@ -52,6 +52,31 @@
     python mutation/151-failed-reload-keeps-the-list.py restore
 
 แถวอยู่ใน `e2e/tests/151a-failed-reload-keeps-the-list.spec.js`
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `closblanks` | `clos` — `KEPT` → `BLANKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · *a reload that fails keeps the list it last drew* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:573` `docs/acceptance/27-course-learning-outcomes.md:574` |
+| `criteriablanks` | `criteria` — `KEPT` → `BLANKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · *a reload that fails keeps the list it last drew* · ที่มา `docs/acceptance/29-achievement-criteria.md:431` `docs/acceptance/29-achievement-criteria.md:432` |
+| `behaviorsblanks` | `behaviors` — `KEPT` → `BLANKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · *a reload that fails keeps the list it last drew* · ที่มา `docs/acceptance/28-measurable-behaviors.md:431` `docs/acceptance/28-measurable-behaviors.md:432` |
+| `planblanks` | `plan` — `KEPT` → `BLANKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · *a reload that fails keeps the list it last drew* · ที่มา `docs/acceptance/31-teaching-plan.md:434` `docs/acceptance/31-teaching-plan.md:435` |
+| `activitiesblanks` | `activities` — `KEPT` → `BLANKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · *a reload that fails keeps the list it last drew* · ที่มา `docs/acceptance/33-activity-editor.md:435` `docs/acceptance/33-activity-editor.md:436` |
+| `evidenceblanks` | `evidence` — `KEPT` → `BLANKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another file's form survives a reload that fails* · *a reload that fails keeps the list it last drew* · ที่มา `docs/acceptance/35-assessment-evidence.md:452` `docs/acceptance/35-assessment-evidence.md:453` |
+| `improvementblanks` | `improvement` — `KEPT` → `BLANKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another section survives a reload that fails* · *a reload that fails keeps the plan it last drew* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:518` `docs/acceptance/41-continuous-improvement-plan.md:519` |
+| `closblinks` | `clos` — `KEPT` → `BLINKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · ที่มา `docs/acceptance/27-course-learning-outcomes.md:573` |
+| `criteriablinks` | `criteria` — `KEPT` → `BLINKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · ที่มา `docs/acceptance/29-achievement-criteria.md:431` |
+| `behaviorsblinks` | `behaviors` — `KEPT` → `BLINKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · ที่มา `docs/acceptance/28-measurable-behaviors.md:431` |
+| `planblinks` | `plan` — `KEPT` → `BLINKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · ที่มา `docs/acceptance/31-teaching-plan.md:434` |
+| `activitiesblinks` | `activities` — `KEPT` → `BLINKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another card's form survives a reload that fails* · ที่มา `docs/acceptance/33-activity-editor.md:435` |
+| `evidenceblinks` | `evidence` — `KEPT` → `BLINKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another file's form survives a reload that fails* · ที่มา `docs/acceptance/35-assessment-evidence.md:452` |
+| `improvementblinks` | `improvement` — `KEPT` → `BLINKED` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *what was typed into another section survives a reload that fails* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:518` |
 """
 from harness import main
 

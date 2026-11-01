@@ -10,6 +10,40 @@ for which assertion, and for what each mutant is about.
     python mutation/18-program-subjects.py save
     python mutation/18-program-subjects.py <mutant>
     python mutation/18-program-subjects.py restore
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `noautoprogram` | 18a row 1: the one programme in reach is chosen for the person. · `const onlyOne = usable.length === 1 ? usable[0] : null + const starting = (filtered ? defa…` → `+ const starting = filtered ? defaultProgram : ''` | **แถวที่สเปคของมันบอก** `18a` แถว 1 · **ผลหลังเล็งใหม่** 1 ตก 10 ไม่ได้รัน (แฟ้ม `serial`) คือแถว 1 · ที่มา `docs/acceptance/10-application-shell.md:1263` `docs/acceptance/18-program-subjects.md:120` |
+| `alwaysfilter` | **แก้อะไร** หน้ารายการวาด dropdown เสมอ แม้มีหลักสูตรเดียว | **ฆ่าข้ออ้างไหน** 18a ข้อ 1 บรรทัด 113 · ที่มา `docs/acceptance/18-program-subjects.md:121` |
+| `labelwithcode` | **แก้อะไร** ป้ายหลักสูตรขึ้นรหัสก่อนชื่ออีกครั้ง | **ฆ่าข้ออ้างไหน** 18a ข้อ 1 บรรทัด 129 และ 18c ข้อ 8 บรรทัด 96 · ที่มา `docs/acceptance/18-program-subjects.md:122` |
+| `keepgood` | **แก้อะไร** `lib/importer` COMMIT แทน ROLLBACK เมื่อมีแถวผิด | **ฆ่าข้ออ้างไหน** 18b ข้อ 7 บรรทัด 158 · ที่มา `docs/acceptance/18-program-subjects.md:138` |
+| `alwayselective` | **แก้อะไร** insert เขียนประเภทเป็น `elective` เสมอ | **ฆ่าข้ออ้างไหน** 18a ข้อ 1 บรรทัด 146 · ที่มา `docs/acceptance/18-program-subjects.md:123` |
+| `typeignored` | **แก้อะไร** PUT เขียนประเภทเดิมกลับไป | **ฆ่าข้ออ้างไหน** 18a ข้อ 2 บรรทัด 161 · ที่มา `docs/acceptance/18-program-subjects.md:124` |
+| `nofreeze` | **แก้อะไร** ช่องหลักสูตรไม่ถูก disable ตอนแก้ไข | **ฆ่าข้ออ้างไหน** 18a ข้อ 2 บรรทัด 172 · ที่มา `docs/acceptance/18-program-subjects.md:125` |
+| `nohint` | **แก้อะไร** ตัดข้อความว่าย้ายข้ามหลักสูตรไม่ได้ออก | **ฆ่าข้ออ้างไหน** 18a ข้อ 2 บรรทัด 180 · ที่มา `docs/acceptance/18-program-subjects.md:126` |
+| `ignorequery` | **แก้อะไร** catalogue ไม่สนใจคำค้น คืนทุกแถว | **ฆ่าข้ออ้างไหน** 18a ข้อ 3 บรรทัด 197 · ที่มา `docs/acceptance/18-program-subjects.md:127` |
+| `duplicatesilent` | **แก้อะไร** POST ไม่แปลง unique violation เป็นข้อความ | **ฆ่าข้ออ้างไหน** 18a ข้อ 4 บรรทัด 217 · ที่มา `docs/acceptance/18-program-subjects.md:128` |
+| `terseconfirm` | **แก้อะไร** กล่องยืนยันไม่บอกรหัสวิชาและชื่อวิชา | **ฆ่าข้ออ้างไหน** 18a ข้อ 6 บรรทัด 237 · ที่มา `docs/acceptance/18-program-subjects.md:129` |
+| `nodelete` | **แก้อะไร** `deleteOrDeactivate` ไม่ลบจริง แต่ตอบว่าลบแล้ว | **ฆ่าข้ออ้างไหน** 18a ข้อ 5 บรรทัด 256 · ที่มา `docs/acceptance/18-program-subjects.md:130` |
+| `nodeactivate` | **แก้อะไร** ไม่ปิดการใช้งาน แต่ตอบว่าปิดแล้ว | **ฆ่าข้ออ้างไหน** 18a ข้อ 5 บรรทัด 280 · ที่มา `docs/acceptance/18-program-subjects.md:131` |
+| `noreopen` | **แก้อะไร** PUT ไม่รับ `is_active` กลับมา | **ฆ่าข้ออ้างไหน** 18a ข้อ 5 บรรทัด 287 · ที่มา `docs/acceptance/18-program-subjects.md:132` |
+| `catalogueowndept` | **แก้อะไร** จำกัด catalogue ไว้ที่ภาควิชา `05` | **ฆ่าข้ออ้างไหน** 18a ข้อ 10 บรรทัด 303 · ที่มา `docs/acceptance/18-program-subjects.md:133` |
+| `catalogueretired` | **แก้อะไร** catalogue คืนวิชาที่ปิดการใช้งานแล้วด้วย | **ฆ่าข้ออ้างไหน** 18a ข้อ 10 บรรทัด 341 · ที่มา `docs/acceptance/18-program-subjects.md:134` |
+| `nobom` | **แก้อะไร** `saveAsFile` ไม่เติม BOM กลับ | **ฆ่าข้ออ้างไหน** 18b ข้อ 7 บรรทัด 95 · มันอยู่ในโค้ดที่ทุกหน้าจอใช้ร่วมกัน จึงฆ่าอีกสองแถวนอกใบนี้ด้วย — `17b` แถว 12 (มีมาก่อนแล้ว) กับ `11b` แถว 5 (เพิ่งมี assertion ตอน #124) รวมสามแถว อีกสิบห้าแถวในสามสเปคนั้นเขียวหมด วัดเมื่อ 9 ก.ย. 2569 · ที่มา `docs/acceptance/18-program-subjects.md:135` `docs/acceptance/11-user-accounts.md:350` |
+| `importdrops` | **แก้อะไร** import รายงานสำเร็จโดยไม่เขียนแถว | **ฆ่าข้ออ้างไหน** 18b ข้อ 7 บรรทัด 120 · ที่มา `docs/acceptance/18-program-subjects.md:136` |
+| `wrongcataloguereason` | **แก้อะไร** เหตุผลของแถวผิดเปลี่ยนเป็นข้อความกลาง ๆ | **ฆ่าข้ออ้างไหน** 18b ข้อ 7 บรรทัด 149 · ที่มา `docs/acceptance/18-program-subjects.md:137` |
+| `nolimit` | **แก้อะไร** รายการไม่จำกัดสิบแถวต่อหน้า | **ฆ่าข้ออ้างไหน** 18b ข้อ 9 บรรทัด 190 · ที่มา `docs/acceptance/18-program-subjects.md:139` |
+| `unordered` | **แก้อะไร** เรียงตามประเภทแทนรหัสวิชา | **ฆ่าข้ออ้างไหน** 18b ข้อ 9 บรรทัด 202 · ที่มา `docs/acceptance/18-program-subjects.md:140` |
+| `listeveryone` | **แก้อะไร** รายการไม่ถูกจำกัดด้วย reach | **ฆ่าข้ออ้างไหน** 18c ข้อ 8 บรรทัด 90 · ที่มา `docs/acceptance/18-program-subjects.md:141` |
+| `maintainerall` | **แก้อะไร** `MAINTAINERS` รวม `FULL_ADMIN`, `TEACHER` กับ `FACULTY_ADMIN` | **ฆ่าข้ออ้างไหน** 18c ข้อ 8 บรรทัด 152 — เขียนใหม่ที่ #79 รันซ้ำแล้ว · ที่มา `docs/acceptance/18-program-subjects.md:142` |
 """
 
 from harness import main

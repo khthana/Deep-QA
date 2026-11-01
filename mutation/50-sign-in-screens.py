@@ -53,6 +53,28 @@ file and the sheet when you add one in the middle.
 with it, because `support/auth.js` signs in by label and every spec signs in.
 That is not noise to be tidied - it is the size of what two missing `id`
 attributes were costing, stated as a number.
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `googlerefusalmissesone` | **ไฟล์** `Login.js` · **ทำให้อะไรพัง** ลบ `validityEnded` ออกจากตารางคำ — ข้อบกพร่องที่ตั๋วนี้เจอ ใส่กลับ (เดิมยึดกับ `outsideValidity` เล็งใหม่เมื่อ #89 แยกกุญแจ) | **ฆ่าแถว** 1 · ที่มา `docs/acceptance/50-sign-in-screens.md:247` `docs/acceptance/50-sign-in-screens.md:41` `docs/acceptance/50-sign-in-screens.md:179` |
+| `refusalalwaysfallback` | **ไฟล์** `Login.js` · **ทำให้อะไรพัง** ทุกเหตุผลได้ประโยคสำรอง หน้าจอยัง*พูดอะไรบางอย่าง* | **ฆ่าแถว** 1, 4 · ที่มา `docs/acceptance/50-sign-in-screens.md:248` `docs/acceptance/50-sign-in-screens.md:41` |
+| `refusalneverdrawn` | **ไฟล์** `Login.js` · **ทำให้อะไรพัง** ไม่อ่านเหตุผลในที่อยู่เลย คนถูกส่งกลับมาที่หน้าที่ดูเหมือนไม่มีอะไรเกิดขึ้น | **ฆ่าแถว** 1, 2, 4 · ที่มา `docs/acceptance/50-sign-in-screens.md:249` `docs/acceptance/50-sign-in-screens.md:43` |
+| `refusalalwayssomething` | **ไฟล์** `Login.js` · **ทำให้อะไรพัง** วาดคำปฏิเสธขึ้นทุกครั้งที่มาถึง รวมทั้งครั้งที่ไม่มีใครถูกปฏิเสธ | **ฆ่าแถว** 3 · ที่มา `docs/acceptance/50-sign-in-screens.md:250` `docs/acceptance/50-sign-in-screens.md:44` |
+| `googleunavailableisjson` | **ไฟล์** `routes/auth.js` · **ทำให้อะไรพัง** คืน `503` พร้อม body — เบราว์เซอร์ไปจอดบนหน้า JSON ที่ origin ของ API | **ฆ่าแถว** 4 · ที่มา `docs/acceptance/50-sign-in-screens.md:251` `docs/acceptance/50-sign-in-screens.md:46` |
+| `wrongpasswordinventsasentence` | **ไฟล์** `Login.js` · **ทำให้อะไรพัง** หน้าจอแต่งประโยคเอง แทนที่จะแสดงคำของ server | **ฆ่าแถว** 5 · ที่มา `docs/acceptance/50-sign-in-screens.md:252` `docs/acceptance/50-sign-in-screens.md:47` |
+| `emptyformgoesthroughanyway` | **ไฟล์** `Login.js` · **ทำให้อะไรพัง** ส่งฟอร์มเปล่าไปที่ server — ยังได้แถบแดง แต่เป็นคนละคำถาม | **ฆ่าแถว** 11 · ที่มา `docs/acceptance/50-sign-in-screens.md:253` `docs/acceptance/50-sign-in-screens.md:56` |
+| `emptyformsaysnothing` | **ไฟล์** `Login.js` · **ทำให้อะไรพัง** ปฏิเสธฟอร์มเปล่าโดยไม่บอกอะไร ปุ่มกดแล้วเงียบ | **ฆ่าแถว** 11 · ที่มา `docs/acceptance/50-sign-in-screens.md:254` `docs/acceptance/50-sign-in-screens.md:56` |
+| `labelnamesnothing` | **ไฟล์** `LoginForm.js` · **ทำให้อะไรพัง** ป้ายรหัสผ่านชี้ไปที่ `website-admin` อีกครั้ง | **ฆ่าแถว** 5, 12, 14 · ที่มา `docs/acceptance/50-sign-in-screens.md:255` `docs/acceptance/50-sign-in-screens.md:58` |
+| `usernotfoundcomesback` | **ไฟล์** `AppRoutes.js` · **ทำให้อะไรพัง** ประกาศ `/user-not-found` ขึ้นมาใหม่ | **ฆ่าแถว** 13 · ที่มา `docs/acceptance/50-sign-in-screens.md:256` `docs/acceptance/50-sign-in-screens.md:59` |
+| `shellisnotbehindthesession` | **ไฟล์** `AppRoutes.js` · **ทำให้อะไรพัง** เปลือกหน้าจออยู่นอก `ProtectedRoute` คนแปลกหน้าที่พิมพ์ที่อยู่ได้กรอบของหน้าจอ แทนที่จะได้หน้าลงชื่อเข้าใช้ | **ฆ่าแถว** 14 · ที่มา `docs/acceptance/50-sign-in-screens.md:257` `docs/acceptance/50-sign-in-screens.md:60` |
 """
 
 from harness import main

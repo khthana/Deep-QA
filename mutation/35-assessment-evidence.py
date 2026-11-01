@@ -19,6 +19,22 @@ request, and that both roads to a file are open.
 Killing them:
 
     cd e2e && npx playwright test 35a
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `typecheckgone` | BR-15 stops being enforced anywhere, which is the state the delivered system shipped in: the file input still says PDF, the extension still says PDF, and a PNG called `brief.pdf` is filed as evidence. · บล็อกที่ถูกแทน ท้ายของมัน `const looksLikePdf = (buffer) =>` → `const unusedLooksLikePdf = (buffer) =>` | **แถวที่มันค้ำ** 2 (BR-15 บนจอ) · **ตายที่** แถว 2 ที่ `toBeVisible` — PNG ที่ชื่อ `brief.pdf` ถูกรับเข้าเป็นหลักฐาน ประโยคปฏิเสธไม่มา · ที่มา `docs/acceptance/35-assessment-evidence.md:131` |
+| `uploadsendsnofile` | The form posts its two fields and leaves the file behind. · `if (file) form.append('file', file, file.name)` → `if (false && file) form.append('file', file, file.name)` | **แถวที่มันค้ำ** 1 (ฟอร์มส่งไฟล์จริง) · **ตายที่** แถว 1 ที่ `toBeVisible` — ไม่มีไฟล์ขึ้นบนชั้น · **แถว 2 กับ 3 ล้มตามไปด้วย** เพราะทั้งสองแถวก็แนบไฟล์ผ่านฟอร์มเดียวกัน · ที่มา `docs/acceptance/35-assessment-evidence.md:129` |
+| `evidencelinkmisleads` | The paperclip on the Activity's card opens the marks screen instead. · `learningActivities/${activity.id}/evidence`}` → `activityScores`}` | **แถวที่มันค้ำ** 1 (ทางเข้าบนการ์ด) · **ตายที่** แถว 1 ที่ `waitForURL` — คลิปหนีบเปิดหน้าจออื่น · ที่มา `docs/acceptance/35-assessment-evidence.md:128` `docs/acceptance/35-assessment-evidence.md:67` |
+| `openaskstheservernothing` | Pressing a file's name shows an empty document rather than fetching the one on the server. · `showPdf(await getEvidenceFile(file.evidence_id), file.file_name)` → `showPdf(new Blob([]), file.file_name)` | **แถวที่มันค้ำ** 1 (การเปิดไฟล์เป็นคำขอ) · **ตายที่** แถว 1 ที่ `waitForResponse` — ไม่มีคำขอออกไปเลย ปุ่มยังกดได้และยังตอบสนอง · ที่มา `docs/acceptance/35-assessment-evidence.md:130` `docs/acceptance/35-assessment-evidence.md:75` |
+| `readerlockedout` | The committee's road to a file closes, leaving only the teacher's. · `if (acting && READERS.includes(acting.role_id)) {` → `if (false && acting && READERS.includes(acting.role_id)) {` | **แถวที่มันค้ำ** 3 (ทางเข้าของกรรมการ) · **ตายที่** แถว 3 ที่ `waitForResponse` — กรรมการได้ ไม่พบ ทั้งที่ drill-down ยังเอ่ยชื่อไฟล์อยู่ · ที่มา `docs/acceptance/35-assessment-evidence.md:132` `docs/acceptance/35-assessment-evidence.md:78` `docs/acceptance/42-program-level-by-intake.md:68` |
 """
 
 from harness import main

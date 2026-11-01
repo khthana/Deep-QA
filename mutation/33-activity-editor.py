@@ -29,6 +29,31 @@ reason, and the acceptance document says so:
 Killing them:
 
     cd e2e && npx playwright test 33a-activity-editor
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `noattribution` | **แตะอะไร** route · **ทำอะไร** บันทึกกิจกรรมโดยไม่เขียนแถว CLO เลย | **แถวที่มันค้ำ · ตายที่** **แถว 1** · บรรทัด 104 `attributionOf(MADE)` ต้องมี `CLO-1 (60%)` · **แถวอื่นที่ตายไปด้วย** 2–7 (ปนเปื้อน — แถว 1 เป็นคนสร้างกิจกรรมที่แถวหลังใช้) · ที่มา `docs/acceptance/33-activity-editor.md:145` `docs/acceptance/33-activity-editor.md:79` |
+| `emptyeditor` | **แตะอะไร** form · **ทำอะไร** เปิดแก้ไขแล้วแถว CLO ว่างเปล่า | **แถวที่มันค้ำ · ตายที่** **แถว 2** · บรรทัด 126 `cloRow(1).clo` ต้องมีค่าเป็น CLO-1 · **แถวอื่นที่ตายไปด้วย** 3 · 4 · 6 · 7 (ปนเปื้อน — บันทึกซ้ำแทนที่แถวทั้งชุด แถวเดิมจึงหาย) · ที่มา `docs/acceptance/33-activity-editor.md:146` `docs/acceptance/33-activity-editor.md:85` |
+| `duplicateoffered` | **แตะอะไร** form · **ทำอะไร** picker เลิกซ่อน CLO ที่แถวอื่นถืออยู่ | **แถวที่มันค้ำ · ตายที่** **แถว 3** · บรรทัด 144 `second` ต้องไม่มี CLO-1 · **แถวอื่นที่ตายไปด้วย** 4 (จำนวนตัวเลือกเกินไปหนึ่ง) · ที่มา `docs/acceptance/33-activity-editor.md:147` `docs/acceptance/33-activity-editor.md:84` |
+| `alwaysnew` | **แตะอะไร** screen · **ทำอะไร** บันทึกกิจกรรมเดิมด้วย POST เสมอ | **แถวที่มันค้ำ · ตายที่** **แถว 6** · บรรทัด 238 ต้องได้ 200 (ได้ 201) · **แถวอื่นที่ตายไปด้วย** 7 (ปนเปื้อน — แถว 6 ไม่ได้เปลี่ยนชื่อให้) · ที่มา `docs/acceptance/33-activity-editor.md:148` `docs/acceptance/33-activity-editor.md:86` |
+| `weightsunchecked` | **แตะอะไร** route · **ทำอะไร** เพดานผลรวมน้ำหนักเป็น 1000 แทน 100 | **แถวที่มันค้ำ · ตายที่** **แถว 5** · บรรทัด 208 ต้องได้ 400 · ที่มา `docs/acceptance/33-activity-editor.md:149` `docs/acceptance/33-activity-editor.md:91` |
+| `swallowrefusal` | **แตะอะไร** screen · **ทำอะไร** ประโยคปฏิเสธไม่ถูกตั้งเป็น notice | **แถวที่มันค้ำ · ตายที่** **แถว 5** · บรรทัด 209 ประโยค `activityCloWeights(110)` ต้องเห็นบนจอ · ที่มา `docs/acceptance/33-activity-editor.md:150` |
+| `cloofanyyear` | **แตะอะไร** route · **ทำอะไร** ตัด `AND sc.academic_year = c.academic_year` — picker เสนอ CLO ทุกปี | **แถวที่มันค้ำ · ตายที่** **แถว 4** · บรรทัด 170 `clos` ต้องยาวเท่า `CLOS.length` ของ seed · **แถวอื่นที่ตายไปด้วย** 3 (ป้าย CLO-1 โผล่ซ้ำจากอีกปี) · ที่มา `docs/acceptance/33-activity-editor.md:151` `docs/acceptance/33-activity-editor.md:83` |
+| `weeksofanysection` | **แตะอะไร** route · **ทำอะไร** สัปดาห์จากทุกตอนเรียน ไม่ใช่ของตอนเรียนนี้ | **แถวที่มันค้ำ · ตายที่** **แถว 4** · บรรทัด 185 จำนวนสัปดาห์ต้องเท่ากับ `planWeeksFor` ของตอนเรียนนี้ · ที่มา `docs/acceptance/33-activity-editor.md:152` `docs/acceptance/33-activity-editor.md:83` |
+| `onetypesent` | **แตะอะไร** form · **ทำอะไร** ส่ง `individual` เสมอไม่ว่าเลือกอะไร | **แถวที่มันค้ำ · ตายที่** **แถว 1** · บรรทัด 99 การ์ดต้องอ่านว่า *งานกลุ่ม* · **แถวอื่นที่ตายไปด้วย** 2 (ค่าที่โหลดกลับมาเป็น `individual`) · ที่มา `docs/acceptance/33-activity-editor.md:153` `docs/acceptance/33-activity-editor.md:79` |
+| `nodateload` | **แตะอะไร** form · **ทำอะไร** ไม่โหลดวันที่กลับเข้าฟอร์ม | **แถวที่มันค้ำ · ตายที่** **แถว 2** · บรรทัด 119 *วันที่ประกาศ* ต้องเป็น `2026-08-03` · ที่มา `docs/acceptance/33-activity-editor.md:154` `docs/acceptance/33-activity-editor.md:85` |
+| `norowadded` | **แตะอะไร** form · **ทำอะไร** ปุ่ม *เพิ่มผลการเรียนรู้* คำนวณแถวใหม่แล้วไม่ต่อเข้าไป | **แถวที่มันค้ำ · ตายที่** **แถว 1** · `activities-screen.js` บรรทัด 137 — ไม่มี control ของแถวที่สองให้เลือก CLO · **แถวอื่นที่ตายไปด้วย** 2–7 (ปนเปื้อน — แถว 1 เป็นคนสร้างกิจกรรม) · ที่มา `docs/acceptance/33-activity-editor.md:155` `docs/acceptance/33-activity-editor.md:82` |
+| `norowdropped` | **แตะอะไร** form · **ทำอะไร** ปุ่มนำแถวออกเก็บทุกแถวไว้ | **แถวที่มันค้ำ · ตายที่** **แถว 6** · บรรทัด 238 ต้องได้ 200 (ได้ 400 เพราะแถวเดิมยังอยู่ ผลรวมเป็น 140) · **แถวอื่นที่ตายไปด้วย** 7 (ปนเปื้อน) · ที่มา `docs/acceptance/33-activity-editor.md:156` `docs/acceptance/33-activity-editor.md:82` |
+| `marksguardoff` | **แตะอะไร** route · **ทำอะไร** ปิดด่านที่ห้ามถอด CLO ที่มีคะแนนแล้ว | **แถวที่มันค้ำ · ตายที่** **ตายที่ seam ของ backend** — `activity-editor.test.js` ข้อ *a CLO a cohort has already been marked against…* · ที่มา `docs/acceptance/33-activity-editor.md:157` `docs/acceptance/33-activity-editor.md:94` |
+| `markfromweight` | **แตะอะไร** route · **ทำอะไร** คะแนนต่อ CLO กลายเป็นตัวน้ำหนักเอง (60 คะแนนของงาน 20 คะแนน) | **แถวที่มันค้ำ · ตายที่** **ตายที่ seam ของ backend** — ข้อ *an activity is created…* และ *saving twice updates…* · ที่มา `docs/acceptance/33-activity-editor.md:158` |
 """
 
 from harness import main

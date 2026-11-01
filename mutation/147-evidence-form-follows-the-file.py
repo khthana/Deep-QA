@@ -55,6 +55,19 @@ baseline 5 ผ่าน สามตัวเดิมได้ผลเดิ�
     python mutation/147-evidence-form-follows-the-file.py restore
 
 แถวอยู่ใน `e2e/tests/147a-evidence-form-follows-the-file.spec.js`
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาคือห้าแถวเกณฑ์ของ `docs/acceptance/35-assessment-evidence.md` (บรรทัด 417–421) กับย่อหน้าบันทึกผลกวาดของใบเดียวกัน (บรรทัด 409 และ 429) ไม่ใช่ความจำ
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `unkeyed` | ถอด `key` ต่อแฟ้มออกจาก `<EvidenceForm>` ทั้งก้อน คือสภาพก่อน #147 | **สี่แถวของ `147a`** — *another file's pencil puts that file's type and description in the form* (ครึ่ง*คำอธิบาย*) · *what was typed for one file does not go with the pencil to another* · *a file chosen for one file is not carried to another* ที่จุดรอคำอธิบาย ไม่ใช่ที่กล่องไฟล์ จึงไม่ถูกอ้างในแถวนั้น · *the attach form's draft does not go to the file a pencil opens* (ครึ่ง*คำอธิบาย*) · และ *บันทึก after another pencil writes that file with its own values* |
+| `keyedbymode` | `key` ผูกกับ**โหมด** (`'new'` กับ `'file'`) ไม่ใช่กับแฟ้ม ฟอร์มจึงไม่ remount เมื่อดินสอย้ายจากแฟ้มหนึ่งไปอีกแฟ้ม | **สามแถวเดียวกันกับตัวบน แต่ไม่ฆ่าแถว *the attach form's draft does not go to the file a pencil opens*** ซึ่งคือเหตุผลที่แถวนั้นเป็นแถวของตัวเอง (#66 — ทางเข้าที่สอง) |
+| `typeunseeded` | ช่อง *ประเภทหลักฐาน* ไม่ seed จากแฟ้มที่เปิด (`useState(types[0]?.evidence_type ?? '')`) | **ครึ่ง*ประเภท* ของสามแถว** — *another file's pencil…* · *the attach form's draft…* · และ *บันทึก after another pencil…* ซึ่ง `toMatchObject` ตัวเดียวอ่านทั้งสองค่า |
+| `syncedbyeffect` | ทางของห้าจอพี่น้อง: effect ที่ผูกกับ `[evidence]` แทน `key` — ตั๋วเขียนว่าสองทางต่างกันที่ร่างที่คนพิมพ์ไว้ **วัดแล้วไม่ใช่** ทั้งสองทางทิ้งร่างเหมือนกัน และต่างกันที่กล่องไฟล์ ซึ่งเป็น input ของ DOM ที่ state ล้างไม่ได้ | **ล้ม 1 ผ่าน 4** (25 วินาที) — แถว *a file chosen for one file is not carried to another* ที่ assertion *a file in the box of the second form* แถวเดียว ซึ่งคือสิ่งที่ทางที่เลือกทำนายไว้ และเป็นแถวที่บอกว่าทำไมเป็น `key` ไม่ใช่ effect |
 """
 from harness import main
 

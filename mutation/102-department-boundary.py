@@ -103,6 +103,17 @@ compare FILES, not subject matter.
     python mutation/102-department-boundary.py save
     python mutation/102-department-boundary.py <mutant>
     python mutation/102-department-boundary.py restore
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาคือแถว `102:anydepartmentreachesall` ของตารางมัตแตนต์ใน `docs/acceptance/18-program-subjects.md` `19-programme-learning-outcomes.md` กับ `21-rubrics.md` และร้อยแก้วข้างมัตแตนต์ในไฟล์นี้ ไม่ใช่ความจำ
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `noprogramfilter` | รายการหลักสูตรไม่ถูกบีบให้เหลือเท่าที่ grant ครอบ (`program_id = ANY($1)` เป็น `TRUE`) | **8 ข้อ** ที่ seam HTTP — `evidence` `offerings` `plos` ×2 `program-subjects` ×2 `rubrics` `students` · เจ็ดในแปดข้อนั้นมีมาก่อน #102 ซึ่งหมายความว่ามัตแตนต์ตัวนี้**ไม่เคยเป็นช่องว่าง** ทั้งที่พาดหัวของตั๋วบอกว่าเป็น (#66 — วัดก่อนแก้) |
+| `anydepartmentreachesall` | grant ที่ผูกกับภาควิชาเอื้อมถึงทุกหลักสูตร ไม่ใช่เฉพาะของภาคตน เล็งให้กิ่ง**ภาควิชา**กว้างออกเท่านั้น grant ที่ผูกกับหลักสูตรปล่อยให้ `EXISTS` เป็นเท็จและไม่ถูกแตะ ซึ่งเป็นสิ่งที่กันมันจากการเป็นมัตแตนต์ที่หยุดแอป (#97) | **7 ข้อ** ที่ seam HTTP ซึ่งก่อนหลักสูตรที่ #102 เติมลง seed มีแค่ 2 — `the administrator above a programme reaches it` กับ `the pickers offer exactly what the writes will accept` ของ `18` · `a department administrator reaches both curricula under their department` ของ `19` ซึ่งเคยอ่านด้วย `includes` สองครั้ง รายการที่กว้างเกินจึงผ่าน (#102 เปลี่ยนเป็นทั้งรายการ) · `the curricula offered are the ones the account holds` ของ `21` |
 """
 
 from harness import main

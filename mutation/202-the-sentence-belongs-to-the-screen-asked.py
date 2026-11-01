@@ -98,6 +98,24 @@ guard จึงเป็นเท็จตลอด ฆ่าแถวบวก�
 ค้างอยู่ ซึ่งยังไม่มีแถวไหนเดิน ใบของทั้งสองจอเขียนไว้ว่ายังไม่ถูกพิสูจน์ (#68)
 
 ผลการกวาดอยู่ใน `docs/acceptance/` ของแต่ละจอ และในหัวข้อของ #202 ใน `docs/lessons.md`
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `departmentssaysanyway` | ภาควิชา: การลบพูดประโยคของตัวเองเหนือฟอร์มที่เปิดขึ้นมาแทน — `if (showing.current === sent) { waiting.current = { of: readOf(onPage.current), said } } c…` → `if (showing.current !== null) { waiting.current = { of: readOf(onPage.current), said } } c…` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says nothing over the form that was opened while it was out* · ที่มา `docs/acceptance/14-departments.md:730` `docs/acceptance/14-departments.md:1817` `docs/acceptance/14-departments.md:2164` |
+| `departmentssaysnothing` | ภาควิชา: guard ที่จับ `{}` ใหม่แทน ref - เป็นเท็จตลอด การลบจึงไม่เคยพูดอะไร — บล็อกที่ถูกแทน ท้ายของมัน `const sent = showing.current` → `const sent = {}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says what it did when nothing took the screen* · ที่มา `docs/acceptance/14-departments.md:731` `docs/acceptance/14-departments.md:1817` |
+| `plossaysanyway` | ผลการเรียนรู้ระดับหลักสูตร: จอที่ ref มาถึงพร้อมตั๋วนี้ — `if (showing.current === sent) waiting.current = { of: program, said }` → `if (showing.current !== null) waiting.current = { of: program, said }` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says nothing over the form that was opened while it was out* · *says what it did when nothing took the screen* · ที่มา `docs/acceptance/14-departments.md:1817` `docs/acceptance/19-programme-learning-outcomes.md:440` `docs/acceptance/19-programme-learning-outcomes.md:441` |
+| `plosnorefatadd` | ผลการเรียนรู้ระดับหลักสูตร: ref มีอยู่ แต่ปุ่มเพิ่มไม่เขียนมัน guard จึงเทียบ — `asked.current = null showing.current = {} setNotice(null) setEditing({})` → `asked.current = null setNotice(null) setEditing({})` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says nothing over the form that was opened while it was out* · ที่มา `docs/acceptance/14-departments.md:1817` `docs/acceptance/19-programme-learning-outcomes.md:440` |
+| `userssaysanyway` | ผู้ใช้งาน: สวิตช์สถานะ ซึ่งไม่ถามอะไรก่อน รายการจึงยังมีชีวิตอยู่ทั้งเวลา — `if (showing.current === sent) waiting.current = { of: readOf(page, filters), said } const …` → `if (showing.current !== null) waiting.current = { of: readOf(page, filters), said } const …` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says nothing over the form that was opened while it was out* · *says what it did when nothing took the screen* · ที่มา `docs/acceptance/11-user-accounts.md:1469` `docs/acceptance/11-user-accounts.md:1470` `docs/acceptance/14-departments.md:1817` |
+| `enrolmentaddsaysanyway` | รายชื่อนักศึกษาของรายวิชา: การเพิ่ม - โค้ดก่อนครึ่งหลังของตั๋วนี้เป๊ะ ๆ — บล็อกที่ถูกแทน ท้ายของมัน `if (reloaded && onScreen.current === sent) setNotice(said)` → `if (reloaded) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says nothing over the Section the jump moved to while the enrolment was out* · *says what it enrolled when the pager stayed where it was* · ที่มา `docs/acceptance/14-departments.md:1817` `docs/acceptance/25-section-enrolment.md:475` `docs/acceptance/25-section-enrolment.md:476` |
+| `enrolmentremovekeyedelsewhere` | แถวบวกของจุดเดียวกัน: *การนำออกที่ไม่มีใครย้ายหน้า ยังบอกว่ามันนำใครออก* เคยถูกค้ำด้วย — `waiting.current = { of: readOf(sectionId, onPage.current), said }` → `waiting.current = { of: readOf(sectionId, onPage.current + 1), said }` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says what it removed when the pager stayed where it was* · ที่มา `docs/acceptance/25-section-enrolment.md:478` |
 """
 from harness import main
 

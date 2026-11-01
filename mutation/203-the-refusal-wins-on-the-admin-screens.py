@@ -60,6 +60,37 @@
     python mutation/203-the-refusal-wins-on-the-admin-screens.py restore
 
 แถวที่มิวแทนต์เหล่านี้ค้ำ: `e2e/tests/203a-the-refusal-wins-on-the-admin-screens.spec.js`
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `departmentssaveanyway` | `departments` — บล็อกที่ถูกแทน ท้ายของมัน `await drawing(() => onScreen.current === drawing)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/14-departments.md:814` |
+| `departmentsremovalanyway` | `departments` — บล็อกที่ถูกแทน ท้ายของมัน `await reader(() => onScreen.current === reader)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/14-departments.md:815` |
+| `programssaveanyway` | `programs` — บล็อกที่ถูกแทน ท้ายของมัน `await drawing(() => onScreen.current === drawing)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/15-programs.md:810` |
+| `programsremovalanyway` | `programs` — บล็อกที่ถูกแทน ท้ายของมัน `await reader(() => onScreen.current === reader)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/15-programs.md:811` |
+| `subjectssaveanyway` | `subjects` — บล็อกที่ถูกแทน ท้ายของมัน `await drawing(() => onScreen.current === drawing)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/16-subjects.md:602` |
+| `subjectsremovalanyway` | `subjects` — บล็อกที่ถูกแทน ท้ายของมัน `await reader(() => onScreen.current === reader)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/16-subjects.md:603` |
+| `pairssaveanyway` | `pairs` — บล็อกที่ถูกแทน ท้ายของมัน `await drawing(() => onScreen.current === drawing)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/18-program-subjects.md:481` |
+| `pairsremovalanyway` | `pairs` — บล็อกที่ถูกแทน ท้ายของมัน `await reader(() => onScreen.current === reader)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/18-program-subjects.md:482` |
+| `rubricssaveanyway` | `rubrics` — บล็อกที่ถูกแทน ท้ายของมัน `await drawing(() => onScreen.current === drawing)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/21-rubrics.md:460` |
+| `rubricsremovalanyway` | `rubrics` — บล็อกที่ถูกแทน ท้ายของมัน `await reader(() => onScreen.current === reader)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/21-rubrics.md:461` |
+| `plossaveanyway` | `plos` — `PLOS_MODAL_READS` → `PLOS_MODAL_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:502` |
+| `plosremovalanyway` | `plos` — `PLOS_REMOVAL_READS` → `PLOS_REMOVAL_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a removal whose reload is refused says the refusal and not that it removed* · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:503` |
+| `userssaveanyway` | `users` — `USERS_SAVE_READS` → `USERS_SAVE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save whose reload is refused says the refusal and not that it saved* · ที่มา `docs/acceptance/11-user-accounts.md:1532` |
+| `userstoggleanyway` | `users` — `USERS_TOGGLE_READS` → `USERS_TOGGLE_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a suspension whose reload is refused says the refusal and not that it suspended* · ที่มา `docs/acceptance/11-user-accounts.md:1533` |
+| `studentssaveanyway` | `students` — `STUDENTS_BY_HAND_READS` → `STUDENTS_BY_HAND_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *an addition whose reload is refused says the refusal and not that it added* · ที่มา `docs/acceptance/17-students.md:476` |
+| `studentsmovedanyway` | `students` — `MOVED_READS` → `MOVED_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a sentence handed to the page move is not said when that page is refused* · ที่มา `docs/acceptance/17-students.md:478` |
+| `studentsdrewunsaid` | `students` — `DREW_READS` → `DREW_UNSAID` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a sentence handed to the page move is said when that page draws* · ที่มา `docs/acceptance/17-students.md:477` |
+| `offeringssaveanyway` | `offerings` — บล็อกที่ถูกแทน ท้ายของมัน `await drawing(() => onScreen.current === drawing)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a เปิดรายวิชา whose reload is refused says the refusal and not that it opened* · ที่มา `docs/acceptance/23-offerings.md:804` |
+| `offeringscopyanyway` | `offerings` — `OFFERINGS_BY_HAND_READS` → `OFFERINGS_BY_HAND_ANYWAY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a คัดลอก whose reload is refused says the refusal and not that it copied* · ที่มา `docs/acceptance/23-offerings.md:805` |
+| `offeringsremovalanyway` | `offerings` — บล็อกที่ถูกแทน ท้ายของมัน `await reader(() => onScreen.current === reader)` → `if (showing.current === sent) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a ยกเลิกการเปิด whose reload is refused says the refusal and not that it cancelled* · ที่มา `docs/acceptance/23-offerings.md:806` |
 """
 from harness import main
 

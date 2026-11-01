@@ -100,6 +100,30 @@ heartbeat ที่หลุดไปจึงไม่เปลี่ยนอ�
     python mutation/99-heartbeat.py save
     python mutation/99-heartbeat.py <mutant>
     python mutation/99-heartbeat.py restore
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `nobeat` | `context` — `BEAT` → `lastBeat.current = now` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *typing five minutes into the session sends a heartbeat* · *a click five minutes into the session sends a heartbeat* · ที่มา `docs/acceptance/10-application-shell.md:534` `docs/acceptance/10-application-shell.md:535` |
+| `clicksonly` | `context` — ตัด `KEYS` ท้าย `` ออก | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *typing five minutes into the session sends a heartbeat* · ที่มา `docs/acceptance/10-application-shell.md:534` |
+| `keysonly` | `context` — ตัด `CLICKS` ท้าย `` ออก | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a click five minutes into the session sends a heartbeat* · ที่มา `docs/acceptance/10-application-shell.md:535` |
+| `timerbeat` | `context` — บล็อกที่ถูกแทน ท้ายของมัน `CLICKS` → `void timer` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *ten minutes with nothing pressed sends none* · ที่มา `docs/acceptance/10-application-shell.md:536` |
+| `slowbeat` | `context` — `INTERVAL` → `const HEARTBEAT_MS = 6 * 60 * 1000` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *typing five minutes into the session sends a heartbeat* · *a click five minutes into the session sends a heartbeat* · ที่มา `docs/acceptance/10-application-shell.md:534` `docs/acceptance/10-application-shell.md:535` `docs/acceptance/10-application-shell.md:544` |
+| `fastbeat` | `context` — `INTERVAL` → `const HEARTBEAT_MS = 30 * 1000` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *typing again within five minutes does not send a second* · ที่มา `docs/acceptance/10-application-shell.md:537` |
+| `nostart` | `context` — ตัด `START` ท้าย `` ออก | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *typing five minutes into the session sends a heartbeat* · *a click five minutes into the session sends a heartbeat* · ที่มา `docs/acceptance/10-application-shell.md:534` `docs/acceptance/10-application-shell.md:535` |
+| `logoutunwaited` | `context` — `await beating.current LOGOUT` → `LOGOUT` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *signing out waits for a heartbeat that is still out* · ที่มา `docs/acceptance/10-application-shell.md:538` |
+| `switchunwaited` | `context` — `await beating.current SWITCH` → `SWITCH` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *switching grant waits for a heartbeat that is still out* · ที่มา `docs/acceptance/10-application-shell.md:539` |
+| `endedunwaited` | `context` — `ENDED` → `post('/api/auth/logout').catch(() => {})` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the sign-out an ended account makes waits for a heartbeat that is still out* · ที่มา `docs/acceptance/10-application-shell.md:540` |
+| `unrouted` | **ทำอะไร** ไม่ประกาศ route ของ heartbeat เลย | **ฆ่าที่** แถว HTTP ที่หนึ่งและที่สอง (404) `not ok` สองแถว — node รายงาน **fail 3 pass 24** เพราะนับ test แม่ *a heartbeat (#99)* ด้วย อ่านชื่อ ไม่ใช่จำนวน (#48) · แถวที่สามผ่านทั้งสองทาง เพราะ 401 มาจาก middleware ก่อนถึง route แถวนั้นจึงไม่อ้างมัตแตนต์ตัวนี้ · ที่มา บันทึกการกวาดของใบนี้เอง |
+| `alwaysrenew` | **ทำอะไร** route ต่ออายุทุกครั้ง ไม่ว่า token จะเหลือเวลาเท่าไร | **ฆ่าที่** แถว HTTP ที่สอง *leaves a session with more than that alone* **แถวเดียว** — node รายงาน **fail 2 pass 25** (รวมแม่) คือแถวที่บอกว่า heartbeat ไม่ได้ต่ออายุแรงกว่าคำขออื่น ซึ่งเป็นเหตุผลเรื่อง #51 · เขียนคำแทนที่ใหม่เมื่อ #51 เพิ่มพารามิเตอร์ให้ `issueSession` แล้วกวาดซ้ำ ผลเท่าเดิม (#140) · ที่มา บันทึกการกวาดของใบนี้เอง |
+| `fivethreshold` | **ทำอะไร** `RENEW_BELOW_SECONDS` เป็นห้านาที แทนสิบ | **ฆ่าที่** แถว HTTP ที่หนึ่ง **แถวเดียว** — node รายงาน **fail 2 pass 25** (รวมแม่) เพราะ token เก้านาทีเขียนเป็นตัวเลขในแถว ไม่ได้อ่านจากค่าคงที่ จึงเป็นครึ่งของ server ที่ตรึงสิบไว้ · ที่มา บันทึกการกวาดของใบนี้เอง |
 """
 from harness import main
 

@@ -51,6 +51,23 @@ matter - #85's warning about two tickets on one screen cuts the other way here,
 because these two really do share paths.
 
 Row numbers below are `122a`'s two tests in the order they are written.
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `schemesaysnothing` | **ทำอะไร** ประโยคหายไป เหลือแต่สี — สภาพก่อน #122 | **แถวที่มันค้ำ · ตายที่** `122a` แถว 1 · การยืนยันแรก (*ครบ 100 แล้ว บันทึกได้*) · **แถวอื่นที่ตายไปด้วย** ไม่มี — `30a` ครบสิบแถว และ `33a` ครบเจ็ดแถวยังผ่าน · ที่มา `docs/acceptance/30-weighting-scheme.md:316` `docs/acceptance/30-weighting-scheme.md:88` |
+| `schemeonlycomplains` | **ทำอะไร** พูดเฉพาะตอนเกิน เงียบตอนยังไม่ถึงร้อย | **แถวที่มันค้ำ · ตายที่** `122a` แถว 1 · สถานะ *ยังไม่ถึง 100* · **แถวอื่นที่ตายไปด้วย** ไม่มี · ที่มา `docs/acceptance/30-weighting-scheme.md:317` `docs/acceptance/30-weighting-scheme.md:88` |
+| `schemeinterrupts` | **ทำอะไร** `aria-live="assertive"` แทน `polite` | **แถวที่มันค้ำ · ตายที่** `122a` แถว 1 · `toHaveAttribute` · **แถวอื่นที่ตายไปด้วย** ไม่มี · ที่มา `docs/acceptance/30-weighting-scheme.md:318` `docs/acceptance/30-weighting-scheme.md:88` |
+| `editorsaysnothing` | **ทำอะไร** ประโยคหายไป เหลือแต่เลขสีแดง — สภาพก่อน #122 | **แถวที่มันค้ำ · ตายที่** `122a` แถว 2 · การยืนยันแรกที่ผลรวม 110 · **แถวอื่นที่ตายไปด้วย** ไม่มี — `33a` ครบเจ็ดแถว และ `30a` ครบสิบแถวยังผ่าน · ที่มา `docs/acceptance/33-activity-editor.md:179` `docs/acceptance/33-activity-editor.md:89` |
+| `editorcopiesthescheme` | **ทำอะไร** ใช้กติกาของ #30 บนจอนี้ (`!== 100` แทน `> 100`) | **แถวที่มันค้ำ · ตายที่** `122a` แถว 2 · บล็อกสุดท้าย ที่ผลรวม 10 แล้วต้องเงียบ · **แถวอื่นที่ตายไปด้วย** ไม่มี · ที่มา `docs/acceptance/33-activity-editor.md:180` `docs/acceptance/33-activity-editor.md:89` |
+| `editorinterrupts` | **ทำอะไร** `aria-live="assertive"` แทน `polite` | **แถวที่มันค้ำ · ตายที่** `122a` แถว 2 · `toHaveAttribute` · **แถวอื่นที่ตายไปด้วย** ไม่มี · ที่มา `docs/acceptance/33-activity-editor.md:181` `docs/acceptance/33-activity-editor.md:89` |
 """
 
 from harness import main

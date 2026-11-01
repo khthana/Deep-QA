@@ -42,6 +42,29 @@ with no side effect, which makes `exportPdf.js`'s own `addFileToVFS` + `addFont`
 the only registration there is. `nofont` deletes the two `addFont` calls, and the PDF
 that comes out has no embedded face at all - it downloads, is still named for the
 curriculum, still opens, and shows a row of empty boxes where the Thai was.
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `subcolumn` | **ทำอะไรพัง** ทิ้งตัวกรอง `parent_outcome_id IS NULL` ออกจากแกน PLO — ข้อย่อยกลับมาเป็นคอลัมน์ของตัวเองอีกครั้ง คือ grain ก่อน #100 | **แถวที่ตาย** ทุกข้อหลักเป็นคอลัมน์ และไม่มีข้อย่อยเลย (ตายตัวเดียว) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:233` |
+| `emptyise` | **ทำอะไรพัง** ช่องที่ยังไม่มีใครเขียน วาดเป็น `E` แทนที่จะว่าง | **แถวที่ตาย** รายวิชาที่เพิ่งถูกใส่ มีทุกช่องว่าง — ตายพร้อมแถวแรกด้วย ดูย่อหน้าใต้ตาราง · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:234` |
+| `onelevel` | **ทำอะไรพัง** ทุกการเขียนเก็บเป็น `I` ไม่ว่าเลือกอะไร | **แถวที่ตาย** ค่าที่ตั้งอยู่ต่อ (**ตัวเดียวที่ค้ำแถวนี้**) — ตายพร้อมกันสามแถว ดูย่อหน้าใต้ตาราง · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:235` |
+| `noupsert` | **ทำอะไรพัง** `ON CONFLICT` เป็น `DO NOTHING` — การบันทึกครั้งที่สองหายไปเงียบ ๆ แต่ route ยังตอบ 200 | **แถวที่ตาย** บันทึกซ้ำที่ช่องเดิม แก้ของเดิม · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:236` |
+| `nofont` | **ทำอะไรพัง** ทิ้ง `addFont` ทั้งสองบรรทัด — ไม่มีฟอนต์ไทยฝังในไฟล์เลย | **แถวที่ตาย** ส่งออก PDF ได้ และเป็นไฟล์ของหลักสูตรนั้น (ครึ่งที่เป็นฟอนต์) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:237` |
+| `nosticky` | **ทำอะไรพัง** คอลัมน์ *รายวิชา* เลื่อนหายไปพร้อมแถว (รันซ้ำตอน #100 ที่หน้าต่าง 800px) | **แถวที่ตาย** ตารางเลื่อนในกรอบ และคอลัมน์รายวิชาไม่หาย (ครึ่งหลัง) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:238` |
+| `openreach` | **ทำอะไรพัง** ทิ้งการตรวจ reach ตอนอ่าน — ยื่นตารางของหลักสูตรอื่นให้ | **แถวที่ตาย** กรรมการหลักสูตรของอีกหลักสูตรถูกปฏิเสธ (ครึ่ง 403) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:239` |
+| `letfaculty` | **ทำอะไรพัง** ใส่ `FACULTY_ADMIN` กลับเข้า `MAINTAINERS` ขัดกับ #79 | **แถวที่ตาย** บัญชีที่ไม่ควรเข้าถึงเลย — ครึ่งที่เป็นกฎ · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:240` |
+| `smalltype` | **ทำอะไรพัง** ตั้งตัวอักษรกลับไปที่ 10pt คือขนาดที่การเดินเจอ | **แถวที่ตาย** ไม่มีตัวอักษรไหนเล็กกว่า 14pt (ตายตัวเดียว) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:241` `docs/acceptance/20-outcome-to-subject-mapping.md:92` |
+| `bigtype` | **ทำอะไรพัง** ตั้งเป็น 20pt — ยกขนาดโดยไม่ถามว่าคอลัมน์จ่ายอะไร | **แถวที่ตาย** รหัสพอดีคอลัมน์ **และ**คอลัมน์รายวิชา — ตายสองแถว ดูย่อหน้าใต้ตาราง · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:242` `docs/acceptance/20-outcome-to-subject-mapping.md:93` `docs/acceptance/20-outcome-to-subject-mapping.md:94` |
+| `narrowsubject` | **ทำอะไรพัง** บีบ `SUBJECT_WIDTH` จาก 72mm เหลือ 30mm | **แถวที่ตาย** คอลัมน์ *รายวิชา* ยังอ่านได้ทั้งรหัสและชื่อไทย (ตายตัวเดียว) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:243` `docs/acceptance/20-outcome-to-subject-mapping.md:94` |
+| `narrowpage` | **ทำอะไรพัง** ตั้ง `OUTCOME_WIDTH` กลับไปที่ 9mm คืออัตราที่หน้าโตต่อหนึ่งคอลัมน์ก่อน #103 | **แถวที่ตาย** หลักสูตรที่มียี่สิบข้อ (ตายตัวเดียว) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:244` `docs/acceptance/20-outcome-to-subject-mapping.md:356` `docs/acceptance/20-outcome-to-subject-mapping.md:95` |
 """
 
 from harness import main

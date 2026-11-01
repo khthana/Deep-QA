@@ -21,6 +21,37 @@ assertion at the HTTP surface can reach.
 Killing them:
 
     cd e2e && npx playwright test 39a-outcome-activity-map
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `bandsdrawnfromtheweight` | **ทำอะไร** วาดความหนาจากร้อยละแทนคะแนน | **ฆ่าแถว** 1 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:145` |
+| `everybandthesamewidth` | **ทำอะไร** ทุกเส้นหนาเท่ากัน | **ฆ่าแถว** 1 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:146` |
+| `onlythefirstbandisdrawn` | **ทำอะไร** วาดเส้นเดียวจากสิบสามเส้น | **ฆ่าแถว** 1 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:147` |
+| `unassessednodedrawnatnothing` | **ทำอะไร** โหนดที่ไม่มีเส้นสูงศูนย์พิกเซล | **ฆ่าแถว** 2 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:148` |
+| `unassessedoutcomenotnamed` | **ทำอะไร** ไม่เอ่ยชื่อข้อที่ไม่มีกิจกรรมวัด | **ฆ่าแถว** 2 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:149` |
+| `unattributedactivitynotdrawn` | **ทำอะไร** ไม่วาดกิจกรรมที่ยังไม่ผูกกับข้อใด | **ฆ่าแถว** 3 · 4 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:150` |
+| `unattributedactivitynotnamed` | **ทำอะไร** ไม่เอ่ยชื่อกิจกรรมนั้น | **ฆ่าแถว** 3 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:151` |
+| `linkcountisthecloscount` | **ทำอะไร** การ์ดจำนวนเส้นอ่านจำนวน CLO | **ฆ่าแถว** 4 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:152` |
+| `activitycountdropstheunattributedone` | **ทำอะไร** การ์ดจำนวนกิจกรรมนับเฉพาะตัวที่ผูกแล้ว | **ฆ่าแถว** 4 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:153` |
+| `meanreadsthemarksattached` | **ทำอะไร** ช่องค่าเฉลี่ยแสดงคะแนนที่ผูกไว้แทน | **ฆ่าแถว** 5 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:154` |
+| `meandoesnotsaywhatitcounted` | **ทำอะไร** ค่าเฉลี่ยไม่บอกว่าเฉลี่ยจากกี่คน | **ฆ่าแถว** 5 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:155` |
+| `detailtabledropsthelastrow` | **ทำอะไร** ตารางละเอียดหายไปหนึ่งแถว | **ฆ่าแถว** 6 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:156` |
+| `detailtableprintsmarksasthepercent` | **ทำอะไร** คอลัมน์ร้อยละพิมพ์คะแนน | **ฆ่าแถว** 6 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:157` |
+| `diagramoverflowsinsteadofscrolling` | **ทำอะไร** กรอบของแผนผังไม่เลื่อน | **ฆ่าแถว** 7 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:158` |
+| `emptystatenevershown` | **ทำอะไร** ตอนเรียนที่ไม่มีกิจกรรมยังวาดแผนผัง | **ฆ่าแถว** 8 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:159` |
+| `refusalkeepsloading` | **ทำอะไร** คำปฏิเสธมี *กำลังโหลดข้อมูล…* ค้างอยู่ใต้ | **ฆ่าแถว** 9 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:160` |
+| `labelcutbythecharactercount` | **ทำอะไร** ตัดชื่อด้วยการนับตัวอักษร อย่างที่เป็นก่อน #115 | **ฆ่าแถว** 10 · 12 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:161` |
+| `outcomenumberdrawnwhole` | **ทำอะไร** คอลัมน์ซ้ายวาดรหัสเต็ม ไม่ตัดเลย | **ฆ่าแถว** 13 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:162` |
+| `everylabelcutwhetherornot` | **ทำอะไร** ตัดทุกป้าย แม้ป้ายนั้นจะมีที่ว่างพอ | **ฆ่าแถว** 11 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:163` |
+| `cutsaysnothing` | **ทำอะไร** ตัดแล้วไม่เติม `…` | **ฆ่าแถว** 10 · 12 · 13 · ที่มา `docs/acceptance/39-outcome-to-activity-map.md:164` |
 """
 
 from harness import main

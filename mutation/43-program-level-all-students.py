@@ -22,6 +22,24 @@ unmarked intake gets a sentence, and that the menu entry leads here.
 Killing them:
 
     cd e2e && npx playwright test 43a-program-level
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `rollfrommarks` | The roll is built from the marks rather than from the register, which is how it would be written by anybody who started from `activity_scores`. · `ROLL_QUERY` → `ROLL_FROM_MARKS` | **แถวที่มันค้ำ** 1 (ข้อ 1) · **ตายที่** แถว 1 ที่ `toHaveCount` — คนที่ยังไม่มีใครประเมินหายไปจากกริด · ที่มา `docs/acceptance/43-program-level-all-students.md:108` |
+| `ordernevermoves` | The order that says it puts the weakest first sorts by code instead. · `compare: (a, b) => b.below_count - a.below_count \|\| a.student_id.localeCompare(b.student_i…` → `compare: (a, b) => a.student_id.localeCompare(b.student_id),` | **แถวที่มันค้ำ** 2 (ข้อ 4) · **ตายที่** แถว 2 ที่ `toEqual` — ลำดับ *อ่อนที่สุดก่อน* เรียงตามรหัส · ที่มา `docs/acceptance/43-program-level-all-students.md:109` `docs/acceptance/43-program-level-all-students.md:57` |
+| `framelost` | The frame around the grid loses its scrolling. · `<div className="overflow-x-auto">` → `<div>` | **แถวที่มันค้ำ** 3 (ข้อ 3) · **ตายที่** แถว 3 ที่ `toBe` — กริดกว้างกว่ากรอบแต่เลื่อนไม่ได้ · ที่มา `docs/acceptance/43-program-level-all-students.md:111` `docs/acceptance/43-program-level-all-students.md:56` |
+| `emptydrawsthegrid` | An intake nobody has marked gets the grid anyway - a page of em dashes, which is a heatmap shaped like a heatmap and empty of anything to read. · `empty: students.every((student) => student.measured_count === 0),` → `empty: false,` | **แถวที่มันค้ำ** 4 (ข้อ 5) · **ตายที่** แถว 4 ที่ `toBeVisible` — ได้กริดขีดแทนประโยค · ที่มา `docs/acceptance/43-program-level-all-students.md:112` |
+| `labellosesthefraction` | The label on the *below the line* cell loses the fraction, so a reader who is not looking at the table is told there is a count and not what it is. · `….student_id} ต่ำกว่าเกณฑ์ ${student.below_count} จาก ${student.measured_count} ข้อที่วัดได…` → `….student_id} ต่ำกว่าเกณฑ์`}` | **แถวที่มันค้ำ** 2 (ป้ายที่พูดได้) · **ตายที่** แถว 2 ที่อ่านป้ายไม่เจอเศษส่วน (`TypeError`) · ที่มา `docs/acceptance/43-program-level-all-students.md:110` `docs/acceptance/43-program-level-all-students.md:58` |
+| `menumisleads` | The committee's menu entry points at the next screen along. · `path: '/main/programLevelAllStudents',` → `path: '/main/programLevelCompare',` | **แถวที่มันค้ำ** 1 (ทางเข้าในเมนู) · **ตายที่** แถว 1 ที่ `waitForURL` — รายการเมนูเปิดหน้าจออื่น · ที่มา `docs/acceptance/43-program-level-all-students.md:107` `docs/acceptance/43-program-level-all-students.md:51` |
+| `refusalkeepsloading` | The refused screen goes back to waiting for ever. · `setLoading(false) return }` → `return }` | **แถวที่มันค้ำ** 5 (ข้อ 6 · ข้อบกพร่องที่การเดินเจอ) · **ตายที่** แถว 5 ที่ `toHaveCount` — *กำลังโหลดข้อมูล…* ค้างอยู่ใต้คำปฏิเสธ และตายที่ข้อยืนยันใหม่เท่านั้น อีกสี่แถวผ่าน · ที่มา `docs/acceptance/43-program-level-all-students.md:113` |
 """
 
 from harness import main

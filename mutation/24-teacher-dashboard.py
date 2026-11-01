@@ -38,6 +38,28 @@ the carrier - so a mutant that removes the id from the address ought to take all
 three, and one that took only one would mean two of them were passing for some
 other reason. What discriminates *between* them is elsewhere: `notoken` for the
 menu, `rememberedsection` for the reload.
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `anyterm` | **ทำอะไร** เอาเงื่อนไขปีและภาคออกจากรายการ (คงจำนวนพารามิเตอร์ไว้) | **ตายที่** 4 จาก 10 subtests รวมทั้ง *a teacher sees the sections they teach this term, and not last year and this* — `teacher.one@` เห็นสองตอนเรียนแทนที่จะเป็นหนึ่ง คู่ตอนเรียน 1 ของสองปีคือตัวแยกแยะทั้งหมดของแถวนี้ · ที่มา `docs/acceptance/24-teacher-dashboard.md:145` |
+| `anysection` | **ทำอะไร** เอา `cst.user_id = $2` ออกจากการอ่านทีละตอน | **ตายที่** 3 subtests รวมทั้ง *a section the caller does not teach is refused, and refused as not found* และ *a colleague teaching the next section along of the same subject is still refused* — ด่านภาควิชายังอยู่และยังตอบว่าใช่ ซึ่งเป็นประเด็นทั้งหมด · ที่มา `docs/acceptance/24-teacher-dashboard.md:146` |
+| `norolegate` | **ทำอะไร** เอา `requireRole(...TEACHING)` ออกจากหน้าหลัก | **ตายที่** 2 subtests คือ *the account holding two roles has to be acting as the teacher* และ *a role that is not a teaching one does not reach these routes at all* — บัญชีผู้สอนบทบาทเดียวทุกบัญชีไม่กระทบ ซึ่งเป็นสิ่งที่ทำให้มันเป็นมัตแตนต์ของแถวสองบทบาทโดยเฉพาะ · ที่มา `docs/acceptance/24-teacher-dashboard.md:147` |
+| `currenttermonly` | **ทำอะไร** เอากฎของ *รายการ* ไปบังคับกับการอ่านทีละตอน | **ตายที่** 1 subtest คือ *the section of the year before is still reachable one at a time* — ตัวเดียว ตรงตามแถวที่มันค้ำ · ที่มา `docs/acceptance/24-teacher-dashboard.md:148` `docs/acceptance/24-teacher-dashboard.md:86` |
+| `countjoin` | **ทำอะไร** นับนักศึกษาข้าม join ขึ้นไปถึงรายวิชาที่เปิดสอน | **ตายที่** 1 subtest ที่ `student_count` — 113 แทน 57 ทั้งสองเลขอ่านดูสมเหตุสมผลบนการ์ด · ที่มา `docs/acceptance/24-teacher-dashboard.md:149` `docs/acceptance/24-teacher-dashboard.md:76` |
+| `nonumericguard` | **ทำอะไร** ผูก query ด้วยที่อยู่ดิบ แทนค่าที่ `integerId` ตรวจแล้ว (เดิมเอาด่าน `/^\d+$/` ออก — #107 ทำให้ต้องเล็งใหม่) | **ตายที่** **2 subtests** คือ *an id that is not a number is refused rather than raised* และ *an id too large for the column is ไม่พบ, not a 500* — id ที่ไม่ใช่ตัวเลขทะลุไปถึง PostgreSQL แล้วกลับมาเป็น 22P02 ส่วนตัวเลขล้วนที่กว้างเกินคอลัมน์กลับมาเป็น 22003 ทั้งคู่ผ่าน error handler เป็น 500 · ที่มา `docs/acceptance/24-teacher-dashboard.md:150` |
+| `notoken` | **ทำอะไร** `sub.path.replace(SECTION_TOKEN, section)` กลายเป็น `sub.path` | **ตายที่** แถว *a section-specific menu entry leads to that section and not to a placeholder* บรรทัด 124 (`waitForURL`) — ตายแถวเดียว อีกหกแถวผ่านหมด · ที่มา `docs/acceptance/24-teacher-dashboard.md:156` |
+| `termlessempty` | **ทำอะไร** สถานะว่างเลิกเอ่ยชื่อเทอม | **ตายที่** แถว 2 บรรทัด 89 — ตายแถวเดียว · ที่มา `docs/acceptance/24-teacher-dashboard.md:157` |
+| `rememberedsection` | **ทำอะไร** เขียนตอนเรียนที่เลือกลง `localStorage` ด้วย (พฤติกรรมเดิมที่รับสืบมา) | **ตายที่** แถว 5 บรรทัด 155 (`toEqual([null, null])`) — ตายแถวเดียว ทุกแถวที่พูดถึง *การเดินทาง* ยังผ่าน ซึ่งเป็นประเด็นทั้งหมด · ที่มา `docs/acceptance/24-teacher-dashboard.md:158` |
+| `staydashboard` | **ทำอะไร** ไม่ใส่ `section_id` ลงในที่อยู่เลย | **ตายที่** สามแถว คือ 3, แถวเมนู และ 5 ทั้งหมดตายที่ `waitForResponse` ใน `support/teaching-screen.js:33` · ที่มา `docs/acceptance/24-teacher-dashboard.md:159` |
+| `nosectionnumber` | **ทำอะไร** หน้าตอนเรียนเลิกบอกว่าเป็นตอนเรียนที่เท่าไหร่ | **ตายที่** แถว 3 บรรทัด 103 — ตายแถวเดียว ที่อยู่ยังถูกและวิชายังถูก · ที่มา `docs/acceptance/24-teacher-dashboard.md:160` |
 """
 
 from harness import main

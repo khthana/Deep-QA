@@ -56,6 +56,22 @@ of still reports `visible` and counts 60 frames a second. Both things #169 asked
 still hold here: there is no mutant for a claim the harness cannot put at risk, and
 row 4 of `47a` stays a net on purpose. What #169 changed is the hand-walk's cause,
 not the row.
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `typecheckgone` | The type check stops being a check, which is the state the delivered system shipped in: `uploads.single('image')` wrote whatever arrived, under whatever name, and nothing ever looked at the bytes. · บล็อกที่ถูกแทน ท้ายของมัน `const imageKind = (buffer) => {` → `const unusedImageKind = (buffer) => {` | **แถวที่มันค้ำ** 2 (การตรวจไบต์บนจอ) · **ตายที่** แถว 2 สองที่ — ไม่มีประโยคปฏิเสธ และมีอวาตาร์โผล่ขึ้นมาในที่ที่แถวบอกว่าต้องยังเป็นรูปแทน · **แถว 3 ล้มด้วย** เพราะทุกไฟล์ถูกเสิร์ฟเป็น PNG — JPEG ที่มาทับจึงกลับมาเป็น `image/png` · แถว 1 ยังเขียว · ที่มา `docs/acceptance/47-profile-photo.md:92` |
+| `uploadsendsnofile` | The form posts to the right route with nothing in it. · `form.append('image', file, file.name)` → `if (false) form.append('image', file, file.name)` | **แถวที่มันค้ำ** 1 (ฟอร์มส่งไฟล์จริง) · **ตายที่** **ทั้งสามแถว** — แถว 1 ที่ `expect(upload.status())` เพราะ POST ได้ 400 *กรุณาเลือกรูปภาพ* · แถว 2 เพราะคำปฏิเสธที่ขึ้นเป็นคนละประโยคกับที่แถวรอ · แถว 3 เพราะการอัปโหลดแรกก็ไม่เกิด — ทุกแถวที่มีการอัปโหลดสักครั้งขู่กับมัตแตนต์ตัวนี้ · ที่มา `docs/acceptance/47-profile-photo.md:90` |
+| `avatarneverfetches` | The navbar never asks for the photo. The account has one, `/api/me` says so, the upload succeeded - and the button keeps the placeholder, which is what everybody saw in the delivered system for a different reason: it drew Google's `profile_picture`, an address · `if (!profile?.has_photo) {` → `if (true) {` | **แถวที่มันค้ำ** 1 (รูปมาจากเซิร์ฟเวอร์) · **ตายที่** แถว 1 ที่ `toBeVisible` — บัญชีมีรูปแล้ว `/api/me` บอกว่ามี แต่ปุ่มยังเป็นรูปแทน · **แถว 3 ล้มด้วย** เพราะเป็นข้ออ้างเดียวกันถามกับการเปลี่ยนรูป · แถว 2 ยังเขียว · ที่มา `docs/acceptance/47-profile-photo.md:91` `docs/acceptance/47-profile-photo.md:63` |
+| `replacementnotredrawn` | The navbar is never told to ask again, so a replacement leaves the photo that was there. · `if (profile?.has_photo) setPhotoVersion(version => version + 1)` → `if (profile?.has_photo) setPhotoVersion(version => version)` | **แถวที่มันค้ำ** 3 (เปลี่ยนรูปแล้วจอเปลี่ยนตาม) · **ตายที่** แถว 3 ที่การรอคำขอรอบที่สอง — ไม่มีใครบอกอวาตาร์ว่าให้ถามใหม่ รูปเก่าจึงค้างอยู่ · แถว 1 กับ 2 ยังเขียว · ที่มา `docs/acceptance/47-profile-photo.md:94` `docs/acceptance/47-profile-photo.md:69` |
+| `refusalnotsaid` | The refusal is swallowed: the save does nothing, the dialog stays open with no sentence in it, and the person presses the button again. · `setError(err.message)` → `setError('')` | **แถวที่มันค้ำ** 2 (ปฏิเสธแล้วบอกด้วย) · **ตายที่** แถว 2 ที่ `toHaveText` — กล่องยังเปิดอยู่ ไม่มีอะไรเกิดขึ้น และไม่มีประโยคบอกว่าทำไม · ที่มา `docs/acceptance/47-profile-photo.md:93` `docs/acceptance/47-profile-photo.md:425` `docs/acceptance/47-profile-photo.md:65` |
 """
 
 from harness import main

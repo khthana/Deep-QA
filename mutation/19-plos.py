@@ -76,6 +76,33 @@ about confirmation specifically.
     python mutation/19-plos.py codeorder
     cd e2e && npx playwright test 19a        # expect exactly the named failure
     python mutation/19-plos.py restore
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `codeorder` | **ทำอะไรพัง** เรียงต้นไม้ตาม `outcome_code` แทน path ของลำดับ | **แถวที่ตาย** รายการเรียงตามลำดับที่ตั้งไว้ ไม่ใช่ตามรหัส · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:192` |
+| `childpath` | **ทำอะไรพัง** path ของกิ่งเวียนไม่อ่าน `sequence_order` (ข้อหลักคงเดิม) | **แถวที่ตาย** ข้อย่อยเรียงอยู่ใต้ข้อหลักของตัวเอง · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:193` |
+| `ordernotsaved` | **ทำอะไรพัง** การแก้ไขไม่เขียนคอลัมน์ `sequence_order` | **แถวที่ตาย** เปลี่ยนลำดับแล้วแถวขยับจริง · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:194` |
+| `pickeroffersall` | **ทำอะไรพัง** ช่อง *อยู่ใต้ข้อ* เสนอทุกข้อ รวมทั้งตัวเองและลูกหลาน | **แถวที่ตาย** ตัวเลือกข้อหลักไม่เสนอสิ่งที่ server จะปฏิเสธ · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:195` |
+| `hardcancel` | **ทำอะไรพัง** ปุ่ม *ยกเลิก* ในกล่องยืนยันทำสิ่งที่ปุ่มยืนยันทำ | **แถวที่ตาย** ถามยืนยันก่อนลบ และกดยกเลิกแล้วไม่มีอะไรเปลี่ยน · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:196` |
+| `nochildguard` | **ทำอะไรพัง** ทิ้งการถามเรื่องข้อย่อย ปล่อยให้ `deleteOrDeactivate` จัดการ | **แถวที่ตาย** ข้อหลักที่ยังมีข้อย่อย ลบไม่ได้ · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:197` |
+| `saysdeleted` | **ทำอะไรพัง** ตอบ `deactivated: false` ทั้งที่ปิดการใช้งาน | **แถวที่ตาย** PLO ที่ถูกอ้างอิง ถูกปิดการใช้งานแทนการลบ (ครึ่งแถบข้อความ) · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:198` |
+| `hideinactive` | **ทำอะไรพัง** รายการซ่อนข้อที่ปิดการใช้งาน | **แถวที่ตาย** ครึ่งที่แถวยังอยู่ในตาราง · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:199` |
+| `statusignored` | **ทำอะไรพัง** `PUT` ไม่เขียน `is_active` | **แถวที่ตาย** เปิดกลับได้จากหน้าเดิม · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:200` |
+| `nofilter` | **ทำอะไรพัง** `?program_id=` ไม่ถูกใช้ (เล็งใหม่ใน [#101](https://github.com/khthana/Deep-QA/issues/101) หลังจาก `IS NULL OR` หายไป) | **แถวที่ตาย** สามแถว — *ผู้ดูแลภาควิชาเลือกหลักสูตรแล้วรายการเปลี่ยนตาม* ของ #19 บวกสองแถวของ [#101](https://github.com/khthana/Deep-QA/issues/101) วัดทีละแถวด้วย `--grep` · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:201` |
+| `facultyadmin` | **ทำอะไรพัง** ใส่ `FACULTY_ADMIN` กลับเข้า `MAINTAINERS` | **แถวที่ตาย** บัญชีที่ไม่ควรเข้าถึงเลย — ครึ่งที่เป็นกฎ · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:206` |
+| `alwaysadropdown` | **ทำอะไรพัง** หน้ารายการวาด dropdown แม้มีหลักสูตรเดียว | **แถวที่ตาย** สองแถว — *ช่องหลักสูตรไม่ต้องเลือกเมื่อมีหลักสูตรเดียว* ของ #19 บวกแถวกรรมการหลักสูตรของ [#101](https://github.com/khthana/Deep-QA/issues/101) — ตัวที่สองเพิ่งนับได้หลังจาก locator ของตัวกรองเลิกดูเฉพาะ `0501` · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:191` |
+| `alwaysallprograms` | **ทำอะไรพัง** ใส่ตัวเลือก *ทุกหลักสูตร* กลับเข้าตัวกรอง | **แถวที่ตาย** ตัวกรองหลักสูตรไม่มี *ทุกหลักสูตร* อีกต่อไป (แถวเดียว) · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:202` |
+| `landsonthelast` | **ทำอะไรพัง** หน้าจอเลือกหลักสูตรสุดท้ายในสิทธิ์ แทนที่จะเลือกตัวแรก | **แถวที่ตาย** เข้าหน้ามาแล้วอยู่ที่หลักสูตรแรก และแถวช่อง *อยู่ใต้ข้อ* ซึ่งตั้งต้นด้วยข้อเดียวกัน · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:203` |
+| `formkeepsthetable` | **ทำอะไรพัง** ช่อง *อยู่ใต้ข้อ* อ่านจากหลักสูตรที่ตารางกรองไว้ ไม่ใช่ของหลักสูตรที่ฟอร์มอยู่ | **แถวที่ตาย** ช่อง *อยู่ใต้ข้อ* เสนอข้อของหลักสูตรที่ฟอร์มอยู่ (แถวเดียว) · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:204` |
+| `programoptional` | **ทำอะไรพัง** `GET /plos` เลิกปฏิเสธคำขอที่ไม่ระบุหลักสูตร | **แถวที่ตาย** ที่ seam ของ HTTP: *the list refuses to answer without a curriculum* — ตายแถวเดียวใน 717 แถว · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:205` `docs/acceptance/19-programme-learning-outcomes.md:129` |
 """
 
 import os

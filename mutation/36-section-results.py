@@ -35,6 +35,24 @@ own markers.
 Killing them:
 
     cd e2e && npx playwright test 36a
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `chartdrawsthewrongnumbers` | The chart draws every point at four out of five. · `const distance = (value / MAX) * RADIUS` → `const distance = (4 / MAX) * RADIUS` | **แถวที่มันค้ำ** 1 (จุดที่วาดตรงกับตัวเลข) · **ตายที่** แถว 1 **และแถว 2** — ทั้งสองแถวอ่านรูปเทียบกับตัวเลข ซึ่งเป็นทางเดียวที่แถวจะพูดถึงรูปได้ แถว 2 มีมัตแตนต์ของตัวเองอีกตัว · ที่มา `docs/acceptance/36-section-results.md:120` `docs/acceptance/36-section-results.md:50` `docs/acceptance/36-section-results.md:52` |
+| `tickedyearneverreachesthechart` | Ticking a year fetches it, stores it, tabulates it - and the chart is handed only the base series. · `const series = columns.map(one => ({` → `const series = columns.slice(0, 1).map(one => ({` | **แถวที่มันค้ำ** 5 (ปีที่ติ๊กกลายเป็นเส้นที่สอง) · **ตายที่** แถว 2 ตัวเดียว — ตัวเลือกยังตอบ คำขอยังออกไป ตารางยังงอกคอลัมน์ ขาดแต่เส้น · **เลขนี้คือการกวาดก่อน #112** หลังเล็งใหม่มันฆ่าแถว 2 และแถว 8 — ดู §#112 · ที่มา `docs/acceptance/36-section-results.md:121` `docs/acceptance/36-section-results.md:271` `docs/acceptance/36-section-results.md:55` |
+| `blankdrawnasnought` | A blank becomes a nought on the chart: the ring closes through the centre and a marker is planted on an axis nobody was measured on. · `…axes, series, title }) { const count = axes.length` → `…axes, series, title }) { series = series.map(one => ({ ...one, values: one.values.map(valu…` | **แถวที่มันค้ำ** 6 (ช่องว่างไม่ใช่ศูนย์บนกราฟ) · **ตายที่** แถว 3 ตัวเดียว — และ **ตารางยังถูกอยู่** ซึ่งเป็นสภาพที่ทำให้ข้อบกพร่องนี้เห็นด้วยตายาก: ตัวเลขบอกว่ายังไม่ได้วัด รูปข้าง ๆ บอกว่าตกทุกคน · ที่มา `docs/acceptance/36-section-results.md:122` `docs/acceptance/36-section-results.md:59` |
+| `refusalkeepsloading` | The screen stops clearing `loading` when the read is refused, so a ผู้สอน who types another ตอนเรียน's address reads the refusal with *กำลังโหลดข้อมูล…* under it, for ever. · `} finally { // Cleared on the refusal too, not only on the answer. #43's hand-walk // foun…` → `}` | **แถวที่มันค้ำ** 8 (คำปฏิเสธไม่ทิ้งใครไว้รอ) · **ตายที่** แถว 4 ตัวเดียว · เลขนี้เก่าตั้งแต่ตั๋วอื่นแทรกเทสต์ไว้ข้างบน วันนี้คือแถว 5 (*is refused, and is not left waiting*) · ที่มา `docs/acceptance/36-section-results.md:123` |
+| `nocaponsectionaxes` | #112. The cap `RadarChart` exports was enforced by #37 and not here, so one component answered ten outcomes on that screen and every outcome on this one. · `const axes = data.clos.slice(0, MAX_AXES).map(clo => clo.clo_number)` → `const axes = data.clos.map(clo => clo.clo_number)` | **แถวที่มันค้ำ** สิบแกนบนกราฟ · **ตายที่** แถว 7 **และแถว 8** — ทั้งสองแถวนับแกน และไม่มีมัตแตนต์รูปใดที่แยกสองแถวนี้ออกจากกันได้ (#191) · ที่มา `docs/acceptance/36-section-results.md:268` `docs/acceptance/36-section-results.md:257` |
+| `seriesnotcappedtotheaxes` | The other half of the cap, and the half with nothing to see. · `values: one.values.slice(0, MAX_AXES),` → `values: one.values,` | **แถวที่มันค้ำ** เส้นลากผ่านจุดของตัวเอง · **ตายที่** แถว 8 ตัวเดียว ที่ *the line should pass through its own markers* — แถว 7 นับแกนกับอ่านตาราง ทั้งสองอย่างไม่ขยับ · ที่มา `docs/acceptance/36-section-results.md:269` `docs/acceptance/36-section-results.md:259` |
+| `sectioncapnotsaid` | The cap bites and says nothing: ten axes of eleven outcomes, with the eleventh in the table and nothing on the page to say the chart left it off. · `{data.clos.length > MAX_AXES && (` → `{false && (` | **แถวที่มันค้ำ** ประโยคที่บอกว่าเพดานกัดแล้ว · **ตายที่** แถว 7 ตัวเดียว ที่ `toBeVisible()` ของประโยค · ที่มา `docs/acceptance/36-section-results.md:270` `docs/acceptance/36-section-results.md:258` |
 """
 
 from harness import main

@@ -80,6 +80,23 @@ README says to run the census script before sweeping a shared frontend file,
 and this is what it is for.
 
 Row numbers below are `66a`'s tests in the order they are written.
+
+## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
+
+แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
+หลัง `258` เป็นต้นไป สิ่งที่แถวเหล่านี้เป็นจึงเป็นการ**จด**ว่าอะไรตายไปแล้ว ไม่ใช่คำทำนาย
+(#54 — ลงวันที่ ไม่ใช่ลบ) ที่มาของทุกแถวอ้างไว้ในแถวเอง คือตารางมัตแตนต์และแถว ⚙ ของ
+`docs/acceptance/` ไม่ใช่ความจำ **สิ่งที่แถวพวกนี้ไม่ได้บอก**คือจำนวนข้อที่ตายทั้งการกวาด
+เว้นที่ใบรับงานจดไว้ และคำที่คัดมาเป็นคำของวันที่กวาด ไม่ใช่ของวันนี้ (#173)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
+|---|---|---|
+| `landingisahandoffagain` | **แก้อะไร** `GuestRoute` กลับไปพูดว่า `/main` แล้วปล่อยที่เหลือให้ `SidebarItem` คือแฟ้มก่อน [#120](https://github.com/khthana/Deep-QA/issues/120) ทั้งอัน | **assertion ที่ล้ม** `66a` rows 6–7 — จุดที่เบราว์เซอร์**หยุด** ยังเท่าเดิม rows 1–2 จึงยังผ่าน — นี่คือตัวที่บอกว่าแถวซึ่งอ่านแค่*ที่ที่ไปถึง*มองไม่เห็นทางที่เดิน · ที่มา `docs/acceptance/10-application-shell.md:239` `docs/acceptance/10-application-shell.md:36` |
+| `landingstopsattheshell` | **แก้อะไร** `SidebarItem` เลิกย้ายคนที่ยืนอยู่บน `/main` (เงื่อนไขชี้ไปที่ path ที่ไม่มีอยู่) | **assertion ที่ล้ม** `66a` row 8 — คนที่**พิมพ์** `/main` เองค้างอยู่กับ `<div />` ว่าง · ก่อน [#120](https://github.com/khthana/Deep-QA/issues/120) มันฆ่า rows 1–2 หลังจากนั้นการเข้าระบบไม่ผ่านทางนี้อีก มันจึงรอดการกวาด **มัตแตนต์ที่รอดตรงที่ไฟล์ของมันทำนายว่าจะฆ่า คือแถวที่ยังไม่มี** ([#118](https://github.com/khthana/Deep-QA/issues/118)) แถว 8 จึงเขียนขึ้นเพราะมัน · ที่มา `docs/acceptance/10-application-shell.md:240` `docs/acceptance/10-application-shell.md:33` `docs/acceptance/10-application-shell.md:36` |
+| `landingisapathnotarule` | **แก้อะไร** `landingPath` ใน `SidebarItem/menus.js` ส่งทุกคนไป `/main/programs` แทนรายการแรกของเมนูตัวเอง | **assertion ที่ล้ม** `66a` rows 1–2 — ผู้สอนถูกส่งไปหน้าที่เมนูตัวเองไม่มี · **และ rows 6–7 ด้วย แต่ตายที่เงื่อนไขนำ ไม่ใช่ที่ข้ออ้าง** — สิ่งที่สองแถวนั้นบันทึกไว้คือการเดินทางถูกบันทึกจริง ไม่ใช่*ไม่ผ่าน `/main`* · ย้ายจุดยิงมาจาก `SidebarItem` ที่ [#120](https://github.com/khthana/Deep-QA/issues/120) เพราะ**การกวาดบอกว่ามันรอดที่เดิม** การตรวจจุดยึดบอกไม่ได้ เพราะบรรทัดเดิมยังอยู่ · ที่มา `docs/acceptance/10-application-shell.md:241` `docs/acceptance/10-application-shell.md:33` |
+| `landingtakesadetour` | **แก้อะไร** `Login.js` `pushState` ไป `/select-app` อีกครั้งหลัง `reload()` | **assertion ที่ล้ม** `66a` rows 1–3 — เขียนไว้เพื่อแยก *ทางที่เดิน* ออกจาก *ที่ที่ไปถึง* แต่มันฆ่าทั้งสามแถว เพราะ `pushState` ทำให้ router หลุดจากที่อยู่จริง ปลายทางจึงผิดไปด้วย ข้ออ้างของแถวที่ 3 จึงเป็นการให้เหตุผล ไม่ใช่การสาธิต — ดูหัวเรื่องในไฟล์กลายพันธุ์ · ที่มา `docs/acceptance/10-application-shell.md:242` `docs/acceptance/10-application-shell.md:33` `docs/acceptance/10-application-shell.md:36` |
+| `chooserisdeclaredagain` | **แก้อะไร** ประกาศ route `/select-app` ขึ้นใหม่หลัง `ProtectedRoute` ชี้ไปที่ shell | **assertion ที่ล้ม** `66a` row 4 — ที่อยู่นั้นตอบด้วยหน้าจริงแทน 404 · ที่มา `docs/acceptance/10-application-shell.md:243` `docs/acceptance/10-application-shell.md:36` |
+| `portfoliodoorreturns` | **แก้อะไร** เอาปุ่ม *ไปที่ Deep Portfolio* กลับเข้าเมนูผู้ใช้ใน `Navbar.js` | **assertion ที่ล้ม** `66a` row 5 — ประตูออกไปแอปอื่นกลับมาอยู่ในเมนู · ที่มา `docs/acceptance/10-application-shell.md:246` `docs/acceptance/10-application-shell.md:37` |
 """
 
 from harness import main
