@@ -524,7 +524,10 @@ citation.
 - **A test-file argument is matched as a substring** — `51a` also runs `151a`, so a kill count read
   off a command like that is two sheets' rows counted as one. Every such command was right the day
   it was written and expired by a file somewhere else; `python mutation/anchors.py` counts them now.
-  (#154, #158)
+  **A sheet's citation token is matched the same way, and a spec added years later is what
+  makes it ambiguous** — the instrument is right to refuse it, and the fix is the whole file
+  name, with a dated record's old form quoted so it is not read as a citation (#173, #54).
+  (#154, #158, #257)
 - **A documented command that pins an environment value expires on a schedule nothing in the
   repository controls** — so its population is the **value** and not the variable name, and the fix
   is a pointer to the one rule rather than a fresher number (#154 and #158's command, expired by the
@@ -558,7 +561,8 @@ citation.
   re-sweep the ones you did not touch. **A spec that gains a row the mutant can reach expires it
   the same way**, and nothing reports that one: the anchor is still exact and the code untouched,
   so only re-running it says the mutant proves one claim more than its sheet credits it with.
-  (#48, #202, #248)
+  **Predict which, in the new sheet, before the re-sweep.**
+  (#48, #202, #248, #257)
 - **What corrupts a sweep is a repeated path — compare `FILES`, not subject matter**, and ask the
   census script rather than your memory; the figure that decides is the group, not the total.
   (#85, #87, #125)
@@ -1088,6 +1092,14 @@ citation.
   the window instead of closing it, and what says so is moving that other control inside the same
   held window. Ask it of the screens that already took the option, too: there the decision can
   still be right for a reason the option's own wording does not carry. (#221)
+- **An owner's answer comes with a reason, and the reason is a claim like a ticket's
+  numbers** — #228 and #232 from the other side: the answer is the owner's and stands, while
+  the reason it was given on can be false in its own words, and then the thing the owner
+  chose is not the thing they were told they were choosing. Measure the reason, at the layer
+  an instrument can reach rather than the one that needs an eye (#163), and take the
+  measurement back to the owner rather than into the commit message (#228) — with every
+  option priced, because the answer may be the one whose own wording the measurement
+  refuted. (#257)
 - **An owner's decision is about what the person reads, not about the diff that occurs to you
   first** — and the cheapest implementation of it can break a closed ticket. Which closed tickets
   the cheap reading touches is a measurement: run their suites against it before building it, and if
@@ -1240,7 +1252,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Twelve censuses, as instruments. `npm run census` runs all twelve since 30 October 2569, when #249 closed the population `save-window-fields.js` was a red gate over and it went in with nothing changed in the script (#200). Their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241). Not rows and not gates — nothing in the repository runs them, and five of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257). Not rows and not gates — nothing in the repository runs them, and six of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|

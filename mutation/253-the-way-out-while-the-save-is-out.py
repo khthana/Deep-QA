@@ -117,10 +117,17 @@ MUTANTS = {
     # has given up on an upload is kept in the box until it lands. Every way out
     # of this box goes through `close`, the backdrop included, so this is the
     # whole refusal and not one button's.
+    #
+    # Re-aimed on 1 November 2569: #257's fix put `handedBack.current = true`
+    # between the two lines this quoted, so the anchor found nothing and
+    # `anchors.py` said so. What is kept is the claim - `if (busy) return` as
+    # the first statement of `close` - and not the line it was written against
+    # (#203). Re-swept the same day, and that record is on
+    # `docs/acceptance/47-profile-photo.md` §#257.
     'photoboxstays': (
         'photo',
-        '  const close = () => {\n    setFile(null)\n',
-        '  const close = () => {\n    if (busy) return\n    setFile(null)\n',
+        '  const close = () => {\n    handedBack.current = true\n',
+        '  const close = () => {\n    if (busy) return\n    handedBack.current = true\n',
     ),
 
     # 5 - the shell never told. `47a`'s own rows read the photo changing; this

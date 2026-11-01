@@ -183,8 +183,58 @@ export default function ProfilePhotoDialog({
    */
   const inputRef = useRef(null)
 
+  /*
+   * Whether the person has already handed this box back — #257,
+   * 1 พฤศจิกายน 2569.
+   *
+   * The owner's answer of 31 ตุลาคม 2569 on #253 was *nothing is said*, and its
+   * reason was that closing this box unmounts it, so a refusal reaches
+   * `setError` on a component nobody is drawing. The per-frame measurement of
+   * 1 พฤศจิกายน 2569 refuted that reason in its own words: `RetiringPresence`
+   * keeps this component mounted for the exit tween - 195 to 227 milliseconds,
+   * measured on this box over eight arms rather than taken from #169's other
+   * one - and a `setState` on a mounted component re-renders it whatever
+   * element the parent is handing down, so a refusal landing in that window was
+   * **drawn** at 0.93 to 0.97 opacity and faded out with the box over about
+   * 160ms. #188's rule does not reach it: this `setError` is not in the same
+   * task as the removal, it arrives a round trip later.
+   *
+   * Answered on 1 พฤศจิกายน 2569, option ข: silent in that window too, which is
+   * what ข้อ ก's own wording described. The flag goes **up** at the press and is
+   * read in the `catch`, which is the opposite way round from #254's `pwdOpening`
+   * on the change-password box, and for the reason the paragraph above gives:
+   * this box is unmounted on the way out, so there is nothing to clear and
+   * nothing that outlives it. The next open is a fresh mount reading
+   * `useRef`'s initial value.
+   *
+   * A boolean is enough for the same reason a key was needed there (#185, #254):
+   * one instance of this component belongs to exactly one opening. What would
+   * make it a key is this box being reopened **inside** the tween, so that the
+   * live instance is one whose flag is already up - measured on
+   * 1 พฤศจิกายน 2569 as unreachable, because reopening it takes two presses
+   * through the avatar menu and the fifth arm of
+   * `e2e/probes/257-the-refusal-inside-the-tween.spec.js` carries that number.
+   * The day one press can reopen it, this is #254's defect inverted and the flag
+   * has to say which opening it is about (#54).
+   *
+   * The flag names the way out the **person** took, which is not every way this
+   * box leaves the screen: `Navbar.photoSaved` also sets `showPhotoDialog` to
+   * false, and it runs inside `submit`'s own `try`, so a throw from there would
+   * reach the `catch` below with this flag still down. Measured on
+   * 1 พฤศจิกายน 2569 that cannot happen: `photoSaved` sets state and then awaits
+   * `reload`, which is `AuthContext.load`, and that function catches everything
+   * and ends in a `finally` - nothing in it can throw. That is a dated claim and
+   * not a guard (#54). The day anything in `photoSaved` can raise, the condition
+   * to read is not *who handed the box back* but *is this box still on the
+   * screen*, which is the parent's flag and so a prop or a second ref rather
+   * than a wider reading of this one (#242's rule: the reason names its own
+   * remedy).
+   */
+  const handedBack = useRef(false)
+
   /** Every way out of this box: the button, the backdrop, and an ended session. */
   const close = () => {
+    handedBack.current = true
     setFile(null)
     setError('')
     setBusy(false)
@@ -210,6 +260,13 @@ export default function ProfilePhotoDialog({
         close()
         return
       }
+      // Nobody is being shown this box any more, and for the 195 to 227
+      // milliseconds it goes on fading it would be drawn in it (#257, the
+      // paragraph at `handedBack` above). The answer of 1 พฤศจิกายน 2569 is
+      // that the sentence is not said anywhere, so the window says nothing
+      // either. The success path is untouched: `onSaved` above has already run
+      // by then, which is `253a`'s second row.
+      if (handedBack.current) return
       setError(err.message)
     } finally {
       setBusy(false)

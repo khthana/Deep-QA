@@ -86,6 +86,22 @@ const {
  * row waits past the tween before reading, which is a limit stated rather than
  * a settle point chosen for comfort (#209); #257 carries the measurement.
  *
+ * **Measured and answered on 1 พฤศจิกายน 2569 (#257).** The window is 195 to
+ * 227ms on this box, read per frame over eight arms rather than taken from
+ * #169's other one, and the refusal landing inside it was **drawn** at 0.93 to
+ * 0.97 opacity and faded out with the box over about 160ms, with the browser's
+ * own `renderTime` for it. So the reason the owner's answer of 31 ตุลาคม 2569
+ * rested on was false in its own words, which made it a question to re-ask
+ * rather than a sentence to write down (#228). **Answered: option ข, silent in
+ * that window too**, which is what ข้อ ก described; the guard is in
+ * `ProfilePhotoDialog.submit`'s `catch` and the row that holds it is
+ * `e2e/tests/257a-the-refusal-inside-the-tween.spec.js`.
+ *
+ * The third row below is unchanged by that: it reads the same silence at the
+ * same settle point, and what has changed is that the silence is now whole
+ * rather than true only past the tween. Its limit paragraph is dated rather
+ * than deleted (#54), because it is what the row was written against.
+ *
  * ## What this file writes
  *
  * Nothing. Every write is held at the route and answered there, so neither the
@@ -145,6 +161,12 @@ const PROFILE = '/api/me';
  * instead of at the claim, with the numbers it was showing (#139, #209). What
  * no wait of any length can answer is whether the sentence was on the screen
  * inside the tween; that needs a sample per frame (#164) and is #257.
+ *
+ * **It has a measured reason since 1 พฤศจิกายน 2569**, which is what #257 owed
+ * it: the window is 195 to 227ms over eight arms, so 400 is past it by about
+ * its own width again. The numbers are in the docblock above and on
+ * `docs/acceptance/47-profile-photo.md` §#257. Before that it was a number with
+ * room left in it against #169's 190, which was measured on the other box.
  */
 const GONE_MS = 400;
 

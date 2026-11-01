@@ -16847,3 +16847,69 @@ count the gate is red over, the two partial sheets being red as well (#174 again
 ticket that cites it); and the real-store test printed 897 `NO PREDICTION` lines into the run's
 output, which is an instrument speaking over the suite rather than asserting anything — it now
 swallows them and asserts the count instead.
+
+## #257 — the reason an owner's answer stood on, and the nine frames that refuted it
+
+The owner answered **ก — say nothing** on #253 on 31 October 2569, and the reason given with the
+answer was that closing this box unmounts the component, so the refusal reaches `setError` on a
+component nobody is drawing. The answer is the owner's and stands; the reason is a claim like a
+ticket's numbers, and this one is **false in its own words**. `RetiringPresence` keeps the removed
+child mounted for its exit tween, and a `setState` on a still-mounted component re-renders it:
+measured on this box itself, over eight arms of two runs, it stays in the document for **195 to 227
+milliseconds** — not the 190 of #169, which was measured on the password box — and a refusal landing
+at the top of that window was drawn on **nine frames**, first at 37 ms at an effective opacity of
+**0.966**, fading with the box over about 160 ms (0.966, 0.703, 0.510, 0.317, 0.163, 0.019, 0.003,
+0.0001). That is the box's own fade and not a dimmed draft, and `PerformanceObserver` with
+`type: 'element'` reported a `renderTime` for it, which is the browser's answer rather than an
+inference (#164, #188).
+
+**The control arm is what makes the other three a measurement.** At `GONE_MS = 400`, which is where
+`253a`'s first row reads, the sentence was on **0** frames — so that row was right about what it
+saw, and right to say on its own face that no length of wait can answer *was it ever on the screen*
+(#164). A sampler is also a locator built out of a source string, so the sentence was read out of
+the file rather than out of memory, or the probe would have answered *never* on both sides (#152,
+#118). Sixty to sixty-two frames ran on after the last sighting, which is what says the sampler was
+still alive when it stopped seeing it rather than having stopped.
+
+**So the measurement went back to the owner, not into the commit message** (#228). Its four options
+were priced first: keep today (0 lines, and the person gets a red bar they cannot finish reading);
+be silent in that window too (one ref, three lines, one row, two mutants); send the refusal up to
+the shell (`Navbar` has no surface for a sentence, which #254 had just decided, so a new prop and
+rows on both sides — and a sentence the delivered UI does not have, which is a second Out-of-Scope
+question); and remove the window (`RetiringPresence` would need a *do not fade* instruction, a new
+mechanism in a component with no rows at all, and the person would see the box vanish, which is the
+thing #169's `visible` arm exists to catch — 0 frames instead of 13). The owner answered **ข** on
+1 November 2569: be silent in that window too, which is what option ก's own wording described.
+
+**The guard is a boolean and not #254's key, and that is a measurement rather than a judgement**
+(#141). This flag goes **up** at the press, where `pwdOpening` went up at the answer, and a flag
+raised while nobody is looking is still raised when they come back (#169) — so what makes a boolean
+enough is that one instance of this component belongs to one opening. The probe's fifth arm pressed
+*ยกเลิก* and reopened the box as fast as the driver could: the heading marks came back `[1, 2]`, a
+new node and so a new mount, at **676 ms** from the press, with the driver's own two clicks at 226
+and 664 ms, against a window of 215. The day one press can reopen this box, that is #254's defect
+upside down and the flag has to say **which** opening it is of (#54, #185).
+
+**The new row was run against the unfixed code before its mutant was written** (#203): red at its
+own claim, with both lines above it green — the sampler ran, and the box really was in the document
+for more than one frame. Those two readings have no mutant of their own, because nothing in `src/`
+can take that window away; they stand as a net that says what can be measured (#164, #171). The
+claim is read **above** them, so the mutant takes the claim away and not the precondition (#233).
+
+**Two of #253's mutants gained the row, and nothing reported it** (#248, #202). `257a` presses
+*ยกเลิก* while the upload is out, so it walks through the code both of them edit, their anchors
+still exact and their code untouched; only re-running them said so. `photocancelbusy` kills it, and
+kills it **at the timeout** on `locator.click` rather than at an assertion, because a disabled
+button is read by waiting (#139); `photoboxstays` kills it at the claim; `photoquietsaved` and
+`47:refusalnotsaid` do not, which was measured rather than inferred (#107, #68). `photoboxstays`
+also had to be **re-aimed** the same day, the fix having written a line between the two its anchor
+quoted — what was kept is the claim, *`if (busy) return` is the first statement of `close`*, and not
+the line (#203), which `anchors.py` is what says so while the change is being made (#202).
+
+**And a short citation token became ambiguous the day a spec was added.** `anchors.py` resolves a
+citation as a substring of the path on purpose (#154, #158), so `57a`:89 in `docs/acceptance/57-pager.md`
+matched both `57a-pager.spec.js` and the new `257a-the-refusal-inside-the-tween.spec.js`, and the
+instrument refused it. The instrument is right: the fix is the full file name in the two live
+citations, with the dated record keeping its old form quoted so that the question does not read it
+as a citation at all (#173, #54) — and my own first attempt at that note re-created the ambiguity
+by quoting `` `57a:89` `` inside one code span, which is the same mistake one layer up.

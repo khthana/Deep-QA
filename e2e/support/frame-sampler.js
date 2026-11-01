@@ -20,17 +20,39 @@ const { expect } = require('@playwright/test');
  * `document.body.innerText` inside the callback rather than a locator, because
  * a locator read is executed by the renderer and queues behind the drawing it
  * is trying to catch (#170); in here the DOM is whatever the last commit left.
+ *
+ * `alsoShowing` is an optional second reading, added by #257: a selector and the
+ * text one of its elements must carry, counted per frame as `alsoFrames`. It is
+ * what lets a row say that the window it sampled **existed** - a sampler that
+ * read nothing on a screen which took its subject away instantly has proved
+ * that nothing can be drawn in a window that is not there, which is the vacuous
+ * pass a reader scoped to something never drawn gives (#171). Left out, nothing
+ * extra is read and `alsoFrames` stays 0, so the callers that came before it
+ * are untouched; the reading is by `textContent` on a selector rather than
+ * through `innerText`, because the words a row wants to find this way are
+ * usually a heading the menu that opens it carries too.
  */
-async function watchForTheSentence(page, sentence) {
-  await page.evaluate((said) => {
-    window.__sightings = { frames: 0, saying: 0 };
-    const tick = () => {
-      window.__sightings.frames += 1;
-      if (document.body.innerText.includes(said)) window.__sightings.saying += 1;
+async function watchForTheSentence(page, sentence, alsoShowing = null) {
+  await page.evaluate(
+    ([said, also]) => {
+      window.__sightings = { frames: 0, saying: 0, alsoFrames: 0 };
+      const tick = () => {
+        window.__sightings.frames += 1;
+        if (document.body.innerText.includes(said)) window.__sightings.saying += 1;
+        if (
+          also &&
+          Array.from(document.querySelectorAll(also.selector)).some(
+            (node) => node.textContent === also.text,
+          )
+        ) {
+          window.__sightings.alsoFrames += 1;
+        }
+        window.__frameTick = requestAnimationFrame(tick);
+      };
       window.__frameTick = requestAnimationFrame(tick);
-    };
-    window.__frameTick = requestAnimationFrame(tick);
-  }, sentence);
+    },
+    [sentence, alsoShowing],
+  );
   return {
     read: () =>
       page.evaluate(() => {
@@ -46,11 +68,17 @@ async function watchForTheSentence(page, sentence) {
  * The frame count is asserted as well as the sightings: a sampler that never
  * ran reports nothing said, which is the answer the row wants and no evidence
  * at all.
+ *
+ * The reading is handed back, for a row with a second precondition of its own to
+ * assert below the claim: the order is the claim first and what follows from it
+ * second, so that a mutant takes the claim away rather than the reading above it
+ * (#233).
  */
 async function neverSaid(watch, what) {
   const seen = await watch.read();
   expect(seen.frames, 'frames sampled').toBeGreaterThan(10);
   expect(seen.saying, what).toBe(0);
+  return seen;
 }
 
 module.exports = { watchForTheSentence, neverSaid };
