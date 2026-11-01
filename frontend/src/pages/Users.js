@@ -290,20 +290,37 @@ const matchesSearch = (term, draft) => {
  * is the cheaper half; the day a third caller wants it, the extraction and the
  * re-aim go together.
  *
- * **The role filter cannot be asked of an import's answer.** The role a CSV row
- * names is resolved on the server - `backend/routes/users.js`' `readRow`
- * refuses a row whose role it cannot read - and then not published:
- * `backend/auth/administration.js`' `COLUMNS` is a curated list and carries no
- * role, on purpose, so the created rows this handler is given have no role to
- * compare. The half that is missing is *a file that writes accounts whose role
- * is not the one the table is filtered to says nothing*, and it is quiet rather
- * than wrong - #119: say which half, with a date, rather than moving the mark.
- * [#256](https://github.com/khthana/Deep-QA/issues/256) is the queue for it,
- * and what would close it is the answer carrying the role, which is a change to
- * what that endpoint publishes and so not this ticket's to make.
+ * **All three since 1 พฤศจิกายน 2569, which is #256's answer ข้อ ก.** Until
+ * then this asked two: the role a CSV row names is resolved on the server -
+ * `backend/routes/users.js`' `readRow` refuses a row whose role it cannot read
+ * - and was then not published, so the rows this handler was given had no role
+ * to compare, and *a file that writes accounts whose role is not the one the
+ * table is filtered to* said nothing. That was the quiet half, dated here
+ * rather than marked (#119). The owner's answer was to publish it from the
+ * import route alone, where the value is already in hand; what the ticket had
+ * proposed - `backend/auth/administration.js`' `COLUMNS`, so every read carries
+ * it - could not be done at all, a grant being `user_roles` and not a column of
+ * `users` (#232, and the route's own comment has the measurement).
+ *
+ * So the role question is asked here the way the server asks it: not *is this
+ * the row's role* but *does this account hold an active grant of that role*,
+ * which is the `EXISTS` above. An imported account holds exactly one and the
+ * answer says which, so the two readings agree on every row a file can write;
+ * what they would not agree on is an account with two grants, which this
+ * endpoint cannot make. `?? []` answers *holds no such grant* for a row that
+ * carries no key at all - the shape before 1 พฤศจิกายน 2569 - and
+ * nothing here screens a `roles` that arrived as something other than a list:
+ * the handler asks `Array.isArray` of the list it iterates and not of each
+ * row's keys, which is one layer out of this predicate's reach (#123).
  */
 const importedOutsideTheFilters = (filters, row) => {
   if (filters.status && filters.status !== row.status) return true
+  if (
+    filters.role &&
+    !(row.roles ?? []).some(grant => grant.role_id === filters.role)
+  ) {
+    return true
+  }
   const term = String(filters.q ?? '').trim()
   return Boolean(term) && !matchesSearch(term.toLowerCase(), row)
 }

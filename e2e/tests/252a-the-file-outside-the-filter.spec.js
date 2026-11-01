@@ -44,9 +44,12 @@ const { openUsers, search, userRow, importUsers } = require('../support/users-sc
  *   แฟ้มนี้ถือ `Students` ไว้เป็นตัวแทน เพราะทั้งสามเรียกกฎร่วมอันเดียวกัน (#68: สำมะโนถือจอ
  *   ที่ใช้กลไกร่วม)
  * - **สามคำถาม** — `Users` ไม่มีตัวกรองรูปนั้นเลย `importedOutsideTheFilters` ในแฟ้มของจอ
- *   เองถามคำค้นและสถานะกับแถวที่เขียน และ **ถามบทบาทไม่ได้** เพราะคำตอบของการนำเข้า
- *   ไม่ถือบทบาทมา (`COLUMNS` ของ `backend/auth/administration.js` คัดไว้โดยเจตนา) —
- *   ครึ่งที่เงียบนั้นลงวันไว้ที่ docblock ของมันและคิวของมันคือ #256 (#119)
+ *   เองถามคำค้น สถานะ และ — **ตั้งแต่ 1 พฤศจิกายน 2569** — บทบาท กับแถวที่เขียน
+ *   ถึง 30 ตุลาคม 2569 มันถามบทบาทไม่ได้ เพราะคำตอบของการนำเข้าไม่ถือบทบาทมา และ
+ *   ครึ่งที่เงียบนั้นลงวันไว้ที่ docblock ของมัน คิวของมันคือ #256 (#119) ซึ่งเจ้าของงาน
+ *   ตอบข้อ ก ว่า **เฉพาะคำตอบของการนำเข้า**ถือบทบาทมา ไม่ใช่ `COLUMNS` ของ
+ *   `backend/auth/administration.js` ซึ่งทำแทนไม่ได้อยู่แล้ว (บทบาทอยู่ที่ `user_roles`
+ *   ไม่ใช่คอลัมน์ของ `users` — #232) แถว 6 กับ 7 ข้างล่างคือข้อนั้น
  *
  * แถวคุมของแต่ละกลไกคือแฟ้มเดียวกันที่แถวอยู่ **ใน** รายการ — เกณฑ์ที่ตอบว่า *ไม่* ต้องมีแถว
  * เท่ากับเกณฑ์ที่ตอบว่า *ใช่* (#48) และแถวคุมคือสิ่งที่ฆ่ามัตแตนต์ *พูดทุกครั้ง*
@@ -61,7 +64,9 @@ const { openUsers, search, userRow, importUsers } = require('../support/users-sc
  * - **ไม่ได้พูดถึง `ProgramSubjects` กับ `Subjects`** ทั้งสองเรียกกฎร่วมอันเดียวกับ `Students`
  *   และสำมะโน `frontend/scripts/rows-outside-the-filter.js` ถือไว้ตั้งแต่ 30 ตุลาคม 2569
  *   ว่าทั้งสี่จุดเมานต์พูดประโยคนี้
- * - **ไม่ได้พูดเรื่องบทบาทของ `Users`** นั่นคือ #256 และเป็นครึ่งที่เงียบ ไม่ใช่ครึ่งที่ผิด
+ * - **เรื่องบทบาทของ `Users` เคยไม่อยู่ในแฟ้มนี้** บรรทัดนี้ถึง 31 ตุลาคม 2569 อ่านว่า
+ *   *ไม่ได้พูดเรื่องบทบาทของ `Users` นั่นคือ #256 และเป็นครึ่งที่เงียบ ไม่ใช่ครึ่งที่ผิด* —
+ *   #256 ปิดเมื่อ 1 พฤศจิกายน 2569 และแถว 6 กับ 7 คือครึ่งนั้น
  * - **ไม่ได้พูดว่าถ้อยคำถูกต้องไหม** ถ้อยคำเป็นของเจ้าของงาน (`docs/06` §Out of Scope) และ
  *   ประโยคนี้เป็นประโยคที่สองของตระกูล เพราะประโยคของ #247 พูดว่า *แถวนี้* ซึ่งแฟ้ม N แถว
  *   ถือไม่ได้
@@ -111,6 +116,9 @@ const notice = page => page.getByRole('status');
 
 /** The สถานะ filter, found by the sentinel option it carries (#180). */
 const statusBox = page => page.locator('select:has(option:text-is("ทุกสถานะ"))');
+
+/** The บทบาท filter, found the same way — rows 6 and 7, #256. */
+const roleBox = page => page.locator('select:has(option:text-is("ทุกบทบาท"))');
 
 test('row 1: a file whose students belong to another programme', async ({ page }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);
@@ -274,5 +282,90 @@ test('row 5: the สถานะ filter, which every imported account is outside
   await expect(
     userRow(page, 'row.five.252@kmitl.ac.th'),
     'over a list that does not hold it',
+  ).toHaveCount(0);
+});
+
+test('row 6: the บทบาท filter, which the answer could not be asked about until #256', async ({
+  page,
+}) => {
+  // The third of this screen's three questions, and the one that did not exist
+  // before 1 พฤศจิกายน 2569: the import answer now carries each account's
+  // grant, so *a file that writes teachers over a table filtered to programme
+  // managers* is a list that holds none of the rows the file made. Its own row
+  // because a mutant that breaks one clause must leave the others standing
+  // (#97), and the question is asked the way the server filters - a grant the
+  // account holds, not the role the file named.
+  await signIn(page, ACCOUNTS.systemAdmin);
+  await openUsers(page);
+  const header = headerOf(await downloadUsersTemplate(page));
+
+  await Promise.all([
+    page.waitForResponse(
+      answer => new URL(answer.url()).searchParams.get('role') === 'PROG_MANAGER',
+    ),
+    roleBox(page).selectOption('PROG_MANAGER'),
+  ]);
+
+  const written = await importUsers(
+    page,
+    csv(
+      header,
+      lineFor(
+        header,
+        account({ user_id: '91252006', email: 'row.six.252@kmitl.ac.th' }),
+      ),
+    ),
+  );
+  expect(written.status()).toBe(201);
+
+  await expect(
+    notice(page),
+    'the file wrote a teacher and the table is filtered to another role',
+  ).toHaveText(SOME_IMPORTED_OUTSIDE);
+  await expect(
+    userRow(page, 'row.six.252@kmitl.ac.th'),
+    'over a list that does not hold the account',
+  ).toHaveCount(0);
+});
+
+test('row 7: the same file, whose account holds the role the table is filtered to, says nothing', async ({
+  page,
+}) => {
+  // The control for the row above. The search term is here as well as the role
+  // filter, and not for the claim: filtered to *อาจารย์ผู้สอน* alone, a list of
+  // ten rows ordered by address need not hold the account this file wrote, and
+  // a precondition that failed for that reason would read as this sentence
+  // being wrong. The term narrows the list to the row, which is what makes the
+  // reading below about the role (#164).
+  await signIn(page, ACCOUNTS.systemAdmin);
+  await openUsers(page);
+  const header = headerOf(await downloadUsersTemplate(page));
+
+  await Promise.all([
+    page.waitForResponse(answer => new URL(answer.url()).searchParams.get('role') === 'TEACHER'),
+    roleBox(page).selectOption('TEACHER'),
+  ]);
+  await search(page, TERM);
+
+  const written = await importUsers(
+    page,
+    csv(
+      header,
+      lineFor(
+        header,
+        account({ user_id: '91252007', email: `row.seven.${TERM}@kmitl.ac.th` }),
+      ),
+    ),
+  );
+  expect(written.status()).toBe(201);
+
+  await expect(importedLine(page), "the panel's own report, which is the").toBeVisible();
+  await expect(
+    userRow(page, `row.seven.${TERM}@kmitl.ac.th`),
+    'precondition of the claim below: the file was written and the list redrawn',
+  ).toHaveCount(1);
+  await expect(
+    notice(page),
+    'and the screen adds nothing over a list that holds the account the file made',
   ).toHaveCount(0);
 });

@@ -553,7 +553,38 @@ function userRoutes(pool) {
             'IMPORT_USERS',
             onUser(written.user.user_id),
           );
-          return { ok: true, row: written.user };
+          // The grant, which the row `insertAccount` returns cannot carry -
+          // #256, the owner's answer ข้อ ก of 1 พฤศจิกายน 2569.
+          //
+          // `Users` filters its table by three questions and its import
+          // sentence could ask two of them, because the role a CSV row names is
+          // resolved here and then not published (#252's quiet half, dated in
+          // `frontend/src/pages/Users.js`). What the ticket proposed - publish
+          // it at `auth/administration.js`' `COLUMNS`, so every read carries it
+          // - is not a thing that list can do: a grant is `user_roles` and not a
+          // column of `users`, `RETURNED` is `COLUMNS` with the alias stripped,
+          // and a subquery over the grants inside the INSERT's own RETURNING
+          // would run before `insertAccount` writes the grant and answer `[]`
+          // exactly where this needs it (#232: an option that names a state the
+          // mechanism cannot carry is no option). So the value comes from where
+          // it is already known, which is this callback's own `role`.
+          //
+          // Published as `roles`, in the shape `GET /users` publishes, so the
+          // screen asks the question the server filters by - EXISTS over the
+          // account's active grants - rather than a shape of its own (#96,
+          // #174). An imported account holds exactly the one grant
+          // `insertAccount` wrote, which is why one element is the whole truth
+          // here and not a convenience.
+          //
+          // Only here. The owner chose this over the same line in
+          // `insertAccount`, which would have published it from `POST /users`
+          // as well; `backend/test/users.test.js` holds a row on that, because
+          // the declined option is only a decision once something breaks when
+          // it is made to run (#48).
+          return {
+            ok: true,
+            row: { ...written.user, roles: [{ role_id: role.role_id, scope_id: role.scope_id }] },
+          };
         },
       });
 

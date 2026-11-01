@@ -963,6 +963,76 @@ test('importing a valid spreadsheet', async (t) => {
     );
   });
 
+  await t.test("answers with each row's grant, in the shape the list publishes", async () => {
+    // #256, the owner's answer ข้อ ก of 1 พฤศจิกายน 2569. `Users` filters its
+    // table by role and its import sentence could not ask that question,
+    // because the row `insertAccount` returns carries no grant - `COLUMNS` is a
+    // curated list of columns of `users` and a grant is not one of them. The
+    // import route publishes it from the value it already holds, in the shape
+    // `GET /users` publishes (`roles`, each with its scope), so the screen asks
+    // the question the server filters by rather than one of its own.
+    const admin = await signInAs('U_ADMIN');
+
+    const response = await importCsv(
+      admin,
+      csvOf([
+        {
+          user_id: 'IMP_ROLE_T',
+          email: 'improlet@kmitl.ac.th',
+          first_name_th: 'บทบาท',
+          last_name_th: 'สอน',
+          department_id: DEPT_COMPUTER,
+          role_id: 'TEACHER',
+          scope_id: DEPT_COMPUTER,
+        },
+        {
+          user_id: 'IMP_ROLE_P',
+          email: 'improlep@kmitl.ac.th',
+          first_name_th: 'บทบาท',
+          last_name_th: 'หลักสูตร',
+          program_id: PROGRAM_THAI,
+          department_id: DEPT_COMPUTER,
+          role_id: 'PROG_MANAGER',
+          scope_id: PROGRAM_THAI,
+        },
+      ]),
+    );
+
+    assert.equal(response.status, 201, JSON.stringify(response.body.errors));
+    // Two rows with two different grants, so a route publishing a constant -
+    // or the first row's grant for every row - is not an answer that passes.
+    assert.deepEqual(
+      response.body.users.map((row) => [row.user_id, row.roles]),
+      [
+        ['IMP_ROLE_T', [{ role_id: 'TEACHER', scope_id: DEPT_COMPUTER }]],
+        ['IMP_ROLE_P', [{ role_id: 'PROG_MANAGER', scope_id: PROGRAM_THAI }]],
+      ],
+    );
+  });
+
+  await t.test('while the single-account answer still publishes no grant', async () => {
+    // The other half of the same answer, and the reason it is a row: the owner
+    // chose the import route over `insertAccount`, where the same line would
+    // have published the grant from `POST /users` as well. Nothing breaks when
+    // a declined option is made to run unless something holds it (#48), and
+    // this is what holds it.
+    const admin = await signInAs('U_ADMIN');
+
+    const created = await create(admin, {
+      user_id: 'NEW_NOROLE',
+      email: 'newnorole@kmitl.ac.th',
+      title_th: 'นาย',
+      first_name_th: 'ไม่มี',
+      last_name_th: 'บทบาท',
+      department_id: DEPT_COMPUTER,
+      password: 'deep-core-new',
+      role: { role_id: 'TEACHER', scope_id: DEPT_COMPUTER },
+    });
+
+    assert.equal(created.status, 201, created.body.message);
+    assert.equal(created.body.user.roles, undefined);
+  });
+
   await t.test('reads a quoted field containing a comma', async () => {
     const admin = await signInAs('U_ADMIN');
 
