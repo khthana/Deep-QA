@@ -8,6 +8,7 @@
 แถวที่ถูกฆ่าอยู่ใน `e2e/tests/243a-the-form-that-sent-the-save-twice.spec.js`
 
     cd e2e && npx playwright test tests/243a-the-form-that-sent-the-save-twice.spec.js
+    cd e2e && npx playwright test tests/258a-the-box-opened-while-the-change-was-out.spec.js
 สามแถว · ใบ `docs/acceptance/10-application-shell.md` (สองแถวแรก) กับ
 `docs/acceptance/50-sign-in-screens.md` (แถวที่สาม)
 
@@ -36,28 +37,36 @@
 
 | ชื่อ | สิ่งที่มันทำ | สิ่งที่มันฆ่า |
 |---|---|---|
-| `oldpasswordlive` | เอา `disabled={sending}` ออกจากช่องรหัสผ่านเดิม คือโค้ดก่อนตั๋วนี้เป๊ะ ๆ (#115) | ข้ออ้างที่ 1 ของแถว 1 |
+| `oldpasswordlive` | เอา `disabled={pwdBusy}` ออกจากช่องรหัสผ่านเดิม คือโค้ดก่อนตั๋วนี้เป๊ะ ๆ (#115) | ข้ออ้างที่ 1 ของแถว 1 |
 | `newpasswordlive` | เช่นเดียวกันที่ช่องรหัสผ่านใหม่ | ข้ออ้างที่ 2 ของแถว 1 |
 | `confirmpasswordlive` | เช่นเดียวกันที่ช่องยืนยัน | ข้ออ้างที่ 3 ของแถว 1 |
-| `savelive` | เอา `disabled={sending}` ออกจากปุ่ม *บันทึกรหัสใหม่* | ข้ออ้างที่ 4 ของแถว 1 **และข้ออ้างของแถว 2** — การกดครั้งที่สองส่งคำขอที่สองจริง ซึ่งเป็นข้อบกพร่องที่ใบนี้วัดได้ |
-| `flagneverlowered` | เอา `finally { setSending(false) }` ออก ธงขึ้นแล้วไม่ลง | ข้ออ้างสุดท้ายของแถว 2 — ช่องกลับมากดได้หลังคำปฏิเสธ ซึ่งเป็นข้ออ้างที่สี่ข้อข้างบนทั้งหมดยังจริงอยู่ขณะที่มันเท็จ (#227) |
-| `cancelclosed` | ให้ *ยกเลิก* ของกล่องนี้อ่าน `disabled={sending}` คือข้อเสนอที่เจ้าของงานปฏิเสธเมื่อ 26 ต.ค. 2569 ทำให้รันได้ (#48) | ข้ออ้างที่ 5 ของแถว 1 |
+| `savelive` | เอา `disabled={pwdBusy}` ออกจากปุ่ม *บันทึกรหัสใหม่* | ข้ออ้างที่ 4 ของแถว 1 **และข้ออ้างของแถว 2** — การกดครั้งที่สองส่งคำขอที่สองจริง ซึ่งเป็นข้อบกพร่องที่ใบนี้วัดได้ |
+| `flagneverlowered` | เอาการลงธงใน `finally` ออก ธงขึ้นแล้วไม่ลง | ข้ออ้างสุดท้ายของแถว 2 — ช่องกลับมากดได้หลังคำปฏิเสธ ซึ่งเป็นข้ออ้างที่สี่ข้อข้างบนทั้งหมดยังจริงอยู่ขณะที่มันเท็จ (#227) · และข้ออ้างสุดท้ายของแถวที่สองของ `258a` ตั้งแต่ 1 พ.ย. 2569 ดูหัวข้อข้างล่าง |
+| `cancelclosed` | ให้ *ยกเลิก* ของกล่องนี้อ่าน `disabled={pwdBusy}` คือข้อเสนอที่เจ้าของงานปฏิเสธเมื่อ 26 ต.ค. 2569 ทำให้รันได้ (#48) | ข้ออ้างที่ 5 ของแถว 1 · และ **สองแถวของ `254a` กับสองแถวของ `258a`** ซึ่งใช้ปุ่มนั้นเป็น**เครื่องมือ**จัดสถานการณ์ ไม่ใช่เป็นเรื่องที่อ้าง (#199, #221) |
 | `loginformstays` | ให้ `pages/Login.js` วาดฟอร์มไว้แทนที่จะสลับเป็นสถานะกำลังโหลด คือกลไกที่เหตุผลข้างแฟ้ม `LoginForm.js` ยืนอยู่บน ถูกถอดออก | ข้ออ้างของแถว 3 |
+
+ชื่อของ attribute ในสามแถวแรกกับแถว `savelive` อ่านว่า `disabled={sending}` จนถึง
+1 พ.ย. 2569 เมื่อ #258 เปลี่ยนธงของกล่องนี้เป็นตัวที่ถือการเปิดที่ส่ง ความผิดที่
+มัตแตนต์ทำไม่เปลี่ยน คือตัวควบคุมนั้นไม่ถือธงอะไรเลย (#203, #54)
 
 `savelive` ฆ่าสองแถว ซึ่งไม่ใช่ข้ออ้างเดียวที่นับสองครั้ง แต่เป็นข้ออ้างเรื่อง**การไปถึง**
 สองข้อ (#191): แถว 1 อ่านว่าปุ่มถูกปิด แถว 2 อ่านว่าการกดมันไม่ส่งอะไร ซึ่งเป็นคนละ
 ประโยคและเป็นประโยคที่ทำให้ใบนี้ไม่ใช่เรื่องของค่าที่แยกทางอย่างเดียว
 
 ไม่มีมัตแตนต์ของ *ตา* ที่เปิดดูรหัสผ่าน — มันไม่ใช่ช่องกรอก และการเปิดดูสิ่งที่พิมพ์ไว้
-ไม่เปลี่ยนสิ่งที่กำลังถูกส่ง ซึ่งเป็นทั้งหมดที่ธงนี้เกี่ยวกับ เหตุผลนั้นอยู่ข้าง `sending`
-ใน `Navbar.js`
+ไม่เปลี่ยนสิ่งที่กำลังถูกส่ง ซึ่งเป็นทั้งหมดที่ธงนี้เกี่ยวกับ เหตุผลนั้นอยู่ข้าง
+`sendingFor` ใน `Navbar.js` (ชื่อนั้นคือ `sending` จนถึง 1 พ.ย. 2569)
 
 ## ตอนกวาด
 
 `frontend/src/components/Navbar.js` อยู่ใน `10-application-shell.py`, `47-profile-photo.py`,
-`111-refusals-announced.py` กับ `167-a-cancelled-dialog-forgets.py` ด้วย และ
-`pages/Login.js` อยู่ใน `50-sign-in-screens.py` เส้นทางที่ซ้ำกันทำให้การกวาดเสีย จึงเทียบ
-`FILES` ไม่ใช่เรื่องที่ใบพูดถึง และอย่ากวาดใบนี้ข้างห้าใบนั้น (#85, #87, #125)
+`66-sign-in-landing.py`, `111-refusals-announced.py`, `167-a-cancelled-dialog-forgets.py`,
+`254-the-refusal-that-outlived-the-box.py` กับ
+`258-the-box-opened-while-the-change-was-out.py` ด้วย และ
+`pages/Login.js` อยู่ใน `50-sign-in-screens.py` — ชื่อทั้งแปดมาจาก
+`grep -ln 'components/Navbar.js' mutation/*.py` ไม่ใช่จากความจำ (#126) และรายการเดิม
+ของย่อหน้านี้เขียนไว้สี่ชื่อ ซึ่งหมดอายุไปแล้วสามใบ · เส้นทางที่ซ้ำกันทำให้การกวาดเสีย
+จึงเทียบ `FILES` ไม่ใช่เรื่องที่ใบพูดถึง และอย่ากวาดใบนี้ข้างเจ็ดใบนั้น (#85, #87, #125)
 """
 from harness import main
 
@@ -69,9 +78,19 @@ FILES = {
 # Each field is anchored on the `type=` above its own `disabled`: the three
 # write the same two lines, so the line alone is not unique, and the eye each
 # one reveals itself with is what makes the site that field's (#140).
+#
+# Four of the mutants below were re-aimed on 1 พฤศจิกายน 2569 by #258, which
+# replaced the page-wide boolean this file's rows were written against with a
+# flag holding **which opening** sent the change: `disabled={sending}` became
+# `disabled={pwdBusy}` at all four sites and `setSending(false)` became a keyed
+# updater. What is preserved is the mistake and not the line (#203) — each
+# mutant still takes the same control's flag away, and `cancelclosed` still
+# writes the declined option, in today's spelling. `anchors.py` reports the
+# anchors; only re-running them says they still prove what their sheet credits
+# them with, so all seven were swept again that day (#107, #68).
 FIELD_OPEN = "                            type={show%s ? 'text' : 'password'}\n" \
              "                            required\n" \
-             "                            disabled={sending}\n"
+             "                            disabled={pwdBusy}\n"
 FIELD_LIVE = "                            type={show%s ? 'text' : 'password'}\n" \
              "                            required\n"
 
@@ -91,7 +110,7 @@ MUTANTS = {
     # and the twenty-five whose premise held.
     'savelive': ('navbar',
                  '                          type="submit"\n'
-                 '                          disabled={sending}\n',
+                 '                          disabled={pwdBusy}\n',
                  '                          type="submit"\n'),
 
     # 5 — the flag raised and never let go. Everything row 1 reads stays true
@@ -104,7 +123,8 @@ MUTANTS = {
     # it empties the `finally` instead of deleting it, so `setError` and
     # its guard are left alone (#203, #140).
     'flagneverlowered': ('navbar',
-                         '      setSending(false)\n'
+                         '      setSendingFor(current => '
+                         '(current === opening ? null : current))\n'
                          '    }\n',
                          '    }\n'),
 
@@ -116,7 +136,7 @@ MUTANTS = {
                      '                          type="button"\n'
                      '                          onClick={closeChangePassword}\n',
                      '                          type="button"\n'
-                     '                          disabled={sending}\n'
+                     '                          disabled={pwdBusy}\n'
                      '                          onClick={closeChangePassword}\n'),
 
     # 7 — the mechanism the sign-in screen's dated reason rests on, taken away:

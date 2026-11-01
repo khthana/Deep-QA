@@ -563,6 +563,12 @@ citation.
   so only re-running it says the mutant proves one claim more than its sheet credits it with.
   **Predict which, in the new sheet, before the re-sweep.**
   (#48, #202, #248, #257)
+- **And that prediction is a claim about each of the new spec's *assertions*, not about its
+  rows** — the line above one unit in: a row's headline claim can be the opposite of what its own
+  preconditions and its sibling assertions read, so a mutant that makes the headline *truer* can
+  still kill the row, and one that was predicted to gain nothing can gain two. Four of seven
+  predictions were refuted that way in one run, all four by reading the row instead of its lines
+  (#233). (#258)
 - **What corrupts a sweep is a repeated path — compare `FILES`, not subject matter**, and ask the
   census script rather than your memory; the figure that decides is the group, not the total.
   (#85, #87, #125)
@@ -1110,6 +1116,12 @@ citation.
   implementation keeps the closed tickets green. The census that finds it is of the **press**
   (#199, #221), which counts the rows using the control as an instrument and not the rows it is
   about. (#228)
+- **A prescription a file wrote beside its own expiry condition is *answered* on the day the
+  condition fires, and where what it prescribes is what the person reads, the answer is the
+  owner's** — #242 and #228 meeting on one comment: the remedy is a work item and not a decision,
+  so it goes to the owner with the measurement of what the person would be left with under each
+  reading. Here the fix made a value the screen could keep, and the value was the one that very
+  save had just replaced, so keeping it would say a refusal after a success. (#258)
 - **A behaviour that depends on which of two invisible windows a press landed in is a defect,
   not a preference** — #52 met in the product rather than in a fixture. Both behaviours can be
   defensible, so what is wrong is that the system holds both and the clock picks: the owner's
@@ -1252,7 +1264,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Twelve censuses, as instruments. `npm run census` runs all twelve since 30 October 2569, when #249 closed the population `save-window-fields.js` was a red gate over and it went in with nothing changed in the script (#200). Their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257). Not rows and not gates — nothing in the repository runs them, and six of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257, #258). Not rows and not gates — nothing in the repository runs them, and seven of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|

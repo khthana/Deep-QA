@@ -16913,3 +16913,137 @@ instrument refused it. The instrument is right: the fix is the full file name in
 citations, with the dated record keeping its old form quoted so that the question does not read it
 as a citation at all (#173, #54) — and my own first attempt at that note re-created the ambiguity
 by quoting `` `57a:89` `` inside one code span, which is the same mistake one layer up.
+
+## #258 — the prescription a file wrote for itself, and the four predictions one new spec refuted
+
+#249 closed the change-password dialog's three fields and its own *บันทึกรหัสใหม่* with
+`disabled={sending}`, on the owner's answer of 26 ตุลาคม 2569, and that same answer left *ยกเลิก*
+and the backdrop holding nothing, because a person who has given up on a save must be able to
+leave. Those two sentences are one way in: press save, press *ยกเลิก* while the change is out,
+open the box again — and the box you get is closed by the **earlier** opening's flag, with nothing
+on the screen saying why, for the length of a request nobody can see. #185's and #249's rule, met
+where one form is opened twice: a flag that says *the save is still out* has to say **whose**.
+
+**Both of the ticket's questions were measured before either was asked** (#77, #141, #228). The
+instrument was `e2e/probes/258-the-second-opening.spec.js`, three arms, and its third needed a hold
+that keeps a list rather than `gate`'s hold of the first request, because the state the ticket's
+option ข is a claim about is two changes out at once — which a boolean cannot describe at all. On
+`HEAD` the first arm read `fields 3 · fields disabled [true, true, true] · save disabled true ·
+cancel disabled false`, a press sending nothing, and all four back to `false` when the first answer
+landed: a window and not a permanent death, its length the round trip. The second arm added that a
+**success** closes the second box and says the shell's sentence. The third printed that there was
+no overlap to read at all, because nothing could leave the second box.
+
+**The ticket's cost line for option ข was refuted by building it** (#77, #114, #152). The ticket
+wrote that `closeChangePassword` calling `setSending(false)` was *one line cheaper than ก and the
+same behaviour*. Built as a candidate and measured with the third arm, it read `requests 3` and a
+second box whose fields were live while **its own** change was still out — not the same behaviour
+but a new defect of `243a`'s second row's species, one opening along. So that option came off the
+owner's list with a measurement rather than an argument, which is what let the question be written
+down honestly: option ก, the flag holds the opening that sent, measured as a box live immediately,
+a second request leaving, and the first answer **not** freeing the second box.
+
+**The second question was a prescription this very file had written beside its own expiry
+condition.** #254 left `closeChangePassword()` unguarded on the success path and wrote, in the
+comment above it, that the day #258 gave each opening its own flag this close would owe the guard
+the refusal below it has, keyed on `opening` — the remedy written beside the condition, because the
+fix that fires the condition is the fix that owes the prescription (#242, #54). That day arrived,
+and the prescription was **taken to the owner rather than carried out**, because what it changes is
+what the person reads (#152, #228, `docs/06` §Out of Scope). What the measurement added is the
+reason: with the fix in, the later box can hold what was typed, and what was typed is the current
+password this very change has just replaced, so a box kept open over a success is a 403
+*รหัสผ่านปัจจุบันไม่ถูกต้อง* one press later — a refusal after a success, which is the shape #243
+was opened about. The owner answered **close it as today**, and the paragraph now records the
+answer, the reason, and the condition that would re-date it: a change that leaves the current
+password usable, which this endpoint cannot have.
+
+The fix is a flag that holds the opening and a comparison beside the sentinel it compares:
+`sendingFor` in state, `pwdBusy = sendingFor !== null && sendingFor === pwdOpening.current`,
+`setSendingFor(opening)` at the press, and in the `finally` a **keyed** updater,
+`setSendingFor(current => (current === opening ? null : current))`, read with an updater rather than
+from the closure because the closure holds the value of the render that sent (#201). The first
+clause of `pwdBusy` is structurally unreachable rather than untested — without it the flag would
+read as up while the box is shut, which no row can see because the form is not drawn then (#102,
+#142) — and it is written for the reader, not for the proof.
+
+**Two rows, both red on the unfixed code before either mutant was written** (#203). Row 1 is the
+owner's answer read off the screen: the second opening has three fields, all live, a live button, a
+live *ยกเลิก*, and a press that sends. Row 2 is the half that makes the fix a key rather than a
+clearing: with two changes out, the first answer leaves the box on the screen closed, a press
+inside that window sends nothing, and its **own** answer brings the flag down. Both count the
+controls before reading them, because a reader that only reads what a control holds cannot tell an
+absent control from a closed one, and a box that never opened would read as a box with nothing
+closed in it (#164).
+
+**Row 2's claim is the one claim a retrying read cannot hold**, and that is a settle point and not
+a timeout. `toBeDisabled` passes on its first poll whether or not the answer has been dealt with,
+so under a mutant that frees the box the row would be green for one round trip with nothing to say
+so (#50, #214). The row waits for the answer to reach the page — the `response` event, which is the
+protocol and not a clock (#52) — and then for two frames, by which time anything that answer caused
+has been committed and drawn (#164, #188). The first draft asserted that the first refusal was said
+to nobody with `toHaveCount(0)`, which is exactly the assertion that cannot fail, and it came out.
+
+**Both mutants died where the prediction table said** (#255). `pagewideflag` is option ง made to
+run — `pwdBusy` reads only whether a change is out — and it killed row 1 at its own claim and row 2
+at its **precondition**, a `fill` on a closed field dying at the timeout rather than at an assertion
+(#139, #193): two reachability claims of one shared line and not one claim counted twice (#191).
+`flagdownatanyanswer` is option ข's mechanism made to run, and it killed row 2 alone, at `the
+current-password field while its own change is out`. Option ข written whole — the boolean back, and
+cleared at the close as well — is an **equivalent** mutant on these two rows, because a clearing at
+the close only frees a box with no change of its own out, which row 1 already requires to be free
+(#97, #201). Both left `243a`'s first two rows standing, which the ticket named as the controls.
+
+**And four of the seven re-sweep predictions were refuted, all four the same way.** The fix moved
+four of `243`'s anchors, so they were re-aimed keeping the mistake and not the line (#203), and
+`258a` is a new spec the old mutants reach, which expires their counts with nothing to report it
+(#248, #202). The prediction table was written by reading each new row's **headline claim** — *the
+second box is live* — and concluding that a mutant which **frees** a control makes that claim truer,
+not false. What that forgot is that row 2 reads the same four controls as **closed**, and row 1
+reads the box that *sent* as closed in its own preconditions (#233): so `oldpasswordlive`,
+`newpasswordlive` and `confirmpasswordlive` each gained row 2 (ล้ม 2 ผ่าน 3), and `savelive`, which
+was predicted to gain nothing, gained **both** rows and died on row 1 at
+`บันทึกรหัสใหม่ of the box that sent the change` (ล้ม 4 ผ่าน 1). A prediction about a new spec is a
+claim about each of that spec's assertions, not about its rows; `flagneverlowered` and `cancelclosed`
+came out exactly as predicted, the second of them at `locator.click`'s timeout on both new rows,
+because it closes the control those rows press as an **instrument** (#139, #199, #221).
+
+**The sheet's own prose expired too.** #254's second criteria row ended by saying that the second
+box's fields are closed by the earlier opening's flag, and pointed at this ticket; a criteria row
+says what the system *is*, so it was rewritten rather than dated (#54). `243`'s mutation docstring
+had two sentences that said *and nothing else*, and four that named `disabled={sending}` by its old
+spelling; those were corrected with the date beside them, and its *ตอนกวาด* paragraph named four
+files where `grep -ln` now finds eight (#126, #130).
+
+**And the two-axis review of the same day found the ⚙ that had not been earned — in this
+ticket's own two rows.** Row 1's headline claim is that the second opening *can send*, and the
+assertion that reads it, `requests after the second opening pressed save`, is the row's last
+line: every mutant that touches row 1 frees or closes a control the row reads five lines higher,
+so each died there and the send was never read. The kill count was right, the row was red, and
+the claim under the red line was proved by nothing (#88) — an overclaim that reads modestly
+(#116), which is the fourth of the four ways to read a *kills* column. The answer was a third
+mutant, and the question *which option is it* answered itself: option ค, which the review also
+asked about, is **refuse the second send and say why**, and its mechanism moved off the attribute
+and into the handler is exactly the mutant that kills the send claim and nothing above it
+(`if (sendingFor !== null) return`, ล้ม 2 ผ่าน 5, row 1 at its own last assertion and row 2 at the
+arrangement that needs the second request). The other half of ค is a sentence no code holds, so
+it cannot be written as a mutant, and that reason is written down in its place (#48).
+
+Row 2's middle claim — *a press while its own change is out sends nothing* — came out of the
+same reading as a **net**, and that is the fifth answer to *why did this survive*: not that the
+claim was never at risk, but that no mutant can put it at risk here, since freeing the press
+means freeing the button, which the read four lines above forbids (#47's sixth reading). The
+condition that would make it readable is written beside it, and it names `secondsendrefused`,
+where the press *is* refused somewhere other than the attribute — and there the row dies above
+that line.
+
+**The review's other finding was in two files nobody thought they were changing.**
+`mutation/254-…py` and #254's row in `mutation/README.md` both said there was no mutant of
+`setSending(false)` outside the guard, *the price of that having been measured and being #258* —
+a sentence whose subject this ticket renamed and whose price this ticket paid. Dated, not deleted
+(#54, #130), together with the same row's count of *six* files holding `components/Navbar.js`,
+which is seven today, and `CLAUDE.md`'s `e2e/probes/` row, which counted six specs where the tree
+now holds seven (#141). Four of the five findings were numbers or sentences expired by this very
+diff; the fifth was the ⚙. The one finding declined was the dialog's locators, a fourth copy:
+`support/shell.js` holds no locator of this box, and the repo answered that species three times on
+this same dialog (`167a`, `243a`, `254a`), which is a decision rather than a precedent to weigh
+(#196).

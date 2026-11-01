@@ -46,8 +46,26 @@ function Navber({ setAlert, onStayedPut }) {
    * a save must be able to leave. The eyes are not fields and keep their
    * press — revealing what was typed changes nothing about what is being
    * sent, which is the whole of what this flag is about.
+   *
+   * ## It holds an opening and not a boolean — #258, 1 พฤศจิกายน 2569
+   *
+   * A boolean says *a change is out*; it cannot say *whose*. *ยกเลิก* and the
+   * backdrop hold nothing by that same answer of 26 ตุลาคม 2569, so the person
+   * can leave in the middle of a change and come back inside one round trip —
+   * and what they came back to was a box closed by the **earlier** opening's
+   * flag: three fields and the button disabled, *ยกเลิก* free, nothing on the
+   * screen saying why, for the length of a request nobody can see. Measured on
+   * 1 พฤศจิกายน 2569 before the fix with `e2e/probes/258-the-second-opening`,
+   * which read `fields disabled [true, true, true] | save disabled true` on the
+   * second opening and a press there sending nothing.
+   *
+   * So it holds the opening that sent, `null` when none has, and `pwdBusy`
+   * below is the comparison. The owner's answer was **ข้อ ก — a second change
+   * may be sent while the first is out**, which is what that shape buys: the
+   * person who gave up on a change, reopened the box and retyped is the person
+   * whose first change was going to be refused anyway.
    */
-  const [sending, setSending] = useState(false)
+  const [sendingFor, setSendingFor] = useState(null)
 
   /**
    * Which opening of the change-password box is on the screen - #254.
@@ -61,6 +79,22 @@ function Navber({ setAlert, onStayedPut }) {
    * and the handler reads it a turn after it was written (#133).
    */
   const pwdOpening = useRef(null)
+
+  /**
+   * Whether the box **on the screen** has a change of its own still out - #258.
+   *
+   * `sendingFor` holds the opening that sent, so a box opened after another
+   * opening's change left is live, and the one that sent is closed until its
+   * own answer lands. The sentinel is read from the ref during the render on
+   * purpose: it is only ever written in an event handler - the menu's press
+   * writes a fresh one, `closeChangePassword` writes `null` - and each of those
+   * is followed by a state change, so every render in between reads the same
+   * value. Holding it in state as well would be a second copy to keep in step,
+   * and the guard in `handlePasswordSubmit` needs the live value that a
+   * closure cannot give it (#133, #207).
+   */
+  const pwdBusy = sendingFor !== null && sendingFor === pwdOpening.current
+
   const [pwdData, setPwdData] = useState({
     old_password: '',
     new_password: '',
@@ -235,7 +269,10 @@ function Navber({ setAlert, onStayedPut }) {
     // that sent it and not with whatever is on the screen when it lands - #254.
     const opening = pwdOpening.current
 
-    setSending(true)
+    // The opening that sent, and not a boolean: what this flag closes is the
+    // box that asked, which is not every box the person may since have opened
+    // (#258, #185).
+    setSendingFor(opening)
     try {
       await changePassword(pwdData.old_password, pwdData.new_password)
       // Neither of the next two lines is behind the guard below, and each
@@ -247,18 +284,23 @@ function Navber({ setAlert, onStayedPut }) {
       // rather than in the box, so there is no box it needs to be about.
       //
       // The close: a success landing after this box was closed and another
-      // opened closes that later opening. **What keeps that from taking
-      // anything the person typed is #258's window, not this code** -
-      // `sending` is still true while the change is out, so the later box's
-      // fields are disabled and there is nothing in them (measured with a
-      // probe in `254a`'s second row: `field0 disabled true`). That is an
-      // accident of the flag being page-wide, which is #258's defect, so the
-      // day #258 gives each opening its own flag this close owes the guard
-      // the refusal below has, keyed on `opening` - the remedy is written
-      // beside the condition, because the fix that fires the condition is
-      // the fix that owes the prescription (#242, #54). Whether the later
-      // box should then close or stay open is what the person reads, which
-      // is the owner's (#152, `docs/06` §Out of Scope).
+      // opened closes that later opening - and it stays unguarded on purpose.
+      //
+      // The paragraph here used to say that the day #258 gave each opening its
+      // own flag, this line would owe the guard the refusal below has, keyed on
+      // `opening` - the remedy written beside the condition, because the fix
+      // that fires the condition is the fix that owes the prescription (#242,
+      // #54). That day is 1 พฤศจิกายน 2569, and the prescription was taken to
+      // the owner with both readings measured rather than carried out, because
+      // which of them the person should meet is what they read (#152, #228,
+      // `docs/06` §Out of Scope). What the measurement added is that the later
+      // box can now hold what was typed, and what was typed is the current
+      // password **this very change has just replaced**: a box kept open over
+      // a success would be refused 403 *รหัสผ่านปัจจุบันไม่ถูกต้อง* one press
+      // later, a sentence after a success. **The owner's answer of
+      // 1 พฤศจิกายน 2569 is to close it as today**, with the shell saying the
+      // change happened. The condition that would re-date this: a change that
+      // leaves the current password usable, which this endpoint cannot have.
       setAlert({
         open: true,
         message: 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว',
@@ -302,13 +344,20 @@ function Navber({ setAlert, onStayedPut }) {
       // Outside the guard, and that is not an oversight: a flag that says *a
       // change is still out* has to come down wherever it was raised, or it
       // stays up for ever and the box is dead to everybody after it (#227).
-      // What that costs is a box opened inside the round trip whose fields are
-      // closed by an earlier opening's flag - measured on 31 ตุลาคม 2569 with a
-      // probe in `254a`'s second row and filed as **#258**, because the fix is a
-      // flag that says *whose* save is out (#185, #249) and the answer it needs
-      // is whether a second change may be sent while the first is out, which
-      // #243's second row decided for one box and not for two.
-      setSending(false)
+      //
+      // And it comes down **only where it is still this opening's**, which is
+      // the half #258 added on 1 พฤศจิกายน 2569. With the flag holding an
+      // opening, two changes can be out at once - the person leaves one in
+      // flight, opens the box again and sends a second - and a bare
+      // `setSendingFor(null)` here would put the later opening's flag down at
+      // the earlier answer, which frees a box whose own change is still out and
+      // lets a third request leave from it: the second-send `243a`'s second row
+      // closed, met one opening along. Measured that day with
+      // `e2e/probes/258-the-second-opening`'s third arm, which read
+      // `requests 3` under exactly that line and `requests 2` under this one.
+      // The live value is read with an updater rather than from the closure,
+      // which holds the value of the render that sent (#201).
+      setSendingFor(current => (current === opening ? null : current))
     }
   }
 
@@ -521,7 +570,7 @@ function Navber({ setAlert, onStayedPut }) {
                           <input
                             type={showOld ? 'text' : 'password'}
                             required
-                            disabled={sending}
+                            disabled={pwdBusy}
                             className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={pwdData.old_password}
                             onChange={e =>
@@ -553,7 +602,7 @@ function Navber({ setAlert, onStayedPut }) {
                           <input
                             type={showNew ? 'text' : 'password'}
                             required
-                            disabled={sending}
+                            disabled={pwdBusy}
                             className={`mt-1 w-full rounded-xl border px-4 py-3 pr-10 text-sm transition focus:outline-none focus:ring-2 ${
                               error &&
                               pwdData.new_password !== pwdData.confirm_password
@@ -590,7 +639,7 @@ function Navber({ setAlert, onStayedPut }) {
                           <input
                             type={showConfirm ? 'text' : 'password'}
                             required
-                            disabled={sending}
+                            disabled={pwdBusy}
                             className={`mt-1 w-full rounded-xl border px-4 py-3 pr-10 text-sm transition focus:outline-none focus:ring-2 ${
                               error &&
                               pwdData.new_password !== pwdData.confirm_password
@@ -629,7 +678,7 @@ function Navber({ setAlert, onStayedPut }) {
                         </button>
                         <button
                           type="submit"
-                          disabled={sending}
+                          disabled={pwdBusy}
                           className="rounded-lg bg-secondary px-4 py-2 font-medium text-white shadow-md transition hover:bg-secondary disabled:opacity-60"
                         >
                           บันทึกรหัสใหม่
