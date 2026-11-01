@@ -17102,6 +17102,41 @@ because a zero that came from asking nothing would satisfy the new line on its o
 paragraphs recording the day it landed unwired were dated, not overwritten (#54). And its first
 limitation was remeasured rather than carried: of all 144 sheets, **142** have a third column and
 **139** have at least one row naming a spec, a row or an assertion, where the same reading over the
-57 compliant sheets that morning gave 55 and 47. That second figure is a grep for six tokens over
-one column and so an upper bound of the same kind as the figure it qualifies (#174) — the question
-that would ask it is still unwritten and still this ticket's to carry.
+57 compliant sheets that morning gave 55 and 47. That second figure is a grep for six tokens and so
+an upper bound of the same kind as the figure it qualifies (#174) — the question that would ask
+it is still unwritten and still this ticket's to carry.
+
+**And the two-axis review refuted two of this ticket's own claims, both of them claims this very
+story had just been written about.** The first was the extract's line numbers one ticket further
+than the sheet the story tells it on: sheet `40`'s sixteen hand-written rows cite
+`40-clo-assessment-report.md` at ten points, and every one of them was counted in a
+`sed -n '120,300p'` window, so every one is 119 lines short of the file — three of them landing on
+blank lines and the rest on criteria rows (#173). The story already told this with sheet `13`,
+caught by a grep five rows after the citation was laid down; sheet `40` is the copy that survived
+whole, which is what a defect found by hand rather than by an instrument does. What replaced the
+grep is a question asked of the **population**: every citation in a #259 block is handed its own
+line and asked whether that line says anything about the row citing it — blank, past the end of
+the file, or holding neither the mutant's name nor a word of the sweep within a window around it.
+**1064 of 1064** pass with sheet `40` repaired, and the three zeroes before the repair read, on
+their own, as that one sheet (#141, #230).
+
+The second was **the property a figure counts being part of the figure** (#174), met in the
+sentence this story's own last paragraph had written down: the limitation said **139** sheets name
+a spec, a row or an assertion *in the third column*, and the number is right for the **whole row**
+while the third cell alone gives **136**. The review found it from a sheet whose `toEqual` is in
+the fourth cell. The list of short sheets was wrong in the same breath and worse, because it mixed
+two populations: the five it named included `119-google-landing` and `84-own-row-controls`, which
+have no third column at all and so are outside the 142 rather than short of the 139 — three sheets
+are short, three more say it past the third cell, and that difference is exactly the gap between
+the two figures. All three groups are now named apart, in the docblock and in `mutation/README.md`.
+A sentence that gets the number right and the property wrong is the hardest kind of wrong figure to
+catch, because nothing it predicts is off by anything (#141).
+
+The review's other two findings were prose that expired on the day it was wired, which is the same
+species one layer down: the module docstring's heading still read *the seventh question, unwired*
+and `predictions()`'s own docstring still read *Not called by the run below*, two paragraphs above
+and inside the function the `__main__` beneath it now calls; and the README still said the exit
+code is non-zero when any of **six** questions is red. Those are property sentences, not dated
+records, so they were corrected and told when they changed, while the paragraphs recording the day
+the question landed unwired stayed where they were (#54, #130, #154). What a diff touches is what a
+diff proofreads, and this diff touched what two files **count** (#154).
