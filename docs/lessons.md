@@ -17047,3 +17047,61 @@ diff; the fifth was the ⚙. The one finding declined was the dialog's locators,
 `support/shell.js` holds no locator of this box, and the repo answered that species three times on
 this same dialog (`167a`, `243a`, `254a`), which is a decision rather than a precedent to weigh
 (#196).
+
+## #259 — eight hundred and eighty-nine rows that are records, not predictions
+
+#255 landed `anchors.py`'s seventh question — *does every mutant have a row in its own file's
+docstring table?* — **unwired**, because its first run was a red gate over a population no ticket
+had fixed, which is the switch `swallowed-refusals.js` (#200, #203) and `save-window-fields.js`
+(#243, #249) were both thrown by. #259 was that population, and closing it threw the switch.
+
+**The ticket's own numbers were a claim with a date, and all three were wrong by the hour it was
+worked** (#66, #174). It said 892 mutants in 84 sheets of 141; the first run on 1 พ.ย. 2569 read
+**889 mutants over 85 sheets of 144**. Nothing had been fixed in between and nothing was
+miscounted: #256, #257 and #258 had landed three sheets and nine mutants since #255 measured, and
+one of the new sheets was itself compliant, so the gap moved in both directions at once. The
+ticket's figures were not a measurement of the store but a copy of an earlier run's — a deferral's
+population read off a dated reason instead of being censused where the deferral was answered
+(#253, #249, #81, #54, #119).
+
+**The thing the rows could not be was predictions.** #255's rule — the table is written before the
+first mutant runs — binds from the sheet that landed after `258`, and these mutants were swept
+between สิงหาคม and ตุลาคม 2569. A row written today that reads as a prediction would make every
+sheet's *died at the assertion the table named before the run* unfalsifiable in exactly the way
+#248's sentence was, with the author as the reviewer. So each of the 85 blocks carries a dated
+header saying **บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)**, and each of the 889 rows cites
+the sweep record it was read out of, by file and line: the acceptance sheets' ⚙ rows, their
+per-mutant tables and their sweep paragraphs. Where no record held a mutant's kill, the row was
+hand-written from the mutation file's own comment and says which sentence of the record stands
+behind it — `40-clo-assessment`'s sixteen are the clearest case, every one of them stating its
+kill in its comment over a sheet whose record confirms the set wholesale twice, at the sweep of
+4 กันยายน 2569 and at the re-sweep after prettier re-aimed two anchors.
+
+**The generator was an instrument and its own output was a claim** (#141, #230). It read each
+mutant's edit and the prose comment above it and wrote a row with `@@TODO@@` wherever it found no
+record, which is what a hand pass then answered. Two of its defects are worth the ink. Its first
+sentinel was `??`, which **JavaScript writes**: three sheets came back clean because a mutant
+whose replacement held a nullish operator read as a row already answered, and the count fell by
+three for nothing — a sentinel is a claim that the corpus does not write it, which is
+*anchor patch scripts on unique ASCII* one species along. And its reader of the comment accepted
+the first **line** of a multi-line comment as the whole description, so a dozen rows said half a
+sentence; the repair asks whether the next line continues it, the same question `_predicted`'s
+fence counter asks about a markdown table.
+
+**A line number read off a scratch extract is the extract's line number** (#173). Sheet `13`'s
+eight-mutant summary was cited as `บรรทัด 61` from a `sed`-ed copy and is `บรรทัด 64` in the file;
+the grep that found the sentence is what found the error, five rows after the citation had been
+pasted five times. A citation by line number ages the day anything above it grows, and it is wrong
+from birth when the line was counted in a window.
+
+**What the wiring is, and what it is not.** `predictions()` is now the seventh question of the
+no-argument run, so a sheet that adds a mutant without a row is red in the run every ticket already
+makes, and `anchors_test.py`'s question of the real store asserts `problems == 0` with the weaker
+form kept under it — every sheet read, nothing unreadable, `problems` agreeing with the shortfall —
+because a zero that came from asking nothing would satisfy the new line on its own (#141). The
+paragraphs recording the day it landed unwired were dated, not overwritten (#54). And its first
+limitation was remeasured rather than carried: of all 144 sheets, **142** have a third column and
+**139** have at least one row naming a spec, a row or an assertion, where the same reading over the
+57 compliant sheets that morning gave 55 and 47. That second figure is a grep for six tokens over
+one column and so an upper bound of the same kind as the figure it qualifies (#174) — the question
+that would ask it is still unwritten and still this ticket's to carry.

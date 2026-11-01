@@ -569,6 +569,13 @@ citation.
   still kill the row, and one that was predicted to gain nothing can gain two. Four of seven
   predictions were refuted that way in one run, all four by reading the row instead of its lines
   (#233). (#258)
+- **A table written for mutants already swept is a *record*, and saying so is what keeps every
+  other sheet's prediction falsifiable** — the rule *write the table before the first mutant* binds
+  from the sheet it landed on, so a row filled in afterwards is dated as a retro record and cites
+  the sweep record it was read out of, by file and line (#54, #173). Where no record holds a kill,
+  the mutant's own comment is the source and the row says so; and the instrument that writes 889 of
+  them is a claim like any other, down to its sentinel, which must be something the corpus does not
+  write. (#259)
 - **What corrupts a sweep is a repeated path — compare `FILES`, not subject matter**, and ask the
   census script rather than your memory; the figure that decides is the group, not the total.
   (#85, #87, #125)

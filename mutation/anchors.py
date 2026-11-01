@@ -215,12 +215,20 @@ table row whose first cell is its name. It calls `sheets()` and `_module()`, so
 a sheet added tomorrow is in this question and in `check()` or in neither
 (#126).
 
-**It is not wired into the run**, and that is this store's answer to the shape
-rather than a softening of it: the first run is a red gate over a population no
-ticket has fixed, so the instrument lands unwired with a ticket for the gap
-instead of wired with the gap marked - `swallowed-refusals.js` (#200, #203) and
-`save-window-fields.js` (#243, #249) both landed that way. The population is
-#259. Run it by hand, which is the only thing that runs it:
+**It landed unwired**, and that was this store's answer to the shape rather
+than a softening of it: the first run is a red gate over a population no ticket
+has fixed, so the instrument lands unwired with a ticket for the gap instead of
+wired with the gap marked - `swallowed-refusals.js` (#200, #203) and
+`save-window-fields.js` (#243, #249) both landed that way. The population was
+#259, which closed it on 1 พ.ย. 2569, and the question is **wired into the
+no-argument run** from that day: a sheet that adds a mutant without a row is
+red in the run every ticket already makes. The paragraph above is the dated
+record of the day it landed and is not overwritten (#54); remeasured the day it
+was wired, over 144 sheets and the 1174 mutants that are still live - three
+sheets and nine mutants newer than #255's figures - **every one of them has a
+row**, 5 are withdrawn to a record and not asked, and `problems` is 0.
+
+Asked on its own, which is the form #255's own acceptance criterion names:
 
     python mutation/anchors.py predictions
 
@@ -1313,10 +1321,21 @@ def predictions(paths=None):
 
     1. Whether the row says *which* assertion. It reads the first cell, so the
        compliant figure is an upper bound: of the 57 sheets holding a row for a
-       live mutant on 1 November 2569, 55 have a third column and **47** have at
+       live mutant on 1 November 2569, 55 had a third column and **47** had at
        least one row naming a spec, a row or an assertion. A question asking
-       that too would be red over 94 sheets, which is the option the owner was
-       offered that day and did not take (#259 carries it).
+       that too would have been red over 94 sheets, which is the option the
+       owner was offered that day and did not take (#259 carries it).
+       Remeasured when #259 closed the population later the same day, over all
+       144 sheets: **142** have a third column and **139** have at least one row
+       naming a spec, a row or an assertion. That second figure is itself an
+       upper bound of the same kind - it is a grep for *แถว*, *spec*,
+       *assertion*, `toEqual`, `toHave` and `assert.` over the third column
+       (#174), and the rule it would stand for is still unwritten and still
+       #259's to carry. The five sheets short of it are
+       `116-a-breadcrumb-that-reads-the-section`, `119-google-landing`,
+       `68-superseded-answer`, `84-own-row-controls` and
+       `87-assessor-is-from-outside`, the middle one and `84-own-row-controls`
+       having no third column at all.
     2. Whether the table was written **before** the sweep, which no static
        reading can say. 13 of the 14 newest sheets landed in the same commit as
        the acceptance sheet carrying their sweep's result, so `git` cannot tell
@@ -1384,10 +1403,10 @@ def predictions(paths=None):
 
 if __name__ == "__main__":
     if sys.argv[1:]:
-        # The seventh question, which the no-argument run does not ask. Anything
-        # else is refused rather than falling through: a mistyped word that ran
-        # the six questions and printed `problems 0` would read as the seventh
-        # being clean over a store where it is red over 85 sheets.
+        # The seventh question on its own, which is the form the README's
+        # command and #255's acceptance criterion both name. Anything else is
+        # refused rather than falling through: a mistyped word that ran the
+        # other six and printed `problems 0` would read as this one being clean.
         if sys.argv[1:] != ["predictions"]:
             print("usage: python mutation/anchors.py [predictions]")
             sys.exit(2)
@@ -1402,5 +1421,13 @@ if __name__ == "__main__":
     # so it is named for the question rather than for a kind it does not have
     # on its own.
     legend_faults = legends()[0]
+    # The seventh question, wired into the run by #259 on 1 พ.ย. 2569, the day
+    # its population reached nothing. It landed unwired with the ticket for that
+    # population rather than wired with the population marked, which is the
+    # switch `swallowed-refusals.js` (#200, #203) and `save-window-fields.js`
+    # (#243, #249) were both thrown by: the gate goes on when the store passes
+    # it, and from here a sheet that adds a mutant without a row is red in the
+    # no-argument run.
+    unpredicted = predictions()[0]
     sys.exit(1 if (misanchored or undocumented or miscounted or unlisted or uncited
-                   or legend_faults) else 0)
+                   or legend_faults or unpredicted) else 0)

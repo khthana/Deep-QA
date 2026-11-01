@@ -1110,20 +1110,28 @@ class Predictions(TempStore):
         self.assertEqual(anchors.predictions(self.sheet("MUTANTS = {}\n"))[0], 1)
 
     def test_the_real_store_can_be_asked_of_every_sheet(self):
-        # What is assertable about the real store while the population is still
-        # red: that every sheet was read and none of them was unreadable, so
-        # the figure the run prints is about all of them. The 889 is pinned
-        # nowhere - a hand-kept number in a store that grows every ticket is
-        # already wrong.
+        # #259 closed the population on 1 November 2569, so this says what it
+        # could not say while the question was red: **nothing is without a
+        # row**. The weaker form it carried before - every sheet read, nothing
+        # unreadable, and `problems` agreeing with the shortfall - stays under
+        # it, because a zero that came from asking nothing would satisfy the
+        # new line on its own.
         #
-        # Its output is swallowed on purpose. Asking the real store prints a
-        # line per unpredicted mutant, which was 897 of this file's 1057 output
-        # lines and buried the other 96 tests' reds in them. The figure belongs
-        # to the run somebody does by hand.
+        # No count is pinned here beyond the zero. A hand-kept number in a
+        # store that grows every ticket is already wrong, and that is why the
+        # counts are compared with each other and with `sheets()`.
+        #
+        # Its output is swallowed on purpose. While the population was red,
+        # asking the real store printed a line per unpredicted mutant, which
+        # was 897 of this file's 1057 output lines and buried the other 96
+        # tests' reds in them. Now it prints one summary line, and the sink is
+        # what the `NO PREDICTION` count below is read out of.
         sink = io.StringIO()
         with contextlib.redirect_stdout(sink):
             problems, read, asked, with_row, withdrawn, _fenced = anchors.predictions()
         self.assertEqual(read, len(anchors.sheets()))
+        self.assertEqual(problems, 0)
+        self.assertEqual(with_row, asked)
         self.assertEqual(problems, asked - with_row)
         self.assertGreater(with_row, 0)
         self.assertGreater(withdrawn, 0)
