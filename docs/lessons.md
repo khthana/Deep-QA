@@ -16758,3 +16758,92 @@ also hold three more citations by line number of the same family, two of them mo
 fix. That is #130 exactly — the copy you will miss is in the file you did not think you were
 changing — and #154, a changed pair read side by side: the script's bullet and the script's
 fixtures are one document in two files.
+
+## #255 — the rule the store states four times, and the question nothing was asking
+
+`mutation/README.md` says four times that a sweep is read by whether each mutant died **at the
+assertion its sheet's table named before the run**, because the tell that a mutant has become a
+twin of another is the *name* of the assertion that dies and not the kill count: two duplicates
+kill exactly the same number of rows (#201). The two-axis review of #248 then found the sentence
+*every mutant matched the table written before the sweep* to be a claim nobody could check — that
+ticket's table was in the conversation and in no file, and the author was the reviewer. So the
+rule was restated four times while nothing anywhere asked for its own input. That is the species
+this whole file exists not to believe, met one layer up: not a number kept by hand but a **premise
+kept nowhere**, and the deferral of it had been sitting in the *what is still open* section of two
+handoffs with no ticket, which is what #119 forbids.
+
+**The ticket's census was evidence about the property it counted, twice over.** Its regex read
+every dict key at the start of a line, so the keys of each sheet's `FILES` counted as mutants
+named in a table: 60 sheets by that reading, **57** when the population is the keys of `MUTANTS`
+read with `ast` (#174). And the ticket priced option ข — *every mutant in the catalogue has a
+row* — as a gate red over **82 files**, which is the per-file question. Asked of the unit the rule
+is actually about, the gate is red over **85 sheets and 889 mutants**, 276 of the 1165 live ones
+having a row. The two numbers are close only by luck: just two sheets name some of their mutants
+and not the rest, so the per-file figure happened to stand in for the per-mutant one.
+
+**The measurement that answered the owner's second question struck one of the ticket's options
+out.** Item 2 was that a table written afterwards reads the same, character for character, as one
+written before, and that `git` tells them apart only when the table and the sweep's record land in
+different commits. The condition is right; measured, it holds for **1 of the 14** newest sheets —
+thirteen landed in the same commit as the acceptance sheet carrying their own sweep's result. So
+`git` separates prediction from record nowhere in that month, and option ค, whose stated benefit
+was exactly that separation, buys it no more than the other two do. What answers item 2 is a
+**commit rule** and not an instrument, which is what the owner chose: the table lands in a commit
+before the record, and a table edited because the result disagreed is edited in the second commit
+with the reason, rather than overwritten silently. A cost line is a claim about the shape its
+author pictured (#77), and here measuring it removed an option rather than repricing one (#247).
+
+**The shape it lands in was not the owner's to choose.** Option ข was offered *in the shape of
+#200* — unwired, with the population's ticket — and that is a decision this store has already
+taken twice for this species, `swallowed-refusals.js` (#200, #203) and `save-window-fields.js`
+(#243, #249). A rule already applied to the same question is a decision and not a precedent to
+weigh (#196), so what went to the owner was whether the rule exists at all, and at which width:
+the measurement that the question reads the **first cell only** made a fourth option visible — ask
+that the row name the assertion too, red over 94 sheets — which was offered and not taken, and so
+is written into #259 rather than into prose.
+
+**Proved both ways on real sites and never on its own fixtures** (#141, #230). Taking one real row
+out of `254-the-refusal-that-outlived-the-box.py` moved `with a row` down by one and `problems` up
+by one; writing a sheet nobody had listed, with a mutant and no table, moved `sheets` from 141 to
+142 and found it. Breaking a member shows the rule reads; moving the population shows the
+instrument follows the directory rather than a list (#126) — and both were undone in a `finally`
+with the file compared byte for byte afterwards (#138).
+
+**It has no exemption marker, and that is written down rather than left to be noticed.** Every
+census in `frontend/scripts/` has one because a real site needed one; nothing in the store needs
+one here, and a marker outlives the gap it documented, which turns it into an exemption (#93,
+#141). What looks like one is not: a mutant withdrawn to a record (`SUPERSEDED`) is counted apart
+and **not asked**, because its prediction is history and a record is not a sheet's to rewrite
+(#54) — and one that becomes applicable again is a live mutant this question then reaches, which
+`check()` already reports.
+
+**A silent fall-through would make one instrument's green read as another's.** The seventh question
+is reached by an argument, and anything else is refused with exit 2 instead of falling through: a
+mistyped word that ran the six wired questions would print `problems 0` over a store where the
+seventh is red over 85 sheets, and nothing in that output would say which question had answered.
+That is the same failure as a tool that cannot say what it did not look at (#123, #126), bought
+for two lines.
+
+**The honest half of the population ticket is that the rows written for it are records and not
+predictions.** The rule binds from the next sheet on; for the 889 mutants already swept, a table
+written today is a note of what died, so each retroactive row is dated as one and sourced from the
+⚙ rows and sweep records that exist, not from memory (#54). Saying that in #259 is what keeps the
+convention's own sentence true, and it is also why the stronger question matters more there than
+here: a record that names the assertion is worth reading, and a record that names only the mutant
+is worth nothing at all.
+
+**And the instrument's own first version overstated the population, which only reading a named
+file caught.** `_predicted` read a row's first cell whole, so a cell that annotates the name —
+`141`'s `` | `importrereadstalewins` (one edit, the `onImported` flag alone) | `` — matched no
+mutant, and both of that sheet's mutants printed `NO PREDICTION` over a sheet that predicts them;
+`206` was the same. Five such cells exist, three of them live. The repair is to offer **two**
+readings of the first cell, the whole cell and every code span inside it, which is the too-loose
+direction of the same question, so it was bounded by measuring that no first cell in the store
+names two of its own mutants today and pinning that as a dated test (#54, #141). Three more things
+the review found were the same species one layer down: the number **896** was self-refuting beside
+`273 of 1170`, since 1170 counts the five withdrawn mutants the question does not ask; the gate was
+reported over **84 sheets** at three sites, which is the count of sheets giving *none* and not the
+count the gate is red over, the two partial sheets being red as well (#174 again, inside the
+ticket that cites it); and the real-store test printed 897 `NO PREDICTION` lines into the run's
+output, which is an instrument speaking over the suite rather than asserting anything — it now
+swallows them and asserts the count instead.

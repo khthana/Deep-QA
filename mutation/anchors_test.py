@@ -14,6 +14,7 @@ Run:
 stdlib `unittest`, for the reason `harness_test.py` gives.
 """
 
+import contextlib
 import glob
 import io
 import os
@@ -989,6 +990,144 @@ class Legends(TempStore):
             said = anchors._entry(block or [], WALKED)
             self.assertIsNotNone(said, os.path.basename(path))
             self.assertIn("seam HTTP", said, os.path.basename(path))
+
+
+# ASCII on purpose, like the fixture the legend tests pin: the real sheets write
+# this header and these cells in Thai, and a fixture whose text the console
+# cannot print is a fixture nobody proofreads. What the header is here for is
+# that its first cell names no mutant.
+PREDICTED = (
+    '"""#21 this sheet\n'
+    "\n"
+    "| name | what it does | what it kills |\n"
+    "|---|---|---|\n"
+    "| `one` | x | 21a row 1 |\n"
+    "| **two** | y | 21a row 2 |\n"
+    '"""\n'
+    "FILES = {'a': 'x.js'}\n"
+    "MUTANTS = {'one': ('a', 'p', 'q'), 'two': ('a', 'r', 's')}\n"
+)
+
+
+class Predictions(TempStore):
+    """Does a mutant say beforehand what it kills? - #255.
+
+    The question this file can ask and the real store cannot: whether a missing
+    prediction is *found*. Over the real sheets it is red over 85 of them on the
+    day it was written, which is why it is unwired, and a test asserting that
+    red would go red itself the day #259 closes.
+    """
+
+    def sheet(self, source=PREDICTED, name="21-rubrics.py"):
+        return [self.write(name, source)]
+
+    def test_a_sheet_that_predicts_every_mutant_it_holds(self):
+        self.assertEqual(anchors.predictions(self.sheet()), (0, 1, 2, 2, 0, 0))
+
+    def test_a_mutant_with_no_row_is_a_problem(self):
+        # The disease itself: 889 mutants were in this state when the question
+        # was written, and every one of the six questions above was green.
+        source = PREDICTED.replace("| **two** | y | 21a row 2 |\n", "")
+        self.assertEqual(anchors.predictions(self.sheet(source))[:4], (1, 1, 2, 1))
+
+    def test_the_name_in_backticks_and_in_bold_is_the_same_name(self):
+        # Asserted because the store writes a mutant name all three ways and a
+        # reader that took the markup for part of the name would answer
+        # *nothing is predicted* over a store that predicts everything.
+        plain = PREDICTED.replace("| `one` |", "| one |")
+        self.assertEqual(anchors.predictions(self.sheet(plain))[0], 0)
+
+    def test_a_row_quoted_inside_a_fence_is_not_a_prediction(self):
+        # A docstring that shows what a row looks like is explaining the table,
+        # the reason `catalogue()` skips a fenced row in the README.
+        source = PREDICTED.replace(
+            "| **two** | y | 21a row 2 |\n",
+            "```\n| two | y | 21a row 2 |\n```\n")
+        # The skipped count is asserted beside the problem: a reader that found
+        # no fence at all would also report one problem here.
+        self.assertEqual(anchors.predictions(self.sheet(source)),
+                         (1, 1, 2, 1, 0, 1))
+
+    def test_a_mutant_named_in_a_later_cell_is_not_read(self):
+        # The documented limit, pinned so that widening the question is a
+        # choice somebody makes and not something that happens: it reads the
+        # first cell and nothing else.
+        source = PREDICTED.replace("| **two** | y |", "| y | **two** |")
+        self.assertEqual(anchors.predictions(self.sheet(source))[0], 1)
+
+    def test_the_name_annotated_where_two_mutants_differ_by_shape_is_read(self):
+        # The first version of this question read the whole cell only, so
+        # `141-the-guard-a-later-guard-masked.py`, which writes the name as a
+        # code span and then says how that mutant differs from its sibling,
+        # counted as predicting neither of its two mutants. A rule too strict
+        # fails in the direction that looks modest (#174), and it put three
+        # live mutants into #259's population that were never in it.
+        source = PREDICTED.replace(
+            "| **two** | y | 21a row 2 |",
+            "| `two` (one edit, the `onImported` flag alone) | y | 21a row 2 |")
+        self.assertEqual(anchors.predictions(self.sheet(source))[:4], (0, 1, 2, 2))
+
+    def test_no_first_cell_in_the_store_names_two_of_its_own_mutants(self):
+        # The loose half of that reading, bounded by a measurement rather than
+        # by a hope: a first cell naming a *second* mutant of the same sheet in
+        # a code span would credit a prediction nobody wrote. None does, on 1
+        # November 2569. This is a dated claim about the store and goes red if
+        # somebody writes one, which is the point of pinning it (#54).
+        for path in anchors.sheets():
+            _files, mutants, _superseded, env = anchors._module(path)
+            names = set(anchors._value(key, env) for key in mutants.keys)
+            fenced = False
+            for line in anchors._docstring(path).split("\n"):
+                if line.strip().startswith("```"):
+                    fenced = not fenced
+                    continue
+                if fenced or not line.strip().startswith("|"):
+                    continue
+                first = line.strip().strip("|").split("|")[0]
+                spans = [span for span in anchors.CODE_SPAN.findall(first)
+                         if span in names]
+                self.assertLessEqual(len(spans), 1,
+                                     "%s -> %r" % (os.path.basename(path), first))
+
+    def test_a_sheet_with_no_docstring_at_all_predicts_nothing(self):
+        self.assertEqual(anchors.predictions(self.sheet(SHEET_SOURCE))[:4],
+                         (2, 1, 2, 0))
+
+    def test_a_mutant_withdrawn_to_a_record_is_counted_apart_and_not_asked(self):
+        # A `SUPERSEDED` mutant is a record of a claim proved against code that
+        # has gone, and a record is not a sheet's to rewrite (#54). The
+        # withdrawn figure is asserted and not inferred from `asked` dropping,
+        # because what the question promises is that it said so out loud: one
+        # that becomes applicable again is a live mutant with no prediction.
+        source = PREDICTED.replace(
+            "| **two** | y | 21a row 2 |\n", "") + "SUPERSEDED = {'two'}\n"
+        self.assertEqual(anchors.predictions(self.sheet(source)),
+                         (0, 1, 1, 1, 1, 0))
+
+    def test_a_sheet_whose_mutants_cannot_be_read_is_said_out_loud(self):
+        # Counting it as nothing would make this question's figure look better
+        # than it is, which is the failure `check()` was rewritten about.
+        self.assertEqual(anchors.predictions(self.sheet("MUTANTS = {}\n"))[0], 1)
+
+    def test_the_real_store_can_be_asked_of_every_sheet(self):
+        # What is assertable about the real store while the population is still
+        # red: that every sheet was read and none of them was unreadable, so
+        # the figure the run prints is about all of them. The 889 is pinned
+        # nowhere - a hand-kept number in a store that grows every ticket is
+        # already wrong.
+        #
+        # Its output is swallowed on purpose. Asking the real store prints a
+        # line per unpredicted mutant, which was 897 of this file's 1057 output
+        # lines and buried the other 96 tests' reds in them. The figure belongs
+        # to the run somebody does by hand.
+        sink = io.StringIO()
+        with contextlib.redirect_stdout(sink):
+            problems, read, asked, with_row, withdrawn, _fenced = anchors.predictions()
+        self.assertEqual(read, len(anchors.sheets()))
+        self.assertEqual(problems, asked - with_row)
+        self.assertGreater(with_row, 0)
+        self.assertGreater(withdrawn, 0)
+        self.assertEqual(sink.getvalue().count("NO PREDICTION"), problems)
 
 
 if __name__ == "__main__":

@@ -368,6 +368,12 @@ citation.
 
 ### Mutants and sweeps
 
+- **A rule the store states four times can be a rule nothing asks** — *read the sweep against the
+  table written before it* is checkable only where that table is in a file, and #248's was in the
+  conversation, which makes every sentence citing it unfalsifiable with the author as the reviewer.
+  Ask where a rule's own **input** is kept before trusting a run that cites it; the per-file count
+  of who keeps it is not the per-mutant one (#174); and the instrument that would ask it, red over
+  the store on its first run, lands unwired with the population's ticket (#200, #196). (#255)
 - Read a sweep five ways: a **MISS** means the anchor moved; a **survivor** may be a claim never
   at risk (delete the mutant, mark ☑); a mutant that **kills too much** has stopped the
   application; a **survivor on a row nobody suspected** is an overclaim; and a sweep **cannot see

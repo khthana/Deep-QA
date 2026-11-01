@@ -190,6 +190,44 @@ both corrected by hand with a date on the measurement. The other three marks'
 wording, which diverges the same way and is a different ticket's blast radius
 (#119). And which *kind* of half-walked a row means - a person, a ticket, or
 nothing at all - which is written in the row and counted by hand.
+
+## The seventh question, unwired: does a mutant say beforehand what it kills?
+
+`mutation/README.md` states the rule four times - a sweep is read by whether
+each mutant died **at the assertion its sheet's table named before the run** -
+because the tell that a mutant has quietly become a twin of another is the
+*name* of the assertion that dies and not the kill count: two duplicates kill
+exactly the same number of rows (#201). The table in the sheet's own docstring
+is where that prediction lives.
+
+Nothing asked whether the table was there. The two-axis review of #248 found
+the sentence *every mutant matched the table written before the sweep* to be a
+claim nobody could check: that ticket's table was in the conversation and in no
+file, which is the shape of claim this whole file exists not to believe, and the
+author was the reviewer. Measured on 1 November 2569 over 141 sheets and the
+1165 mutants that are still live: 55 sheets give every one of them a row, 2 give
+some, **83 give none**, and one holds nothing but a withdrawn record - so the
+question is red over **85** sheets and **889** mutants have no written
+prediction at all (#255).
+
+`predictions()` asks of each mutant whether its own sheet's docstring holds a
+table row whose first cell is its name. It calls `sheets()` and `_module()`, so
+a sheet added tomorrow is in this question and in `check()` or in neither
+(#126).
+
+**It is not wired into the run**, and that is this store's answer to the shape
+rather than a softening of it: the first run is a red gate over a population no
+ticket has fixed, so the instrument lands unwired with a ticket for the gap
+instead of wired with the gap marked - `swallowed-refusals.js` (#200, #203) and
+`save-window-fields.js` (#243, #249) both landed that way. The population is
+#259. Run it by hand, which is the only thing that runs it:
+
+    python mutation/anchors.py predictions
+
+**What it cannot measure is written beside its own numbers**, in
+`predictions()`'s docblock rather than here, which is where #255's second
+acceptance criterion asks for it and where the censuses in `frontend/scripts/`
+keep theirs (#226, #247). It is one list and not two (#97).
 """
 
 import ast
@@ -1212,7 +1250,148 @@ def legends(files=None):
     return problems, read, marks, counted
 
 
+def _docstring(path):
+    """The module docstring of one mutation sheet, or the empty string."""
+    with io.open(path, encoding="utf-8") as handle:
+        return ast.get_docstring(ast.parse(handle.read())) or u""
+
+
+CODE_SPAN = re.compile(r"`([^`]+)`")
+
+
+def _predicted(doc):
+    """(the names a table row's first cell offers, lines skipped in a fence).
+
+    Fenced lines are skipped for the reason `_rows()` skips them: a docstring
+    showing what a row looks like is explaining the table, not writing one.
+
+    A cell offers two names and not one: the **whole** cell stripped of
+    backticks and of bold, because the sheets write a name all three ways, and
+    every **code span** inside it, because a sheet annotates the name where two
+    mutants differ by their shape - `141` writes
+
+        | `importrereadstalewins` (one edit, the `onImported` flag alone) | ...
+
+    and the first reading of this, which took the whole cell only, printed both
+    of that sheet's mutants as unpredicted over a sheet that predicts them by
+    name. A rule too strict fails in the direction that looks modest (#174), and
+    the figure it reported was wrong by three live mutants over `141` and `206`.
+    The loose half can credit a prediction nobody wrote, where a first cell
+    names a *second* mutant of the same sheet in a span: no cell in the store
+    does on 1 November 2569, measured, and `anchors_test.py` holds that as a
+    dated assertion rather than as a hope.
+    """
+    names, fenced, skipped = set(), False, 0
+    for line in doc.split("\n"):
+        if line.strip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            skipped += 1
+            continue
+        if not line.strip().startswith("|"):
+            continue
+        first = line.strip().strip("|").split("|")[0]
+        names.add(first.strip().strip("`*").strip())
+        names.update(CODE_SPAN.findall(first))
+    return names, skipped
+
+
+def predictions(paths=None):
+    """(problems, sheets read, mutants asked, with a row, withdrawn, fenced) - #255.
+
+    Takes its world as an argument for the reason `catalogue()` does: the only
+    way to assert that a missing prediction is *found* rather than that today's
+    store happens to hold one is to hand it a sheet missing one.
+
+    Not called by the run below. The module docstring says why, and what to run
+    when the population behind #259 is empty.
+
+    **Seven things it does not look at**, written here beside the numbers it
+    prints, because a found guard counted as enough reads as a stronger claim
+    than the instrument made (#226, #247):
+
+    1. Whether the row says *which* assertion. It reads the first cell, so the
+       compliant figure is an upper bound: of the 57 sheets holding a row for a
+       live mutant on 1 November 2569, 55 have a third column and **47** have at
+       least one row naming a spec, a row or an assertion. A question asking
+       that too would be red over 94 sheets, which is the option the owner was
+       offered that day and did not take (#259 carries it).
+    2. Whether the table was written **before** the sweep, which no static
+       reading can say. 13 of the 14 newest sheets landed in the same commit as
+       the acceptance sheet carrying their sweep's result, so `git` cannot tell
+       the prediction from the record either; what answers it is the two-commit
+       rule in `mutation/README.md` and not an instrument.
+    3. A mutant named in a second column, or in prose. `_predicted` reads the
+       first cell, in the two shapes the store writes a name in there.
+    4. A **stale** row, naming a mutant a rename took away: it asks of each
+       mutant and not of each row, which is `catalogue()`'s species one layer
+       in, and `check()`'s `SUPERSEDED NAMES NO MUTANT` from the other side.
+    5. A prediction table written into `docs/acceptance/` rather than into the
+       docstring. Nine sheets there use the phrase *before the sweep*, and
+       whether each holds a table or only the sentence is unread.
+    6. Which question answered, if the row and the count are read apart: the
+       `problems` figure adds a per-mutant finding to the per-sheet
+       `NO READABLE MUTANTS`, as the six questions above also do, so the count
+       is read with the names printed beside it and not on its own.
+    7. A mutant withdrawn to a record (`SUPERSEDED`), whose prediction is
+       history and whose record is not a sheet's to rewrite (#54). Those are
+       counted apart and not asked - one sheet holds nothing else, and reads as
+       neither covered nor bare - and one that becomes applicable again is a
+       live mutant this question then reaches, which `check()` reports.
+    """
+    if paths is None:
+        paths = sheets()
+    problems = read = asked = with_row = kept = skipped = 0
+    for path in paths:
+        short = os.path.relpath(path, ROOT).replace("\\", "/")
+        _files, mutants, superseded, env = _module(path)
+        if not isinstance(mutants, ast.Dict) or not mutants.keys:
+            # The same finding `check()` and `catalogue()` make of it, counted
+            # here too: a sheet whose mutants cannot be read holds an unknown
+            # number of unwritten predictions, and passing over it quietly
+            # would make this question's figure look better than it is.
+            problems += 1
+            print("NO READABLE MUTANTS %s" % short)
+            continue
+        read += 1
+        named, fenced = _predicted(_docstring(path))
+        skipped += fenced
+        for key_node in mutants.keys:
+            name = _value(key_node, env)
+            if not isinstance(name, str):
+                problems += 1
+                print("UNREADABLE MUTANT NAME %s" % short)
+                continue
+            if name in superseded:
+                kept += 1
+                continue
+            asked += 1
+            if name in named:
+                with_row += 1
+            else:
+                problems += 1
+                print("NO PREDICTION %s %s" % (short, name))
+    print("predictions: sheets %d | mutants %d | with a row %d | without %d | "
+          "withdrawn to a record and not asked %d | "
+          "lines skipped inside fences %d | problems %d"
+          % (read, asked, with_row, asked - with_row, kept, skipped, problems))
+    # Everything it counted, not only what it judges by: a caller that can read
+    # the withdrawn and the fenced figures can assert they were *said* rather
+    # than inferring it from a number that moved (#40, #96).
+    return problems, read, asked, with_row, kept, skipped
+
+
 if __name__ == "__main__":
+    if sys.argv[1:]:
+        # The seventh question, which the no-argument run does not ask. Anything
+        # else is refused rather than falling through: a mistyped word that ran
+        # the six questions and printed `problems 0` would read as the seventh
+        # being clean over a store where it is red over 85 sheets.
+        if sys.argv[1:] != ["predictions"]:
+            print("usage: python mutation/anchors.py [predictions]")
+            sys.exit(2)
+        sys.exit(1 if predictions()[0] else 0)
     misanchored = check()
     undocumented = commands()[0]
     miscounted = columns()[0]
