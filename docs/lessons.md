@@ -17140,3 +17140,48 @@ code is non-zero when any of **six** questions is red. Those are property senten
 records, so they were corrected and told when they changed, while the paragraphs recording the day
 the question landed unwired stayed where they were (#54, #130, #154). What a diff touches is what a
 diff proofreads, and this diff touched what two files **count** (#154).
+
+## #229 — the walk that was not in any mark column, and the answer that read the screen back
+
+#197's survey left one row of its 47 with a colour claim that nothing asserted and nobody had
+walked: `24-teacher-dashboard.md`'s criterion 2, whose *a white card, not a red bar* half sat
+inside a **⚙** row. That mark is what made it invisible. The sheet's own walk log said *every row
+that is not ⚙ was walked*, and the census that counts the hand-walk queue counts **◐ and ☐ in each
+table's mark column** — so a walk owed on a ⚙ row is in neither place. It was in a ticket, and
+only in a ticket.
+
+That is the first thing this one teaches, and it arrived as a wrong sentence of ours rather than
+as a finding: the same afternoon, the queue was reported as **empty** on the strength of a mark
+count, with #229 open on the board the whole time. *The queue is empty* is a claim about two
+populations — the marks and the tracker — and counting one of them answers confidently for both.
+
+### The question a seam cannot ask has to be asked in a form the screen cannot answer
+
+The row's second half is *does the person read this as an explanation or as an error*, which is
+why the ticket said a person must walk it. Asked as **"does it read as an explanation?"**, the
+answer came back as the two sentences that were on the screen, pasted. That is not a refusal to
+answer; it is what a question invites when the thing it names is also the thing being looked at —
+and it is the same shape as #163's walk two hours earlier, where a reported sentence could not be
+told from a reading of the page.
+
+What fixed it was not asking harder but asking in a form whose answers the screen does not hold:
+*a teacher opening this for the first time — is the system telling them the state of the term, or
+telling them something is wrong?*, with a third option for *cannot tell*. Those are three
+feelings, and the page carries none of them. The answer was the first, and the reason given was
+the second sentence of the card — the one that says what has to happen before sections appear, and
+who makes it happen. **Nothing a person can read off the screen is evidence for a claim about how
+the screen reads.**
+
+### The half an instrument can reach, measured beside the half it cannot
+
+The colour half is the other kind, and it was measured rather than looked at: `bg-white`
+`rgb(255, 255, 255)`, `border-slate-100` `rgb(241, 245, 249)` at 0.8px, `rounded-xl`, `p-8`,
+`text-primary` `rgb(15, 42, 96)` over `text-slate-500` `rgb(100, 116, 139)`, and **zero elements
+on the page with a red-toned background**. The card also carries no `role` and no `aria-live`, so
+it does not announce itself as an error either. The sheet records those by token and not as
+*white* and *red*, which is what makes the row re-readable by somebody who was not there.
+
+Both halves passed, so the ticket's third closing criterion — *if what is seen is not a white
+card, this becomes a defect of the screen and a new ticket* — did not fire. The row keeps its ⚙:
+the mark says the browser seam proved the row's other claim, and the sheet now says beside it when
+the colour half was walked and by whom, which is what #197's marker had been holding a place for.

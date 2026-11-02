@@ -1231,6 +1231,14 @@ citation.
   own old note had said so in September. Keep the behaviour if the configuration is not shipped,
   but write the condition and its date beside the constant — and then ask which screens the
   condition was drawn from, because on this ticket one of four was already outside it. (#113)
+- **The hand-walk queue has two populations, and the mark columns are only one of them** — a walk
+  owed on a **⚙** row is in no sheet's ◐ or ☐, so a census of the marks answers confidently for a
+  queue it cannot see, and the other half is the tracker. *The queue is empty* is a claim about
+  both. (#229, #197)
+- **A half only a person can answer has to be asked in a form whose answers the screen does not
+  hold** — ask *does it read as an explanation* and what comes back is the sentence that is on the
+  screen, which is #163's rule met from the asking side: offer the feelings instead (telling the
+  state · telling something is wrong · cannot tell), because the page carries none of them. (#229)
 - **Every automated row asks whether a control works; only a person asks whether it is there to be
   found** — or whether responding was worth offering. (#45, #40)
 - Not drawing a thing is not the same as not leaving a hole where it was, and drawing a thing is
