@@ -262,8 +262,10 @@ e2e/
 │   └── program-subjects-screen.js ┘
 ├── probes/                instruments, not rows: nothing measures them and no gate runs them,
 │                          kept because nothing else can read their answer again — #169, #219,
-│                          #221, #222, #238, #241, #257, #258, #261 (read off the directory on
-│                          3 November 2569, where this line still named the first four)
+│                          #221, #222, #238, #241, #257, #258, #261, #264 (read off the
+│                          directory on 3 November 2569, where this line still named the first
+│                          four; #264's landed the same evening and the count in the root
+│                          CLAUDE.md moved with it)
 └── tests/                 named for the rows they cover
 ```
 

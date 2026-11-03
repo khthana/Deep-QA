@@ -165,7 +165,9 @@ citation.
   else. (#225)
 - **A ticket written from another ticket's closing sweep inherits that sweep's population** — a
   sweep is evidence about the mutants somebody ran (#107, #68), so re-derive the population from
-  the catalogue before pricing the fix. (#223)
+  the catalogue before pricing the fix. **And a ticket split out of another inherits that one's
+  list of widths, screens or values**, which is why its headline can name a boundary nothing was ever
+  asked at: bisect the property before quoting the number. (#223, #264)
 - **A ticket that names a race has named a window, not the population of ways in** — measure for
   the raceless sibling before accepting the sequence the ticket wrote, because that one lasts until
   a reload and so is the one a person meets. (#179)
@@ -223,6 +225,10 @@ citation.
   alike the two look on the screen. So ask the delivered code who picked each number before writing
   the owner's question: that is where the option nobody listed comes from, and it can buy exactly
   what the divergence would have (#45, #204). (#156)
+- **An option written as *X or Y* is two options, and pricing them as one row can hide a no-op
+  beside a regression** — #66's *a row that names two ways in is two rows*, met in a cost line.
+  And a candidate's expensive half is usually paid where nobody was looking for it, which is what
+  hands over the option nobody listed (#77, #156). (#264)
 - **And which of them are *options at all* is decided by the population, not by the screen the
   ticket was written on** — #156's twin for the other half of a cost line, and #128 one species
   along: an option priced as *the mechanism needs nothing* can name a value a sibling screen's
@@ -1305,7 +1311,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Twelve censuses, as instruments. `npm run census` runs all twelve since 30 October 2569, when #249 closed the population `save-window-fields.js` was a red gate over and it went in with nothing changed in the script (#200). Their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257, #258, #261). Not rows and not gates — nothing in the repository runs them, and **eight** of them are specs the runner only sees when they are copied into `tests/` by hand — counted on 3 November 2569, where this line read *seven*, which was right until #261's probe landed. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257, #258, #261, #264). Not rows and not gates — nothing in the repository runs them, and **nine** of them are specs the runner only sees when they are copied into `tests/` by hand — counted on 3 November 2569, where this line read *seven* in the morning and *eight* for the hours between #261's probe and #264's, both of which landed the same day. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|

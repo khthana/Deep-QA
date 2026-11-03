@@ -17631,3 +17631,80 @@ cells, which is what #119 calls a deferral nobody can find; what stays in those 
 dated decision, the measurement, and a pointer. A ticket whose own body names who may close it
 and on what result is still closed by the owner's word, and what the closing comment owes is to
 say which of the two it was closed on (#54).
+## #264 — the option in the parenthesis was two options, and one of them bought nothing
+
+#264 was split out of #261 by the owner's answer **จ** and arrived as a question rather than a
+task: its options move values `DEEP-QA-FRONTEND/src/components/Navbar.js` chose — `w-1/3` at
+`:143` and `:167`, `h-[64px]` at `:140`, `hidden … sm:flex` at `:168` — so under `docs/06`
+§Out of Scope the choice is the owner's and the work is the price (#77, #228, #156). Which of
+them move a *delivered* value is itself the #156 question, and the answer is not uniform: the
+arm that reverts #261 moves a value the **rebuild** chose, the delivered file carrying
+`whitespace-nowrap` on the option rows and not on the trigger
+(`DEEP-QA-FRONTEND/src/components/RoleDropdown.js:103`), which makes undoing it a change to the
+owner's own answer rather than a divergence from the delivered screen. The ticket said so itself, and said where the instrument was: *the measurement
+exists already, adding the widths to its list reads it.* So the deliverable was twelve widths from
+1366 down to 540, each arm reloading the page, reading the unmodified bar, applying its one
+candidate and reading again, because *what does this option make worse* is answerable only
+against today (#194) and a candidate must be read back off the element it was meant to change
+(#156, #260).
+
+**The first thing the measurement refuted was the ticket's own headline.** *Below 1024px* was the
+title, and at 1024 not one box has lost a pixel: every number equals 1366's. Bisecting the six
+properties gives 916 for the name's second line, 857 for the logo's first lost pixel, 791 for the
+third line, 659 for the row's overflow, 660 for the logo reaching zero and 639 for the name going
+away, which is the delivered `sm`. 1024 was a width in #261's own list, which steps 1024 → 768 and
+so never asked anything in between — a diagnosis inherited from the ticket it was split from
+(#223, #66), and the property that goes first is the **name**, not the logo the title leads with.
+
+**The second was that option ข was two options.** Its parenthesis read *`shrink-0` at the left
+column or at the `<img>`*, and measured apart they are at opposite ends of the range: at the
+`<img>` nothing moves at all, every number at every width identical to today, because the `<a>`
+and the `div` between the image and the row still shrink and `w-auto` follows the box that holds
+it; at the column the logo is indeed whole everywhere, and the name wraps at 1024 instead of 916,
+reaches three lines from 960 instead of 791, and the **row overflows sideways by 4 to 218 pixels**
+from 960 down, where today it does not overflow at all until 659. One half of the option is a
+no-op and the other is worse than *leave it* at every width it touches, which is #164's rule met
+in a price: a candidate that moves the damage out of the bar reads as free in every box inside it.
+So an option written as *X or Y* is two options, and pricing it as one hands the owner a single
+row standing for a no-op and a regression (#66's *a row that names two ways in is two rows*, in a
+cost line).
+
+**The third was where ค and ง are expensive, which is the wide end and not the narrow one.** The
+picker cutting its own label costs the middle box 21 pixels **at 1366**, 498 down to 477, so the
+role's name is elided on the widest screen in the building; and letting the row wrap costs the bar
+84 pixels at 1366 and 124 below 768, because the three boxes' bases — a third, the content, a
+third — already exceed the row at full width, so permitting a wrap takes one immediately. Both
+prices are paid by the mechanism being on all the time, which is what hands over **the option
+nobody listed**: the same candidate behind the boundary the bisection already measured, 857, where
+above it nothing changes from today and below it the numbers are ค's or ง's. That option's own
+price is a condition line in each of two files and a number the delivered screen never chose,
+which is one more thing only the owner may pick (#156, #247).
+
+The arm that made all of this legible was the control group **in time**: `whitespace-nowrap` taken
+back off the trigger, which reproduced #264's own *before #261* column character for character —
+156 and 121×48 at 768, 131 and 75×48 at 640 — and added what the ticket does not say, that before
+#261 the picker was two lines and **2 pixels outside the 64px bar at every width including 1366**,
+14 at 576. So *#261 widened it* is true and incomplete: #261 closed an overflow that was there on
+every screen and moved the whole cost to the two sides. Reverting it is an option with a price
+written down, not a free way out.
+
+**And the probe written to catch that mistake had made it.** Its first `WIDTHS` ran
+1366 · 1280 · 1152 · 1024 · 960 · 896 · 832 · 768 · 704 · 640 · 576 · 540, which is #261's list
+with four widths added and holds **not one** of the six boundaries its own bisection returns, so
+every arm was read between the breaks and never at them — the same inherited list, one file
+further in, found by the review rather than by the run (#223, and the run cannot see it: twelve
+widths of numbers look thorough). Re-reading the five arms with 916, 857, 791 and 659 in the list
+cost 1.2 minutes and added the two sentences the ticket most needed. First, **ค and *before #261*
+are one mechanism** differing only in what the button does when the room runs out: the middle box
+measures 402 · 388 · 373 · 336 at those four widths in **both** arms, because both let it shrink,
+which is what the delivered screen does; before #261 the button then wrapped to two lines and hung
+2px outside the 64px bar, and under ค it elides on one line inside it. So ค is the revert of #261
+without the overflow coming back with it — an option neither the ticket nor the first draft of the
+answer could see. Second, **#261 did not make the sides worse, it moved the whole price**: before
+it, at 916 down to 791, the logo was 156 and the name on one line and the picker paid alone;
+after it the picker is 498×44 at every width and never leaves the bar, and the two sides pay
+everything.
+
+The probe stays in `e2e/probes/` because nothing else can read these numbers again (#169), and
+its docblock says what it cannot say: one account, one browser, it prices and does not decide, and
+it is silent on whether the name should be hidden below `sm` at all.
