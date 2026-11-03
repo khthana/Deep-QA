@@ -327,6 +327,11 @@ async function signOut(page) {
 
 module.exports = {
   breadcrumb,
+  // #261 needed the bar itself - its rows read the picker's box against the
+  // bar's. The name was defined here and not exported, so the ticket's first
+  // draft retyped it in two files, which is a census of the places somebody
+  // typed it rather than one name (#231).
+  navbar,
   menu,
   menuLink,
   menuEntries,

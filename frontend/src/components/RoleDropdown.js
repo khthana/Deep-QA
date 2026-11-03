@@ -191,10 +191,43 @@ function RoleDropdown({ setAlert, onStayedPut }) {
 
   return (
     <div className="relative" ref={dropdownRef}>
+      {/*
+        `whitespace-nowrap` is #261, answered จ by the owner on 3 พฤศจิกายน 2569.
+
+        #231's label made the longest scope name in this organisation wrap, and
+        two 24px lines inside `py-2.5` are 68px in a bar that is 64px: over the
+        top by 2px and under the bottom by 2px, which is what the walk of
+        `docs/acceptance/10-application-shell.md` row 3 found the day before.
+
+        Every number that could have been moved instead is the delivered
+        screen's: `DEEP-QA-FRONTEND/src/components/RoleDropdown.js` writes this
+        same `px-5 py-2.5`, the same absent `nowrap`, and drew a scope here too
+        - `ชื่อ - ปี`, longer again - so the overflow is something the rebuild
+        walked into (#103) and the wording was the owner's (`docs/06` §Out of
+        Scope). The four options were priced off a screen by
+        `e2e/probes/261-the-button-in-the-bar.spec.js`, which also refuted the
+        ticket's claim that each of them costs this file alone: the button is
+        itself `flex`, so the label is an anonymous flex item that `truncate`
+        cannot reach, and a cut needs the label wrapped and the two `w-1/3`
+        columns of `Navbar.js` touched - without which nothing is cut at all
+        and at 640px the button leaves the bar sideways instead.
+
+        What this buys, measured: the button comes to 498×44 and sits inside
+        the bar with 10px of air above and below, and at 1280 and 1024 - the
+        widths this suite and the hand-walks use - the logo's 156px and the
+        user name's 129×24 are to the pixel what they were. Below 1024 the two
+        sides do give room up; the probe read the same bar already wrapping the
+        name at 768 and already squeezing the logo at 640 with no `nowrap`
+        anywhere, so that is the bar's own defect and is #264.
+
+        `261a` holds both halves - one line, and the box inside the bar - and
+        asserts the relation rather than 44px, because the rule is that the
+        button fits whatever the bar is (#145).
+      */}
       <button
         onClick={() => setOpen(prev => !prev)}
         disabled={busy}
-        className="flex w-auto items-center justify-between rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
+        className="flex w-auto items-center justify-between whitespace-nowrap rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
         type="button"
       >
         {label(worn)}

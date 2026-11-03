@@ -51,12 +51,20 @@ working in. Dedicated ports and an explicit `reuseExistingServer: false` are wha
 ### Ports
 
 **This is the one statement of the port *rule*.** Which ports this suite uses is in `support/env.js` and in the root
-`CLAUDE.md`; what is here is why a run may need them overridden and how to tell the two failures apart. Twenty-five
-run blocks in `mutation/`, the three docblocks in `probes/`, and `support/env.js` point here instead of carrying a
-number of their own — a port typed into twenty-eight places is a number that is already wrong (#237,
+`CLAUDE.md`; what is here is why a run may need them overridden and how to tell the two failures apart. **Thirty-four**
+run blocks in `mutation/`, **five** docblocks in `probes/`, and `support/env.js` point here instead of carrying a
+number of their own — a port typed into **forty** places is a number that is already wrong (#237,
 26 October 2569; #244 added the twenty-fourth run block on the same day and #234 the twenty-fifth on
 27 October 2569, which is what a hand-kept number in a directory that grows every ticket does — the
 count here is `grep -rl Ports mutation/*.py`, which is how these two were taken).
+
+**And all three of those figures were stale when #261 re-read them on 3 November 2569**, which is the
+same rule one turn later: they stood at *twenty-five*, *three* and *twenty-eight* while the directories
+held 34, 5 and 40. Only one of the nine sheets between them was #261's own, and its probe carries no
+pointer at all — so eight of the nine were other tickets' and nothing counted them. The numbers above
+are `grep -l Ports mutation/*.py | wc -l` and the same over `e2e/probes/*`; a figure read here is a
+measurement of the day it was taken, and this paragraph is the record of that day rather than a
+correction of the one above it (#54, #119).
 
 **A number read here is a measurement of its own day, this one included.** On 26 October 2569 the reserved ranges
 were `3024-3123` · `3124-3223` · `3324-3423` · `3424-3523` · `4261-4360` · `4361-4460` · `4561-4660` · `4661-4760` ·
@@ -254,7 +262,8 @@ e2e/
 │   └── program-subjects-screen.js ┘
 ├── probes/                instruments, not rows: nothing measures them and no gate runs them,
 │                          kept because nothing else can read their answer again — #169, #219,
-│                          #221, #222
+│                          #221, #222, #238, #241, #257, #258, #261 (read off the directory on
+│                          3 November 2569, where this line still named the first four)
 └── tests/                 named for the rows they cover
 ```
 
