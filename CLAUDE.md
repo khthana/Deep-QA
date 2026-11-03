@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 1 November 2569 that is
-`2026-11-01-the-rows-that-are-records.md`. Read it before taking work. Each handoff
+will cost time — as of 2 November 2569 that is
+`2026-11-02-the-ear-the-owner-closed.md`. Read it before taking work. Each handoff
 names the one it supersedes for state, so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -120,6 +120,11 @@ citation.
 - **A ticket's reason for *not hurting yet* is a claim with a date too** — and it is the claim that
   decided how long the ticket waited, so reading it as still true is an argument for closing the
   ticket unfixed. (#81)
+- **An expiry condition that names an authority outside the repository is measured in two halves,
+  and what the measurement usually hands back is a narrower condition rather than an answer** —
+  the public half, and the organisation's own documents no instrument can reach. What lands beside
+  the condition is the date, what was looked at and the half still owed, because a search that
+  found nothing is not a finding of *there is none* (#121, #54). (#263)
 - **An owner's answer reaches the population the ticket's census had, and the reason the owner gave
   is a sentence about those screens and silent about their siblings** — so census the siblings by
   the mechanism and ask which of them carries a write that shortens its own list: that one's way in
@@ -313,12 +318,13 @@ citation.
   by X*, check the assertion reads X rather than passing it through. (#40, #96)
 - **A ☐ that names a ticket is a working link between two sheets, not a gap in one of them.**
   Never invent a fifth mark. (#97, #66)
-- **A ◐ is one of three kinds, and the third is the one a two-kind definition hides** — a request
-  no control can produce, which waits on nobody; an attribute that reached the DOM and needs an
-  ear, which is a real queue; and a half that waits on a **ticket**, which is not in the walk queue
-  at all. The row says which, and they are counted apart — the split is a survey with a date on it
-  and lives in §#157, because no instrument reproduces it. (#85, #111, #122, #157 — told under
-  *The ◐ and ☐ rows* and §#157)
+- **A ◐ is one of four kinds, and the kind a shorter definition hides is the one that matters
+  most** — a request no control can produce, which waits on nobody; an attribute that reached the
+  DOM and needs an ear, which is a real queue; a half that waits on a **ticket**, which is not in
+  the walk queue at all; and a half an **owner has closed**, which waits on an expiry condition
+  rather than on anybody. The row says which, and they are counted apart — the split is a survey
+  with a date on it, in §#157 and re-measured in §#263, because no instrument reproduces it.
+  (#85, #111, #122, #157, #263 — told under *The ◐ and ☐ rows*, §#157 and §#263)
 - **A legend is a claim about the sheet's own rows, and its two halves can contradict each other** —
   `python mutation/anchors.py` asks whether every mark a row carries is defined, in one spelling
   across the sheets, and cannot ask whether the legend's own count sentence is right: that one is a

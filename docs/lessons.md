@@ -7780,6 +7780,15 @@ none unnamed, which is the figure to read if you are counting the walk queue —
 with a date rather than a property of the store, because no instrument reproduces it: `legends()`
 counts all four marks together and cannot see a kind.
 
+**That figure is this paragraph's own measurement and is not the one to read today.** The 23 marks
+of 8 October 2569 are 12 on **3 November 2569**, most of the ear rows having been walked on
+2 November, and §#263 holds the re-survey and the **fourth** kind the owner's answer that day
+created. The numbers above are left where they are because a dated survey says what one
+measurement returned (#54); what expires with them is the sentence *which is the figure to read*.
+Of the rows this section names, neither reads as a ◐ any more: `43-program-level-all-students.md:66`
+and `47-profile-photo.md:68` had both stopped being half-walked by 1 November 2569, the second of
+them because #166 struck its criterion outright and left the row as a ☐ that is a record.
+
 The third kind is the one the two-kind definition had no room for, and it is the kind that matters
 most to read correctly, because a ◐ waiting on a ticket is *not* in the walk queue: asking a person
 to walk it is asking them to walk something that cannot pass yet. So the settled entry names all
@@ -17519,3 +17528,97 @@ question, and offered an exemption marker as the fix. The measurement says neith
 written, so the green route for a mutant string is value-preserving and the other question stays
 open. What was owed was the limit written beside the docblock's six, with the date (#226, #54) —
 not a marker for a population that is empty today (#141).
+
+## #263 — the fourth kind of ◐, and an expiry condition measured into a narrower condition
+
+#263 is not work. It is the **record of a question already answered**: on 2 November 2569, during
+the screen-reader walk, the owner asked *ทำไมต้องได้ยินเสียงด้วยครับ ในเมื่อการใช้งานจริง ไม่ได้ใช้*,
+and answered **ค** — close the ear half as a dated decision **and write the expiry condition beside
+it**. Nothing in the code changes; `role` and `aria-live` stay, and the mechanism halves of all
+seven rows of that family are ⚙ as before. The answer was already on the two rows it closes
+(`docs/acceptance/30-weighting-scheme.md:89`, `docs/acceptance/33-activity-editor.md:90`) and in
+the 2 November handoff, in commit `34b36d2`. What the ticket added was the question and each
+option's price, which had lived only in the chat — the place nobody can search (#119, and
+*an answered question lives only in the chat*).
+
+So this ticket's own work was to land the two things its answer leaves standing somewhere else.
+
+### The answer created a fourth kind of ◐, and the definition still said three
+
+§#157 settled, on 8 October 2569, that a ◐ is one of three kinds — a request no control can
+produce, which waits on nobody; an attribute that reached the DOM and needs an ear, which is a real
+queue; and a half that waits on a **ticket**, which is not in the walk queue at all. The ticket's
+own text names the fourth: **◐ by decision**, a half an owner has closed, which waits on an expiry
+condition rather than on anybody.
+
+That is not a fourth name for the third kind. The three are each a statement about *who is next*: a
+person, a ticket, or nobody ever. A ◐ by decision has no next at all until a condition outside the
+repository fires, and reading it as the ear kind puts it back in a queue the owner emptied, which
+is exactly the mistake §#157 was written to stop in the other direction — *asking a person to walk
+something that cannot pass yet*. The rule that the kind is prose and no instrument reproduces it
+survives the fourth kind unchanged: `legends()` counts 1,484 marks today and cannot see one.
+
+### The survey the answer expired, re-measured — the ◐ walk queue is one row
+
+§#157's split was **9 · 12 · 2** over 23 ◐ marks. The total has moved and so have two of its
+three parts — *permanent by structure* is **9** both times — and none of the move is this ticket's
+work. Measured by running the survey at each commit the figures were written at, reading the
+sheets out of git rather than off the disk (#141, #208):
+
+```
+f4da863  (#157,  8 Oct 2569)   walked 499 | half 23 | not 15 | gear 726
+8840ebd  (       1 Nov 2569)   walked 517 | half 26 | not 31 | gear 909
+5c7a081  (       2 Nov 2569)   walked 543 | half 11 | not 20 | gear 909
+HEAD     (       3 Nov 2569)   walked 543 | half 12 | not 19 | gear 910
+```
+
+So the population **grew** to 26 before it fell: *23 → 12* read as one move is a wrong premise,
+and what did the work is the screen-reader walk of 2 November, 26 → 11 in a day — which is the
+figure that afternoon's handoff wrote down itself. The twelfth is `10-application-shell.md:52`,
+which went **☐ → ◐** when #261 landed the next morning: a row gaining a walkable half is not a
+regression (#105). Re-surveyed on **3 November 2569**, per sheet, finding each table's mark column
+from its own header (#141) and reading only that column:
+
+```
+walked 543 | half 12 | not 19 | gear 910
+```
+
+which is 1,484, the figure `legends()` prints at the same commit — #174's rule from the other
+side, the counter reproducing the record's own total rather than offering a fourth opinion. The 12
+◐ read by hand as **9 permanent by structure · 1 waiting on a person · 2 by decision · 0 waiting on
+a ticket**. The one waiting on a person is `10-application-shell.md:52`, whose `prog.manager.0503@`
+half wants re-walking after #261's fix, and the two by decision are the rows this ticket records.
+
+So **the ◐ walk queue is one row**, where §#157's figure, read today, would have said twelve. That
+is the figure to carry; §#157's own paragraph keeps its date and its numbers and is not edited,
+because a dated survey says what one measurement returned (#54) — and the fourth kind is what makes
+the new split unreadable from the old one, since two of its twelve are in no queue at all.
+
+### The expiry condition was measured, and came back narrower rather than answered
+
+The ticket's condition is *การรับรองหลักสูตรหรือมหาวิทยาลัย เรียกร้องการเข้าถึง* — accreditation
+demanding accessibility — which on 2 November was explicitly **unmeasured**, and written as a
+condition that may fire rather than as an excuse that it will not (#54). Measured on **3 November
+2569**, in three searches of public sources:
+
+- **No source makes accessibility a requirement of programme accreditation.** The AUN-QA
+  programme-level guide is 8 criteria and 53 requirements and none of them names it; the nearest
+  hook is institutional-level, asking that published information be *readily accessible*, which is
+  about information being available and not about WCAG. Nothing was found linking AUN-QA, TQF or
+  EdPEx to a web-accessibility standard.
+- **What does exist is a legal line rather than an accreditation one.** §20(6) of the
+  พ.ร.บ. ส่งเสริมและพัฒนาคุณภาพชีวิตคนพิการ พ.ศ. 2550 gives a right of access to information and
+  communication technology, and a 2554 ministerial regulation sits under it (ราชกิจจานุเบกษา
+  เล่ม 128 ตอนที่ 38 ก, 20 พฤษภาคม 2554). TWCAG is a government translation of WCAG 2.0 and is
+  **guidance**; the 2022 inspection of 411 government websites was a committee's criteria and
+  scoring, not a statute.
+
+Neither half fires the condition, and neither says there is nothing. What the measurement did was
+**narrow the condition**: what is unmeasured is no longer *is there any requirement* but *does that
+regulation's reach, or KMITL's own accreditation documents, name a system that is internal and not
+a public website* — and no public search can answer that, because those documents are the
+university's. A public search finding nothing is weak evidence, and reading it as *there is none*
+is #121's mistake with a bigger blast radius: it would turn the owner's dated decision into a
+permanent one. So the date, what was looked at and the remaining half go beside the condition on
+both rows, and the ticket stays open, with the narrower question put to the owner rather than
+answered for them.
