@@ -17622,3 +17622,12 @@ is #121's mistake with a bigger blast radius: it would turn the owner's dated de
 permanent one. So the date, what was looked at and the remaining half go beside the condition on
 both rows, and the ticket stays open, with the narrower question put to the owner rather than
 answered for them.
+
+**That last clause expired the same evening, and the way it expired is the rule.** The owner
+answered `ปิด`, which closes the ticket without answering the question, and then
+`เปิดตั๋ว`, which moved the narrowed question onto the board as **#265** with the measurement
+above written into it so nobody searches again. So the condition no longer lives in prose in two
+cells, which is what #119 calls a deferral nobody can find; what stays in those cells is the
+dated decision, the measurement, and a pointer. A ticket whose own body names who may close it
+and on what result is still closed by the owner's word, and what the closing comment owes is to
+say which of the two it was closed on (#54).
