@@ -111,7 +111,7 @@ history*) ยังเขียว เพราะแถวนั้นไม่
 frontend ของ e2e เป็น dev server ที่คอมไพล์ใหม่ทุกครั้งที่ไฟล์เปลี่ยน **อย่าแก้ `frontend/src` ระหว่าง
 ที่ชุดเบราว์เซอร์วิ่ง** รอบนั้นไม่ใช่ทั้งโค้ดเก่าและไม่ใช่โค้ดใหม่
 
-| มัตแตนต์ | backend | เบราว์เซอร์ |
+| มัตแตนต์ | backend — ข้อที่ตาย | เบราว์เซอร์ — แถวที่ตาย |
 |---|---|---|
 | `notflagged` | **3** — *says so when the account was suspended while signed in*, *and when an assessor’s window closed while they were signed in*, *and when the account was left holding no grant* | **6** — `52a` แถว 1–6 |
 | `noroleisordinary` | **1** — *and when the account was left holding no grant* | **0** |

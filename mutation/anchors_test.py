@@ -1022,7 +1022,8 @@ class Predictions(TempStore):
         return [self.write(name, source)]
 
     def test_a_sheet_that_predicts_every_mutant_it_holds(self):
-        self.assertEqual(anchors.predictions(self.sheet()), (0, 1, 2, 2, 0, 0))
+        self.assertEqual(anchors.predictions(self.sheet()),
+                         (0, 1, 2, 2, 0, 0, 2))
 
     def test_a_mutant_with_no_row_is_a_problem(self):
         # The disease itself: 889 mutants were in this state when the question
@@ -1046,7 +1047,7 @@ class Predictions(TempStore):
         # The skipped count is asserted beside the problem: a reader that found
         # no fence at all would also report one problem here.
         self.assertEqual(anchors.predictions(self.sheet(source)),
-                         (1, 1, 2, 1, 0, 1))
+                         (1, 1, 2, 1, 0, 1, 1))
 
     def test_a_mutant_named_in_a_later_cell_is_not_read(self):
         # The documented limit, pinned so that widening the question is a
@@ -1102,12 +1103,127 @@ class Predictions(TempStore):
         source = PREDICTED.replace(
             "| **two** | y | 21a row 2 |\n", "") + "SUPERSEDED = {'two'}\n"
         self.assertEqual(anchors.predictions(self.sheet(source)),
-                         (0, 1, 1, 1, 1, 0))
+                         (0, 1, 1, 1, 1, 0, 1))
 
     def test_a_sheet_whose_mutants_cannot_be_read_is_said_out_loud(self):
         # Counting it as nothing would make this question's figure look better
         # than it is, which is the failure `check()` was rewritten about.
         self.assertEqual(anchors.predictions(self.sheet("MUTANTS = {}\n"))[0], 1)
+
+    # ---- #260: the row says WHICH assertion, the column found from the header
+
+    def test_a_row_that_fills_the_column_its_header_points_at_is_enough(self):
+        # The fixture's own header is `| name | what it does | what it kills |`
+        # and both rows fill the third cell, so the answer to #260's question is
+        # the same as the answer to #255's here. The count is asserted and not
+        # inferred from `problems` staying 0, because a reader that found no
+        # headed column at all would also print no problem if the new question
+        # were written to pass when it cannot ask (#226).
+        self.assertEqual(anchors.predictions(self.sheet()),
+                         (0, 1, 2, 2, 0, 0, 2))
+
+    def test_a_bare_cell_in_that_column_is_a_problem(self):
+        # The defect #260 is about, in its cheapest shape: the row exists, the
+        # first cell names the mutant, the sixth question is green over it, and
+        # the row says nothing about where the mutant dies.
+        source = PREDICTED.replace("| `one` | x | 21a row 1 |",
+                                   "| `one` | x | - |")
+        sink = io.StringIO()
+        with contextlib.redirect_stdout(sink):
+            got = anchors.predictions(self.sheet(source))
+        self.assertEqual(got, (1, 1, 2, 2, 0, 0, 1))
+        said = sink.getvalue()
+        # `NO ASSERTION COLUMN` holds `NO ASSERTION` as a substring, so the
+        # long count is asserted beside the loose one and the bare-cell kind is
+        # their difference - here 1 - 0. A test reading the loose count alone
+        # would pass over either kind.
+        self.assertEqual(said.count("NO ASSERTION COLUMN"), 0)
+        self.assertEqual(said.count("NO ASSERTION"), 1)
+        self.assertEqual(said.count("NO PREDICTION"), 0)
+        self.assertIn("21-rubrics.py one", said)
+
+    def test_an_em_dash_with_prose_beside_it_is_an_answer(self):
+        # `117-thai-pdf-line-breaks` writes `- (read the next paragraph)` for a
+        # mutant it predicts kills nothing, which is a claim and not an unwritten
+        # cell. Only a cell that is empty or nothing but dashes is unwritten.
+        source = PREDICTED.replace("| `one` | x | 21a row 1 |",
+                                   "| `one` | x | - (kills nothing, read on) |")
+        self.assertEqual(anchors.predictions(self.sheet(source))[0], 0)
+
+    def test_a_table_heading_no_such_column_is_said_apart(self):
+        # The two kinds are counted and printed apart, because the fix differs:
+        # a bare cell is a row to fill, a headless table is a header to name
+        # (`52-access-ended` and `83-refusal-that-names-the-rule` were both the
+        # second kind on 3 November 2569, and both held the answer in the cells).
+        source = PREDICTED.replace("| name | what it does | what it kills |",
+                                   "| name | what it does | notes |")
+        sink = io.StringIO()
+        with contextlib.redirect_stdout(sink):
+            got = anchors.predictions(self.sheet(source))
+        self.assertEqual(got, (2, 1, 2, 2, 0, 0, 0))
+        said = sink.getvalue()
+        self.assertEqual(said.count("NO ASSERTION COLUMN"), 2)
+        self.assertEqual(said.count("NO ASSERTION"), 2)
+        self.assertEqual(said.count("NO PREDICTION"), 0)
+
+    def test_the_column_is_found_from_the_header_and_not_from_its_place(self):
+        # #141's rule for the acceptance sheets, one store along: a sheet heads
+        # the column one way or another and may put it in the middle. This is
+        # what the owner chose on 3 November 2569 over reading the third cell,
+        # and it is the claim that makes the rule read `201`, whose words are in
+        # the header and not in the rows.
+        source = (PREDICTED
+                  .replace("| name | what it does | what it kills |",
+                           "| name | what it kills | what it does |")
+                  .replace("| `one` | x | 21a row 1 |", "| `one` | 21a row 1 | x |")
+                  .replace("| **two** | y | 21a row 2 |", "| **two** | 21a row 2 | y |"))
+        self.assertEqual(anchors.predictions(self.sheet(source)),
+                         (0, 1, 2, 2, 0, 0, 2))
+
+    def test_a_cell_holding_an_escaped_pipe_is_one_cell(self):
+        # The store writes `\|` for a pipe the renderer draws inside a cell, and
+        # `_cells()` has split on the unescaped pipe alone since #141's own
+        # question. The first version of this one wrote its own `split("|")`, so
+        # five live mutants on four sheets were read one cell to the left of the
+        # one their table heads - `34-activity-scores`, `37-student-results`,
+        # `38-learning-details` and `43-program-level-all-students`, each at a
+        # fragment holding a lone backslash. Every one of those cells is written
+        # under either reading, so no verdict moved and no number said so; what
+        # says so is this row, where the misread fragment is a dash and the real
+        # assertion is one cell further right. The two-axis review of
+        # 3 November 2569 found it; a primitive that exists is the fix (#168).
+        source = PREDICTED.replace("| `one` | x | 21a row 1 |",
+                                   "| `one` | x \\| - | 21a row 1 |")
+        self.assertEqual(anchors.predictions(self.sheet(source)),
+                         (0, 1, 2, 2, 0, 0, 2))
+
+    def test_a_mutant_with_no_row_is_not_asked_this_question_twice(self):
+        # One mutant, one finding: a missing row is `NO PREDICTION` and not also
+        # a missing assertion, or the `problems` figure double-counts the very
+        # population #259 closed.
+        source = PREDICTED.replace("| **two** | y | 21a row 2 |\n", "")
+        sink = io.StringIO()
+        with contextlib.redirect_stdout(sink):
+            got = anchors.predictions(self.sheet(source))
+        self.assertEqual(got, (1, 1, 2, 1, 0, 0, 1))
+        self.assertEqual(sink.getvalue().count("NO PREDICTION"), 1)
+        self.assertEqual(sink.getvalue().count("NO ASSERTION"), 0)
+
+    def test_the_real_store_says_which_assertion_for_every_live_mutant(self):
+        # The gate #260 asked for, wired rather than landed unwired, because the
+        # population it was red over on 3 November 2569 was two sheets and both
+        # were false reds - a header naming the seam over cells that held the
+        # rows all along. Measured, not hoped: 13 mutants of 1174.
+        sink = io.StringIO()
+        with contextlib.redirect_stdout(sink):
+            got = anchors.predictions()
+        problems, read, asked, with_row, _withdrawn, _fenced, with_assertion = got
+        self.assertEqual(read, len(anchors.sheets()))
+        self.assertEqual(problems, 0)
+        self.assertEqual(with_row, asked)
+        self.assertEqual(with_assertion, asked)
+        self.assertGreater(with_assertion, 0)
+        self.assertEqual(sink.getvalue().count("NO ASSERTION"), 0)
 
     def test_the_real_store_can_be_asked_of_every_sheet(self):
         # #259 closed the population on 1 November 2569, so this says what it
@@ -1128,7 +1244,8 @@ class Predictions(TempStore):
         # what the `NO PREDICTION` count below is read out of.
         sink = io.StringIO()
         with contextlib.redirect_stdout(sink):
-            problems, read, asked, with_row, withdrawn, _fenced = anchors.predictions()
+            problems, read, asked, with_row, withdrawn, _fenced, _said = \
+                anchors.predictions()
         self.assertEqual(read, len(anchors.sheets()))
         self.assertEqual(problems, 0)
         self.assertEqual(with_row, asked)

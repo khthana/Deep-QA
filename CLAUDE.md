@@ -140,6 +140,13 @@ citation.
   exists, so the option costs an edit at every caller that holds it and leaves the rule nowhere
   shared to live. And the cost line **you** write to replace the ticket's is a claim like the
   ticket's, refutable the same day. (#240)
+- **A ticket's options are priced in a unit, and the unit is a claim like its numbers** —
+  #77's cost line one layer out: where a ticket prices its options in the thing a hand
+  measurement counted and the run asks its question of something smaller, every price is
+  wrong by the ratio, and the owner answers a cheaper question than the one being built. Ask
+  what grain the instrument reports at before writing the owner's question, because the
+  option that is unaffordable per sheet can be the cheap one per mutant — and the option
+  nobody listed usually comes out of that remeasurement (#252, #247). (#260)
 - **An accepted price is a claim like a ticket's numbers, and measuring it can widen it** — the cost
   line's twin, for the cost of *not* fixing. Ask what the person can do about it, because the
   recovery they have may move the price rather than end it, and ask whether it reaches the work they
@@ -776,6 +783,12 @@ citation.
   shows the rule reads, while moving the rule's own input shows the instrument follows it, and the
   tell is that it names a file nobody has touched. Where the population comes from a rule restated
   in the script, say whose rows hold the real one. (#230)
+- **And the arrangement built to break it is a claim like the instrument** — #230 from the
+  failing side: the rule's own input can sit **twice** in the member you chose, so a faithful
+  removal of one copy changes nothing and reads exactly like an instrument that cannot see
+  its own defect (#117 one species along, from two implementations that agree to two headers
+  that agree). Ask how many copies the member holds, break the one that holds a single copy,
+  and move the input for the other half. (#260)
 - **An instrument that reads code for an attribute has to strip the comments first** — a
   `// disabled={loading}` left in the markup as the inherited intention counts as the attribute it
   describes, so the population comes back short in the safe-looking direction, with nothing red to

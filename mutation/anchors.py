@@ -211,7 +211,9 @@ question is red over **85** sheets and **889** mutants have no written
 prediction at all (#255).
 
 `predictions()` asks of each mutant whether its own sheet's docstring holds a
-table row whose first cell is its name. It calls `sheets()` and `_module()`, so
+table row whose first cell is its name and - since 3 พ.ย. 2569 (#260) - whether
+that row fills a column its own table **heads** as where the mutant dies. It
+calls `sheets()` and `_module()`, so
 a sheet added tomorrow is in this question and in `check()` or in neither
 (#126).
 
@@ -1266,6 +1268,111 @@ def _docstring(path):
 
 CODE_SPAN = re.compile(r"`([^`]+)`")
 
+# What a header cell says when its column holds where the mutant dies - the
+# rule the owner chose on 3 พ.ย. 2569 (#260), written in `mutation/README.md`
+# under *the rule for what counts as a row saying which assertion* before this
+# question was written, which is the order that ticket asked for.  It is a
+# question about the header and not about a position: the store never decided
+# that the third column *is* the assertion column, and 142 of its 144 sheets
+# have a third column for reasons that differ from each other.  Both languages,
+# because the fixtures `anchors_test.py` pins are ASCII on purpose and the real
+# sheets are Thai (#194's reason, one file along).
+ASSERTION_HEADS = (u"แถว", u"ข้อยืนยัน", u"ตาย", u"ล้ม", u"ฆ่า",
+                   u"assertion", u"row", u"rows", u"kills", u"dies")
+# A cell that is empty, or nothing but dashes, is a cell nobody wrote.  A dash
+# with prose beside it is an answer: `117-thai-pdf-line-breaks` writes
+# `— (อ่านย่อหน้าถัดไป)` for a mutant it predicts kills nothing, which is a
+# claim and not a gap.
+UNWRITTEN = set(u"-–— ")
+
+
+def _offers(cell):
+    """The names one table cell offers, in the two shapes the store writes.
+
+    Factored out of `_predicted`, which reads the first cell of a row for a
+    name, so that the question above it and #260's question below read a cell
+    the same way.  A cell offers the whole cell stripped of backticks and of
+    bold, and every code span inside it; `_predicted`'s own docstring carries
+    why both, and the measurement that bounds the loose half.
+    """
+    names = {cell.strip().strip("`*").strip()}
+    names.update(CODE_SPAN.findall(cell))
+    return names
+
+
+def _tables(doc, known):
+    """Every prediction table of a docstring: (its where-it-dies columns, rows).
+
+    A **prediction table** is one with at least one row whose first cell offers
+    a mutant name of this sheet, live or withdrawn to a record - the same
+    population `_predicted` reads names out of.  That is what keeps the
+    question off the store's other tables: a sheet's `FILES` table, a table of
+    screens, and `207-the-rows-the-step-back-counts`'s dated *ตัวที่ถอน*
+    record, whose four names a first reading of this took for stale rows (#54).
+
+    The columns are every column past the first whose **header** says it holds
+    where the mutant dies, which is #141's rule for the acceptance sheets one
+    store along: a sheet heads it one way or another and may put it in the
+    middle.  All of them and not the last, because a sheet that heads two -
+    `201-the-refusal-keeps-what-was-typed` heads `แถวที่ล้ม` and `ที่ assertion` -
+    has answered the question in either.
+
+    What it cannot do is tell a prediction from a record *inside* one table,
+    which is the limit written beside #260's numbers in `mutation/README.md`.
+
+    It splits with `_cells()` and skips the rule with `_is_rule()`, the two
+    primitives `columns()` already asks the store's tables with, because the
+    store writes `\\|` for a pipe the renderer draws **inside** a cell: a reader
+    with its own `split("|")` read five live mutants one cell to the left of the
+    one their table heads, on four sheets, every one of them written under
+    either reading - a wrong reading with no number to say so, found by the
+    two-axis review of 3 พ.ย. 2569 and pinned by a row in `anchors_test.py`
+    where the misread fragment is a dash (#168).
+    """
+    out, block, fenced = [], [], False
+    for line in doc.split("\n") + [u""]:
+        if line.strip().startswith("```"):
+            fenced = not fenced
+            continue
+        if not fenced and line.strip().startswith("|"):
+            block.append(line)
+            continue
+        if len(block) >= 2:
+            header = [cell.strip() for cell in _cells(block[0])]
+            rows = [[cell.strip() for cell in _cells(line)]
+                    for line in block[1:] if not _is_rule(line)]
+            if any(_offers(cells[0]) & known for cells in rows if cells):
+                columns = tuple(index for index, cell in enumerate(header)
+                                if index and any(head in cell
+                                                 for head in ASSERTION_HEADS))
+                out.append((columns, rows))
+        block = []
+    return out
+
+
+def _said(doc, known):
+    """(the names whose row says where they die, the names a column was offered).
+
+    Two sets and not one, because the two reds have different fixes and
+    reporting them as one would read as a stronger claim than the instrument
+    makes (#226): a bare cell is a row somebody has to fill, and a table that
+    heads no such column is a header somebody has to name - which is what both
+    of 3 พ.ย. 2569's two reds were, `52-access-ended` and
+    `83-refusal-that-names-the-rule` holding the rows in cells headed with the
+    name of a seam.
+    """
+    filled, headed = set(), set()
+    for columns, rows in _tables(doc, known):
+        for cells in rows:
+            names = _offers(cells[0]) & known
+            if not names or not columns:
+                continue
+            headed |= names
+            for index in columns:
+                if index < len(cells) and set(cells[index]) - UNWRITTEN:
+                    filled |= names
+    return filled, headed
+
 
 def _predicted(doc):
     """(the names a table row's first cell offers, lines skipped in a fence).
@@ -1300,13 +1407,13 @@ def _predicted(doc):
         if not line.strip().startswith("|"):
             continue
         first = line.strip().strip("|").split("|")[0]
-        names.add(first.strip().strip("`*").strip())
-        names.update(CODE_SPAN.findall(first))
+        names |= _offers(first)
     return names, skipped
 
 
 def predictions(paths=None):
-    """(problems, sheets read, mutants asked, with a row, withdrawn, fenced) - #255.
+    """(problems, sheets read, mutants asked, with a row, withdrawn, fenced,
+    saying which assertion) - #255, the last of them #260's.
 
     Takes its world as an argument for the reason `catalogue()` does: the only
     way to assert that a missing prediction is *found* rather than that today's
@@ -1316,9 +1423,25 @@ def predictions(paths=None):
     it landed unwired over. The module docstring holds the dated record of the
     day it landed and of the day it was wired (#54).
 
-    **Seven things it does not look at**, written here beside the numbers it
-    prints, because a found guard counted as enough reads as a stronger claim
-    than the instrument made (#226, #247):
+    **Nine questions asked of it, eight of which it still does not look
+    at** - seven when #255 wrote them, and 8 and 9 added by the two-axis
+    review of the day item 1 was answered, both measured on real sheets -
+    written here beside the numbers it prints, because a found guard counted as
+    enough reads as a stronger claim than the instrument made (#226, #247).
+    The numbering is kept where it was when they were seven, because
+    `mutation/README.md` cites two of them by number: the one that was answered
+    is the first.
+
+    Since 3 พ.ย. 2569 it asks, of each mutant that has a row, whether that row
+    fills a column its own table **heads** as where the mutant dies, and says
+    the two reds apart - `NO ASSERTION` for a bare cell, which is a row to
+    fill, and `NO ASSERTION COLUMN` for a table heading no such column, which
+    is a header to name.  The rule is in `mutation/README.md`, written there
+    before this was written, and it was the owner's answer ง of that day over
+    three options that all read a fixed cell (#260).  The paragraph below is
+    the dated record of what the question could not say before it (#54), and
+    the figure it quotes is the one the option was priced at on the day it was
+    not taken.
 
     1. Whether the row says *which* assertion. It reads the first cell, so the
        compliant figure is an upper bound: of the 57 sheets holding a row for a
@@ -1344,6 +1467,22 @@ def predictions(paths=None):
        it only past the third cell, which is the difference between the two
        figures; and `119-google-landing` and `84-own-row-controls` have no third
        column at all, so they are outside the 142 rather than short of the 139.
+       **Answered on 3 พ.ย. 2569 (#260), and the remeasurement refuted three
+       of the numbers above**, which are left standing as the record (#54):
+       the whole-row figure is **141** and not 139, so that option was red
+       over three sheets and not five, and the three sheets named are exactly
+       the shortfall - 139 contradicted its own list; reading from the third
+       cell on gives **137** and not the 138 the ticket implied; and of the
+       three said to say it *past* the third cell only
+       `141-superseded-across-a-section-jump` does, the other two saying it in
+       the first or second.  All four figures are per **sheet**, which is not
+       the grain this question asks at: per mutant the same six words are red
+       over 115 of 1174, and the rule that replaced them over 13, which is why
+       it could be wired here rather than landed unwired (#200). The fourth
+       figure, **142** sheets with a third column, was remeasured the same
+       day over all 144 and holds - it is the one the ticket's three options
+       rested on, and the review of that day found it restated as a present
+       fact with nothing saying it had been asked again (#174).
     2. Whether the table was written **before** the sweep, which no static
        reading can say. 13 of the 14 newest sheets landed in the same commit as
        the acceptance sheet carrying their sweep's result, so `git` cannot tell
@@ -1354,9 +1493,28 @@ def predictions(paths=None):
     4. A **stale** row, naming a mutant a rename took away: it asks of each
        mutant and not of each row, which is `catalogue()`'s species one layer
        in, and `check()`'s `SUPERSEDED NAMES NO MUTANT` from the other side.
+       **Read on 3 พ.ย. 2569 (#260): no stale row in the store today**, and
+       the reading found what such a census needs first. The four names a
+       first reading took for stale -
+       `207-the-rows-the-step-back-counts`'s `closurerowcount`,
+       `alwaysthelivecount`, `trustthestalecount` and `refalwaysone` - sit in a
+       table headed *ตัวที่ถอน*, which is a **dated record** and not a
+       prediction, and a record is not a sheet's to rewrite (#54). So the
+       population of that census is *prediction tables*, which this question
+       can tell from the store's other tables and cannot tell from a record
+       **inside** one. It stays a limit.
     5. A prediction table written into `docs/acceptance/` rather than into the
        docstring. Nine sheets there use the phrase *before the sweep*, and
        whether each holds a table or only the sentence is unread.
+       **Read on 3 พ.ย. 2569 (#260): ten sheets, not nine, and this question
+       loses nothing by them.** `10-application-shell.md` holds three real
+       mutant tables, but their first cells are written `232:arrayidentity`,
+       the shape of a **sweep record**, and every mutant in them already has a
+       row in its own sheet, which the per-mutant figure says. The rest is
+       prose citing the docstring's table, and two of the ten use the phrase in
+       another sense altogether - `25-section-enrolment.md` means *fix it
+       before sweeping the rest* and `33-activity-editor.md` *what the sweep
+       said that was unknown before it*.
     6. Which question answered, if the row and the count are read apart: the
        `problems` figure adds a per-mutant finding to the per-sheet
        `NO READABLE MUTANTS`, as the six questions above also do, so the count
@@ -1366,10 +1524,40 @@ def predictions(paths=None):
        counted apart and not asked - one sheet holds nothing else, and reads as
        neither covered nor bare - and one that becomes applicable again is a
        live mutant this question then reaches, which `check()` reports.
+    8. Whether the cell it reads says *which* assertion rather than *how
+       many*. It asks the **header** and then asks only whether the cell is
+       written, so a column headed `ฆ่า` over `24 ข้อ ใน 8 สวีท` counts as
+       said. Measured on 3 พ.ย. 2569, the day the rule landed: five mutants
+       on two sheets - `48-assessor-validity-window` (three) and
+       `87-assessor-is-from-outside` (two) - are green on a count, and both
+       sheets are on the ticket's own list of three that say no assertion,
+       so this question's 1174 does not refute that list. The third sheet
+       whose column is headed `ฆ่า` alone, `84-own-row-controls`, names the
+       row beside the count and is green for the right reason. This is the
+       too-loose direction of the owner's answer ง, and the words were
+       chosen in it: dropping `ฆ่า` and `kills` to close it would make
+       `สิ่งที่มันฆ่า`, `ใบที่มันฆ่า` and `ข้ออ้างที่มันฆ่า` read as
+       tables heading no such column - **94 mutants on 17 sheets**, 89 of
+       which do name their assertion, so it would pay 89 to close 5, which
+       is #174 the other way round. (That price was first written as
+       *fourteen*, which was a count of **tables** read off the header
+       census and refuted the same day by counting mutants - the very
+       grain this ticket is about.) What would close it is a question
+       about what the cell *says*, which is the option item 1 records as
+       #259's to carry.
+    9. A header word is matched as a substring, and the match is
+       case-sensitive: an English header reading `browser` would be
+       accepted by `row` - no sheet writes one today, the two that name a
+       seam writing it in Thai - and one reading `Rows` or `Assertion`
+       would not be accepted at all. Both are `51a` matching `151a` (#154,
+       #158) asked of a word instead of a file name. Widening the words to
+       the seam names is what `mutation/README.md` says was refused,
+       because `ผล` would accept a kill-count column - which item 8 shows
+       `ฆ่า` already does.
     """
     if paths is None:
         paths = sheets()
-    problems = read = asked = with_row = kept = skipped = 0
+    problems = read = asked = with_row = kept = skipped = said = 0
     for path in paths:
         short = os.path.relpath(path, ROOT).replace("\\", "/")
         _files, mutants, superseded, env = _module(path)
@@ -1382,8 +1570,15 @@ def predictions(paths=None):
             print("NO READABLE MUTANTS %s" % short)
             continue
         read += 1
-        named, fenced = _predicted(_docstring(path))
+        doc = _docstring(path)
+        named, fenced = _predicted(doc)
         skipped += fenced
+        live = set()
+        for key_node in mutants.keys:
+            name = _value(key_node, env)
+            if isinstance(name, str):
+                live.add(name)
+        filled, headed = _said(doc, live | set(superseded))
         for key_node in mutants.keys:
             name = _value(key_node, env)
             if not isinstance(name, str):
@@ -1394,19 +1589,32 @@ def predictions(paths=None):
                 kept += 1
                 continue
             asked += 1
-            if name in named:
-                with_row += 1
-            else:
+            if name not in named:
                 problems += 1
                 print("NO PREDICTION %s %s" % (short, name))
+                # One mutant, one finding. A missing row is not also a missing
+                # assertion, or `problems` counts the population #259 closed
+                # twice over and the figure stops being readable (#48).
+                continue
+            with_row += 1
+            if name in filled:
+                said += 1
+            elif name in headed:
+                problems += 1
+                print("NO ASSERTION %s %s" % (short, name))
+            else:
+                problems += 1
+                print("NO ASSERTION COLUMN %s %s" % (short, name))
     print("predictions: sheets %d | mutants %d | with a row %d | without %d | "
+          "saying which assertion %d | "
           "withdrawn to a record and not asked %d | "
           "lines skipped inside fences %d | problems %d"
-          % (read, asked, with_row, asked - with_row, kept, skipped, problems))
+          % (read, asked, with_row, asked - with_row, said, kept, skipped,
+             problems))
     # Everything it counted, not only what it judges by: a caller that can read
     # the withdrawn and the fenced figures can assert they were *said* rather
     # than inferring it from a number that moved (#40, #96).
-    return problems, read, asked, with_row, kept, skipped
+    return problems, read, asked, with_row, kept, skipped, said
 
 
 if __name__ == "__main__":

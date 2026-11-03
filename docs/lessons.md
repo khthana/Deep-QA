@@ -17185,3 +17185,121 @@ Both halves passed, so the ticket's third closing criterion — *if what is seen
 card, this becomes a defect of the screen and a new ticket* — did not fire. The row keeps its ⚙:
 the mark says the browser seam proved the row's other claim, and the sheet now says beside it when
 the colour half was walked and by whom, which is what #197's marker had been holding a place for.
+
+## #260 — the options were priced in sheets and the question is asked per mutant
+
+#259 wired the seventh question into `python mutation/anchors.py` on 1 November 2569, and it
+reads the **first cell** of a row: it asks whether a mutant has a row, not what the row says.
+The rule `mutation/README.md` states four times is that each mutant dies at the assertion its own
+sheet's table wrote down **before the sweep**, so a question that cannot see the assertion is not
+asking that rule. #260 was opened the same day the population closed, because the option that
+asks it too had been priced at **97 sheets** and declined on that price, and the price moved when
+the population closed — a reason with a date on it, read on the day it expired (#81).
+
+### The three options were all the same mistake, priced in the wrong unit
+
+The ticket offered three readings of where the words may sit — the whole row, the third cell on,
+the third cell alone — and priced each **in sheets**: red over five, six, eight. Remeasured on
+3 November 2569 the figures were 141 (not 139, which contradicted its own list of three short
+sheets), 137 and 136, so the sheet prices are three, seven and eight. But the question those
+options would replace is asked **per mutant**, and nothing in the ticket said so. Per mutant the
+same six words are red over **115 of 1174 mutants on 26 sheets**, from the third cell alone over
+**154 on 37** — an order of magnitude more than the sentence the owner was being asked to answer.
+
+**A ticket's options are priced in a unit, and the unit is a claim like the numbers.** Where the
+unit differs from the grain the run asks at, every price in the ticket is wrong by the ratio,
+and the owner is answering a cheaper question than the one being built.
+
+### The six words were evidence for the pattern somebody typed
+
+Reading the per-mutant reds found what the grain had hidden.
+`201-the-refusal-keeps-what-was-typed` heads its table `| มัตแตนต์ | แถวที่ล้ม | ที่ assertion |`
+and fills the assertion for all five of its mutants, in the shape the rule wants — and all three
+of the ticket's options call it **bare**, because the words are in the **header** and the rows
+hold the assertion text itself. A rule too strict fails in the direction that looks modest
+(#174), and here it would have put a model sheet into the population it was built to find.
+
+What reads `201` is the store's own idiom, which an acceptance sheet had already needed: **ask the
+table's own header which column holds what you are counting** (#141, whose mark column is headed
+`✓` on one sheet and `ผล` on another and can sit in the middle). The rule that landed is three
+sentences — a prediction table is one with a row whose first cell names a mutant of that sheet;
+the where-it-dies columns are those past the first whose header says `แถว`, `ข้อยืนยัน`, `ตาย`,
+`ล้ม`, `ฆ่า`, `assertion`, `row`, `rows`, `kills` or `dies`; and a cell is written unless it is
+empty or nothing but dashes, because `117-thai-pdf-line-breaks` writes `— (อ่านย่อหน้าถัดไป)` for
+a mutant it predicts kills nothing, which is a claim. Priced per mutant it is red over **13 of
+1174, on two sheets** — which is what let it be **wired** in the same ticket rather than landed
+unwired with a ticket for its population (#200's shape, which four of the five candidates needed).
+
+A fifth candidate nobody had listed — the header's column **and** that cell naming a spec, a row
+or an assertion — was measured at 113 mutants and thrown away, because it reads `201` as bare the
+other way round: its cells hold the **text** of the assertion and not the word.
+
+### Both of the two reds were false, which is why the rule could be wired
+
+`52-access-ended` and `83-refusal-that-names-the-rule` head their columns with the name of a
+**seam** — `backend`, `HTTP seam`, `เบราว์เซอร์` — over cells that have held `52a แถว 1–6` all
+along. The fix was a word at each header, in the same commit as the question; the cells were not
+touched. Widening the head words to the seam names would have made the question green over the
+whole store in one line, and it was not done: `ผล` among them would accept a kill-count column,
+which is not where the mutant dies. **A rule tuned until it is green is the thing this file exists
+not to trust.**
+
+That last sentence was an overclaim, and the same day's review measured it: `ฆ่า`, which the rule
+does carry, already accepts a kill-count column on two sheets — `48-assessor-validity-window` and
+`87-assessor-is-from-outside`, five mutants between them, both on the ticket's own list of three
+sheets that say no assertion. So refusing the seam names **narrowed** the loose direction rather
+than closing it, and the words were chosen knowing that: taking `ฆ่า` and `kills` out would read
+**94 mutants on 17 sheets** as tables heading no such column, 89 of which do name their assertion,
+so it would pay 89 to close 5 — #174 the other way round. That price was itself written as
+*fourteen* first, a count of **tables** read straight off the header census and refuted the same
+hour by counting mutants, which is the ticket's own mistake made twice in one day: **the grain is a
+claim every time, including when you are the one correcting somebody else's** (#260's own rule, one
+turn along). **What a rule lets through is measured on the real population, not argued from the
+words that were refused** — and it goes beside the number, as the two limits now do in the
+docstring (#226, #247).
+
+### A question that writes its own reader over one the file already holds
+
+The first version of the question split its table rows on every `|`, where `anchors.py` has held
+`_cells()` and `_is_rule()` since #141's own question, splitting on the unescaped pipe alone
+because the store writes `\|` for a pipe the renderer draws **inside** a cell. Five live mutants
+on four sheets were therefore read one cell to the left of the one their table heads, at a
+fragment holding a lone backslash. Nothing said so: a backslash is written, so every one of those
+five answered *said* under either reading and the gate's figure did not move — which is why the
+review's own first wording of this, *a measured false green*, was itself refuted by running both
+splits over the store. **A wrong reading that agrees with the right one today is invisible to the
+number and visible in the diff**; the row that pins it is one where the misread fragment is a dash
+and the assertion is one cell further right, and the fix is the primitive that exists (#168).
+
+### The arrangement that proves an instrument is a claim like the instrument
+
+The first break-a-real-site probe emptied the assertion cell of `201`'s first row and came back
+**green**, which read exactly like an instrument that cannot see its own defect. The instrument
+was right: `201` heads **two** such columns, and the other one, `ใบ 30`, still said where the
+mutant dies. The probe moved to `117`, which heads exactly one (`ผล` is not a head word), and the
+same arrangement printed `NO ASSERTION`. **Before believing an instrument is blind, ask whether
+the arrangement built to break it is a break at all** — the rule's own input can be present twice
+in the member you chose, which makes a faithful removal of one copy invisible (#117 one species
+along, from two implementations that agree to two headers that agree). Moving the rule's own input
+instead — un-heading `201`'s two columns and touching no cell — printed five `NO ASSERTION COLUMN`
+lines over a file whose rows nobody had edited, which is #230's proof that the question follows
+its input and not a list.
+
+### What the two unread limits said
+
+**Limit 5, the prediction table written into `docs/acceptance/` instead of the docstring:** ten
+sheets use the phrase *ก่อนกวาด*, not the nine the ticket counted, and **none holds a prediction
+table the docstring lacks**. `10-application-shell.md` holds three real mutant tables, but their
+first cells are written `232:arrayidentity` — the shape of a **sweep record** — and every mutant
+in them already has a row in its own sheet, which the per-mutant figure says. Two of the ten use
+the phrase in another sense altogether: `25-section-enrolment.md` means *fix it before sweeping
+the rest*, `33-activity-editor.md` *what the sweep said that was unknown before it*. **A census of
+a phrase counts the phrase, not the thing** (#174 again, in a hand reading).
+
+**Limit 4, the stale row:** no stale row in the store today, and the reading found what such a
+census needs before it can run. The four names a first detector flagged in
+`207-the-rows-the-step-back-counts` — `closurerowcount`, `alwaysthelivecount`,
+`trustthestalecount`, `refalwaysone` — sit in a table headed *ตัวที่ถอน*, a **dated record** of
+four mutants withdrawn on 19 ต.ค. 2569, and a record is not a sheet's to rewrite (#54). So that
+census's population is *prediction tables*, and the thing it cannot yet tell apart is a record
+**inside** one. It stays a limit, written beside the number rather than reported as done (#226).

@@ -53,7 +53,7 @@ grant they just asked to undo and could already see* — เป้าหมา�
 `cd backend && node --test "test/*.test.js"` (732 ข้อ) และ
 `cd e2e && E2E_FRONTEND_PORT=5300 npx playwright test` (369 แถว)
 
-| มัตแตนต์ | HTTP seam | เบราว์เซอร์ |
+| มัตแตนต์ | HTTP seam — ข้อที่ตาย | เบราว์เซอร์ — แถวที่ตาย |
 |---|---|---|
 | `statusisjustforbidden` | **1 ข้อ** — *and told which of the two 403s it is* | **0 แถว** ใน 369 (10 ก.ย.) · **1 แถว** ใน 372 หลัง #84 (11 ก.ย.) — `84a` แถว 3 |
 | `revokeisjustforbidden` | **1 ข้อ** — *nor can an administrator revoke their own grant* | **3 แถว** (10 ก.ย.) — `12a` แถว 6 · `111a` แถว 3 · `121a` · **1 แถว** หลัง #130 (20 ก.ย.) — แถวของ `12a` ที่ยิงตรงไปที่ route |
