@@ -754,6 +754,12 @@ citation.
   reads exactly like a candidate that buys nothing, which is an answer somebody will act on.
   Reproduce one candidate by editing the code before believing the table. **And the probe goes when
   the *fix* has been measured, not when the question has been answered** (#207). (#156)
+- **And the property is read on an element, which is a claim like the property** — #156 one
+  species along: a candidate applied by walking up from the subject can land on a different box,
+  the property changing exactly as asked while the box that needed it is untouched, and the arm
+  then reads *buys nothing*, which is indistinguishable from a candidate that buys nothing.
+  Assert each property on the element it was meant to change, named from the markup rather than
+  reached by a parent walk. (#261)
 - **A red is not a measurement until the same read has been seen green** — the same rule from the
   failing side. A locator scoped to a heading the screen never draws reads empty drawn and undrawn
   alike, so ten reds of ten can mean nothing, and a fix built on them is wrong the same way. (#171)
@@ -1292,7 +1298,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Twelve censuses, as instruments. `npm run census` runs all twelve since 30 October 2569, when #249 closed the population `save-window-fields.js` was a red gate over and it went in with nothing changed in the script (#200). Their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257, #258). Not rows and not gates — nothing in the repository runs them, and seven of them are specs the runner only sees when they are copied into `tests/` by hand. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257, #258, #261). Not rows and not gates — nothing in the repository runs them, and **eight** of them are specs the runner only sees when they are copied into `tests/` by hand — counted on 3 November 2569, where this line read *seven*, which was right until #261's probe landed. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|

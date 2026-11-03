@@ -17303,3 +17303,119 @@ census needs before it can run. The four names a first detector flagged in
 four mutants withdrawn on 19 ต.ค. 2569, and a record is not a sheet's to rewrite (#54). So that
 census's population is *prediction tables*, and the thing it cannot yet tell apart is a record
 **inside** one. It stays a limit, written beside the number rather than reported as done (#226).
+
+## #261 — the probe that read the right property on the wrong box
+
+#231 put the scope's name in the role picker's label on 27 October 2569, and the longest name in
+this organisation made the label wrap: two 24px lines inside `py-2.5` gave a 68px button in a bar
+that is 64px, over the top by 2px and under the bottom by 2px. The hand-walk of
+`docs/acceptance/10-application-shell.md` row 3 found it on 2 November 2569, which is what that
+row's own ☐ had been citing.
+
+Every number the fix could move is one the **delivered** screen chose.
+`DEEP-QA-FRONTEND/src/components/RoleDropdown.js` writes the same `px-5 py-2.5`, is missing
+`whitespace-nowrap` in the same place, and drew a scope in the trigger too — `ชื่อ - ปี`, which is
+longer again. So the rebuild walked into this rather than causing it (#103), and which wording the
+person reads was the owner's (`docs/06` §Out of Scope). Four options went to the owner, priced off
+a screen by `e2e/probes/261-the-button-in-the-bar.spec.js` (#77, #228).
+
+### Three of the ticket's claims were refuted by the probe, and one of them was its own question
+
+Its label table named a role the code does not write, and its population was two accounts where
+the mechanism has four. Its sentence that *every option costs one file* is false for the cut: the
+trigger is itself `flex`, so its label is a bare text node — an **anonymous flex item** — and
+`truncate` on the button cannot reach it. A cut needs the label wrapped in an element of its own,
+`min-w-0` up the chain, and both `w-1/3` siblings touched: three files, not one.
+
+And its unmeasured number for the option that was chosen — *how far does the button cover the user
+name* — **cannot exist in the form it was asked**. Nothing in the bar is positioned: the row is
+`flex justify-between` over three boxes, and `w-1/3` sets flex-basis without closing `flex-shrink`,
+so the sides give room up and the middle squeezes them. The name's box does not move at all until
+the button reaches 845–906px, which is 110 to 118 characters, against 498px and 55 characters for
+the longest label the seed holds. #232's rule one layer out: an owner's question is void where one
+of its answers names a state the system cannot carry, and here it was the **premise of the
+measurement** that the layout could not produce.
+
+The owner answered **จ** on 3 November 2569 — `whitespace-nowrap` on the trigger now, and the
+narrow viewports as their own ticket, which is [#264].
+
+### The arm that read *buys nothing* had changed the property on another element
+
+The probe's own first version priced the cut by setting `min-width: 0` on the chain above the
+label and reading the boxes back. It reported that the candidate bought nothing at every width,
+and that reading is what somebody would have acted on.
+
+What it had actually done was walk up with `node.parentElement`, which is `RoleDropdown`'s own
+`<div className="relative">` and not the nav's `flex justify-center` column. The precondition it
+asserted — `parentMin === '0px'` — **passed**: the property had changed exactly as asked, on a box
+that was never in the way. #156's rule is to check the candidate by the property it was meant to
+change, and that check is satisfied here; what it does not ask is *on which element*.
+
+**And the property is read on an element, which is a claim like the property.** A candidate
+applied by walking up from the subject can land on a different box, the property changing exactly
+as asked while the box that needed it is untouched, and the arm then reads *buys nothing* — which
+is indistinguishable from a candidate that buys nothing (#156, #260). The repair was to wrap the
+label text node in a span and set `min-width` on every ancestor **named from the markup** up to
+`nav`, asserting each property on the element it was meant to change.
+
+The rebuilt arm then read *free at every width*, which is impossible at 640, because the readings
+for sideways escape were missing: with them, the button is 155..653 in a bar 0..640, the row
+overflows by 37px and nothing is clipped. A probe's own first version is a claim too (#164, #207).
+
+### The viewport arm had no control group, and the control group is what made #264
+
+The arm printed the logo and the name only under `nowrap`, so every number it gave was a cost of
+the fix by construction. Read against today (#194), what it found is that the bar **already** wraps
+the user's name at 768 and **already** squeezes the logo to 131px at 640, with no `nowrap` anywhere
+in it. At 1280 and 1024 — the widths this suite and the hand-walks use — not one box moves by a
+pixel.
+
+That is why the narrow widths left as a separate ticket are a defect of the bar rather than a price
+of this button, and why the chosen option is strictly better than today in every box that was read
+at the widths anybody has walked.
+
+### Two rows, and a sweep whose predictions were right about the rows and wrong about the lines
+
+`e2e/tests/261a-the-picker-stays-in-the-bar.spec.js` holds two rows, run red against the unfixed
+code before the mutant was written (#203). They are two because one mutant kills whichever claim is
+read first and a claim written below another claim is proved by nothing (#88): row 1 is the label
+on one line, row 2 the button's box inside the bar's. Row 2 asserts the **relation** and not 44px,
+because the rule is that the button fits whatever the bar is (#145).
+
+Fifteen mutants edit `RoleDropdown.js`, so all fifteen were re-swept against the new spec — a spec
+that gains a row a mutant can reach expires that mutant's count with nothing to report it (#248,
+#202) — with the prediction written down first. Every headline prediction held: `labelwraps` and
+`231`'s `namelessresolver` and `triggerreadsthepointer` killed both rows, the other twelve left
+them green.
+
+But **two of the three killers die at the precondition**. Both `231` mutants fail at the
+`toContainText` that reads the label's text, above the claim, so neither row's own claim is read
+under them and neither mutant adds any proof to this sheet; only `labelwraps` reaches the claims.
+#258's lesson from the other side: the prediction about each **row** was right, and the
+prediction that mattered was about each **assertion** (#193, #233).
+
+### And the same rule was inside one row, where the sweep could not show it
+
+Row 2's first draft read the two heights, then the top bound, then the bottom bound. The sheet's
+only mutant therefore died at the **height**, and neither bound was ever read under it — #88's
+rule inside a single row, where the row is red, the mutant is credited, and nothing says the
+claims below the red line are proved by nothing (#233). The two-axis review of 3 November 2569
+is what caught it, and no instrument could: `anchors.py`'s seventh question accepts a column
+headed *row*, so the prediction table that named *both rows* instead of both assertions passed
+it too.
+
+Splitting it in two would have been wrong as well. The defect pushes the button through the top
+**and** the bottom in one go, so no mutant can fail one half and leave the other standing, and
+two rows would be two claims neither of which can be shown to be held (#97). The shape that
+holds is one assertion over a pair — `{overTheTop, underTheBottom}` against `{0, 0}` — and the
+height comparison came out, the bounds implying it.
+
+Row 1's inline line counter came out the same day for the plainer reason: `e2e/README.md` already
+names `support/line-breaks.js` as the instrument for *did this come apart*, so the row held a
+third copy of a shared one (#171) — and a weaker copy, reading `getClientRects()` on the first
+text node where `linesOf` walks every text node and compares each character's own `top`. The
+re-sweep paid for the swap immediately: where the inline reader could only say *2*, `linesOf`
+printed the lines, and the second of them is `(0503)` — the bracketed code is the part that
+wrapped. The navbar locator came out too, into `support/shell.js`'s exports, where the name was
+already defined and merely unexported; declining to export it had made the ticket retype it in
+two files, which is a census of the places somebody typed it (#231).
