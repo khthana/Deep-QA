@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 #38 รายละเอียดผลการเรียนรู้ - a heatmap, and the rules that colour it.
 
 Fourteen mutants. This is the first screen in the rebuild that computes rather

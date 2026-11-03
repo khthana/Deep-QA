@@ -17419,3 +17419,103 @@ printed the lines, and the second of them is `(0503)` — the bracketed code is 
 wrapped. The navbar locator came out too, into `support/shell.js`'s exports, where the name was
 already defined and merely unexported; declining to export it had made the ticket retype it in
 two files, which is a census of the places somebody typed it (#231).
+
+## #262 — the warnings were twice the report, because the tool parses each sheet four times
+
+Six sheets printed `SyntaxWarning: invalid escape sequence` on top of `anchors.py`'s own report.
+Each of them quotes something into its module docstring that is right where it came from and is an
+escape Python does not know: a warning in 3.12 and, by the language's own documentation, an error
+in a later version. The fix is `r` in front of the docstring, not a change to the prose, and that
+the docstring still **says** the same thing was asserted with `ast.get_docstring` on each of the
+six rather than read.
+
+**And it is not one sequence, which the first prose written about it said it was.** Of the
+eighteen sites, sixteen are `\|` on four sheets, where a GFM cell holding a pipe really is the
+cause; `24-teacher-dashboard.py` holds only `\d` and `40-clo-assessment.py` only `\.`, both inside
+a quoted **regular expression** and neither in a table cell. The two-axis review of 3 November
+2569 caught the generalisation, and it is the rule this very ticket applies to the ticket's own
+numbers, turned on the fix's own description (#102, #48). Nothing in the repair changes — `r` is
+right for all six — and the prose is what was wrong, in all three places it had been copied to.
+
+Everything about the ticket's diagnosis held except one number, and that one was the number its
+price argument rested on. It said six warning lines per run. The run prints **24**, over a report
+of **12** — the noise is twice the report, not six lines above it — because `anchors.py` parses
+every sheet **four times**: `_module()` from `check()`, from `catalogue()` and from
+`predictions()`, and `_docstring()` once. Python reports one invalid escape per string literal per
+parse, which is also why the ticket's own count of **18 sites** in those six files is right while
+its count of warnings is not: a site count and a warning count are different properties (#174,
+#67). The refutation makes the ticket's case stronger, which is the reason to publish it rather
+than quietly fix the six files.
+
+Two more warnings were nobody's list. `anchors_test.py`'s `PREDICTED` fixture builds the defect on
+purpose to test the seventh question (#172), and its parse warns while the test file itself
+compiles clean — found by running the sibling tool, not by reading the ticket's file list (#111's
+species: a grep is evidence for the pattern somebody typed).
+
+### The fix changes no running code, so the instrument was the only proof available
+
+No mutant can be written for a raw-string prefix: nothing in the diff can be broken to make a row
+fail, and the six docstrings say the same words either way. That is the whole question the owner
+was asked — close it as a one-character fix nothing holds, or spend the instrument — and the
+answer on 3 November 2569 was **ข**, the eighth question of `anchors.py`.
+
+It asks the **compiler**, which is the only thing that knows what Python calls a valid escape. A
+list of sequences written into the script would be a second opinion expiring the day the language
+gains one, and a regular expression over the source would be evidence about the pattern somebody
+typed (#83, #124). Compiling runs nothing.
+
+**It landed wired, where the seventh landed unwired.** `swallowed-refusals.js` (#200, #203),
+`save-window-fields.js` (#243, #249) and `predictions()` (#255, #259) all came in with the gate
+off and a ticket for the population, because their first run was red over screens no ticket had
+fixed. Here the population was closed by this very ticket in the same breath, so the first run is
+green — `read 150 | strings warned 0 | problems 0` — and there is no gap to mark.
+
+### Its own first finding was its own file, twice over
+
+The section written into `anchors.py`'s module docstring to record the eighth question quotes
+`\|`, so the tool printed the very warning it exists to catch the moment it was written; the same
+docstring's prose had already closed itself early by containing a literal triple quote. Both were
+repaired the way the six sheets were, with the docstring made raw and the wording changed to not
+need the quote at all. Then `escapes()`'s own docstring, which lists `\|` and `\d` among the
+things it cannot tell apart from a mistake, was the third. #141's species: the instrument finds a
+site nobody had ever seen, starting with the file it is written in. And the scratch script that
+applied the repair had the same defect one layer up, which is why its docstring is now comments.
+
+### The walk was merged, and the merge is asserted and not assumed
+
+`markdown()` held the repository walk alone — `os.walk` rather than `git ls-files`, deliberately,
+because git cannot see a file nobody has added yet (#186, #126). The eighth question needs the
+same walk for `.py`, so it came out as `owned(ending)` and `markdown()` became one line over it.
+A merge is a change to every question that reads the corpus, so a row asserts that
+`markdown() == owned(".md")` rather than leaving it to the suite's silence (#97, #171).
+
+The review of the same day found that the extraction had stopped one line too early: the sentence
+each question prints about *what it left out* — the `CANNOT ASK` fault and both *reading N files
+of the whole repository* branches — had been copied beside it, differing only in `.md` or `.py`.
+It is `_walked()` now, and the proof that the merge changed nothing is the whole report coming
+back byte-identical. The merge also **bought** a row: that branch fires only in the no-argument
+run, which every other row avoids by handing files, so two unproved copies became one claim a row
+holds (#192).
+
+The proof of the question itself is on real sites and never on its own fixtures (#141, #230,
+#260): taking the `r` off `mutation/37-student-results.py`, which holds a single copy of the
+rule's input, went red at exactly that file; and a `.py` written into `docs/`, a directory holding
+none and a file git has never been told about, moved the count 150 → 151 and went red there. Both
+were undone.
+
+The other measurement is the one the ticket prescribed and did not let anybody argue: those six
+files hold mutant anchors, and an `r` on the opening line does not move the text an anchor quotes
+— *which is a claim, not a conclusion* (#107, #68). The run of the same day answers it:
+`mutants 1180 | anchors checked 1227 | superseded on purpose 5 | unreadable 0 | problems 0`,
+unmoved.
+
+### The gate reaches a population the ticket set aside, and the review asked whether it decides it
+
+#262 keeps `\|` inside a mutant's own **replacement string** out of scope, because an `r` there
+*changes what the mutant writes*. `escapes()` asks the file, so such a string would be red, and
+one row asserts that on purpose. The review read that as the gate pre-deciding the ticket's other
+question, and offered an exemption marker as the fix. The measurement says neither is needed:
+`'\|'` and `'\\|'` are the same two characters, Python keeping an invalid escape exactly as
+written, so the green route for a mutant string is value-preserving and the other question stays
+open. What was owed was the limit written beside the docblock's six, with the date (#226, #54) —
+not a marker for a population that is empty today (#141).

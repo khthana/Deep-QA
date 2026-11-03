@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 #34 คะแนนกิจกรรมการเรียนรู้ - a grid under two toggles.
 
 Fifteen mutants. The ticket is one storage shape and two ways of typing into it,

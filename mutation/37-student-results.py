@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 #37 ผลลัพธ์การเรียนรู้รายบุคคล - one student's shape against the class's.
 
 Thirteen mutants, and every one of them is in the browser. That is not a gap in

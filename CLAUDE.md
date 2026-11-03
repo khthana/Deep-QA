@@ -63,9 +63,10 @@ citation.
   claim, an inference from a correct measurement, a count inflated by the runner's output shape,
   right in its species and wrong in the route it names, already carried out by a later ticket's
   fix, which leaves the subject absent from the tree, the sheet itself asking for the
-  defect — and a diagnosis that describes one behaviour where the code holds two, an invisible
-  number choosing between them. (#66, #111, #55, #155, #102, #122, #67, #101, #48, #133, #127,
-  #185, #165, #186, #58, #187, #218, #219, #89, #224)
+  defect, a count that is right per site and wrong per report because the tool parses its own
+  corpus more than once — and a diagnosis that describes one behaviour where the code holds two, an
+  invisible number choosing between them. (#66, #111, #55, #155, #102, #122, #67, #101, #48, #133,
+  #127, #185, #165, #186, #58, #187, #218, #219, #89, #224, #262)
 - **A ticket's supporting identifiers are a claim like its numbers** — ask `CREATE TABLE` before
   pasting a list of names, because a wrong list gets pasted more than once. **And a *decision* a
   cost line cites is the same kind of claim**: grep the corpus before believing it was ever taken,

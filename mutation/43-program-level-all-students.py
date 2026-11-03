@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 #43 ผลการเรียนรู้ระดับหลักสูตรของนักศึกษาทุกคน - the whole cohort as a grid.
 
 Seven mutants, one per claim `43a` makes.

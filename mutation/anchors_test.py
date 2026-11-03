@@ -23,6 +23,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import warnings
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -997,7 +998,13 @@ class Legends(TempStore):
 # cannot print is a fixture nobody proofreads. What the header is here for is
 # that its first cell names no mutant.
 PREDICTED = (
-    '"""#21 this sheet\n'
+    # Raw, because the store's sheet docstrings are raw since #262 and a
+    # fixture for one is written the way one is written: the row below
+    # that holds `\\|` made `ast.parse` warn twice per run of this file,
+    # on top of its own report, which is the defect #262 is about met in
+    # the tool that checks for it. The text the docstring says does not
+    # move - the escaped-pipe row is what measures that.
+    'r"""#21 this sheet\n'
     "\n"
     "| name | what it does | what it kills |\n"
     "|---|---|---|\n"
@@ -1253,6 +1260,125 @@ class Predictions(TempStore):
         self.assertGreater(with_row, 0)
         self.assertGreater(withdrawn, 0)
         self.assertEqual(sink.getvalue().count("NO PREDICTION"), problems)
+
+
+class Escapes(TempStore):
+    r"""Does the python this repository owns compile quietly? - #262.
+
+    Six sheets printed `SyntaxWarning: invalid escape sequence` on top of
+    `anchors.py`'s own report, because each quotes its acceptance table in the
+    module docstring and a GFM cell writes a pipe `\|`. The fix changes no
+    running code, so no mutant can be written for it and the question itself is
+    the only proof there is (#111).
+
+    The rows below hand `escapes()` their files, because the only way to assert
+    that a warning is **found** is to hand it one and the repository is clean
+    the moment the question lands (#141, #203). The last row asks the real tree
+    instead, which is the half a made-up store cannot hold.
+    """
+
+    def sheet(self, name="21-rubrics.py", docstring='"""a sheet\n"""'):
+        return self.write(name, "# -*- coding: utf-8 -*-\n%s\nFILES = {}\n" % docstring)
+
+    def test_a_file_that_compiles_quietly_is_no_problem(self):
+        path = self.sheet()
+        self.assertEqual(anchors.escapes([path]), (0, 1, 0))
+
+    def test_an_escaped_pipe_in_a_docstring_is_found(self):
+        # The defect itself: right as Markdown, unknown to Python.
+        path = self.sheet(docstring='"""| a \\| b |\n"""')
+        self.assertEqual(anchors.escapes([path]), (1, 1, 1))
+
+    def test_the_same_text_in_a_raw_docstring_is_not(self):
+        # #262's option ก, and the pair that says the question is about the
+        # compiler and not about the characters: the docstring says the same
+        # thing either way, and only one of the two warns.
+        plain = self.sheet(name="21-rubrics.py", docstring='"""| a \\| b |\n"""')
+        raw = self.sheet(name="22-rubrics.py", docstring='r"""| a \\| b |\n"""')
+        self.assertEqual(anchors.escapes([plain])[2], 1)
+        self.assertEqual(anchors.escapes([raw])[2], 0)
+        # `_docstring` parses, so reading the plain fixture raises the very
+        # warning this row is about; caught, because a run that prints it is
+        # the output #262 was opened to clean up.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.assertEqual(anchors._docstring(plain), anchors._docstring(raw))
+
+    def test_an_escape_python_knows_is_not_a_problem(self):
+        # A rule that is too loose fails the other way, and reporting every
+        # backslash would be a check nobody could keep green (#174).
+        path = self.sheet(docstring='"""a\\nb\\tc\n"""')
+        self.assertEqual(anchors.escapes([path]), (0, 1, 0))
+
+    def test_a_string_that_is_not_a_docstring_is_asked_too(self):
+        # #262 says this population is empty today and is not asking about it.
+        # The question is asked of the file, so it is covered anyway, and that
+        # is worth a row rather than an assumption.
+        path = self.write("21-rubrics.py",
+                          "# -*- coding: utf-8 -*-\nFILES = {'a': 'x\\|y.js'}\n")
+        self.assertEqual(anchors.escapes([path]), (1, 1, 1))
+
+    def test_two_sites_in_one_string_are_one_warning(self):
+        # The limit its own docblock states: python reports the first invalid
+        # escape of each string and says nothing about the rest, which is why
+        # the six sheets held eighteen sites and printed six warnings.
+        path = self.sheet(docstring='"""| a \\| b \\| c |\n"""')
+        self.assertEqual(anchors.escapes([path]), (1, 1, 1))
+
+    def test_a_file_that_will_not_compile_is_a_problem_and_not_a_silence(self):
+        # Folding this into the quiet answer would tell somebody whose file is
+        # broken that the store compiles cleanly (#159).
+        path = self.write("21-rubrics.py", "# -*- coding: utf-8 -*-\nFILES = {\n")
+        problems, read, warned = anchors.escapes([path])
+        self.assertEqual((problems, read, warned), (1, 1, 0))
+
+    def test_a_file_it_cannot_read_is_a_problem_too(self):
+        path = os.path.join(self.root, "21-rubrics.py")
+        with io.open(path, "wb") as handle:
+            handle.write(b"# -*- coding: utf-8 -*-\n\xff\xfe not utf-8\n")
+        self.assertEqual(anchors.escapes([path]), (1, 0, 0))
+
+    def test_the_shared_report_line_counts_a_tree_it_could_not_prune(self):
+        # `_walked` is the second half of #262's extraction, and the half no
+        # question's rows reached: both callers print it only in the
+        # no-argument run, which every other row avoids by handing files. So
+        # the branch is asserted here rather than left as two unproved copies
+        # (#97, #192) - the merge buys the proof it costs nothing.
+        for question in ("columns", "escapes"):
+            sink = io.StringIO()
+            with contextlib.redirect_stdout(sink):
+                clean = anchors._walked(question, "python", ["a.py"], ["x"], None)
+            self.assertEqual(clean, 0)
+            self.assertIn("the 1 paths git ignores", sink.getvalue())
+            sink = io.StringIO()
+            with contextlib.redirect_stdout(sink):
+                blind = anchors._walked(question, "python", ["a.py"], [], "git said no")
+            self.assertEqual(blind, 1)
+            self.assertIn("CANNOT ASK -> git said no", sink.getvalue())
+            self.assertIn("nothing else", sink.getvalue())
+            self.assertTrue(sink.getvalue().startswith("CANNOT ASK"))
+
+    def test_the_merge_did_not_move_what_markdown_walks(self):
+        # `owned()` is the walk `markdown()` held alone until this question
+        # needed it for `.py` (#97, #171). The merge is a change to every
+        # question that reads the corpus, so it is asserted and not assumed.
+        self.assertEqual(anchors.markdown(), anchors.owned(".md"))
+        self.assertTrue(anchors.owned(".py"))
+        self.assertFalse(set(anchors.owned(".py")) & set(anchors.owned(".md")))
+
+    def test_the_store_itself_compiles_quietly(self):
+        # The half a made-up store cannot hold, and the gate the run makes:
+        # this is red on the day a sheet arrives with a plain docstring quoting
+        # a table. Its output is swallowed so that a red here reads as this row
+        # and not as a wall of lines (#88).
+        sink = io.StringIO()
+        with contextlib.redirect_stdout(sink):
+            problems, read, warned = anchors.escapes()
+        self.assertEqual(problems, 0)
+        self.assertEqual(warned, 0)
+        self.assertEqual(read, len(anchors.owned(".py")))
+        self.assertGreater(read, 100)
+        self.assertEqual(sink.getvalue().count("INVALID ESCAPE"), warned)
 
 
 if __name__ == "__main__":

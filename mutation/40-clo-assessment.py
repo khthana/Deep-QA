@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 #40 การประเมินผลการเรียนรู้ - the formal assessment table and its PDF.
 
 Sixteen mutants, all of them in the browser. The route and the arithmetic are

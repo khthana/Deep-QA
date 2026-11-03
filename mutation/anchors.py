@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 Are the mutants still bound to code that exists?
 
     python mutation/anchors.py
@@ -238,6 +238,45 @@ Asked on its own, which is the form #255's own acceptance criterion names:
 `predictions()`'s docblock rather than here, which is where #255's second
 acceptance criterion asks for it and where the censuses in `frontend/scripts/`
 keep theirs (#226, #247). It is one list and not two (#97).
+
+## The eighth question, wired 3 พ.ย. 2569: does the store compile quietly?
+
+Six sheets printed `SyntaxWarning: invalid escape sequence` on top of this
+file's own report, every run. All six quote something into the module
+docstring that is right where it came from and is an escape Python does not
+know. **It is not one sequence**, which is a measurement and not the
+reading the prose first carried: of the eighteen sites, sixteen are `\|` on
+four sheets, where a GFM cell holding a pipe writes it that way, while
+`24-teacher-dashboard.py` holds only `\d` and `40-clo-assessment.py` only
+`\.`, both inside a **quoted regular expression** and neither in a table
+cell. #262 is that ticket, and its fix is an `r` in front of six docstrings
+- **six characters**, and the string each one says does not move, because
+not one of the six held a valid escape (compared with `ast.get_docstring`
+either way, six of six identical).
+
+The ticket said six warning lines. Measured on 3 November 2569 it is
+**24**, over a report of 12 lines: Python prints one warning per string per
+**parse**, and this file parses each sheet four times - three in `_module()`
+and one in `_docstring()`. Eighteen escape sites, six strings, four parses.
+The ticket's count was a claim like any other and the noise was twice the
+report rather than six lines above it (#174, #67). Two more came from
+`anchors_test.py`, whose escaped-pipe fixture builds the defect on purpose
+(#172) and is now written the way a sheet is written.
+
+`escapes()` asks the **compiler**, of every `.py` this repository owns,
+because no mutant can be written for a fix that changes no running code and
+an instrument is the only proof there is (#111). It walks the tree rather
+than asking `git ls-files`, for the reason `markdown()` always has: git
+cannot see the file nobody has added yet, which is the one nobody has looked
+at. Both walks are now one (#97, #171).
+
+**It landed wired**, where the seventh landed unwired (#200, #203, #243,
+#249): the population it is a gate over was closed by its own ticket in the
+same breath, so its first run is green - 150 files, 0 warnings - and there
+is no gap to mark. What it asks of the next sheet is that a docstring
+quoting a table carries an `r` in front of it, which is what its own
+finding says - this file among them, the section above having printed the
+warning it describes the moment it was written.
 """
 
 import ast
@@ -247,6 +286,7 @@ import os
 import re
 import subprocess
 import sys
+import warnings
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -644,6 +684,55 @@ def ignored(root=None):
     return frozenset(line for line in printed if line), None
 
 
+def owned(ending, root=None, theirs=None):
+    """Every file this repository owns whose name ends `ending`.
+
+    The walk `markdown()` described and held on its own until the eighth
+    question needed the same pruning for `.py` (#262). Two copies of one
+    opinion is a claim neither of them can be shown to hold (#97), and a
+    walk is an instrument rather than an assertion, so sharing it costs no
+    question its own proof (#171). `markdown()`'s docblock, below, is where
+    the pruning is explained; it is one list and not two.
+    """
+    root = ROOT if root is None else root
+    theirs = ignored(root)[0] if theirs is None else theirs
+    found = []
+    for where, directories, names in os.walk(root):
+        inside = os.path.relpath(where, root).replace("\\", "/")
+        prefix = "" if inside == "." else inside + "/"
+        directories[:] = [name for name in directories
+                          if name not in NOT_OURS and prefix + name + "/" not in theirs]
+        found += [os.path.join(where, name) for name in names
+                  if name.endswith(ending) and prefix + name not in theirs]
+    return sorted(found)
+
+
+def _walked(question, kind, files, theirs, could_not_ask):
+    """Print what a question over `owned()` looked at, and count the one fault.
+
+    Returns 1 if it could not ask git what to prune and 0 otherwise. What a
+    question leaves out goes in its own summary rather than only in the README,
+    because a tool that cannot say what it did not look at is the same species
+    as the hand-kept numbers it checks (#123).
+
+    It is one function and not two copies because the second question over this
+    walk arrived with #262: the extraction that made `owned()` had been applied
+    to the walk and not to the report beside it (#97), which the two-axis review
+    of 3 พ.ย. 2569 read as the same shape one line along.
+    """
+    if could_not_ask:
+        print("CANNOT ASK -> %s; pruned by the %d names only, so a tree nobody "
+              "has named is counted as ours" % (could_not_ask, len(NOT_OURS)))
+        print("%s: reading %d %s files of the whole repository, "
+              "outside %s and nothing else"
+              % (question, len(files), kind, ", ".join(NOT_OURS)))
+        return 1
+    print("%s: reading %d %s files of the whole repository, "
+          "outside %s and the %d paths git ignores"
+          % (question, len(files), kind, ", ".join(NOT_OURS), len(theirs)))
+    return 0
+
+
 def markdown(root=None, theirs=None):
     """Every markdown file this repository owns, asked of the tree.
 
@@ -698,17 +787,7 @@ def markdown(root=None, theirs=None):
     check reports somebody else's rows - did not reproduce. What was wrong is
     the corpus, and a count nobody can stand behind is enough.
     """
-    root = ROOT if root is None else root
-    theirs = ignored(root)[0] if theirs is None else theirs
-    found = []
-    for where, directories, names in os.walk(root):
-        inside = os.path.relpath(where, root).replace("\\", "/")
-        prefix = "" if inside == "." else inside + "/"
-        directories[:] = [name for name in directories
-                          if name not in NOT_OURS and prefix + name + "/" not in theirs]
-        found += [os.path.join(where, name) for name in names
-                  if name.endswith(".md") and prefix + name not in theirs]
-    return sorted(found)
+    return owned(".md", root, theirs)
 
 
 def columns(files=None):
@@ -757,20 +836,7 @@ def columns(files=None):
                 problems += 1
                 print("CELLS %s:%d -> %d cells in a %d-column table" % (short, number, got, width))
     if not named:
-        # What it leaves out goes in the summary rather than only in the README,
-        # because a tool that cannot say what it did not look at is the same
-        # species as the hand-kept numbers it checks (#123).
-        if could_not_ask:
-            problems += 1
-            print("CANNOT ASK -> %s; pruned by the %d names only, so a tree nobody "
-                  "has named is counted as ours" % (could_not_ask, len(NOT_OURS)))
-            print("columns: reading %d markdown files of the whole repository, "
-                  "outside %s and nothing else"
-                  % (len(files), ", ".join(NOT_OURS)))
-        else:
-            print("columns: reading %d markdown files of the whole repository, "
-                  "outside %s and the %d paths git ignores"
-                  % (len(files), ", ".join(NOT_OURS), len(theirs)))
+        problems += _walked("columns", "markdown", files, theirs, could_not_ask)
         print("columns: tables %d | rows %d | lines skipped inside fences %d | problems %d"
               % (tables, rows, fenced_lines, problems))
     return problems, tables, rows
@@ -1617,12 +1683,111 @@ def predictions(paths=None):
     return problems, read, asked, with_row, kept, skipped, said
 
 
+def escapes(files=None, root=None):
+    # Raw, because the list below quotes the very sequences it is about, which
+    # is this question finding its own first site on its first run (#141).
+    r"""(problems, files read, strings warned) over the python this repo owns.
+
+    Asks the compiler, which is the only thing that knows what Python calls a
+    valid escape: a list of sequences written here would be a second opinion
+    expiring the day the language gains one, and a regular expression over the
+    source would be a claim about the pattern somebody typed (#83, #124). So it
+    compiles each file with the warnings captured, and reports what came back.
+    Compiling runs nothing.
+
+    Takes its files as an argument for the same reason `columns()` does: the only
+    way to assert a warning is **found** is to hand it one, and the repository is
+    clean by construction the moment this lands (#141, #203).
+
+    **What it cannot measure**, beside its own numbers (#226, #247):
+
+    - **One warning is one string, not one site.** Python reports the first
+      invalid escape of each string literal and says nothing about the rest, so
+      the six sheets of #262 held eighteen sites between them and printed six
+      warnings per parse. A file reported once may need more than one fix.
+    - **It cannot say an escape was meant.** `\|` inside a quoted Markdown table
+      is right as Markdown and wrong as Python, and `\d` inside a quoted regular
+      expression is the same shape; both are repaired by a raw string rather than
+      by changing the text. What it reports is that the file does not compile
+      quietly, which is the thing that will be an error in a later Python, and
+      not that the prose is wrong.
+    - **It is blind to a string built at runtime.** `anchors_test.py` writes a
+      sheet's source into a string and parses it, and that parse warns while the
+      test file itself compiles clean - which is how #262's own second half was
+      found by running the suite rather than by this question (#172).
+    - **It asks nothing about `.py` outside the tree it walks.** A file git
+      ignores, a file under `_local`, and the two `DEEP-QA-*` reference trees are
+      pruned by `owned()`; see `markdown()` for why, and for the day that list
+      was a list of names only (#126, #186).
+    - **It is not a style check.** A file may compile quietly and still quote a
+      table wrongly, or hold a bare `\` nobody meant; this reads the compiler's
+      answer and no further.
+    - **A file it cannot read is a problem and not a silence**, because a tool
+      that cannot say what it did not look at is the same species as the
+      hand-kept numbers it checks (#123).
+    - **It reaches a population #262 set aside, and does not decide it.** The
+      question is asked of the **file**, so a mutant's own replacement string
+      holding such a sequence is red here too, where the ticket said adding an
+      `r` there *changes what the mutant writes, which is another question*.
+      It does not have to: doubling the backslash is a green route whose value
+      is identical - measured on 3 November 2569, a pipe behind one backslash
+      and behind two are the same two characters, Python keeping an invalid
+      escape as written. So there is no exemption marker here, unlike the
+      censuses in `frontend/scripts/`: nothing in the store needs one today,
+      and the day one does the fix is value-preserving (#141's date on it).
+    """
+    named = files is not None
+    could_not_ask = None
+    if not named:
+        theirs, could_not_ask = ignored(root)
+        files = owned(".py", root, theirs)
+    base = ROOT if root is None else root
+    problems = read = warned = 0
+    for path in files:
+        short = os.path.relpath(path, base).replace("\\", "/")
+        try:
+            with io.open(path, encoding="utf-8", newline="") as handle:
+                source = handle.read()
+        except (OSError, UnicodeDecodeError) as refusal:
+            problems += 1
+            print("CANNOT READ %s -> %s" % (short, refusal))
+            continue
+        read += 1
+        with warnings.catch_warnings(record=True) as caught:
+            # `always`, because the default filter prints one warning per
+            # (message, category, module, line) for the life of the process and
+            # the second file holding the same sequence would go unreported.
+            warnings.simplefilter("always")
+            try:
+                compile(source, path, "exec")
+            except SyntaxError as broken:
+                problems += 1
+                print("WILL NOT COMPILE %s:%s -> %s" % (short, broken.lineno, broken.msg))
+                continue
+        for raised in caught:
+            said = str(raised.message)
+            if "invalid escape sequence" not in said:
+                continue
+            warned += 1
+            problems += 1
+            print("INVALID ESCAPE %s:%s -> %s"
+                  % (short, getattr(raised, "lineno", "?"), said.split("sequence ")[-1]))
+    if not named:
+        problems += _walked("escapes", "python", files, theirs, could_not_ask)
+        print("escapes: read %d | strings warned %d | problems %d"
+              % (read, warned, problems))
+    return problems, read, warned
+
+
 if __name__ == "__main__":
     if sys.argv[1:]:
         # The seventh question on its own, which is the form the README's
         # command and #255's acceptance criterion both name. Anything else is
         # refused rather than falling through: a mistyped word that ran the
-        # other six and printed `problems 0` would read as this one being clean.
+        # other questions and printed `problems 0` would read as this one being
+        # clean. The sentence says `the other questions` and not a number,
+        # because a count written here expires the next time one is wired in,
+        # which #262 did on 3 พ.ย. 2569.
         if sys.argv[1:] != ["predictions"]:
             print("usage: python mutation/anchors.py [predictions]")
             sys.exit(2)
@@ -1645,5 +1810,9 @@ if __name__ == "__main__":
     # it, and from here a sheet that adds a mutant without a row is red in the
     # no-argument run.
     unpredicted = predictions()[0]
+    # The eighth, wired on the day it landed (#262): unlike the seventh it
+    # is a gate over a population its own ticket closed in the same breath,
+    # so there is no gap to mark and nothing to defer.
+    wrongly_escaped = escapes()[0]
     sys.exit(1 if (misanchored or undocumented or miscounted or unlisted or uncited
-                   or legend_faults or unpredicted) else 0)
+                   or legend_faults or unpredicted or wrongly_escaped) else 0)
