@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 3 November 2569 that is
-`2026-11-03-the-parenthesis-that-held-two-options.md`. Read it before taking work. Each handoff
+will cost time — as of the evening of 3 November 2569 that is
+`2026-11-03-the-second-write-nobody-listed.md`. Read it before taking work. Each handoff
 names the one it supersedes for state, so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -773,6 +773,15 @@ citation.
   then reads *buys nothing*, which is indistinguishable from a candidate that buys nothing.
   Assert each property on the element it was meant to change, named from the markup rather than
   reached by a parent walk. (#261)
+- **And a property read back on the right element is still not the *effect* it was written for** —
+  #261 one species along, and the cheapest arm to be fooled by: an arm that writes `text-overflow`
+  and `overflow` onto the label and reads both back off that label reports the values it has just
+  set, over a label nothing is eliding, because the candidate's second write — a width the box
+  cannot exceed — was in nobody's list of it. Its price then equals the control group's at every
+  width, which reads as *one mechanism, two endings* and is an arm that did nothing. Read the
+  effect: `scrollWidth > clientWidth`, asked of every box in the subject. The write nobody lists
+  is found by asking what kind of box it is — a `<button>` is a form control, so `width: auto` is
+  fit-content and does not follow a parent that has shrunk. (#264)
 - **A red is not a measurement until the same read has been seen green** — the same rule from the
   failing side. A locator scoped to a heading the screen never draws reads empty drawn and undrawn
   alike, so ten reds of ten can mean nothing, and a fix built on them is wrong the same way. (#171)

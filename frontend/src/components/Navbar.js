@@ -384,7 +384,13 @@ function Navber({ setAlert, onStayedPut }) {
           </a>
         </div>
 
-        <div className="flex  justify-center">
+        {/* `max-[916px]:min-w-0` is #264's other half: below 916px the middle
+            may shrink past its own content, so the picker's label is what is
+            given up and the logo and the user's name keep their boxes. The cut
+            itself is in `RoleDropdown.js`, where the reason is written; without
+            this line it cuts nothing, which is what made #264 cost two files
+            and not one. */}
+        <div className="flex  justify-center max-[916px]:min-w-0">
           <RoleDropdown setAlert={setAlert} onStayedPut={onStayedPut} />
         </div>
 

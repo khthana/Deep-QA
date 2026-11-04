@@ -265,7 +265,9 @@ e2e/
 │                          #221, #222, #238, #241, #257, #258, #261, #264 (read off the
 │                          directory on 3 November 2569, where this line still named the first
 │                          four; #264's landed the same evening and the count in the root
-│                          CLAUDE.md moved with it)
+│                          CLAUDE.md moved with it; and later that evening #264's own ค arm was
+│                          repaired and then retired, its proposal having become the code, which
+│                          makes every arm's control reading one of the answered bar)
 └── tests/                 named for the rows they cover
 ```
 

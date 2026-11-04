@@ -190,7 +190,7 @@ function RoleDropdown({ setAlert, onStayedPut }) {
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative max-[916px]:min-w-0" ref={dropdownRef}>
       {/*
         `whitespace-nowrap` is #261, answered จ by the owner on 3 พฤศจิกายน 2569.
 
@@ -227,10 +227,39 @@ function RoleDropdown({ setAlert, onStayedPut }) {
       <button
         onClick={() => setOpen(prev => !prev)}
         disabled={busy}
-        className="flex w-auto items-center justify-between whitespace-nowrap rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
+        className="flex w-auto items-center justify-between whitespace-nowrap rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60 max-[916px]:max-w-full"
         type="button"
       >
-        {label(worn)}
+        {/*
+          The label has a box of its own so that it can be cut: below 916px the
+          picker elides its own label and the two sides of the bar keep theirs,
+          which is #264, answered จ-ค ที่ 916 by the owner on 3 พฤศจิกายน 2569.
+
+          A bare text node beside the chevron is an anonymous flex item, which
+          no class can reach, so `truncate` written on the button cuts nothing
+          at all - and a cut also needs `min-w-0` on every box between this one
+          and the bar's row, which is why #264 costs `Navbar.js` as well. Both
+          halves were measured rather than reasoned:
+          `e2e/probes/264-the-bar-at-narrow-widths.spec.js` priced all four
+          options off a screen, and this landing is what refuted its reading of
+          this one. The middle box measures 402, 388, 373 and 336 at 916, 857,
+          791 and 659, which the probe read as *the revert of #261 without
+          #261's overflow*; those numbers are the bar shrinking its middle and
+          say nothing about the label, because that arm never wrote a width the
+          button could not exceed and so never cut anything (its docblock,
+          3 พฤศจิกายน 2569). What the gate buys is written in `264a` and proved
+          by the three mutants of `mutation/264-the-bar-below-916.py`.
+
+          916 is the width at which the user's name went to two lines, from that
+          probe's bisection. A media query reads the **layout** viewport, which
+          is the width the wrapping is decided by too, so the gate turns on
+          exactly where the defect used to start. `264a` holds the three claims:
+          above 916 not a box moves, at 916 the picker is what pays, and at 791
+          the logo and the name are still whole.
+        */}
+        <span className="max-[916px]:min-w-0 max-[916px]:truncate">
+          {label(worn)}
+        </span>
         <svg
           className="ms-3 h-2.5 w-2.5"
           aria-hidden="true"

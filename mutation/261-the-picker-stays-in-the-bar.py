@@ -45,10 +45,21 @@
 จอที่ส่งมอบ) และในคอมเมนต์ที่บันทึกคำตอบของเจ้าของงาน ฉะนั้น anchor เป็นบรรทัด
 `className` ทั้งบรรทัด ไม่ใช่คำนั้น — เป็นโค้ดที่มัตแตนต์แก้ ไม่ใช่คอมเมนต์ข้าง ๆ (#121, #123)
 
+## เล็งใหม่เมื่อ 3 พ.ย. 2569 — #264 เติมคลาสเข้าบรรทัดที่ anchor นี้ยกมาทั้งบรรทัด
+
+คำตอบ **จ-ค ที่ 916** ของเจ้าของงานเติม `max-[916px]:max-w-full` ให้ `className` ของตัวกระตุ้น
+ซึ่งเป็น anchor ของตัวนี้ทั้งบรรทัด ทั้งสองครึ่งของมัตแตนต์จึงถูกเติมคลาสนั้นด้วย ไม่ใช่เขียนใหม่
+การเล็งใหม่ซื่อตรงเมื่อมันรักษา**ความผิด**ไว้ ไม่ใช่เมื่อมันหาบรรทัดเจอ (#203) และสิ่งที่
+มัตแตนต์นี้เอาออกยังเป็น `whitespace-nowrap` คำเดียวเหมือนเดิม การเล็งใหม่ตามด้วยการกวาด
+ไม่ใช่ตามด้วยการตรวจ anchor (#107, #68) ซึ่งบันทึกอยู่ในย่อหน้าถัดไป
+
 ## ตอนกวาด และ **บันทึก**ของการกวาดซ้ำสิบห้าตัว
 
-แฟ้มนี้ถือ `frontend/src/components/RoleDropdown.js` ซึ่งมัตแตนต์ของ `10`, `81`, `155` กับ `231`
-อ่านอยู่ จึงอย่ากวาดใบนี้ข้างใบเหล่านั้น (#85 · #87 · #125)
+แฟ้มนี้ถือ `frontend/src/components/RoleDropdown.js` ซึ่งมัตแตนต์ของ `10`, `81`, `155`, `231`
+กับ **`264`** อ่านอยู่ จึงอย่ากวาดใบนี้ข้างใบเหล่านั้น (#85 · #87 · #125) — `264` เติมเข้ามา
+เมื่อ 3 พ.ย. 2569 โดยการรีวิวสองแกน: รายการนี้หมดอายุด้วยการแก้ที่เขียนย่อหน้าข้างล่างนี้เอง
+และไม่มีเครื่องมือไหนบอก เพราะมันเป็นรายการที่มือเก็บ (#126) รายการที่ถูกคืออันที่อ่านจาก
+`grep -ln 'components/RoleDropdown.js' mutation/*.py`
 
 และเพราะสเปคใหม่ทำให้จำนวนที่แต่ละตัวฆ่าหมดอายุโดยไม่มีอะไรรายงาน (#248, #202) ทั้งสิบห้าตัวที่
 แก้แฟ้มนั้นถูกกวาดซ้ำกับ `261a` เมื่อ 3 พ.ย. 2569 ตารางข้างล่างเป็น **บันทึก ไม่ใช่คำทำนาย**
@@ -59,6 +70,7 @@
 | ตัว | ผลที่วัดได้ | ที่ไหน |
 |---|---|---|
 | `261:labelwraps` | ฆ่าทั้งสองแถว | แถว 1 ที่ `toHaveLength(1)` · แถว 2 ที่ `toEqual` ของสองขอบ |
+| `261:labelwraps` **หลังเล็งใหม่ 3 พ.ย. 2569** | ฆ่าทั้งสองแถว **และแถว 1 ของ `264a` เพิ่มมาอีกแถว เท่านั้น ไม่ใช่สามแถว** | สองแถวเดิมที่เดิม · แถวใหม่ที่ `toEqual` ของ `264a` แถว 1 เพราะที่ 1280 ปุ่มอ่านได้ 465 ไม่ใช่ 498 ป้ายที่ตกบรรทัดมี max-content แคบลง จึงไม่ใช่กล่องเดียวกับที่ 917 · เป็นข้ออ้างเรื่องการไปถึง ไม่ใช่ข้อเดิมนับซ้ำ (#191) และข้อพิสูจน์ของแถวนั้นเองคือ `264:cutateverywidth` · **และเย็นวันเดียวกัน แถว 2 กับแถว 3 ของ `264a` ได้กุญแจ `insideBar` เพิ่ม ตัวนี้ก็ยัง**ไม่**ฆ่ามัน** เพราะ `truncate` ของ Tailwind คือ `white-space: nowrap` ด้วย ใต้ขอบ 916 ป้ายจึงประกาศการป้องกันของใบนี้ ลงบนตัวเอง และตัวนี้เอาคลาสนั้นออกจากปุ่ม ซึ่งเป็นที่ที่ประตูส่งคำถามให้ `span` ไปแล้ว |
 | `231:namelessresolver` | ฆ่าทั้งสองแถว **แต่ที่เงื่อนไขนำ** | `toContainText(LONGEST)` ของ `openTheBar` |
 | `231:triggerreadsthepointer` | ฆ่าทั้งสองแถว **แต่ที่เงื่อนไขนำ** | `toContainText(LONGEST)` ของ `openTheBar` |
 | อีกสิบสองตัว | ปล่อยทั้งสองแถวเขียว | — |
@@ -81,9 +93,9 @@ FILES = {
     'picker': 'frontend/src/components/RoleDropdown.js',
 }
 
-NOWRAP = """        className="flex w-auto items-center justify-between whitespace-nowrap rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
+NOWRAP = """        className="flex w-auto items-center justify-between whitespace-nowrap rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60 max-[916px]:max-w-full"
 """
-WRAPS = """        className="flex w-auto items-center justify-between rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
+WRAPS = """        className="flex w-auto items-center justify-between rounded-lg bg-white px-5 py-2.5 text-center font-medium text-secondary hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60 max-[916px]:max-w-full"
 """
 
 MUTANTS = {

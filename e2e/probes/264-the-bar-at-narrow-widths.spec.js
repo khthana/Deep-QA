@@ -50,6 +50,56 @@ const { actingButton, navbar } = require('../support/shell');
  * - **whether the row or the page overflows sideways**, because a candidate that
  *   moves the damage out of the bar instead of removing it reads as free in
  *   every box above (#164).
+ * - **whether the trigger is showing less than its text** — added on
+ *   3 November 2569, and the reading whose absence made option ค's prices
+ *   wrong. Every arm had read back the properties it wrote, on the elements it
+ *   wrote them to (#156, #260), and none of them the effect those properties
+ *   were for; ค's `ellipsis` landed over a label that was not elided. It is
+ *   asked of the button and of every box inside it, so it answers whether the
+ *   label is wrapped in a box of its own or not.
+ *
+ * ## Dated 3 November 2569 — the `today` column is now the answered bar
+ *
+ * The owner answered **จ-ค ที่ 916** on the day this file priced the options,
+ * and the answer is in `RoleDropdown.js` and `Navbar.js`. So every arm's
+ * control reading is now of a bar that cuts its label below 916, and ค's own
+ * arm is retired where it stands: its proposal is the code. What the defect
+ * looked like is in #264's table, in this file's history, and in the two runs
+ * of `e2e/tests/264a-the-bar-below-916.spec.js` - against the unfixed tree and
+ * against the fix.
+ *
+ * ### ค's arm, repaired and then retired on 3 November 2569
+ *
+ * ค was *the picker cuts its own label*: the label is a bare text node
+ * beside the chevron inside a `flex` button, an anonymous flex item no
+ * class can reach, so the price in markup is a wrapper element **plus**
+ * `min-w-0` on every box up to the row.
+ *
+ * Every property the arm wrote landed and nothing was ever cut: a
+ * `<button>` is a form control, so `width: auto` is fit-content and the
+ * button does not follow a parent that has shrunk. The chain shrank, the
+ * button went on drawing its whole 498 over the top of it, and the span
+ * kept all of its text. The arm read back each property on the element it
+ * had written it to (#156, #260) and read none of the **effect** those
+ * properties were for, which is why its prices came out identical to
+ * `before-261`'s at every width - an equivalence this file reported as a
+ * finding and which was an artefact of the arm. What repaired it was one
+ * more write, `max-width` on the button, and what *found* it was reading
+ * the clipping itself, which `readBar` now does for every arm.
+ *
+ * The repair is in this file's history and not in it, because the owner
+ * answered **จ-ค ที่ 916** that same day: the arm's proposal is the code,
+ * so there is no bare text node left to wrap and the arm threw. It is gone
+ * rather than stubbed, because a stub returning the one value its own table
+ * compares against is an assertion that cannot fail, and it would drive
+ * sixteen reloads a run to print `today` twice (#47, #203, #210) - the
+ * record is this paragraph, which is what #54 asks for.
+ *
+ * What the repaired run read, with the fix in: the label is cut from 916
+ * down, the name holds one line to 791 where it used to give way at 916,
+ * the logo holds 156 to 768 where it used to start shrinking at 857, and
+ * the row never overflows at all - 0 at 659, where it was 25px over. To
+ * read the defect again, run this file at a commit before the fix.
  *
  * ## What it cannot say
  *
@@ -150,6 +200,19 @@ async function readBar(page) {
       const row = document.querySelector(selector + ' > div');
       return Math.round(row.scrollWidth - row.clientWidth);
     }, BAR),
+    /**
+     * Whether the trigger is showing less than its text — the **effect** option
+     * ค is for, which this file read nowhere until 3 November 2569 and which is
+     * why the arm's prices used to equal `before-261`'s. Asked of every box
+     * inside the button and of the button itself, so it answers whether the
+     * label was wrapped in one or not.
+     */
+    labelCut: await page.evaluate(selector => {
+      const button = document.querySelector(selector + ' button');
+      return [button, ...button.querySelectorAll('*')].some(
+        box => box.scrollWidth - box.clientWidth > 0
+      );
+    }, BAR),
     pageScrolls: await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth
     ),
@@ -163,6 +226,7 @@ const line = (what, read) =>
     26
   ) +
   `   picker ${read.button.w}x${read.button.h} on ${read.buttonLines}` +
+  `   label cut ${read.labelCut}` +
   `   bar ${read.nav.h}` +
   `   out of the bar ${read.nav.y - read.button.y > 0 ? read.nav.y - read.button.y : 0}` +
   `/${
@@ -225,40 +289,6 @@ const CANDIDATES = {
         also: [],
       };
     }, selector),
-  /**
-   * ค — the picker cuts its own label. The label is a bare text node beside the
-   * chevron inside a `flex` button, so it is an anonymous flex item no class can
-   * reach: the price in markup is a wrapper element **plus** `min-w-0` on every
-   * box up to the row, which is what #261 measured and what this arm repeats.
-   * The chain is the arm's whole price, so every box in it is read back.
-   */
-  'ค-cut': (page, selector) =>
-    page.evaluate(sel => {
-      const button = document.querySelector(sel + ' button');
-      const text = [...button.childNodes].find(child => child.nodeType === 3);
-      const span = document.createElement('span');
-      span.textContent = text.textContent;
-      span.style.minWidth = '0';
-      span.style.overflow = 'hidden';
-      span.style.textOverflow = 'ellipsis';
-      span.style.whiteSpace = 'nowrap';
-      text.replaceWith(span);
-      const chain = [];
-      for (let node = button; node; node = node.parentElement) {
-        node.style.minWidth = '0';
-        chain.push(getComputedStyle(node).minWidth);
-        if (node.matches('nav')) break;
-      }
-      return {
-        where: span.textContent.trim(),
-        landed: getComputedStyle(span).textOverflow,
-        also: [
-          ['the span is cut', getComputedStyle(span).overflow],
-          ['the chain reached the bar', String(chain.length >= 3)],
-          ['every box in the chain', [...new Set(chain)].join(',')],
-        ],
-      };
-    }, selector),
   /** ง — the row may take a second line, so the bar's fixed height has to go. */
   'ง-wrap': (page, selector) =>
     page.evaluate(sel => {
@@ -283,13 +313,11 @@ const LANDED = {
   'before-261': 'normal',
   'ข-column': '0',
   'ข-img': '0',
-  'ค-cut': 'ellipsis',
   'ง-wrap': 'wrap',
 };
 
 /** And what each candidate's *other* writes must read back as (#260). */
 const ALSO = {
-  'ค-cut': ['hidden', 'true', '0px'],
   'ง-wrap': ['64px', 'auto'],
 };
 
