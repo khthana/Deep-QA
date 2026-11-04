@@ -4,15 +4,17 @@ const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { BACKEND_URL } = require('../support/env');
 const { mySectionIds } = require('../support/enrolment-screen');
 const { openAt } = require('../support/navigation');
 const {
   DOCUMENT,
   LAST_YEAR,
+  header,
   intoTheListedSection,
   markDocument,
   menuPathLink,
+  yearOf,
+  yearsDrawn,
 } = require('../support/section-jump');
 const { DASHBOARD, waitForSection } = require('../support/teaching-screen');
 
@@ -111,9 +113,12 @@ const HELD_MS = 2_000;
  */
 const SETTLE_MS = 250;
 
-// The two Sections, the marker and the walk up to the listed one are
-// `support/section-jump.js`, which carries the sequence and what was measured
-// of it; `202a` is the second caller.
+// The two Sections, the marker, the walk up to the listed one and the three
+// readers of the screen's own header are `support/section-jump.js`, which
+// carries the sequence and what was measured of it. `202a` is the second caller
+// and `266b` the third: the readers moved there on 4 November 2569 because a
+// second file needed them, and *a fixture a second file needs is shared, because
+// no row's claim lives in it* (#171).
 
 const sleep = ms => new Promise(done => setTimeout(done, ms));
 
@@ -141,30 +146,6 @@ const SCREENS = [
   { sheet: '40', page: 'CloAssessment', route: '/AssessmentCLO', api: '/clo-assessment' },
   { sheet: '41', page: 'ContinuousImprovement', route: '/ContinuousImprove', api: '/improvement-plan' },
 ];
-
-/**
- * The paragraphs under the screen's own heading.
- *
- * Every one of the eleven draws exactly one `<h1>` and nothing in the shell
- * draws any, measured on 5 October 2569 — so this is the screen's own header
- * and not a locator that is unique by accident of what is on the page today
- * (#93). The year is read out of it rather than matched inside it, so the row
- * can say *which* year was drawn when it disagrees.
- */
-const header = page => page.locator('h1').locator('xpath=following-sibling::p');
-
-/** Every Buddhist-era year the screen's header is showing, in the order drawn. */
-async function yearsDrawn(page) {
-  const paragraphs = await header(page).allInnerTexts();
-  return [...paragraphs.join(' ').matchAll(/\b(25\d\d)\b/g)].map(found => found[1]);
-}
-
-/** The year the server says a Section is of, asked of the server and not of a screen. */
-async function yearOf(page, sectionId) {
-  const answer = await page.request.get(`${BACKEND_URL}/api/teaching/sections/${sectionId}`);
-  expect(answer.status()).toBe(200);
-  return (await answer.json()).section.academic_year;
-}
 
 /**
  * The jump, written once for the eleven rows that differ only in an address.

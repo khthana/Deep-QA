@@ -79,6 +79,15 @@ export default function TeachingPlan() {
    * reasons. The jump #133's comment above `load` now names reaches this guard
    * too, taken while a reload a handler sent is still out - but no row walks
    * that sequence yet, so the sheet still says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   *
+   * 4 November 2569 (#266) - the sentence above expired today. The sequence is
+   * walked: `e2e/tests/266b-the-list-a-handler-reloads-across-a-section-jump.spec.js`
+   * holds a row for each of this screen's two handlers, taken through `141b`'s
+   * asymmetric jump, and `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`
+   * breaks each of them with `266:plansavehandlerstale` and `266:planremovehandlerstale`.
+   * Each mutant killed its own row and no other, at that row's own `toEqual`
+   * and not at a timeout (#139). The reason it was unmeasured was the fixture,
+   * not the mechanism (#141, #245).
    */
   const onScreen = useRef(load)
   useEffect(() => {

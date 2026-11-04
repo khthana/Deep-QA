@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 
+const { BACKEND_URL } = require('./env');
 const { menu } = require('./shell');
 const {
   DASHBOARD,
@@ -102,6 +103,41 @@ async function intoTheListedSectionScreen(page, sectionId, route, wait) {
   return drawn;
 }
 
+/**
+ * The paragraphs under the screen's own heading.
+ *
+ * Every one of the eleven screens of `141b` draws exactly one `<h1>` and nothing
+ * in the shell draws any, measured on 5 October 2569 — so this is the screen's
+ * own header and not a locator that is unique by accident of what is on the page
+ * today (#93). The year is read out of it rather than matched inside it, so the
+ * row can say *which* year was drawn when it disagrees.
+ *
+ * `266b`'s six screens are six of those eleven, so that measurement covers them;
+ * a caller outside the eleven owes the reading again.
+ *
+ * Moved here from `141b` on 4 November 2569, when `266b` became the second file
+ * to need them (#171). The move is a pure move — `141b` ran green afterwards,
+ * eleven rows in 1.2 minutes — but *a shared instrument is read by breaking it,
+ * not by the rows staying green* (#203, #207), and what breaks it is the
+ * mutants: `266b`'s ten each die at the `years` clause, which is this reader,
+ * and `141`'s four kill `141b`'s own rows at the same clause (measured before
+ * the move, in `mutation/141-superseded-across-a-section-jump.py`).
+ */
+const header = page => page.locator('h1').locator('xpath=following-sibling::p');
+
+/** Every Buddhist-era year the screen's header is showing, in the order drawn. */
+async function yearsDrawn(page) {
+  const paragraphs = await header(page).allInnerTexts();
+  return [...paragraphs.join(' ').matchAll(/\b(25\d\d)\b/g)].map(found => found[1]);
+}
+
+/** The year the server says a Section is of, asked of the server and not of a screen. */
+async function yearOf(page, sectionId) {
+  const answer = await page.request.get(`${BACKEND_URL}/api/teaching/sections/${sectionId}`);
+  expect(answer.status()).toBe(200);
+  return (await answer.json()).section.academic_year;
+}
+
 module.exports = {
   LAST_YEAR,
   SUBJECT,
@@ -110,4 +146,7 @@ module.exports = {
   markDocument,
   intoTheListedSection,
   intoTheListedSectionScreen,
+  header,
+  yearsDrawn,
+  yearOf,
 };

@@ -54,6 +54,20 @@ Killing them:
 | `norowdropped` | **แตะอะไร** form · **ทำอะไร** ปุ่มนำแถวออกเก็บทุกแถวไว้ | **แถวที่มันค้ำ · ตายที่** **แถว 6** · บรรทัด 238 ต้องได้ 200 (ได้ 400 เพราะแถวเดิมยังอยู่ ผลรวมเป็น 140) · **แถวอื่นที่ตายไปด้วย** 7 (ปนเปื้อน) · ที่มา `docs/acceptance/33-activity-editor.md:156` `docs/acceptance/33-activity-editor.md:82` |
 | `marksguardoff` | **แตะอะไร** route · **ทำอะไร** ปิดด่านที่ห้ามถอด CLO ที่มีคะแนนแล้ว | **แถวที่มันค้ำ · ตายที่** **ตายที่ seam ของ backend** — `activity-editor.test.js` ข้อ *a CLO a cohort has already been marked against…* · ที่มา `docs/acceptance/33-activity-editor.md:157` `docs/acceptance/33-activity-editor.md:94` |
 | `markfromweight` | **แตะอะไร** route · **ทำอะไร** คะแนนต่อ CLO กลายเป็นตัวน้ำหนักเอง (60 คะแนนของงาน 20 คะแนน) | **แถวที่มันค้ำ · ตายที่** **ตายที่ seam ของ backend** — ข้อ *an activity is created…* และ *saving twice updates…* · ที่มา `docs/acceptance/33-activity-editor.md:158` |
+
+**กวาดซ้ำกับ `266b` 4 พ.ย. 2569 — `alwaysnew` ได้หนึ่งแถวเพิ่ม** ล้ม 1 ผ่าน 9 ใน 2.1 นาที ใน
+`e2e/tests/266b-the-list-a-handler-reloads-across-a-section-jump.spec.js` แถว *บันทึก* ของ `LearningActivities`
+— *สเปคที่ได้แถวที่มัตแตนต์ไปถึงทำให้จำนวนของตัวนั้นหมดอายุ โดยไม่มีอะไรรายงาน* (#248, #257)
+**แต่แถวนั้นตายที่การรอ ไม่ใช่ที่ข้ออ้าง** คือ timeout ของ `page.waitForResponse` ที่ `landedAgain`
+ซึ่งเป็นเงื่อนไขนำที่คอยคำตอบของการโหลดใหม่ ไม่ใช่ `toEqual` ของแถวที่ลงท้ายด้วย `years: [landedYear]` — *การอ่านสิ่งที่
+มัตแตนต์ทำให้ไม่มีอยู่คือการรอ ไม่ใช่ข้ออ้าง* (#139) แถวที่เพิ่มมาจึงไม่ได้เพิ่มการพิสูจน์ข้ออ้างของ
+แถว และราคาของมันอ่านได้จากเวลา: 2.1 นาที เทียบกับ 1.2 นาทีของตัวที่ไม่ฆ่าอะไร ซึ่งคือ 60 วินาที
+ของ timeout (#146) คำทำนายของ #266 ถูกเรื่อง**ชนิด**ของการตาย และ**ผิดเรื่องว่ารอตัวไหน** —
+เขียนไว้ว่า `reloadSent` ส่วนที่รายงานคือ `landedAgain` ทั้งสามตัวถูกคอยอยู่ใน `Promise.all`
+เดียวกันกับการกด สิ่งที่การวัดชี้ขาดจึงเป็นชนิดของจุดตาย ไม่ใช่ว่าเป็นการรอตัวไหน
+บันทึกเต็ม: `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`
+§ *ผลการกวาดซ้ำเก้าสิบเก้าตัว 4 พ.ย. 2569*
+
 """
 
 from harness import main

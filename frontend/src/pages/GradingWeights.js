@@ -104,6 +104,18 @@ export default function GradingWeights() {
    * reasons. The jump #133's comment above `load` now names reaches this guard
    * too, taken while a reload a handler sent is still out - but no row walks
    * that sequence yet, so the sheet still says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   *
+   * 4 November 2569 (#266) - the sentence above expired today for this screen's
+   * own write, and holds for the import. The write's sequence is walked:
+   * `e2e/tests/266b-the-list-a-handler-reloads-across-a-section-jump.spec.js`
+   * holds the row, taken through `141b`'s asymmetric jump, and
+   * `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`
+   * breaks it with `266:weightssavehandlerstale`, which killed that row and no
+   * other, at the row's own `toEqual` and not at a timeout (#139). The
+   * `onImported` half below is still ยังไม่ได้ทดสอบ: the guard is already
+   * there, what is missing is a row, and the reason is the fixture - a file the
+   * server will not refuse - rather than the mechanism. Tracker #268
+   * (#141, #245).
    */
   const onScreen = useRef(load)
   useEffect(() => {
@@ -133,6 +145,14 @@ export default function GradingWeights() {
    * `onScreen` names, taken while this write is out - which no row walks yet, so
    * the sheet says ยังไม่ได้ทดสอบ: #199's sibling, measured on the enrolment
    * screen and not here. 11 October 2569 (#202, #68)
+   *
+   * 4 November 2569 (#266) - the way in is walked now:
+   * `e2e/tests/266b-the-list-a-handler-reloads-across-a-section-jump.spec.js`
+   * takes exactly that jump while this save is out, and
+   * `266:weightssavehandlerstale` breaks it. What that row asserts is the
+   * **drawing** - the document, the address and the year in the screen's own
+   * header - and not the sentence, so
+   * the sentence half above keeps ยังไม่ได้ทดสอบ. Dated, not deleted (#54).
    */
   const save = async () => {
     setBusy(true)
@@ -334,6 +354,19 @@ export default function GradingWeights() {
             so the flag is unproved rather than unneeded - sheet 30 says
             ยังไม่ได้ทดสอบ, and the first link between ตอนเรียน on this route
             makes it a row.
+
+            4 November 2569 (#266) - *a way to change `sectionId` while that
+            reload is out* exists after all, and the sentence above was wrong
+            about the mechanism rather than about the mark: `141b`'s asymmetric
+            jump - last year's screen by address, dashboard, this year's
+            Section, this year's screen, then `window.history.go(-3)` - is that
+            way, and ten rows of
+            `e2e/tests/266b-the-list-a-handler-reloads-across-a-section-jump.spec.js`
+            take it. What stops this half is the fixture: the scheme is replaced
+            whole, so the file must total 100, hold no duplicate category and
+            drop no category an activity points at. Tracker #268. Sheet 30 still
+            says ยังไม่ได้ทดสอบ, for that reason and not for this one
+            (#141, #245, #54).
           */}
           <ImportPanel
             title="นำเข้าสัดส่วนคะแนนจากไฟล์"

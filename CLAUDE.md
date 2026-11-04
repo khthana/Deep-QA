@@ -598,6 +598,13 @@ citation.
   still kill the row, and one that was predicted to gain nothing can gain two. Four of seven
   predictions were refuted that way in one run, all four by reading the row instead of its lines
   (#233). (#258)
+- **A kill a re-sweep hands back is proof only where it lands on the row's own assertion** — the
+  line above one unit on, from predicting the kill to reading what it bought: one run returned
+  sixteen new kills, of which six died at the **arrangement** — a waiting precondition the mutant
+  starved (#139), a press whose locator the mutant stopped being unique for (#93) — and ten at the
+  claim. All sixteen redden a row and raise the total by one, and no instrument tells them apart;
+  what does is reading which line each row died at and comparing it with where that row's own
+  mutant dies. (#266)
 - **A table written for mutants already swept is a *record*, and saying so is what keeps every
   other sheet's prediction falsifiable** — the rule *write the table before the first mutant* binds
   from the sheet it landed on, so a row filled in afterwards is dated as a retro record and cites

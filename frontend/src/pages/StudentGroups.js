@@ -140,6 +140,18 @@ export default function StudentGroups() {
    * reasons. The jump #133's comment above `load` now names reaches this guard
    * too, taken while a reload a handler sent is still out - but no row walks
    * that sequence yet, so the sheet still says ยังไม่ได้ทดสอบ rather than ไม่ต้องมี.
+   *
+   * 4 November 2569 (#266) - the sentence above expired today for this screen's
+   * own write, and holds for the import. The write's sequence is walked:
+   * `e2e/tests/266b-the-list-a-handler-reloads-across-a-section-jump.spec.js`
+   * holds the row, taken through `141b`'s asymmetric jump, and
+   * `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`
+   * breaks it with `266:groupswritehandlerstale`, which killed that row and no
+   * other, at the row's own `toEqual` and not at a timeout (#139). The
+   * `onImported` half below is still ยังไม่ได้ทดสอบ: the guard is already
+   * there, what is missing is a row, and the reason is the fixture - a file the
+   * server will not refuse - rather than the mechanism. Tracker #268
+   * (#141, #245).
    */
   const onScreen = useRef(load)
   useEffect(() => {

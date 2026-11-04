@@ -55,7 +55,12 @@ helper's own comment says so.
 
 Killing them:
 
-    cd e2e && npx playwright test 66a
+    cd e2e && npx playwright test tests/66a-sign-in-landing.spec.js
+
+The whole file name since 4 พ.ย. 2569, not `66a`: #266's own spec is
+`tests/266a-the-list-a-handler-reloads-across-a-history-jump.spec.js`, and a
+test-file argument is matched as a **substring**, so `66a` had become two files
+and a kill count read off it two sheets' rows counted as one (#154, #158, #257).
 
 **Never sweep this file and `50-sign-in-screens.py` in the same run**, and the
 same goes for `24-teacher-dashboard.py` **and `105-sidebar-icons.py`**. The
