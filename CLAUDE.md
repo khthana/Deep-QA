@@ -1292,7 +1292,13 @@ citation.
   describes can be one a later ticket closed (#217), so a row with steps written in it is a cell
   to go and read, not a row to go and walk — and the cell usually says itself when it was
   withdrawn and what would bring it back. Thirty marks came apart into five rows with steps, none
-  of them walkable. (*การเดินมือ 4 พ.ย. 2569*; #229, #217, #210)
+  of them walkable. **And the cell's *tracker* is a dated claim in the same way, which is the
+  third face of the one number**: a ◐ or ☐ naming a ticket reads as a row somebody holds, while
+  that ticket may be closed — and closed over something else, its own closing having moved only
+  part of its population on. The mark census cannot see it, every mark being right; so read the
+  state of the ticket a cell names, not only that it names one. Ten cells named a tracker closed
+  sixteen days earlier, by the very ticket that had been opened to stop deferrals living in prose.
+  (*การเดินมือ 4 พ.ย. 2569*; #229, #217, #210, #119, #97)
 - **A half only a person can answer has to be asked in a form whose answers the screen does not
   hold** — ask *does it read as an explanation* and what comes back is the sentence that is on the
   screen, which is #163's rule met from the asking side: offer the feelings instead (telling the
