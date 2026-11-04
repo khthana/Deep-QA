@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of the evening of 3 November 2569 that is
-`2026-11-03-the-second-write-nobody-listed.md`. Read it before taking work. Each handoff
+will cost time — as of 4 November 2569 that is
+`2026-11-04-the-condition-its-author-withdrew.md`. Read it before taking work. Each handoff
 names the one it supersedes for state, so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -125,6 +125,15 @@ citation.
   the public half, and the organisation's own documents no instrument can reach. What lands beside
   the condition is the date, what was looked at and the half still owed, because a search that
   found nothing is not a finding of *there is none* (#121, #54). (#263)
+- **And such a condition is withdrawn by whoever wrote it, which voids the ticket carrying it
+  without answering its question** — #263 from the other side: the owner's own expiry condition can
+  be cancelled by an instruction, and then the search already done stands as a record of a question
+  that was never answered rather than of one that was. What the withdrawal owes is the date, the
+  population counted rather than taken from the instruction's own word *all* — a census by the
+  mechanism found two rows where *all* sounded like a sweep — and the reason written down as a
+  claim and not as a fact, even where it is a claim no instrument can measure and no one should be
+  asked (#257, #141, #126). The struck criterion then keeps its row and its mark, because a
+  criterion struck is not a criterion measured (#166, #97). (#265)
 - **An owner's answer reaches the population the ticket's census had, and the reason the owner gave
   is a sentence about those screens and silent about their siblings** — so census the siblings by
   the mechanism and ask which of them carries a write that shortens its own list: that one's way in
