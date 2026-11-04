@@ -1285,6 +1285,14 @@ citation.
   owed on a **⚙** row is in no sheet's ◐ or ☐, so a census of the marks answers confidently for a
   queue it cannot see, and the other half is the tracker. *The queue is empty* is a claim about
   both. (#229, #197)
+- **And the mark columns over-count as well, so a census of them answers for a queue that is not
+  there** — #229 from the other side: ◐ and ☐ hold rows waiting on a spec, on the seed, on nobody,
+  and criteria struck to records, mixed in with the rows waiting on a person. What separates them
+  is the row's own *steps* column, and **that column is a dated claim too**: the way in it
+  describes can be one a later ticket closed (#217), so a row with steps written in it is a cell
+  to go and read, not a row to go and walk — and the cell usually says itself when it was
+  withdrawn and what would bring it back. Thirty marks came apart into five rows with steps, none
+  of them walkable. (*การเดินมือ 4 พ.ย. 2569*; #229, #217, #210)
 - **A half only a person can answer has to be asked in a form whose answers the screen does not
   hold** — ask *does it read as an explanation* and what comes back is the sentence that is on the
   screen, which is #163's rule met from the asking side: offer the feelings instead (telling the
