@@ -12,7 +12,8 @@ const {
   DOCUMENT,
   LAST_YEAR,
   header,
-  intoTheListedSectionScreen,
+  heldReloadLosesTheSectionJump,
+  isRead,
   markDocument,
   yearOf,
   yearsDrawn,
@@ -85,9 +86,19 @@ const {
  * reaches that copy whole: what a grep counts is copies and what a mutant can
  * tell apart is sites (#97, #244), and a mutant there cannot tell the create
  * from the rename, the removal or a member move. The two `ImportPanel` sites
- * are a different way in — a file — and are the two of the twelve that end
+ * are a different way in — a file — and were the two of the twelve that ended
  * *ยังไม่ได้ทดสอบ*, with the date, the reason and the tracker in each sheet's
  * own cell rather than in prose here (#119).
+ *
+ * 5 November 2569 (#268) — those two have their rows, in
+ * `e2e/tests/268-the-list-an-import-reloads-across-a-section-jump.spec.js`,
+ * with `mutation/268-the-list-an-import-reloads-across-a-section-jump.py`
+ * breaking each one. The reason they waited was the fixture, and it was
+ * measured rather than argued (#141): both routes answer **201** to a file
+ * built from what the Section already holds. The walk below moved to
+ * `support/section-jump.js` the same day, `268` being the second file to need
+ * it (#171) — a pure move, and what says the rows still go through it is the
+ * mutants and not the rows staying green (#203).
  *
  * ## What this file does not say
  *
@@ -108,16 +119,6 @@ const {
  *   mutant, and what each row adds is that **its own** way in arrives there
  *   (#191).
  */
-
-/** Long enough for the Section the jump lands on to be back and drawn first. */
-const HELD_MS = 2_000;
-
-/** The render the held answer would cause; `141b`'s number, for its reason. */
-const SETTLE_MS = 250;
-
-const sleep = ms => new Promise(done => setTimeout(done, ms));
-
-const isRead = answer => answer.request().method() === 'GET';
 
 /** A name no seed row carries, so a press can be aimed at the row this test made. */
 const MINE = 'แถว #266';
@@ -420,68 +421,6 @@ const SCREENS = [
   },
 ];
 
-/**
- * The jump, written once for the ten rows that differ only in an address and a
- * press.
- *
- * This is an instrument and not an assertion — it ends with the screen in the
- * state a row is about and reads nothing of its own beyond the settle points,
- * so every claim stays in the row that called it (#171). What it does, in
- * order: walks to the second address with the controls a person has, and waits
- * for that screen to be **drawn** before anything is held, because the hold
- * cannot be installed earlier without delaying that screen's own first read;
- * holds this year's list read back; presses the write and waits for the
- * **reload** to be out, by identity and never by a clock; jumps the whole
- * distance in one move, which is what the history list does and what `goBack()`
- * could not do without passing through a screen that unmounts this one; and
- * returns once both answers are in, the held one second, with a turn for the
- * renderer.
- */
-async function heldReloadLosesTheSectionJump(
-  page,
-  { screen, one, arranged, landed, held, heldYear },
-) {
-  const api = sectionId => `/api/teaching/sections/${sectionId}${screen.api}`;
-  const isFor = (url, sectionId) => new URL(url).pathname === api(sectionId);
-  const eitherSection = url => url.pathname === api(landed) || url.pathname === api(held);
-
-  await intoTheListedSectionScreen(page, held, screen.route, p =>
-    p.waitForResponse(answer => isFor(answer.url(), held) && isRead(answer)),
-  );
-  // What the answer carried is what the screen shows (#132), read as the year
-  // in the screen's own header — the same settle point `141b` uses, and the
-  // thing the row goes on to read.
-  await expect(header(page).filter({ hasText: heldYear })).toHaveCount(1);
-
-  await page.route(eitherSection, async (route, request) => {
-    if (request.method() === 'GET' && isFor(request.url(), held)) await sleep(HELD_MS);
-    try {
-      await route.continue();
-    } catch {
-      /* the row has already ended */
-    }
-  });
-
-  try {
-    const reloadSent = page.waitForRequest(
-      request => request.method() === 'GET' && isFor(request.url(), held),
-    );
-    const heldArrived = page.waitForResponse(answer => isFor(answer.url(), held) && isRead(answer));
-    const landedAgain = page.waitForResponse(
-      answer => isFor(answer.url(), landed) && isRead(answer),
-    );
-
-    await one.press(page, held, arranged);
-    await reloadSent;
-    await page.evaluate(() => window.history.go(-3));
-    await landedAgain;
-    await heldArrived;
-    await page.waitForTimeout(SETTLE_MS);
-  } finally {
-    await page.unroute(eitherSection);
-  }
-}
-
 // Every row here writes through the screen, and four of them seed a record
 // first, so the schema is remembered before anything else writes and put back
 // at the end (#134). Declared before any other hook: what it remembers is the
@@ -525,9 +464,9 @@ for (const screen of SCREENS) {
       await markDocument(page);
 
       await heldReloadLosesTheSectionJump(page, {
-        screen,
-        one,
-        arranged,
+        api: screen.api,
+        route: screen.route,
+        press: () => one.press(page, listed, arranged),
         landed: LAST_YEAR,
         held: listed,
         heldYear,

@@ -138,10 +138,100 @@ async function yearOf(page, sectionId) {
   return (await answer.json()).section.academic_year;
 }
 
+/** Long enough for the Section the jump lands on to be back and drawn first. */
+const HELD_MS = 2_000;
+
+/** The render the held answer would cause; `141b`'s number, for its reason. */
+const SETTLE_MS = 250;
+
+const sleep = ms => new Promise(done => setTimeout(done, ms));
+
+/** A read, by its method — the half of a matcher that is never about a clock. */
+const isRead = answer => answer.request().method() === 'GET';
+
+/**
+ * A handler's reload, held back across the jump — the walk `266b` and `268`
+ * share.
+ *
+ * Written for `266b` on 4 November 2569 and moved here on 5 November 2569, when
+ * `268` became the second file to need it (#171). Like the three readers above
+ * it, it is an instrument and not an assertion: it ends with the screen in the
+ * state a row is about and reads nothing of its own beyond the settle points, so
+ * every claim stays in the row that called it. What proves the callers still go
+ * through it is the mutants, not the rows staying green (#203, #207) — `266b`'s
+ * ten and `268`'s two all die at the `years` clause of their own row.
+ *
+ * What it does, in order: walks to the second address with the controls a person
+ * has, and waits for that screen to be **drawn** before anything is held,
+ * because the hold cannot be installed earlier without delaying that screen's
+ * own first read; holds this year's list read back; presses the write and waits
+ * for the **reload** to be out, by identity and never by a clock; jumps the
+ * whole distance in one move, which is what the history list does and what
+ * `goBack()` could not do without passing through a screen that unmounts this
+ * one; and returns once both answers are in, the held one second, with a turn
+ * for the renderer.
+ *
+ * `api` is the suffix under `/api/teaching/sections/:id`, matched **whole** for
+ * the held read — *ask which document asked, by identity and never by a clock*
+ * (#160) — so a write to `${api}/:id` is not held, and neither is an import's
+ * own POST to `${api}/import`. `press` is handed nothing and must return when
+ * the **write** has answered and never when the reload has been drawn: every
+ * support helper that presses these buttons waits for the reload too, which is
+ * right for every other row in the suite and is exactly what these rows must
+ * not do.
+ */
+async function heldReloadLosesTheSectionJump(
+  page,
+  { api: suffix, route, press, landed, held, heldYear },
+) {
+  const api = sectionId => `/api/teaching/sections/${sectionId}${suffix}`;
+  const isFor = (url, sectionId) => new URL(url).pathname === api(sectionId);
+  const eitherSection = url => url.pathname === api(landed) || url.pathname === api(held);
+
+  await intoTheListedSectionScreen(page, held, route, p =>
+    p.waitForResponse(answer => isFor(answer.url(), held) && isRead(answer)),
+  );
+  // What the answer carried is what the screen shows (#132), read as the year
+  // in the screen's own header — the same settle point `141b` uses, and the
+  // thing the row goes on to read.
+  await expect(header(page).filter({ hasText: heldYear })).toHaveCount(1);
+
+  await page.route(eitherSection, async (route_, request) => {
+    if (request.method() === 'GET' && isFor(request.url(), held)) await sleep(HELD_MS);
+    try {
+      await route_.continue();
+    } catch {
+      /* the row has already ended */
+    }
+  });
+
+  try {
+    const reloadSent = page.waitForRequest(
+      request => request.method() === 'GET' && isFor(request.url(), held),
+    );
+    const heldArrived = page.waitForResponse(answer => isFor(answer.url(), held) && isRead(answer));
+    const landedAgain = page.waitForResponse(
+      answer => isFor(answer.url(), landed) && isRead(answer),
+    );
+
+    await press();
+    await reloadSent;
+    await page.evaluate(() => window.history.go(-3));
+    await landedAgain;
+    await heldArrived;
+    await page.waitForTimeout(SETTLE_MS);
+  } finally {
+    await page.unroute(eitherSection);
+  }
+}
+
 module.exports = {
   LAST_YEAR,
   SUBJECT,
   DOCUMENT,
+  HELD_MS,
+  SETTLE_MS,
+  isRead,
   menuPathLink,
   markDocument,
   intoTheListedSection,
@@ -149,4 +239,5 @@ module.exports = {
   header,
   yearsDrawn,
   yearOf,
+  heldReloadLosesTheSectionJump,
 };
