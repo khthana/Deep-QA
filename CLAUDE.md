@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 4 November 2569 that is
-`2026-11-04-the-condition-its-author-withdrew.md`. Read it before taking work. Each handoff
+will cost time — as of 5 November 2569 that is
+`2026-11-05-the-sweep-that-applied-nothing-twice.md`. Read it before taking work. Each handoff
 names the one it supersedes for state, so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
@@ -448,6 +448,13 @@ citation.
   much. (#193, #224)
 - Before reading a kill count that looks like the suite as a mutant that stops everything, read
   the names for a leak. (#52)
+- **A sweep that applied nothing reads exactly like a sweep that killed nothing, and is most
+  believable where the prediction said nothing would die** — #208's *the count is the tell*
+  from the other side, met twice in one day from two causes: a call operator that killed `npx`
+  in two seconds, and a verb the harness does not have, which printed its usage and exited 0.
+  So the sweep record asks the **tree** whether the mutant is in it, and that answer is a
+  **gate** and not a field to read afterwards — as a field it still spent fifteen minutes and
+  nearly recorded a prediction as confirmed. (#268)
 - **Two places holding one opinion is not a safety margin; it is a claim neither of them can be
   shown to hold.** (#97)
 - **A ticket that asks whether to de-duplicate a claim has not said how many rows hold it, and the

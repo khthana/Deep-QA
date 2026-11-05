@@ -105,9 +105,22 @@ const {
  * is a change to the thing these ten rows arrange their situation with. So
  * *what says the rows still go through it is the mutants and not the rows
  * staying green* (#203, #207) binds here, and the ten rows passing after the
- * move is this rule's own counterexample shape rather than its evidence. The
- * re-sweep that answers it is predicted and recorded in
- * `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`.
+ * move is this rule's own counterexample shape rather than its evidence.
+ *
+ * The re-sweep answers it: all ten still kill **one row each**, each on its
+ * own screen, with the `บันทึก`/`ลบ` pairs still separable — `ล้ม 1 ผ่าน 9`,
+ * measured on 5 November 2569 and recorded with the figures and the dying
+ * line in `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`.
+ * `groupswritehandlerstale` was run once more on its own to read where the
+ * kill lands: the `toEqual` below, with **only `years`** differing, so it is
+ * the row's own claim and not its arrangement (#266, #233).
+ *
+ * The first attempt at that re-sweep applied nothing — twelve runs that each
+ * said `10 passed`, which reads as *the move left these ten rows proving
+ * nothing* and was believable because that is what the review had warned of.
+ * What said otherwise was the sweep record's own `dirty:` field, empty in all
+ * twelve: the harness has no `apply` verb, so it printed its usage and exited
+ * 0 (#208, *the count is the tell, not the exit code*).
  *
  * ## What this file does not say
  *
