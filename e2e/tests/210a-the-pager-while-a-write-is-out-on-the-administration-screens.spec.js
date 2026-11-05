@@ -11,6 +11,7 @@ const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv } = require('../support/import-panel');
 const { keysOn, next, reading } = require('../support/pager');
 const departments = require('../support/departments-screen');
+const offerings = require('../support/offerings-screen');
 const programs = require('../support/programs-screen');
 const subjects = require('../support/subjects-screen');
 const rubrics = require('../support/rubrics-screen');
@@ -45,15 +46,24 @@ const rubrics = require('../support/rubrics-screen');
  * is what keeps a red a measurement (#171) - a button disabled by #57's end rule
  * would read `disabled` on the broken screen too.
  *
- * ## The two sites with no row here
+ * ## The one site with no row here
  *
- * `ProgramSubjects` and `Offerings` carry the same line and are not rowed, which
- * is a measurement rather than an omission. A row needs a second page, and
- * measured on 19 ตุลาคม 2569 the seed gives the committee **one** pair and **two**
- * offerings in the term the screen opens on; the pairs can be imported but an
- * offering needs a (programme, subject) pair for every row, so a second page of
- * offerings is a seed change rather than a fixture (growing the seed is the
- * owner's call). The sheet carries this as ☐ with the date.
+ * `ProgramSubjects` and `Offerings` carry the same line, and until 5 พ.ย. 2569
+ * neither was rowed. The paragraph that stood here gave one reason for both —
+ * *an offering needs a (programme, subject) pair for every row, so a second
+ * page of offerings is a seed change rather than a fixture* — and that half was
+ * **false on the day it was written**, so it is corrected rather than dated
+ * (#54, #130). `semester_courses` is unique on
+ * `(program_id, subject_id, academic_year, semester)`, not on the pair, so one
+ * placed pair opens in as many terms as anybody asks for; and this file's own
+ * `secondPage` hook was already building second pages as fixtures for three of
+ * its five rows while the sentence said a fixture could not. #267 measured both
+ * halves on 4–5 พ.ย. 2569, and the owner's answer was ง: build the page here
+ * and leave the seed alone.
+ *
+ * `ProgramSubjects` keeps the ☐ and the date. Its key really is
+ * `PRIMARY KEY (program_id, subject_id)`, so an eleventh row there is ten more
+ * subjects — which is a seed change, and the owner's call (#130).
  *
  * Each row writes - an import, and a removal that really lands - so the file
  * holds the schema and puts it back when it ends (#134).
@@ -69,6 +79,14 @@ test.afterAll(() => release());
 
 /** Ten more rows than a page holds, so ถัดไป is live before anything is out. */
 const PAGE_SIZE = 10;
+
+/**
+ * The terms the offerings fixture opens its subject in — four years of this
+ * file's own, the last kept for the one row that is pressed. Far enough ahead
+ * that no seed and no other spec plans a term in them, which is what keeps this
+ * file's rows out of every other file's reading (#132).
+ */
+const PAGING_YEARS = [2590, 2591, 2592, 2593];
 
 async function untilAtLeast(page, table, total) {
   await expect.poll(async () => (await reading(page, table)).total).toBeGreaterThanOrEqual(total);
@@ -155,13 +173,37 @@ const SCREENS = [
       subjects.subjectRow(page, '99990000').getByRole('button', { name: 'ลบ' }).click(),
     confirm: 'ลบรายวิชา',
   },
+  {
+    name: 'การเปิดรายวิชาในภาคการศึกษา (Offerings.js)',
+    account: ACCOUNTS.committee0501,
+    open: page => offerings.openOfferings(page),
+    table: page => offerings.listTable(page),
+    write: /^\/api\/offerings\/\d+$/,
+    // #267's answer ง (5 พ.ย. 2569): a second page here is a fixture, and the
+    // years are this file's own so that no other file shares a term with it.
+    // The last of them holds the one row this row presses - see
+    // `moreThanOnePage`.
+    secondPage: page => offerings.moreThanOnePage(page, { years: PAGING_YEARS }),
+    // The fixture's own row, in the one year holding a single Offering: it has
+    // no section and nothing points at it, so the removal really lands, where
+    // the seeded Offerings carry 113 enrolments and their marks and are refused
+    // (`23a` row 8). A refused write never leaves the window this row is about.
+    startRemoval: (page, built) =>
+      offerings
+        .offeringTermRow(page, built.spare)
+        .getByRole('button', { name: 'ยกเลิกการเปิด' })
+        .click(),
+    confirm: 'ยกเลิกการเปิดรายวิชา',
+  },
 ];
 
 for (const screen of SCREENS) {
   test(`${screen.name}: the pager is closed while a removal is out`, async ({ page }) => {
     await signIn(page, screen.account);
     await screen.open(page);
-    await screen.secondPage(page);
+    // What the fixture built, for the rows whose removal has to land on a row
+    // of the fixture's own rather than on a seeded one.
+    const built = await screen.secondPage(page);
 
     const table = screen.table(page);
     const line = await reading(page, table);
@@ -172,7 +214,7 @@ for (const screen of SCREENS) {
     // this ticket's flag.
     await expect(next(page), 'ถัดไป with nothing out').toBeEnabled();
 
-    await screen.startRemoval(page);
+    await screen.startRemoval(page, built);
     const write = await gate(page, screen.write, isWrite);
     await panel(page).getByRole('button', { name: screen.confirm }).click();
     await write.sent;

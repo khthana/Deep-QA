@@ -1,7 +1,7 @@
 'use strict';
 
 const { expect } = require('@playwright/test');
-const { untilDrawn } = require('./pager');
+const { reading, untilDrawn } = require('./pager');
 const { openAt } = require('./navigation');
 
 /**
@@ -117,6 +117,26 @@ const offeringRow = (page, code) =>
     .getByRole('row')
     .filter({ has: page.getByRole('cell', { name: code, exact: true }) });
 
+/**
+ * The screen's own list, told apart from the copy panel's report.
+ *
+ * `first()` for `departments-screen.js`'s reason: `CopyTermPanel` is drawn
+ * below the list and draws a table of its own once a copy has run.
+ */
+const listTable = page => page.locator('table').first();
+
+/**
+ * One row of a single term, found by its year cell as well as its code.
+ *
+ * The unfiltered list draws one code in several terms, so `offeringRow` alone
+ * hands back as many rows as the term has; a caller that means *the one row in
+ * that year* says so.
+ */
+const offeringTermRow = (page, { code, year }) =>
+  offeringRow(page, code).filter({
+    has: page.getByRole('cell', { name: String(year), exact: true }),
+  });
+
 /** The form that opens a subject for a term. */
 async function openForm(page) {
   await page.getByRole('button', { name: 'เปิดรายวิชา', exact: true }).click();
@@ -143,6 +163,84 @@ async function openSubject(page, { subject, year, semester }) {
     waitForDetail(page),
     page.getByRole('button', { name: 'เปิดรายวิชา', exact: true }).click(),
   ]);
+}
+
+/** A subject the form says this curriculum may open, read off the open form. */
+async function oneOfferableSubject(page) {
+  const offerable = await subjectPicker(page)
+    .locator('option:not([value=""])')
+    .evaluateAll(options => options.map(option => option.value));
+  expect(
+    offerable.length,
+    'a subject this curriculum may open, whose terms the fixture varies',
+  ).toBeGreaterThan(0);
+  return offerable[0];
+}
+
+/**
+ * Opens one subject in as many terms as it takes for the unfiltered list to
+ * have a second page, and says what it built.
+ *
+ * #267's answer ง (5 พ.ย. 2569): the second page this screen's pager rows need
+ * is a **fixture** and not a seed change. `semester_courses` is unique on
+ * `(program_id, subject_id, academic_year, semester)`
+ * (`db/migrations/0002_offerings_and_learning_outcomes.sql:96`), so eleven rows
+ * come out of one placed pair by varying the term — no new subject, no new
+ * pair, nothing a `PRIMARY KEY` refuses, which is where `ProgramSubjects` and
+ * this screen part company. And the list is unfiltered on arrival
+ * (`Offerings.js` opens with `year = ''` and `semester = ''`), so every row
+ * this builds is in the list the screen draws first.
+ *
+ * The rows go out again with the schema the calling file holds (#132, #134):
+ * each is an Offering with no section at all, which `DELETE /offerings/:id`
+ * answers `204` for.
+ *
+ * Two things are the caller's, so that two files cannot collide in one term:
+ * the years, and the knowledge that **the last of them is kept for one row of
+ * its own**. That row is what a caller presses — a year holding exactly one
+ * Offering is found by its year cell whatever else the list is showing — and it
+ * is the first row the list draws, the order being `academic_year DESC`.
+ *
+ * The subject is read out of the form's own picker rather than from the seed,
+ * because what may be opened here is what `GET /offerings/subjects` says is
+ * placed and still switched on, and an earlier file in the run can have closed
+ * the seeded entry (`16a` row 82). An empty picker fails an assertion rather
+ * than the timeout the first submit would die at (#139).
+ */
+async function moreThanOnePage(page, { years, perPage = 10 }) {
+  const table = listTable(page);
+  const spareYear = years[years.length - 1];
+  const terms = [
+    { year: spareYear, semester: 1 },
+    ...years
+      .slice(0, -1)
+      .flatMap(year => [1, 2, 3].map(semester => ({ year, semester }))),
+  ];
+
+  const start = await reading(page, table);
+  expect(
+    terms.length,
+    'enough terms of its own to fill a page, with one kept for the row that is pressed',
+  ).toBeGreaterThan(perPage - start.total);
+
+  let code;
+  let made = start.total;
+  for (const term of terms) {
+    if (made > perPage && term.year !== spareYear) break;
+    await openForm(page);
+    code = code ?? (await oneOfferableSubject(page));
+    await openSubject(page, { subject: code, ...term });
+    await backToList(page);
+    made += 1;
+  }
+
+  await expect
+    .poll(async () => (await reading(page, table)).total, {
+      message: 'the total the line reads out, once this file has its own terms',
+    })
+    .toBe(made);
+
+  return { total: made, spare: { code, year: spareYear, semester: 1 } };
 }
 
 /** From a row to that Offering's sections. */
@@ -257,9 +355,13 @@ module.exports = {
   waitForOfferable,
   filterToTerm,
   offeringRow,
+  offeringTermRow,
+  listTable,
   openForm,
   subjectPicker,
   openSubject,
+  oneOfferableSubject,
+  moreThanOnePage,
   openSections,
   backToList,
   sectionCard,
