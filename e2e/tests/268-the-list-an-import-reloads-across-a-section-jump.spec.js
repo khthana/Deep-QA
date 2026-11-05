@@ -157,7 +157,7 @@ const SCREENS = [
     api: '/groups',
     what: 'นำเข้ากลุ่มงานจากไฟล์',
     arrange: async (page, sectionId) => {
-      const header_ = await templateHeader(page, sectionId, '/groups');
+      const columns = await templateHeader(page, sectionId, '/groups');
       const { students } = await read(page, sectionId, '/groups');
       const free = students.filter(one => one.group_id === null);
       // Asserted where it is used (#51): the file is refused with
@@ -165,7 +165,7 @@ const SCREENS = [
       // refused import sends no reload at all, so this row would die at
       // `reloadSent` with nothing to say why.
       expect(free.length, 'an enrolled student in no group of this Section').toBeGreaterThan(0);
-      return csv(header_, `${MINE},${free[0].student_id}`);
+      return csv(columns, `${MINE},${free[0].student_id}`);
     },
   },
   {
@@ -176,7 +176,7 @@ const SCREENS = [
     api: '/weights',
     what: 'นำเข้าสัดส่วนคะแนนจากไฟล์',
     arrange: async (page, sectionId) => {
-      const header_ = await templateHeader(page, sectionId, '/weights');
+      const columns = await templateHeader(page, sectionId, '/weights');
       // The answer's own key, read out of `backend/routes/weights.js:153`
       // rather than out of a memory of what the screen calls it.
       const { weights } = await read(page, sectionId, '/weights');
@@ -185,7 +185,7 @@ const SCREENS = [
       // The precondition of *restating is accepted*: the file's total is this
       // one, and `weightsNotHundred` refuses anything else.
       expect(sum, 'a scheme that already totals 100').toBe(100);
-      return csv(header_, ...weights.map(one => `${one.score_category},${one.weight}`));
+      return csv(columns, ...weights.map(one => `${one.score_category},${one.weight}`));
     },
   },
 ];

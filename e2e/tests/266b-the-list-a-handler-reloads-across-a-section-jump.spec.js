@@ -97,8 +97,17 @@ const {
  * measured rather than argued (#141): both routes answer **201** to a file
  * built from what the Section already holds. The walk below moved to
  * `support/section-jump.js` the same day, `268` being the second file to need
- * it (#171) — a pure move, and what says the rows still go through it is the
- * mutants and not the rows staying green (#203).
+ * it (#171).
+ *
+ * It was **not** a pure move, which this paragraph said until the review of
+ * the same day: the signature changed from `{screen, one, arranged, …}` to
+ * `{api, route, press, …}` and the press became the caller's to write, which
+ * is a change to the thing these ten rows arrange their situation with. So
+ * *what says the rows still go through it is the mutants and not the rows
+ * staying green* (#203, #207) binds here, and the ten rows passing after the
+ * move is this rule's own counterexample shape rather than its evidence. The
+ * re-sweep that answers it is predicted and recorded in
+ * `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`.
  *
  * ## What this file does not say
  *

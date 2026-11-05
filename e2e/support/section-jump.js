@@ -175,20 +175,29 @@ const isRead = answer => answer.request().method() === 'GET';
  * the held read — *ask which document asked, by identity and never by a clock*
  * (#160) — so a write to `${api}/:id` is not held, and neither is an import's
  * own POST to `${api}/import`. `press` is handed nothing and must return when
- * the **write** has answered and never when the reload has been drawn: every
- * support helper that presses these buttons waits for the reload too, which is
- * right for every other row in the suite and is exactly what these rows must
- * not do.
+ * the **write** has answered and never when the reload has been drawn.
+ *
+ * Which of the suite's helpers already do that is a claim about each helper and
+ * not about the family: this paragraph read *every support helper that presses
+ * these buttons waits for the reload too* when it was written on 5 November
+ * 2569, and that was already false for the one `268` presses with —
+ * `importCsv` waits for the **POST** by its exact pathname and for nothing
+ * after it, which is why `268` calls it bare while `266b`'s ten rows write
+ * their own press. Corrected the same day rather than dated, the sentence
+ * having been a generalisation from the callers it was written for and never
+ * true (#54, #130). A caller whose helper does wait for the reload owes its
+ * own press here.
  */
 async function heldReloadLosesTheSectionJump(
   page,
-  { api: suffix, route, press, landed, held, heldYear },
+  { api: suffix, route: screenRoute, press, landed, held, heldYear },
 ) {
-  const api = sectionId => `/api/teaching/sections/${sectionId}${suffix}`;
-  const isFor = (url, sectionId) => new URL(url).pathname === api(sectionId);
-  const eitherSection = url => url.pathname === api(landed) || url.pathname === api(held);
+  const pathFor = sectionId => `/api/teaching/sections/${sectionId}${suffix}`;
+  const isFor = (url, sectionId) => new URL(url).pathname === pathFor(sectionId);
+  const eitherSection = url =>
+    url.pathname === pathFor(landed) || url.pathname === pathFor(held);
 
-  await intoTheListedSectionScreen(page, held, route, p =>
+  await intoTheListedSectionScreen(page, held, screenRoute, p =>
     p.waitForResponse(answer => isFor(answer.url(), held) && isRead(answer)),
   );
   // What the answer carried is what the screen shows (#132), read as the year
@@ -196,10 +205,10 @@ async function heldReloadLosesTheSectionJump(
   // thing the row goes on to read.
   await expect(header(page).filter({ hasText: heldYear })).toHaveCount(1);
 
-  await page.route(eitherSection, async (route_, request) => {
+  await page.route(eitherSection, async (held_, request) => {
     if (request.method() === 'GET' && isFor(request.url(), held)) await sleep(HELD_MS);
     try {
-      await route_.continue();
+      await held_.continue();
     } catch {
       /* the row has already ended */
     }
@@ -229,8 +238,6 @@ module.exports = {
   LAST_YEAR,
   SUBJECT,
   DOCUMENT,
-  HELD_MS,
-  SETTLE_MS,
   isRead,
   menuPathLink,
   markDocument,
