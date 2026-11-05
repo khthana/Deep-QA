@@ -271,6 +271,15 @@ citation.
   the files the instrument names before believing either answer. **A rule that is too loose fails
   the other way and only breaking a real site shows it**; the other way a census misses is counting
   by the wrong property, under *Tests and fixtures*. (#141, #174)
+- **And an instrument's written limits are a claim like its numbers — the blind spot its own
+  *cannot measure* paragraph names can be one it does not have, while the one it has is the
+  example that paragraph holds up as something else** — the census written to replace #266's
+  forbidden grep came back **narrower than the grep**, its population written
+  `await <f>(<arrow>)` where the question was *guard*, and the two sites it could not see were
+  the `<ImportPanel>` callbacks its limits paragraph cited as *a way in not written as a guard*.
+  Such a paragraph reads as diligence and acts as cover: nothing is red, the figure is lower in
+  the reassuring direction, and the ticket it refuted had been right. Read the population against
+  the question in the ticket's own words, then read the limits against the population. (#268)
 - **A marker written for an instrument has to be in a syntax the instrument reads** — `//` between
   two JSX tags is `JSXText`, so the parser sees no comment and the browser draws the words on the
   screen. **And a marker outlives the gap it documented, which turns it into an exemption.** (#93,
