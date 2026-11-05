@@ -35,7 +35,7 @@ question, not implemented."* Read a defect ticket for a question before reading 
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
 will cost time — as of 5 November 2569 that is
-`2026-11-05-the-sweep-that-applied-nothing-twice.md`. Read it before taking work. Each handoff
+`2026-11-05-the-prediction-nobody-ran.md`. Read it before taking work. Each handoff
 names the one it supersedes for state, so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
