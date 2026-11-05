@@ -165,15 +165,28 @@ async function openSubject(page, { subject, year, semester }) {
   ]);
 }
 
-/** A subject the form says this curriculum may open, read off the open form. */
-async function oneOfferableSubject(page) {
-  const offerable = await subjectPicker(page)
-    .locator('option:not([value=""])')
-    .evaluateAll(options => options.map(option => option.value));
-  expect(
-    offerable.length,
+/**
+ * The code of a subject the form says this curriculum may open, read off the
+ * open form.
+ *
+ * The options are drawn from `GET /offerings/subjects`, which `openForm` does
+ * not wait for - it reads the heading - and `waitForOfferable` cannot close
+ * that window from here, a `waitForResponse` having to be armed before the
+ * click. So the settle point is a **retrying read of the drawing** (#132), and
+ * it is a read of the option count rather than of the picker's value, because a
+ * sampler that reads what a control holds cannot tell an absent control from an
+ * empty one (#164). A screen that really has nothing to offer then fails here,
+ * on this message, instead of at the first submit's timeout (#139, #209).
+ */
+async function oneOfferableSubjectCode(page) {
+  const choices = subjectPicker(page).locator('option:not([value=""])');
+  await expect(
+    choices,
     'a subject this curriculum may open, whose terms the fixture varies',
-  ).toBeGreaterThan(0);
+  ).not.toHaveCount(0);
+  const offerable = await choices.evaluateAll(options =>
+    options.map(option => option.value),
+  );
   return offerable[0];
 }
 
@@ -226,9 +239,14 @@ async function moreThanOnePage(page, { years, perPage = 10 }) {
   let code;
   let made = start.total;
   for (const term of terms) {
+    // Stop as soon as there is a second page. The second clause reads as a
+    // guard on every pass and can only hold on the first one, the spare being
+    // `terms[0]`: it says *build the spare whatever the list already holds*, so
+    // that a run whose earlier files left a full page still leaves this file a
+    // row of its own to press.
     if (made > perPage && term.year !== spareYear) break;
     await openForm(page);
-    code = code ?? (await oneOfferableSubject(page));
+    code = code ?? (await oneOfferableSubjectCode(page));
     await openSubject(page, { subject: code, ...term });
     await backToList(page);
     made += 1;
@@ -240,7 +258,13 @@ async function moreThanOnePage(page, { years, perPage = 10 }) {
     })
     .toBe(made);
 
-  return { total: made, spare: { code, year: spareYear, semester: 1 } };
+  const spare = { code, year: spareYear, semester: 1 };
+  await expect(
+    offeringTermRow(page, spare),
+    'one row in the spare year, which is what the caller presses - a sibling file writing that year would make this an arrangement failure and not a red claim (#129)',
+  ).toHaveCount(1);
+
+  return { total: made, spare };
 }
 
 /** From a row to that Offering's sections. */
@@ -360,7 +384,7 @@ module.exports = {
   openForm,
   subjectPicker,
   openSubject,
-  oneOfferableSubject,
+  oneOfferableSubjectCode,
   moreThanOnePage,
   openSections,
   backToList,

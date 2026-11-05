@@ -448,6 +448,14 @@ citation.
   much. (#193, #224)
 - Before reading a kill count that looks like the suite as a mutant that stops everything, read
   the names for a leak. (#52)
+- **A prediction nobody ran reads exactly like a sweep record, and the ones to miss are the rows
+  that say *unchanged*** — #268's *a sweep that applied nothing* met one step earlier, in the table
+  rather than in the run: a prediction table written per assertion (#258) can carry rows for mutants
+  the sweep never asks, and nothing is red, no anchor moves and the reasoning is usually right, so
+  the row reads as measured. The tell is the count — predictions written against runs made — and
+  the fix is to ask them, which is cheap where the mutant is one `--grep` away: ten such rows, all
+  reasoned correctly, were still *unmeasured* until they were run, and the rule the same file had
+  already applied to another spec was the one it had not applied to itself (#266, #107, #68).
 - **A sweep that applied nothing reads exactly like a sweep that killed nothing, and is most
   believable where the prediction said nothing would die** — #208's *the count is the tell*
   from the other side, met twice in one day from two causes: a call operator that killed `npx`
@@ -676,6 +684,13 @@ citation.
   may have changed the shape of** — #152's rule one layer along: one render behind and frozen at
   the first are different mutants, and the difference is which row goes red. Read a re-aimed
   mutant's kill against the row it is *for*. (#205)
+- **A net's *nothing holds this seat* is a dated claim that a later ticket's mutant can falsify,
+  and the falsifying mutant is written in another ticket's file** — the net reads the **mechanism**
+  rather than the claim (#203), and the mechanism is the screen's own code, so a mutant written for
+  a different row in that code can kill the net too: the anchor is exact, the code it edits is
+  untouched, nothing is red, and only running it says so (#107, #68). So a new mutant in a screen's
+  code is a question about that screen's net rows; the mark stays ☐, because what is unreachable is
+  the claim and not the reading. (#210, #223)
 - **A row left as a net takes its mutants with it** — a mutant whose only killer becomes a net
   proves nothing, and no instrument says so: the anchor is still exact, the code it edits is
   untouched, and the difference is in another file, so only re-running it speaks (#107, #68).
