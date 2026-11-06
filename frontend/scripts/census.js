@@ -31,6 +31,12 @@ const CENSUSES = [
   // ignore the whole suite of them - and that reason expired with the ticket
   // the instrument landed with rather than with an argument (#141, #200).
   'save-window-fields.js',
+  // Wired in on the day it landed, 6 พฤศจิกายน 2569, because its population was
+  // already closed: `problems 0` on its first run over the tree, every one of
+  // the 56 guards of the #140 family edited by a mutant of its own file. #200's
+  // reason for landing an instrument unwired is a red gate nobody has fixed,
+  // and there was none - which is itself #269's finding (#141).
+  'guards-with-no-mutant.js',
 ]
 
 let worst = 0
