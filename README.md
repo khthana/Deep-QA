@@ -313,6 +313,7 @@ files cannot collide.
 | Command | What it does |
 |---|---|
 | `npm start` | Starts the API on `PORT`, after checking the schema is level with `db/migrations` — and refusing to start if it is not. |
+| `npm run dev` | The same under `node --watch`: restarts whenever a file the server `require`s changes, `db/` included. Not `.env` — restart by hand after editing it. |
 | `npm test` | Runs every `test/*.test.js`, each against its own throwaway schema. |
 | `node --test test/smoke.test.js` | One file, when that is all you want. |
 
@@ -322,6 +323,21 @@ builders compose onto what it made.
 
 Note that the backend and a CRA frontend both read `PORT`, and the last assignment in a `.env` wins. The root `.env`
 holds the backend's; the frontend section of [`.env.example`](./.env.example) is copied into `frontend/.env` instead.
+
+## Running everything in one terminal
+
+```bash
+npm install               # once, at the repository root — installs only `concurrently`
+npm run dev
+```
+
+`npm run dev` at the root starts the database container and waits for it to be healthy, applies any pending
+migration, then runs the backend under `npm run dev` (restarting on change) and the frontend under `npm start`, with
+their output prefixed `[api]` and `[web]`. Ctrl+C stops both; so does either one exiting. The container keeps running
+— `cd db && npm run db:down` stops it.
+
+It assumes `db/`, `backend/` and `frontend/` already have their dependencies installed, as set out above. The browser
+tests do not use it: they start their own servers on their own ports.
 
 ## The browser tests
 

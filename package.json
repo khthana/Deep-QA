@@ -1,0 +1,12 @@
+{
+  "name": "deep-core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Starts the database, migrates it, then runs the backend (restarting on change) and the frontend in one terminal.",
+  "scripts": {
+    "dev": "npm --prefix db run db:up && npm --prefix db run migrate && concurrently --kill-others --names api,web --prefix-colors blue,green \"npm --prefix backend run dev\" \"npm --prefix frontend start\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.5"
+  }
+}
