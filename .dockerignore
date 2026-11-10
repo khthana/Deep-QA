@@ -1,0 +1,17 @@
+# Build context for backend/Dockerfile, which is the repository root. Only db/
+# and backend/ are copied; everything else is kept out so the context stays
+# small and nothing secret or host-built leaks into the image.
+**/node_modules
+**/.env
+**/.env.*
+.git
+_local
+DEEP-QA-BACKEND
+DEEP-QA-FRONTEND
+docs
+e2e
+frontend
+mutation
+scripts
+backend/test
+db/test

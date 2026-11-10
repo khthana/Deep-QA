@@ -1,0 +1,112 @@
+# The whole application in containers: frontend and backend as two separate
+# images, plus the database they run on.
+#
+#   docker compose up -d --build              frontend http://localhost:3100
+#                                             backend  http://localhost:3150
+#   docker compose --profile seed run --rm seed   fill it with the dev dataset
+#   docker compose down                       stop (data kept)
+#   docker compose down -v                    stop and throw the data away
+#
+# Values come from the repository-root .env (DB_USER, DB_PASS, DB_NAME,
+# DB_SCHEMA, SECRET_KEY, ...), which compose reads for interpolation on its own.
+#
+# This stack is separate from `npm run dev`: its own database container and
+# volume, and the database publishes no port, so it does not collide with
+# deep-core-postgres on 5433. It does collide with the e2e suite, whose
+# backend defaults to 3100 - stop this stack before a Playwright run, or move
+# the suite with E2E_BACKEND_PORT.
+
+name: deep-core
+
+x-backend-env: &backend-env
+  DB_HOST: db
+  DB_PORT: "5432"
+  DB_USER: ${DB_USER:?set DB_USER in the repository-root .env}
+  DB_PASS: ${DB_PASS:?set DB_PASS in the repository-root .env}
+  DB_NAME: ${DB_NAME:?set DB_NAME in the repository-root .env}
+  DB_SCHEMA: ${DB_SCHEMA:?set DB_SCHEMA in the repository-root .env}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  # Applies db/migrations and exits. The backend refuses to start on a schema
+  # that is behind (#159), so it waits for this to finish successfully.
+  migrate:
+    build: &backend-build
+      context: .
+      dockerfile: backend/Dockerfile
+    image: deep-core-backend
+    command: ["node", "/app/db/migrate.js"]
+    environment: *backend-env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # The development dataset (db/seed.js). Idempotent, but not run by `up`:
+  # only on `docker compose --profile seed run --rm seed`.
+  seed:
+    build: *backend-build
+    image: deep-core-backend
+    profiles: ["seed"]
+    command: ["node", "/app/db/seed.js"]
+    environment: *backend-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  backend:
+    build: *backend-build
+    image: deep-core-backend
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+      PORT: "3150"
+      # The one origin CORS admits - the frontend as the browser sees it.
+      FRONTEND_URL: http://localhost:3100
+      # development, because this stack is served over plain http: production
+      # marks the session cookie `secure`, which a browser will not send back
+      # to http://localhost, and also closes password sign-in to most roles.
+      NODE_ENV: development
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in the repository-root .env}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      MAX_SCORE: ${MAX_SCORE:-}
+      EVIDENCE_DIR: /data/evidence
+    volumes:
+      - evidence:/data/evidence
+    ports:
+      - "3150:3150"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: frontend
+      args:
+        REACT_APP_API_URL: http://localhost:3150
+    image: deep-core-frontend
+    restart: unless-stopped
+    ports:
+      - "3100:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  evidence:
