@@ -90,7 +90,7 @@ async function save(page) {
 
 /**
  * The status badge of one row - the fourth cell, as the table's own header
- * orders them (รหัส · ชื่อ (ไทย) · ชื่อ (อังกฤษ) · สถานะ · จัดการ).
+ * orders them (รหัส · ชื่อ (ไทย) · ชื่อ (อังกฤษ) · สถานะ · ดำเนินการ).
  */
 const statusOf = (page, departmentId) =>
   departmentRow(page, departmentId).getByRole('cell').nth(3);

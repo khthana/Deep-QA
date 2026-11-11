@@ -44,6 +44,26 @@ a row action and prove nothing about this ticket.
 |---|---|
 | `86:alwaysofferrestore` | **1** — แถว 5 ที่ *a button named ระงับ* (`toBeVisible`) เพราะทุกปุ่มชื่อ *เปิดใช้งาน* · `86:alwaysoffersuspend` ไม่ฆ่า เพราะแถว 5 กดปุ่มที่ชื่อ *ระงับ* อยู่แล้ว |
 | `130:everyrowisdead` | **1** — แถว 6 ที่ *a button named ยกเลิกบทบาท* เพราะ `named()` ขอปุ่มที่ `:enabled` |
+
+## การกวาด — บันทึกผล (11 พ.ย. 2569)
+
+สองรอบ เพราะรอบแรกถูกหยุดกลางทางเมื่อเครื่องใกล้หมดหน่วยความจำ (ขณะรัน `139:departmentsremovekeepsask`
+ซึ่งยังติดอยู่ในต้นไม้ ถูก `restore` แล้วอ่าน `git status` ว่าสะอาดก่อนรอบสอง) ทุกตัวผ่านด่าน *ต้นไม้สกปรกหลังใส่*
+ก่อนรัน และสะอาดหลัง `restore` ไม่มีตัวไหนผิดคำทำนาย — ทั้งจำนวนและข้อยืนยันที่ตาย
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| baseline (รอบแรก ที่ `0c81f5c`) | `271a` `12a` `84a` | 24 ผ่าน | — |
+| `wordsdrawn` | เดียวกัน | 11 ล้ม 13 ผ่าน | `271a` แถว 1–11 ที่ *the word is not drawn* |
+| `notitle` | เดียวกัน | 11 ล้ม 13 ผ่าน | `271a` แถว 1–11 ที่ *its tooltip is the word* |
+| `noicon` | เดียวกัน | 11 ล้ม 13 ผ่าน | `271a` แถว 1–11 ที่ *it holds one icon* |
+| `reasonlost` | เดียวกัน | 2 ล้ม 6 ไม่ได้รัน 16 ผ่าน | `12a` *row 6: the button on your own grant is dead* กับ `84a` *the signed-in administrator cannot press ระงับ on their own row* ทั้งคู่ที่ `toHaveAttribute` · หกแถวที่ไม่ได้รันคือแถวของ `12a` ที่ตามหลังใน `serial` (#67) |
+| baseline (รอบสอง ที่ `ae729ec` หลังแก้สีตอนชี้) | `271a` | 11 ผ่าน | — |
+| `86:alwaysofferrestore` | `271a` | 1 ล้ม 10 ผ่าน | แถว 5 ที่ *a button named ระงับ* — การจัดฉาก ไม่ใช่ข้ออ้าง (#266) |
+| `86:alwaysoffersuspend` | `271a` | 11 ผ่าน | — |
+| `130:everyrowisdead` | `271a` | 1 ล้ม 10 ผ่าน | แถว 6 ที่ *a button named ยกเลิกบทบาท* — การจัดฉาก |
+
+บันทึกของมัตแตนต์ที่ re-aim (`86` สองตัว `130` หนึ่งตัว `139` แปดตัว) อยู่ในใบของมันเอง
 """
 
 from harness import main

@@ -93,7 +93,7 @@ async function save(page) {
 
 /**
  * The status badge of one row - the fifth cell, as the table's own header
- * orders them (รหัส · ชื่อ · ภาควิชา · ปี · สถานะ · จัดการ) - one further along than the departments
+ * orders them (รหัส · ชื่อ · ภาควิชา · ปี · สถานะ · ดำเนินการ) - one further along than the departments
  * table's, which is why each screen says its own index here.
  */
 const statusOf = (page, programId) =>

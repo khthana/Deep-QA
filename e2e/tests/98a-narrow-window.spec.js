@@ -156,7 +156,7 @@ test.afterAll(async ({ browser }) => {
 test.describe('เกณฑ์การให้คะแนน ที่ครึ่งจอ', () => {
   test.use({ viewport: { width: 900, height: 800 } });
 
-  test('the จัดการ column of a too-wide table can be scrolled to and pressed', async ({ page }) => {
+  test('the ดำเนินการ column of a too-wide table can be scrolled to and pressed', async ({ page }) => {
     await openMine(page);
     const frame = frameOf(table(page));
 

@@ -61,6 +61,17 @@ offering the way back* / *back to the change it offered before*) พิสูจ
 ความหมายของตัวค้ำจึงคงเดิม และคอมเมนต์ของ `140` ที่เขียนว่า *`toggle` has no `finally`* หมดอายุในวันเดียวกัน
 เพราะ handler นี้มี `finally` แล้ว — ตัวแยกคือ `setSwitching(null)` ที่บรรทัดแรกของ `catch`
 
+## #271 ย้ายคำกริยาไปเป็นชื่อของไอคอน (11 พ.ย. 2569)
+
+ปุ่มเป็น `<RowAction>` คำกริยาจึงอยู่ที่ `label=` ไม่ใช่ข้อความในปุ่ม `alwaysoffersuspend` กับ
+`alwaysofferrestore` เล็งใหม่ที่บรรทัดนั้น ความผิดเดิมคงอยู่ — ชื่อกับ tooltip ผิดทิศ ส่วน `kind`
+ยังเปลี่ยนตามสถานะ ไอคอนจึงถูก มัตแตนต์จึง**แคบกว่าเดิม**สำหรับคนที่มองเห็น (ไอคอนกับชื่อไม่ตรงกัน)
+แต่เท่าเดิมสำหรับเบราว์เซอร์ ซึ่งหาปุ่มด้วยชื่อ · กวาดใหม่กับ `86a`: baseline 5 ผ่าน ·
+`alwaysoffersuspend` 3 ล้ม 2 ผ่าน (แถว 3 ที่ *the control, now offering the way back*) ·
+`alwaysofferrestore` 4 ล้ม 1 ผ่าน (แถว 1 ที่ *the change the row arrives offering*) — จำนวนเท่าตาราง
+ข้างบน · **และ `alwaysofferrestore` ฆ่าแถว 5 ของ `271a` ด้วย** ที่การหาปุ่ม ไม่ใช่ที่ข้ออ้าง
+บันทึกอยู่ที่ `mutation/271-action-icons.py` แถวของใบนั้นไม่อ้างมัน
+
 ## วิธีรัน
 
     python mutation/86-a-question-before-a-status-change.py save
