@@ -213,8 +213,8 @@ MUTANTS = {
         '                showing.current = {}\n                setNotice(null)\n                setEditing({})\n'),
     # ภาควิชา: ลบ leaves the last แก้ไข standing
     'departmentsremovekeepsask': ('departments',
-        '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(department)\n',
-        '                            setNotice(null)\n                            setRemoving(department)\n'),
+        '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(department)\n',
+        '                              setNotice(null)\n                              setRemoving(department)\n'),
     # ภาควิชา: the ask is the row, so a second press on it matches the first
     'departmentssamerowmatches': ('departments',
         '    const ask = {}\n    asked.current = ask\n',
@@ -237,8 +237,8 @@ MUTANTS = {
         '                showing.current = {}\n                setNotice(null)\n                setEditing({})\n'),
     # หลักสูตร: ลบ leaves the last แก้ไข standing
     'programsremovekeepsask': ('programs',
-        '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(program)\n',
-        '                            setNotice(null)\n                            setRemoving(program)\n'),
+        '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(program)\n',
+        '                              setNotice(null)\n                              setRemoving(program)\n'),
     # หลักสูตร: the ask is the row, so a second press on it matches the first
     'programssamerowmatches': ('programs',
         '    const ask = {}\n    asked.current = ask\n',
@@ -261,8 +261,8 @@ MUTANTS = {
         '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # รายวิชา: ลบ leaves the last แก้ไข standing
     'subjectsremovekeepsask': ('subjects',
-        '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(subject)\n',
-        '                            setNotice(null)\n                            setRemoving(subject)\n'),
+        '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(subject)\n',
+        '                              setNotice(null)\n                              setRemoving(subject)\n'),
     # รายวิชา: the ask is the row, so a second press on it matches the first
     'subjectssamerowmatches': ('subjects',
         '    const ask = {}\n    asked.current = ask\n',
@@ -285,8 +285,8 @@ MUTANTS = {
         '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # รายวิชาในหลักสูตร: ลบ leaves the last แก้ไข standing
     'pairsremovekeepsask': ('pairs',
-        '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(pair)\n',
-        '                            setNotice(null)\n                            setRemoving(pair)\n'),
+        '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(pair)\n',
+        '                              setNotice(null)\n                              setRemoving(pair)\n'),
     # รายวิชาในหลักสูตร: the ask is the row, so a second press on it matches the first
     'pairssamerowmatches': ('pairs',
         '    const ask = {}\n    asked.current = ask\n',
@@ -309,8 +309,8 @@ MUTANTS = {
         '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # Rubric: ลบ leaves the last แก้ไข standing
     'rubricsremovekeepsask': ('rubrics',
-        '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(rubric)\n',
-        '                            setNotice(null)\n                            setRemoving(rubric)\n'),
+        '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(rubric)\n',
+        '                              setNotice(null)\n                              setRemoving(rubric)\n'),
     # Rubric: the ask is the row, so a second press on it matches the first
     'rubricssamerowmatches': ('rubrics',
         '    const ask = {}\n    asked.current = ask\n',
@@ -329,8 +329,8 @@ MUTANTS = {
         '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # เกณฑ์: ลบ leaves the last แก้ไข standing
     'criteriaremovekeepsask': ('criteria',
-        '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(criterion)\n',
-        '                            setNotice(null)\n                            setRemoving(criterion)\n'),
+        '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(criterion)\n',
+        '                              setNotice(null)\n                              setRemoving(criterion)\n'),
     # เกณฑ์: the ask is the row, so a second press on it matches the first
     'criteriasamerowmatches': ('criteria',
         '    const ask = {}\n    asked.current = ask\n',
@@ -349,8 +349,8 @@ MUTANTS = {
         '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
     # PLO: ลบ leaves the last แก้ไข standing
     'plosremovekeepsask': ('plos',
-        '                            asked.current = null\n                            setNotice(null)\n                            setRemoving(plo)\n',
-        '                            setNotice(null)\n                            setRemoving(plo)\n'),
+        '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(plo)\n',
+        '                              setNotice(null)\n                              setRemoving(plo)\n'),
     # PLO: the ask is the row, so a second press on it matches the first
     'plossamerowmatches': ('plos',
         '    const ask = {}\n    asked.current = ask\n',
@@ -373,8 +373,8 @@ MUTANTS = {
         '                  showing.current = {}\n                  setNotice(null)\n                  setOpening(true)\n'),
     # Offering: ยกเลิกการเปิด leaves the last panel standing
     'offeringscancelkeepsask': ('offerings',
-        "                            asked.current = null\n                            setNotice(null)\n                            setRemoving({ kind: 'offering', offering })\n",
-        "                            setNotice(null)\n                            setRemoving({ kind: 'offering', offering })\n"),
+        "                              asked.current = null\n                              setNotice(null)\n                              setRemoving({ kind: 'offering', offering })\n",
+        "                              setNotice(null)\n                              setRemoving({ kind: 'offering', offering })\n"),
     # Offering: กลับไปหน้ารายการ leaves the panel asked for
     'offeringsbackkeepsask': ('offerings',
         '            asked.current = null\n            setNotice(null)\n            setViewing(null)\n',

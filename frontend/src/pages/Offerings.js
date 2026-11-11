@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import CopyTermPanel from '../components/offerings/CopyTermPanel'
 import Notice from '../components/Notice'
+import RowAction, { RowActions } from '../components/RowAction'
 import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import OfferingForm from '../components/offerings/OfferingForm'
 import Pager from '../components/Pager'
@@ -921,7 +922,7 @@ export default function Offerings() {
                   <th className="px-4 py-3">ภาคการศึกษา</th>
                   <th className="px-4 py-3">ตอนเรียน</th>
                   <th className="px-4 py-3">หลักสูตร</th>
-                  <th className="px-4 py-3 text-right">จัดการ</th>
+                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -959,25 +960,23 @@ export default function Offerings() {
                         {offering.section_count} ตอน
                       </td>
                       <td className="px-4 py-3 text-slate-500">{nameOf(offering.program_id)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => openSections(offering)}
-                          className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
-                        >
-                          ตอนเรียนและผู้สอน
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            asked.current = null
-                            setNotice(null)
-                            setRemoving({ kind: 'offering', offering })
-                          }}
-                          className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
-                        >
-                          ยกเลิกการเปิด
-                        </button>
+                      <td className="px-4 py-3">
+                        <RowActions>
+                          <RowAction
+                            kind="open"
+                            label="ตอนเรียนและผู้สอน"
+                            onClick={() => openSections(offering)}
+                          />
+                          <RowAction
+                            kind="remove"
+                            label="ยกเลิกการเปิด"
+                            onClick={() => {
+                              asked.current = null
+                              setNotice(null)
+                              setRemoving({ kind: 'offering', offering })
+                            }}
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}

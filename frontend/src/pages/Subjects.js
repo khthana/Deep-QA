@@ -10,6 +10,7 @@ import {
   SOME_IMPORTED_OUTSIDE,
 } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
+import RowAction, { RowActions } from '../components/RowAction'
 import SubjectForm from '../components/subjects/SubjectForm'
 import {
   createSubject,
@@ -497,7 +498,7 @@ export default function Subjects() {
                   <th className="px-4 py-3">หน่วยกิต</th>
                   <th className="px-4 py-3">ภาควิชา</th>
                   <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-right">จัดการ</th>
+                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -538,25 +539,23 @@ export default function Subjects() {
                           {subject.is_active ? 'ใช้งานอยู่' : 'ปิดใช้งาน'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => openEditor(subject)}
-                          className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
-                        >
-                          แก้ไข
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            asked.current = null
-                            setNotice(null)
-                            setRemoving(subject)
-                          }}
-                          className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
-                        >
-                          ลบ
-                        </button>
+                      <td className="px-4 py-3">
+                        <RowActions>
+                          <RowAction
+                            kind="edit"
+                            label="แก้ไข"
+                            onClick={() => openEditor(subject)}
+                          />
+                          <RowAction
+                            kind="remove"
+                            label="ลบ"
+                            onClick={() => {
+                              asked.current = null
+                              setNotice(null)
+                              setRemoving(subject)
+                            }}
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
+import RowAction, { RowActions } from '../components/RowAction'
 import {
   alsoOutside,
   outsideFilter,
@@ -510,7 +511,7 @@ export default function ProgramSubjects() {
                   <th className="px-4 py-3">ประเภท</th>
                   <th className="px-4 py-3">หลักสูตร</th>
                   <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-right">จัดการ</th>
+                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -562,25 +563,23 @@ export default function ProgramSubjects() {
                           {pair.is_active ? 'ใช้งานอยู่' : 'ปิดใช้งาน'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => openEditor(pair)}
-                          className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
-                        >
-                          แก้ไข
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            asked.current = null
-                            setNotice(null)
-                            setRemoving(pair)
-                          }}
-                          className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
-                        >
-                          นำออก
-                        </button>
+                      <td className="px-4 py-3">
+                        <RowActions>
+                          <RowAction
+                            kind="edit"
+                            label="แก้ไข"
+                            onClick={() => openEditor(pair)}
+                          />
+                          <RowAction
+                            kind="remove"
+                            label="นำออก"
+                            onClick={() => {
+                              asked.current = null
+                              setNotice(null)
+                              setRemoving(pair)
+                            }}
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}

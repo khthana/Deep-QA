@@ -4,6 +4,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
+import RowAction, { RowActions } from '../components/RowAction'
 import ProgramForm from '../components/programs/ProgramForm'
 import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
@@ -445,7 +446,7 @@ export default function Programs() {
                   <th className="px-4 py-3">ภาควิชา</th>
                   <th className="px-4 py-3">ปีหลักสูตร</th>
                   <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-right">จัดการ</th>
+                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -490,25 +491,23 @@ export default function Programs() {
                           {program.is_active ? 'ใช้งานอยู่' : 'ปิดใช้งาน'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => openEditor(program)}
-                          className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
-                        >
-                          แก้ไข
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            asked.current = null
-                            setNotice(null)
-                            setRemoving(program)
-                          }}
-                          className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
-                        >
-                          ลบ
-                        </button>
+                      <td className="px-4 py-3">
+                        <RowActions>
+                          <RowAction
+                            kind="edit"
+                            label="แก้ไข"
+                            onClick={() => openEditor(program)}
+                          />
+                          <RowAction
+                            kind="remove"
+                            label="ลบ"
+                            onClick={() => {
+                              asked.current = null
+                              setNotice(null)
+                              setRemoving(program)
+                            }}
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}

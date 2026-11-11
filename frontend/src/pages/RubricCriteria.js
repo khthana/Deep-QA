@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import Notice from '../components/Notice'
+import RowAction, { RowActions } from '../components/RowAction'
 import CriterionForm, { BANDS } from '../components/rubrics/CriterionForm'
 import {
   createCriterion,
@@ -309,7 +310,7 @@ export default function RubricCriteria() {
                       {band.label}
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-right">จัดการ</th>
+                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -348,25 +349,23 @@ export default function RubricCriteria() {
                           {criterion[band.key]}
                         </td>
                       ))}
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => openEditor(criterion)}
-                          className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
-                        >
-                          แก้ไข
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            asked.current = null
-                            setNotice(null)
-                            setRemoving(criterion)
-                          }}
-                          className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
-                        >
-                          ลบ
-                        </button>
+                      <td className="px-4 py-3">
+                        <RowActions>
+                          <RowAction
+                            kind="edit"
+                            label="แก้ไข"
+                            onClick={() => openEditor(criterion)}
+                          />
+                          <RowAction
+                            kind="remove"
+                            label="ลบ"
+                            onClick={() => {
+                              asked.current = null
+                              setNotice(null)
+                              setRemoving(criterion)
+                            }}
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}

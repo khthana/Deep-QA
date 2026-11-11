@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { HiOutlineTrash } from 'react-icons/hi2'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
+import RowAction, { RowActions } from '../components/RowAction'
 import {
   enrolStudent,
   importEnrolments,
@@ -468,7 +468,7 @@ export default function SubjectStudents() {
                     <th className="px-4 py-3 font-medium">รหัสนักศึกษา</th>
                     <th className="px-4 py-3 font-medium">ชื่อ - นามสกุล</th>
                     <th className="px-4 py-3 font-medium">หลักสูตร</th>
-                    <th className="px-4 py-3 font-medium">จัดการ</th>
+                    <th className="px-4 py-3 text-center font-medium">ดำเนินการ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -513,14 +513,13 @@ export default function SubjectStudents() {
                           {student.program_name_th ?? student.program_id}
                         </td>
                         <td className="px-4 py-3">
-                          <button
-                            type="button"
-                            onClick={() => setRemoving(student)}
-                            aria-label={`นำ ${student.student_id} ออกจากตอนเรียน`}
-                            className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                          >
-                            <HiOutlineTrash className="h-5 w-5" />
-                          </button>
+                          <RowActions>
+                            <RowAction
+                              kind="remove"
+                              label={`นำ ${student.student_id} ออกจากตอนเรียน`}
+                              onClick={() => setRemoving(student)}
+                            />
+                          </RowActions>
                         </td>
                       </tr>
                     ))}

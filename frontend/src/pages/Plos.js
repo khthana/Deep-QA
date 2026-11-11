@@ -4,6 +4,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import { OUTCOME_TYPES } from '../lib/outcomes'
 import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Notice from '../components/Notice'
+import RowAction, { RowActions } from '../components/RowAction'
 import PloForm from '../components/plos/PloForm'
 import {
   createPlo,
@@ -632,7 +633,7 @@ export default function Plos() {
                   <th className="px-4 py-3">ลำดับ</th>
                   <th className="px-4 py-3">หลักสูตร</th>
                   <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-right">จัดการ</th>
+                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -702,25 +703,23 @@ export default function Plos() {
                           {plo.is_active ? 'ใช้งานอยู่' : 'ปิดใช้งาน'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => openEditor(plo)}
-                          className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
-                        >
-                          แก้ไข
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            asked.current = null
-                            setNotice(null)
-                            setRemoving(plo)
-                          }}
-                          className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
-                        >
-                          ลบ
-                        </button>
+                      <td className="px-4 py-3">
+                        <RowActions>
+                          <RowAction
+                            kind="edit"
+                            label="แก้ไข"
+                            onClick={() => openEditor(plo)}
+                          />
+                          <RowAction
+                            kind="remove"
+                            label="ลบ"
+                            onClick={() => {
+                              asked.current = null
+                              setNotice(null)
+                              setRemoving(plo)
+                            }}
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}

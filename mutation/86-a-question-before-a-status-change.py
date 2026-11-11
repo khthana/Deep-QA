@@ -179,12 +179,12 @@ MUTANTS = {
         '  }\n'),
     # ปุ่มเสนอ *ระงับ* ทุกสถานะ - ถูกข้างที่แถว 3 กดเข้าไป ผิดข้างที่แถว 3 อ่านออกมา
     'alwaysoffersuspend': ('users',
-        "                          {suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}\n",
-        "                          {suspends(user) ? 'ระงับ' : 'ระงับ'}\n"),
+        "                            label={suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}\n",
+        "                            label={suspends(user) ? 'ระงับ' : 'ระงับ'}\n"),
     # ปุ่มเสนอ *เปิดใช้งาน* ทุกสถานะ - กระจกของตัวข้างบน สำหรับแถว 5
     'alwaysofferrestore': ('users',
-        "                          {suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}\n",
-        "                          {suspends(user) ? 'เปิดใช้งาน' : 'เปิดใช้งาน'}\n"),
+        "                            label={suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}\n",
+        "                            label={suspends(user) ? 'เปิดใช้งาน' : 'เปิดใช้งาน'}\n"),
 }
 
 main(FILES, MUTANTS)

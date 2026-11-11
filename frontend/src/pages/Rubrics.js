@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import Notice from '../components/Notice'
+import RowAction, { RowActions } from '../components/RowAction'
 import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import RubricForm from '../components/rubrics/RubricForm'
@@ -520,7 +521,7 @@ export default function Rubrics() {
                   <th className="px-4 py-3">ลำดับ</th>
                   <th className="px-4 py-3">เกณฑ์การให้คะแนน</th>
                   <th className="px-4 py-3">หลักสูตร</th>
-                  <th className="px-4 py-3 text-right">จัดการ</th>
+                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -569,25 +570,23 @@ export default function Rubrics() {
                         </Link>
                       </td>
                       <td className="px-4 py-3 text-slate-500">{nameOf(rubric.program_id)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => openEditor(rubric)}
-                          className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
-                        >
-                          แก้ไข
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            asked.current = null
-                            setNotice(null)
-                            setRemoving(rubric)
-                          }}
-                          className="rounded-lg px-3 py-1.5 text-red-600 hover:bg-red-50"
-                        >
-                          ลบ
-                        </button>
+                      <td className="px-4 py-3">
+                        <RowActions>
+                          <RowAction
+                            kind="edit"
+                            label="แก้ไข"
+                            onClick={() => openEditor(rubric)}
+                          />
+                          <RowAction
+                            kind="remove"
+                            label="ลบ"
+                            onClick={() => {
+                              asked.current = null
+                              setNotice(null)
+                              setRemoving(rubric)
+                            }}
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}

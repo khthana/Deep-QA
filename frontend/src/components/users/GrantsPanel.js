@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ContentMotionDIV from '../ContentMotionDIV'
 import GrantPicker from './GrantPicker'
 import Notice from '../Notice'
+import RowAction, { RowActions } from '../RowAction'
 import useGrantable from './useGrantable'
 import { scopeNamed } from './scopeLabel'
 import { roleName } from '../MapRole'
@@ -235,7 +236,7 @@ export default function GrantsPanel({ user, onError }) {
               <th className="px-4 py-2">ขอบเขต</th>
               <th className="px-4 py-2">ผู้กำหนด</th>
               <th className="px-4 py-2">เมื่อ</th>
-              <th className="px-4 py-2 text-right">จัดการ</th>
+              <th className="px-4 py-2 text-center">ดำเนินการ</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -265,16 +266,16 @@ export default function GrantsPanel({ user, onError }) {
                 </td>
                 <td className="px-4 py-2">{grant.assigned_by ?? '—'}</td>
                 <td className="px-4 py-2">{madeOn(grant.assigned_at)}</td>
-                <td className="px-4 py-2 text-right">
-                  <button
-                    type="button"
-                    onClick={() => remove(grant)}
-                    disabled={busy || isSelf}
-                    title={isSelf ? CANNOT_REVOKE_SELF : undefined}
-                    className="rounded-lg px-3 py-1.5 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-                  >
-                    ยกเลิกบทบาท
-                  </button>
+                <td className="px-4 py-2">
+                  <RowActions>
+                    <RowAction
+                      kind="remove"
+                      label="ยกเลิกบทบาท"
+                      onClick={() => remove(grant)}
+                      disabled={busy || isSelf}
+                      title={isSelf ? CANNOT_REVOKE_SELF : undefined}
+                    />
+                  </RowActions>
                 </td>
               </tr>
             ))}

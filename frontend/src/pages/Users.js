@@ -7,6 +7,7 @@ import ImportPanel from '../components/ImportPanel'
 import Notice from '../components/Notice'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
+import RowAction, { RowActions } from '../components/RowAction'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
 import { scopeNamed } from '../components/users/scopeLabel'
@@ -859,7 +860,7 @@ export default function Users() {
                   <th className="px-4 py-3">บทบาท</th>
                   <th className="px-4 py-3">ช่วงเวลาใช้งาน</th>
                   <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-right">จัดการ</th>
+                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -906,27 +907,25 @@ export default function Users() {
                           {STATUS[user.status]?.label ?? user.status}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            showing.current = {}
-                            setNotice(null)
-                            setEditing(user)
-                          }}
-                          className="rounded-lg px-3 py-1.5 text-secondary hover:bg-blue-50"
-                        >
-                          แก้ไข
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => startSwitch(user)}
-                          disabled={isSelf(user)}
-                          title={isSelf(user) ? CANNOT_SUSPEND_SELF : undefined}
-                          className="rounded-lg px-3 py-1.5 text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-transparent"
-                        >
-                          {suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}
-                        </button>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <RowActions>
+                          <RowAction
+                            kind="edit"
+                            label="แก้ไข"
+                            onClick={() => {
+                              showing.current = {}
+                              setNotice(null)
+                              setEditing(user)
+                            }}
+                          />
+                          <RowAction
+                            kind={suspends(user) ? 'suspend' : 'restore'}
+                            label={suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}
+                            onClick={() => startSwitch(user)}
+                            disabled={isSelf(user)}
+                            title={isSelf(user) ? CANNOT_SUSPEND_SELF : undefined}
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}

@@ -81,17 +81,17 @@ MUTANTS = {
     # ช่องว่างไม่ได้บอกว่าทำไม ส่วนปุ่มที่ปิดอยู่พร้อม title บอก
     "selfrowhidesthebutton": [
         ("grants",
-         "                  <button\n"
-         "                    type=\"button\"\n"
-         "                    onClick={() => remove(grant)}\n",
-         "                  {!isSelf && <button\n"
-         "                    type=\"button\"\n"
-         "                    onClick={() => remove(grant)}\n"),
+         "                    <RowAction\n"
+         "                      kind=\"remove\"\n"
+         "                      label=\"ยกเลิกบทบาท\"\n",
+         "                    {!isSelf && <RowAction\n"
+         "                      kind=\"remove\"\n"
+         "                      label=\"ยกเลิกบทบาท\"\n"),
         ("grants",
-         "                    ยกเลิกบทบาท\n"
-         "                  </button>\n",
-         "                    ยกเลิกบทบาท\n"
-         "                  </button>}\n"),
+         "                    />\n"
+         "                  </RowActions>\n",
+         "                    />}\n"
+         "                  </RowActions>\n"),
     ],
 }
 
