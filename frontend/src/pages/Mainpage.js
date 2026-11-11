@@ -426,7 +426,7 @@ export default function MainPage() {
           refuses to shrink below the widest table inside it — the criteria
           screen wants about 1,100px — and is pushed off the right of a narrow
           window. The `overflow-x-hidden` below then clips what hangs over, and
-          the จัดการ column with its แก้ไข and ลบ buttons becomes unreachable
+          the action column with its แก้ไข and ลบ buttons becomes unreachable
           rather than scrollable. Each table's own `overflow-x-auto` cannot help
           while its frame is as wide as its contents: nothing overflows it. #98.
         */}

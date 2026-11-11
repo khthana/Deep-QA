@@ -459,7 +459,7 @@ export default function SubjectStudents() {
 
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
             {/* The table scrolls inside its own frame rather than pushing the
-                  page sideways — #98, and the จัดการ column is the one that
+                  page sideways — #98, and the ดำเนินการ column is the one that
                   goes out of reach when it does not. */}
             <div className="overflow-x-auto">
               <table className="w-full min-w-[36rem] text-left text-sm">

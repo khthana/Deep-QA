@@ -6,7 +6,8 @@ import { RiDeleteBin6Line, RiEdit2Line } from 'react-icons/ri'
  *
  * The owner's answer of 10 November 2569 restores the delivered system's
  * column (`DEEP-QA-FRONTEND/src/components/BT.js`): an icon in a bordered
- * square instead of a word. The icons and colours are that file's, plus two
+ * square instead of a word. The icons, the colours, the hover shades and the
+ * gap between buttons (`gap-4`, its tables' cells) are that file's, plus two
  * the delivered system never had because it drew the account status as a
  * switch in its own column - `suspend` and `restore`, for ข้อมูลผู้ใช้งาน,
  * answered the same day.
@@ -28,23 +29,23 @@ import { RiDeleteBin6Line, RiEdit2Line } from 'react-icons/ri'
 const KINDS = {
   edit: {
     Icon: RiEdit2Line,
-    tone: 'border-green-600 text-green-600 hover:bg-green-100',
+    tone: 'border-green-600 text-green-600 hover:bg-green-200',
   },
   remove: {
     Icon: RiDeleteBin6Line,
-    tone: 'border-rose-700 text-rose-700 hover:bg-red-100',
+    tone: 'border-rose-700 text-rose-700 hover:bg-red-200',
   },
   open: {
     Icon: MdOutlineRemoveRedEye,
-    tone: 'border-blue-700 text-blue-700 hover:bg-blue-100',
+    tone: 'border-blue-700 text-blue-700 hover:bg-blue-200',
   },
   suspend: {
     Icon: MdBlock,
-    tone: 'border-orange-600 text-orange-600 hover:bg-orange-100',
+    tone: 'border-orange-600 text-orange-600 hover:bg-orange-200',
   },
   restore: {
     Icon: MdOutlineCheckCircle,
-    tone: 'border-green-600 text-green-600 hover:bg-green-100',
+    tone: 'border-green-600 text-green-600 hover:bg-green-200',
   },
 }
 
@@ -66,5 +67,5 @@ export default function RowAction({ kind, label, title, onClick, disabled = fals
 
 /** The cell the actions sit in, centred under a header that reads ดำเนินการ. */
 export function RowActions({ children }) {
-  return <div className="flex items-center justify-center gap-2">{children}</div>
+  return <div className="flex items-center justify-center gap-4">{children}</div>
 }

@@ -673,8 +673,10 @@ export default function Users() {
    * walk of 21 สิงหาคม 2569 recorded and #86 asked the specification owner
    * about. The answer was to ask in both directions, from the button where it
    * now is. So what is restored is the question and not the switch: the button
-   * stays, because that is what every other row of this table's จัดการ column
-   * looks like and the walked rows of sheet `11` are written about it.
+   * stays, because that is what every other row of this table's action column
+   * looks like and the walked rows of sheet `11` are written about it. Since
+   * #271 (11 November 2569) it is an icon like the rest of that column, which
+   * now reads ดำเนินการ, and the verb is its name and its tooltip.
    *
    * The question is the shared `ConfirmDialog` - #14's, which eighteen other
    * screens ask through - so three things about the delivered box cannot come

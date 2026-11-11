@@ -33,18 +33,18 @@
 
 | # | เกณฑ์ | ทำอะไร | ต้องเห็นอะไร | ✓ |
 |---|---|---|---|---|
-| 1 | ข้อมูลภาควิชา | `faculty.admin@kmitl.ac.th` → *ข้อมูลภาควิชา* | ปุ่ม *แก้ไข* กับ *ลบ* เป็นไอคอน ชื่อและ tooltip เป็นคำ — `e2e/tests/271a-action-icons.spec.js` (row 1) | ☐ |
-| 2 | ข้อมูลหลักสูตร | `faculty.admin@` → *ข้อมูลหลักสูตร* | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 2) | ☐ |
-| 3 | ข้อมูลรายวิชา | `dept.admin.05@kmitl.ac.th` → *ข้อมูลรายวิชา* | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 3) | ☐ |
-| 4 | รายวิชาในหลักสูตร | `prog.manager@kmitl.ac.th` → *รายวิชาในหลักสูตร* | *แก้ไข* กับ *นำออก* — `e2e/tests/271a-action-icons.spec.js` (row 4) | ☐ |
-| 5 | ข้อมูลผู้ใช้งาน | `admin@kmitl.ac.th` → *ข้อมูลผู้ใช้งาน* | *แก้ไข* กับ *ระงับ* ที่แถวของบัญชีอื่น — `e2e/tests/271a-action-icons.spec.js` (row 5) | ☐ |
-| 6 | ตารางบทบาทที่ได้รับ | `dept.admin.05@` → *ข้อมูลผู้ใช้งาน* → *แก้ไข* ที่ `teacher.one@` | *ยกเลิกบทบาท* ในตาราง *บทบาทที่ได้รับ* — `e2e/tests/271a-action-icons.spec.js` (row 6) | ☐ |
-| 7 | รายวิชาที่เปิดสอน | `prog.manager@` → *รายวิชาที่เปิดสอน* | *ตอนเรียนและผู้สอน* (ตา) กับ *ยกเลิกการเปิด* — `e2e/tests/271a-action-icons.spec.js` (row 7) | ☐ |
-| 8 | ผลการเรียนรู้ของหลักสูตร | `prog.manager@` → *ผลการเรียนรู้ของหลักสูตร* | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 8) | ☐ |
-| 9 | Rubric กลาง | `prog.manager@` → *Rubric กลาง* | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 9) | ☐ |
-| 10 | เกณฑ์ของ Rubric | `prog.manager@` → *Rubric กลาง* → เปิดเกณฑ์ของ rubric แรก | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 10) | ☐ |
-| 11 | นักศึกษาในตอนเรียน | `teacher.one@kmitl.ac.th` → ตอนเรียนแรกของตัวเอง → นักศึกษา | ถังขยะชื่อ `นำ <รหัส> ออกจากตอนเรียน` tooltip เป็นชื่อเดียวกัน — `e2e/tests/271a-action-icons.spec.js` (row 11) | ☐ |
-| 12 | ปุ่มที่ปิดอยู่ยังบอกว่าทำไม | `admin@` → แถวของ `admin@` เอง · `dept.admin.05@` → *แก้ไข* ที่ตัวเอง → ตารางบทบาท | ปุ่ม *ระงับ* กับ *ยกเลิกบทบาท* วาดไว้แต่กดไม่ได้ และ tooltip เป็นเหตุผล ไม่ใช่คำ — `e2e/tests/84a-own-row-controls.spec.js` (*the signed-in administrator cannot press ระงับ on their own row*) กับ `e2e/tests/12a-role-grants.spec.js` (*the button on your own grant is dead*) ซึ่งมีอยู่ก่อนใบนี้ ใบนี้เพิ่มมัตแตนต์ `reasonlost` ที่เขียนทับเหตุผลด้วยคำ เพราะค่าตั้งต้นของ `title` เป็นของใหม่ที่ #271 ใส่ | ☐ |
+| 1 | ข้อมูลภาควิชา | `faculty.admin@kmitl.ac.th` → *ข้อมูลภาควิชา* | ปุ่ม *แก้ไข* กับ *ลบ* เป็นไอคอน ชื่อและ tooltip เป็นคำ — `e2e/tests/271a-action-icons.spec.js` (row 1) | ⚙ |
+| 2 | ข้อมูลหลักสูตร | `faculty.admin@` → *ข้อมูลหลักสูตร* | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 2) | ⚙ |
+| 3 | ข้อมูลรายวิชา | `dept.admin.05@kmitl.ac.th` → *ข้อมูลรายวิชา* | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 3) | ⚙ |
+| 4 | รายวิชาในหลักสูตร | `prog.manager@kmitl.ac.th` → *รายวิชาในหลักสูตร* | *แก้ไข* กับ *นำออก* — `e2e/tests/271a-action-icons.spec.js` (row 4) | ⚙ |
+| 5 | ข้อมูลผู้ใช้งาน | `admin@kmitl.ac.th` → *ข้อมูลผู้ใช้งาน* | *แก้ไข* กับ *ระงับ* ที่แถวของบัญชีอื่น — `e2e/tests/271a-action-icons.spec.js` (row 5) | ⚙ |
+| 6 | ตารางบทบาทที่ได้รับ | `dept.admin.05@` → *ข้อมูลผู้ใช้งาน* → *แก้ไข* ที่ `teacher.one@` | *ยกเลิกบทบาท* ในตาราง *บทบาทที่ได้รับ* — `e2e/tests/271a-action-icons.spec.js` (row 6) | ⚙ |
+| 7 | รายวิชาที่เปิดสอน | `prog.manager@` → *รายวิชาที่เปิดสอน* | *ตอนเรียนและผู้สอน* (ตา) กับ *ยกเลิกการเปิด* — `e2e/tests/271a-action-icons.spec.js` (row 7) | ⚙ |
+| 8 | ผลการเรียนรู้ของหลักสูตร | `prog.manager@` → *ผลการเรียนรู้ของหลักสูตร* | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 8) | ⚙ |
+| 9 | Rubric กลาง | `prog.manager@` → *Rubric กลาง* | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 9) | ⚙ |
+| 10 | เกณฑ์ของ Rubric | `prog.manager@` → *Rubric กลาง* → เปิดเกณฑ์ของ rubric แรก | *แก้ไข* กับ *ลบ* — `e2e/tests/271a-action-icons.spec.js` (row 10) | ⚙ |
+| 11 | นักศึกษาในตอนเรียน | `teacher.one@kmitl.ac.th` → ตอนเรียนแรกของตัวเอง → นักศึกษา | ถังขยะชื่อ `นำ <รหัส> ออกจากตอนเรียน` tooltip เป็นชื่อเดียวกัน — `e2e/tests/271a-action-icons.spec.js` (row 11) | ⚙ |
+| 12 | ปุ่มที่ปิดอยู่ยังบอกว่าทำไม | `admin@` → แถวของ `admin@` เอง · `dept.admin.05@` → *แก้ไข* ที่ตัวเอง → ตารางบทบาท | ปุ่ม *ระงับ* กับ *ยกเลิกบทบาท* วาดไว้แต่กดไม่ได้ และ tooltip เป็นเหตุผล ไม่ใช่คำ — `e2e/tests/84a-own-row-controls.spec.js` (*the signed-in administrator cannot press ระงับ on their own row*) กับ `e2e/tests/12a-role-grants.spec.js` (*the button on your own grant is dead*) ซึ่งมีอยู่ก่อนใบนี้ ใบนี้เพิ่มมัตแตนต์ `reasonlost` ที่เขียนทับเหตุผลด้วยคำ เพราะค่าตั้งต้นของ `title` เป็นของใหม่ที่ #271 ใส่ | ⚙ |
 | 13 | สีและไอคอนตรงกับจอที่ส่งมอบ | เดินจอใดก็ได้ข้างบน | *แก้ไข* ดินสอ กรอบเขียว · ถังขยะทุกใบ กรอบแดง (`rose-700`) · *ตอนเรียนและผู้สอน* ตา กรอบน้ำเงิน · *ระงับ* วงกลมขีด กรอบส้ม · *เปิดใช้งาน* วงกลมติ๊ก กรอบเขียว · เลื่อนเมาส์ผ่านแล้วพื้นเป็นสีอ่อนของสีกรอบ · ปุ่มที่ปิดอยู่จางลงและไม่เปลี่ยนพื้น | ☐ |
 | 14 | หัวคอลัมน์ | เดินจอใดก็ได้ข้างบน | หัวคอลัมน์อ่านว่า *ดำเนินการ* จัดกึ่งกลาง และไอคอนในแถวอยู่กึ่งกลางใต้หัว | ☐ |
 | 15 | tooltip ขึ้นจริง | เลื่อนเมาส์ค้างบนถังขยะของ *รายวิชาที่เปิดสอน* | เบราว์เซอร์แสดง *ยกเลิกการเปิด* — ครึ่งที่ attribute ไปถึง DOM คือแถว 7 ครึ่งที่วาดเป็นของเบราว์เซอร์ จึงต้องมีคนดู | ☐ |
