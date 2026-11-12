@@ -44,6 +44,20 @@
 | `204:nofocusonopen` | (ใบ 204) | `270a` แถว *the focus goes into the window* ที่ `the window has the focus` |
 | `204:notrap` | (ใบ 204) | `270a` แถว *the focus goes into the window* ที่ `the focus it took is back in the window` |
 | `204:noescape` | (ใบ 204) | `270a` แถว *Escape closes the window when nothing is out* ที่ `toHaveCount(0)` |
+
+## ตัวของใบอื่นที่แก้ `ImportPanel.js` — คำทำนายต่อ `270a` เขียนก่อนกวาด (12 พ.ย. 2569)
+
+ประชากรนี้หาด้วยการอ่าน `FILES` ของทุกแฟ้มใน `mutation/` แล้วเลือกตัวที่แก้
+`components/ImportPanel.js` หรือ `components/useModalFocus.js` ได้สิบเก้าตัว แปดตัวเป็นของใบนี้ สามตัวเป็นของ
+`204` (อยู่ในตารางข้างบน) อีกแปดตัวอยู่ข้างล่าง แต่ละตัวรันกับ spec ของใบตัวเองและกับ `270a`
+
+| มัตแตนต์ | ใบ | คำทำนายต่อ `270a` |
+|---|---|---|
+| `importstayssilent` | `111` | ตาย ที่แถว *a refused file keeps the window open* ที่ `the report is in the window` เพราะแถวหารายงานด้วย `getByRole('alert')` ในหน้าต่าง |
+| `keepbeforeupload` | `91` | ไม่มีแถวไหนตาย `270a` ไม่อ่านแบนเนอร์ของจอ |
+| `panelkeepsanswer` | `252` | ไม่มีแถวไหนตาย ภาควิชาไม่มีตัวกรองที่อ่านคำตอบ |
+| `importanswerwinsthepicker` | `141` | ไม่มีแถวไหนตาย `270a` ไม่เปลี่ยน `target` |
+| `reportoutlivesthetarget` · `drawsasupersededsuccess` · `drawsasupersededrefusal` · `swallowsthesupersededrefusal` | `179` | ไม่มีแถวไหนตาย ด้วยเหตุเดียวกัน |
 """
 from harness import main
 
