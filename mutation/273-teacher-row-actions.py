@@ -97,6 +97,11 @@
 - **ปุ่มสามปุ่มถูกห่อด้วย `div` ที่คืน `ml-auto` กับ `justify-self-start`** ซึ่งการเขียนใหม่ทำหาย สมอของ
   `t273group_rename` `t273group_remove` `t273form_drop` เลื่อนเข้าไปสองช่อง ต้องรันซ้ำ (#107, #68) ทำนาย: ตายแถวเดิมที่เดิม
 - `t273namebutton` รันซ้ำเพราะแถวของใบถูกแยก ทำนาย: ตายแถว 9 ที่ *the file name is text, not a button* เหมือนเดิม
+
+**รันซ้ำที่ `a419b1d`** (12 พ.ย. 2569) — `273a` สะอาดก่อน 10 ผ่าน แล้วหกตัวตรงคำทำนายทุกตัว: `t273linkisbutton` แถว 7 ที่
+*หลักฐาน is a link* กับแถว 9 ที่ `locator.click` หมดเวลา · `t273nonamedrawn` แถว 9 ที่ `toContainText` · `t273namebutton`
+แถว 9 ที่ *the file name is text, not a button* · `t273group_rename` `t273group_remove` แถว 5 และ `t273form_drop` แถว 8
+ที่ *its tooltip is its whole name*
 """
 
 from harness import main

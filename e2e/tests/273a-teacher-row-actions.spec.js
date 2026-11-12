@@ -3,6 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
+const { hold } = require('../support/hold');
 const { openClos, mySectionIds } = require('../support/clos-screen');
 const { openBehaviors } = require('../support/behaviors-screen');
 const { openCriteria } = require('../support/achievements-screen');
@@ -58,6 +59,21 @@ async function isARowAction(control) {
 /** The first button whose accessible name starts with these words. */
 const starting = (page, words, role = 'button') =>
   page.getByRole(role, { name: new RegExp('^' + words) }).first();
+
+/**
+ * Rows 9 and 10 write: the screen's own delete marks an evidence file removed
+ * rather than deleting its row, and the seeded entry opens the CLO's plan,
+ * which taking the entry out leaves standing - so both are taken out when the
+ * file ends (#134), as `leftovers.js` measured on the full run of 12
+ * November 2569.
+ *
+ * `support/hold.js` says what it puts back, and what it does not.
+ */
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 let sectionId;
 
