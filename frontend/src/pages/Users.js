@@ -879,6 +879,10 @@ export default function Users() {
               // filters for that save's own reason: this screen's pager is not
               // disabled while a write is out, so the live ref is the page the
               // person has since moved to and not the list this import was about.
+              // Since #270 (12 November 2569) the import window's cover hides
+              // the pager while a file is out, so for an import that way in is
+              // back or a typed address only - the conclusion stands on a
+              // narrower premise, dated rather than rewritten (#141, #54).
               // `Array.isArray` rather than `?? []`, which is the spelling
               // `someImportedOutside` uses for the same question: a key that
               // arrives as something other than a list answers *no* instead of

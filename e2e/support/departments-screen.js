@@ -98,10 +98,14 @@ const statusOf = (page, departmentId) =>
 /**
  * The screen's own list, told apart from the rejection report's table.
  *
- * `first()` because the list is drawn above the import panel, and a refused
- * import puts the report's table on the screen underneath it.
+ * Any table not inside a dialog: since #270 (12 November 2569) a refused
+ * import's report is drawn in the import window, which is mounted *above* the
+ * list, so the `first()` this used to be - when the report was a box under the
+ * list - would have read the report while the window was open. `first()` stays
+ * for nothing but a single answer.
  */
-const listTable = page => page.locator('table').first();
+const listTable = page =>
+  page.locator('xpath=//table[not(ancestor::*[@role="dialog"])]').first();
 
 /**
  * Deletes one department through the screen's own confirmation, and waits for
@@ -228,7 +232,10 @@ async function threePagesEndingIn(page, { rows, prefix, note }) {
  * Answers the import's own response. The list read it starts belongs to the
  * caller, which waits for it or holds it at the route - and the template is
  * fetched here because nothing in the panel but the file input is disabled
- * while an import is out, read from `ImportPanel.js` on 19 ตุลาคม 2569. Here
+ * while an import is out, read from `ImportPanel.js` on 19 ตุลาคม 2569 - no
+ * longer true since #270 (12 November 2569), whose window disables its download
+ * as well, and the template is still fetched first because the order costs
+ * nothing (#54). Here
  * rather than in a spec for `threePagesEndingIn`'s reason: no row's claim lives
  * in it, only the situation (#171).
  */

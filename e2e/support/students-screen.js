@@ -96,11 +96,14 @@ const registerRow = (page, code) =>
 /**
  * The screen's own list, told apart from the rejection report's table.
  *
- * `first()` because the list is drawn above the import panel, and a refused
- * import puts the report's table on the screen underneath it. The same shape
+ * Any table not inside a dialog: since #270 (12 November 2569) a refused
+ * import's report is drawn in the import window, which is mounted *above* the
+ * list, so the `first()` this used to be would have read the report while the
+ * window was open. The same shape
  * as every other screen's, so `support/pager.js` can be handed it.
  */
-const listTable = page => page.locator('table').first();
+const listTable = page =>
+  page.locator('xpath=//table[not(ancestor::*[@role="dialog"])]').first();
 
 module.exports = {
   STUDENT_DATA,

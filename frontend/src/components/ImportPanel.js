@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { FaDownload } from 'react-icons/fa'
 
 import ContentMotionDIV from './ContentMotionDIV'
 import useModalFocus from './useModalFocus'
@@ -244,12 +245,17 @@ export default function ImportPanel({
     // The screen's own banner, not this panel's report - #91. Sending a file
     // (choosing one, until #270) is a new action, and the panel is the one
     // place that begins one without touching `editing` or `removing`, so it
-    // was the site the first pass at #91 walked straight past: a refusal from the upload before, or a
-    // "saved" from something else entirely, sat above the panel's own green
-    // line and read as though it belonged to the import that just succeeded.
+    // was the site the first pass at #91 walked straight past: a refusal
+    // from the upload before, or a "saved" from something else entirely, sat
+    // above the panel's own green line and read as though it belonged to the
+    // import that just succeeded.
     onStart?.()
     setBusy(true)
     try {
+      // A re-aimed screen - back, or a typed address, since the cover hides
+      // the picker (#270) - returns below with the window still open on the new
+      // target and nothing drawn in it: the window belongs to the person, who
+      // closes it, and the answer belonged to the target that was left.
       const result = await send(await file.text())
       if (latest.current !== asked) return
       setReport({ ok: true, created: result.created })
@@ -359,8 +365,9 @@ export default function ImportPanel({
             type="button"
             onClick={download}
             disabled={busy}
-            className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+            className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-md transition hover:bg-green-700 disabled:opacity-60"
           >
+            <FaDownload className="h-4 w-4" aria-hidden="true" />
             ดาวน์โหลดแบบฟอร์ม
           </button>
           <label className="cursor-pointer rounded-lg border border-dashed border-blue-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50">
@@ -412,7 +419,7 @@ export default function ImportPanel({
             type="button"
             onClick={close}
             disabled={busy}
-            className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+            className="rounded-lg bg-gray-200 px-5 py-2 text-sm font-medium text-gray-800 transition hover:bg-gray-300 disabled:opacity-60"
           >
             ยกเลิก
           </button>

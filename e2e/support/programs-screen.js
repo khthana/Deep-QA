@@ -39,10 +39,14 @@ const importPrograms = (page, text, name = 'programs.csv') =>
 /**
  * The screen's own list, told apart from the rejection report's table.
  *
- * `first()` because the list is drawn above the import panel, and a refused
- * import puts the report's table on the screen underneath it.
+ * Any table not inside a dialog: since #270 (12 November 2569) a refused
+ * import's report is drawn in the import window, which is mounted *above* the
+ * list, so the `first()` this used to be - when the report was a box under the
+ * list - would have read the report while the window was open. `first()` stays
+ * for nothing but a single answer.
  */
-const listTable = page => page.locator('table').first();
+const listTable = page =>
+  page.locator('xpath=//table[not(ancestor::*[@role="dialog"])]').first();
 
 /**
  * One row of the table, found by the code in its first cell.
