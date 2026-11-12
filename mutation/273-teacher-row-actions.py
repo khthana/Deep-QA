@@ -49,8 +49,9 @@
 | `t273file_remove` | `273a` *row 9: หลักฐานการประเมิน - เปิดหลักฐาน, แก้ไขหลักฐาน and ลบหลักฐาน* | *its tooltip is its whole name* | อีกเก้าแถวของ `273a` · `271a` ทั้งสิบเอ็ด |
 | `t273entry_edit` | `273a` *row 10: การปรับปรุงอย่างต่อเนื่อง - แก้ไข and ลบ an entry* | *its tooltip is its whole name* | อีกเก้าแถวของ `273a` · `271a` ทั้งสิบเอ็ด |
 | `t273entry_remove` | `273a` *row 10: การปรับปรุงอย่างต่อเนื่อง - แก้ไข and ลบ an entry* | *its tooltip is its whole name* | อีกเก้าแถวของ `273a` · `271a` ทั้งสิบเอ็ด |
-| `t273linkisbutton` | `273a` *row 7: กิจกรรมการเรียนรู้ - หลักฐาน, แก้ไขกิจกรรม and ลบกิจกรรม* ที่ *the control is drawn* (ไม่มีลิงก์ชื่อนั้น) · แถว 9 ที่การจัดฉาก (กดลิงก์ที่ไม่มี) · ทุกสเปกที่เข้าจอหลักฐานด้วยการกดลิงก์จาก `LearningActivities` | ดูคอลัมน์ซ้าย | แถวที่เหลือของ `273a` · `271a` ทั้งสิบเอ็ด (ไม่มี `to` บนจอผู้ดูแล) |
+| `t273linkisbutton` | `273a` *row 7: กิจกรรมการเรียนรู้ - หลักฐาน, แก้ไขกิจกรรม and ลบกิจกรรม* ที่ *the control is drawn* (ไม่มีลิงก์ชื่อนั้น — คำทำนายก่อนรีวิว ดูข้างล่าง) · แถว 9 ที่การจัดฉาก (กดลิงก์ที่ไม่มี) · ทุกสเปกที่เข้าจอหลักฐานด้วยการกดลิงก์จาก `LearningActivities` | ดูคอลัมน์ซ้าย | แถวที่เหลือของ `273a` · `271a` ทั้งสิบเอ็ด (ไม่มี `to` บนจอผู้ดูแล) |
 | `t273namebutton` | `273a` *row 9: หลักฐานการประเมิน - เปิดหลักฐาน, แก้ไขหลักฐาน and ลบหลักฐาน* | *the file name is text, not a button* | อีกเก้าแถวของ `273a` |
+| `t273nonamedrawn` | `273a` *row 9: หลักฐานการประเมิน - เปิดหลักฐาน, แก้ไขหลักฐาน and ลบหลักฐาน* (เพิ่มหลังรีวิว ทำนายก่อนรัน) | `toContainText(NAME)` | อีกเก้าแถวของ `273a` |
 
 สเปกอื่นที่กดปุ่มเหล่านี้กดด้วยชื่อ ซึ่งมัตแตนต์ tooltip ไม่แตะ จึงไม่ทำนายการตายที่อื่น ยกเว้น
 `t273linkisbutton` ซึ่งปุ่มที่ได้ไม่พาไปไหน แถวที่ใช้ลิงก์นั้นเป็นเครื่องมือจัดฉากจึงตายที่การจัดฉาก
@@ -67,6 +68,35 @@
 | `notitle` | ทั้งสิบ | *its tooltip is its whole name* — ไม่มีผู้เรียกฝั่งอาจารย์คนไหนส่ง `title` | ไม่มี |
 | `noicon` | ทั้งสิบ | *it holds one icon* | ไม่มี |
 | `reasonlost` | ไม่มี | — | ทั้งสิบ: `title={label}` กับ `title ?? label` ให้ค่าเดียวกันเมื่อไม่มีใครส่ง `title` และในสิบแฟ้มไม่มีใครส่ง (grep `title=` ใต้ `<RowAction` 12 พ.ย. 2569 พบแค่ `GrantsPanel.js` กับ `Users.js`) |
+
+## บันทึกผลกวาด (12 พ.ย. 2569)
+
+กวาดที่ `41f0a4b` ซึ่งเป็น commit ที่ตารางข้างบนลงพร้อมตัวแก้ ต้นไม้ของ `frontend/src` สะอาดก่อน apply
+ทุกตัว ประตูต้นไม้จึงถามได้จริงครั้งนี้ (ต่างจาก `274-…py`) และสคริปต์ถามบรรทัด `applied <ชื่อ>` ด้วย
+(#268) ยี่สิบหกตัวรัน `273a` ทั้งไฟล์ ตัวละครั้ง
+
+- ยี่สิบตัวของ tooltip ตายตัวละแถวตามตาราง ทุกตัวตายที่ *its tooltip is its whole name* (1 failed | 9 passed)
+  ตัวที่ปุ่มที่สองของแถวตายที่ assertion ของปุ่มที่สอง เพราะปุ่มแรกผ่านแล้ว (#88)
+- `t273linkisbutton` ตายสองแถว: แถว 7 ที่ *the control is drawn* (ไม่มีลิงก์ชื่อนั้น) และแถว 9 ที่การจัดฉาก
+  (`locator.click` หมดเวลา 60 วินาที) ตามที่ทำนาย — แถว 9 เป็นการตายที่การจัดฉาก ไม่ใช่ข้ออ้าง (#266)
+- `t273namebutton` ตายแถว 9 แถวเดียว ที่ *the file name is text, not a button*
+- สี่ตัวของ `271-action-icons.py`: `wordsdrawn` `notitle` `noicon` ฆ่าทั้งสิบแถว ที่ *no word is drawn* ·
+  *its tooltip is its whole name* · *it holds one icon* ตามลำดับ · `reasonlost` รอดทั้งสิบ (10 passed) ตามที่ทำนาย
+
+ยี่สิบหกของยี่สิบหกตรงคำทำนาย อ่านจากบรรทัด `Error:` ของแต่ละ log ไม่ใช่จากจำนวน
+
+## หลังรีวิว (12 พ.ย. 2569) — คำทำนายเขียนก่อนรันซ้ำ
+
+รีวิวพบสามข้อที่เปลี่ยนมัตแตนต์:
+
+- **แถว 7 พิสูจน์ *หลักฐานเป็นลิงก์* ด้วยการรอ ไม่ใช่ด้วย assertion** — บทบาท link เป็นข้อตั้งของ locator (#85, #139)
+  แถวจึงหาตัวควบคุมด้วยชื่อแล้วอ่าน `tagName` คำทำนายใหม่: `t273linkisbutton` ตายแถว 7 ที่ *หลักฐาน is a link*
+  และแถว 9 ที่การจัดฉากเหมือนเดิม
+- **ใบเกณฑ์แถว 12 มีสองข้ออ้าง** (#66) — *ชื่อแฟ้มยังอยู่* ไม่มีมัตแตนต์ฆ่า จึงเพิ่ม `t273nonamedrawn` ทำนาย: ตายแถว 9
+  แถวเดียว ที่ `toContainText(NAME)` (การ์ดหาด้วยป้าย `หลักฐาน <ชื่อแฟ้ม>` จึงยังหาเจอ และปุ่มทั้งสามไม่มีคำ)
+- **ปุ่มสามปุ่มถูกห่อด้วย `div` ที่คืน `ml-auto` กับ `justify-self-start`** ซึ่งการเขียนใหม่ทำหาย สมอของ
+  `t273group_rename` `t273group_remove` `t273form_drop` เลื่อนเข้าไปสองช่อง ต้องรันซ้ำ (#107, #68) ทำนาย: ตายแถวเดิมที่เดิม
+- `t273namebutton` รันซ้ำเพราะแถวของใบถูกแยก ทำนาย: ตายแถว 9 ที่ *the file name is text, not a button* เหมือนเดิม
 """
 
 from harness import main
@@ -120,12 +150,12 @@ MUTANTS = {
         '                      label={`ลบสัปดาห์ที่ ${week.week_no} · ${week.title}`}\n                      title=""\n'),
     # row 5: กลุ่มงานนักศึกษา - เปลี่ยนชื่อ and ลบ: this button's tooltip is gone again
     't273group_rename': ('groups',
-        '                      label={`เปลี่ยนชื่อ ${group.group_name}`}\n',
-        '                      label={`เปลี่ยนชื่อ ${group.group_name}`}\n                      title=""\n'),
+        '                        label={`เปลี่ยนชื่อ ${group.group_name}`}\n',
+        '                        label={`เปลี่ยนชื่อ ${group.group_name}`}\n                        title=""\n'),
     # row 5: กลุ่มงานนักศึกษา - เปลี่ยนชื่อ and ลบ: this button's tooltip is gone again
     't273group_remove': ('groups',
-        '                      label={`ลบ ${group.group_name}`}\n',
-        '                      label={`ลบ ${group.group_name}`}\n                      title=""\n'),
+        '                        label={`ลบ ${group.group_name}`}\n',
+        '                        label={`ลบ ${group.group_name}`}\n                        title=""\n'),
     # row 6: สัดส่วนคะแนน - ลบหมวดคะแนนที่: this button's tooltip is gone again
     't273weight_remove': ('weights',
         '                    label={`ลบหมวดคะแนนที่ ${index + 1}`}\n',
@@ -144,8 +174,8 @@ MUTANTS = {
         '                              label={`ลบกิจกรรม ${activity.activity_name}`}\n                              title=""\n'),
     # row 8: the activity form - นำผลการเรียนรู้แถวที่ … ออก: this button's tooltip is gone again
     't273form_drop': ('form',
-        '                    label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}\n',
-        '                    label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}\n                    title=""\n'),
+        '                      label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}\n',
+        '                      label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}\n                      title=""\n'),
     # row 9: หลักฐานการประเมิน - เปิดหลักฐาน, แก้ไขหลักฐาน and ลบหลักฐาน: this button's tooltip is gone again
     't273file_open': ('evidence',
         '                      label={`เปิดหลักฐาน ${file.file_name}`}\n',
@@ -170,6 +200,10 @@ MUTANTS = {
     't273linkisbutton': ('action',
         "  const Square = to ? Link : 'button'\n",
         "  const Square = 'button'\n"),
+    # the file name is no longer drawn on the card at all
+    't273nonamedrawn': ('evidence',
+        '                    <p className="mt-1 text-sm text-gray-900">{file.file_name}</p>\n',
+        ''),
     # the file name is the control that opens it again, as before the answer
     't273namebutton': ('evidence',
         '                    <p className="mt-1 text-sm text-gray-900">{file.file_name}</p>\n',

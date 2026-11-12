@@ -105,8 +105,12 @@ test('row 6: สัดส่วนคะแนน - ลบหมวดคะแ�
 
 test('row 7: กิจกรรมการเรียนรู้ - หลักฐาน, แก้ไขกิจกรรม and ลบกิจกรรม', async ({ page }) => {
   await openActivities(page, sectionId);
-  // หลักฐาน is a place and not an act, so it stays a link (#35).
-  await isARowAction(starting(page, 'หลักฐานการประเมินของ ', 'link'));
+  // หลักฐาน is a place and not an act, so it stays a link (#35). Found by its
+  // name and not by its role, so the role is read as a claim rather than
+  // being the premise of the locator (#85).
+  const evidence = page.locator('[aria-label^="หลักฐานการประเมินของ "]').first();
+  expect(await evidence.evaluate(element => element.tagName), 'หลักฐาน is a link').toBe('A');
+  await isARowAction(evidence);
   await isARowAction(starting(page, 'แก้ไขกิจกรรม '));
   await isARowAction(starting(page, 'ลบกิจกรรม '));
 });

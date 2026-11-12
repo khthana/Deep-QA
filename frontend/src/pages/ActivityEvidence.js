@@ -12,7 +12,8 @@ import {
   getEvidenceFile,
   replaceEvidence,
   showPdf,
-  uploadEvidence } from '../api/evidence'
+  uploadEvidence,
+} from '../api/evidence'
 import RowAction from '../components/RowAction'
 
 /**

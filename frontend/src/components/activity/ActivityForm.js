@@ -316,12 +316,16 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
                       : '—'}
                   </p>
 
-                  <RowAction
-                    kind="remove"
-                    label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}
-                    disabled={sending}
-                    onClick={() => dropRow(index)}
-                  />
+                  {/* justify-self-start as the bare bin had, or the square
+                      stretches across the one-column grid below sm (#273). */}
+                  <div className="justify-self-start">
+                    <RowAction
+                      kind="remove"
+                      label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}
+                      disabled={sending}
+                      onClick={() => dropRow(index)}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>

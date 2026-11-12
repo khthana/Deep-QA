@@ -10,7 +10,8 @@ import {
   getWeights,
   saveWeights,
   importTemplate,
-  importWeights } from '../api/weights'
+  importWeights,
+} from '../api/weights'
 import RowAction from '../components/RowAction'
 
 /**

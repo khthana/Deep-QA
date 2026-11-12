@@ -9,7 +9,8 @@ import {
   createCourseOutcome,
   deleteCourseOutcome,
   getCourseOutcomes,
-  updateCourseOutcome } from '../api/clos'
+  updateCourseOutcome,
+} from '../api/clos'
 import RowAction from '../components/RowAction'
 
 /**

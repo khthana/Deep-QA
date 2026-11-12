@@ -11,7 +11,8 @@ import {
   createBehavior,
   deleteBehavior,
   getBehaviors,
-  updateBehavior } from '../api/behaviors'
+  updateBehavior,
+} from '../api/behaviors'
 import RowAction from '../components/RowAction'
 
 /**

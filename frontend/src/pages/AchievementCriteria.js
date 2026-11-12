@@ -10,7 +10,8 @@ import {
   createCriterion,
   deleteCriterion,
   getCriteria,
-  updateCriterion } from '../api/achievements'
+  updateCriterion,
+} from '../api/achievements'
 import RowAction from '../components/RowAction'
 
 /**

@@ -23,7 +23,8 @@ import {
   listGroups,
   moveToGroup,
   removeFromGroup,
-  renameGroup } from '../api/workGroups'
+  renameGroup,
+} from '../api/workGroups'
 import RowAction from '../components/RowAction'
 
 /**
@@ -437,18 +438,22 @@ export default function StudentGroups() {
                     >
                       {group.member_count}/{data.max_group_size}
                     </span>
-                    <RowAction
-                      kind="edit"
-                      label={`เปลี่ยนชื่อ ${group.group_name}`}
-                      onClick={() =>
-                        setRenaming({ group_id: group.group_id, value: group.group_name })
-                      }
-                    />
-                    <RowAction
-                      kind="remove"
-                      label={`ลบ ${group.group_name}`}
-                      onClick={() => setRemovingGroup(group)}
-                    />
+                    {/* ml-auto as the bare pencil had, so the pair keeps the
+                        right edge of the card head (#273). */}
+                    <div className="ml-auto flex gap-2">
+                      <RowAction
+                        kind="edit"
+                        label={`เปลี่ยนชื่อ ${group.group_name}`}
+                        onClick={() =>
+                          setRenaming({ group_id: group.group_id, value: group.group_name })
+                        }
+                      />
+                      <RowAction
+                        kind="remove"
+                        label={`ลบ ${group.group_name}`}
+                        onClick={() => setRemovingGroup(group)}
+                      />
+                    </div>
                   </div>
                 )}
 

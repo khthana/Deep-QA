@@ -62,6 +62,8 @@ export default function RowAction({ kind, label, title, onClick, to, disabled = 
   // One element whichever it is, so the name, the tooltip and the icon are
   // written once for both and a mutant of any of them reaches the link too.
   const Square = to ? Link : 'button'
+  // A link goes somewhere and does nothing, so it takes neither onClick nor
+  // disabled; no caller hands a link either (12 November 2569, #273).
   const how = to ? { to } : { type: 'button', onClick, disabled }
   return (
     <Square
