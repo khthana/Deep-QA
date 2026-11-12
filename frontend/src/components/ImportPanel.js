@@ -331,8 +331,14 @@ export default function ImportPanel({
     ) : null
   }
 
+  // `!m-0` because the screens mount this inside their own `space-y-6`, whose
+  // `> :not([hidden]) ~ :not([hidden])` margin-top would push a `fixed
+  // inset-0` cover 24 px down the screen and leave the logo and the profile
+  // button clickable above it (#274). `mt-0` alone loses on specificity:
+  // 0,1,0 against 0,3,0. `ConfirmDialog.js` draws the same cover and carries the
+  // same fix, each with its own mutant (#125).
   return (
-    <ContentMotionDIV className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+    <ContentMotionDIV className="fixed inset-0 z-[9998] !m-0 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
       <div
         ref={box}
         role="dialog"
