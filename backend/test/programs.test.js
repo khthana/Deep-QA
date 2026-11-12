@@ -981,3 +981,39 @@ test('the same year refusal reaches an edit and a spreadsheet row — #177', asy
   ]);
   assert.equal((await read(cookie, 'T7709')).status, 404);
 });
+
+test('a search narrows the list to the programmes whose code, name or year holds it - #272', async () => {
+  // The owner's answer of 12 November 2569, as on departments: code, both
+  // names and the revision year the table shows, any case, the count following.
+  const cookie = await signInAs('U_FAC');
+  const made = [
+    {
+      program_id: 'K001',
+      program_name_th: 'หลักสูตรค้นเจอ',
+      program_name_en: 'Findable Programme',
+      department_id: DEPT_COMPUTER,
+      revision_year: '2501',
+    },
+    {
+      program_id: 'K002',
+      program_name_th: 'หลักสูตรอื่น',
+      program_name_en: 'Other Programme',
+      department_id: DEPT_COMPUTER,
+    },
+  ];
+  for (const row of made) assert.equal((await create(cookie, row)).status, 201);
+  const ids = (response) => response.body.programs.map((row) => row.program_id);
+  try {
+    const byEnglish = await list(cookie, '?q=findable%20PROG');
+    assert.equal(byEnglish.status, 200);
+    assert.deepEqual(ids(byEnglish), ['K001'], 'the English name, whatever its case');
+    assert.equal(byEnglish.body.total, 1, 'the count is the search count');
+
+    assert.deepEqual(ids(await list(cookie, '?q=ค้นเจอ')), ['K001'], 'the Thai name');
+    assert.deepEqual(ids(await list(cookie, '?q=k002')), ['K002'], 'the code');
+    assert.deepEqual(ids(await list(cookie, '?q=2501')), ['K001'], 'the revision year');
+    assert.equal((await list(cookie, '?q=K00_')).body.total, 0, 'an underscore matches itself');
+  } finally {
+    for (const row of made) await remove(cookie, row.program_id);
+  }
+});

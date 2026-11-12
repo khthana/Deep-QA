@@ -103,14 +103,14 @@ MUTANTS = {
     # ยังอยู่ใน `data` ตอนนั้น · สมอยาวถึงบรรทัด `reader` เพราะสามบรรทัดบนเหมือนของ `save`
     'thedrawncountdecidesagain': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n',
         '      if (data.departments.length === 1 && onPage.current > 1) {\n'
         '        setPage(onPage.current - 1)\n'
         '      }\n'
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'),
     # ล้างประโยคที่เพิ่งถูกติดกุญแจใหม่ให้การอ่านที่กำลังจะวาด

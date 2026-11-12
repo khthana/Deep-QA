@@ -9,7 +9,9 @@ import {
   someImportedOutside,
   SOME_IMPORTED_OUTSIDE,
 } from '../lib/outsideTheFilter'
+import { outsideSearch } from '../lib/outsideTheSearch'
 import Pager from '../components/Pager'
+import SearchBox from '../components/SearchBox'
 import StudentForm from '../components/students/StudentForm'
 import {
   createStudent,
@@ -61,7 +63,15 @@ const STATUS = {
  * What a read of this list is *of*, which is what a sentence handed to
  * `waiting` names - #205. `Departments.js` carries the reasons.
  */
-const readOf = (page, program) => `${page}:${program}`
+const readOf = (page, program, q) => `${page}:${program}:${q}`
+
+/**
+ * What the search box holds a student to - #272. The columns
+ * `backend/routes/students.js` hands `holding`, read off the row the server
+ * stored: the full name and the admission year are derived there and never sent
+ * by the form. `Departments.js` carries the reasons.
+ */
+const searched = student => [student.student_id, student.full_name_th, student.admission_year]
 
 // pager-last-page: the rule the owner settled on 19 ตุลาคม 2569 (#209) is not
 // here, because nothing a person can press on this screen makes the list it is
@@ -69,6 +79,8 @@ const readOf = (page, program) => `${page}:${program}`
 // can only add rows; there is no *แก้ไข* and no *ลบ*. The program filter is the
 // other way a list narrows, and it calls `setPage(1)` in the same handler that
 // calls `setProgram`, so the pager is never left past the end by a filter.
+// The search box (#272, 12 พฤศจิกายน 2569) narrows the same way: its handler
+// calls `setPage(1)` beside `setQ`.
 // Measured 28 ตุลาคม 2569 (#239). The day this screen gains a write that can
 // take a row out of what the pager asked for, this marker is an exemption and
 // nothing here will say so (#93) - the rule belongs in `load` then, in the
@@ -76,6 +88,8 @@ const readOf = (page, program) => `${page}:${program}`
 export default function Students() {
   const [page, setPage] = useState(1)
   const [program, setProgram] = useState('')
+  // The search the list is on - #272, `Departments.js` carries the reasons.
+  const [q, setQ] = useState('')
   const [data, setData] = useState({ students: [], total: 0 })
   const [programs, setPrograms] = useState([])
   const [departments, setDepartments] = useState([])
@@ -151,10 +165,10 @@ export default function Students() {
    */
   const load = useCallback(async isCurrent => {
     // Which read this is, for the sentence that may be waiting for it - #205.
-    const key = readOf(page, program)
+    const key = readOf(page, program, q)
     setLoading(true)
     try {
-      const answer = await listStudents({ page, per_page: PAGE_SIZE, program_id: program })
+      const answer = await listStudents({ page, per_page: PAGE_SIZE, program_id: program, q })
       if (isCurrent()) {
         setData(answer)
         if (waiting.current && waiting.current.of === key) {
@@ -186,7 +200,7 @@ export default function Students() {
         if (!waiting.current?.held) waiting.current = null
       }
     }
-  }, [page, program, report])
+  }, [page, program, q, report])
 
   useEffect(() => {
     let current = true
@@ -295,9 +309,9 @@ export default function Students() {
     if (adding) return
     const held = waiting.current
     if (!held?.held) return
-    if (held.of === readOf(page, program)) setNotice(held.said)
+    if (held.of === readOf(page, program, q)) setNotice(held.said)
     waiting.current = null
-  }, [adding, page, program])
+  }, [adding, page, program, q])
 
   /**
    * The page the pager is on now, for a handler that has to know whether the
@@ -364,7 +378,7 @@ export default function Students() {
     const sent = showing.current
     setBusy(true)
     try {
-      await createStudent(draft)
+      const { student } = await createStudent(draft)
       // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The หลักสูตร picker here
       // carries no `disabled` of any kind, and this screen has no แก้ไข at all
       // (the docblock above says why), so the one way a row lands outside the
@@ -372,7 +386,9 @@ export default function Students() {
       // The sentence is the same one the other six screens say: the row that was
       // just saved is not in the list it is standing over.
       // `lib/outsideTheFilter.js` carries the measured population of seven.
-      const outside = outsideFilter(program, draft.program_id)
+      // #272 - and the search is a filter like the curriculum (ข้อ 4).
+      const outside =
+        outsideFilter(program, draft.program_id) || outsideSearch(q, searched(student))
       const said = {
         error: false,
         message: alsoOutside('บันทึกข้อมูลนักศึกษาเรียบร้อยแล้ว', outside),
@@ -397,13 +413,13 @@ export default function Students() {
         // over any more.
         const drawing = onScreen.current
         if (showing.current === sent) {
-          const target = readOf(1, program)
+          const target = readOf(1, program, q)
           waiting.current = { of: target, said }
         }
         await drawing(() => onScreen.current === drawing)
       } else {
         if (showing.current === sent) {
-          const target = readOf(1, program)
+          const target = readOf(1, program, q)
           waiting.current = { of: target, said }
         }
         setPage(1)
@@ -445,6 +461,15 @@ export default function Students() {
               setAdding(true)
             }}
           >
+            {/* #272 - the delivered system's search, before the filters. */}
+            <SearchBox
+              label="ค้นหานักศึกษา"
+              value={q}
+              onSearch={term => {
+                setPage(1)
+                setQ(term)
+              }}
+            />
             {/* Stated, not offered — see the note at the top of the file. */}
             {departments.length === 1 && (
               <span className="flex items-center gap-2 text-sm text-slate-600">
@@ -499,10 +524,10 @@ export default function Students() {
               const outside = someImportedOutside(
                 program,
                 result?.students?.map(row => row.program_id),
-              )
+              ) || (result?.students ?? []).some(row => outsideSearch(q, searched(row)))
               if (outside) {
                 waiting.current = {
-                  of: readOf(1, program),
+                  of: readOf(1, program, q),
                   said: { error: false, message: SOME_IMPORTED_OUTSIDE },
                 }
               }
@@ -540,7 +565,11 @@ export default function Students() {
                 {!loading && data.students.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                      {program ? 'ยังไม่มีนักศึกษาในหลักสูตรนี้' : 'ยังไม่มีข้อมูลนักศึกษาในระบบ'}
+                      {q.trim()
+                        ? 'ไม่พบนักศึกษาตามคำค้น'
+                        : program
+                          ? 'ยังไม่มีนักศึกษาในหลักสูตรนี้'
+                          : 'ยังไม่มีข้อมูลนักศึกษาในระบบ'}
                     </td>
                   </tr>
                 )}

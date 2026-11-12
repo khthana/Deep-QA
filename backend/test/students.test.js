@@ -655,3 +655,36 @@ test('an import writes a line per row, whether the row was new or overwritten �
     );
   }
 });
+
+test('a search narrows the register to the students whose code, name or intake holds it - #272', async () => {
+  // The owner's answer of 12 November 2569: the code, the name as the table
+  // shows it and the year of admission, the count following.
+  const cookie = await signInAs('U_DEPT');
+  const made = ['59990001', '59990002'];
+  assert.equal(
+    (await create(cookie, draftOf(made[0], { first_name_th: 'ค้นเจอ', last_name_th: 'ทดสอบสาม' }))).status,
+    201,
+  );
+  assert.equal((await create(cookie, draftOf(made[1]))).status, 201);
+  try {
+    const byName = await list(cookie, '?q=ค้นเจอ');
+    assert.equal(byName.status, 200);
+    assert.deepEqual(idsOf(byName.body), [made[0]], 'the first name');
+    assert.equal(byName.body.total, 1, 'the count is the search count');
+
+    assert.deepEqual(idsOf((await list(cookie, '?q=เจอ%20ทดสอบสาม')).body), [made[0]], 'the whole name');
+    assert.deepEqual(idsOf((await list(cookie, '?q=59990002')).body), [made[1]], 'the code');
+    assert.equal((await list(cookie, '?q=5999000_')).body.total, 0, 'an underscore matches itself');
+
+    const intake = (await list(cookie, `?q=${made[0]}`)).body.students[0].admission_year;
+    const byYear = await list(cookie, `?q=${intake}`);
+    assert.ok(byYear.body.total >= made.length, 'the year of admission');
+    assert.ok(
+      byYear.body.students.every((row) => String(row.admission_year).includes(String(intake))
+        || row.student_id.includes(String(intake))),
+      'every row it returns holds the year',
+    );
+  } finally {
+    await api.pool.query('DELETE FROM student WHERE student_id = ANY($1)', [made]);
+  }
+});

@@ -203,7 +203,7 @@ OFFERING_REMOVAL_ANYWAY = (
 # #205 - the handover is written with the key of the read it is for.
 MOVED_READS = (
     "        if (showing.current === sent) {\n"
-    "          const target = readOf(1, program)\n"
+    "          const target = readOf(1, program, q)\n"
     "          waiting.current = { of: target, said }\n"
     "        }\n"
     "        setPage(1)\n"
@@ -240,7 +240,7 @@ DREW_UNSAID = "        setData(answer)\n"
 MUTANTS = {
     'departmentssaveanyway': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
@@ -249,7 +249,7 @@ MUTANTS = {
         '      if (showing.current === sent) setNotice(said)\n'),
     'departmentsremovalanyway': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
@@ -258,7 +258,7 @@ MUTANTS = {
         '      if (showing.current === sent) setNotice(said)\n'),
     'programssaveanyway': ('programs',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
@@ -267,7 +267,7 @@ MUTANTS = {
         '      if (showing.current === sent) setNotice(said)\n'),
     'programsremovalanyway': ('programs',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
@@ -276,7 +276,7 @@ MUTANTS = {
         '      if (showing.current === sent) setNotice(said)\n'),
     'subjectssaveanyway': ('subjects',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
@@ -285,7 +285,7 @@ MUTANTS = {
         '      if (showing.current === sent) setNotice(said)\n'),
     'subjectsremovalanyway': ('subjects',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',

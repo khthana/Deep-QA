@@ -114,7 +114,11 @@ test.afterAll(async () => {
   await db.end();
 });
 
-/** The body a gated write is answered with. Nothing on these screens draws it. */
+/**
+ * The body a gated write is answered with. Nothing on these screens draws it -
+ * except the register's `save`, which since #272 (12 November 2569) reads the
+ * stored row out of its answer, so its rows hand `answerOfAnAddition` instead.
+ */
 const DONE = {};
 
 /** The reload's refusal - worded so no screen of the ten could say it itself. */
@@ -466,6 +470,12 @@ test.describe('ข้อมูลนักศึกษา (Students.js)', () => 
     await theRefusalWins(page, {
       write: /^\/api\/students$/,
       list: /^\/api\/students$/,
+      success: students.answerOfAnAddition({
+        code: '68203001',
+        first: FIRST,
+        last: LAST,
+        program: PROGRAM,
+      }),
       sentence: ADDED,
       what: 'the banner of the addition',
       press: () =>
@@ -512,7 +522,14 @@ test.describe('ข้อมูลนักศึกษา (Students.js)', () => 
 
       // The write is crafted, so nothing is added and the page one that draws
       // is the page one the seed has. The sentence is the claim, not the row.
-      const sent = await gate(page, LIST, isWrite, { success: DONE });
+      const sent = await gate(page, LIST, isWrite, {
+        success: students.answerOfAnAddition({
+          code: '68203002',
+          first: FIRST,
+          last: LAST,
+          program: PROGRAM,
+        }),
+      });
       sent.open();
       await students.addStudent(page, {
         code: '68203002',
@@ -534,6 +551,12 @@ test.describe('ข้อมูลนักศึกษา (Students.js)', () => 
       await theRefusalWins(page, {
         write: LIST,
         list: LIST,
+        success: students.answerOfAnAddition({
+          code: '68203003',
+          first: FIRST,
+          last: LAST,
+          program: PROGRAM,
+        }),
         sentence: ADDED,
         what: 'the banner of the addition',
         press: () =>

@@ -7,6 +7,7 @@ import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
+import SearchBox from '../components/SearchBox'
 import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
   createDepartment,
@@ -17,6 +18,8 @@ import {
   listDepartments,
   updateDepartment,
 } from '../api/departments'
+import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
+import { outsideSearch } from '../lib/outsideTheSearch'
 
 /**
  * ข้อมูลภาควิชา — ticket #14.
@@ -69,7 +72,19 @@ const PAGE_SIZE = 10
  * parameters - the id of the thing a list hangs from counts (#185), and so does
  * a filter, because the same page of a different filter is a different list.
  */
-const readOf = page => `${page}`
+const readOf = (page, q) => `${page}:${q}`
+
+/**
+ * What the search box holds a department to - #272. The columns
+ * `backend/routes/departments.js` hands `holding`, so a save or an import that
+ * writes a department the term does not find says so (the owner's answer ข้อ 4,
+ * #247's sentence).
+ */
+const searched = department => [
+  department.department_id,
+  department.department_name_th,
+  department.department_name_en,
+]
 
 /**
  * `load`'s third answer - #209.
@@ -100,6 +115,9 @@ const HANDED_ON = 'handed-on'
 
 export default function Departments() {
   const [page, setPage] = useState(1)
+  // The search the list is on - #272. Written once typing pauses, never per
+  // keystroke: `components/SearchBox.js` holds what is being typed.
+  const [q, setQ] = useState('')
   const [data, setData] = useState({ departments: [], total: 0 })
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
@@ -203,14 +221,14 @@ export default function Departments() {
    */
   const load = useCallback(async isCurrent => {
     // Which read this is, for the sentence that may be waiting for it - #205.
-    const key = readOf(page)
+    const key = readOf(page, q)
     setLoading(true)
     // Whether this read handed the page on rather than drawing it - #209. The
     // sentence that was waiting for it belongs to the read that follows, so the
     // `finally` below must not clear it.
     let handedOn = false
     try {
-      const answer = await listDepartments({ page, per_page: PAGE_SIZE })
+      const answer = await listDepartments({ page, per_page: PAGE_SIZE, q })
       if (isCurrent()) {
         // #209 - the owner's answer of 19 ตุลาคม 2569: whether the page the
         // person is on still exists is the server's to say, not this screen's.
@@ -229,7 +247,7 @@ export default function Departments() {
         if (answer.page > lastPage) {
           handedOn = true
           if (waiting.current && waiting.current.of === key) {
-            waiting.current = { of: readOf(lastPage), said: waiting.current.said }
+            waiting.current = { of: readOf(lastPage, q), said: waiting.current.said }
           }
           setPage(lastPage)
           return HANDED_ON
@@ -275,7 +293,7 @@ export default function Departments() {
     // what it changes is *when* this read happens, not what is asked for, so
     // the rule below sees a dependency it cannot account for - #198.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, generation])
+  }, [page, q, generation])
 
   useEffect(() => {
     let current = true
@@ -334,9 +352,9 @@ export default function Departments() {
     if (editing) return
     const held = waiting.current
     if (!held?.held) return
-    if (held.of === readOf(page)) setNotice(held.said)
+    if (held.of === readOf(page, q)) setNotice(held.said)
     waiting.current = null
-  }, [editing, page])
+  }, [editing, page, q])
 
   /**
    * The page the pager is on now - #206.
@@ -557,7 +575,11 @@ export default function Departments() {
       } else {
         await createDepartment(draft)
       }
-      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #272 - the owner's answer ข้อ 4 of 12 November 2569: a department the
+      // search does not find is written outside the list, as #247's filters are.
+      // What the form does not send on an edit is the record's, so both are read.
+      const outside = outsideSearch(q, searched({ ...editing, ...draft }))
+      const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       if (showing.current === sent) setEditing(null)
       // #203 - the refusal wins.
       //
@@ -582,7 +604,7 @@ export default function Departments() {
       // the page it is about (#205), and the press that takes the screen is
       // read here, where it was read before.
       if (showing.current === sent) {
-        waiting.current = { of: readOf(onPage.current), said }
+        waiting.current = { of: readOf(onPage.current, q), said }
       }
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
@@ -671,7 +693,7 @@ export default function Departments() {
       // clearing a sentence nobody is going to say (the owner's decision of
       // 10 October 2569, #152).
       if (showing.current === sent) {
-        waiting.current = { of: readOf(onPage.current), said }
+        waiting.current = { of: readOf(onPage.current, q), said }
       }
       const reader = onScreen.current
       await reader(() => onScreen.current === reader)
@@ -714,7 +736,19 @@ export default function Departments() {
               setNotice(null)
               setEditing({})
             }}
-          />
+          >
+            {/* #272 - the delivered system's search, in the slot #270 left for it. */}
+            <SearchBox
+              label="ค้นหาภาควิชา"
+              value={q}
+              onSearch={term => {
+                // Back to the first page: page 3 of everything is rarely a page
+                // of what was searched for.
+                setPage(1)
+                setQ(term)
+              }}
+            />
+          </PageHeader>
 
           <ImportPanel
             open={importing}
@@ -725,7 +759,17 @@ export default function Departments() {
             target="departments"
             fetchTemplate={importTemplate}
             send={importDepartments}
-            onImported={() => {
+            onImported={result => {
+              // #272 - an import writes rows the search may not find, as an add
+              // does; said by `load`, keyed for page one where the reload goes
+              // (#252's shape, `Subjects.js` carries the reasons).
+              const rows = result?.departments
+              if (Array.isArray(rows) && rows.some(row => outsideSearch(q, searched(row)))) {
+                waiting.current = {
+                  of: readOf(1, q),
+                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
+                }
+              }
               // Going to page one is a change the effect fetches; asking `load`
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
@@ -763,7 +807,7 @@ export default function Departments() {
                 {!loading && data.departments.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                      ยังไม่มีภาควิชาในระบบ
+                      {q.trim() ? 'ไม่พบภาควิชาตามคำค้น' : 'ยังไม่มีภาควิชาในระบบ'}
                     </td>
                   </tr>
                 )}

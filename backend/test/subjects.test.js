@@ -801,3 +801,43 @@ test('an import writes a line per row, sharing one timestamp — #58', async () 
     await remove(cookie, 'T5800003');
   }
 });
+
+test('a search narrows the list to the subjects whose code, name or credits hold it - #272', async () => {
+  // The owner's answer of 12 November 2569: code and both names, any case, the
+  // count following, and the department filter still applying beside it.
+  const cookie = await signInAs('U_DEPT');
+  const made = [
+    draftOf('K0000001', { subject_name_th: 'วิชาค้นเจอ', subject_name_en: 'Findable Topics' }),
+    draftOf('K0000002', {
+      subject_name_th: 'วิชาอื่น',
+      subject_name_en: 'Other Topics',
+      credits: '9',
+    }),
+  ];
+  for (const row of made) assert.equal((await create(cookie, row)).status, 201);
+  const ids = (response) => response.body.subjects.map((row) => row.subject_id);
+  try {
+    const byEnglish = await list(cookie, '?q=FINDABLE');
+    assert.equal(byEnglish.status, 200);
+    assert.deepEqual(ids(byEnglish), ['K0000001'], 'the English name, whatever its case');
+    assert.equal(byEnglish.body.total, 1, 'the count is the search count');
+
+    assert.deepEqual(ids(await list(cookie, '?q=ค้นเจอ')), ['K0000001'], 'the Thai name');
+    assert.deepEqual(ids(await list(cookie, '?q=k0000002')), ['K0000002'], 'the code');
+    assert.deepEqual(
+      ids(await list(cookie, `?q=K000000&department_id=${DEPT_COMPUTER}`)).sort(),
+      ['K0000001', 'K0000002'],
+      'the department filter still applies beside the search',
+    );
+    assert.equal((await list(cookie, '?q=K000000_')).body.total, 0, 'an underscore matches itself');
+    // The table draws the credits, and the delivered table searched them with
+    // the rest of the record (`SubjectTable.js`, `Object.values`).
+    assert.deepEqual(
+      ids(await list(cookie, `?q=9&department_id=${DEPT_COMPUTER}`)),
+      ['K0000002'],
+      'the credits',
+    );
+  } finally {
+    for (const row of made) await remove(cookie, row.subject_id);
+  }
+});

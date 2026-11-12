@@ -106,12 +106,12 @@ MUTANTS = {
     # การอ่านของหน้าที่เขาจากมา ซึ่งไม่มีใครจะทำ
     'sentenceofthepagetheyleft': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(page - 1), said }\n'
+        '        waiting.current = { of: readOf(page - 1, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n'),
@@ -121,7 +121,7 @@ MUTANTS = {
     # และ #205 ไม่ใช่ของตั๋วนี้ แต่เป็นบรรทัดที่ถือข้ออ้างของแถว)
     'stationarysentencelost': ('departments',
         '          if (waiting.current && waiting.current.of === key) {\n'
-        '            waiting.current = { of: readOf(lastPage), said: waiting.current.said }\n'
+        '            waiting.current = { of: readOf(lastPage, q), said: waiting.current.said }\n'
         '          }\n',
         ''),
 }

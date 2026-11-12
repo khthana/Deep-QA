@@ -49,6 +49,7 @@ const { blankToNull, isDuplicate, isReferenced } = require('../lib/fields');
 const { forgetRevokedGrants, isGranted } = require('../lib/scopeGrants');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { holding, searchOf } = require('../lib/search');
 
 /**
  * The one role that maintains departments.
@@ -161,18 +162,21 @@ function departmentRoutes(pool) {
     try {
       const reach = await coveredScopes(pool, req.auth.acting.scope_id);
       const { page, perPage, offset } = pageOf(req);
+      const search = searchOf(req);
+
+      // #272: the search box, over what the table shows of a department.
+      const where = `WHERE ($1::text[] IS NULL OR department_id = ANY($1))
+                       AND ${holding(2, ['department_id', 'department_name_th', 'department_name_en'])}`;
 
       const counted = await pool.query(
-        `SELECT count(*)::int AS total FROM departments
-          WHERE ($1::text[] IS NULL OR department_id = ANY($1))`,
-        [reach],
+        `SELECT count(*)::int AS total FROM departments ${where}`,
+        [reach, search],
       );
       const { rows } = await pool.query(
-        `SELECT ${RETURNED} FROM departments
-          WHERE ($1::text[] IS NULL OR department_id = ANY($1))
+        `SELECT ${RETURNED} FROM departments ${where}
           ORDER BY department_id ASC
-          LIMIT $2 OFFSET $3`,
-        [reach, perPage, offset],
+          LIMIT $3 OFFSET $4`,
+        [reach, search, perPage, offset],
       );
 
       return res.status(200).json({

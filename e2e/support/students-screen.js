@@ -105,8 +105,36 @@ const registerRow = (page, code) =>
 const listTable = page =>
   page.locator('xpath=//table[not(ancestor::*[@role="dialog"])]').first();
 
+/**
+ * A crafted answer to an addition, shaped like the row `backend/routes/students.js`
+ * returns from `POST /api/students` (`{ student }`, the columns of `RETURNED`).
+ *
+ * Until #272 the register's `save` read nothing out of its answer, so a row that
+ * gated the write could answer it with `{}`. Since 12 November 2569 it reads the
+ * stored row, to ask whether the student holds the search the list is on - the
+ * full name and the admission year are derived by the server and never sent by
+ * the form - and an empty body throws inside `save`, which a row about what the
+ * save does next would read as that row's own failure. #146's Offerings rows
+ * crafted a readable body for the same reason. The values matter only to a
+ * search, and they are the server's own derivations so that a row that does
+ * search reads what the server would have said.
+ */
+const answerOfAnAddition = ({ code, first, last, program }) => ({
+  student: {
+    student_id: code,
+    first_name_th: first,
+    last_name_th: last,
+    full_name_th: `${first} ${last}`,
+    department_id: null,
+    program_id: program,
+    admission_year: String(2500 + Number(code.slice(0, 2))),
+    status: 'active',
+  },
+});
+
 module.exports = {
   STUDENT_DATA,
+  answerOfAnAddition,
   BOM,
   openRegister,
   downloadTemplate,

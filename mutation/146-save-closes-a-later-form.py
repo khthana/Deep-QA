@@ -273,11 +273,11 @@ MUTANTS = {
     # ภาควิชา: ประโยคของการบันทึกขึ้นทับฟอร์มที่แถวถัดไปกำลังถูกอ่านเพื่อเปิด
     'departmentssavesaysanyway': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
-        '      waiting.current = { of: readOf(onPage.current), said }\n'
+        '      waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n'),
     # หลักสูตร
@@ -285,11 +285,11 @@ MUTANTS = {
     'programsrefusalwins': ('programs', REPORTED, REPORTED_ANY),
     'programssavesaysanyway': ('programs',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
-        '      waiting.current = { of: readOf(onPage.current), said }\n'
+        '      waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n'),
     # รายวิชา
@@ -297,11 +297,11 @@ MUTANTS = {
     'subjectsrefusalwins': ('subjects', REPORTED, REPORTED_ANY),
     'subjectssavesaysanyway': ('subjects',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
-        '      waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '      waiting.current = { of: readOf(onPage.current, department, q), said }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n'),
     # ผู้ใช้งาน

@@ -686,3 +686,33 @@ test('a department is created open, whatever the body says - #180', async () => 
     await remove(cookie, 'T23');
   }
 });
+
+test('a search narrows the list to the departments whose code or name holds it - #272', async () => {
+  // The owner's answer of 12 November 2569: the search is the server's, because
+  // the list is paged there and a box that filtered the page in hand would find
+  // ten rows at most. Code and both names, any case, the count following.
+  const cookie = await signInAs('U_FAC');
+  const made = [
+    { department_id: 'K1', department_name_th: 'ภาควิชาค้นเจอ', department_name_en: 'Findable Studies' },
+    { department_id: 'K2', department_name_th: 'ภาควิชาอื่น', department_name_en: 'Other Studies' },
+  ];
+  for (const row of made) assert.equal((await create(cookie, row)).status, 201);
+  const ids = (response) => response.body.departments.map((row) => row.department_id);
+  try {
+    const byEnglish = await list(cookie, '?q=FINDABLE');
+    assert.equal(byEnglish.status, 200);
+    assert.deepEqual(ids(byEnglish), ['K1'], 'the English name, whatever its case');
+    assert.equal(byEnglish.body.total, 1, 'the count is the search count');
+
+    assert.deepEqual(ids(await list(cookie, '?q=ค้นเจอ')), ['K1'], 'the Thai name');
+    assert.deepEqual(ids(await list(cookie, '?q=k2')), ['K2'], 'the code');
+    assert.deepEqual(ids(await list(cookie, '?q=%20K1%20')), ['K1'], 'trimmed as a blank is');
+    assert.ok((await list(cookie, '?q=%20')).body.total >= made.length, 'blank is no search');
+
+    // `%` and `_` are characters a person typed, not wildcards.
+    assert.equal((await list(cookie, '?q=%25')).body.total, 0, 'a percent sign matches itself');
+    assert.equal((await list(cookie, '?q=K_')).body.total, 0, 'an underscore matches itself');
+  } finally {
+    for (const row of made) await remove(cookie, row.department_id);
+  }
+});

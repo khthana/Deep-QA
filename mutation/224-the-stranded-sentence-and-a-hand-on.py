@@ -55,7 +55,7 @@ FILES = {
 
 REKEY = (
     '          if (waiting.current && waiting.current.of === key) {\n'
-    '            waiting.current = { of: readOf(lastPage), said: waiting.current.said }\n'
+    '            waiting.current = { of: readOf(lastPage, q), said: waiting.current.said }\n'
     '          }\n'
 )
 
@@ -63,14 +63,14 @@ MUTANTS = {
     # ทางเลือกข้อ 1 ของ #224: ล้างประโยคที่กุญแจไม่ตรงเมื่อส่งหน้าต่อ
     'clearedwhenthekeyisother': ('departments', REKEY,
         '          if (waiting.current && waiting.current.of === key) {\n'
-        '            waiting.current = { of: readOf(lastPage), said: waiting.current.said }\n'
+        '            waiting.current = { of: readOf(lastPage, q), said: waiting.current.said }\n'
         '          } else {\n'
         '            waiting.current = null\n'
         '          }\n'),
     # ทางเลือกข้อ 2 ของ #224: ติดกุญแจใหม่ให้ทุกประโยค ไม่ว่ากุญแจจะตรงหรือไม่
     'rekeyedwhateverthekey': ('departments', REKEY,
         '          if (waiting.current) {\n'
-        '            waiting.current = { of: readOf(lastPage), said: waiting.current.said }\n'
+        '            waiting.current = { of: readOf(lastPage, q), said: waiting.current.said }\n'
         '          }\n'),
 }
 

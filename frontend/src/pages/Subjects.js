@@ -10,8 +10,10 @@ import {
   someImportedOutside,
   SOME_IMPORTED_OUTSIDE,
 } from '../lib/outsideTheFilter'
+import { outsideSearch } from '../lib/outsideTheSearch'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
+import SearchBox from '../components/SearchBox'
 import SubjectForm from '../components/subjects/SubjectForm'
 import {
   createSubject,
@@ -63,7 +65,7 @@ const PAGE_SIZE = 10
  * What a read of this list is *of*, which is what a sentence handed to
  * `waiting` names - #205. `Departments.js` carries the reasons.
  */
-const readOf = (page, department) => `${page}:${department}`
+const readOf = (page, department, q) => `${page}:${department}:${q}`
 
 /**
  * `load`'s third answer - #209. `Departments.js` carries the reasons: a read
@@ -71,11 +73,25 @@ const readOf = (page, department) => `${page}:${department}`
  * been refused, and a caller with a sentence hands it over rather than saying
  * it over a page about to be replaced.
  */
+/**
+ * What the search box holds a subject to - #272. The columns
+ * `backend/routes/subjects.js` hands `holding`; `Departments.js` carries the
+ * reasons.
+ */
+const searched = subject => [
+  subject.subject_id,
+  subject.subject_name_th,
+  subject.subject_name_en,
+  subject.credits,
+]
+
 const HANDED_ON = 'handed-on'
 
 export default function Subjects() {
   const [page, setPage] = useState(1)
   const [department, setDepartment] = useState('')
+  // The search the list is on - #272, `Departments.js` carries the reasons.
+  const [q, setQ] = useState('')
   const [data, setData] = useState({ subjects: [], total: 0 })
   const [departments, setDepartments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -113,14 +129,14 @@ export default function Subjects() {
    */
   const load = useCallback(async isCurrent => {
     // Which read this is, for the sentence that may be waiting for it - #205.
-    const key = readOf(page, department)
+    const key = readOf(page, department, q)
     setLoading(true)
     // Whether this read handed the page on rather than drawing it - #209. The
     // sentence that was waiting for it belongs to the read that follows, so the
     // `finally` below must not clear it.
     let handedOn = false
     try {
-      const answer = await listSubjects({ page, per_page: PAGE_SIZE, department_id: department })
+      const answer = await listSubjects({ page, per_page: PAGE_SIZE, department_id: department, q })
       if (isCurrent()) {
         // #209 - the owner's answer of 19 ตุลาคม 2569: whether the page the
         // person is on still exists is the server's to say, not this screen's,
@@ -134,7 +150,7 @@ export default function Subjects() {
         if (answer.page > lastPage) {
           handedOn = true
           if (waiting.current && waiting.current.of === key) {
-            waiting.current = { of: readOf(lastPage, department), said: waiting.current.said }
+            waiting.current = { of: readOf(lastPage, department, q), said: waiting.current.said }
           }
           setPage(lastPage)
           return HANDED_ON
@@ -174,7 +190,7 @@ export default function Subjects() {
         if (!handedOn && !waiting.current?.held) waiting.current = null
       }
     }
-  }, [page, department, report])
+  }, [page, department, q, report])
 
   useEffect(() => {
     let current = true
@@ -233,9 +249,9 @@ export default function Subjects() {
     if (editing) return
     const held = waiting.current
     if (!held?.held) return
-    if (held.of === readOf(page, department)) setNotice(held.said)
+    if (held.of === readOf(page, department, q)) setNotice(held.said)
     waiting.current = null
-  }, [editing, page, department])
+  }, [editing, page, department, q])
 
   /**
    * The page the pager is on now - #206. A removal steps the page back only
@@ -341,7 +357,10 @@ export default function Subjects() {
       // on an add and on an edit (it carries only `sending`), so a subject can be
       // written into a department the table is not filtered to.
       // `lib/outsideTheFilter.js` carries the measured population.
-      const outside = outsideFilter(department, draft.department_id)
+      // #272 - and the search is a filter like the department (ข้อ 4).
+      const outside =
+        outsideFilter(department, draft.department_id) ||
+        outsideSearch(q, searched({ ...editing, ...draft }))
       const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       if (showing.current === sent) setEditing(null)
       // #203 - the sentence waits for the read that draws it, and #209 has it
@@ -349,7 +368,7 @@ export default function Subjects() {
       // past the end, and only `load` can re-key the sentence for the read it
       // hands to. `Departments.js` carries the reasons.
       if (showing.current === sent) {
-        waiting.current = { of: readOf(onPage.current, department), said }
+        waiting.current = { of: readOf(onPage.current, department, q), said }
       }
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
@@ -405,7 +424,7 @@ export default function Subjects() {
       // outlives the gap it documented is an exemption (#141). The read that
       // draws says the sentence, keyed on itself (#205, #208).
       if (showing.current === sent) {
-        waiting.current = { of: readOf(onPage.current, department), said }
+        waiting.current = { of: readOf(onPage.current, department, q), said }
       }
       const reader = onScreen.current
       await reader(() => onScreen.current === reader)
@@ -448,6 +467,15 @@ export default function Subjects() {
               setEditing({})
             }}
           >
+            {/* #272 - the delivered system's search, before the filters. */}
+            <SearchBox
+              label="ค้นหารายวิชา"
+              value={q}
+              onSearch={term => {
+                setPage(1)
+                setQ(term)
+              }}
+            />
             {/* A picker when there is a choice to make, and a statement of
                 where one is when there is not. A department administrator
                 reaches one department: a dropdown whose two options - "ทุก
@@ -511,10 +539,10 @@ export default function Subjects() {
               const outside = someImportedOutside(
                 department,
                 result?.subjects?.map(row => row.department_id),
-              )
+              ) || (result?.subjects ?? []).some(row => outsideSearch(q, searched(row)))
               if (outside) {
                 waiting.current = {
-                  of: readOf(1, department),
+                  of: readOf(1, department, q),
                   said: { error: false, message: SOME_IMPORTED_OUTSIDE },
                 }
               }
@@ -556,7 +584,11 @@ export default function Subjects() {
                 {!loading && data.subjects.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                      {department ? 'ยังไม่มีรายวิชาในภาควิชานี้' : 'ยังไม่มีรายวิชาในระบบ'}
+                      {q.trim()
+                        ? 'ไม่พบรายวิชาตามคำค้น'
+                        : department
+                          ? 'ยังไม่มีรายวิชาในภาควิชานี้'
+                          : 'ยังไม่มีรายวิชาในระบบ'}
                     </td>
                   </tr>
                 )}

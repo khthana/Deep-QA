@@ -130,12 +130,12 @@ MUTANTS = {
     # ภาควิชา: การลบพูดประโยคของตัวเองเหนือฟอร์มที่เปิดขึ้นมาแทน
     'departmentssaysanyway': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
         '      if (showing.current !== null) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n'),

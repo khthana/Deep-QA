@@ -55,6 +55,7 @@ const { REFUSALS, sentenceOf } = require('../auth/refusals');
 const { blankToNull, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { holding, searchOf } = require('../lib/search');
 const { departmentInReach, reachableDepartments } = require('../lib/reach');
 const { deleteOrDeactivate } = require('../lib/removal');
 const { revisionYearRefusal } = require('../lib/revisionYear');
@@ -197,19 +198,23 @@ function programRoutes(pool) {
       const reach = await coveredScopes(pool, req.auth.acting.scope_id);
       const { page, perPage, offset } = pageOf(req);
       const activeOnly = ['1', 'true'].includes(String(req.query.active));
+      const search = searchOf(req);
 
+      // #272: the search box, over what the table shows of a programme.
       const where = `WHERE ($1::text[] IS NULL OR department_id = ANY($1))
-                       AND ($2::boolean IS NOT TRUE OR is_active)`;
+                       AND ($2::boolean IS NOT TRUE OR is_active)
+                       AND ${holding(3, ['program_id', 'program_name_th', 'program_name_en', 'revision_year'])}`;
 
       const counted = await pool.query(`SELECT count(*)::int AS total FROM programs ${where}`, [
         reach,
         activeOnly,
+        search,
       ]);
       const { rows } = await pool.query(
         `SELECT ${RETURNED} FROM programs ${where}
           ORDER BY program_id ASC
-          LIMIT $3 OFFSET $4`,
-        [reach, activeOnly, perPage, offset],
+          LIMIT $4 OFFSET $5`,
+        [reach, activeOnly, search, perPage, offset],
       );
 
       return res.status(200).json({

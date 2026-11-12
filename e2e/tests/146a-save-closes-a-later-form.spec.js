@@ -13,7 +13,7 @@ const { openDepartments } = require('../support/departments-screen');
 const { openPrograms } = require('../support/programs-screen');
 const { openSubjects } = require('../support/subjects-screen');
 const { openUsers } = require('../support/users-screen');
-const { openRegister } = require('../support/students-screen');
+const { openRegister, answerOfAnAddition } = require('../support/students-screen');
 const { openOfferings, openForm, subjectPicker } = require('../support/offerings-screen');
 const { PDF_BYTES, attach, evidencePath } = require('../support/evidence-screen');
 const improvement = require('../support/improvement-screen');
@@ -924,13 +924,23 @@ test.describe('การเปิดรายวิชาในภาคกา�
  * so it is ยกเลิก — `StudentForm` disables บันทึก and nothing else — and then
  * เพิ่มนักศึกษา again, which is the same shape as การเปิดรายวิชา's one form above.
  *
- * The crafted answer is a 200 with an empty body rather than the register's own
- * 201: this success path reads neither, only that the call did not throw, and
- * what the row is about is what it does next. Nothing is written either way.
+ * The crafted answer is a 200 rather than the register's own 201, and what the
+ * row is about is what the save does next. Nothing is written either way. Until
+ * #272 the body was empty, this success path reading nothing but that the call
+ * did not throw; since 12 November 2569 it reads the stored row, to ask whether
+ * the student holds the search, so the body is `answerOfAnAddition` - the
+ * Offerings block's reason above, met by a second screen.
  */
 test.describe('ข้อมูลนักศึกษากลาง (Students.js)', () => {
   const ADD = 'เพิ่มนักศึกษา';
   const CODE = 'รหัสนักศึกษา';
+  /** The answer of the addition `openAndCancel` sends. */
+  const ADDED_ROW = answerOfAnAddition({
+    code: '61146001',
+    first: 'นักศึกษา',
+    last: 'ของแถว 146',
+    program: PROGRAM,
+  });
 
   /** Fills the add form, sends it, and leaves the answer held with the register back on the screen. */
   async function openAndCancel(page, answer) {
@@ -954,7 +964,7 @@ test.describe('ข้อมูลนักศึกษากลาง (Students.
   }) => {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openRegister(page);
-    const write = await openAndCancel(page, { success: SAVED });
+    const write = await openAndCancel(page, { success: ADDED_ROW });
 
     await button(page, ADD).click();
     await expect(heading(page, ADD)).toBeVisible();
@@ -995,7 +1005,7 @@ test.describe('ข้อมูลนักศึกษากลาง (Students.
   test('a save that nothing took the place of says what it did', async ({ page }) => {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openRegister(page);
-    const write = await openAndCancel(page, { success: SAVED });
+    const write = await openAndCancel(page, { success: ADDED_ROW });
 
     const reloaded = waitForReload(page, '/api/students');
     write.open();

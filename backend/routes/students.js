@@ -58,6 +58,7 @@ const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { holding, searchOf } = require('../lib/search');
 const { reachableDepartments, reachablePrograms, programInReach } = require('../lib/reach');
 
 const MAINTAINERS = ['DEPT_ADMIN'];
@@ -228,15 +229,19 @@ function studentRoutes(pool) {
       const { page, perPage, offset } = pageOf(req);
       const department = blankToNull(req.query.department_id) ?? null;
       const program = blankToNull(req.query.program_id) ?? null;
+      const search = searchOf(req);
 
+      // #272: the search box, over what the table shows of a student.
       const where = `WHERE ($1::text[] IS NULL OR department_id = ANY($1))
                        AND ($2::text IS NULL OR department_id = $2)
-                       AND ($3::text IS NULL OR program_id = $3)`;
+                       AND ($3::text IS NULL OR program_id = $3)
+                       AND ${holding(4, ['student_id', 'full_name_th', 'admission_year'])}`;
 
       const counted = await pool.query(`SELECT count(*)::int AS total FROM student ${where}`, [
         reach,
         department,
         program,
+        search,
       ]);
       const { rows } = await pool.query(
         // Newest first, and newest means most recently *added*, not highest
@@ -251,8 +256,8 @@ function studentRoutes(pool) {
         // imported batch, all written in one statement, is the whole ordering.
         `SELECT ${RETURNED} FROM student ${where}
           ORDER BY created_at DESC, student_id DESC
-          LIMIT $4 OFFSET $5`,
-        [reach, department, program, perPage, offset],
+          LIMIT $5 OFFSET $6`,
+        [reach, department, program, search, perPage, offset],
       );
 
       return res.status(200).json({

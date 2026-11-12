@@ -313,7 +313,14 @@ test.describe('Students.js', () => {
 
     // Held so it reaches no database, and opened before the helper presses:
     // `addStudent` waits for the answer itself.
-    const write = await gate(page, REGISTER, isWrite, { success: {} });
+    const write = await gate(page, REGISTER, isWrite, {
+      success: students.answerOfAnAddition({
+        code: ADDED_CODE,
+        first: FIRST,
+        last: LAST,
+        program: PROGRAM,
+      }),
+    });
     // The read `save` does by hand, because the register is on page one.
     const handed = await gate(page, REGISTER, isGet);
     write.open();

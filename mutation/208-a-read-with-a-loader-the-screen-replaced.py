@@ -82,12 +82,12 @@ MUTANTS = {
     # โค้ดที่ตั๋ววินิจฉัยไว้ เขียนให้รันได้ (#115) — อ่านซ้ำด้วย loader ที่ handler ปิดทับไว้ ไม่ใช่ตัวที่จออยู่
     'departmentsstaleloader': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      await load(() => onScreen.current === load)\n'),
     # อย่างเดียวกันที่จอบัญชีผู้ใช้ ซึ่งทางเข้าไม่ใช่การแข่งกันของสองช่วงเวลา (ดูหมายเหตุ #86 ข้างบน)

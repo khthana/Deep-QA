@@ -76,8 +76,8 @@ MUTANTS = {
     # และมัตแตนต์ที่หยุดแอปไม่พิสูจน์อะไร (#101) — อาร์กิวเมนต์ที่เกินมาที่จุดเรียก
     # ภาษาไม่สนใจอยู่แล้ว
     'keyforgetsthefilter': ('register',
-        'const readOf = (page, program) => `${page}:${program}`\n',
-        'const readOf = page => `${page}`\n'),
+        'const readOf = (page, program, q) => `${page}:${program}:${q}`\n',
+        'const readOf = (page, program, q) => `${page}:${q}`\n'),
 }
 
 main(FILES, MUTANTS)

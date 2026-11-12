@@ -6,6 +6,7 @@ import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
+import SearchBox from '../components/SearchBox'
 import ProgramForm from '../components/programs/ProgramForm'
 import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
@@ -18,6 +19,8 @@ import {
   listReachableDepartments,
   updateProgram,
 } from '../api/programs'
+import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
+import { outsideSearch } from '../lib/outsideTheSearch'
 
 /**
  * ข้อมูลหลักสูตร — ticket #15.
@@ -48,7 +51,20 @@ const PAGE_SIZE = 10
  * What a read of this list is *of*, which is what a sentence handed to
  * `waiting` names - #205. `Departments.js` carries the reasons.
  */
-const readOf = page => `${page}`
+const readOf = (page, q) => `${page}:${q}`
+
+/**
+ * What the search box holds a programme to - #272. The columns
+ * `backend/routes/programs.js` hands `holding`, so a save or an import that
+ * writes a programme the term does not find says so (the owner's answer ข้อ 4,
+ * #247's sentence).
+ */
+const searched = program => [
+  program.program_id,
+  program.program_name_th,
+  program.program_name_en,
+  program.revision_year,
+]
 
 /**
  * `load`'s third answer - #209. `Departments.js` carries the reasons: a read
@@ -60,6 +76,9 @@ const HANDED_ON = 'handed-on'
 
 export default function Programs() {
   const [page, setPage] = useState(1)
+  // The search the list is on - #272. Written once typing pauses, never per
+  // keystroke: `components/SearchBox.js` holds what is being typed.
+  const [q, setQ] = useState('')
   const [data, setData] = useState({ programs: [], total: 0 })
   const [departments, setDepartments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -105,14 +124,14 @@ export default function Programs() {
    */
   const load = useCallback(async isCurrent => {
     // Which read this is, for the sentence that may be waiting for it - #205.
-    const key = readOf(page)
+    const key = readOf(page, q)
     setLoading(true)
     // Whether this read handed the page on rather than drawing it - #209. The
     // sentence that was waiting for it belongs to the read that follows, so the
     // `finally` below must not clear it.
     let handedOn = false
     try {
-      const answer = await listPrograms({ page, per_page: PAGE_SIZE })
+      const answer = await listPrograms({ page, per_page: PAGE_SIZE, q })
       if (isCurrent()) {
         // #209 - the owner's answer of 19 ตุลาคม 2569: whether the page the
         // person is on still exists is the server's to say, not this screen's,
@@ -126,7 +145,7 @@ export default function Programs() {
         if (answer.page > lastPage) {
           handedOn = true
           if (waiting.current && waiting.current.of === key) {
-            waiting.current = { of: readOf(lastPage), said: waiting.current.said }
+            waiting.current = { of: readOf(lastPage, q), said: waiting.current.said }
           }
           setPage(lastPage)
           return HANDED_ON
@@ -170,7 +189,7 @@ export default function Programs() {
     // what it changes is *when* this read happens, not what is asked for, so
     // the rule below sees a dependency it cannot account for - #198.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, report, generation])
+  }, [page, q, report, generation])
 
   useEffect(() => {
     let current = true
@@ -229,9 +248,9 @@ export default function Programs() {
     if (editing) return
     const held = waiting.current
     if (!held?.held) return
-    if (held.of === readOf(page)) setNotice(held.said)
+    if (held.of === readOf(page, q)) setNotice(held.said)
     waiting.current = null
-  }, [editing, page])
+  }, [editing, page, q])
 
   /**
    * The page the pager is on now - #206. A removal steps the page back only
@@ -340,14 +359,18 @@ export default function Programs() {
       } else {
         await createProgram(draft)
       }
-      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
+      // #272 - the owner's answer ข้อ 4 of 12 November 2569: a programme the
+      // search does not find is written outside the list, as #247's filters are.
+      // What the form does not send on an edit is the record's, so both are read.
+      const outside = outsideSearch(q, searched({ ...editing, ...draft }))
+      const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       if (showing.current === sent) setEditing(null)
       // #203 - the sentence waits for the read that draws it, and #209 has it
       // handed over before the await: only `load` learns that the page has gone
       // past the end, and only `load` can re-key the sentence for the read it
       // hands to. `Departments.js` carries the reasons.
       if (showing.current === sent) {
-        waiting.current = { of: readOf(onPage.current), said }
+        waiting.current = { of: readOf(onPage.current, q), said }
       }
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
@@ -393,7 +416,7 @@ export default function Programs() {
       // outlives the gap it documented is an exemption (#141). The read that
       // draws says the sentence, keyed on itself (#205, #208).
       if (showing.current === sent) {
-        waiting.current = { of: readOf(onPage.current), said }
+        waiting.current = { of: readOf(onPage.current, q), said }
       }
       const reader = onScreen.current
       await reader(() => onScreen.current === reader)
@@ -435,7 +458,19 @@ export default function Programs() {
               setNotice(null)
               setEditing({})
             }}
-          />
+          >
+            {/* #272 - the delivered system's search, in the slot #270 left for it. */}
+            <SearchBox
+              label="ค้นหาหลักสูตร"
+              value={q}
+              onSearch={term => {
+                // Back to the first page: page 3 of everything is rarely a page
+                // of what was searched for.
+                setPage(1)
+                setQ(term)
+              }}
+            />
+          </PageHeader>
 
           <ImportPanel
             open={importing}
@@ -446,7 +481,17 @@ export default function Programs() {
             target="programs"
             fetchTemplate={importTemplate}
             send={importPrograms}
-            onImported={() => {
+            onImported={result => {
+              // #272 - an import writes rows the search may not find, as an add
+              // does; said by `load`, keyed for page one where the reload goes
+              // (#252's shape, `Subjects.js` carries the reasons).
+              const rows = result?.programs
+              if (Array.isArray(rows) && rows.some(row => outsideSearch(q, searched(row)))) {
+                waiting.current = {
+                  of: readOf(1, q),
+                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
+                }
+              }
               // Going to page one is a change the effect fetches; asking `load`
               // as well would ask from the page being left, and the two answers
               // would race - #68. Only the branch already on page one, where
@@ -485,7 +530,7 @@ export default function Programs() {
                 {!loading && data.programs.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                      ยังไม่มีหลักสูตรในระบบ
+                      {q.trim() ? 'ไม่พบหลักสูตรตามคำค้น' : 'ยังไม่มีหลักสูตรในระบบ'}
                     </td>
                   </tr>
                 )}

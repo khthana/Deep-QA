@@ -226,24 +226,24 @@ MUTANTS = {
     # ข้อมูลภาควิชา: บันทึก
     'departmentssavestalewins': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => true)\n'),
     # ข้อมูลภาควิชา: ลบ / นำออก
     'departmentsremovestalewins': ('departments',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => true)\n'),
@@ -258,24 +258,24 @@ MUTANTS = {
     # ข้อมูลหลักสูตร: บันทึก
     'programssavestalewins': ('programs',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => true)\n'),
     # ข้อมูลหลักสูตร: ลบ / นำออก
     'programsremovestalewins': ('programs',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => true)\n'),
@@ -290,24 +290,24 @@ MUTANTS = {
     # ข้อมูลรายวิชา: บันทึก
     'subjectssavestalewins': ('subjects',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => true)\n'),
     # ข้อมูลรายวิชา: ลบ / นำออก
     'subjectsremovestalewins': ('subjects',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => true)\n'),

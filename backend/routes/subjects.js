@@ -52,6 +52,7 @@ const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { holding, searchOf } = require('../lib/search');
 const { deleteOrDeactivate } = require('../lib/removal');
 const { departmentInReach, reachableDepartments } = require('../lib/reach');
 
@@ -226,21 +227,25 @@ function subjectRoutes(pool) {
       const { page, perPage, offset } = pageOf(req);
       const activeOnly = ['1', 'true'].includes(String(req.query.active));
       const department = blankToNull(req.query.department_id) ?? null;
+      const search = searchOf(req);
 
+      // #272: the search box, over what the table shows of a subject.
       const where = `WHERE ($1::text[] IS NULL OR department_id = ANY($1))
                        AND ($2::boolean IS NOT TRUE OR is_active)
-                       AND ($3::text IS NULL OR department_id = $3)`;
+                       AND ($3::text IS NULL OR department_id = $3)
+                       AND ${holding(4, ['subject_id', 'subject_name_th', 'subject_name_en', 'credits'])}`;
 
       const counted = await pool.query(`SELECT count(*)::int AS total FROM subjects ${where}`, [
         reach,
         activeOnly,
         department,
+        search,
       ]);
       const { rows } = await pool.query(
         `SELECT ${RETURNED} FROM subjects ${where}
           ORDER BY subject_id ASC
-          LIMIT $4 OFFSET $5`,
-        [reach, activeOnly, department, perPage, offset],
+          LIMIT $5 OFFSET $6`,
+        [reach, activeOnly, department, search, perPage, offset],
       );
 
       return res.status(200).json({
