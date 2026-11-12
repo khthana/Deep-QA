@@ -58,6 +58,38 @@
 | `panelkeepsanswer` | `252` | ไม่มีแถวไหนตาย ภาควิชาไม่มีตัวกรองที่อ่านคำตอบ |
 | `importanswerwinsthepicker` | `141` | ไม่มีแถวไหนตาย `270a` ไม่เปลี่ยน `target` |
 | `reportoutlivesthetarget` · `drawsasupersededsuccess` · `drawsasupersededrefusal` · `swallowsthesupersededrefusal` | `179` | ไม่มีแถวไหนตาย ด้วยเหตุเดียวกัน |
+
+## บันทึกผลกวาด (12 พ.ย. 2569) — คำทำนายลงคอมมิต `727bce4` กับ `c460894` ก่อนรัน
+
+ยี่สิบเก้าตัว รันทีละตัวโดยเช็กก่อนรันว่ามัตแตนต์อยู่ใน tree จริง และเช็กหลัง `restore` ว่า tree สะอาด
+**ไม่มีตัวไหนรอด และทุกตัวตายที่ข้อยืนยันที่ทำนายไว้** `270a` เป็น `serial` จึงรายงานแถวแรกที่ตาย
+แล้วข้ามที่เหลือ (#67) คำทำนายที่อยู่หลังแถวแรกจึง**ไม่ได้รัน** ไม่ใช่ *ยืนยันแล้ว*:
+`sendwithoutfile` ที่แถวยกเลิก และ `alwaysopen` ที่แถว Escape
+
+| มัตแตนต์ | ตายที่ | เทียบคำทำนาย |
+|---|---|---|
+| `sendsonchoose` | `270a:94` `choosing a file is not sending it` | ตรง |
+| `sendwithoutfile` | `270a:106` `toBeDisabled` | ตรง · แถวยกเลิกไม่ได้รัน |
+| `cancelwhilebusy` | `270a:119` ยกเลิก `toBeDisabled` | ตรง |
+| `escapewhilebusy` | `270a:123` `Escape does not take the window away from its own answer` | ตรง |
+| `staysopen` | `270a:141` `the window has gone` | ตรง |
+| `closesonreport` | `270a:160` `the report is in the window` | ตรง |
+| `keepsonopen` | `270a:185` ชื่อ `z7.csv` หลังเปิดใหม่ | ตรง |
+| `alwaysopen` | `270a:74` `input[type="file"]` `toHaveCount(0)` | ตรง · แถวอื่นไม่ได้รัน |
+| `204:nofocusonopen` | `204a:163` และ `270a:194` `the window has the focus` | ตรง |
+| `204:notrap` | `204a:203` `204a:224` และ `270a:200` `the focus it took is back in the window` | ตรง |
+| `204:noescape` | `204a:179` และ `270a:206` | ตรง |
+| `111:importstayssilent` | `111a:172` และ `270a:160` | ตรง |
+| `91:keepbeforeupload` | `14c:110` · `270a` ผ่านครบ | ตรง |
+| `252:panelkeepsanswer` | `252a` สี่แถว ที่ `SOME_IMPORTED_OUTSIDE` · `270a` ผ่านครบ | ตรง |
+| `141:importanswerwinsthepicker` | `141c` แถว 2 กับ 3 · `270a` ผ่านครบ | ตรง |
+| `179:reportoutlivesthetarget` | `179a` item 1 กับ 3 · `270a` ผ่านครบ | ตรง |
+| `179:drawsasupersededsuccess` · `drawsasupersededrefusal` · `swallowsthesupersededrefusal` | `179a` item 4 · 2 · 5 ตัวละแถว · `270a` ผ่านครบ | ตรง |
+
+ตัวที่เล็งใหม่ซึ่งไม่ได้แก้ `ImportPanel` ถูกรันในรอบเดียวกันกับ spec ของใบตัวเอง: `139` สี่ตัว `…addkeepsask`
+ตายที่แถว *เพิ่ม pressed while a แก้ไข is out* ของจอตัวเอง สี่ตัว `…importkeepsask` ตายที่แถว
+*an import started while a แก้ไข is out* ด้วย `editing: 1` กับ `bar: 0` คือฟอร์มที่มาช้าวาดทับ ซึ่งเป็นข้ออ้างของแถว
+ไม่ใช่การจัดฉาก · `91:keepsaved` ตายที่ `14c:81` · `16:M10` ตายที่ `16a-subjects.spec.js:138` (แถว 92)
 """
 from harness import main
 
