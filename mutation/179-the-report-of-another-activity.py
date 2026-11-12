@@ -88,9 +88,12 @@ FILES = {
 # The first mechanism: what the panel remembers is forgotten when the target
 # changes. `setAimedAt` stays, so the render that notices the change still
 # records it and there is no loop; only the forgetting goes.
+# #270 (12 พ.ย. 2569): the window holds the chosen file as well as its name,
+# and forgets both.
 FORGETS = """  if (target !== aimedAt) {
     setAimedAt(target)
     setReport(null)
+    setFile(null)
     setFilename('')
   }"""
 KEEPS = """  if (target !== aimedAt) {
@@ -105,13 +108,15 @@ GUARDS_THE_SUCCESS = """      const result = await send(await file.text())
 """
 DRAWS_THE_SUCCESS = """      const result = await send(await file.text())
 """
+# #270 (12 พ.ย. 2569): the other branch also closes the window now, so the
+# anchors stop at its opening brace.
 GUARDS_THE_REFUSAL = """      if (error.details?.length) {
         if (latest.current !== asked) return
         setReport({ ok: false, errors: error.details })
-      } else onError?.(error)"""
+      } else {"""
 DRAWS_THE_REFUSAL = """      if (error.details?.length) {
         setReport({ ok: false, errors: error.details })
-      } else onError?.(error)"""
+      } else {"""
 
 # And the arrangement that was declined, made to run: the guard above the whole
 # branch, which is where it stood until the review of #179 asked what happens to

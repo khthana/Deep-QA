@@ -12,6 +12,7 @@ import {
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import GroupHistory from '../components/groups/GroupHistory'
 import {
@@ -86,6 +87,8 @@ export default function StudentGroups() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [name, setName] = useState('')
   const [chosen, setChosen] = useState({})
@@ -289,19 +292,42 @@ export default function StudentGroups() {
 
       {data && (
         <>
-          <div>
-            <p className="text-xs font-medium text-slate-400">
-              {/* label-code: the line above the heading, the one place on this screen
-                  that says which section is being read (#93) */}
-              {data.section.subject_id} {data.section.subject_name_en}
-            </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">กลุ่มงานนักศึกษา</h1>
-            <p className="mt-2 text-sm text-slate-500">
-              ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
-              {data.section.academic_year} · {data.groups.length} กลุ่ม · จัดกลุ่มแล้ว{' '}
-              {placed} คน · ยังไม่มีกลุ่ม {ungrouped.length} คน
-            </p>
-          </div>
+          <PageHeader
+            heading={
+              <div>
+                <p className="text-xs font-medium text-slate-400">
+                  {/* label-code: the line above the heading, the one place on this screen
+                      that says which section is being read (#93) */}
+                  {data.section.subject_id} {data.section.subject_name_en}
+                </p>
+                <h1 className="mt-1 text-xl font-semibold text-primary">กลุ่มงานนักศึกษา</h1>
+                <p className="mt-2 text-sm text-slate-500">
+                  ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
+                  {data.section.academic_year} · {data.groups.length} กลุ่ม · จัดกลุ่มแล้ว{' '}
+                  {placed} คน · ยังไม่มีกลุ่ม {ungrouped.length} คน
+                </p>
+              </div>
+            }
+            importLabel="นำเข้ากลุ่ม"
+            onImport={() => setImporting(true)}
+          />
+
+          <ImportPanel
+            open={importing}
+            onClose={() => setImporting(false)}
+            title="นำเข้ากลุ่มงาน"
+            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกชื่อกลุ่มและรหัสนักศึกษาบรรทัดละหนึ่งคน แล้วอัปโหลดกลับเข้ามา กลุ่มที่ยังไม่มีจะถูกสร้างให้ และนักศึกษาที่อยู่ในกลุ่มอยู่แล้วจะถูกปฏิเสธทั้งไฟล์"
+            templateName="section-groups-template.csv"
+            target={sectionId}
+            fetchTemplate={() => importTemplate(sectionId)}
+            send={csv => importGroups(sectionId, csv)}
+            onStart={() => setNotice(null)}
+            onImported={() => {
+              const drawing = onScreen.current
+              drawing(() => onScreen.current === drawing)
+            }}
+            onError={failed}
+          />
 
           <form
             onSubmit={create}
@@ -358,22 +384,6 @@ export default function StudentGroups() {
               onError={failed}
             />
           )}
-
-          <ImportPanel
-            title="นำเข้ากลุ่มงาน"
-            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกชื่อกลุ่มและรหัสนักศึกษาบรรทัดละหนึ่งคน แล้วอัปโหลดกลับเข้ามา กลุ่มที่ยังไม่มีจะถูกสร้างให้ และนักศึกษาที่อยู่ในกลุ่มอยู่แล้วจะถูกปฏิเสธทั้งไฟล์"
-            templateName="section-groups-template.csv"
-            target={sectionId}
-            fetchTemplate={() => importTemplate(sectionId)}
-            send={csv => importGroups(sectionId, csv)}
-            onStart={() => setNotice(null)}
-            onImported={() => {
-              const drawing = onScreen.current
-              drawing(() => onScreen.current === drawing)
-            }}
-            onError={failed}
-          />
-
           <div className="grid gap-4 md:grid-cols-2">
             {data.groups.length === 0 && (
               <p className="text-sm text-slate-500">

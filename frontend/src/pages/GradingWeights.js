@@ -5,6 +5,7 @@ import { HiOutlineTrash } from 'react-icons/hi2'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import {
   getWeights,
@@ -49,6 +50,8 @@ export default function GradingWeights() {
   const [draft, setDraft] = useState([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [removing, setRemoving] = useState(null)
 
@@ -201,27 +204,75 @@ export default function GradingWeights() {
           moment it says what just happened. */}
       {data && (
         <>
-          <div>
-            <p className="text-xs font-medium text-slate-400">
-              {data.offering.subject_id}
-            </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">
-              สัดส่วนคะแนน
-            </h1>
-            {/*
-              The grain, in words — the line break falls before และ, where a
-              space belongs, for CourseOutcomes' reason: JSX joins two lines
-              with one space, and Thai does not space inside a word.
-            */}
-            <p className="mt-2 text-sm text-slate-500">
-              ปีการศึกษา {data.offering.academic_year} ·
-              ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
-              และปีการศึกษาอื่นมีชุดของตัวเอง
-            </p>
-            <p className="mt-1 text-sm text-slate-500">
-              น้ำหนักทุกหมวดรวมกันต้องเท่ากับ 100 จึงจะบันทึกได้
-            </p>
-          </div>
+          <PageHeader
+            heading={
+              <div>
+                <p className="text-xs font-medium text-slate-400">
+                  {data.offering.subject_id}
+                </p>
+                <h1 className="mt-1 text-xl font-semibold text-primary">
+                  สัดส่วนคะแนน
+                </h1>
+                {/*
+                  The grain, in words — the line break falls before และ, where a
+                  space belongs, for CourseOutcomes' reason: JSX joins two lines
+                  with one space, and Thai does not space inside a word.
+                */}
+                <p className="mt-2 text-sm text-slate-500">
+                  ปีการศึกษา {data.offering.academic_year} ·
+                  ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
+                  และปีการศึกษาอื่นมีชุดของตัวเอง
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  น้ำหนักทุกหมวดรวมกันต้องเท่ากับ 100 จึงจะบันทึกได้
+                </p>
+              </div>
+            }
+            importLabel="นำเข้าสัดส่วนคะแนน"
+            onImport={() => setImporting(true)}
+          />
+
+          {/*
+            #140 asked whether the flag `onImported` passes is needed here at
+            all. It is: an import reloads the scheme with the screen still
+            mounted, which is every other handler's situation. What this screen
+            lacks today is a way to change `sectionId` while that reload is out,
+            so the flag is unproved rather than unneeded - sheet 30 says
+            ยังไม่ได้ทดสอบ, and the first link between ตอนเรียน on this route
+            makes it a row.
+
+            4 November 2569 (#266) - *a way to change `sectionId` while that
+            reload is out* exists after all, and the sentence above was wrong
+            about the mechanism rather than about the mark: `141b`'s asymmetric
+            jump - last year's screen by address, dashboard, this year's
+            Section, this year's screen, then `window.history.go(-3)` - is that
+            way, and ten rows of
+            `e2e/tests/266b-the-list-a-handler-reloads-across-a-section-jump.spec.js`
+            take it. What stops this half is the fixture: the scheme is replaced
+            whole, so the file must total 100, hold no duplicate category and
+            drop no category an activity points at. Tracker #268. Sheet 30 still
+            says ยังไม่ได้ทดสอบ, for that reason and not for this one
+            (#141, #245, #54).
+          */}
+          <ImportPanel
+            open={importing}
+            onClose={() => setImporting(false)}
+            title="นำเข้าสัดส่วนคะแนนจากไฟล์"
+            subtitle="ไฟล์หนึ่งคือทั้งชุด — หมวดที่ไม่อยู่ในไฟล์จะถูกลบออก และน้ำหนักทั้งไฟล์ต้องรวมได้ 100"
+            templateName="weighting-scheme-template.csv"
+            target={sectionId}
+            fetchTemplate={() => importTemplate(sectionId)}
+            send={csv => importWeights(sectionId, csv)}
+            onStart={() => setNotice(null)}
+            onImported={() => {
+              const drawing = onScreen.current
+              drawing(() => onScreen.current === drawing)
+            }}
+            onError={error => {
+              if (!error.expired)
+                setNotice({ error: true, message: error.message })
+            }}
+          />
 
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <ul className="space-y-3">
@@ -345,46 +396,6 @@ export default function GradingWeights() {
               </div>
             </div>
           </div>
-
-          {/*
-            #140 asked whether the flag `onImported` passes is needed here at
-            all. It is: an import reloads the scheme with the screen still
-            mounted, which is every other handler's situation. What this screen
-            lacks today is a way to change `sectionId` while that reload is out,
-            so the flag is unproved rather than unneeded - sheet 30 says
-            ยังไม่ได้ทดสอบ, and the first link between ตอนเรียน on this route
-            makes it a row.
-
-            4 November 2569 (#266) - *a way to change `sectionId` while that
-            reload is out* exists after all, and the sentence above was wrong
-            about the mechanism rather than about the mark: `141b`'s asymmetric
-            jump - last year's screen by address, dashboard, this year's
-            Section, this year's screen, then `window.history.go(-3)` - is that
-            way, and ten rows of
-            `e2e/tests/266b-the-list-a-handler-reloads-across-a-section-jump.spec.js`
-            take it. What stops this half is the fixture: the scheme is replaced
-            whole, so the file must total 100, hold no duplicate category and
-            drop no category an activity points at. Tracker #268. Sheet 30 still
-            says ยังไม่ได้ทดสอบ, for that reason and not for this one
-            (#141, #245, #54).
-          */}
-          <ImportPanel
-            title="นำเข้าสัดส่วนคะแนนจากไฟล์"
-            subtitle="ไฟล์หนึ่งคือทั้งชุด — หมวดที่ไม่อยู่ในไฟล์จะถูกลบออก และน้ำหนักทั้งไฟล์ต้องรวมได้ 100"
-            templateName="weighting-scheme-template.csv"
-            target={sectionId}
-            fetchTemplate={() => importTemplate(sectionId)}
-            send={csv => importWeights(sectionId, csv)}
-            onStart={() => setNotice(null)}
-            onImported={() => {
-              const drawing = onScreen.current
-              drawing(() => onScreen.current === drawing)
-            }}
-            onError={error => {
-              if (!error.expired)
-                setNotice({ error: true, message: error.message })
-            }}
-          />
         </>
       )}
 

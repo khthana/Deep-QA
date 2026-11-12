@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import DepartmentForm from '../components/departments/DepartmentForm'
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
@@ -102,6 +103,8 @@ export default function Departments() {
   const [data, setData] = useState({ departments: [], total: 0 })
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
   /**
@@ -700,21 +703,43 @@ export default function Departments() {
         />
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-lg font-medium text-primary">ข้อมูลภาควิชา</h1>
-            <button
-              type="button"
-              onClick={() => {
-                asked.current = null
-                showing.current = {}
-                setNotice(null)
-                setEditing({})
-              }}
-              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
-            >
-              เพิ่มภาควิชา
-            </button>
-          </div>
+          <PageHeader
+            heading={<h1 className="text-lg font-medium text-primary">ข้อมูลภาควิชา</h1>}
+            importLabel="นำเข้าภาควิชา"
+            onImport={() => setImporting(true)}
+            addLabel="เพิ่มภาควิชา"
+            onAdd={() => {
+              asked.current = null
+              showing.current = {}
+              setNotice(null)
+              setEditing({})
+            }}
+          />
+
+          <ImportPanel
+            open={importing}
+            onClose={() => setImporting(false)}
+            title="นำเข้าภาควิชาจากไฟล์"
+            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
+            templateName="departments-template.csv"
+            target="departments"
+            fetchTemplate={importTemplate}
+            send={importDepartments}
+            onImported={() => {
+              // Going to page one is a change the effect fetches; asking `load`
+              // as well would ask from the page being left, and the two answers
+              // would race - #68. Only the branch already on page one, where
+              // nothing refetches, reloads by hand.
+              const drawing = onScreen.current
+              if (page === 1) drawing(() => onScreen.current === drawing)
+              else setPage(1)
+            }}
+            onStart={() => {
+              asked.current = null
+              setNotice(null)
+            }}
+            onError={report}
+          />
 
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
@@ -794,29 +819,6 @@ export default function Departments() {
             perPage={PAGE_SIZE}
             onPage={setPage}
             busy={busy}
-          />
-
-          <ImportPanel
-            title="นำเข้าภาควิชาจากไฟล์"
-            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
-            templateName="departments-template.csv"
-            target="departments"
-            fetchTemplate={importTemplate}
-            send={importDepartments}
-            onImported={() => {
-              // Going to page one is a change the effect fetches; asking `load`
-              // as well would ask from the page being left, and the two answers
-              // would race - #68. Only the branch already on page one, where
-              // nothing refetches, reloads by hand.
-              const drawing = onScreen.current
-              if (page === 1) drawing(() => onScreen.current === drawing)
-              else setPage(1)
-            }}
-            onStart={() => {
-              asked.current = null
-              setNotice(null)
-            }}
-            onError={report}
           />
         </>
       )}

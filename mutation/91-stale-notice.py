@@ -40,14 +40,16 @@ MUTANTS = {
                       "            setEditing(null)\n"
                       "          }}"),
     # The success outlives its action again: opening a new form stops clearing.
+    # #270 (12 พ.ย. 2569): the body is `<PageHeader onAdd>`'s now, two spaces
+    # shallower; the line taken out is the same one.
     "keepsaved": ("departments",
-                  "                asked.current = null\n"
-                  "                showing.current = {}\n"
-                  "                setNotice(null)\n"
-                  "                setEditing({})\n",
-                  "                asked.current = null\n"
-                  "                showing.current = {}\n"
-                  "                setEditing({})\n"),
+                  "              asked.current = null\n"
+                  "              showing.current = {}\n"
+                  "              setNotice(null)\n"
+                  "              setEditing({})\n",
+                  "              asked.current = null\n"
+                  "              showing.current = {}\n"
+                  "              setEditing({})\n"),
     # An upload stops clearing what was on the screen before it - the site the
     # first pass at #91 walked past, and the one the code review found.
     "keepbeforeupload": ("panel", "    onStart?.()", "    if (false) onStart?.()"),

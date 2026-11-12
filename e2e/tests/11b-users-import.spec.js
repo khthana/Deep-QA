@@ -14,6 +14,7 @@ const {
   reportTable,
   reportedLines,
   reportedReason,
+  openImport,
 } = require('../support/import-panel');
 const { openUsers, search, importUsers, userRow } = require('../support/users-screen');
 
@@ -322,6 +323,10 @@ test('row 5: the screen states the rules the header cannot', async ({ page }) =>
   // Asserted before the template is downloaded, in the order a person meets
   // them: guidance that arrives after the file has been filled in is guidance
   // that arrived too late.
+  //
+  // The notes are inside the import window since #270 (12 November 2569), so
+  // the window is opened first - which is still before the template.
+  await openImport(page);
   await expect(page.getByRole('heading', { name: 'รูปแบบข้อมูลในไฟล์' })).toBeVisible();
 
   for (const rule of ['ภาษาไทยหรือภาษาอังกฤษก็ได้', 'ปี ค.ศ.', 'FULL_ADMIN และ EXT_ASSESSOR']) {

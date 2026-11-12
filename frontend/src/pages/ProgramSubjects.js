@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import RowAction, { RowActions } from '../components/RowAction'
 import {
@@ -74,6 +75,8 @@ export default function ProgramSubjects() {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
   /**
@@ -448,58 +451,99 @@ export default function ProgramSubjects() {
         />
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-lg font-medium text-primary">รายวิชาในหลักสูตร</h1>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* A picker when there is a choice to make, and a statement of
-                  where one is when there is not — ข้อมูลรายวิชา's control, for
-                  ข้อมูลรายวิชา's reasons. A กรรมการหลักสูตร reaches one
-                  programme and is shown which. */}
-              {programs.length > 1 ? (
-                <label className="flex items-center gap-2 text-sm text-slate-600">
+          <PageHeader
+            heading={<h1 className="text-lg font-medium text-primary">รายวิชาในหลักสูตร</h1>}
+            importLabel="นำเข้ารายวิชาเข้าหลักสูตร"
+            onImport={() => setImporting(true)}
+            addLabel="เพิ่มรายวิชาเข้าหลักสูตร"
+            onAdd={() => {
+              asked.current = null
+              showing.current = {}
+              setNotice(null)
+              setEditing({})
+            }}
+          >
+            {/* A picker when there is a choice to make, and a statement of
+                where one is when there is not — ข้อมูลรายวิชา's control, for
+                ข้อมูลรายวิชา's reasons. A กรรมการหลักสูตร reaches one
+                programme and is shown which. */}
+            {programs.length > 1 ? (
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                หลักสูตร
+                <select
+                  value={program}
+                  onChange={event => {
+                    // Back to the first page: page 3 of the faculty's
+                    // curricula is rarely a page of one programme's.
+                    setPage(1)
+                    setProgram(event.target.value)
+                  }}
+                  className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
+                >
+                  <option value="">ทุกหลักสูตร</option>
+                  {programs.map(entry => (
+                    <option key={entry.program_id} value={entry.program_id}>
+                      {entry.program_name_th}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              programs.length === 1 && (
+                <span className="flex items-center gap-2 text-sm text-slate-600">
                   หลักสูตร
-                  <select
-                    value={program}
-                    onChange={event => {
-                      // Back to the first page: page 3 of the faculty's
-                      // curricula is rarely a page of one programme's.
-                      setPage(1)
-                      setProgram(event.target.value)
-                    }}
-                    className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-                  >
-                    <option value="">ทุกหลักสูตร</option>
-                    {programs.map(entry => (
-                      <option key={entry.program_id} value={entry.program_id}>
-                        {entry.program_name_th}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : (
-                programs.length === 1 && (
-                  <span className="flex items-center gap-2 text-sm text-slate-600">
-                    หลักสูตร
-                    <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                      {programs[0].program_name_th}
-                    </span>
+                  <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
+                    {programs[0].program_name_th}
                   </span>
-                )
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  asked.current = null
-                  showing.current = {}
-                  setNotice(null)
-                  setEditing({})
-                }}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
-              >
-                เพิ่มรายวิชาเข้าหลักสูตร
-              </button>
-            </div>
-          </div>
+                </span>
+              )
+            )}
+          </PageHeader>
+
+          <ImportPanel
+            open={importing}
+            onClose={() => setImporting(false)}
+            title="นำเข้ารายวิชาในหลักสูตรจากไฟล์"
+            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
+            templateName="program-subjects-template.csv"
+            target="program-subjects"
+            fetchTemplate={importTemplate}
+            send={importProgramSubjects}
+            onImported={result => {
+              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
+              // makes take their keys from the file, so an import writes outside
+              // this table's filter exactly as an *add* does, and the panel's own
+              // green line is in another module and says nothing about it. The
+              // screen is the only place that knows what its table is filtered
+              // to, so the screen says it, out of the answer the panel now hands
+              // over. Handed to `load` rather than said here, which is the rule
+              // the save above follows (#238, #203): the sentence is keyed for
+              // the list it is about - page one, where the reload is going - and
+              // `load` is the only thing that says it.
+              const outside = someImportedOutside(
+                program,
+                result?.program_subjects?.map(row => row.program_id),
+              )
+              if (outside) {
+                waiting.current = {
+                  of: readOf(1, program),
+                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
+                }
+              }
+              // Going to page one is a change the effect fetches; asking `load`
+              // as well would ask from the page being left, and the two answers
+              // would race - #68. Only the branch already on page one, where
+              // nothing refetches, reloads by hand.
+              const drawing = onScreen.current
+              if (page === 1) drawing(() => onScreen.current === drawing)
+              else setPage(1)
+            }}
+            onStart={() => {
+              asked.current = null
+              setNotice(null)
+            }}
+            onError={report}
+          />
 
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
@@ -594,49 +638,6 @@ export default function ProgramSubjects() {
             perPage={PAGE_SIZE}
             onPage={setPage}
             busy={busy}
-          />
-
-          <ImportPanel
-            title="นำเข้ารายวิชาในหลักสูตรจากไฟล์"
-            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
-            templateName="program-subjects-template.csv"
-            target="program-subjects"
-            fetchTemplate={importTemplate}
-            send={importProgramSubjects}
-            onImported={result => {
-              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
-              // makes take their keys from the file, so an import writes outside
-              // this table's filter exactly as an *add* does, and the panel's own
-              // green line is in another module and says nothing about it. The
-              // screen is the only place that knows what its table is filtered
-              // to, so the screen says it, out of the answer the panel now hands
-              // over. Handed to `load` rather than said here, which is the rule
-              // the save above follows (#238, #203): the sentence is keyed for
-              // the list it is about - page one, where the reload is going - and
-              // `load` is the only thing that says it.
-              const outside = someImportedOutside(
-                program,
-                result?.program_subjects?.map(row => row.program_id),
-              )
-              if (outside) {
-                waiting.current = {
-                  of: readOf(1, program),
-                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
-                }
-              }
-              // Going to page one is a change the effect fetches; asking `load`
-              // as well would ask from the page being left, and the two answers
-              // would race - #68. Only the branch already on page one, where
-              // nothing refetches, reloads by hand.
-              const drawing = onScreen.current
-              if (page === 1) drawing(() => onScreen.current === drawing)
-              else setPage(1)
-            }}
-            onStart={() => {
-              asked.current = null
-              setNotice(null)
-            }}
-            onError={report}
           />
         </>
       )}

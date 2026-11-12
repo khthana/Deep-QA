@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import { getActivities } from '../api/activities'
 import { getScores, importScores, saveScores, scoresTemplate } from '../api/activityScores'
@@ -114,6 +115,8 @@ export default function ActivityScores() {
   const [busy, setBusy] = useState(false)
   const [sending, setSending] = useState(false)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [mode, setMode] = useState('activity')
   const [entry, setEntry] = useState('student')
   const [draft, setDraft] = useState({})
@@ -405,18 +408,40 @@ export default function ActivityScores() {
 
       {list && (
         <>
-          <div>
-            <p className="text-xs font-medium text-slate-400">
-              {/* label-code: the line above the heading, the one place on this screen
-                  that says which section is being read (#93) */}
-              {list.section.subject_id} {list.section.subject_name_en}
-            </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">คะแนนกิจกรรมการเรียนรู้</h1>
-            <p className="mt-2 text-sm text-slate-500">
-              ตอนเรียน {list.section.section_number} · ปีการศึกษา {list.section.academic_year} ·{' '}
-              {list.activities.length} กิจกรรม
-            </p>
-          </div>
+          <PageHeader
+            heading={
+              <div>
+                <p className="text-xs font-medium text-slate-400">
+                  {/* label-code: the line above the heading, the one place on this screen
+                      that says which section is being read (#93) */}
+                  {list.section.subject_id} {list.section.subject_name_en}
+                </p>
+                <h1 className="mt-1 text-xl font-semibold text-primary">คะแนนกิจกรรมการเรียนรู้</h1>
+                <p className="mt-2 text-sm text-slate-500">
+                  ตอนเรียน {list.section.section_number} · ปีการศึกษา {list.section.academic_year} ·{' '}
+                  {list.activities.length} กิจกรรม
+                </p>
+              </div>
+            }
+            importLabel="นำเข้าคะแนน"
+            onImport={data && data.clo_rows.length > 0 ? () => setImporting(true) : undefined}
+          />
+
+          {data && data.clo_rows.length > 0 && (
+            <ImportPanel
+              open={importing}
+              onClose={() => setImporting(false)}
+              title="นำเข้าคะแนนจากไฟล์"
+              subtitle="ดาวน์โหลดแบบฟอร์มของกิจกรรมนี้ กรอกคะแนนแล้วอัปโหลดกลับเข้ามา ไฟล์ต้องมีนักศึกษาครบทุกคนของตอนเรียนนี้ รหัสและชื่อต้องตรงกับทะเบียน และคอลัมน์คะแนนต้องตรงกับที่เลือกไว้ มิฉะนั้นจะถูกปฏิเสธทั้งไฟล์"
+              templateName="activity-marks-template.csv"
+              target={`${sectionId}/${activityId}`}
+              fetchTemplate={() => scoresTemplate(sectionId, activityId, { mode })}
+              send={csv => importScores(sectionId, activityId, csv)}
+              onStart={() => setNotice(null)}
+              onImported={() => load(() => onScreen.current === activityId)}
+              onError={failed}
+            />
+          )}
 
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="mb-1 text-lg font-medium text-primary">เลือกกิจกรรมและวิธีกรอก</h2>
@@ -561,20 +586,6 @@ export default function ActivityScores() {
                 </table>
               </div>
             </form>
-          )}
-
-          {data && data.clo_rows.length > 0 && (
-            <ImportPanel
-              title="นำเข้าคะแนนจากไฟล์"
-              subtitle="ดาวน์โหลดแบบฟอร์มของกิจกรรมนี้ กรอกคะแนนแล้วอัปโหลดกลับเข้ามา ไฟล์ต้องมีนักศึกษาครบทุกคนของตอนเรียนนี้ รหัสและชื่อต้องตรงกับทะเบียน และคอลัมน์คะแนนต้องตรงกับที่เลือกไว้ มิฉะนั้นจะถูกปฏิเสธทั้งไฟล์"
-              templateName="activity-marks-template.csv"
-              target={`${sectionId}/${activityId}`}
-              fetchTemplate={() => scoresTemplate(sectionId, activityId, { mode })}
-              send={csv => importScores(sectionId, activityId, csv)}
-              onStart={() => setNotice(null)}
-              onImported={() => load(() => onScreen.current === activityId)}
-              onError={failed}
-            />
           )}
         </>
       )}

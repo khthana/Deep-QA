@@ -14,7 +14,7 @@ const { openSubjects } = require('../support/subjects-screen');
 const { openProgramSubjects } = require('../support/program-subjects-screen');
 const { openRubrics, rubricRow } = require('../support/rubrics-screen');
 const { openCriteriaVia } = require('../support/rubric-criteria-screen');
-const { importCsv } = require('../support/import-panel');
+const { importCsv, importButton } = require('../support/import-panel');
 const {
   openPlos,
   waitForList: waitForPlos,
@@ -552,15 +552,21 @@ for (const screen of LIST_SCREENS) {
           await held.handed;
           await page.waitForTimeout(SETTLE_MS);
 
+          // Since #270 (12 November 2569) the import is a window, and a
+          // refusal with no rows in it closes the window so that the shell's
+          // sentence underneath can be read - so what is left of the panel's
+          // place is the bar the window was opened from, which a late แก้ไข
+          // would have replaced with its form. The count of file inputs this
+          // read until then is 0 on the fixed screen and on the broken one.
           expect({
             ...(await drawn(page, screen)),
-            importing: await page.locator('input[type="file"]').count(),
+            bar: await importButton(page).count(),
           }).toEqual({
             editing: 0,
             adding: 0,
             asking: 0,
             shows: null,
-            importing: 1,
+            bar: 1,
           });
         } finally {
           await held.release();

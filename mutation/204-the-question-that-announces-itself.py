@@ -92,15 +92,20 @@ from harness import main
 
 FILES = {
     'dialog': 'frontend/src/components/ConfirmDialog.js',
+    # #270 (12 พ.ย. 2569): the three effects below moved here, so the import
+    # window has them too. Each of `nofocusonopen`, `noescape` and `notrap` now
+    # reaches every box that calls the hook - `204a` and `270a`.
+    'focus': 'frontend/src/components/useModalFocus.js',
 }
 
 FOCUS_EFFECT = (
     '  useEffect(() => {\n'
     '    if (open) box.current.focus()\n'
-    '  }, [open])\n'
+    '  }, [box, open])\n'
 )
 
 ESCAPE_EFFECT = (
+    '\n'
     '  useEffect(() => {\n'
     '    if (!open) return undefined\n'
     '    const onKeyDown = event => {\n'
@@ -109,7 +114,6 @@ ESCAPE_EFFECT = (
     "    window.addEventListener('keydown', onKeyDown)\n"
     "    return () => window.removeEventListener('keydown', onKeyDown)\n"
     '  }, [open, onCancel])\n'
-    '\n'
 )
 
 TRAP_EFFECT = (
@@ -120,7 +124,7 @@ TRAP_EFFECT = (
     '    }\n'
     "    document.addEventListener('focusin', keep)\n"
     "    return () => document.removeEventListener('focusin', keep)\n"
-    '  }, [open])\n'
+    '  }, [box, open])\n'
     '\n'
 )
 
@@ -143,11 +147,11 @@ MUTANTS = {
         '        aria-describedby={messageId}\n',
         ''),
     # พฤติกรรมก่อน #204: โฟกัสค้างที่ปุ่มของแถวที่เปิดกล่องมา
-    'nofocusonopen': ('dialog', FOCUS_EFFECT + '\n', ''),
+    'nofocusonopen': ('focus', FOCUS_EFFECT + '\n', ''),
     # พฤติกรรมก่อน #204: ไม่มีทางปิดกล่องด้วยแป้นพิมพ์
-    'noescape': ('dialog', ESCAPE_EFFECT, ''),
+    'noescape': ('focus', ESCAPE_EFFECT, ''),
     # พฤติกรรมก่อน #217: ไม่มีอะไรขังโฟกัส คอนโทรลใต้ผ้าคลุมรับแป้นพิมพ์ได้
-    'notrap': ('dialog', TRAP_EFFECT, ''),
+    'notrap': ('focus', TRAP_EFFECT, ''),
 }
 
 main(FILES, MUTANTS)

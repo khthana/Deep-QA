@@ -4,6 +4,7 @@ import HistoryPanel from '../components/users/HistoryPanel'
 import GrantsPanel from '../components/users/GrantsPanel'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
@@ -372,6 +373,8 @@ export default function Users() {
   const [data, setData] = useState({ users: [], total: 0 })
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
   const [switching, setSwitching] = useState(null)
   /**
@@ -802,55 +805,104 @@ export default function Users() {
         </>
       ) : (
         <>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="flex flex-wrap gap-3">
-              <input
-                className={`${control} w-64`}
-                value={filters.q}
-                onChange={filter('q')}
-                placeholder="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้"
-              />
-              <select
-                className={control}
-                value={filters.role}
-                onChange={filter('role')}
-              >
-                <option value="">ทุกบทบาท</option>
-                {[
-                  'FULL_ADMIN',
-                  'FACULTY_ADMIN',
-                  'DEPT_ADMIN',
-                  'PROG_MANAGER',
-                  'TEACHER',
-                  'EXT_ASSESSOR',
-                ].map(role => (
-                  <option key={role} value={role}>
-                    {roleName(role)}
-                  </option>
-                ))}
-              </select>
-              <select
-                className={control}
-                value={filters.status}
-                onChange={filter('status')}
-              >
-                <option value="">ทุกสถานะ</option>
-                <option value="active">ใช้งานอยู่</option>
-                <option value="inactive">ถูกระงับ</option>
-              </select>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                showing.current = {}
-                setNotice(null)
-                setEditing({})
-              }}
-              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
+          <PageHeader
+            importLabel="นำเข้าผู้ใช้งาน"
+            onImport={() => setImporting(true)}
+            addLabel="เพิ่มผู้ใช้งาน"
+            onAdd={() => {
+              showing.current = {}
+              setNotice(null)
+              setEditing({})
+            }}
+          >
+            <input
+              className={`${control} w-64`}
+              value={filters.q}
+              onChange={filter('q')}
+              placeholder="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้"
+            />
+            <select
+              className={control}
+              value={filters.role}
+              onChange={filter('role')}
             >
-              เพิ่มผู้ใช้งาน
-            </button>
-          </div>
+              <option value="">ทุกบทบาท</option>
+              {[
+                'FULL_ADMIN',
+                'FACULTY_ADMIN',
+                'DEPT_ADMIN',
+                'PROG_MANAGER',
+                'TEACHER',
+                'EXT_ASSESSOR',
+              ].map(role => (
+                <option key={role} value={role}>
+                  {roleName(role)}
+                </option>
+              ))}
+            </select>
+            <select
+              className={control}
+              value={filters.status}
+              onChange={filter('status')}
+            >
+              <option value="">ทุกสถานะ</option>
+              <option value="active">ใช้งานอยู่</option>
+              <option value="inactive">ถูกระงับ</option>
+            </select>
+          </PageHeader>
+
+          <ImportPanel
+            open={importing}
+            onClose={() => setImporting(false)}
+            title="นำเข้าผู้ใช้งานจากไฟล์"
+            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
+            notes={IMPORT_NOTES}
+            templateName="users-template.csv"
+            target="users"
+            fetchTemplate={importTemplate}
+            send={importUsers}
+            onImported={result => {
+              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
+              // makes take their keys from the file, so an import writes outside
+              // this table's filters exactly as an *add* does, and the panel's
+              // own green line is in another module and says nothing about it.
+              // Asked by this screen's own predicate rather than by
+              // `someImportedOutside`, because the filter here is three
+              // questions. Until 31 ตุลาคม 2569 these lines read *and one of
+              // them, the role, an import's answer cannot be asked*, which #256
+              // made false on 1 พฤศจิกายน 2569: the import answer carries each
+              // row's grant and `importedOutsideTheFilters` above asks all
+              // three.
+              //
+              // Handed to `load` rather than said here, which is the rule the
+              // save above follows (#238, #203), and keyed on the render's
+              // filters for that save's own reason: this screen's pager is not
+              // disabled while a write is out, so the live ref is the page the
+              // person has since moved to and not the list this import was about.
+              // `Array.isArray` rather than `?? []`, which is the spelling
+              // `someImportedOutside` uses for the same question: a key that
+              // arrives as something other than a list answers *no* instead of
+              // throwing inside the handler.
+              const outside =
+                Array.isArray(result?.users) &&
+                result.users.some(row => importedOutsideTheFilters(filters, row))
+              if (outside) {
+                waiting.current = {
+                  of: readOf(1, filters),
+                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
+                }
+              }
+              // Going to page one is a change the effect fetches; asking `load`
+              // as well would ask from the page being left, and the two answers
+              // would race - #68. Only the branch already on page one, where
+              // nothing refetches, reloads by hand.
+              const drawing = onScreen.current
+              if (page === 1) drawing(() => onScreen.current === drawing)
+              else setPage(1)
+            }}
+            onStart={() => setNotice(null)}
+            onError={report}
+          />
 
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
@@ -941,57 +993,6 @@ export default function Users() {
             total={data.total}
             perPage={PAGE_SIZE}
             onPage={setPage}
-          />
-
-          <ImportPanel
-            title="นำเข้าผู้ใช้งานจากไฟล์"
-            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
-            notes={IMPORT_NOTES}
-            templateName="users-template.csv"
-            target="users"
-            fetchTemplate={importTemplate}
-            send={importUsers}
-            onImported={result => {
-              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
-              // makes take their keys from the file, so an import writes outside
-              // this table's filters exactly as an *add* does, and the panel's
-              // own green line is in another module and says nothing about it.
-              // Asked by this screen's own predicate rather than by
-              // `someImportedOutside`, because the filter here is three
-              // questions. Until 31 ตุลาคม 2569 these lines read *and one of
-              // them, the role, an import's answer cannot be asked*, which #256
-              // made false on 1 พฤศจิกายน 2569: the import answer carries each
-              // row's grant and `importedOutsideTheFilters` above asks all
-              // three.
-              //
-              // Handed to `load` rather than said here, which is the rule the
-              // save above follows (#238, #203), and keyed on the render's
-              // filters for that save's own reason: this screen's pager is not
-              // disabled while a write is out, so the live ref is the page the
-              // person has since moved to and not the list this import was about.
-              // `Array.isArray` rather than `?? []`, which is the spelling
-              // `someImportedOutside` uses for the same question: a key that
-              // arrives as something other than a list answers *no* instead of
-              // throwing inside the handler.
-              const outside =
-                Array.isArray(result?.users) &&
-                result.users.some(row => importedOutsideTheFilters(filters, row))
-              if (outside) {
-                waiting.current = {
-                  of: readOf(1, filters),
-                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
-                }
-              }
-              // Going to page one is a change the effect fetches; asking `load`
-              // as well would ask from the page being left, and the two answers
-              // would race - #68. Only the branch already on page one, where
-              // nothing refetches, reloads by hand.
-              const drawing = onScreen.current
-              if (page === 1) drawing(() => onScreen.current === drawing)
-              else setPage(1)
-            }}
-            onStart={() => setNotice(null)}
-            onError={report}
           />
         </>
       )}

@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
@@ -73,6 +74,8 @@ export default function SubjectStudents() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [page, setPage] = useState(1)
   const [code, setCode] = useState('')
@@ -388,20 +391,48 @@ export default function SubjectStudents() {
 
       {data && (
         <>
-          <div>
-            <p className="text-xs font-medium text-slate-400">
-              {/* label-code: the line above the heading, the one place on this screen
-                  that says which section is being read (#93) */}
-              {data.section.subject_id} {data.section.subject_name_en}
-            </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">
-              รายชื่อนักศึกษาของรายวิชา
-            </h1>
-            <p className="mt-2 text-sm text-slate-500">
-              ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
-              {data.section.academic_year} · นักศึกษา {data.total} คน
-            </p>
-          </div>
+          <PageHeader
+            heading={
+              <div>
+                <p className="text-xs font-medium text-slate-400">
+                  {/* label-code: the line above the heading, the one place on this screen
+                      that says which section is being read (#93) */}
+                  {data.section.subject_id} {data.section.subject_name_en}
+                </p>
+                <h1 className="mt-1 text-xl font-semibold text-primary">
+                  รายชื่อนักศึกษาของรายวิชา
+                </h1>
+                <p className="mt-2 text-sm text-slate-500">
+                  ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
+                  {data.section.academic_year} · นักศึกษา {data.total} คน
+                </p>
+              </div>
+            }
+            importLabel="นำเข้านักศึกษา"
+            onImport={() => setImporting(true)}
+          />
+
+          <ImportPanel
+            open={importing}
+            onClose={() => setImporting(false)}
+            title="นำเข้ารายชื่อนักศึกษา"
+            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกรหัสนักศึกษา แล้วอัปโหลดกลับเข้ามา ทุกรหัสต้องมีอยู่ในทะเบียนนักศึกษากลางแล้ว"
+            templateName="section-students-template.csv"
+            target={sectionId}
+            fetchTemplate={() => importTemplate(sectionId)}
+            send={csv => importEnrolments(sectionId, csv)}
+            onStart={() => setNotice(null)}
+            /* `ImportPanel` calls this with nothing and draws its own per-row
+               report, so there is no sentence to hand over and nothing for
+               #152's `waiting` to hold. Written out rather than passed by
+               reference, because `reload`'s first parameter is now that
+               sentence. */
+            onImported={() => reload()}
+            onError={error => {
+              if (!error.expired)
+                setNotice({ error: true, message: error.message })
+            }}
+          />
 
           <form
             onSubmit={add}
@@ -436,27 +467,6 @@ export default function SubjectStudents() {
               </button>
             </div>
           </form>
-
-          <ImportPanel
-            title="นำเข้ารายชื่อนักศึกษา"
-            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกรหัสนักศึกษา แล้วอัปโหลดกลับเข้ามา ทุกรหัสต้องมีอยู่ในทะเบียนนักศึกษากลางแล้ว"
-            templateName="section-students-template.csv"
-            target={sectionId}
-            fetchTemplate={() => importTemplate(sectionId)}
-            send={csv => importEnrolments(sectionId, csv)}
-            onStart={() => setNotice(null)}
-            /* `ImportPanel` calls this with nothing and draws its own per-row
-               report, so there is no sentence to hand over and nothing for
-               #152's `waiting` to hold. Written out rather than passed by
-               reference, because `reload`'s first parameter is now that
-               sentence. */
-            onImported={() => reload()}
-            onError={error => {
-              if (!error.expired)
-                setNotice({ error: true, message: error.message })
-            }}
-          />
-
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
             {/* The table scrolls inside its own frame rather than pushing the
                   page sideways — #98, and the ดำเนินการ column is the one that

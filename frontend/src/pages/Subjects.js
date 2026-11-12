@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import {
   alsoOutside,
@@ -79,6 +80,8 @@ export default function Subjects() {
   const [departments, setDepartments] = useState([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
   /**
@@ -433,61 +436,102 @@ export default function Subjects() {
         />
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-lg font-medium text-primary">ข้อมูลรายวิชา</h1>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* A picker when there is a choice to make, and a statement of
-                  where one is when there is not. A department administrator
-                  reaches one department: a dropdown whose two options - "ทุก
-                  ภาควิชา" and their own - return the same rows would be a control
-                  that does nothing, and leaving it out entirely would take the
-                  answer to "which catalogue am I reading?" off the screen. So
-                  the label stays and only the control it carries changes. */}
-              {departments.length > 1 ? (
-                <label className="flex items-center gap-2 text-sm text-slate-600">
+          <PageHeader
+            heading={<h1 className="text-lg font-medium text-primary">ข้อมูลรายวิชา</h1>}
+            importLabel="นำเข้ารายวิชา"
+            onImport={() => setImporting(true)}
+            addLabel="เพิ่มรายวิชา"
+            onAdd={() => {
+              asked.current = null
+              showing.current = {}
+              setNotice(null)
+              setEditing({})
+            }}
+          >
+            {/* A picker when there is a choice to make, and a statement of
+                where one is when there is not. A department administrator
+                reaches one department: a dropdown whose two options - "ทุก
+                ภาควิชา" and their own - return the same rows would be a control
+                that does nothing, and leaving it out entirely would take the
+                answer to "which catalogue am I reading?" off the screen. So
+                the label stays and only the control it carries changes. */}
+            {departments.length > 1 ? (
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                ภาควิชา
+                <select
+                  value={department}
+                  onChange={event => {
+                    // Back to the first page: page 3 of the faculty's
+                    // catalogue is rarely a page of one department's.
+                    setPage(1)
+                    setDepartment(event.target.value)
+                  }}
+                  className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
+                >
+                  <option value="">ทุกภาควิชา</option>
+                  {departments.map(entry => (
+                    <option key={entry.department_id} value={entry.department_id}>
+                      {entry.department_name_th}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              departments.length === 1 && (
+                <span className="flex items-center gap-2 text-sm text-slate-600">
                   ภาควิชา
-                  <select
-                    value={department}
-                    onChange={event => {
-                      // Back to the first page: page 3 of the faculty's
-                      // catalogue is rarely a page of one department's.
-                      setPage(1)
-                      setDepartment(event.target.value)
-                    }}
-                    className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-                  >
-                    <option value="">ทุกภาควิชา</option>
-                    {departments.map(entry => (
-                      <option key={entry.department_id} value={entry.department_id}>
-                        {entry.department_name_th}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : (
-                departments.length === 1 && (
-                  <span className="flex items-center gap-2 text-sm text-slate-600">
-                    ภาควิชา
-                    <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                      {departments[0].department_name_th}
-                    </span>
+                  <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
+                    {departments[0].department_name_th}
                   </span>
-                )
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  asked.current = null
-                  showing.current = {}
-                  setNotice(null)
-                  setEditing({})
-                }}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
-              >
-                เพิ่มรายวิชา
-              </button>
-            </div>
-          </div>
+                </span>
+              )
+            )}
+          </PageHeader>
+
+          <ImportPanel
+            open={importing}
+            onClose={() => setImporting(false)}
+            title="นำเข้ารายวิชาจากไฟล์"
+            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
+            templateName="subjects-template.csv"
+            target="subjects"
+            fetchTemplate={importTemplate}
+            send={importSubjects}
+            onImported={result => {
+              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
+              // makes take their keys from the file, so an import writes outside
+              // this table's filter exactly as an *add* does, and the panel's own
+              // green line is in another module and says nothing about it. The
+              // screen is the only place that knows what its table is filtered
+              // to, so the screen says it, out of the answer the panel now hands
+              // over. Handed to `load` rather than said here, which is the rule
+              // the save above follows (#238, #203): the sentence is keyed for
+              // the list it is about - page one, where the reload is going - and
+              // `load` is the only thing that says it.
+              const outside = someImportedOutside(
+                department,
+                result?.subjects?.map(row => row.department_id),
+              )
+              if (outside) {
+                waiting.current = {
+                  of: readOf(1, department),
+                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
+                }
+              }
+              // Going to page one is a change the effect fetches; asking `load`
+              // as well would ask from the page being left, and the two answers
+              // would race - #68. Only the branch already on page one, where
+              // nothing refetches, reloads by hand.
+              const drawing = onScreen.current
+              if (page === 1) drawing(() => onScreen.current === drawing)
+              else setPage(1)
+            }}
+            onStart={() => {
+              asked.current = null
+              setNotice(null)
+            }}
+            onError={report}
+          />
 
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
@@ -570,49 +614,6 @@ export default function Subjects() {
             perPage={PAGE_SIZE}
             onPage={setPage}
             busy={busy}
-          />
-
-          <ImportPanel
-            title="นำเข้ารายวิชาจากไฟล์"
-            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย"
-            templateName="subjects-template.csv"
-            target="subjects"
-            fetchTemplate={importTemplate}
-            send={importSubjects}
-            onImported={result => {
-              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
-              // makes take their keys from the file, so an import writes outside
-              // this table's filter exactly as an *add* does, and the panel's own
-              // green line is in another module and says nothing about it. The
-              // screen is the only place that knows what its table is filtered
-              // to, so the screen says it, out of the answer the panel now hands
-              // over. Handed to `load` rather than said here, which is the rule
-              // the save above follows (#238, #203): the sentence is keyed for
-              // the list it is about - page one, where the reload is going - and
-              // `load` is the only thing that says it.
-              const outside = someImportedOutside(
-                department,
-                result?.subjects?.map(row => row.department_id),
-              )
-              if (outside) {
-                waiting.current = {
-                  of: readOf(1, department),
-                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
-                }
-              }
-              // Going to page one is a change the effect fetches; asking `load`
-              // as well would ask from the page being left, and the two answers
-              // would race - #68. Only the branch already on page one, where
-              // nothing refetches, reloads by hand.
-              const drawing = onScreen.current
-              if (page === 1) drawing(() => onScreen.current === drawing)
-              else setPage(1)
-            }}
-            onStart={() => {
-              asked.current = null
-              setNotice(null)
-            }}
-            onError={report}
           />
         </>
       )}

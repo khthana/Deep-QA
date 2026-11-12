@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ImportPanel from '../components/ImportPanel'
+import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import {
   alsoOutside,
@@ -80,6 +81,8 @@ export default function Students() {
   const [departments, setDepartments] = useState([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The import window, opened by นำเข้า… in the bar (#270).
+  const [importing, setImporting] = useState(false)
   const [adding, setAdding] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -431,51 +434,89 @@ export default function Students() {
         />
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-lg font-medium text-primary">ข้อมูลนักศึกษากลาง</h1>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Stated, not offered — see the note at the top of the file. */}
-              {departments.length === 1 && (
-                <span className="flex items-center gap-2 text-sm text-slate-600">
-                  ภาควิชา
-                  <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                    {departments[0].department_name_th}
-                  </span>
+          <PageHeader
+            heading={<h1 className="text-lg font-medium text-primary">ข้อมูลนักศึกษากลาง</h1>}
+            importLabel="นำเข้านักศึกษา"
+            onImport={() => setImporting(true)}
+            addLabel="เพิ่มนักศึกษา"
+            onAdd={() => {
+              showing.current = {}
+              setNotice(null)
+              setAdding(true)
+            }}
+          >
+            {/* Stated, not offered — see the note at the top of the file. */}
+            {departments.length === 1 && (
+              <span className="flex items-center gap-2 text-sm text-slate-600">
+                ภาควิชา
+                <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
+                  {departments[0].department_name_th}
                 </span>
-              )}
-              <label className="flex items-center gap-2 text-sm text-slate-600">
-                หลักสูตร
-                <select
-                  value={program}
-                  onChange={event => {
-                    // Page 3 of the department's register is rarely page 3 of
-                    // one หลักสูตร's.
-                    setPage(1)
-                    setProgram(event.target.value)
-                  }}
-                  className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-                >
-                  <option value="">ทุกหลักสูตร</option>
-                  {programs.map(entry => (
-                    <option key={entry.program_id} value={entry.program_id}>
-                      {entry.program_name_th}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  showing.current = {}
-                  setNotice(null)
-                  setAdding(true)
+              </span>
+            )}
+            <label className="flex items-center gap-2 text-sm text-slate-600">
+              หลักสูตร
+              <select
+                value={program}
+                onChange={event => {
+                  // Page 3 of the department's register is rarely page 3 of
+                  // one หลักสูตร's.
+                  setPage(1)
+                  setProgram(event.target.value)
                 }}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
+                className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
               >
-                เพิ่มนักศึกษา
-              </button>
-            </div>
-          </div>
+                <option value="">ทุกหลักสูตร</option>
+                {programs.map(entry => (
+                  <option key={entry.program_id} value={entry.program_id}>
+                    {entry.program_name_th}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </PageHeader>
+
+          <ImportPanel
+            open={importing}
+            onClose={() => setImporting(false)}
+            title="นำเข้ารายชื่อนักศึกษาจากไฟล์"
+            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย รหัสนักศึกษาที่มีอยู่แล้วจะถูกปรับปรุงข้อมูลแทนการเพิ่มซ้ำ"
+            templateName="students-template.csv"
+            target="students"
+            fetchTemplate={importTemplate}
+            send={importStudents}
+            onImported={result => {
+              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
+              // makes take their keys from the file, so an import writes outside
+              // this table's filter exactly as an *add* does, and the panel's own
+              // green line is in another module and says nothing about it. The
+              // screen is the only place that knows what its table is filtered
+              // to, so the screen says it, out of the answer the panel now hands
+              // over. Handed to `load` rather than said here, which is the rule
+              // the save above follows (#238, #203): the sentence is keyed for
+              // the list it is about - page one, where the reload is going - and
+              // `load` is the only thing that says it.
+              const outside = someImportedOutside(
+                program,
+                result?.students?.map(row => row.program_id),
+              )
+              if (outside) {
+                waiting.current = {
+                  of: readOf(1, program),
+                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
+                }
+              }
+              // Going to page one is a change the effect fetches; asking `load`
+              // as well would ask from the page being left, and the two answers
+              // would race - #68. Only the branch already on page one, where
+              // nothing refetches, reloads by hand.
+              const drawing = onScreen.current
+              if (page === 1) drawing(() => onScreen.current === drawing)
+              else setPage(1)
+            }}
+            onStart={() => setNotice(null)}
+            onError={report}
+          />
 
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
@@ -535,46 +576,6 @@ export default function Students() {
             total={data.total}
             perPage={PAGE_SIZE}
             onPage={setPage}
-          />
-
-          <ImportPanel
-            title="นำเข้ารายชื่อนักศึกษาจากไฟล์"
-            subtitle="ดาวน์โหลดแบบฟอร์ม กรอกข้อมูล แล้วอัปโหลดกลับ หากมีแถวใดผิดพลาดระบบจะไม่บันทึกรายการใดเลย รหัสนักศึกษาที่มีอยู่แล้วจะถูกปรับปรุงข้อมูลแทนการเพิ่มซ้ำ"
-            templateName="students-template.csv"
-            target="students"
-            fetchTemplate={importTemplate}
-            send={importStudents}
-            onImported={result => {
-              // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
-              // makes take their keys from the file, so an import writes outside
-              // this table's filter exactly as an *add* does, and the panel's own
-              // green line is in another module and says nothing about it. The
-              // screen is the only place that knows what its table is filtered
-              // to, so the screen says it, out of the answer the panel now hands
-              // over. Handed to `load` rather than said here, which is the rule
-              // the save above follows (#238, #203): the sentence is keyed for
-              // the list it is about - page one, where the reload is going - and
-              // `load` is the only thing that says it.
-              const outside = someImportedOutside(
-                program,
-                result?.students?.map(row => row.program_id),
-              )
-              if (outside) {
-                waiting.current = {
-                  of: readOf(1, program),
-                  said: { error: false, message: SOME_IMPORTED_OUTSIDE },
-                }
-              }
-              // Going to page one is a change the effect fetches; asking `load`
-              // as well would ask from the page being left, and the two answers
-              // would race - #68. Only the branch already on page one, where
-              // nothing refetches, reloads by hand.
-              const drawing = onScreen.current
-              if (page === 1) drawing(() => onScreen.current === drawing)
-              else setPage(1)
-            }}
-            onStart={() => setNotice(null)}
-            onError={report}
           />
         </>
       )}

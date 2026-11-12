@@ -135,6 +135,14 @@ Offering แรกเปิดขึ้น และคำถามกลาย�
 ที่แถว *… pressed while a แก้ไข is out leaves the table under its question* ของจอตัวเอง
 (`:468`) และ `offeringscancelkeepsask` ที่แถวของ Offering (`:708`) — ตรงกับตารางข้างล่าง
 
+## #270 เล็งสี่ตัวใหม่ (12 พ.ย. 2569)
+
+ปุ่ม *เพิ่ม…* ของสี่จอย้ายไปอยู่ใน `<PageHeader onAdd={…}>` เนื้อของ `onClick` เดิมจึงลึก 14 ช่องแทน 16
+(ภาควิชา หลักสูตร) หรือ 18 (รายวิชา รายวิชาในหลักสูตร) `departmentsaddkeepsask` `programsaddkeepsask`
+`subjectsaddkeepsask` `pairsaddkeepsask` เล็งใหม่ด้วยการเปลี่ยนช่องว่างทั้ง FROM และ TO บรรทัดที่ถูกลบไม่เปลี่ยน
+· `…importkeepsask` สี่ตัวไม่ต้องเล็ง เพราะ `onStart` ยังเป็น prop ของ `<ImportPanel>` ที่ลึกเท่าเดิม
+แต่ทางเข้าของมันเปลี่ยน (เปิดหน้าต่าง แล้วกด *นำเข้า*) ผลกวาดอยู่ที่ `mutation/270-import-window.py`
+
 ## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
 
 แถวข้างล่างเขียน**หลัง**การกวาด กฎ *เขียนตารางก่อนรันมัตแตนต์ตัวแรก* (#255) ผูกตั้งแต่ใบที่ลง
@@ -217,8 +225,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # ภาควิชา: เพิ่ม leaves the last แก้ไข standing
     'departmentsaddkeepsask': ('departments',
-        '                asked.current = null\n                showing.current = {}\n                setNotice(null)\n                setEditing({})\n',
-        '                showing.current = {}\n                setNotice(null)\n                setEditing({})\n'),
+        '              asked.current = null\n              showing.current = {}\n              setNotice(null)\n              setEditing({})\n',
+        '              showing.current = {}\n              setNotice(null)\n              setEditing({})\n'),
     # ภาควิชา: ลบ leaves the last แก้ไข standing
     'departmentsremovekeepsask': ('departments',
         '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(department)\n',
@@ -241,8 +249,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # หลักสูตร: เพิ่ม leaves the last แก้ไข standing
     'programsaddkeepsask': ('programs',
-        '                asked.current = null\n                showing.current = {}\n                setNotice(null)\n                setEditing({})\n',
-        '                showing.current = {}\n                setNotice(null)\n                setEditing({})\n'),
+        '              asked.current = null\n              showing.current = {}\n              setNotice(null)\n              setEditing({})\n',
+        '              showing.current = {}\n              setNotice(null)\n              setEditing({})\n'),
     # หลักสูตร: ลบ leaves the last แก้ไข standing
     'programsremovekeepsask': ('programs',
         '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(program)\n',
@@ -265,8 +273,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # รายวิชา: เพิ่ม leaves the last แก้ไข standing
     'subjectsaddkeepsask': ('subjects',
-        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
+        '              asked.current = null\n              showing.current = {}\n              setNotice(null)\n              setEditing({})\n',
+        '              showing.current = {}\n              setNotice(null)\n              setEditing({})\n'),
     # รายวิชา: ลบ leaves the last แก้ไข standing
     'subjectsremovekeepsask': ('subjects',
         '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(subject)\n',
@@ -289,8 +297,8 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # รายวิชาในหลักสูตร: เพิ่ม leaves the last แก้ไข standing
     'pairsaddkeepsask': ('pairs',
-        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
+        '              asked.current = null\n              showing.current = {}\n              setNotice(null)\n              setEditing({})\n',
+        '              showing.current = {}\n              setNotice(null)\n              setEditing({})\n'),
     # รายวิชาในหลักสูตร: ลบ leaves the last แก้ไข standing
     'pairsremovekeepsask': ('pairs',
         '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(pair)\n',

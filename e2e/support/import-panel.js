@@ -13,6 +13,18 @@
  * Factored out of `students-screen.js` when Departments became the second
  * caller. It is deliberately not a base class: each screen's module re-exports
  * what it needs under its own names, so a spec reads as that screen's language.
+ *
+ * ## A window since #270 (12 พฤศจิกายน 2569)
+ *
+ * The box became a window opened by **นำเข้า…** in the screen's bar, and the
+ * file is sent by the window's **นำเข้า** rather than by choosing it. The
+ * helpers below open the window when it is not already open and press นำเข้า
+ * after the file, so the hundred-odd rows that import through them read as they
+ * did; the census of presses that decided this was `importCsv`, `chooseFile`
+ * and `downloadTemplate` here against three specs that press the input
+ * themselves (#199, #221). What a row cannot see from here is the window's own
+ * behaviour - that choosing sends nothing, that it closes on a success and
+ * stays open on a report - and those are `270a`'s rows.
  */
 
 const BOM = String.fromCharCode(0xfeff);
@@ -26,13 +38,17 @@ const BOM = String.fromCharCode(0xfeff);
  * (#62), so the endpoint's answer and the saved file are not the same bytes.
  */
 async function downloadTemplate(page) {
+  const opened = await openImport(page);
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    page.getByRole('button', { name: 'ดาวน์โหลดแบบฟอร์ม' }).click(),
+    importWindow(page).getByRole('button', { name: 'ดาวน์โหลดแบบฟอร์ม' }).click(),
   ]);
   const stream = await download.createReadStream();
   const chunks = [];
   for await (const chunk of stream) chunks.push(chunk);
+  // Left as it was found: a row that downloads and then reads the list should
+  // not have to know that a window is now standing over it.
+  if (opened) await closeImport(page);
   return { name: download.suggestedFilename(), text: Buffer.concat(chunks).toString('utf8') };
 }
 
@@ -62,16 +78,59 @@ async function importCsv(page, { path, text, name }) {
   return response;
 }
 
-/** The file input, which is the only way an import is begun. */
-const fileInput = page => page.locator('input[type="file"]');
+/**
+ * The import window - #270. Told apart from `ConfirmDialog`, which is the other
+ * `role="dialog"` these screens draw, by the file input only it holds.
+ */
+const importWindow = page =>
+  page.getByRole('dialog').filter({ has: page.locator('input[type="file"]') });
+
+/**
+ * The bar's นำเข้า…, whose name is the verb and the register's noun on every
+ * screen - `นำเข้าภาควิชา`, `นำเข้าคะแนน` - and never the bare verb, which is
+ * the window's own button.
+ */
+const importButton = page => page.getByRole('button', { name: /^นำเข้า.+/ });
+
+/** The window's own นำเข้า, which sends the file. */
+const sendButton = page => importWindow(page).getByRole('button', { name: 'นำเข้า', exact: true });
+
+/**
+ * Opens the window unless it is open already - after a refused file it stays
+ * open, and the row sending the corrected one goes on from there. Says whether
+ * it was the one to open it.
+ */
+async function openImport(page) {
+  if (await importWindow(page).count()) return false;
+  await importButton(page).click();
+  await importWindow(page).waitFor();
+  return true;
+}
+
+/** The window's ยกเลิก, and the window gone. */
+async function closeImport(page) {
+  await importWindow(page).getByRole('button', { name: 'ยกเลิก', exact: true }).click();
+  await importWindow(page).waitFor({ state: 'detached' });
+}
+
+/** The file input, inside the window. */
+const fileInput = page => importWindow(page).locator('input[type="file"]');
+
+/** Puts a file in the window without sending it - `270a`'s own question. */
+async function pickFile(page, { text, name }) {
+  await openImport(page);
+  await fileInput(page).setInputFiles({ name, mimeType: 'text/csv', buffer: Buffer.from(text, 'utf8') });
+}
 
 /**
  * Begins an import without waiting for it to be answered - #179, for a row that
  * has to do something while the answer is still out. `importCsv` above is this
  * plus the wait, and cannot be the one that holds an answer open.
  */
-const chooseFile = (page, { text, name }) =>
-  fileInput(page).setInputFiles({ name, mimeType: 'text/csv', buffer: Buffer.from(text, 'utf8') });
+async function chooseFile(page, file) {
+  await pickFile(page, file);
+  await sendButton(page).click();
+}
 
 /**
  * The label on the button while an import is out, which is the panel's own say
@@ -121,6 +180,13 @@ module.exports = {
   csv,
   importCsv,
   chooseFile,
+  pickFile,
+  openImport,
+  closeImport,
+  importWindow,
+  importButton,
+  sendButton,
+  fileInput,
   uploading,
   importedLine,
   chosenFile,

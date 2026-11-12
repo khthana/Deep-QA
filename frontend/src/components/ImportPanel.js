@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import ContentMotionDIV from './ContentMotionDIV'
+import useModalFocus from './useModalFocus'
 import { saveAsFile } from '../api/client'
 
 /**
@@ -89,6 +90,47 @@ import { saveAsFile } from '../api/client'
  * - **And the sentence the shell speaks is not an answer**, so it stays outside
  *   the guard: a refusal with no rows in it is about the person, not about the
  *   target, and the person hears it wherever the picker has since moved to.
+ *
+ * ## A window, not a box at the foot of the page - #270 (12 พฤศจิกายน 2569)
+ *
+ * The owner's answer of 10 พฤศจิกายน 2569 gave back the delivered layout: the
+ * import is opened by **นำเข้า…** in the screen's `PageHeader` and is a window
+ * over the screen, as `Import*Dilog.js` drew it. Everything above is unchanged
+ * and moved in with it; what the window changed is four things.
+ *
+ * - **Choosing a file sends nothing.** The file is sent when **นำเข้า** is
+ *   pressed. The screen-reader walk of `docs/acceptance/14-departments.md`
+ *   row 8 had recorded that sending on the choice sent it before the person
+ *   listening was ready, and the delivered window waited for the press too.
+ * - **While it is out, neither นำเข้า nor ยกเลิก can be pressed**, and Escape
+ *   does nothing - the ticket's own criterion, and the reason this window does
+ *   not leave its way out open while busy as `ConfirmDialog` does. A window
+ *   that closed with its answer still out would take the per-row report with
+ *   it.
+ * - **A success closes the window**, and the green line is drawn where the
+ *   window is mounted, which each screen puts directly under its bar - the
+ *   ticket's *แถบบนหน้า*. Opening the window again takes the line away,
+ *   because pressing นำเข้า… is the next import beginning.
+ * - **A refusal with rows keeps it open** with the whole report inside, so the
+ *   file can be corrected and sent again - a divergence from the delivered
+ *   window, which closed and said only *ไม่สำเร็จ*, taken on purpose because
+ *   the per-row report is `14-departments` row 7's proved criterion. **A
+ *   refusal without rows closes it** and goes to `onError` as before: what it
+ *   carries is the screen's banner or the shell's dialog, and either drawn
+ *   under this window's cover is a sentence nobody can read (an expired
+ *   session's dialog would also be a second box fighting this one's focus).
+ *   That half is this ticket's choice, not the owner's, and it is the half to
+ *   ask about if it reads wrong.
+ *
+ * The focus is moved in, kept in and given Escape by `useModalFocus.js`, which
+ * is `ConfirmDialog`'s own three behaviours moved into one file (#204, #217) -
+ * the ticket asked for them not to be written a second time.
+ *
+ * What a person can no longer do because of it is re-aim the screen while an
+ * answer is out: the cover takes the press and the trap takes the focus, so
+ * #179's race is reachable for a person only through what moves the screen
+ * without either - the browser's back button, a link typed in. The guard stays,
+ * and why it still has rows is written in `docs/acceptance/270-import-window.md`.
  */
 /**
  * What this panel cannot be drawn without - read by
@@ -104,6 +146,8 @@ import { saveAsFile } from '../api/client'
 export const REQUIRED_PROPS = ['target']
 
 export default function ImportPanel({
+  open,
+  onClose,
   title,
   subtitle,
   notes,
@@ -117,13 +161,18 @@ export default function ImportPanel({
 }) {
   const [busy, setBusy] = useState(false)
   const [report, setReport] = useState(null)
+  const [file, setFile] = useState(null)
   const [filename, setFilename] = useState('')
   const [aimedAt, setAimedAt] = useState(target)
+  const [wasOpen, setWasOpen] = useState(open)
   const input = useRef(null)
+  const box = useRef(null)
+  const titleId = useId()
+  const subtitleId = useId()
 
   // What the panel is aimed at *now*, for the answer that comes back later to
   // compare itself against. A ref and not the state above, because `upload`
-  // reads it from the render the file was chosen in, where the state still
+  // reads it from the render นำเข้า was pressed in, where the state still
   // holds the target of that moment - which is exactly what has to be compared
   // against rather than trusted.
   const latest = useRef(target)
@@ -140,8 +189,27 @@ export default function ImportPanel({
   if (target !== aimedAt) {
     setAimedAt(target)
     setReport(null)
+    setFile(null)
     setFilename('')
   }
+
+  // Opening the window is the next import beginning, so what the last one left
+  // - its green line under the bar, or a report and a file from a window that
+  // was cancelled - goes, in the same render and for #167's reason above.
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setReport(null)
+      setFile(null)
+      setFilename('')
+    }
+  }
+
+  // Escape, and ยกเลิก, are no way out while the answer is out (#270).
+  const close = useCallback(() => {
+    if (!busy) onClose()
+  }, [busy, onClose])
+  useModalFocus(box, open, close)
 
   const download = async () => {
     try {
@@ -152,23 +220,31 @@ export default function ImportPanel({
   }
 
   /**
-   * The file input is the only way in and it is `disabled={busy}`, so no second
+   * Choosing a file only holds it - #270. Nothing is sent until นำเข้า.
+   */
+  const choose = event => {
+    const chosen = event.target.files?.[0]
+    if (!chosen) return
+    setFile(chosen)
+    setFilename(chosen.name)
+  }
+
+  /**
+   * นำเข้า is the only way in and it is `disabled={busy}`, so no second
    * import can be begun while this answer is out. What can happen while it is
    * out is the screen being re-aimed - #179, and `target` above is how this
    * knows. The answer is a read like any other: it is drawn only if it is still
    * the answer to what the screen is asking (#133, #140), and here *what was
-   * asked* is the target as it stood when the file was chosen.
+   * asked* is the target as it stood when นำเข้า was pressed.
    */
-  const upload = async event => {
-    const file = event.target.files?.[0]
+  const upload = async () => {
     if (!file) return
     const asked = target
-    setFilename(file.name)
     setReport(null)
-    // The screen's own banner, not this panel's report - #91. Choosing a file
-    // is a new action, and the panel is the one place that begins one without
-    // touching `editing` or `removing`, so it was the site the first pass at
-    // #91 walked straight past: a refusal from the upload before, or a
+    // The screen's own banner, not this panel's report - #91. Sending a file
+    // (choosing one, until #270) is a new action, and the panel is the one
+    // place that begins one without touching `editing` or `removing`, so it
+    // was the site the first pass at #91 walked straight past: a refusal from the upload before, or a
     // "saved" from something else entirely, sat above the panel's own green
     // line and read as though it belonged to the import that just succeeded.
     onStart?.()
@@ -191,6 +267,7 @@ export default function ImportPanel({
       // The six callers whose table is not filtered by state ignore the
       // argument, as a callback's callers may.
       onImported?.(result)
+      onClose()
     } catch (error) {
       // `details` is the per-row report, which rides on the refusal because a
       // rejected import is one: nothing was written. A refusal without rows -
@@ -223,88 +300,132 @@ export default function ImportPanel({
       if (error.details?.length) {
         if (latest.current !== asked) return
         setReport({ ok: false, errors: error.details })
-      } else onError?.(error)
+      } else {
+        onError?.(error)
+        onClose()
+      }
     } finally {
       setBusy(false)
       // So the same file can be chosen again after it has been corrected;
       // without this the input holds the old selection and fires no change.
+      // The file held is let go for the same reason: what is on the disk now
+      // is the corrected one, and นำเข้า waits until it has been chosen. Its
+      // name stays beside the button, because a refused file's report is about
+      // that file and the name is what says which one it was.
+      setFile(null)
       if (input.current) input.current.value = ''
     }
   }
 
+  if (!open) {
+    return report?.ok ? (
+      <p className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
+        นำเข้าสำเร็จ {report.created} รายการ
+      </p>
+    ) : null
+  }
+
   return (
-    <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-1 text-lg font-medium text-primary">{title}</h2>
-      <p className="mb-4 text-sm text-slate-500">{subtitle}</p>
-
-      {Array.isArray(notes) && notes.length > 0 && (
-        <div className="mb-4 rounded-lg bg-slate-50 p-4">
-          <h3 className="mb-2 text-sm font-medium text-slate-800">รูปแบบข้อมูลในไฟล์</h3>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
-            {notes.map(note => (
-              <li key={note}>{note}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={download}
-          className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-        >
-          ดาวน์โหลดแบบฟอร์ม
-        </button>
-        <label className="cursor-pointer rounded-lg bg-secondary px-5 py-2.5 text-sm font-medium text-white hover:bg-secondary_hover">
-          {busy ? 'กำลังนำเข้า…' : 'เลือกไฟล์ที่กรอกแล้ว'}
-          <input
-            ref={input}
-            type="file"
-            accept=".csv,text/csv"
-            className="hidden"
-            onChange={upload}
-            disabled={busy}
-          />
-        </label>
-        {filename && <span className="text-sm text-slate-500">{filename}</span>}
-      </div>
-
-      {report?.ok && (
-        <p className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">
-          นำเข้าสำเร็จ {report.created} รายการ
+    <ContentMotionDIV className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+      <div
+        ref={box}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={subtitleId}
+        tabIndex={-1}
+        className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl focus:outline-none"
+      >
+        <h2 id={titleId} className="mb-1 text-lg font-medium text-primary">
+          {title}
+        </h2>
+        <p id={subtitleId} className="mb-4 text-sm text-slate-500">
+          {subtitle}
         </p>
-      )}
 
-      {/*
-        Announced as well as drawn - #111. The role is on the block rather
-        than on the sentence inside it, so the table of offending lines is
-        part of what gets read out: *nothing was saved* on its own tells
-        somebody that they have to go and find out why.
-      */}
-      {report && !report.ok && (
-        <div role="alert" className="mt-4 rounded-lg bg-red-50 p-3">
-          <p className="text-sm font-medium text-red-800">
-            ไม่ได้บันทึกรายการใด กรุณาแก้ไขแถวต่อไปนี้แล้วอัปโหลดใหม่
-          </p>
-          <table className="mt-2 w-full text-left text-sm text-red-800">
-            <thead>
-              <tr>
-                <th className="w-24 py-1">บรรทัดที่</th>
-                <th className="py-1">สาเหตุ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.errors.map(error => (
-                <tr key={`${error.line}-${error.message}`}>
-                  <td className="py-1 align-top">{error.line}</td>
-                  <td className="py-1">{error.message}</td>
-                </tr>
+        {Array.isArray(notes) && notes.length > 0 && (
+          <div className="mb-4 rounded-lg bg-slate-50 p-4">
+            <h3 className="mb-2 text-sm font-medium text-slate-800">รูปแบบข้อมูลในไฟล์</h3>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
+              {notes.map(note => (
+                <li key={note}>{note}</li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={download}
+            disabled={busy}
+            className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+          >
+            ดาวน์โหลดแบบฟอร์ม
+          </button>
+          <label className="cursor-pointer rounded-lg border border-dashed border-blue-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50">
+            เลือกไฟล์ที่กรอกแล้ว
+            <input
+              ref={input}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={choose}
+              disabled={busy}
+            />
+          </label>
+          {filename && <span className="text-sm text-slate-500">{filename}</span>}
         </div>
-      )}
+
+        {/*
+          Announced as well as drawn - #111. The role is on the block rather
+          than on the sentence inside it, so the table of offending lines is
+          part of what gets read out: *nothing was saved* on its own tells
+          somebody that they have to go and find out why.
+        */}
+        {report && !report.ok && (
+          <div role="alert" className="mt-4 rounded-lg bg-red-50 p-3">
+            <p className="text-sm font-medium text-red-800">
+              ไม่ได้บันทึกรายการใด กรุณาแก้ไขแถวต่อไปนี้แล้วอัปโหลดใหม่
+            </p>
+            <table className="mt-2 w-full text-left text-sm text-red-800">
+              <thead>
+                <tr>
+                  <th className="w-24 py-1">บรรทัดที่</th>
+                  <th className="py-1">สาเหตุ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {report.errors.map(error => (
+                  <tr key={`${error.line}-${error.message}`}>
+                    <td className="py-1 align-top">{error.line}</td>
+                    <td className="py-1">{error.message}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-4">
+          <button
+            type="button"
+            onClick={close}
+            disabled={busy}
+            className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="button"
+            onClick={upload}
+            disabled={busy || !file}
+            className="rounded-lg bg-secondary px-5 py-2 text-sm font-medium text-white hover:bg-secondary_hover disabled:opacity-60"
+          >
+            {busy ? 'กำลังนำเข้า…' : 'นำเข้า'}
+          </button>
+        </div>
+      </div>
     </ContentMotionDIV>
   )
 }

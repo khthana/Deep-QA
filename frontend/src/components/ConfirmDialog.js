@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef } from 'react'
+import { useId, useRef } from 'react'
 
 import ContentMotionDIV from './ContentMotionDIV'
+import useModalFocus from './useModalFocus'
 
 /** Thai letters, vowels and marks - not the digits, ฿, ๏ or ๚๛. */
 const THAI = '[\u0E01-\u0E3A\u0E40-\u0E4E]'
@@ -142,9 +143,6 @@ export default function ConfirmDialog({
   // reads next is the name and the description below and not the row behind.
   // `box.current` is set by construction: this runs after the commit in which
   // `open` was true, which is the commit that drew the div.
-  useEffect(() => {
-    if (open) box.current.focus()
-  }, [open])
 
   // The focus stays in the box while it is open: anything outside that takes
   // the focus has it taken back. This is #217, the containment half #204
@@ -164,28 +162,18 @@ export default function ConfirmDialog({
   // the focus on the first control inside instead of on the box; the box has
   // `tabIndex={-1}` and a name and description, so what a screen reader reads
   // on arrival is the question rather than a button.
-  useEffect(() => {
-    if (!open) return undefined
-    const keep = event => {
-      if (!box.current.contains(event.target)) box.current.focus()
-    }
-    document.addEventListener('focusin', keep)
-    return () => document.removeEventListener('focusin', keep)
-  }, [open])
 
   // Escape is the ยกเลิก, including while `busy` - the ยกเลิก button is not
   // disabled then either, so the two ways out answer alike. On `window` rather
   // than on the box: the listener is not reached by a key pressed outside the
   // box, but the box is where the focus is since #217, and leaving it on
   // `window` costs nothing and keeps the way out independent of the trap.
-  useEffect(() => {
-    if (!open) return undefined
-    const onKeyDown = event => {
-      if (event.key === 'Escape') onCancel()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [open, onCancel])
+  //
+  // The three behaviours above are one call since #270, whose import window
+  // needed all three and whose ticket asked for them not to be written twice:
+  // `useModalFocus.js`. The paragraphs stay here because this is the file
+  // whose rows decided them.
+  useModalFocus(box, open, onCancel)
 
   if (!open) return null
 

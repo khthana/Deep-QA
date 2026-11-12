@@ -91,9 +91,11 @@ MUTANTS = {
    "")],
  # the department's code put back in front of its name, which is what #93
  # took out of every label that names a department, a programme or a subject
+ # #270 (12 พ.ย. 2569): the filter is `<PageHeader>`'s child now, two spaces
+ # shallower.
  'M10': [('page',
-   "                      {departments[0].department_name_th}",
-   "                      {departments[0].department_id} {departments[0].department_name_th}")],
+   "                    {departments[0].department_name_th}",
+   "                    {departments[0].department_id} {departments[0].department_name_th}")],
  # the English name not drawn beside the Thai one
  'M11': [('page',
    "                          {subject.subject_name_en}",
