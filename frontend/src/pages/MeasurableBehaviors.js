@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { HiOutlineArrowLeft, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
+import { HiOutlineArrowLeft } from 'react-icons/hi2'
 
 import BehaviorForm from '../components/behaviors/BehaviorForm'
 import { cognitiveLevelName, learningActivityName } from '../components/behaviors/labels'
@@ -11,8 +11,8 @@ import {
   createBehavior,
   deleteBehavior,
   getBehaviors,
-  updateBehavior,
-} from '../api/behaviors'
+  updateBehavior } from '../api/behaviors'
+import RowAction from '../components/RowAction'
 
 /**
  * พฤติกรรมที่วัดผลได้ตาม CLO — ticket #28.
@@ -263,25 +263,19 @@ export default function MeasurableBehaviors() {
                   </div>
 
                   <div className="flex shrink-0 gap-2">
-                    <button
-                      type="button"
+                    <RowAction
+                      kind="edit"
+                      label={`แก้ไขข้อ ${behavior.behavior_no}`}
                       onClick={() => {
                         showing.current = {}
                         setEditing(behavior)
                       }}
-                      aria-label={`แก้ไขข้อ ${behavior.behavior_no}`}
-                      className="rounded-lg p-2 text-primary hover:bg-blue-50"
-                    >
-                      <HiOutlinePencil className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
+                    />
+                    <RowAction
+                      kind="remove"
+                      label={`ลบข้อ ${behavior.behavior_no}`}
                       onClick={() => setRemoving(behavior)}
-                      aria-label={`ลบข้อ ${behavior.behavior_no}`}
-                      className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                    >
-                      <HiOutlineTrash className="h-5 w-5" />
-                    </button>
+                    />
                   </div>
                 </div>
               </li>

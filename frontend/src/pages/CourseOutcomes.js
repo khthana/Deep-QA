@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
 
 import CloForm from '../components/clos/CloForm'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -10,8 +9,8 @@ import {
   createCourseOutcome,
   deleteCourseOutcome,
   getCourseOutcomes,
-  updateCourseOutcome,
-} from '../api/clos'
+  updateCourseOutcome } from '../api/clos'
+import RowAction from '../components/RowAction'
 
 /**
  * ผลการเรียนรู้รายวิชา — ticket #27.
@@ -289,25 +288,19 @@ export default function CourseOutcomes() {
                   </div>
 
                   <div className="flex shrink-0 gap-2">
-                    <button
-                      type="button"
+                    <RowAction
+                      kind="edit"
+                      label={`แก้ไข ${clo.clo_number}`}
                       onClick={() => {
                         showing.current = {}
                         setEditing(clo)
                       }}
-                      aria-label={`แก้ไข ${clo.clo_number}`}
-                      className="rounded-lg p-2 text-primary hover:bg-blue-50"
-                    >
-                      <HiOutlinePencil className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
+                    />
+                    <RowAction
+                      kind="remove"
+                      label={`ลบ ${clo.clo_number}`}
                       onClick={() => setRemoving(clo)}
-                      aria-label={`ลบ ${clo.clo_number}`}
-                      className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                    >
-                      <HiOutlineTrash className="h-5 w-5" />
-                    </button>
+                    />
                   </div>
                 </div>
 

@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import {
-  HiOutlineArrowLeft,
-  HiOutlinePencil,
-  HiOutlineTrash,
-} from 'react-icons/hi2'
+import { HiOutlineArrowLeft } from 'react-icons/hi2'
 
 import CriterionForm from '../components/achievements/CriterionForm'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -14,8 +10,8 @@ import {
   createCriterion,
   deleteCriterion,
   getCriteria,
-  updateCriterion,
-} from '../api/achievements'
+  updateCriterion } from '../api/achievements'
+import RowAction from '../components/RowAction'
 
 /**
  * เกณฑ์การบรรลุผลตาม CLO — ticket #29.
@@ -262,25 +258,19 @@ export default function AchievementCriteria() {
                   </div>
 
                   <div className="flex shrink-0 gap-2">
-                    <button
-                      type="button"
+                    <RowAction
+                      kind="edit"
+                      label={`แก้ไขข้อ ${criterion.criteria_no}`}
                       onClick={() => {
                         showing.current = {}
                         setEditing(criterion)
                       }}
-                      aria-label={`แก้ไขข้อ ${criterion.criteria_no}`}
-                      className="rounded-lg p-2 text-primary hover:bg-blue-50"
-                    >
-                      <HiOutlinePencil className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
+                    />
+                    <RowAction
+                      kind="remove"
+                      label={`ลบข้อ ${criterion.criteria_no}`}
                       onClick={() => setRemoving(criterion)}
-                      aria-label={`ลบข้อ ${criterion.criteria_no}`}
-                      className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                    >
-                      <HiOutlineTrash className="h-5 w-5" />
-                    </button>
+                    />
                   </div>
                 </div>
               </li>

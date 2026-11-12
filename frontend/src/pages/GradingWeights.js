@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { HiOutlineTrash } from 'react-icons/hi2'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
@@ -11,8 +10,8 @@ import {
   getWeights,
   saveWeights,
   importTemplate,
-  importWeights,
-} from '../api/weights'
+  importWeights } from '../api/weights'
+import RowAction from '../components/RowAction'
 
 /**
  * สัดส่วนคะแนน — ticket #30.
@@ -313,16 +312,13 @@ export default function GradingWeights() {
                       className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"
                     />
                   </label>
-                  <button
-                    type="button"
+                  <RowAction
+                    kind="remove"
+                    label={`ลบหมวดคะแนนที่ ${index + 1}`}
                     onClick={() =>
                       setRemoving({ index, name: row.score_category })
                     }
-                    aria-label={`ลบหมวดคะแนนที่ ${index + 1}`}
-                    className="rounded-lg p-2.5 text-red-600 hover:bg-red-50"
-                  >
-                    <HiOutlineTrash className="h-5 w-5" />
-                  </button>
+                  />
                 </li>
               ))}
             </ul>

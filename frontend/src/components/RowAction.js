@@ -1,4 +1,5 @@
 import { MdBlock, MdOutlineCheckCircle, MdOutlineRemoveRedEye } from 'react-icons/md'
+import { Link } from 'react-router-dom'
 import { RiDeleteBin6Line, RiEdit2Line } from 'react-icons/ri'
 
 /**
@@ -23,8 +24,15 @@ import { RiDeleteBin6Line, RiEdit2Line } from 'react-icons/ri'
  * person cannot suspend their own account or revoke their own grant was
  * already a tooltip, and it says more than the word would.
  *
+ * **A place is drawn as a link** (#273). Handed `to` instead of `onClick`, it
+ * renders a router `<Link>` in the same square, because LearningActivities'
+ * หลักฐาน goes somewhere rather than doing something (#35) and its role is
+ * what the specs and a screen reader read it by.
+ *
  * `e2e/tests/271a-action-icons.spec.js` holds the three claims on every
- * screen that draws one; `mutation/271-action-icons.py` breaks each here.
+ * administration screen that draws one, and `273a-teacher-row-actions.spec.js`
+ * on the teacher screens (#273), whose names say what the act is done to and so
+ * make a longer tooltip; `mutation/271-action-icons.py` breaks each here.
  */
 const KINDS = {
   edit: {
@@ -49,19 +57,21 @@ const KINDS = {
   },
 }
 
-export default function RowAction({ kind, label, title, onClick, disabled = false }) {
+export default function RowAction({ kind, label, title, onClick, to, disabled = false }) {
   const { Icon, tone } = KINDS[kind]
+  // One element whichever it is, so the name, the tooltip and the icon are
+  // written once for both and a mutant of any of them reaches the link too.
+  const Square = to ? Link : 'button'
+  const how = to ? { to } : { type: 'button', onClick, disabled }
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
+    <Square
+      {...how}
       aria-label={label}
       title={title ?? label}
       className={`inline-flex rounded-lg border p-2 transition focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${tone}`}
     >
       <Icon aria-hidden="true" className="text-xl" />
-    </button>
+    </Square>
   )
 }
 

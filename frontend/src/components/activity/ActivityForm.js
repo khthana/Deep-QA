@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { HiOutlineTrash } from 'react-icons/hi2'
 
 import ContentMotionDIV from '../ContentMotionDIV'
+import RowAction from '../RowAction'
 
 /**
  * The one form, used for adding and for editing — as WeekForm is for #31.
@@ -316,15 +316,12 @@ export default function ActivityForm({ activity, categories, clos, weeks, busy, 
                       : '—'}
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={() => dropRow(index)}
+                  <RowAction
+                    kind="remove"
+                    label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}
                     disabled={sending}
-                    aria-label={`นำผลการเรียนรู้แถวที่ ${index + 1} ออก`}
-                    className="justify-self-start rounded-lg p-2 text-red-600 hover:bg-red-50"
-                  >
-                    <HiOutlineTrash className="h-5 w-5" />
-                  </button>
+                    onClick={() => dropRow(index)}
+                  />
                 </li>
               ))}
             </ul>

@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import {
-  HiOutlineArrowDownTray,
-  HiOutlineArrowLeft,
-  HiOutlinePencil,
-  HiOutlineTrash,
-} from 'react-icons/hi2'
+import { HiOutlineArrowLeft } from 'react-icons/hi2'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
@@ -17,8 +12,8 @@ import {
   getEvidenceFile,
   replaceEvidence,
   showPdf,
-  uploadEvidence,
-} from '../api/evidence'
+  uploadEvidence } from '../api/evidence'
+import RowAction from '../components/RowAction'
 
 /**
  * หลักฐานการประเมิน — ticket #35.
@@ -271,21 +266,14 @@ export default function ActivityEvidence() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h2 className="font-medium text-gray-900">{nameOfType(file.evidence_type)}</h2>
-                    {/* The name a reader hears is *เปิดหลักฐาน <ชื่อไฟล์>* and
-                        not the filename alone. The hand-walk is what settled
-                        that: on screen the arrow icon says *press this to open
-                        it*, and to anybody not looking at the icon the button
-                        was called `walk-brief.pdf` — which names the file and
-                        not the act, where its two neighbours name both. */}
-                    <button
-                      type="button"
-                      onClick={() => open(file)}
-                      aria-label={`เปิดหลักฐาน ${file.file_name}`}
-                      className="mt-1 inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                    >
-                      <HiOutlineArrowDownTray className="h-4 w-4" />
-                      {file.file_name}
-                    </button>
+                    {/* The file's name is text, and opening it is the blue
+                        eye beside แก้ไข and ลบ (#273, the owner's answer of 12
+                        November 2569). The eye is still called *เปิดหลักฐาน
+                        <ชื่อไฟล์>* and not the filename alone, which the
+                        hand-walk settled when the name itself was the button:
+                        it names the act and the file, as its two neighbours
+                        do. */}
+                    <p className="mt-1 text-sm text-gray-900">{file.file_name}</p>
                     {file.description && (
                       <p className="mt-1 text-sm text-slate-600">{file.description}</p>
                     )}
@@ -293,25 +281,24 @@ export default function ActivityEvidence() {
                   </div>
 
                   <div className="flex shrink-0 gap-2">
-                    <button
-                      type="button"
+                    <RowAction
+                      kind="open"
+                      label={`เปิดหลักฐาน ${file.file_name}`}
+                      onClick={() => open(file)}
+                    />
+                    <RowAction
+                      kind="edit"
+                      label={`แก้ไขหลักฐาน ${file.file_name}`}
                       onClick={() => {
                         showing.current = {}
                         setEditing(file)
                       }}
-                      aria-label={`แก้ไขหลักฐาน ${file.file_name}`}
-                      className="rounded-lg p-2 text-primary hover:bg-blue-50"
-                    >
-                      <HiOutlinePencil className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
+                    />
+                    <RowAction
+                      kind="remove"
+                      label={`ลบหลักฐาน ${file.file_name}`}
                       onClick={() => setRemoving(file)}
-                      aria-label={`ลบหลักฐาน ${file.file_name}`}
-                      className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                    >
-                      <HiOutlineTrash className="h-5 w-5" />
-                    </button>
+                    />
                   </div>
                 </div>
               </li>

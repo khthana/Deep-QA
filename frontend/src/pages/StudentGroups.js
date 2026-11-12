@@ -3,9 +3,7 @@ import { useParams } from 'react-router-dom'
 import {
   HiOutlineArrowRightCircle,
   HiOutlineClock,
-  HiOutlinePencilSquare,
   HiOutlinePlusCircle,
-  HiOutlineTrash,
   HiOutlineXMark,
 } from 'react-icons/hi2'
 
@@ -25,8 +23,8 @@ import {
   listGroups,
   moveToGroup,
   removeFromGroup,
-  renameGroup,
-} from '../api/workGroups'
+  renameGroup } from '../api/workGroups'
+import RowAction from '../components/RowAction'
 
 /**
  * กลุ่มงานนักศึกษา — ticket #26.
@@ -439,24 +437,18 @@ export default function StudentGroups() {
                     >
                       {group.member_count}/{data.max_group_size}
                     </span>
-                    <button
-                      type="button"
+                    <RowAction
+                      kind="edit"
+                      label={`เปลี่ยนชื่อ ${group.group_name}`}
                       onClick={() =>
                         setRenaming({ group_id: group.group_id, value: group.group_name })
                       }
-                      aria-label={`เปลี่ยนชื่อ ${group.group_name}`}
-                      className="ml-auto rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-                    >
-                      <HiOutlinePencilSquare className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
+                    />
+                    <RowAction
+                      kind="remove"
+                      label={`ลบ ${group.group_name}`}
                       onClick={() => setRemovingGroup(group)}
-                      aria-label={`ลบ ${group.group_name}`}
-                      className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                    >
-                      <HiOutlineTrash className="h-5 w-5" />
-                    </button>
+                    />
                   </div>
                 )}
 

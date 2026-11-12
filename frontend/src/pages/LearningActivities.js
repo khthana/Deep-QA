@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { HiOutlinePaperClip, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
+import { useParams } from 'react-router-dom'
 
 import ActivityForm from '../components/activity/ActivityForm'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import { createActivity, deleteActivity, getActivities, updateActivity } from '../api/activities'
+import RowAction from '../components/RowAction'
 
 /**
  * กิจกรรมการเรียนรู้ในรายวิชา — ticket #32.
@@ -313,32 +313,24 @@ export default function LearningActivities() {
                                 card rather than in the editor because the
                                 evidence is about the work rather than part of
                                 writing it. */}
-                            <Link
+                            <RowAction
+                              kind="open"
+                              label={`หลักฐานการประเมินของ ${activity.activity_name}`}
                               to={`/teacher/teacherDashboard/${sectionId}/learningActivities/${activity.id}/evidence`}
-                              aria-label={`หลักฐานการประเมินของ ${activity.activity_name}`}
-                              className="rounded-lg p-2 text-primary hover:bg-blue-50"
-                            >
-                              <HiOutlinePaperClip className="h-5 w-5" />
-                            </Link>
-                            <button
-                              type="button"
+                            />
+                            <RowAction
+                              kind="edit"
+                              label={`แก้ไขกิจกรรม ${activity.activity_name}`}
                               onClick={() => {
                                 showing.current = {}
                                 setEditing(activity)
                               }}
-                              aria-label={`แก้ไขกิจกรรม ${activity.activity_name}`}
-                              className="rounded-lg p-2 text-primary hover:bg-blue-50"
-                            >
-                              <HiOutlinePencil className="h-5 w-5" />
-                            </button>
-                            <button
-                              type="button"
+                            />
+                            <RowAction
+                              kind="remove"
+                              label={`ลบกิจกรรม ${activity.activity_name}`}
                               onClick={() => setRemoving(activity)}
-                              aria-label={`ลบกิจกรรม ${activity.activity_name}`}
-                              className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                            >
-                              <HiOutlineTrash className="h-5 w-5" />
-                            </button>
+                            />
                           </div>
                         </div>
                       </li>

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
+import RowAction from '../RowAction'
 
 /**
  * What `seededFrom` holds while no editor is open.
@@ -146,22 +146,16 @@ export default function EntrySection({
 
         {!editing && entry && (
           <div className="flex shrink-0 gap-2">
-            <button
-              type="button"
+            <RowAction
+              kind="edit"
+              label={`แก้ไข${label}`}
               onClick={onEdit}
-              aria-label={`แก้ไข${label}`}
-              className="rounded-lg p-2 text-primary hover:bg-blue-50"
-            >
-              <HiOutlinePencil className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
+            />
+            <RowAction
+              kind="remove"
+              label={`ลบ${label}`}
               onClick={onRemove}
-              aria-label={`ลบ${label}`}
-              className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-            >
-              <HiOutlineTrash className="h-5 w-5" />
-            </button>
+            />
           </div>
         )}
       </div>

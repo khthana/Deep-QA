@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import WeekForm from '../components/plan/WeekForm'
 import { createWeek, deleteWeek, getPlan, updateWeek } from '../api/teachingPlan'
+import RowAction from '../components/RowAction'
 
 /**
  * แผนการสอน — ticket #31.
@@ -260,25 +260,19 @@ export default function TeachingPlan() {
                   </div>
 
                   <div className="flex shrink-0 gap-2">
-                    <button
-                      type="button"
+                    <RowAction
+                      kind="edit"
+                      label={`แก้ไขสัปดาห์ที่ ${week.week_no} · ${week.title}`}
                       onClick={() => {
                         showing.current = {}
                         setEditing(week)
                       }}
-                      aria-label={`แก้ไขสัปดาห์ที่ ${week.week_no} · ${week.title}`}
-                      className="rounded-lg p-2 text-primary hover:bg-blue-50"
-                    >
-                      <HiOutlinePencil className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
+                    />
+                    <RowAction
+                      kind="remove"
+                      label={`ลบสัปดาห์ที่ ${week.week_no} · ${week.title}`}
                       onClick={() => setRemoving(week)}
-                      aria-label={`ลบสัปดาห์ที่ ${week.week_no} · ${week.title}`}
-                      className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                    >
-                      <HiOutlineTrash className="h-5 w-5" />
-                    </button>
+                    />
                   </div>
                 </div>
               </li>
