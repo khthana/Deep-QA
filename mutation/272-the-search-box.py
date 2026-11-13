@@ -176,6 +176,8 @@ list is already on, once trimmed, leaves the page where it is*
 *the banner of the addition, over a list it is not of* · ตรงคำทำนายทั้งเจ็ด · สามแฟ้มสะอาด 75 ผ่าน
 
 **13 พ.ย. 2569:** `s272searchignored` ฆ่าแถว H1 ของ `tests/272c-the-search-box-on-the-history-picker.spec.js` ด้วย ที่ `total` — ทำนายและบันทึกใน `272-the-search-box-on-the-history-picker.py` (#257)
+
+**13 พ.ย. 2569 (ชิ้นที่สี่):** `s272outsidenever` ฆ่าแถว D1–D4 และ `s272outsidealways` ฆ่า D1–D3 ของ `tests/272d-the-search-box-on-the-teacher-dashboard.spec.js` ด้วย — ทำนายและบันทึกใน `272-the-search-box-on-the-teacher-dashboard.py` (#257)
 """
 from harness import main
 

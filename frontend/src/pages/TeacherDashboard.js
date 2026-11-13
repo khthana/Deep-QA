@@ -3,9 +3,29 @@ import { useNavigate } from 'react-router-dom'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
+import SearchBox from '../components/SearchBox'
 import { listMySections } from '../api/teaching'
+import { outsideSearch } from '../lib/outsideTheSearch'
 import { semesterLabel } from '../components/offerings/terms'
 import { useScreenGeneration } from '../context/ScreenGeneration'
+
+/**
+ * What the search box holds a card to - #272, the owner's answer of
+ * 13 November 2569: the code and both names, and not the section number or the
+ * count of students. The options not taken were the delivered screen's code and
+ * Thai name
+ * (`DEEP-QA-FRONTEND/src/components/content/TeacherContent/TeacherDashboard/TeacherDashboard.js`,
+ * `filteredCourses`) and everything the card draws.
+ *
+ * In the browser and not on the server, like `StudentGroups.js`:
+ * `listMySections` answers every ตอนเรียน of the term at once and nothing here
+ * is paged, so the cards in hand are all the cards there are.
+ */
+const searched = section => [
+  section.subject_id,
+  section.subject_name_th,
+  section.subject_name_en,
+]
 
 /**
  * รายวิชาที่สอน — ticket #24, the first screen a ผู้สอน sees.
@@ -21,6 +41,8 @@ import { useScreenGeneration } from '../context/ScreenGeneration'
  * this account teaches (ADR-0002). There is no filter on this screen and no
  * term picker, because "this term" is not a preference — a lecturer opening the
  * system in August is looking at the class they are teaching in August.
+ * (13 November 2569: a search box narrows the cards drawn, in the browser -
+ * #272, `searched` above. It decides nothing about what the server sends.)
  *
  * The term therefore comes back with the list rather than being worked out
  * here. That is what lets the empty state name it. A screen that read its own
@@ -48,6 +70,10 @@ export default function TeacherDashboard() {
   const [term, setTerm] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The search the cards are filtered by - #272. Written once typing pauses
+  // (`components/SearchBox.js`) and read only in the drawing: no request
+  // carries it, `searched` above says why.
+  const [q, setQ] = useState('')
   const navigate = useNavigate()
 
   // Which generation of its data this screen is drawn from - #198. A switch of
@@ -55,7 +81,9 @@ export default function TeacherDashboard() {
   // this screen reads its list again instead of being unmounted. There is
   // nothing on this screen for a remount to throw away - no filter, no form -
   // so what the generation buys here is only the read, which is what #155
-  // wanted from the remount in the first place.
+  // wanted from the remount in the first place. (13 November 2569: the search
+  // of #272 is kept across that read, as a filter the person typed and not an
+  // answer the server gave.)
   // `context/ScreenGeneration.js` carries why #155's remount was narrowed.
   const generation = useScreenGeneration()
 
@@ -89,6 +117,8 @@ export default function TeacherDashboard() {
     load()
   }, [load])
 
+  const shown = sections.filter(section => !outsideSearch(q, searched(section)))
+
   const termLabel = term
     ? `${semesterLabel(term.semester)} ปีการศึกษา ${term.academicYear}`
     : ''
@@ -97,11 +127,15 @@ export default function TeacherDashboard() {
     <ContentMotionDIV className="px-6 py-6">
       <Notice notice={notice} />
 
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-primary">รายวิชาที่สอน</h1>
-        {term && (
-          <p className="mt-1 text-sm text-slate-500">{termLabel}</p>
-        )}
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-primary">รายวิชาที่สอน</h1>
+          {term && (
+            <p className="mt-1 text-sm text-slate-500">{termLabel}</p>
+          )}
+        </div>
+        {/* #272 - the delivered screen's search (`ค้นหารายวิชา`). */}
+        <SearchBox label="ค้นหารายวิชา" value={q} onSearch={setQ} />
       </div>
 
       {loading && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -117,9 +151,13 @@ export default function TeacherDashboard() {
         </div>
       )}
 
-      {!loading && sections.length > 0 && (
+      {!loading && sections.length > 0 && shown.length === 0 && (
+        <p className="text-sm text-slate-500">ไม่พบรายวิชาตามคำค้น</p>
+      )}
+
+      {!loading && shown.length > 0 && (
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {sections.map(section => (
+          {shown.map(section => (
             <li key={section.section_id}>
               <button
                 type="button"
