@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
+import SearchBox from '../components/SearchBox'
 import HistoryPanel from '../components/users/HistoryPanel'
 import { personName } from '../components/users/personName'
 import { listUsers } from '../api/users'
@@ -25,6 +26,12 @@ import { listUsers } from '../api/users'
  * The search box narrows the picker rather than the history. A `<select>` is
  * unusable at university scale, so it holds one server page of matches and says
  * how many matched in total when there are more than fit.
+ *
+ * Since #272 (the owner's answer of 13 November 2569) the box is the shared
+ * `SearchBox` - the magnifier, a pause before the read, and `%` `_` read as
+ * themselves by `GET /api/users` - and it still narrows the picker: a second box
+ * over the history, and the delivered page's one table of every account's
+ * entries (`userLogs.js`), were the options not taken.
  */
 
 const PICKER_SIZE = 100
@@ -104,12 +111,7 @@ export default function UserHistory() {
         </p>
 
         <div className="flex flex-wrap gap-3">
-          <input
-            className={`${control} w-64`}
-            value={q}
-            onChange={event => setQ(event.target.value)}
-            placeholder="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้"
-          />
+          <SearchBox label="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้" value={q} onSearch={setQ} />
           <select
             className={`${control} w-80`}
             value={chosen?.user_id ?? ''}

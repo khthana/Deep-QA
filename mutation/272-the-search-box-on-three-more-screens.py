@@ -120,6 +120,8 @@ list: a jump to another ตอนเรียน clears the term* · **G11** *th
 - `s272bclassboxkept` ล้ม 1 — C9 ที่ `toHaveValue('')` ของช่อง
 - `s272bgroupsjumpkeeps` ล้ม 1 — G11 ที่การ์ด
 - `s272bgroupsboxkept` ล้ม 1 — G11 ที่ `toHaveValue('')` ของช่อง
+
+**13 พ.ย. 2569:** `s272busersescape` ฆ่าแถว H1 ของ `tests/272c-the-search-box-on-the-history-picker.spec.js` ด้วย ที่ `total` — ทำนายและบันทึกใน `272-the-search-box-on-the-history-picker.py` (#257)
 """
 from harness import main
 
