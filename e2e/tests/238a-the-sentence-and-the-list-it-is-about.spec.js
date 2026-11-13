@@ -178,7 +178,18 @@ test.describe('ข้อมูลผู้ใช้งาน (Users.js)', () => 
         new URL(answer.url()).pathname === users.API &&
         new URL(answer.url()).searchParams.get('q') === term,
     );
+    const asked = page.waitForRequest(
+      request =>
+        new URL(request.url()).pathname === users.API &&
+        new URL(request.url()).searchParams.get('q') === term,
+    );
     await page.getByPlaceholder('ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้').fill(term);
+    // Since #272 (13 November 2569) the box waits for typing to pause before
+    // the term becomes the filter, so the held answer is let go only once the
+    // filter has moved - which is the situation the row is about. Released
+    // earlier, it lands on a screen nobody has moved yet, and saying the
+    // sentence there is right.
+    await asked;
 
     held.open();
     await held.answered;

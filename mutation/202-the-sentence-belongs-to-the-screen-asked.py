@@ -195,8 +195,8 @@ MUTANTS = {
     # ของหน้าที่ไม่มีใครจะอ่าน ซึ่งเป็นความผิดของ #206 เขียนที่จุดนี้ ประโยคจึงไม่เคยถูกพูด
     # และแถวลบ (ที่ขอให้เงียบ) ยังเขียว
     'enrolmentremovekeyedelsewhere': ('enrolment',
-        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n',
-        '        waiting.current = { of: readOf(sectionId, onPage.current + 1), said }\n'),
+        '        waiting.current = { of: readOf(sectionId, onPage.current, q), said }\n',
+        '        waiting.current = { of: readOf(sectionId, onPage.current + 1, q), said }\n'),
 }
 
 # ถอนเป็นบันทึก ไม่ใช่ลบ: ข้อความของมันคือโค้ดก่อน #209 และบรรทัดนั้นไม่มีในต้นไม้วันนี้

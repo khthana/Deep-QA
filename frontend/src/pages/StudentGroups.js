@@ -11,6 +11,9 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
 import PageHeader from '../components/PageHeader'
+import SearchBox from '../components/SearchBox'
+import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
+import { outsideSearch } from '../lib/outsideTheSearch'
 import Notice from '../components/Notice'
 import GroupHistory from '../components/groups/GroupHistory'
 import {
@@ -26,6 +29,28 @@ import {
   renameGroup,
 } from '../api/workGroups'
 import RowAction from '../components/RowAction'
+
+/**
+ * What the search box holds a group to - #272, the owner's answer of
+ * 12 November 2569: *ค้นทั้งชื่อกลุ่มและสมาชิก*. The delivered screen searched the
+ * group's name and meant to search its members
+ * (`DEEP-QA-FRONTEND/src/components/content/TeacherContent/StudentGroups/StudentGroups.js`,
+ * `filteredGroups`), but it joined objects - `g.students` holds
+ * `{ student_id }` (`DEEP-QA-BACKEND/models/studentGroupModel.js`) - so it read
+ * `[object Object]` and no member's code ever matched (review of
+ * 13 November 2569). The answer asks for members, and a member is drawn here as
+ * a code and a name, so both are searched. Its row number and `group_id` were
+ * searched too and are not: the rebuild draws neither.
+ *
+ * In the browser and not on the server, unlike the other screens of #272:
+ * `listGroups` answers every group of the Section at once and nothing here is
+ * paged, so the rows in hand are all the rows there are. `outsideSearch` is the
+ * same question the server-side screens ask (`lib/outsideTheSearch.js`).
+ */
+const searched = group => [
+  group.group_name,
+  ...group.members.flatMap(member => [member.student_id, member.full_name_th]),
+]
 
 /**
  * กลุ่มงานนักศึกษา — ticket #26.
@@ -97,6 +122,25 @@ export default function StudentGroups() {
   const [sending, setSending] = useState(null)
   const [showHistory, setShowHistory] = useState(false)
   const [writes, setWrites] = useState(0)
+  // The search the cards are filtered by - #272. Written once typing pauses
+  // (`components/SearchBox.js`), and read only in the drawing: no request
+  // carries it, `searched` above says why.
+  //
+  // It belongs to the Section it was typed on - the owner's answer of
+  // 13 November 2569, `SubjectStudents.js` carries the reasons.
+  const [search, setSearch] = useState({ of: sectionId, q: '' })
+  const q = search.of === sectionId ? search.q : ''
+  const setQ = term => setSearch({ of: sectionId, q: term })
+
+  /**
+   * The answer the screen last drew - #272. A write's sentence asks it whether
+   * the group the write was about is one the search hides, because what a
+   * group holds after a write is the server's to say: a rename keeps members
+   * the form never saw, and a create is found by the name it was given. Written
+   * by `load` below, beside `setData` and under the same `isCurrent()`, so it is
+   * never an answer the screen did not draw.
+   */
+  const drawn = useRef(null)
 
   /**
    * `loading` swaps the body of the screen and nothing above it —
@@ -114,7 +158,10 @@ export default function StudentGroups() {
     setLoading(true)
     try {
       const answer = await listGroups(sectionId)
-      if (isCurrent()) setData(answer)
+      if (isCurrent()) {
+        drawn.current = answer
+        setData(answer)
+      }
       return true
     } catch (error) {
       if (isCurrent()) {
@@ -161,6 +208,16 @@ export default function StudentGroups() {
   }, [load])
 
   /**
+   * Whether the search hides a group the reload has just drawn - #272, the
+   * owner's answer ข้อ 4 of 12 November 2569: #247's sentence is said when the
+   * row a write was about is not in the list the sentence stands over.
+   * `about` picks the group out of the answer; a group the answer no longer
+   * holds is hidden by nothing.
+   */
+  const hidden = (term, about) =>
+    (drawn.current?.groups ?? []).some(group => about(group) && outsideSearch(term, searched(group)))
+
+  /**
    * Every write ends in a reload rather than in a patch of the state it just
    * changed.
    *
@@ -169,7 +226,7 @@ export default function StudentGroups() {
    * count on the screen. Reconciling that by hand is four places to forget one,
    * and the read costs one request against a list that is a few dozen rows.
    */
-  const after = async (message, sent) => {
+  const after = async (message, sent, about = () => false) => {
     const drawing = onScreen.current
     const reloaded = await drawing(() => onScreen.current === drawing)
     // The counter is what the history panel reads and must move either way
@@ -181,7 +238,9 @@ export default function StudentGroups() {
     // has already moved the ref. Untested: the jump the comment above
     // `onScreen` names, #199's sibling. 11 October 2569 (#68)
     setWrites(count => count + 1)
-    if (reloaded && onScreen.current === sent) setNotice({ error: false, message })
+    if (reloaded && onScreen.current === sent) {
+      setNotice({ error: false, message: alsoOutside(message, hidden(q, about)) })
+    }
   }
 
   const failed = error => {
@@ -195,13 +254,13 @@ export default function StudentGroups() {
    * no form behind it - นำออกจากกลุ่ม is a button on a row - passes none and
    * closes no field.
    */
-  const write = async (action, succeeded, form = null) => {
+  const write = async (action, succeeded, form = null, about = undefined) => {
     setBusy(true)
     setSending(form)
     setNotice(null)
     const sent = onScreen.current
     try {
-      await after(succeeded(await action), sent)
+      await after(succeeded(await action), sent, about)
     } catch (error) {
       failed(error)
     } finally {
@@ -220,6 +279,8 @@ export default function StudentGroups() {
         return `สร้างกลุ่ม ${typed} แล้ว`
       },
       'create',
+      // Group names are unique within a Section, so the name finds it.
+      group => group.group_name === typed,
     )
   }
 
@@ -233,6 +294,7 @@ export default function StudentGroups() {
         return `เปลี่ยนชื่อกลุ่มเป็น ${value.trim()} แล้ว`
       },
       'rename',
+      group => group.group_id === group_id,
     )
   }
 
@@ -256,9 +318,14 @@ export default function StudentGroups() {
   }
 
   const takeOut = (group, member) =>
-    write(removeFromGroup(sectionId, group.group_id, member.student_id), () => {
-      return `นำ ${member.full_name_th} ออกจาก ${group.group_name} แล้ว`
-    })
+    write(
+      removeFromGroup(sectionId, group.group_id, member.student_id),
+      () => `นำ ${member.full_name_th} ออกจาก ${group.group_name} แล้ว`,
+      null,
+      // A group found only by the member taken out of it is hidden once they
+      // have gone.
+      one => one.group_id === group.group_id,
+    )
 
   const disband = async () => {
     const group = removingGroup
@@ -281,6 +348,9 @@ export default function StudentGroups() {
   }
 
   const ungrouped = data?.students.filter(student => student.group_id === null) ?? []
+  // The cards the search leaves - #272. The heading's counts and the ungrouped
+  // panel stay the whole Section's: the search is over groups.
+  const shown = data?.groups.filter(group => !outsideSearch(q, searched(group))) ?? []
   const placed = (data?.students.length ?? 0) - ungrouped.length
 
   return (
@@ -309,7 +379,10 @@ export default function StudentGroups() {
             }
             importLabel="นำเข้ากลุ่ม"
             onImport={() => setImporting(true)}
-          />
+          >
+            {/* #272 - the delivered screen's search (`ค้นหากลุ่มหรือสมาชิก`). */}
+            <SearchBox key={sectionId} label="ค้นหากลุ่มหรือสมาชิก" value={q} onSearch={setQ} />
+          </PageHeader>
 
           <ImportPanel
             open={importing}
@@ -321,9 +394,16 @@ export default function StudentGroups() {
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importGroups(sectionId, csv)}
             onStart={() => setNotice(null)}
-            onImported={() => {
+            onImported={async result => {
               const drawing = onScreen.current
-              drawing(() => onScreen.current === drawing)
+              const drew = await drawing(() => onScreen.current === drawing)
+              // #252's sentence, by #272's answer ข้อ 4: a group the file put
+              // somebody into that the search hides. The panel draws its own
+              // report, so this is the screen's only sentence for an import.
+              const groups = new Set((result?.members ?? []).map(row => row.group_id))
+              if (drew && onScreen.current === drawing && hidden(q, group => groups.has(group.group_id))) {
+                setNotice({ error: false, message: SOME_IMPORTED_OUTSIDE })
+              }
             }}
             onError={failed}
           />
@@ -389,8 +469,11 @@ export default function StudentGroups() {
                 ยังไม่มีกลุ่มงานในตอนเรียนนี้
               </p>
             )}
+            {data.groups.length > 0 && shown.length === 0 && (
+              <p className="text-sm text-slate-500">ไม่พบกลุ่มงานตามคำค้น</p>
+            )}
 
-            {data.groups.map(group => (
+            {shown.map(group => (
               <section
                 key={group.group_id}
                 className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"

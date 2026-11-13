@@ -428,12 +428,12 @@ MUTANTS = {
     # รายชื่อนักศึกษาของรายวิชา: นำออก
     'enrolmentremovestalewins': ('enrolment',
         '      if (onScreen.current === sent) {\n'
-        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n'
+        '        waiting.current = { of: readOf(sectionId, onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
         '      if (onScreen.current === sent) {\n'
-        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n'
+        '        waiting.current = { of: readOf(sectionId, onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => true)\n'),

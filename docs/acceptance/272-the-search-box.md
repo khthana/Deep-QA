@@ -77,3 +77,66 @@
   *…ตามเงื่อนไขที่เลือก* ของ `Users` และการใส่คำที่ค้นลงในประโยค) · ถ้อยคำเป็นคำตอบแล้ว ไม่ใช่คำถาม
 - **กุญแจของประโยคที่ฝากไว้ถือ `q` จากการเรนเดอร์ที่ส่ง ไม่ใช่จาก ref** (#207 ขอให้ ref ถือพิกัดทั้งชุด) — ปลอดภัยด้วย
   เหตุผลเดียวกับข้อแรก และหมดอายุวันเดียวกัน (รีวิว 12 พ.ย. 2569)
+
+## ชิ้นที่สอง — `Users` รายชื่อนักศึกษาของรายวิชา และกลุ่มงาน (13 พ.ย. 2569)
+
+`/implement #272 ชิ้นถัดไป` · `Users` ได้ช่องค้นหาร่วม (`components/SearchBox.js`) และ `%` `_` เป็นตัวอักษรที่เส้นทาง
+(`searchOf`) ตามคำตอบของเจ้าของงาน 13 พ.ย. 2569 · **รายชื่อนักศึกษาของรายวิชา** (`SubjectStudents.js`) ค้นที่เซิร์ฟเวอร์
+(`backend/routes/enrolment.js` รหัสและชื่อ ซึ่งเป็นข้อความของระเบียนที่ตารางแสดง) · **กลุ่มงาน** (`StudentGroups.js`) ค้นใน
+เบราว์เซอร์ เพราะรายการไม่แบ่งหน้าและคำตอบเดียวถือทุกกลุ่ม — ชื่อกลุ่ม รหัสและชื่อสมาชิก ตามคำตอบข้อ 1 ·
+ระบบที่ส่งมอบ*ตั้งใจ*ค้นสมาชิก (`DEEP-QA-FRONTEND/.../StudentGroups/StudentGroups.js` `filteredGroups`) แต่ต่อสตริงจาก
+ออบเจกต์ `{ student_id }` จึงได้ `[object Object]` และรหัสของสมาชิกไม่เคยถูกพบ (รีวิว 13 พ.ย. 2569)
+
+**ตัวเลขบนหัวจอรายชื่อนักศึกษาเป็นทั้งตอนเรียน** ไม่ใช่สิ่งที่คำค้นพบ — เส้นทางตอบ `enrolled` คู่กับ `total` เพราะ `total`
+คือสิ่งที่ตัวแบ่งหน้านับ และหัวจอ *นักศึกษา N คน* พูดถึงตอนเรียน ไม่ใช่การค้น · กลุ่มงานถือหลักเดียวกัน: หัวจอนับทุกกลุ่ม
+และแผงนักศึกษาที่ยังไม่มีกลุ่มเป็นของทั้งตอนเรียน เพราะคำค้นเป็นคำค้นของการ์ดกลุ่ม
+
+**คำตอบของเจ้าของงาน 13 พ.ย. 2569** (ถามระหว่างชิ้นนี้ ทีละข้อ):
+
+1. *รายชื่อนักศึกษาของรายวิชาค้นคอลัมน์หลักสูตรด้วยไหม* — **ไม่ค้น คงอย่างนี้** รหัสและชื่อเท่านั้น
+2. *ตัวเลขบนหัวจอนับอะไรตอนมีคำค้น* — **ทั้งตอนเรียน** ย่อหน้าข้างบนจึงเป็นคำตอบ ไม่ใช่การอ่านคำตอบอื่นอีกต่อไป
+3. *การกระโดดไปอีกตอนเรียนด้วยปุ่มย้อนกลับหรือไปข้างหน้าของเบราว์เซอร์ ทำอะไรกับคำค้น* — **ล้างคำค้น** · คำถามนี้
+   ถามสองครั้ง: ครั้งแรกเขียนว่า *จากตัวเลือกตอนเรียน* ซึ่งผิด เพราะทางนั้นผ่านแดชบอร์ดและถอดจอออก คำค้นจึงหายเอง ·
+   ทางที่จอไม่ถูกถอดมีทางเดียวคือรายการประวัติ (#141) จอทั้งสองจึงถือคำค้นคู่กับตอนเรียนที่มันถูกพิมพ์ และอ่านเป็นว่าง
+   ที่ตอนเรียนอื่น ซึ่งทำให้การอ่านครั้งแรกของตอนเรียนใหม่ไม่ถือคำค้นเลย · ช่องถูกคีย์ด้วย `sectionId` เพราะ
+   `SearchBox` ถือสิ่งที่พิมพ์จาก `value` แรกและไม่ตามมันอีก — แถว C9 G11
+
+| # | เกณฑ์ | ทำอะไร | ต้องเห็นอะไร | ✓ |
+|---|---|---|---|---|
+| U1 | Users: ช่องเป็นช่องค้นหาร่วม และ `_` เป็นตัวอักษร | `faculty.admin@kmitl.ac.th` → *ผู้ใช้งาน* → พิมพ์ `teacher_one` ในช่อง *ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้* | ช่องเป็น `searchbox` ของ `components/SearchBox.js` · คำขอถือ `q` · `total` เป็น 0 เพราะไม่มีบัญชีใดถือ `teacher_one` ตามตัวอักษร (`teacher.one` จะถูกพบถ้า `_` เป็นตัวแทน) — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*Users: the box is the shared search box, and an underscore is a character*) · มัตแตนต์ `s272busersescape` · `s272busersinput` | ⚙ |
+| U2 | Users: สร้างบัญชีใต้คำค้นที่มี `_` ได้ประโยคของ #247 | ค้น `zz_272` → *เพิ่มผู้ใช้งาน* สร้าง `z272.under@kmitl.ac.th` | *บันทึกข้อมูลเรียบร้อยแล้ว แถวนี้อยู่นอกรายการที่กรองอยู่* — ก่อนคำตอบของ 13 พ.ย. 2569 จอตอบ *อยู่ใน* เสมอสำหรับคำค้นที่มี `%` หรือ `_` — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*Users: an account created under a term holding an underscore is said to be outside it*) · มัตแตนต์ `s272buserswildcard` | ⚙ |
+| C1 | รายชื่อนักศึกษาของรายวิชา: คำค้นถูกถามที่เซิร์ฟเวอร์ | `teacher.one@kmitl.ac.th` → ตอนเรียนที่ 1 → *รายชื่อนักศึกษา* → ค้นรหัสของนักศึกษาที่อยู่หน้าสี่ | คำขอถือ `q` · `total` เป็น 1 · ตารางวาดนักศึกษาคนนั้น ซึ่งไม่อยู่หน้าแรกของรายการที่ไม่ค้น — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: the term is asked of the server and finds a student four pages in*) · มัตแตนต์ `s272bclassnoq` · `s272bclassunsearched` | ⚙ |
+| C2 | รายชื่อนักศึกษาของรายวิชา: ตัวเลขบนหัวจอเป็นทั้งตอนเรียน | ค้น `66010001` | หัวจอยังอ่าน *นักศึกษา N คน* ด้วย `enrolled` ของคำตอบ ซึ่งนับทั้งตอนเรียน ไม่ใช่ `total` ที่คำค้นพบ (คำตอบข้อ 2 ข้างบน) · รีวิว 13 พ.ย. 2569 เอา `?? data.total` ที่เคยตกไปหา `total` ออก เพราะเส้นทางตอบ `enrolled` เสมอ — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: the heading's count is the whole class, not what the term found*) · มัตแตนต์ `s272bclassenrolled` | ⚙ |
+| C3 | รายชื่อนักศึกษาของรายวิชา: คำค้นที่ไม่พบบอกว่าไม่พบ | พิมพ์ `zz272-nothing` | *ไม่พบนักศึกษาตามคำค้น* แทน *ยังไม่มีนักศึกษาในตอนเรียนนี้* · ถ้อยคำเป็นของเจ้าของงาน (13 พ.ย. 2569) — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: a term nothing holds says so*) · มัตแตนต์ `s272bclassempty` · `s272bclassunsearched` | ⚙ |
+| C4 | รายชื่อนักศึกษาของรายวิชา: คำค้นที่พิมพ์บนหน้าสองขอหน้าหนึ่ง | *ถัดไป* → พิมพ์ `6601` | คำขอที่ถือ `q` ถือ `page=1` — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: a term typed on page two asks for page one*) · มัตแตนต์ `s272bclasspageone` | ⚙ |
+| C5 | รายชื่อนักศึกษาของรายวิชา: เพิ่มนักศึกษาที่คำค้นไม่พบ ได้ประโยคของ #247 | ค้น `zz272-nothing` → เพิ่ม `65010001` | ประโยคของจอตามด้วย *แถวนี้อยู่นอกรายการที่กรองอยู่* เหนือรายการที่ไม่มีแถวนั้น — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: an enrolment the term does not find says #247’s sentence*) · มัตแตนต์ `s272bclasssavequiet` · `s272bclassunsearched` (ที่ *รายการที่ไม่มีแถวนั้น*) | ⚙ |
+| C6 | รายชื่อนักศึกษาของรายวิชา: เพิ่มนักศึกษาที่คำค้นพบ ได้ประโยคของจออย่างเดียว | ค้น `65010002` → เพิ่ม `65010002` | ประโยคของจอเท่านั้น และรายการถือแถวนั้น — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: an enrolment the term finds says only its own sentence*) · มัตแตนต์ `s272bclasssavealways` | ⚙ |
+| C7 | รายชื่อนักศึกษาของรายวิชา: นำเข้าแฟ้มที่คำค้นไม่พบ ได้ประโยคของ #252 | ค้น `zz272-nothing` → นำเข้าแฟ้มหนึ่งแถว `65010003` | *บางแถวที่นำเข้าอยู่นอกรายการที่กรองอยู่* — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: a file the term does not find says the import’s sentence*) · มัตแตนต์ `s272bclassimportquiet` | ⚙ |
+| C8 | รายชื่อนักศึกษาของรายวิชา: นำเข้าแฟ้มที่คำค้นพบ จอไม่เพิ่มอะไร | ค้น `65010004` → นำเข้าแฟ้มหนึ่งแถว `65010004` | เส้นเขียวของแผง แถวถูกวาด และไม่มีประโยคของจอ — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: a file the term finds says nothing*) · มัตแตนต์ `s272bclassimportalways` | ⚙ |
+| C9 | รายชื่อนักศึกษาของรายวิชา: การกระโดดไปอีกตอนเรียนล้างคำค้น | ตอนเรียนปีก่อน (`section_id` 3) ด้วยที่อยู่ของมัน → แดชบอร์ด → ตอนเรียนที่ 1 → *รายชื่อนักศึกษา* → พิมพ์ `zz272-nothing` → ย้อนกลับสามก้าวในทีเดียว (`history.go(-3)`) | เอกสารเดิม (จอไม่ถูกถอด) · คำขอที่การกระโดดส่งไม่ถือ `q` · ช่องว่าง — คำตอบข้อ 3 — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the class list: a jump to another ตอนเรียน clears the term*) · มัตแตนต์ `s272bclassjumpkeeps` · `s272bclassboxkept` | ⚙ |
+| G1 | กลุ่มงาน: ชื่อกลุ่มพบกลุ่มนั้น | `teacher.one@kmitl.ac.th` → ตอนเรียนที่ 1 → *กลุ่มงาน* → พิมพ์ `กลุ่มที่ 2` ในช่อง *ค้นหากลุ่มหรือสมาชิก* | การ์ดที่วาดคือ *กลุ่มที่ 2* ใบเดียว · การค้นอยู่ในเบราว์เซอร์ เพราะ `listGroups` ตอบทุกกลุ่มของตอนเรียนในคำตอบเดียวและไม่แบ่งหน้า — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a group name finds that group and no other*) · มัตแตนต์ `s272bgroupsunfiltered` | ⚙ |
+| G2 | กลุ่มงาน: รหัสของสมาชิกพบกลุ่มที่เขาอยู่ | พิมพ์รหัสของสมาชิกคนหนึ่งของ *กลุ่มที่ 3* | การ์ดที่วาดคือ *กลุ่มที่ 3* ใบเดียว — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a member's code finds the group they are in*) · มัตแตนต์ `s272bgroupsunfiltered` · `s272bgroupsnamesonly` | ⚙ |
+| G3 | กลุ่มงาน: ชื่อของสมาชิกพบกลุ่มที่เขาอยู่ | พิมพ์ชื่อของสมาชิกที่ไม่มีใครในตอนเรียนใช้ซ้ำ | การ์ดที่วาดคือกลุ่มของเขาใบเดียว — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a member's name finds the group they are in*) · มัตแตนต์ `s272bgroupsunfiltered` · `s272bgroupsnamesonly` · `s272bgroupsnoname` | ⚙ |
+| G4 | กลุ่มงาน: คำค้นที่ไม่พบบอกว่าไม่พบ และตัวเลขบนหัวจอคงที่ | พิมพ์ `zz272-nothing` | *ไม่พบกลุ่มงานตามคำค้น* ไม่มีการ์ดใดถูกวาด และหัวจอยังนับทุกกลุ่มของคำตอบ — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a term nothing holds says so, and the heading's count stands*) · มัตแตนต์ `s272bgroupsempty` · `s272bgroupscount` · `s272bgroupsunfiltered` | ⚙ |
+| G5 | กลุ่มงาน: สร้างกลุ่มที่คำค้นไม่พบ ได้ประโยคของ #247 | ค้น `กลุ่มที่ 1` → สร้าง `ทดสอบ272 ก` | ประโยคของจอตามด้วย *แถวนี้อยู่นอกรายการที่กรองอยู่* — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a group created outside the term says #247’s sentence*) · มัตแตนต์ `s272bgroupssavequiet` · `s272bgroupscreateabout` | ⚙ |
+| G6 | กลุ่มงาน: สร้างกลุ่มที่คำค้นพบ ได้ประโยคของจออย่างเดียว | ค้น `ทดสอบ272` → สร้าง `ทดสอบ272 ข` | ประโยคของจอเท่านั้น และการ์ดของกลุ่มนั้นถูกวาด — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a group created inside the term says only its own sentence*) · มัตแตนต์ `s272bgroupssavealways` | ⚙ |
+| G7 | กลุ่มงาน: เปลี่ยนชื่อจนคำค้นไม่พบ ได้ประโยคของ #247 | ค้น `ทดสอบ272 ค` → เปลี่ยนชื่อเป็น `ทดสอบ272 ง` | ประโยคของจอตามด้วย *แถวนี้อยู่นอกรายการที่กรองอยู่* — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a rename the term does not find says #247’s sentence*) · มัตแตนต์ `s272bgroupssavequiet` · `s272bgroupsrenameabout` | ⚙ |
+| G8 | กลุ่มงาน: นำสมาชิกคนเดียวที่คำค้นพบออก ได้ประโยคของ #247 | สร้าง `ทดสอบ272 จ` ใส่สมาชิกหนึ่งคน → ค้นด้วยรหัสของเขา → นำเขาออก | ประโยคของจอตามด้วย *แถวนี้อยู่นอกรายการที่กรองอยู่* — กลุ่มที่ถูกพบด้วยสมาชิกคนนั้นเท่านั้นถูกซ่อนเมื่อเขาออก — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: taking out the only member the term found says #247’s sentence*) · มัตแตนต์ `s272bgroupssavequiet` · `s272bgroupstakeoutabout` · `s272bgroupsnamesonly` | ⚙ |
+| G9 | กลุ่มงาน: นำเข้าแฟ้มที่คำค้นไม่พบ ได้ประโยคของ #252 | ค้น `กลุ่มที่ 1` → นำเข้าแฟ้มที่ใส่นักศึกษาเข้ากลุ่มนั้น | *บางแถวที่นำเข้าอยู่นอกรายการที่กรองอยู่* — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a file the term does not find says the import’s sentence*) · มัตแตนต์ `s272bgroupsimportquiet` | ⚙ |
+| G10 | กลุ่มงาน: นำเข้าแฟ้มที่คำค้นพบ จอไม่เพิ่มอะไร | ค้น `ทดสอบ272 ช` → นำเข้าแฟ้มที่ใส่นักศึกษาเข้ากลุ่มนั้น | เส้นเขียวของแผง และไม่มีประโยคของจอ — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a file the term finds says nothing*) · มัตแตนต์ `s272bgroupsimportalways` | ⚙ |
+| G11 | กลุ่มงาน: การกระโดดไปอีกตอนเรียนล้างคำค้น | สร้างกลุ่ม `ทดสอบ272 ซ` ในตอนเรียนปีก่อน → เดินเหมือน C9 ไปที่ *กลุ่มงาน* → พิมพ์ `zz272-nothing` (การ์ดหายหมด) → `history.go(-3)` | เอกสารเดิม · การ์ดที่วาดคือทุกกลุ่มของคำตอบของตอนเรียนปีก่อน · ช่องว่าง — คำตอบข้อ 3 — `e2e/tests/272b-the-search-box-on-three-more-screens.spec.js` (*the groups: a jump to another ตอนเรียน clears the term*) · มัตแตนต์ `s272bgroupsjumpkeeps` · `s272bgroupsboxkept` | ⚙ |
+
+มัตแตนต์อยู่ที่ `mutation/272-the-search-box-on-three-more-screens.py` ตารางคำทำนายเขียนก่อนกวาด 13 พ.ย. 2569
+อยู่ใน docstring ของแฟ้มนั้น และบันทึกผลกวาดอยู่ใต้ตาราง · ช่องค้นหาสามจอนี้หน้าตาอย่างแถว 26 — ครึ่งที่ต้องใช้ตา
+รอคนเดินพร้อมแถวนั้น
+
+### สิ่งที่ชิ้นที่สองไม่ได้ถือ (#123)
+
+- **`q` ในกุญแจ `readOf` ของรายชื่อนักศึกษา** — *ยังไม่ได้ทดสอบ* ลงวันที่ 13 พ.ย. 2569 ต่างจากสี่จอของชิ้นแรก ที่นี่**ไปถึงได้**
+  เพราะฟอร์มเพิ่มนักศึกษาวาดอยู่ข้างรายการ ไม่ได้แทนที่มัน คนพิมพ์คำค้นระหว่างที่การเพิ่มยังไม่กลับได้ · สิ่งที่ขาดคือแถว
+  ที่จับการเขียนไว้แล้วพิมพ์ — ตั๋ว #275
+- **คำถามข้อที่สองของ `onImported` บนกลุ่มงาน** (`onScreen.current === drawing` ก่อนประโยคของ #252) — *ยังไม่ได้ทดสอบ*
+  ลงวันที่ 13 พ.ย. 2569 ทางเข้าคือการกระโดดข้ามตอนเรียนของ `268` ขณะที่มีคำค้นอยู่ — ตั๋ว #275
+- **คำค้นของกลุ่มงานไม่อยู่ใน URL และไม่อยู่ในกุญแจของประโยค** — การค้นไม่ส่งคำขอ ประโยคของการบันทึกถามคำค้นของ
+  การเรนเดอร์ที่ส่ง ไม่ใช่ของตอนที่คำตอบกลับ · ถ้าคนพิมพ์ระหว่างที่การบันทึกยังไม่กลับ ประโยคตัดสินด้วยคำค้นเก่า
+  ซึ่งเป็นช่องชนิดเดียวกับข้อแรก · *ยังไม่ได้ทดสอบ* ลงวันที่ 13 พ.ย. 2569 — ตั๋ว #275

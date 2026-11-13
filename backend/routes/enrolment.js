@@ -56,6 +56,7 @@ const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, integerId, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { holding, searchOf } = require('../lib/search');
 const { REGISTER, THIS_ACCOUNTS_SECTION, WITH_SUBJECT } = require('../lib/register');
 
 /** Enrolment is the Teacher's own class list, as in `teaching.js` and `clos.js`. */
@@ -185,22 +186,37 @@ function enrolmentRoutes(pool) {
         if (!section) return notThisSection(res);
 
         const { page, perPage, offset } = pageOf(req);
+        // The search box - #272. The code and the name the table shows; the
+        // programme is another list's name and is not searched (the owner's
+        // answer (ก) of 13 November 2569). `lib/search.js` carries the rest.
+        const held = holding(2, ['s.student_id', 's.full_name_th']);
+        const where = `WHERE sc.section_id = $1 AND ${held}`;
+        const search = searchOf(req);
+        // Two counts in one read: `total` is what the search found, which the
+        // pager pages, and `enrolled` is the whole class, which the heading's
+        // *นักศึกษา N คน* says and the dashboard's ตอนเรียน card says too - so a
+        // search does not move it (`SubjectStudents.js`, *The counts*).
         const counted = await pool.query(
-          'SELECT count(*)::int AS total FROM student_course WHERE section_id = $1',
-          [section.section_id],
+          `SELECT count(*) FILTER (WHERE ${held})::int AS total,
+                  count(*)::int AS enrolled
+             FROM student_course sc
+             JOIN student s ON s.student_id = sc.student_id
+            WHERE sc.section_id = $1`,
+          [section.section_id, search],
         );
         const { rows } = await pool.query(
           `SELECT ${RETURNED} FROM student_course sc
              JOIN student s ON s.student_id = sc.student_id
-            WHERE sc.section_id = $1
+            ${where}
             ORDER BY s.student_id
-            LIMIT $2 OFFSET $3`,
-          [section.section_id, perPage, offset],
+            LIMIT $3 OFFSET $4`,
+          [section.section_id, search, perPage, offset],
         );
 
         return res.status(200).json({
           students: rows,
           total: counted.rows[0].total,
+          enrolled: counted.rows[0].enrolled,
           page,
           per_page: perPage,
           section,

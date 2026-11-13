@@ -23,8 +23,9 @@ const { blankToNull } = require('./fields');
  *
  * **A term is text.** `%` and `_` are what a person typed, so they are escaped
  * before they reach `ILIKE`, whose default escape is the backslash. The search
- * on `routes/users.js` predates this and reads them as wildcards, which its
- * screen documents as a limit; that route is left as it is.
+ * on `routes/users.js` predates this and read them as wildcards until the
+ * owner's answer of 13 November 2569, which gave it `searchOf` and kept its own
+ * clause, a name being searched there as first and last joined.
  *
  * Blank is no search, trimmed as `blankToNull` trims, and a `q` that arrives
  * twice (`?q=a&q=b`, which Express hands over as an array) is no search either

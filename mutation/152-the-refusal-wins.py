@@ -208,7 +208,7 @@ MUTANTS = {
     'enrolmentaddanyway': ('enrolment', ADD_READS, ADD_ANYWAY),
     'enrolmentremovalanyway': ('enrolment',
         '      if (onScreen.current === sent) {\n'
-        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n'
+        '        waiting.current = { of: readOf(sectionId, onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
@@ -218,7 +218,7 @@ MUTANTS = {
     'enrolmentmovedanyway': ('enrolment', MOVED_READS, MOVED_ANYWAY),
     'enrolmentmovedremovalanyway': ('enrolment',
         '      if (onScreen.current === sent) {\n'
-        '        waiting.current = { of: readOf(sectionId, onPage.current), said }\n'
+        '        waiting.current = { of: readOf(sectionId, onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',

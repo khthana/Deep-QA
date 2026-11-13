@@ -5,6 +5,9 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import ImportPanel from '../components/ImportPanel'
 import PageHeader from '../components/PageHeader'
+import SearchBox from '../components/SearchBox'
+import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
+import { outsideSearch } from '../lib/outsideTheSearch'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
@@ -54,12 +57,25 @@ import {
  * `students.length`, which is one page of ten. It is on the screen because the
  * ตอนเรียน card on the dashboard shows the same number, and two places showing
  * one number is how somebody notices when a list has silently lost a row.
+ *
+ * Since #272 (13 November 2569) the list can be searched, and `total` is then
+ * what the search found - which is what the pager pages. The heading reads
+ * `enrolled` instead, the whole class counted in the same read, so the number
+ * the dashboard shows too is not moved by a term.
  */
 /**
  * What a read of this list is *of*, which is what a sentence handed to
  * `waiting` names - #205. `Departments.js` carries the reasons.
  */
-const readOf = (sectionId, page) => `${sectionId}:${page}`
+const readOf = (sectionId, page, q) => `${sectionId}:${page}:${q}`
+
+/**
+ * What the search box holds a student to - #272. The columns
+ * `backend/routes/enrolment.js` hands `holding`: the code and the name, and
+ * not the programme (the owner's answer (ก) of 13 November 2569).
+ * `Departments.js` carries the reasons.
+ */
+const searched = student => [student.student_id, student.full_name_th]
 
 /**
  * `load`'s third answer - #209. `Departments.js` carries the reasons: a read
@@ -78,6 +94,17 @@ export default function SubjectStudents() {
   const [importing, setImporting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [page, setPage] = useState(1)
+  // The search the list is on - #272, `Departments.js` carries the reasons.
+  // It belongs to the Section it was typed on: the owner's answer of
+  // 13 November 2569 is that a jump to another Section clears it. The route
+  // does not remount on a jump (#141's way in, back and forward through the
+  // history), so the term is held with the Section it is *of* and read as
+  // blank anywhere else - which asks the new Section unsearched in its first
+  // read, where an effect clearing it would have sent one read with the old
+  // term first.
+  const [search, setSearch] = useState({ of: sectionId, q: '' })
+  const q = search.of === sectionId ? search.q : ''
+  const setQ = term => setSearch({ of: sectionId, q: term })
   const [code, setCode] = useState('')
   const [sending, setSending] = useState(false)
   const [removing, setRemoving] = useState(null)
@@ -122,14 +149,14 @@ export default function SubjectStudents() {
    */
   const load = useCallback(async isCurrent => {
     // Which read this is, for the sentence that may be waiting for it - #205.
-    const key = readOf(sectionId, page)
+    const key = readOf(sectionId, page, q)
     setLoading(true)
     // Whether this read handed the page on rather than drawing it - #209. The
     // sentence that was waiting for it belongs to the read that follows, so the
     // `finally` below must not clear it.
     let handedOn = false
     try {
-      const answer = await listEnrolled(sectionId, { page })
+      const answer = await listEnrolled(sectionId, { page, q })
       if (isCurrent()) {
         // #209 - the owner's answer of 19 ตุลาคม 2569: whether the page the
         // person is on still exists is the server's to say, not this screen's,
@@ -145,7 +172,7 @@ export default function SubjectStudents() {
         if (answer.page > lastPage) {
           handedOn = true
           if (waiting.current && waiting.current.of === key) {
-            waiting.current = { of: readOf(sectionId, lastPage), said: waiting.current.said }
+            waiting.current = { of: readOf(sectionId, lastPage, q), said: waiting.current.said }
           }
           setPage(lastPage)
           return HANDED_ON
@@ -187,7 +214,7 @@ export default function SubjectStudents() {
         if (!handedOn) waiting.current = null
       }
     }
-  }, [sectionId, page])
+  }, [sectionId, page, q])
 
   useEffect(() => {
     let current = true
@@ -258,7 +285,7 @@ export default function SubjectStudents() {
       // The sentence is handed over whichever way this goes, because what
       // says it is the read of the first page, and `load` is where the two
       // are compared - #205.
-      const target = readOf(sectionId, 1)
+      const target = readOf(sectionId, 1, q)
       waiting.current = { of: target, said }
       // The page the pager is on now, not the one this render closed over: a
       // pager pressed while the write was out has moved it, and `setPage(1)`
@@ -273,7 +300,7 @@ export default function SubjectStudents() {
       setPage(1)
       return false
     },
-    [sectionId],
+    [sectionId, q],
   )
 
   /**
@@ -313,9 +340,15 @@ export default function SubjectStudents() {
     try {
       const { student } = await enrolStudent(sectionId, code.trim())
       setCode('')
+      // #272, the owner's answer ข้อ 4 of 12 November 2569: the search is a
+      // filter like #247's, so a student the term does not find is said to be
+      // outside the list the sentence stands over.
       const said = {
         error: false,
-        message: `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
+        message: alsoOutside(
+          `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
+          outsideSearch(q, searched(student)),
+        ),
       }
       // `reload` hands back whatever the loader answered, so `HANDED_ON`
       // would read as *it drew* here - the one thing the third answer exists to
@@ -366,7 +399,7 @@ export default function SubjectStudents() {
       // outlives the gap it documented is an exemption (#141). The read that
       // draws says the sentence, keyed on itself (#205, #208).
       if (onScreen.current === sent) {
-        waiting.current = { of: readOf(sectionId, onPage.current), said }
+        waiting.current = { of: readOf(sectionId, onPage.current, q), said }
       }
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
@@ -404,13 +437,27 @@ export default function SubjectStudents() {
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
                   ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
-                  {data.section.academic_year} · นักศึกษา {data.total} คน
+                  {data.section.academic_year} · นักศึกษา{' '}
+                  {data.enrolled} คน
                 </p>
               </div>
             }
             importLabel="นำเข้านักศึกษา"
             onImport={() => setImporting(true)}
-          />
+          >
+            {/* #272 - the delivered screen's search (`ค้นหานักศึกษา`). */}
+            {/* Keyed by the Section so the box, which holds what was typed
+                in it, is a new one after a jump and shows the blank term. */}
+            <SearchBox
+              key={sectionId}
+              label="ค้นหานักศึกษา"
+              value={q}
+              onSearch={term => {
+                setPage(1)
+                setQ(term)
+              }}
+            />
+          </PageHeader>
 
           <ImportPanel
             open={importing}
@@ -422,12 +469,18 @@ export default function SubjectStudents() {
             fetchTemplate={() => importTemplate(sectionId)}
             send={csv => importEnrolments(sectionId, csv)}
             onStart={() => setNotice(null)}
-            /* `ImportPanel` calls this with nothing and draws its own per-row
-               report, so there is no sentence to hand over and nothing for
-               #152's `waiting` to hold. Written out rather than passed by
-               reference, because `reload`'s first parameter is now that
-               sentence. */
-            onImported={() => reload()}
+            /* `ImportPanel` draws its own per-row report, so the only sentence
+               this screen has for an import is #252's, said when a row the file
+               enrolled is not one the search finds (#272, the owner's answer
+               ข้อ 4). Handed to `reload` like the add's, so the read of page
+               one is what says it (#238). */
+            onImported={result =>
+              reload(
+                (result?.students ?? []).some(row => outsideSearch(q, searched(row)))
+                  ? { error: false, message: SOME_IMPORTED_OUTSIDE }
+                  : undefined,
+              )
+            }
             onError={error => {
               if (!error.expired)
                 setNotice({ error: true, message: error.message })
@@ -503,7 +556,9 @@ export default function SubjectStudents() {
                         colSpan={4}
                         className="px-4 py-8 text-center text-slate-500"
                       >
-                        ยังไม่มีนักศึกษาในตอนเรียนนี้
+                        {q.trim()
+                          ? 'ไม่พบนักศึกษาตามคำค้น'
+                          : 'ยังไม่มีนักศึกษาในตอนเรียนนี้'}
                       </td>
                     </tr>
                   )}

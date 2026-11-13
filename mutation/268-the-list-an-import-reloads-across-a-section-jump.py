@@ -192,7 +192,14 @@ ALWAYS = (
 
 MUTANTS = {
     # นำเข้ากลุ่มงานจากไฟล์ แล้วกระโดดออกไปตอนเรียนอื่น: คำตอบของตอนเรียนเดิมวาดทับ
-    "groupsimporthandlerstale": ("groups", ASKED, ALWAYS),
+    # Re-aimed 13 November 2569 (#272): the groups import awaits the draw
+    # now, because #272's sentence is said after it, so its two lines are its
+    # own and no longer `ASKED`, which weights still writes.
+    "groupsimporthandlerstale": ("groups",
+        "              const drawing = onScreen.current\n"
+        "              const drew = await drawing(() => onScreen.current === drawing)\n",
+        "              const drawing = onScreen.current\n"
+        "              const drew = await drawing(() => true)\n"),
     # นำเข้าสัดส่วนคะแนนจากไฟล์ แล้วกระโดดออกไปตอนเรียนอื่น
     "weightsimporthandlerstale": ("weights", ASKED, ALWAYS),
 }

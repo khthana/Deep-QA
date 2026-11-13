@@ -50,6 +50,7 @@ const { REFUSALS, sentenceOf } = require('../auth/refusals');
 const { blankToNull, trimmed } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
+const { searchOf } = require('../lib/search');
 const { yearRefusal } = require('../lib/year');
 const {
   ADMIN_ROLES,
@@ -280,7 +281,10 @@ function userRoutes(pool) {
       // the SQL from whichever were sent. A query built by concatenating
       // request values is how the inherited controllers got their injection
       // surface, and a WHERE clause is exactly where it showed.
-      const search = blankToNull(req.query.q);
+      // The term as text: `%` and `_` are what was typed, escaped by `searchOf`
+      // as the four administration lists' are - the owner's answer of
+      // 13 November 2569 on #272. Until then this route read them as wildcards.
+      const search = searchOf(req);
       const status = blankToNull(req.query.status);
       const role = blankToNull(req.query.role);
 

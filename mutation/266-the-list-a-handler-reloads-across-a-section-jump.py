@@ -319,12 +319,12 @@ AFTER_DIALOG_CLOSED = "      setRemoving(null)\n"
 # `StudentGroups` writes the pair once, four spaces in, inside the helper every
 # write on that screen goes through; the declaration is its name.
 GROUPS_AFTER = (
-    "  const after = async (message, sent) => {\n"
+    "  const after = async (message, sent, about = () => false) => {\n"
     "    const drawing = onScreen.current\n"
     "    " + ASKED
 )
 GROUPS_AFTER_ALWAYS = (
-    "  const after = async (message, sent) => {\n"
+    "  const after = async (message, sent, about = () => false) => {\n"
     "    const drawing = onScreen.current\n"
     "    " + ALWAYS
 )

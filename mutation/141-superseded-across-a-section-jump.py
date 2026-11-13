@@ -155,9 +155,12 @@ MUTANTS = {
     "sectionstalewins": ("section",
         "      if (isCurrent()) setSection(data.section)\n",
         "      setSection(data.section)\n"),
+    # Re-aimed 13 November 2569 (#272): the guarded draw writes `drawn` beside
+    # `setData` now, so the guard is the `if` around both and the mutant keeps
+    # the block and drops the question - `weightsstalewins`' shape.
     "groupsstalewins": ("groups",
-        "      if (isCurrent()) setData(answer)\n",
-        "      setData(answer)\n"),
+        "      if (isCurrent()) {\n        drawn.current = answer\n",
+        "      if (true) {\n        drawn.current = answer\n"),
     "closstalewins": ("clos",
         "      if (isCurrent()) setData(answer)\n",
         "      setData(answer)\n"),

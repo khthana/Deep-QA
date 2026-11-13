@@ -85,9 +85,11 @@ MUTANTS = {
     # template, and eleven dead rows say nothing about which of them is the row
     # about the offset. The cast is there for the same reason - a parameter
     # whose only use is arithmetic against a literal has no type to infer.
+    # Re-aimed 13 November 2569 (#272): the search took `$2`, so the limit and
+    # the offset are `$3` and `$4`.
     "nooffset": ("route",
-                 "            LIMIT $2 OFFSET $3`,",
-                 "            LIMIT $2 OFFSET $3::int * 0`,"),
+                 "            LIMIT $3 OFFSET $4`,",
+                 "            LIMIT $3 OFFSET $4::int * 0`,"),
     # The count becomes the page rather than the class. Kills the second row 1,
     # at `total > 10`, which is the assertion that says the number under the
     # heading is the whole class and not what is on the screen.
@@ -96,9 +98,15 @@ MUTANTS = {
     # `enrolled - 1`, `+ SPARE_CODES.length`) and one that reads `pages > 1`. All
     # five are the same wrong number, so the row this one is evidence for is
     # still the one above: a count capped at the page.
+    #
+    # Re-aimed 13 November 2569 (#272): the read counts twice now - `total` is
+    # what the search found and `enrolled` is the class, which the heading
+    # reads - so the mistake is kept by capping both at the page.
     "pagecount": ("route",
-                  "'SELECT count(*)::int AS total FROM student_course WHERE section_id = $1',",
-                  "'SELECT least(count(*), 10)::int AS total FROM student_course WHERE section_id = $1',"),
+                  "          `SELECT count(*) FILTER (WHERE ${held})::int AS total,\n"
+                  "                  count(*)::int AS enrolled\n",
+                  "          `SELECT least(count(*) FILTER (WHERE ${held}), 10)::int AS total,\n"
+                  "                  least(count(*), 10)::int AS enrolled\n"),
     # The teaching register leaves the WHERE clause, so any Section resolves for
     # anybody signed in. Kills the first row 9 at the 404 - the class list of a
     # colleague's ตอนเรียน opens, and ADR-0002 is gone with it.
@@ -133,11 +141,15 @@ MUTANTS = {
     # the *rows* while leaving the *number* the ตอนเรียน's. The screen reads 57
     # over a list of 113 - which is why `total < 113` is not evidence about the
     # grain, and `pagecount` is the mutant that row rests on.
+    #
+    # Re-aimed 13 November 2569 (#272): the rows' WHERE is the `where` the
+    # search built, and the count's is its own again, so widening `where`
+    # still widens the rows and leaves the number the ตอนเรียน's.
     "offeringgrain": ("route",
-                      "            WHERE sc.section_id = $1\n",
-                      "            WHERE sc.section_id IN (SELECT section_id FROM course_sections\n"
-                      "                                     WHERE semester_course_id = (SELECT semester_course_id\n"
-                      "                                       FROM course_sections WHERE section_id = $1))\n"),
+                      "        const where = `WHERE sc.section_id = $1 AND ${held}`;\n",
+                      "        const where = `WHERE sc.section_id IN (SELECT section_id FROM course_sections\n"
+                      "                         WHERE semester_course_id = (SELECT semester_course_id\n"
+                      "                           FROM course_sections WHERE section_id = $1)) AND ${held}`;\n"),
     # The register is not asked, so an unknown code reaches the INSERT and the
     # foreign key answers instead - a 23503 that nobody catches, which is a 500
     # and เกิดข้อผิดพลาดในระบบ. Kills row 3 at the 404, and that is the whole
@@ -215,12 +227,14 @@ MUTANTS = {
     # different prop. Kills the second row 7 only. Two mutants and not one
     # because the two paths are two edits, and a single mutant covering both
     # would let either of them be repaired alone without a row noticing.
+    # Re-aimed 13 November 2569 (#272): the import hands `reload` #252's
+    # sentence now, so the mutant is the same redraw of the page the person is
+    # on, the sentence handed in and dropped, kept referenced (#101).
     "importstaysonpage": ("screen",
-                          "            onImported={() => reload()}",
-                          "            onImported={() => {\n"
-                          "              const drawing = onScreen.current\n"
-                          "              return drawing(() => onScreen.current === drawing)\n"
-                          "            }}"),
+                          "            onImported={result =>\n"
+                          "              reload(\n",
+                          "            onImported={result =>\n"
+                          "              (said => onScreen.current(() => Boolean(said ?? true)))(\n"),
     "cancelremoves": ("screen",
                       "        onCancel={() => setRemoving(null)}",
                       "        onCancel={remove}"),

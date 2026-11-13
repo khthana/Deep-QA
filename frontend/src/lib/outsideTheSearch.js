@@ -11,8 +11,10 @@
  * written at its call beside the columns its route searches, so that each
  * screen's use is a claim with its own mutant (#104).
  *
- * `Users.js` keeps its own `matchesSearch`, which predates this and answers
- * for a route that still reads `%` and `_` as wildcards.
+ * `Users.js` keeps its own `matchesSearch`, which predates this and asks the
+ * same question beside its role and status filters. Its route read `%` and `_`
+ * as wildcards until the owner's answer of 13 November 2569 (#272), which gave
+ * it `searchOf`; since then the two answer alike.
  */
 export const outsideSearch = (term, values) => {
   const wanted = String(term ?? '').trim().toLowerCase()

@@ -132,6 +132,23 @@ test('the user list', async (t) => {
     assert.ok(response.body.users.every((user) => user.email.includes('teach')));
   });
 
+  await t.test('a % or an _ in the search is the character, not a wildcard - #272', async () => {
+    // The owner's answer of 13 November 2569: this box searches as the four
+    // administration lists do, which read what was typed as text.
+    const admin = await signInAs('U_ADMIN');
+    const holds = (user, mark) =>
+      [user.email, user.user_id, `${user.first_name_th} ${user.last_name_th}`,
+        `${user.first_name_en} ${user.last_name_en}`].some((text) => String(text).includes(mark));
+
+    for (const mark of ['%', '_']) {
+      const everyone = await list(admin, '?per_page=100');
+      const response = await list(admin, `?q=${encodeURIComponent(mark)}&per_page=100`);
+      assert.equal(response.status, 200);
+      assert.ok(response.body.total < everyone.body.total, `${mark} matched every account`);
+      assert.ok(response.body.users.every((user) => holds(user, mark)), `a row without ${mark}`);
+    }
+  });
+
   await t.test('filters by role, and by status', async () => {
     const admin = await signInAs('U_ADMIN');
 

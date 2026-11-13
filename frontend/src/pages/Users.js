@@ -9,6 +9,7 @@ import Notice from '../components/Notice'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
+import SearchBox from '../components/SearchBox'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
 import { scopeNamed } from '../components/users/scopeLabel'
@@ -214,10 +215,13 @@ const readOf = (page, filters) =>
  *   name pairs joined by a space. That one is asked of both a create and an
  *   edit, because a typed name or email is exactly what an edit changes.
  *
- * What it cannot say is written where it is paid for: a `%` or a `_` in the
- * search term is a wildcard to `ILIKE` and a literal character here, so a term
- * holding one is answered *inside* and the sentence is not added — the quiet
- * direction, which is the one a person can recover from by looking (#153). The
+ * A `%` or a `_` in the term is a character here and on the route. Until
+ * 13 November 2569 the route read them as `ILIKE` wildcards, and a term holding
+ * one was answered *inside* here so that the sentence stayed quiet - the
+ * direction a person can recover from by looking (#153). #272's owner's answer
+ * of that day gave the route `searchOf` from `backend/lib/search.js`, which
+ * escapes them, and the branch went: kept, it would now be silent over a row
+ * that is really outside. The
  * term's **trimming** was the other direction and is not a limit any more: the
  * route reads it through `blankToNull`, so a term with a space around it
  * matched there and missed here, and the sentence stood over a list that did
@@ -257,7 +261,6 @@ const readOf = (page, filters) =>
  * exists>)` answers half of that one, and nobody has asked the other half.
  */
 const matchesSearch = (term, draft) => {
-  if (term.includes('%') || term.includes('_')) return true
   const named = (first, last) => `${first ?? ''} ${last ?? ''}`
   return [
     draft.email,
@@ -815,11 +818,16 @@ export default function Users() {
               setEditing({})
             }}
           >
-            <input
-              className={`${control} w-64`}
+            {/* #272, the owner's answer of 13 November 2569: the same box as
+                the four other administration screens - written once typing
+                pauses, with the magnifier, `%` and `_` read as characters. */}
+            <SearchBox
+              label="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้"
               value={filters.q}
-              onChange={filter('q')}
-              placeholder="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้"
+              onSearch={term => {
+                setPage(1)
+                setFilters(current => ({ ...current, q: term }))
+              }}
             />
             <select
               className={control}

@@ -42,10 +42,11 @@ async function openUsers(page) {
  * Types into the screen's own search box and waits for the answer to the query
  * that box built.
  *
- * The screen reloads on every keystroke - there is no debounce - so several
- * requests are in flight while a word is being typed and all but the last are
- * about a prefix of it. The wait is therefore for the response whose own `q`
- * is the whole term, not merely for the next response to arrive.
+ * Since #272 (13 November 2569) the box is `components/SearchBox.js`, which
+ * asks once typing pauses; until then the screen reloaded on every keystroke
+ * and several requests were in flight about prefixes of the word. Either way
+ * the wait is for the response whose own `q` is the whole term, not merely for
+ * the next response to arrive.
  */
 async function search(page, term) {
   const [response] = await Promise.all([

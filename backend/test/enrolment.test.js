@@ -565,3 +565,46 @@ test('a student comes with the name of their หลักสูตร, not only 
     await api.pool.query('DELETE FROM student WHERE student_id = $1', [code]);
   }
 });
+
+test('a search narrows the class list to the students whose code or name holds it - #272', async () => {
+  // The owner's answers of 12 and 13 November 2569: the record's own text the
+  // table shows - the code and the name - and not the programme, which is
+  // another list's name (answer (ก)). The count follows the search, so a
+  // student on the fourth page is found from the first.
+  const cookie = await teaching('U_TEACH');
+  const section = await seededSection('U_TEACH', CURRENT_YEAR);
+  const { rows } = await api.pool.query(
+    `SELECT s.student_id, s.last_name_th, p.program_name_th
+       FROM student_course sc
+       JOIN student s ON s.student_id = sc.student_id
+       JOIN programs p ON p.program_id = s.program_id
+      WHERE sc.section_id = $1
+      ORDER BY s.student_id OFFSET 31 LIMIT 1`,
+    [section],
+  );
+  assert.equal(rows.length, 1, 'the seed is supposed to fill four pages');
+  const [far] = rows;
+
+  const byCode = await list(cookie, section, `?q=${far.student_id}`);
+  assert.equal(byCode.status, 200);
+  assert.deepEqual(byCode.body.students.map((student) => student.student_id), [far.student_id]);
+  assert.equal(byCode.body.total, 1, 'the count is the search count');
+  // The heading's *นักศึกษา N คน* is the whole class, which the dashboard's
+  // ตอนเรียน card shows too (`SubjectStudents.js`, *The counts*), so the class
+  // size is its own field and a search does not move it.
+  const unsearched = await list(cookie, section, '');
+  assert.equal(byCode.body.enrolled, unsearched.body.total, 'the class size is not the search count');
+  assert.equal(unsearched.body.enrolled, unsearched.body.total);
+
+  const byName = await list(cookie, section, `?q=${encodeURIComponent(far.last_name_th)}&per_page=100`);
+  assert.ok(byName.body.students.some((student) => student.student_id === far.student_id), 'the name');
+  assert.ok(
+    byName.body.students.every((student) => student.full_name_th.includes(far.last_name_th)),
+    'every row it returns holds the name',
+  );
+  assert.equal(byName.body.total, byName.body.students.length);
+
+  const byProgramme = await list(cookie, section, `?q=${encodeURIComponent(far.program_name_th)}`);
+  assert.equal(byProgramme.body.total, 0, 'the programme is not searched');
+  assert.equal((await list(cookie, section, '?q=_')).body.total, 0, 'an underscore matches itself');
+});
