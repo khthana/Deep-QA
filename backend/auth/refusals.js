@@ -350,6 +350,13 @@ const REFUSALS = {
   // hold. Separate from #18's `programNotYours` and #19's `ploProgramNotYours`
   // because the sentence names what is being managed, and a person who is
   // refused wants to read the noun they were working on.
+  //
+  // `rubricProgramRetired` is a หลักสูตร this account holds and that has been
+  // switched off, `subjectRetired`'s mistake one tier along: folded into
+  // `rubricProgramNotYours` it told the person the curriculum was not theirs,
+  // which is untrue (#276, the owner's answer ก of 14 พ.ย. 2569). Only the add
+  // asks it - a rubric already in the curriculum is still edited and removed.
+  rubricProgramRetired: 'หลักสูตรนี้ถูกปิดการใช้งานแล้ว จึงเพิ่ม Rubric ไม่ได้',
   rubricNotFound: 'ไม่พบ Rubric ที่ระบุ',
   duplicateRubricCode: 'รหัส Rubric นี้ถูกใช้งานแล้ว รหัส Rubric ห้ามซ้ำกันทั้งระบบ ไม่ใช่เฉพาะภายในหลักสูตรนี้',
   invalidRubric: 'ข้อมูล Rubric ไม่ครบถ้วน กรุณาตรวจสอบรหัส ชื่อภาษาไทย ชื่อภาษาอังกฤษ และลำดับการแสดงผล',

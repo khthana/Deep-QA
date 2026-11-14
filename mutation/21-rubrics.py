@@ -87,6 +87,7 @@ to.
 |---|---|---|
 | `addduringload` | **ทำอะไรพัง** ปุ่ม *เพิ่ม Rubric* กดได้ระหว่างที่รายการที่วาดอยู่เป็นของหลักสูตรก่อนหน้า | **แถวที่ตาย** *the add row is not offered while another curriculum is read* ที่ `expect(add).toBeDisabled()` · แถวอื่นกดปุ่มนี้หลังรายการวาดแล้วเท่านั้น จึงไม่ตาย |
 | `rowownsitsflag` | **ทำอะไรพัง** ธงที่ปิดช่องของแถวกลับไปเป็นของแถวเอง (รูปก่อน review) แถวที่ถูกวาดใหม่ระหว่างการบันทึกจึงเริ่มด้วยธงลง | **แถวที่ตาย** *an edit row drawn again while its save is out keeps its fields shut* ที่ `toBeDisabled()` ตัวที่สอง (หลังสลับกลับ) · ตัวแรกผ่าน เพราะแถวยังเป็นแถวเดิม · `242a` ไม่ตาย ไม่มีแถวไหนในนั้นวาดแถวใหม่ระหว่างการบันทึก |
+| `addorderkept` | **ทำอะไรพัง** แถวเพิ่มที่เปิดค้างข้ามการสลับหลักสูตรเก็บลำดับของหลักสูตรก่อนหน้า (ตัวเลือก ง ของคำถามที่สามของ #276 ที่เจ้าของไม่เลือก) | **แถวที่ตาย** *an add row kept open across a switch of curriculum keeps what was typed* ที่ `expect(order).toHaveValue(String(after))` · แถวอื่นไม่เปิดแถวเพิ่มข้ามการสลับ จึงไม่ตาย |
 """
 
 import os
@@ -291,6 +292,14 @@ MUTANTS = {
     ),
     # The same review - the row's own flag, which the row drawn anew does not
     # carry: the code as it stood before the review, word for word.
+    # #276's third owner's answer (ก, 14 พ.ย. 2569), with the option that kept
+    # today's behaviour made to run (#48): the add row is never told which
+    # curriculum its order came from, so the switch leaves the old order in it.
+    "addorderkept": (
+        "page",
+        "              addOrderOf.current = data.of\n",
+        "",
+    ),
     "rowownsitsflag": [
         ("row",
          "import { FaSave } from 'react-icons/fa'\n",

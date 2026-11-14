@@ -621,3 +621,41 @@ test('a rubric that was never made, and one addressed by nonsense, both answer t
     assert.equal(answered.body.message, REFUSALS.rubricNotFound, address);
   }
 });
+
+test('adding into a retired curriculum says it is retired, to the account that holds it and to nobody else - #276', async () => {
+  // The owner's answer ก to #276's second question (14 พ.ย. 2569). The screen
+  // still opens at a retired default (#234 keeps retired curricula in the
+  // filter), and the sentence the add met there said the curriculum was not
+  // this account's, which is untrue of it. `subjectRetired` is the same
+  // mistake one tier along. The outsider's answer is unchanged, so the new
+  // sentence says nothing about which curricula another department retired -
+  // `programInReach`'s reason for answering one null.
+  const owner = await signInAs('U_COM');
+  const outsider = await signInAs('U_COM2');
+  const body = () => ({
+    program_id: PROGRAM,
+    rubric_code: nextCode(),
+    rubric_name_th: 'ไม่ควรถูกสร้าง',
+    rubric_name_en: 'Should not exist',
+    display_order: nextOrder(),
+  });
+
+  await api.pool.query(`UPDATE programs SET is_active = false WHERE program_id = $1`, [PROGRAM]);
+  try {
+    const retired = await add(owner, body());
+    assert.equal(retired.status, 403);
+    assert.equal(retired.body.message, REFUSALS.rubricProgramRetired);
+
+    const outside = await add(outsider, body());
+    assert.equal(outside.status, 403);
+    assert.equal(outside.body.message, REFUSALS.rubricProgramNotYours);
+  } finally {
+    await api.pool.query(`UPDATE programs SET is_active = true WHERE program_id = $1`, [PROGRAM]);
+  }
+
+  // And an active curriculum still takes the add, so the new gate is the
+  // retired case's and nobody else's.
+  const taken = await add(owner, body());
+  assert.equal(taken.status, 201);
+  await remove(owner, taken.body.rubric.id);
+});

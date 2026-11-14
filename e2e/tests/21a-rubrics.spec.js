@@ -521,3 +521,36 @@ test('an edit row drawn again while its save is out keeps its fields shut', asyn
   expect((await saved).status()).toBe(200);
   await expect(code).toHaveCount(0);
 });
+
+test('an add row kept open across a switch of curriculum keeps what was typed and takes the new curriculum\'s order', async ({
+  page,
+}) => {
+  // The owner's answer ก to #276's third question (14 พ.ย. 2569). The add row
+  // saves into the curriculum the list is showing, so the ลำดับ it started from
+  // the curriculum before is a number about a list nobody is looking at.
+  await signInAsDepartmentCommittee(page);
+  const first = await openRubricsOn(page, '0501');
+  await settled(table(page));
+  const before = (await first.json()).next_order;
+  await page.getByRole('button', { name: 'เพิ่ม Rubric', exact: true }).click();
+  const code = page.getByRole('textbox', { name: 'รหัส Rubric' });
+  const nameTh = page.getByRole('textbox', { name: 'ชื่อ Rubric (ภาษาไทย)' });
+  const order = page.getByRole('spinbutton', { name: 'ลำดับ' });
+  await code.fill('RUB-SWITCH');
+  await nameTh.fill('ข้ามหลักสูตร');
+  await expect(order).toHaveValue(String(before));
+
+  const answered = waitForList(page);
+  await programFilter(page).selectOption('0503');
+  const after = (await (await answered).json()).next_order;
+  // Where the two agree no mutant could tell which list the row read (#154).
+  expect(after, 'the two curricula start their next rubric from different places').not.toBe(before);
+  await settled(table(page));
+
+  // The claim: the order is the new curriculum's ...
+  await expect(order).toHaveValue(String(after));
+  // ... and what the person typed is still there.
+  await expect(code).toHaveValue('RUB-SWITCH');
+  await expect(nameTh).toHaveValue('ข้ามหลักสูตร');
+  await page.getByRole('button', { name: 'ยกเลิก' }).click();
+});

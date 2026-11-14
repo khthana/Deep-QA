@@ -129,7 +129,17 @@ export default function Rubrics() {
    */
   const [editing, setSubject] = useState(null)
   const [draft, setDraft] = useState(null)
+  /**
+   * Which curriculum the open add row's ลำดับ was read from - #276, the owner's
+   * answer ก of 14 พ.ย. 2569. The row stays open across a switch of curriculum
+   * and saves into the one the list is showing, so when that list lands its
+   * `next_order` replaces the order and nothing else the person typed. A ref
+   * and not state: `load` reads it when its answer lands, and nothing is drawn
+   * from it.
+   */
+  const addOrderOf = useRef(null)
   const setEditing = subject => {
+    if (!subject || subject.id) addOrderOf.current = null
     setSubject(subject)
     setDraft(subject && { ...EMPTY_DRAFT, ...subject })
   }
@@ -210,6 +220,14 @@ export default function Rubrics() {
         }
         // Which curriculum the drawn list is of, for the add button below.
         setData({ ...answer, of: program })
+        // An add row opened on another curriculum starts again from this one's
+        // order, keeping what was typed - #276. `addOrderOf` says why.
+        if (addOrderOf.current !== null && addOrderOf.current !== program) {
+          addOrderOf.current = program
+          setDraft(current =>
+            current && !current.id ? { ...current, display_order: answer.next_order ?? 1 } : current,
+          )
+        }
         // held-sentence: the rows that add and change a rubric are drawn inside the list since #276, so no read lands while the list is replaced and there is nothing to hold a sentence for (#276)
         if (waiting.current && waiting.current.of === key) setNotice(waiting.current.said)
       }
@@ -547,6 +565,7 @@ export default function Rubrics() {
               showing.current = {}
               setNotice(null)
               setEditing({ display_order: data.next_order ?? 1 })
+              addOrderOf.current = data.of
             }}
             // Not while the drawn list is another curriculum's: `next_order`
             // is that list's, and after a switch of curriculum it is the one

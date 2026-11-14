@@ -200,13 +200,19 @@ function rubricRoutes(pool) {
    * Named by the body and checked against the reach derived from the acting
    * grant, which is the shape ADR-0002 permits: authority is never read from a
    * request, a target named by one is verified. A curriculum that does not
-   * exist, one in another department and one that has been retired all answer
-   * the same key, for `departmentInReach`'s reason.
+   * exist and one in another department answer the same key, for
+   * `departmentInReach`'s reason. One that has been retired answers its own key
+   * since #276's owner's answer ก (14 พ.ย. 2569), but only inside the reach: the
+   * account holds it, so saying so tells them nothing about anybody else's.
    */
   async function programRefusal(req, programId) {
     if (!programId) return 'invalidRubric';
     const program = await programInReach(pool, req.auth.acting.scope_id, programId);
-    return program ? null : 'rubricProgramNotYours';
+    if (program) return null;
+    const held = (await reachablePrograms(pool, req.auth.acting.scope_id)).find(
+      (row) => row.program_id === programId,
+    );
+    return held && !held.is_active ? 'rubricProgramRetired' : 'rubricProgramNotYours';
   }
 
   /**
