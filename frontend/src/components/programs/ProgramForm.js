@@ -92,7 +92,7 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
   const starting = onlyOne ? onlyOne.department_id : ''
 
   // The pool as a value rather than as an array - #232's shape, and its
-  // reasons are written out in `rubrics/RubricForm.js`. `departments` is a new
+  // reasons are written out in `rubrics/RubricForm.js` at `58d15b4`. `departments` is a new
   // array on every answer, so an effect depending on it, or on anything
   // derived from it by identity, re-ran whenever the screen read the pool
   // again. On this screen that read is the one `Programs.js` names the

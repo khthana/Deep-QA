@@ -2,7 +2,6 @@ import {
   HiOutlineCube, // ข้อมูลหลัก
   HiOutlineAcademicCap, // ข้อมูลหลักสูตร
   HiOutlineBookOpen, // ข้อมูลรายวิชา
-  HiOutlineClipboardDocumentCheck, // ข้อมูล Rubric กลาง
   HiOutlineSquare3Stack3D, // หลักสูตร
   HiOutlineRectangleGroup, // รายวิชาในหลักสูตร
   HiOutlineIdentification, // ข้อมูลนักศึกษากลาง
@@ -31,12 +30,12 @@ export const DEPT_ADMIN = [
         path: '/main/subjects',
         icon: <HiOutlineBookOpen />,
       },
-      {
-        key: 'ข้อมูล Rubric กลาง',
-        label: 'ข้อมูล Rubric กลาง',
-        path: '/main/rubrics',
-        icon: <HiOutlineClipboardDocumentCheck />,
-      },
+      // ข้อมูล Rubric กลาง stood here until 14 พ.ย. 2569. The owner's answer to
+      // #276 took it off the ผู้ดูแลภาควิชา and gave it to the กรรมการหลักสูตร
+      // alone, at the server as well (`backend/routes/rubrics.js`,
+      // `MAINTAINERS`). The delivered menu carried it, so this is a divergence
+      // the owner chose; a departmental administrator who sits on a committee
+      // finds it under that hat.
     ],
   },
 

@@ -62,6 +62,31 @@ to.
 | `hardcancel` | **ทำอะไรพัง** ปุ่ม *ยกเลิก* ในกล่องยืนยันทำสิ่งที่ปุ่มยืนยันทำ | **แถวที่ตาย** ถามยืนยันก่อนลบ และกดยกเลิกแล้วไม่มีอะไรเปลี่ยน · ที่มา `docs/acceptance/21-rubrics.md:162` |
 | `criterianotcounted` | **ทำอะไรพัง** ตอบ `criteria_removed: 0` ทั้งที่เกณฑ์ถูกลบไปจริง | **แถวที่ตาย** ลบแล้วบอกว่าเกณฑ์ย่อยไปด้วยกี่ข้อ · ที่มา `docs/acceptance/21-rubrics.md:163` |
 | `facultyadmin` | **ทำอะไรพัง** ใส่ `FACULTY_ADMIN` เข้า `MAINTAINERS` ตามที่เกณฑ์ข้อ 7 เขียนไว้ | **แถวที่ตาย** บัญชีที่ไม่ควรเข้าถึงเลย — ครึ่งที่เป็นกฎ · ที่มา `docs/acceptance/21-rubrics.md:164` |
+
+`countnotshown` เก็บไว้เป็นบันทึก (`SUPERSEDED`) ตั้งแต่ 14 พ.ย. 2569: คำตอบของเจ้าของต่อ #276
+เอาคอลัมน์จำนวนเกณฑ์ออก (*เอาออกแบบเดิม*) โค้ดที่มันเคยทำลายจึงไม่อยู่แล้ว และข้ออ้างของมันถูกขีดออก
+ไม่ใช่ถูกพิสูจน์ด้วยตัวอื่น `alwaysadropdown` กับ `facultyadmin` ถูกเล็งใหม่วันเดียวกัน — ตัวแรกเพราะ
+ย่อหน้าเปลี่ยน ตัวหลังเพราะ `MAINTAINERS` เหลือ `PROG_MANAGER` ตัวเดียว ความผิดที่มันทำยังเป็นความผิดเดิม
+
+## คำทำนาย #276 (14 พ.ย. 2569) — เขียนก่อนรันมัตแตนต์ตัวแรกของตารางนี้ (#255)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
+|---|---|---|
+| `deptadminkept` | **ทำอะไรพัง** `DEPT_ADMIN` กลับเข้า `MAINTAINERS` — รูปที่โค้ดเคยเป็นก่อนคำตอบของเจ้าของ (#115) | **แถวที่ตาย** *the accounts this screen is not for are refused it* ที่ `expect(answer.status(), ...).toBe(403)` ของรอบ `departmentAdmin05` · แถวก่อนหน้าทุกแถวไม่ได้ลงชื่อเป็นผู้ดูแลภาควิชาโดยไม่สวมหมวก จึงไม่ตาย |
+| `deptadminmenu` | **ทำอะไรพัง** เมนูของผู้ดูแลภาควิชากลับมามีรายการ *ข้อมูล Rubric กลาง* (route ยังปฏิเสธ) | **แถวที่ตาย** *the department administrator has no menu entry for the screen* ที่ `menuLink(page, 'ข้อมูล Rubric กลาง')).toHaveCount(0)` · แถวก่อนหน้าไม่มีแถวไหนนับเมนู |
+| `addignoresnextorder` | **ทำอะไรพัง** ปุ่มเพิ่มเปิดแถวด้วยลำดับ 1 แทน `next_order` ที่ server ตอบ | **แถวที่ตาย** *a rubric is added through the form* ที่ `toHaveValue(String(nextOrder))` ของช่องลำดับ · ข้อยืนยันเหนือมันอ่านคำตอบของ server ซึ่งมัตแตนต์ไม่แตะ |
+| `addcancelkept` | **ทำอะไรพัง** *ยกเลิก* ของแถวเพิ่มไม่ทำอะไร | **แถวที่ตาย** *a rubric is added through the form* ที่ `expect(editRow(page)).toHaveCount(0)` หลังกดยกเลิกครั้งแรก |
+| `editcancelkept` | **ทำอะไรพัง** *ยกเลิก* ของแถวแก้ไขไม่ทำอะไร แถวเพิ่มยังปิดได้ | **แถวที่ตาย** *a rubric is added through the form* ที่ `rubricRow(page, MINE)).toContainText('เกณฑ์ที่เพิ่มระหว่างการทดสอบ')` หลังกดยกเลิกของแถวแก้ไข |
+| `addrowatbottom` | **ทำอะไรพัง** แถวเพิ่มถูกวาดใต้รายการแทนบนสุด | **แถวที่ตาย** *a rubric is added through the form* ที่ `'the add row is the first row of the table'` |
+| `namesswapped` | **ทำอะไรพัง** ชื่ออังกฤษมาก่อนชื่อไทยในช่องเดียวกัน | **แถวที่ตาย** *the list is code, name, order and actions* ที่ `toHaveText` ของช่องชื่อ ที่อ่านชื่อไทยต่อด้วยชื่ออังกฤษ · แถวที่ 1 ใช้ `toContainText` ทีละชื่อจึงไม่ตาย |
+| `lastprogramfirst` | **ทำอะไรพัง** บัญชีที่ถือสองหลักสูตรเริ่มที่หลักสูตรสุดท้ายแทนหลักสูตรแรก (บัญชีหลักสูตรเดียวไม่เห็นความต่าง) | **แถวที่ตาย** *an account holding two curricula is shown one at a time* ที่ `searchParams.get('program_id')).toBe('0501')` |
+
+สองตัวที่ review ของวันเดียวกันเพิ่ม เขียนก่อนรัน:
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
+|---|---|---|
+| `addduringload` | **ทำอะไรพัง** ปุ่ม *เพิ่ม Rubric* กดได้ระหว่างที่รายการที่วาดอยู่เป็นของหลักสูตรก่อนหน้า | **แถวที่ตาย** *the add row is not offered while another curriculum is read* ที่ `expect(add).toBeDisabled()` · แถวอื่นกดปุ่มนี้หลังรายการวาดแล้วเท่านั้น จึงไม่ตาย |
+| `rowownsitsflag` | **ทำอะไรพัง** ธงที่ปิดช่องของแถวกลับไปเป็นของแถวเอง (รูปก่อน review) แถวที่ถูกวาดใหม่ระหว่างการบันทึกจึงเริ่มด้วยธงลง | **แถวที่ตาย** *an edit row drawn again while its save is out keeps its fields shut* ที่ `toBeDisabled()` ตัวที่สอง (หลังสลับกลับ) · ตัวแรกผ่าน เพราะแถวยังเป็นแถวเดิม · `242a` ไม่ตาย ไม่มีแถวไหนในนั้นวาดแถวใหม่ระหว่างการบันทึก |
 """
 
 import os
@@ -74,7 +99,13 @@ from harness import main  # noqa: E402
 FILES = {
     "route": "backend/routes/rubrics.js",
     "page": "frontend/src/pages/Rubrics.js",
+    "menu": "frontend/src/components/SidebarItem/DeprtAdmin.js",
+    "row": "frontend/src/components/rubrics/RubricRow.js",
 }
+
+# Kept as a record of a claim proved once against code that no longer exists:
+# the criteria-count column went on 14 พ.ย. 2569 by the owner's answer to #276.
+SUPERSEDED = {"countnotshown"}
 
 MUTANTS = {
     # Row 1 — a committee member is told which curriculum is theirs. The label
@@ -82,8 +113,8 @@ MUTANTS = {
     # exists to say this account does not see.
     "alwaysadropdown": (
         "page",
-        "              {programs.length > 1 ? (",
-        "              {programs.length > 0 ? (",
+        "          {programs.length > 1 ? (",
+        "          {programs.length > 0 ? (",
     ),
     # Row 2 — the list is in the stated order, not in the order of the codes.
     "codeorder": (
@@ -185,9 +216,96 @@ MUTANTS = {
     # line, put back the way the ticket's seventh criterion wrote it.
     "facultyadmin": (
         "route",
-        "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];",
-        "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN', 'FACULTY_ADMIN'];",
+        "const MAINTAINERS = ['PROG_MANAGER'];",
+        "const MAINTAINERS = ['PROG_MANAGER', 'FACULTY_ADMIN'];",
     ),
+    # #276 - the owner's answer made to run backwards (#115): the departmental
+    # administrator a maintainer again, as the code was the day before.
+    "deptadminkept": (
+        "route",
+        "const MAINTAINERS = ['PROG_MANAGER'];",
+        "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];",
+    ),
+    # #276 - the menu entry put back while the route still refuses, so the
+    # only row that can notice is the one that counts the menu.
+    "deptadminmenu": (
+        "menu",
+        "        icon: <HiOutlineBookOpen />,\n      },\n",
+        "        icon: <HiOutlineBookOpen />,\n      },\n"
+        "      {\n"
+        "        key: 'ข้อมูล Rubric กลาง',\n"
+        "        label: 'ข้อมูล Rubric กลาง',\n"
+        "        path: '/main/rubrics',\n"
+        "        icon: <HiOutlineBookOpen />,\n"
+        "      },\n",
+    ),
+    # #276 - the add row opens at 1 rather than at the order the server said
+    # comes next.
+    "addignoresnextorder": (
+        "page",
+        "setEditing({ display_order: data.next_order ?? 1 })",
+        "setEditing({ display_order: 1 })",
+    ),
+    # #276 - the add row's ยกเลิก does nothing.
+    "addcancelkept": (
+        "page",
+        "\n      onCancel={cancel}\n    />\n  )",
+        "\n      onCancel={() => {}}\n    />\n  )",
+    ),
+    # #276 - the edit row's ยกเลิก does nothing; the add row's still closes.
+    "editcancelkept": (
+        "page",
+        "                    onCancel={cancel}\n",
+        "                    onCancel={() => {}}\n",
+    ),
+    # #276 - the add row drawn under the list instead of above it.
+    "addrowatbottom": [
+        ("page",
+         "            {editing && !editing.id && row}\n",
+         ""),
+        ("page",
+         "          </tbody>",
+         "            {editing && !editing.id && row}\n          </tbody>"),
+    ],
+    # #276 - English before Thai in the one cell.
+    "namesswapped": (
+        "page",
+        "                        <span>{rubric.rubric_name_th}</span>\n"
+        "                        <span className=\"text-slate-500\">{rubric.rubric_name_en}</span>",
+        "                        <span className=\"text-slate-500\">{rubric.rubric_name_en}</span>\n"
+        "                        <span>{rubric.rubric_name_th}</span>",
+    ),
+    # #276 - an account holding two curricula starts on the last one. One
+    # curriculum reads the same either way, so only the two-curricula row sees it.
+    "lastprogramfirst": (
+        "page",
+        "    : programs[0]?.program_id ?? ''",
+        "    : programs[programs.length - 1]?.program_id ?? ''",
+    ),
+    # The review of 14 พ.ย. 2569 (#276) - the add button live while the drawn
+    # list is another curriculum's.
+    "addduringload": (
+        "page",
+        "            disabled={data.of !== program}\n",
+        "",
+    ),
+    # The same review - the row's own flag, which the row drawn anew does not
+    # carry: the code as it stood before the review, word for word.
+    "rowownsitsflag": [
+        ("row",
+         "import { FaSave } from 'react-icons/fa'\n",
+         "import { useState } from 'react'\nimport { FaSave } from 'react-icons/fa'\n"),
+        ("row",
+         "export default function RubricRow({ draft, onChange, busy, sending, onSave, onCancel }) {\n",
+         "export default function RubricRow({ draft, onChange, busy, onSave, onCancel }) {\n"
+         "  const [sending, setSending] = useState(false)\n"),
+        ("row",
+         "    event.preventDefault()\n    onSave({\n",
+         "    event.preventDefault()\n    setSending(true)\n    onSave({\n"),
+        ("row",
+         "      display_order: draft.display_order,\n    })\n",
+         "      display_order: draft.display_order,\n    }).finally(() => setSending(false))\n"),
+    ],
 }
 
 if __name__ == "__main__":

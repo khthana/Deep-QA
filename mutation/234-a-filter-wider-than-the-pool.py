@@ -91,7 +91,14 @@
 from harness import main
 
 FILES = {
-    'rubric': 'frontend/src/components/rubrics/RubricForm.js',
+    # `RubricForm.js` was deleted on 14 พ.ย. 2569, when the owner's answer to
+    # #276 drew the Rubric form as a row of the table (`RubricRow.js`) and took
+    # its หลักสูตร field away. The key points at the file the form went to only
+    # because `save` copies every file named here; the mutant below quotes the
+    # old form, matches nothing there - `anchors.py` checks that it still does
+    # not - and is withdrawn to a record (`SUPERSEDED`), the claim it held
+    # having gone with the field.
+    'rubric': 'frontend/src/components/rubrics/RubricRow.js',
     'pair': 'frontend/src/components/programSubjects/ProgramSubjectForm.js',
     'outcome': 'frontend/src/components/plos/PloForm.js',
     'offering': 'frontend/src/components/offerings/OfferingForm.js',
@@ -106,11 +113,13 @@ FILES = {
 # `Rubrics.js` draws its filter from `programs` whole, which is what makes the
 # rubrics of a closed curriculum readable. The mutant below is option 2 of the
 # ticket: narrow that list to the ones still running.
-FILTER_OPTIONS = """                    {programs.map(entry => (
+# Re-aimed on 14 พ.ย. 2569 (#276), when the picker lost *ทุกหลักสูตร* and moved
+# out a level; what the mutant takes away is still the reading.
+FILTER_OPTIONS = """                {programs.map(entry => (
 """
-USABLE_FILTER_OPTIONS = """                    {programs
-                      .filter(entry => entry.is_active !== false)
-                      .map(entry => (
+USABLE_FILTER_OPTIONS = """                {programs
+                  .filter(entry => entry.is_active !== false)
+                  .map(entry => (
 """
 
 POOL_CLAUSE = """  const filtered = usable.some(program => program.program_id === defaultProgram)
@@ -131,6 +140,8 @@ OFFERING_POOL_CLAUSE = """  const filteredProgram = usable.some(program => progr
 """
 OFFERING_NO_POOL_CLAUSE = """  const filteredProgram = defaultProgram
 """
+
+SUPERSEDED = {'rubricfollowstheretiredfilter'}
 
 MUTANTS = {
     'rubricfollowstheretiredfilter': [

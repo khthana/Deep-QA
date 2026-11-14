@@ -72,12 +72,12 @@ export default function ProgramSubjectForm({
   // never picks. A string, so a re-read handed the same programmes back moves
   // nothing - #233.
   //
-  // `rubrics/RubricForm.js` carries the reasons for the pool clause (#234).
+  // `rubrics/RubricForm.js` at `58d15b4` carries the reasons for the pool clause (#234).
   const filtered = usable.some(program => program.program_id === defaultProgram)
   const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''
 
   // The pool as a value rather than as an array - #232's shape, whose reasons
-  // are in `rubrics/RubricForm.js`. What this form holds beside the picker is a
+  // are in `rubrics/RubricForm.js` at `58d15b4`. What this form holds beside the picker is a
   // subject chosen out of the catalogue, which is a search of its own below and
   // not part of the pool, so the two effects below divide this form the same
   // way that one does.
@@ -89,7 +89,7 @@ export default function ProgramSubjectForm({
   }, [value])
 
   // And the programme follows the pool, which is the half a re-read may move.
-  // `rubrics/RubricForm.js` carries the reasons, including why a pair that
+  // `rubrics/RubricForm.js` at `58d15b4` carries the reasons, including why a pair that
   // already exists is left where it is.
   useEffect(() => {
     if (editing) return

@@ -72,14 +72,25 @@ const { reachablePrograms, programInReach } = require('../lib/reach');
 /**
  * The roles that decide how a curriculum marks.
  *
- * `PROG_MANAGER` first, because this screen is theirs: the ticket opens with a
+ * `PROG_MANAGER` alone, because this screen is theirs: the ticket opens with a
  * Curriculum Committee member and a rubric is the committee's statement of what
- * good work looks like. `DEPT_ADMIN` above them, with the reach they have
- * everywhere. `FULL_ADMIN` and `FACULTY_ADMIN` are both absent - see the note
- * at the top of the file for the second, which is a reversal and not an
- * omission - and `TEACHER` because marking against a rubric is not writing one.
+ * good work looks like. `FULL_ADMIN` and `FACULTY_ADMIN` are both absent - see
+ * the note at the top of the file for the second, which is a reversal and not
+ * an omission - and `TEACHER` because marking against a rubric is not writing
+ * one.
+ *
+ * `DEPT_ADMIN` stood here beside them, with the reach they have everywhere,
+ * until 14 พ.ย. 2569. The owner's answer to #276 took the screen off the
+ * ผู้ดูแลภาควิชา - *ให้กรรมการหลักสูตรจัดการ แต่ถ้า ผู้ดูแลภาควิชา เป็น
+ * กรรมการหลักสูตร ก็จะเห็นตอนเปลี่ยน role* - and asked for it here and not only
+ * in the menu (ADR-0002). The delivered `DeprtAdmin` menu carried the screen, so
+ * this is a divergence the owner chose. A curriculum with no committee member
+ * is not stranded by it: a departmental administrator may grant `PROG_MANAGER`
+ * inside their own reach (`auth/administration.js`, `assignable`), themselves
+ * included. `rubricCriteria.js` imports this list, so #22's screen moved with
+ * it.
  */
-const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];
+const MAINTAINERS = ['PROG_MANAGER'];
 
 /**
  * What a rubric is, as this file reads it out.
@@ -218,6 +229,11 @@ function rubricRoutes(pool) {
    * The list — the fourth and eighth criteria, in the halves that are facts
    * about the API.
    *
+   * `next_order` is the order a new rubric of what the filter keeps would take,
+   * the highest plus one - #276, the owner's answer of 14 พ.ย. 2569 that the
+   * screen's add row starts there, as the delivered screen's did. The screen
+   * cannot count it: the highest order is usually on another page.
+   *
    * Ten to a page with the total, and `?program_id=` to narrow it. The filter
    * is applied *inside* the reach rather than instead of it: a caller who names
    * a curriculum they do not hold gets an empty page, not somebody else's
@@ -237,8 +253,12 @@ function rubricRoutes(pool) {
       const where = `WHERE ($1::text[] IS NULL OR r.program_id = ANY($1))
                        AND ($2::text IS NULL OR r.program_id = $2)`;
 
+      // `next_order` rides on the count, which already reads every row the
+      // filter keeps and none of the page's limits - #276.
       const counted = await pool.query(
-        `SELECT count(*)::int AS total FROM rubrics r ${where}`,
+        `SELECT count(*)::int AS total,
+                COALESCE(max(r.display_order), 0) + 1 AS next_order
+           FROM rubrics r ${where}`,
         [reach, program],
       );
       const { rows } = await pool.query(
@@ -251,6 +271,7 @@ function rubricRoutes(pool) {
       return res.status(200).json({
         rubrics: rows,
         total: counted.rows[0].total,
+        next_order: counted.rows[0].next_order,
         page,
         per_page: perPage,
       });

@@ -105,6 +105,17 @@ const SETTLE_MS = 250;
 const button = (scope, name) => scope.getByRole('button', { name, exact: true });
 const heading = (page, name) => page.getByRole('heading', { name, exact: true });
 
+/**
+ * The open edit form and the open add form, by the screen's own way of drawing
+ * them. Every screen here heads its form with a heading but one: since #276
+ * (14 พ.ย. 2569) the Rubric forms are rows of the table, the delivered screen's
+ * shape, and a row has no heading. Its entry says how to find them instead -
+ * the same two locators as `139a`'s.
+ */
+const editForm = (page, screen) => (screen.editForm ? screen.editForm(page) : heading(page, screen.edit));
+const addForm = (page, screen) =>
+  screen.addForm ? screen.addForm(page) : heading(page, screen.addHeading);
+
 /** The form's own ยกเลิก, which is the control #228's answer leaves alone. */
 const cancelButton = (page) =>
   page.locator('form').getByRole('button', { name: 'ยกเลิก', exact: true });
@@ -126,7 +137,7 @@ async function openFirstEditor(page, screen) {
     .filter({ has: page.getByRole('button', { name: 'แก้ไข', exact: true }) });
   await expect(rows.first()).toBeVisible();
   await button(rows.first(), 'แก้ไข').click();
-  await expect(heading(page, screen.edit)).toBeVisible();
+  await expect(editForm(page, screen)).toBeVisible();
 }
 
 /**
@@ -178,7 +189,7 @@ const SCREENS = [
     refusalRow: true,
   },
   {
-    name: 'Rubric (RubricForm.js)',
+    name: 'Rubric (RubricRow.js)',
     file: 'Rubrics.js',
     account: ACCOUNTS.committee0501,
     open: (page) => openRubrics(page),
@@ -187,9 +198,13 @@ const SCREENS = [
     edit: 'แก้ไข Rubric',
     add: 'เพิ่ม Rubric',
     addHeading: 'เพิ่ม Rubric',
+    // The row forms of #276: the fields name their `<form>` by `form=` and sit
+    // in the row's cells rather than inside it, so ลำดับ is read by its name.
+    editForm: (page) => page.locator('form[id^="rubric-"]:not(#rubric-new)'),
+    addForm: (page) => page.locator('form#rubric-new'),
     fields: (page) => [
       page.getByPlaceholder('เช่น RUB-12'),
-      page.locator('form input[type="number"]'),
+      page.getByRole('spinbutton', { name: 'ลำดับ', exact: true }),
     ],
     fresh: (page) => page.getByPlaceholder('เช่น การนำเสนอผลงาน'),
   },
@@ -248,7 +263,7 @@ for (const screen of SCREENS) {
       write.open();
       await write.answered;
       await reload.sent;
-      await expect(heading(page, screen.edit)).toBeHidden();
+      await expect(editForm(page, screen)).toBeHidden();
 
       await button(page, screen.add).click();
       const fresh = screen.fresh(page);
@@ -278,10 +293,10 @@ for (const screen of SCREENS) {
       // and the order could not start (`142a`'s `cancelDuringSave`).
       await expect(cancelButton(page), 'ยกเลิก while this form owns the save').toBeEnabled();
       await cancelButton(page).click();
-      await expect(heading(page, screen.edit)).toBeHidden();
+      await expect(editForm(page, screen)).toBeHidden();
 
       await button(page, screen.add).click();
-      const form = heading(page, screen.addHeading);
+      const form = addForm(page, screen);
       await expect(form).toBeVisible();
       const fresh = screen.fresh(page);
       await fresh.fill(TYPED);
@@ -310,10 +325,10 @@ for (const screen of SCREENS) {
         await write.sent;
 
         await cancelButton(page).click();
-        await expect(heading(page, screen.edit)).toBeHidden();
+        await expect(editForm(page, screen)).toBeHidden();
 
         await button(page, screen.add).click();
-        const form = heading(page, screen.addHeading);
+        const form = addForm(page, screen);
         await expect(form).toBeVisible();
 
         // A refused save reloads nothing and a sentence rightly not drawn

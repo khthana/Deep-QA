@@ -89,7 +89,7 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
   const starting = onlyOne ? onlyOne.department_id : ''
 
   // The pool as a value rather than as an array - #232's shape, whose reasons
-  // are in `rubrics/RubricForm.js`. `ProgramForm.js` carries this screen's own
+  // are in `rubrics/RubricForm.js` at `58d15b4`. `ProgramForm.js` carries this screen's own
   // version of them; the difference here is `credits`, which belongs to the
   // effect keyed on `value` because it is read out of the answer that opened
   // the form and not out of the pool.

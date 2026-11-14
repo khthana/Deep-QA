@@ -164,6 +164,15 @@ const field = (page, label) =>
 
 const heading = (page, name) => page.getByRole('heading', { name, exact: true });
 
+/**
+ * The open edit form and the open add form, by the screen's own way of drawing
+ * them. Every screen here heads its form with a heading but one: since #276
+ * (14 พ.ย. 2569) the Rubric forms are rows of the table, the delivered screen's
+ * shape, and a row has no heading. Its entry says how to find them instead.
+ */
+const editForm = (page, screen) => (screen.editForm ? screen.editForm(page) : heading(page, screen.edit));
+const addForm = (page, screen) => (screen.addForm ? screen.addForm(page) : heading(page, screen.add));
+
 /** Any confirmation, whichever screen's words it is in. */
 const confirmation = (page) => page.getByRole('heading', { name: /^ยืนยันการ/ });
 
@@ -241,7 +250,11 @@ const LIST_SCREENS = [
     addButton: 'เพิ่ม Rubric',
     add: 'เพิ่ม Rubric',
     remove: 'ลบ',
-    shows: (page) => field(page, 'รหัส Rubric').inputValue(),
+    // The row forms of #276, told apart by the form each row's fields name:
+    // `rubric-new` for the add row, `rubric-<id>` for the edit row.
+    editForm: (page) => page.locator('form[id^="rubric-"]:not(#rubric-new)'),
+    addForm: (page) => page.locator('form#rubric-new'),
+    shows: (page) => page.getByRole('textbox', { name: 'รหัส Rubric', exact: true }).inputValue(),
     of: (answer) => answer.rubric.rubric_code,
   },
   {
@@ -365,10 +378,10 @@ async function twoRows(page, button) {
  * difference is in the report rather than in which `expect` was reached first.
  */
 async function drawn(page, screen) {
-  const editing = await heading(page, screen.edit).count();
+  const editing = await editForm(page, screen).count();
   return {
     editing,
-    adding: await heading(page, screen.add).count(),
+    adding: await addForm(page, screen).count(),
     asking: await confirmation(page).count(),
     shows: editing ? await screen.shows(page) : null,
   };
@@ -390,7 +403,7 @@ for (const screen of LIST_SCREENS) {
         const answer = await (await secondArrived).json();
         // The second form, drawn, before the first answer is let go — without
         // this the row could read a screen still waiting on both.
-        await expect(heading(page, screen.edit)).toBeVisible();
+        await expect(editForm(page, screen)).toBeVisible();
         await expect.poll(() => screen.shows(page)).toBe(screen.of(answer));
 
         await held.handed;
@@ -419,7 +432,7 @@ for (const screen of LIST_SCREENS) {
         await second.getByRole('button', { name: 'แก้ไข', exact: true }).click();
 
         const answer = await (await secondArrived).json();
-        await expect(heading(page, screen.edit)).toBeVisible();
+        await expect(editForm(page, screen)).toBeVisible();
         await expect.poll(() => screen.shows(page)).toBe(screen.of(answer));
 
         await held.handed;
@@ -449,7 +462,7 @@ for (const screen of LIST_SCREENS) {
       try {
         await first.getByRole('button', { name: 'แก้ไข', exact: true }).click();
         await page.getByRole('button', { name: screen.addButton, exact: true }).click();
-        await expect(heading(page, screen.add)).toBeVisible();
+        await expect(addForm(page, screen)).toBeVisible();
 
         await held.handed;
         await page.waitForTimeout(SETTLE_MS);
@@ -510,9 +523,9 @@ for (const screen of LIST_SCREENS) {
         await edit.click();
 
         await againArrived;
-        await expect(heading(page, screen.edit)).toBeVisible();
+        await expect(editForm(page, screen)).toBeVisible();
         await page.getByRole('button', { name: 'ยกเลิก', exact: true }).click();
-        await expect(heading(page, screen.edit)).toHaveCount(0);
+        await expect(editForm(page, screen)).toHaveCount(0);
 
         await held.handed;
         await page.waitForTimeout(SETTLE_MS);

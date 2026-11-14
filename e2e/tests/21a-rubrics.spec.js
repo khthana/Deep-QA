@@ -6,13 +6,17 @@ const { RUBRICS: SEEDED, RUBRICS_INTL } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
+const { BACKEND_URL } = require('../support/env');
 const { reading, keysOn, step, settled } = require('../support/pager');
 const {
   RUBRICS,
+  API,
   table,
   waitForList,
   openRubrics,
   rubricRow,
+  editRow,
+  programFilter,
   openAddForm,
   openEditor,
   addRubric,
@@ -22,8 +26,15 @@ const {
   listedCodes,
   filterTo,
   criteriaLink,
+  openRubricsOn,
 } = require('../support/rubrics-screen');
 const { statedLabel } = require('../support/stated-label');
+const { saidBy } = require('../support/confirm-dialog');
+const { menuLink } = require('../support/shell');
+const {
+  departmentCommittee,
+  signInAsDepartmentCommittee,
+} = require('../support/department-committee');
 
 /**
  * docs/acceptance/21-rubrics.md — the scales a หลักสูตร marks against, read
@@ -41,6 +52,16 @@ const { statedLabel } = require('../support/stated-label');
  * to be destroyed is appearance, and stays a hand-walked row. That the deletion
  * happens and reports what went is here.
  *
+ * ## #276, 14 พ.ย. 2569
+ *
+ * The owner's answer brought the screen back to the delivered shape: one
+ * curriculum at a time with no *ทุกหลักสูตร*, the criteria behind an eye in
+ * ดำเนินการ, the count column gone, and the add and edit forms drawn as rows of
+ * the table. It also took the screen off the ผู้ดูแลภาควิชา, so the row that
+ * reached two curricula signs in as a committee member of the department
+ * (`support/department-committee.js`), and the department administrator joins
+ * the accounts that are refused. Each row below that changed says so.
+ *
  * `mode: 'serial'` because these rows add a rubric, edit it and take it away
  * again, and because the paging rows read a total the later rows change. Each
  * still makes the state it asserts on rather than inheriting an assertion from
@@ -57,10 +78,20 @@ test.describe.configure({ mode: 'serial' });
  * `support/hold.js` says what it puts back, and what it does not.
  */
 let release;
-test.beforeAll(async () => {
+let releaseCommittee;
+let cleanupFailure = null;
+test.beforeAll(async ({ playwright }) => {
   release = await hold();
+  releaseCommittee = await departmentCommittee(playwright);
 });
-test.afterAll(() => release());
+test.afterAll(async () => {
+  cleanupFailure = releaseCommittee ? await releaseCommittee() : null;
+  await release();
+});
+// Last, so a fixture left behind fails the file rather than the next one.
+test.afterAll(() => {
+  if (cleanupFailure) throw new Error(cleanupFailure);
+});
 
 /** The rubric this file adds to 0501 and takes away again. */
 const MINE = 'RUB-Z1';
@@ -145,37 +176,79 @@ test('every rubric offers a way into its criteria, and the way carries the rubri
   // The fifth criterion. The criteria themselves are #22 and the destination
   // says so; what this screen owes the ticket is that each row has a door and
   // that the door leads to *that* rubric rather than to a screen that would
-  // then have to ask which one.
+  // then have to ask which one. Since #276 the door is the eye in ดำเนินการ,
+  // the delivered screen's ViewBT: a link the owner had been looking for there.
   await signIn(page, ACCOUNTS.committee0501);
   await openRubrics(page);
   await settled(table(page));
 
   const rows = await page.locator('table tbody tr').count();
-  expect(await page.locator('table tbody tr').getByRole('link').count()).toBe(rows);
+  expect(
+    await page
+      .locator('table tbody tr')
+      .getByRole('link', { name: 'ดูเกณฑ์การให้คะแนน' })
+      .count(),
+  ).toBe(rows);
 
-  // The count the row reads out is the number of criteria the seed gave it, so
-  // the door is labelled with what is behind it rather than with a guess.
-  await expect(criteriaLink(page, WITH_CRITERIA.code)).toContainText(
-    String(WITH_CRITERIA.criteria),
-  );
-  await expect(criteriaLink(page, 'RUB-03')).toContainText('ยังไม่มีเกณฑ์');
-
+  // *That* rubric: the address carries the id the list was given for the row,
+  // read off the answer rather than guessed from the order.
+  const listed = await page.request.get(`${BACKEND_URL}${API}?program_id=0501&per_page=100`);
+  const target = (await listed.json()).rubrics.find(row => row.rubric_code === WITH_CRITERIA.code);
   await criteriaLink(page, WITH_CRITERIA.code).click();
-  await expect(page).toHaveURL(/\/main\/rubrics\/[0-9]+\/criteria$/);
+  await expect(page).toHaveURL(new RegExp(`/main/rubrics/${target.id}/criteria$`));
+});
+
+test('the list is code, name, order and actions, and the name is both languages on one line', async ({
+  page,
+}) => {
+  // #276's columns: no หลักสูตร, the list being one curriculum's, and no count
+  // of criteria (*เอาออกแบบเดิม*). The name reads ไทย then อังกฤษ in one cell -
+  // whether they share a line is a width the hand walk measures; that both are
+  // there, in that order, is this row.
+  await signIn(page, ACCOUNTS.committee0501);
+  await openRubrics(page);
+  await settled(table(page));
+
+  expect(await page.locator('table thead th').allInnerTexts()).toEqual([
+    'รหัส',
+    'ชื่อ Rubric',
+    'ลำดับ',
+    'ดำเนินการ',
+  ]);
+  await expect(rubricRow(page, SEEDED[0].code).locator('td').nth(1)).toHaveText(
+    `${SEEDED[0].th}${SEEDED[0].en}`,
+  );
+  await expect(rubricRow(page, SEEDED[0].code).locator('td').nth(2)).toHaveText(
+    String(SEEDED[0].order),
+  );
 });
 
 test('a rubric is added through the form, edited, and is not there until it is saved', async ({
   page,
 }) => {
   // The first criterion, and the shape of it a browser can see: opening the
-  // form is not creating anything.
+  // form is not creating anything. Since #276 the form is a row at the top of
+  // the table, and its ลำดับ starts at the last one plus one - the delivered
+  // screen's rule, answered by the server because the last one is on page two.
   await signIn(page, ACCOUNTS.committee0501);
-  await openRubrics(page);
+  const opened = await openRubrics(page);
   await settled(table(page));
   const before = await listedCodes(page);
+  const nextOrder = (await opened.json()).next_order;
+  expect(nextOrder, 'past every seeded order').toBeGreaterThan(
+    Math.max(...SEEDED.map(entry => entry.order)),
+  );
 
   await openAddForm(page);
+  await expect(page.locator('table tbody tr').first()).toBeVisible();
+  await expect(editRow(page)).toHaveCount(1);
+  expect(
+    await page.locator('table tbody tr').first().getByRole('textbox', { name: 'รหัส Rubric' }).count(),
+    'the add row is the first row of the table',
+  ).toBe(1);
+  await expect(page.getByRole('spinbutton', { name: 'ลำดับ' })).toHaveValue(String(nextOrder));
   await page.getByRole('button', { name: 'ยกเลิก' }).click();
+  await expect(editRow(page)).toHaveCount(0);
   await settled(table(page));
   expect(await listedCodes(page)).toEqual(before);
 
@@ -193,7 +266,18 @@ test('a rubric is added through the form, edited, and is not there until it is s
   await expect(rubricRow(page, MINE)).toBeVisible();
   await expect(rubricRow(page, MINE)).toContainText('เกณฑ์ที่เพิ่มระหว่างการทดสอบ');
 
+  // The edit row stands where the rubric stood, and ยกเลิก - which the
+  // delivered edit row did not have (#276) - puts the row back as it was.
   await openEditor(page, MINE);
+  await expect(rubricRow(page, MINE)).toHaveCount(0);
+  await page.getByPlaceholder('เช่น การนำเสนอผลงาน').fill('ไม่ได้บันทึก');
+  await page.getByRole('button', { name: 'ยกเลิก' }).click();
+  await expect(rubricRow(page, MINE)).toContainText('เกณฑ์ที่เพิ่มระหว่างการทดสอบ');
+
+  await openEditor(page, MINE);
+  await expect(page.getByPlaceholder('เช่น การนำเสนอผลงาน')).toHaveValue(
+    'เกณฑ์ที่เพิ่มระหว่างการทดสอบ',
+  );
   await page.getByPlaceholder('เช่น การนำเสนอผลงาน').fill('เกณฑ์ที่ถูกแก้ไขแล้ว');
   await save(page);
   await expect(rubricRow(page, MINE)).toContainText('เกณฑ์ที่ถูกแก้ไขแล้ว');
@@ -227,13 +311,24 @@ test('a code held by a curriculum this account cannot see is refused, and the se
   await expect(page.getByText(REFUSALS.duplicateRubricCode)).toBeVisible();
 });
 
-test('a department administrator reaches both curricula, and the filter narrows to one', async ({
+test('an account holding two curricula is shown one at a time, the first to start with', async ({
   page,
 }) => {
   // The seventh criterion from above. The two curricula hold disjoint codes,
-  // which is the difference from #19 the walk sheet is careful about.
-  await signIn(page, ACCOUNTS.departmentAdmin05);
-  await openRubrics(page);
+  // which is the difference from #19 the walk sheet is careful about. Until
+  // #276 the account was the department administrator and the list opened on
+  // both; now it is a committee member of the whole department, and the list
+  // opens on the first curriculum with no *ทุกหลักสูตร* to widen it to.
+  await signInAsDepartmentCommittee(page);
+  const opened = await openRubrics(page);
+  expect(new URL(opened.url()).searchParams.get('program_id')).toBe('0501');
+  await expect(programFilter(page)).toHaveValue('0501');
+  expect(
+    await programFilter(page).locator('option').evaluateAll(options => options.map(o => o.value)),
+  ).toEqual(['0501', '0503']);
+  await settled(table(page));
+  await expect(rubricRow(page, SEEDED[0].code)).toHaveCount(1);
+  await expect(rubricRow(page, RUBRICS_INTL[0].code)).toHaveCount(0);
 
   await filterTo(page, '0503');
   await settled(table(page));
@@ -273,11 +368,10 @@ test('removing a rubric that has criteria says how many went with it', async ({ 
   await openRubrics(page);
   await settled(table(page));
 
-  await expect(criteriaLink(page, WITH_CRITERIA.code)).toContainText(
-    String(WITH_CRITERIA.criteria),
-  );
-
+  // The precondition read where it is used (#51), off the question rather than
+  // off a column the list no longer draws (#276).
   await startRemoval(page, WITH_CRITERIA.code);
+  expect(await saidBy(page)).toContain(`เกณฑ์การให้คะแนน ${WITH_CRITERIA.criteria} ข้อ`);
   await confirmRemoval(page);
 
   await expect(rubricRow(page, WITH_CRITERIA.code)).toHaveCount(0);
@@ -293,8 +387,15 @@ test('the accounts this screen is not for are refused it, not merely kept off it
   // หลักสูตร and what is inside one is decided below it - ADR-0002 for the
   // central administrator, and "marking against a rubric is not writing one"
   // for the ผู้สอน. The menu entry each of them lacks is a convenience; this is
-  // the rule, and it holds for an account that typed the address.
-  for (const account of [ACCOUNTS.facultyAdmin, ACCOUNTS.systemAdmin, ACCOUNTS.teacherOne]) {
+  // the rule, and it holds for an account that typed the address. The
+  // department administrator joined them on 14 พ.ย. 2569 by the owner's answer
+  // to #276, at the server and not only in the menu (ADR-0002).
+  for (const account of [
+    ACCOUNTS.facultyAdmin,
+    ACCOUNTS.systemAdmin,
+    ACCOUNTS.teacherOne,
+    ACCOUNTS.departmentAdmin05,
+  ]) {
     await page.context().clearCookies();
     await signIn(page, account);
 
@@ -309,4 +410,114 @@ test('the accounts this screen is not for are refused it, not merely kept off it
     ).toBeVisible();
     await expect(rubricRow(page, 'RUB-02')).toHaveCount(0);
   }
+});
+
+test('the department administrator has no menu entry for the screen, and finds it under a committee hat', async ({
+  page,
+}) => {
+  // #276's two sentences as the person meets them: *ตัดหน้านี้ออกจาก
+  // ผู้ดูแลภาควิชา* in the menu, and *ถ้า ผู้ดูแลภาควิชา เป็นกรรมการหลักสูตร ก็จะ
+  // เห็นตอนเปลี่ยน role*. The same account both times, so what moves the entry
+  // is the hat and not who signed in. The refusal at the server is the row
+  // above; this is the convenience it backs.
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await page.goto('/main/programs');
+  await expect(menuLink(page, 'ข้อมูลหลักสูตร')).toHaveCount(1);
+  await expect(menuLink(page, 'ข้อมูล Rubric กลาง')).toHaveCount(0);
+
+  await page.context().clearCookies();
+  await signInAsDepartmentCommittee(page);
+  await openRubrics(page);
+  await expect(menuLink(page, 'ข้อมูล Rubric กลาง')).toHaveCount(1);
+});
+
+/**
+ * A gate in front of the requests a row names, opened by the row - the review
+ * of 14 พ.ย. 2569 (#276). The request is continued rather than fulfilled, so
+ * the answer is the server's own (#160).
+ */
+async function gateRequests(page, matches) {
+  let open;
+  const opened = new Promise(resolve => {
+    open = resolve;
+  });
+  await page.route(
+    url => matches(url),
+    async route => {
+      await opened;
+      await route.continue();
+    },
+  );
+  return open;
+}
+
+test('the add row is not offered while another curriculum is read, and starts from that one', async ({
+  page,
+}) => {
+  // The review of 14 พ.ย. 2569 (#276): `next_order` is read off the list that
+  // is drawn, so pressed while the next curriculum's list is out the add row
+  // started from the curriculum before it.
+  await signInAsDepartmentCommittee(page);
+  const first = await openRubricsOn(page, '0501');
+  await settled(table(page));
+  const before = (await first.json()).next_order;
+  const add = page.getByRole('button', { name: 'เพิ่ม Rubric', exact: true });
+  await expect(add).toBeEnabled();
+
+  const letGo = await gateRequests(
+    page,
+    url => url.pathname === API && url.searchParams.get('program_id') === '0503',
+  );
+  const answered = waitForList(page);
+  await programFilter(page).selectOption('0503');
+  // The claim: nothing to press while the list in front of the person is the
+  // curriculum they have just left.
+  await expect(add).toBeDisabled();
+
+  letGo();
+  const answer = await answered;
+  const after = (await answer.json()).next_order;
+  // Where the two agree no mutant could tell which list the row read (#154).
+  expect(after, 'the two curricula start their next rubric from different places').not.toBe(before);
+  await expect(add).toBeEnabled();
+  await add.click();
+  await expect(page.getByRole('spinbutton', { name: 'ลำดับ' })).toHaveValue(String(after));
+  await page.getByRole('button', { name: 'ยกเลิก' }).click();
+});
+
+test('an edit row drawn again while its save is out keeps its fields shut', async ({ page }) => {
+  // The review of 14 พ.ย. 2569 (#276): the edit row is drawn inside the list,
+  // and a curriculum switched away and back while its save is out draws it
+  // anew. The flag that shuts its fields has to outlive that, which a flag the
+  // row held itself did not.
+  await signInAsDepartmentCommittee(page);
+  await openRubricsOn(page, '0501');
+  await settled(table(page));
+  // Whatever the list draws first: the serial rows above take rubrics away (#129).
+  const [subject] = await listedCodes(page);
+  await openEditor(page, subject);
+  const code = page.getByRole('textbox', { name: 'รหัส Rubric' });
+
+  const letGo = await gateRequests(page, url => new RegExp(`^${API}/[0-9]+$`).test(url.pathname));
+  const saved = page.waitForResponse(
+    answer =>
+      new RegExp(`^${API}/[0-9]+$`).test(new URL(answer.url()).pathname) &&
+      answer.request().method() === 'PUT',
+  );
+  await page.getByRole('button', { name: 'บันทึก' }).click();
+  await expect(code).toBeDisabled();
+
+  await filterTo(page, '0503');
+  await settled(table(page));
+  await expect(code).toHaveCount(0);
+  await filterTo(page, '0501');
+  await settled(table(page));
+  await expect(rubricRow(page, subject)).toHaveCount(0);
+  await expect(code).toHaveValue(subject);
+  // The claim, on the row drawn anew.
+  await expect(code).toBeDisabled();
+
+  letGo();
+  expect((await saved).status()).toBe(200);
+  await expect(code).toHaveCount(0);
 });

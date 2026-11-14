@@ -5,13 +5,13 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { settled } = require('../support/pager');
+const { saidBy, dismiss } = require('../support/confirm-dialog');
 const {
   openRubrics,
   rubricRow,
   addRubric,
   startRemoval: startRubricRemoval,
   confirmRemoval: confirmRubricRemoval,
-  criteriaLink,
 } = require('../support/rubrics-screen');
 const {
   table,
@@ -99,7 +99,9 @@ test('the way in from the rubric list lands on that rubric, and an empty one say
   });
   expect(created.status()).toBe(201);
 
-  await expect(criteriaLink(page, MINE)).toHaveText(/ยังไม่มีเกณฑ์/);
+  // The link read *ยังไม่มีเกณฑ์* here until 14 พ.ย. 2569, when the owner's
+  // answer to #276 made it the eye in ดำเนินการ and took the count off the list.
+  // That the destination is empty is the claim below, on the screen it opens.
   await openCriteriaVia(page, rubricRow(page, MINE));
 
   await expect(
@@ -187,15 +189,19 @@ test('an edit is saved, and the row afterwards is the row that was edited', asyn
 });
 
 test('the rubric list counts what this screen wrote', async ({ page }) => {
-  // Where the two tickets meet. #21's list shows how many criteria a rubric
+  // Where the two tickets meet. #21's list knows how many criteria a rubric
   // holds, and that number is a subquery over the table this screen writes -
-  // so a rubric that read ยังไม่มีเกณฑ์ in the first row of this file now says
-  // how many there are.
+  // so a rubric with none in the first row of this file now says how many
+  // there are. Until #276 (14 พ.ย. 2569) the number was drawn in the list's
+  // own link; the owner took that column away, and the list's count is read
+  // where the screen still says it, in the question before a removal.
   await signIn(page, ACCOUNTS.committee0501);
   await openRubrics(page);
   await settled(table(page));
 
-  await expect(criteriaLink(page, MINE)).toHaveText(/ดูเกณฑ์ 4 ข้อ/);
+  await rubricRow(page, MINE).getByRole('button', { name: 'ลบ', exact: true }).click();
+  expect(await saidBy(page)).toContain('เกณฑ์การให้คะแนน 4 ข้อ');
+  await dismiss(page);
 });
 
 test('removal asks first, and answering no leaves the criterion where it was', async ({ page }) => {

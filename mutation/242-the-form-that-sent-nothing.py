@@ -38,9 +38,9 @@
 | `ploformclosed` | เอาการ์ดออกจากบล็อกที่ปิดฟอร์มใน `Plos.js` | ข้ออ้างที่ 1 ของแถวที่สอง |
 | `plosentencesaid` | เอาการ์ดออกจากบรรทัดที่ส่งต่อประโยค | ข้ออ้างสุดท้ายของแถวที่สอง |
 | `ploreported` | เอาการ์ดออกจาก `report(error)` ใน `catch` | แถวที่สาม — คำปฏิเสธที่ไม่ได้พูดทับฟอร์มอื่น |
-| `rubcodelive` | เอา `disabled={sending}` ออกจากช่องรหัสของ `RubricForm.js` | ข้ออ้างที่ 1 ของแถว Rubric |
+| `rubcodelive` | เอา `disabled={sending}` ออกจากช่องรหัสของ `RubricForm.js` (ตั้งแต่ #276 คือ `RubricRow.js`) | ข้ออ้างที่ 1 ของแถว Rubric |
 | `ruborderlive` | ออกจากช่องลำดับของแฟ้มเดียวกัน | ข้ออ้างที่ 2 |
-| `rubpagewide` | เช่นเดียวกับ `pspagewide` | ข้ออ้างที่ 3 |
+| `rubpagewide` | เช่นเดียวกับ `pspagewide` | ข้ออ้างที่ 3 · กวาดซ้ำ 14 พ.ย. 2569 หลังเล็งใหม่ไปที่ `RubricRow.js` (#276): ตายที่ข้ออ้างที่ 3 ตามเดิม และแถวที่สองของจอนี้ตายด้วยที่ `fill` หมดเวลา เพราะช่องของแถวเพิ่มถือธงของหน้า — การจัดฉาก ไม่ใช่ข้ออ้าง (#266) |
 | `rubformclosed` | เอาการ์ดออกจาก `setEditing(null)` ใน `Rubrics.js` | ข้ออ้างที่ 1 ของแถวที่สอง |
 | `rubsentencesaid` | เอาการ์ดออกจากบรรทัดที่ส่งต่อประโยค | ข้ออ้างสุดท้ายของแถวที่สอง |
 | `critweightlive` | เอา `disabled={sending}` ออกจากช่องน้ำหนักของ `CriterionForm.js` | ข้ออ้างที่ 1 ของแถวเกณฑ์ |
@@ -83,7 +83,7 @@ from harness import main
 FILES = {
     'psform': 'frontend/src/components/programSubjects/ProgramSubjectForm.js',
     'ploform': 'frontend/src/components/plos/PloForm.js',
-    'rubform': 'frontend/src/components/rubrics/RubricForm.js',
+    'rubform': 'frontend/src/components/rubrics/RubricRow.js',
     'critform': 'frontend/src/components/rubrics/CriterionForm.js',
     'pspage': 'frontend/src/pages/ProgramSubjects.js',
     'plopage': 'frontend/src/pages/Plos.js',
@@ -173,17 +173,27 @@ MUTANTS = {
                     "    } finally {\n"),
 
     # ---- Rubric -------------------------------------------------------------
+    # Re-aimed 14 พ.ย. 2569: since #276 the Rubric form is a row of the table,
+    # `RubricRow.js`, and `RubricForm.js` is gone. The claims are the same.
     'rubcodelive': ('rubform',
-                    "              maxLength={20}\n"
-                    "              disabled={sending}\n",
-                    "              maxLength={20}\n"),
+                    "          maxLength={20}\n"
+                    "          disabled={sending}\n",
+                    "          maxLength={20}\n"),
 
     'ruborderlive': ('rubform',
-                     "              min={0}\n"
-                     "              disabled={sending}\n",
-                     "              min={0}\n"),
+                     "          min={0}\n"
+                     "          disabled={sending}\n",
+                     "          min={0}\n"),
 
-    'rubpagewide': ('rubform', PAGEWIDE_OPEN, PAGEWIDE_SHUT),
+    # Re-aimed again by the review of the same day: the flag is the page's
+    # since then, keyed on which row's save is out, so the page-wide flag is
+    # `busy` handed to both rows in place of that key.
+    'rubpagewide': [('rubpage',
+                     "\n      sending={sendingFor === formOf(draft)}\n",
+                     "\n      sending={busy}\n"),
+                    ('rubpage',
+                     "                    sending={sendingFor === formOf(draft)}\n",
+                     "                    sending={busy}\n")],
 
     'rubformclosed': ('rubpage',
                       "      if (showing.current === sent) setEditing(null)\n",

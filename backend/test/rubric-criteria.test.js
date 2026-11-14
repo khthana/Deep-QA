@@ -423,6 +423,26 @@ test('the faculty administrator and the teacher are refused the screen entirely'
   assert.equal(after.status, 200);
 });
 
+test('the departmental administrator is refused the criteria too, in every verb - #276', async () => {
+  // The owner's answer of 14 พ.ย. 2569: the screen belongs to the กรรมการหลักสูตร
+  // and is taken off the ผู้ดูแลภาควิชา, at the server as well as in the menu
+  // (ADR-0002). A departmental administrator who also sits on a committee
+  // reaches it by putting that hat on, which `rubrics.test.js` builds.
+  const owner = await signInAs('U_COM');
+  const rubric = await ownRubric(owner, 'ZRC-276');
+  const made = await criterion(owner, rubric.id);
+
+  const cookie = await signInAs('U_DEPT');
+  assert.equal((await list(cookie, rubric.id)).status, 403, 'listed criteria');
+  assert.equal((await one(cookie, rubric.id, made.id)).status, 403, 'read one');
+  assert.equal((await add(cookie, rubric.id, draft())).status, 403, 'added one');
+  assert.equal((await edit(cookie, rubric.id, made.id, draft())).status, 403, 'edited one');
+  assert.equal((await remove(cookie, rubric.id, made.id)).status, 403, 'removed one');
+
+  const after = await one(owner, rubric.id, made.id);
+  assert.equal(after.status, 200);
+});
+
 test('a criterion that was never made, and one addressed by nonsense, answer the same way', async () => {
   // Both ids are read from the address, and both are integer columns. A
   // non-numeric one is refused before it reaches the database rather than

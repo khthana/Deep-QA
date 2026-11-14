@@ -101,14 +101,14 @@ export default function PloForm({
   // never picks. A string, so that re-reading the pool and being handed the
   // same curricula back moves nothing - #233.
   //
-  // `rubrics/RubricForm.js` carries the reasons for the pool clause (#234).
+  // `rubrics/RubricForm.js` at `58d15b4` carries the reasons for the pool clause (#234).
   // `pages/Plos.js` lands on a curriculum still running when it opens; this is
   // the other half, for the retired one a person picks by hand afterwards.
   const filtered = usable.some(program => program.program_id === defaultProgram)
   const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''
 
   // The pool as a value rather than as an array - #232's shape, whose reasons
-  // are written out in `rubrics/RubricForm.js`. `programs` is a new array on
+  // are written out in `rubrics/RubricForm.js` at `58d15b4`. `programs` is a new array on
   // every answer, so an effect that depended on anything derived from it by
   // identity re-ran whenever the screen read the pool again, and threw away a
   // form typed and not saved.
@@ -129,7 +129,7 @@ export default function PloForm({
   }, [value])
 
   // And the curriculum follows the pool, which is the half a re-read may move.
-  // `rubrics/RubricForm.js` carries the reasons; this screen adds one of its
+  // `rubrics/RubricForm.js` at `58d15b4` carries the reasons; this screen adds one of its
   // own. The effect below reports `draft.program_id` upwards, and both effects
   // are flushed from the same commit, so what it reports is the settled value
   // rather than the `''` this one is about to replace - which is why the pair

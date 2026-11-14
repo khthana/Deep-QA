@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import Notice from '../components/Notice'
 import RowAction, { RowActions } from '../components/RowAction'
-import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
-import RubricForm from '../components/rubrics/RubricForm'
+import RubricRow from '../components/rubrics/RubricRow'
 import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
   createRubric,
@@ -22,10 +20,29 @@ import {
  *
  * The scales a หลักสูตร marks against, so that two Teachers assessing the same
  * kind of work assess it the same way. The screen belongs to the
- * กรรมการหลักสูตร; the ผู้ดูแลภาควิชา above them reaches it too, over the
- * curricula they hold, and neither is told so by this file — the server filters
+ * กรรมการหลักสูตร alone, and is not told so by this file — the server filters
  * the list and refuses the writes, and what arrives is simply what that account
- * may see (ADR-0002).
+ * may see (ADR-0002). Until 14 พ.ย. 2569 the ผู้ดูแลภาควิชา above them reached
+ * it too; the owner's answer to #276 took it off them, at the server
+ * (`backend/routes/rubrics.js`, `MAINTAINERS`) and in the menu.
+ *
+ * ## The shape the delivered screen had - #276
+ *
+ * The same answer brought the list back to the delivered screen's shape
+ * (`DEEP-QA-FRONTEND/src/components/content/AdminContent/Rubric/RubricTable.js`),
+ * because the way into the criteria was a link the owner did not find:
+ *
+ * - **One curriculum at a time.** The picker has no *ทุกหลักสูตร* and starts on
+ *   the first curriculum in reach; the rubrics of two curricula are not drawn
+ *   in one list, so the table has no หลักสูตร column.
+ * - **The criteria are an eye in ดำเนินการ**, before แก้ไข and ลบ, the
+ *   delivered order - and the column that counted them is gone.
+ * - **Adding and changing are rows of the table** (`RubricRow`), not a form
+ *   drawn in place of the list. The criteria screen kept its form: the answer
+ *   was *เฉพาะรายการ Rubric*.
+ * - **A new rubric's ลำดับ starts at the last one plus one**, which the server
+ *   answers as `next_order`, the last order being on another page as often as
+ *   not.
  *
  * Three things about this screen are decisions rather than habit.
  *
@@ -36,11 +53,12 @@ import {
  * rubric that belongs to a curriculum they cannot see and concluding the screen
  * is broken.
  *
- * *The criteria are a link, not a column of this screen.* The four-level
+ * *The criteria are a way in, not a column of this screen.* The four-level
  * weighted criteria are `rubric_details` and belong to #22. What this screen
- * owes the ticket's fifth criterion is a way in, and what it owes the person is
- * the number — a rubric with no criteria marks nothing, and that is worth
- * seeing from the list rather than after a click.
+ * owes the ticket's fifth criterion is a way in. Until #276 it also drew how
+ * many each rubric had, on the reasoning that a rubric with none marks nothing;
+ * the owner took the column out (*เอาออกแบบเดิม*), and the number is still
+ * what the removal's confirmation reads.
  *
  * *Removing is final, and the confirmation says how final.* Every other
  * master-data screen may come back having switched a row off instead; there is
@@ -65,14 +83,56 @@ const readOf = (page, program) => `${page}:${program}`
  */
 const HANDED_ON = 'handed-on'
 
+/** What the add row's four fields start as - #276. */
+const EMPTY_DRAFT = {
+  rubric_code: '',
+  rubric_name_th: '',
+  rubric_name_en: '',
+  display_order: 1,
+}
+
 export default function Rubrics() {
   const [page, setPage] = useState(1)
-  const [program, setProgram] = useState('')
+  /**
+   * The curriculum picked, and the curriculum shown - #276.
+   *
+   * The list is one curriculum's and never everybody's, so `program` is never
+   * empty once the curricula in reach are read: what the person picked while it
+   * is still in reach, and the first one otherwise. Derived rather than written
+   * by an effect, so a switch of hats that drops the picked curriculum (#198)
+   * lands on the new first one without a read of the old one in between, and so
+   * every line below that reads `program` reads the one the table is showing.
+   */
+  const [chosen, setChosen] = useState('')
   const [data, setData] = useState({ rubrics: [], total: 0 })
   const [programs, setPrograms] = useState([])
+  // Whether the curricula have been asked about yet, answered or refused. The
+  // list is not read before then: with nothing picked it would be the list of
+  // every curriculum in reach, drawn for a moment and then replaced.
+  const [poolRead, setPoolRead] = useState(false)
+  const program = programs.some(entry => entry.program_id === chosen)
+    ? chosen
+    : programs[0]?.program_id ?? ''
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
-  const [editing, setEditing] = useState(null)
+  /**
+   * What the open row is about, and what has been typed into it - #276.
+   *
+   * `editing` is the subject: `null` with no row open, a rubric read back for
+   * the row that changes it, or an object with no `id` for the row that adds
+   * one. `draft` is what the row's four fields hold. The row is drawn inside
+   * the list and so comes and goes with it - the loading line replaces every
+   * row while a read is out, and paging takes a changed rubric's row off the
+   * screen - so what was typed is kept here, where neither can reach it, and
+   * not in the row. Every way of opening or closing a row writes both together,
+   * which is what `setEditing` below is for.
+   */
+  const [editing, setSubject] = useState(null)
+  const [draft, setDraft] = useState(null)
+  const setEditing = subject => {
+    setSubject(subject)
+    setDraft(subject && { ...EMPTY_DRAFT, ...subject })
+  }
   const [removing, setRemoving] = useState(null)
   /**
    * A write holds `writing` and a read holds `reading`, and a read puts down
@@ -81,6 +141,15 @@ export default function Rubrics() {
   const [writing, setWriting] = useState(false)
   const [reading, setReading] = useState(false)
   const busy = writing || reading
+  /**
+   * Which row's save is out - `'new'` for the add row, the rubric's id for an
+   * edit row - #249's key, by the review of 14 พ.ย. 2569 (#276). The row is
+   * drawn inside the list and so is drawn anew whenever the list is, which a
+   * flag of its own would not survive; `busy` is the page's and would close a
+   * row whose save is not the one out (#242's `rubpagewide`).
+   */
+  const [sendingFor, setSendingFor] = useState(null)
+  const formOf = subject => subject?.id ?? 'new'
 
   const report = useCallback(error => {
     // A 401 already raises the shell's dialog; saying it again here would put a
@@ -110,6 +179,8 @@ export default function Rubrics() {
    * `frontend/src/pages/Students.js`.
    */
   const load = useCallback(async isCurrent => {
+    // #276 - not before the curricula are known, for `poolRead`'s reason.
+    if (!poolRead) return true
     // Which read this is, for the sentence that may be waiting for it - #205.
     const key = readOf(page, program)
     setLoading(true)
@@ -137,14 +208,10 @@ export default function Rubrics() {
           setPage(lastPage)
           return HANDED_ON
         }
-        setData(answer)
-        if (waiting.current && waiting.current.of === key) {
-          if (formShown.current) {
-            waiting.current = { ...waiting.current, held: true }
-          } else {
-            setNotice(waiting.current.said)
-          }
-        }
+        // Which curriculum the drawn list is of, for the add button below.
+        setData({ ...answer, of: program })
+        // held-sentence: the rows that add and change a rubric are drawn inside the list since #276, so no read lands while the list is replaced and there is nothing to hold a sentence for (#276)
+        if (waiting.current && waiting.current.of === key) setNotice(waiting.current.said)
       }
       // Whether it drew, for a handler that has a sentence to say - #203. It
       // answers *the read was not refused* and not *the screen is still the one
@@ -166,17 +233,16 @@ export default function Rubrics() {
         // sentence it was given has just been re-keyed for the read it handed
         // to, so clearing here would throw away a sentence nothing else will
         // say - #209.
-        // #246, 29 ตุลาคม 2569 - unless it is held for a form to close,
-        // the one case where a landed read has drawn nothing to put a sentence
-        // over. The effect beside `formShown` owns a held one from here on.
-        if (!handedOn && !waiting.current?.held) waiting.current = null
+        // #246 held a sentence here for a form to close, from 29 ตุลาคม 2569
+        // until #276 drew the form inside the list on 14 พ.ย. 2569.
+        if (!handedOn) waiting.current = null
       }
     }
     // `generation` is in this list and read nowhere in the body on purpose:
     // what it changes is *when* this read happens, not what is asked for, so
     // the rule below sees a dependency it cannot account for - #198.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, program, report, generation])
+  }, [page, program, report, generation, poolRead])
 
   useEffect(() => {
     let current = true
@@ -198,46 +264,14 @@ export default function Rubrics() {
   }, [load])
 
   /**
-   * Whether a form is drawn in place of the list, readable after an await -
-   * #246, 29 ตุลาคม 2569.
-   *
-   * The return below draws the form **or** the table and never both, so a read
-   * that lands while one is open has drawn nothing a waiting sentence is about,
-   * and the sentence waits for a list to be true of. `load` cannot read
-   * `editing` itself: in its dependency list it would rebuild the loader at
-   * every press of the opener and the effect above would fetch the list again
-   * for each one, and out of the list the closure would see the first render's
-   * value (#201). So it is mirrored into a ref the way `onScreen` mirrors
-   * `load` just above. `frontend/src/pages/Plos.js` carries the measurement the
-   * owner's answer rests on and what this ref is *of* (#185, #207).
+   * `formShown` and the held sentence stood here from 29 ตุลาคม 2569 (#246):
+   * the form was drawn **in place of** the list, so a read that landed while it
+   * was open had drawn nothing a waiting sentence was about, and the sentence
+   * waited for the form to close. #276 drew the add and edit rows inside the
+   * list on 14 พ.ย. 2569, so every read that lands draws the table the sentence
+   * is about and says it there. `docs/lessons.md` §#246 carries why the hold was
+   * right while it stood.
    */
-  const formShown = useRef(false)
-  useEffect(() => {
-    formShown.current = Boolean(editing)
-  }, [editing])
-
-  /**
-   * The held sentence, said when the list comes back - #246.
-   *
-   * A held sentence whose read is no longer the one the screen is on is owed to
-   * nobody and goes without being said, which is the same half of the key rule
-   * `load` applies above (#205). That clause is **structurally unreachable**
-   * here on 29 ตุลาคม 2569 and is written for the day it is not: the pager
-   * and the filters are drawn in the branch the form replaces, so nothing can
-   * move the key while a form is open. A control drawn outside that branch
-   * would move it, and that is the condition that re-dates this.
-   *
-   * The clearing here is the whole of it, the `finally` in `load` having stopped
-   * clearing a held one: a sentence nothing clears is not a sentence that is
-   * lost, it is one the next read says over a list it is not about (#205, #137).
-   */
-  useEffect(() => {
-    if (editing) return
-    const held = waiting.current
-    if (!held?.held) return
-    if (held.of === readOf(page, program)) setNotice(held.said)
-    waiting.current = null
-  }, [editing, page, program])
 
   /**
    * The page the pager is on now - #206. A removal steps the page back only
@@ -274,15 +308,23 @@ export default function Rubrics() {
   // change with the grant, so this read names the generation as well as the
   // list below does (#198). Until 23 ตุลาคม 2569 it was fetched once, which was
   // true while a switch that stayed put remounted the screen; with the remount
-  // gone, the statement of which curriculum this screen is in and the pool the
-  // form's picker draws from would have stayed the old hat's until a reload.
+  // gone, the statement of which curriculum this screen is in would have stayed
+  // the old hat's until a reload. Since #276 it also decides which curriculum
+  // the list is of, which is why a refusal lets the list be asked as well: the
+  // list's own refusal is the sentence those rows read.
   useEffect(() => {
     let cancelled = false
     listReachablePrograms()
       .then(({ programs: reachable }) => {
-        if (!cancelled) setPrograms(reachable)
+        if (!cancelled) {
+          setPrograms(reachable)
+          setPoolRead(true)
+        }
       })
-      .catch(report)
+      .catch(error => {
+        report(error)
+        if (!cancelled) setPoolRead(true)
+      })
     return () => {
       cancelled = true
     }
@@ -291,9 +333,6 @@ export default function Rubrics() {
     // why that is a dependency here rather than an effect of its own.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [report, generation])
-
-  const nameOf = programId =>
-    programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId
 
   /**
    * Which press of แก้ไข the form was last asked for - #139. แก้ไข makes a new
@@ -342,9 +381,14 @@ export default function Rubrics() {
    * 11 October 2569 for #202). `Plos.js` carries the reasons and the condition
    * that expired.
    */
-  const save = async draft => {
+  const save = async fields => {
     const sent = showing.current
+    // The curriculum the list is showing - #276. The row has no field for it: a
+    // new rubric goes where the person is looking, and an edit's is ignored by
+    // the server, a rubric not being moved between curricula.
+    const draft = { ...fields, program_id: program }
     setWriting(true)
+    setSendingFor(formOf(editing))
     try {
       if (editing?.id) await updateRubric(editing.id, draft)
       else await createRubric(draft)
@@ -355,12 +399,10 @@ export default function Rubrics() {
       // marker claimed - that nothing can take the screen while this save is
       // out - stopped being true on 28 ตุลาคม 2569, which is why the lines
       // below ask (#242).
-      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The หลักสูตร field is open
-      // on an add, so a Rubric can be written into a curriculum the table is not
-      // filtered to and the sentence would stand over a list without it.
-      // `lib/outsideTheFilter.js` carries the measured population.
-      const outside = outsideFilter(program, draft.program_id)
-      const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
+      // outside-the-filter: a rubric is written into the curriculum the list is showing, there being no หลักสูตร field since the add row of 14 พ.ย. 2569, so the row saved is never outside the filter (#276)
+      // #247 asked here from 29 ตุลาคม 2569 until then, the field being open on
+      // an add. `lib/outsideTheFilter.js` carries that population.
+      const said = { error: false, message: 'บันทึกข้อมูลเรียบร้อยแล้ว' }
       // #203 - the sentence waits for the read that draws it, and #209 has it
       // handed over before the await: only `load` learns that the page has gone
       // past the end, and only `load` can re-key the sentence for the read it
@@ -378,6 +420,7 @@ export default function Rubrics() {
     } catch (error) {
       if (showing.current === sent) report(error)
     } finally {
+      setSendingFor(null)
       setWriting(false)
     }
   }
@@ -436,174 +479,191 @@ export default function Rubrics() {
     }
   }
 
+  const cancel = () => {
+    setNotice(null)
+    setEditing(null)
+  }
+
+  // The row being added is drawn above the list, and the row being changed
+  // where the rubric stood - #276. Both read `draft`, which is why it is held
+  // here rather than in the row.
+  const row = (
+    <RubricRow
+      draft={draft}
+      onChange={setDraft}
+      busy={busy}
+      sending={sendingFor === formOf(draft)}
+      onSave={save}
+      onCancel={cancel}
+    />
+  )
+
   return (
     <div className="space-y-6">
       <Notice notice={notice} />
 
-      {editing ? (
-        <RubricForm
-          value={editing}
-          programs={programs}
-          defaultProgram={program}
-          busy={busy}
-          onSave={save}
-          onCancel={() => {
-            setNotice(null)
-            setEditing(null)
-          }}
-        />
-      ) : (
-        <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-lg font-medium text-primary">ข้อมูล Rubric กลาง</h1>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* A picker when there is a choice to make, and a statement of
-                  where one is when there is not — ผลการเรียนรู้ระดับหลักสูตร's
-                  control, for its reasons. A กรรมการหลักสูตร reaches one
-                  curriculum and is shown which. */}
-              {programs.length > 1 ? (
-                <label className="flex items-center gap-2 text-sm text-slate-600">
-                  หลักสูตร
-                  <select
-                    value={program}
-                    onChange={event => {
-                      // Back to the first page: page 2 of both curricula's
-                      // rubrics is rarely page 2 of one of them.
-                      setPage(1)
-                      setProgram(event.target.value)
-                    }}
-                    className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-                  >
-                    <option value="">ทุกหลักสูตร</option>
-                    {programs.map(entry => (
-                      <option key={entry.program_id} value={entry.program_id}>
-                        {entry.program_name_th}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : (
-                programs.length === 1 && (
-                  <span className="flex items-center gap-2 text-sm text-slate-600">
-                    หลักสูตร
-                    <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                      {programs[0].program_name_th}
-                    </span>
-                  </span>
-                )
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  asked.current = null
-                  showing.current = {}
-                  setNotice(null)
-                  setEditing({})
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-lg font-medium text-primary">ข้อมูล Rubric กลาง</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* A picker when there is a choice to make, and a statement of
+              where one is when there is not — ผลการเรียนรู้ระดับหลักสูตร's
+              control, for its reasons. A กรรมการหลักสูตร reaches one
+              curriculum and is shown which. No *ทุกหลักสูตร* since #276: the
+              list is one curriculum's. */}
+          {programs.length > 1 ? (
+            <label className="flex items-center gap-2 text-sm text-slate-600">
+              หลักสูตร
+              <select
+                value={program}
+                onChange={event => {
+                  // Back to the first page: page 2 of one curriculum's
+                  // rubrics is rarely page 2 of another's.
+                  setPage(1)
+                  setChosen(event.target.value)
                 }}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
+                className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
               >
-                เพิ่ม Rubric
-              </button>
-            </div>
-          </div>
+                {programs.map(entry => (
+                  <option key={entry.program_id} value={entry.program_id}>
+                    {entry.program_name_th}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            programs.length === 1 && (
+              <span className="flex items-center gap-2 text-sm text-slate-600">
+                หลักสูตร
+                <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
+                  {programs[0].program_name_th}
+                </span>
+              </span>
+            )
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              asked.current = null
+              showing.current = {}
+              setNotice(null)
+              setEditing({ display_order: data.next_order ?? 1 })
+            }}
+            // Not while the drawn list is another curriculum's: `next_order`
+            // is that list's, and after a switch of curriculum it is the one
+            // before it - the review of 14 พ.ย. 2569 (#276). A re-read of the
+            // same curriculum leaves the button live, which is #242's claim
+            // (a form opened while the list is being re-read is live).
+            disabled={data.of !== program}
+            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            เพิ่ม Rubric
+          </button>
+        </div>
+      </div>
 
-          <p className="text-sm text-slate-500">
-            รหัส Rubric ห้ามซ้ำกันทั้งระบบ ต่างจากรหัสผลการเรียนรู้ระดับหลักสูตรที่ซ้ำข้ามหลักสูตรได้
-            รายการเรียงตามลำดับที่ตั้งไว้ และลำดับที่เท่ากันจะเรียงตามรหัส
-          </p>
+      <p className="text-sm text-slate-500">
+        รหัส Rubric ห้ามซ้ำกันทั้งระบบ ต่างจากรหัสผลการเรียนรู้ระดับหลักสูตรที่ซ้ำข้ามหลักสูตรได้
+        รายการเรียงตามลำดับที่ตั้งไว้ และลำดับที่เท่ากันจะเรียงตามรหัส
+      </p>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600">
-                <tr>
-                  <th className="px-4 py-3">รหัส</th>
-                  <th className="px-4 py-3">ชื่อ Rubric</th>
-                  <th className="px-4 py-3">ลำดับ</th>
-                  <th className="px-4 py-3">เกณฑ์การให้คะแนน</th>
-                  <th className="px-4 py-3">หลักสูตร</th>
-                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {loading && (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                      กำลังโหลด…
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-50 text-gray-600">
+            <tr>
+              <th className="px-4 py-3">รหัส</th>
+              <th className="px-4 py-3">ชื่อ Rubric</th>
+              <th className="px-4 py-3">ลำดับ</th>
+              <th className="px-4 py-3 text-center">ดำเนินการ</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {editing && !editing.id && row}
+            {loading && (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                  กำลังโหลด…
+                </td>
+              </tr>
+            )}
+            {!loading && data.rubrics.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                  ยังไม่มี Rubric ในหลักสูตรนี้
+                </td>
+              </tr>
+            )}
+            {!loading &&
+              data.rubrics.map(rubric =>
+                editing?.id === rubric.id ? (
+                  <RubricRow
+                    key={rubric.id}
+                    draft={draft}
+                    onChange={setDraft}
+                    busy={busy}
+                    sending={sendingFor === formOf(draft)}
+                    onSave={save}
+                    onCancel={cancel}
+                  />
+                ) : (
+                  <tr key={rubric.id}>
+                    {/* The code leads the row because it is this table's
+                        natural key, as the code does on every other
+                        master-data screen - and because the paging helper the
+                        browser seam shares reads the first cell of each row
+                        as the key that tells two pages apart. ลำดับ could not
+                        do that job: two rubrics may hold the same one. */}
+                    <td className="px-4 py-3 font-bold text-gray-900">{rubric.rubric_code}</td>
+                    <td className="px-4 py-3">
+                      {/* ไทย · อังกฤษ on one line while there is room, and the
+                          second under the first when there is not - the
+                          owner's answer of 14 พ.ย. 2569 (#276). */}
+                      <span className="flex flex-wrap gap-x-2">
+                        <span>{rubric.rubric_name_th}</span>
+                        <span className="text-slate-500">{rubric.rubric_name_en}</span>
+                      </span>
                     </td>
-                  </tr>
-                )}
-                {!loading && data.rubrics.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                      ยังไม่มี Rubric ในหลักสูตรนี้
-                    </td>
-                  </tr>
-                )}
-                {!loading &&
-                  data.rubrics.map(rubric => (
-                    <tr key={rubric.id}>
-                      {/* The code leads the row because it is this table's
-                          natural key, as the code does on every other
-                          master-data screen - and because the paging helper the
-                          browser seam shares reads the first cell of each row
-                          as the key that tells two pages apart. ลำดับ could not
-                          do that job: two rubrics may hold the same one. */}
-                      <td className="px-4 py-3 font-bold text-gray-900">{rubric.rubric_code}</td>
-                      <td className="px-4 py-3">
-                        {rubric.rubric_name_th}
-                        <span className="block text-xs text-slate-500">
-                          {rubric.rubric_name_en}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-500">{rubric.display_order}</td>
-                      <td className="px-4 py-3">
-                        {/* The fifth criterion. The count is here rather than
-                            behind the click because a rubric with none marks
-                            nothing, and that is worth seeing from the list. */}
-                        <Link
+                    <td className="px-4 py-3 text-slate-500">{rubric.display_order}</td>
+                    <td className="px-4 py-3">
+                      {/* The delivered order - ดู แก้ไข ลบ (#276). The eye is the
+                          fifth criterion's way in, and it carries the rubric:
+                          the criteria screen is told which by its address. */}
+                      <RowActions>
+                        <RowAction
+                          kind="open"
+                          label="ดูเกณฑ์การให้คะแนน"
                           to={`/main/rubrics/${rubric.id}/criteria`}
-                          className="rounded-lg px-3 py-1.5 text-primary hover:bg-blue-50"
-                        >
-                          {rubric.criteria_count > 0
-                            ? `ดูเกณฑ์ ${rubric.criteria_count} ข้อ`
-                            : 'ยังไม่มีเกณฑ์ — กำหนดเกณฑ์'}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3 text-slate-500">{nameOf(rubric.program_id)}</td>
-                      <td className="px-4 py-3">
-                        <RowActions>
-                          <RowAction
-                            kind="edit"
-                            label="แก้ไข"
-                            onClick={() => openEditor(rubric)}
-                          />
-                          <RowAction
-                            kind="remove"
-                            label="ลบ"
-                            onClick={() => {
-                              asked.current = null
-                              setNotice(null)
-                              setRemoving(rubric)
-                            }}
-                          />
-                        </RowActions>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
+                        />
+                        <RowAction
+                          kind="edit"
+                          label="แก้ไข"
+                          onClick={() => openEditor(rubric)}
+                        />
+                        <RowAction
+                          kind="remove"
+                          label="ลบ"
+                          onClick={() => {
+                            asked.current = null
+                            setNotice(null)
+                            setRemoving(rubric)
+                          }}
+                        />
+                      </RowActions>
+                    </td>
+                  </tr>
+                ),
+              )}
+          </tbody>
+        </table>
+      </div>
 
-          <Pager
-            page={page}
-            shown={data.page}
-            total={data.total}
-            perPage={PAGE_SIZE}
-            onPage={setPage}
-            busy={busy}
-          />
-        </>
-      )}
+      <Pager
+        page={page}
+        shown={data.page}
+        total={data.total}
+        perPage={PAGE_SIZE}
+        onPage={setPage}
+        busy={busy}
+      />
 
       <ConfirmDialog
         open={Boolean(removing)}

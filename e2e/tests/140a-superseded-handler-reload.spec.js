@@ -22,6 +22,10 @@ const programs = require('../support/programs-screen');
 const subjects = require('../support/subjects-screen');
 const pairs = require('../support/program-subjects-screen');
 const rubrics = require('../support/rubrics-screen');
+const {
+  departmentCommittee,
+  signInAsDepartmentCommittee,
+} = require('../support/department-committee');
 const offerings = require('../support/offerings-screen');
 const students = require('../support/students-screen');
 const enrolment = require('../support/enrolment-screen');
@@ -725,69 +729,90 @@ for (const screen of MASTER) {
 
 // ── Rubric ───────────────────────────────────────────────────────────────────
 
-/**
- * The screen, as a Department Admin of 05 since #223.
- *
- * It was a กรรมการหลักสูตร until then, and a committee reaches one curriculum
- * and is drawn **no** หลักสูตร picker - `Rubrics.js` draws the name instead when
- * `programs.length === 1`. The filter is the only control this screen leaves
- * live while a write is out, so the two rows that supersede by filter need an
- * account that is offered it, and `DEPT_ADMIN` is a maintainer of a Rubric by
- * `backend/routes/rubrics.js`'s own list. `144a` signs the same account in for
- * the same reason.
- */
-async function openRubricsScreen(page) {
-  await signIn(page, ACCOUNTS.departmentAdmin05);
-  const answer = await (await rubrics.openRubrics(page)).json();
-  return {
-    opened: { list: rubrics.API, table: rubrics.table(page), rows: 'rubrics', key: (row) => row.rubric_code },
-    idOf: (code) => answer.rubrics.find((rubric) => rubric.rubric_code === code).id,
-  };
-}
-
-/** The หลักสูตร filter, which is a dependency of `load` and is never `disabled={busy}`. */
-const throughTheProgramFilter = (page) => ({
-  reads: (url) => url.pathname === rubrics.API && url.searchParams.get('program_id') === PROGRAM_INTL,
-  press: async () =>
-    (await live(rubrics.programFilter(page), 'the หลักสูตร filter')).selectOption(
-      PROGRAM_INTL,
-    ),
-});
-
-test('Rubric (Rubrics.js): the list a refused แก้ไข reloads does not land on the page the pager has left', async ({
-  page,
-}) => {
-  // A net since #223, and not a re-aim. #210 closed this row's way in - ถัดไป
-  // is dead from the press until the held read is drawn - and the only control
-  // left is the filter, which `144a`'s *the list a refused แก้ไข reloads does
-  // not land on the หลักสูตร filter that has moved* already presses with the
-  // same handler. So what is left to read here is the premise under that
-  // price, and the claim itself is held there (#47, #203, #217).
-  const { opened, idOf } = await openRubricsScreen(page);
-  await refuseRead(page, `${rubrics.API}/${idOf(RUBRICS[1])}`);
-  await pagerIsDeadWhileTheReloadIsOut(page, {
-    ...opened,
-    press: () =>
-      rubrics.rubricRow(page, RUBRICS[1]).getByRole('button', { name: 'แก้ไข', exact: true }).click(),
+test.describe('as a committee member of the whole department', () => {
+  // Until 14 พ.ย. 2569 these rows signed in as the ผู้ดูแลภาควิชา, the account
+  // that reached both curricula and so was offered the filter. The owner's
+  // answer to #276 took the screen off that role, and the same account now
+  // reaches it under a committee hat over its department - the fixture is
+  // `support/department-committee.js`, made and taken back around these rows
+  // alone so that no other screen in this file is signed in beside the grant.
+  let releaseCommittee;
+  test.beforeAll(async ({ playwright }) => {
+    releaseCommittee = await departmentCommittee(playwright);
   });
-});
-
-test('Rubric (Rubrics.js): the list บันทึก reloads does not land on the page the pager has left', async ({ page }) => {
-  const { opened, idOf } = await openRubricsScreen(page);
-  await supersede(page, {
-    ...opened,
-    move: throughTheProgramFilter(page),
-    press: () =>
-      saveUnchanged(page, rubrics.rubricRow(page, RUBRICS[1]), `${rubrics.API}/${idOf(RUBRICS[1])}`),
+  test.afterAll(async () => {
+    const failure = releaseCommittee ? await releaseCommittee() : null;
+    if (failure) throw new Error(failure);
   });
-});
 
-test('Rubric (Rubrics.js): the list ลบ reloads does not land on the page the pager has left', async ({ page }) => {
-  const { opened } = await openRubricsScreen(page);
-  await supersede(page, {
-    ...opened,
-    move: throughTheProgramFilter(page),
-    press: () => pressAndConfirm(page, rubrics.rubricRow(page, RUBRICS[0]), 'ลบ', 'ลบ Rubric'),
+  /**
+   * The screen, as a Department Admin of 05 since #223 - and since #276 as that
+   * same account under a committee hat over 05, the role it has on this screen
+   * now.
+   *
+   * It was a กรรมการหลักสูตร until then, and a committee reaches one curriculum
+   * and is drawn **no** หลักสูตร picker - `Rubrics.js` draws the name instead when
+   * `programs.length === 1`. The filter is the only control this screen leaves
+   * live while a write is out, so the two rows that supersede by filter need an
+   * account that is offered it, and `DEPT_ADMIN` is a maintainer of a Rubric by
+   * `backend/routes/rubrics.js`'s own list. `144a` signs the same account in for
+   * the same reason.
+   */
+  async function openRubricsScreen(page) {
+    await signInAsDepartmentCommittee(page);
+    // On PROGRAM by name: the curricula this file makes in 05 sort ahead of it,
+    // and the list opens on the first one in reach since #276.
+    const answer = await (await rubrics.openRubricsOn(page, PROGRAM)).json();
+    return {
+      opened: { list: rubrics.API, table: rubrics.table(page), rows: 'rubrics', key: (row) => row.rubric_code },
+      idOf: (code) => answer.rubrics.find((rubric) => rubric.rubric_code === code).id,
+    };
+  }
+
+  /** The หลักสูตร filter, which is a dependency of `load` and is never `disabled={busy}`. */
+  const throughTheProgramFilter = (page) => ({
+    reads: (url) => url.pathname === rubrics.API && url.searchParams.get('program_id') === PROGRAM_INTL,
+    press: async () =>
+      (await live(rubrics.programFilter(page), 'the หลักสูตร filter')).selectOption(
+        PROGRAM_INTL,
+      ),
+  });
+
+  test('Rubric (Rubrics.js): the list a refused แก้ไข reloads does not land on the page the pager has left', async ({
+    page,
+  }) => {
+    // A net since #223, and not a re-aim. #210 closed this row's way in - ถัดไป
+    // is dead from the press until the held read is drawn - and the only control
+    // left is the filter, which `144a`'s *the list a refused แก้ไข reloads does
+    // not land on the หลักสูตร filter that has moved* already presses with the
+    // same handler. So what is left to read here is the premise under that
+    // price, and the claim itself is held there (#47, #203, #217).
+    const { opened, idOf } = await openRubricsScreen(page);
+    await refuseRead(page, `${rubrics.API}/${idOf(RUBRICS[1])}`);
+    await pagerIsDeadWhileTheReloadIsOut(page, {
+      ...opened,
+      press: () =>
+        rubrics.rubricRow(page, RUBRICS[1]).getByRole('button', { name: 'แก้ไข', exact: true }).click(),
+    });
+  });
+
+  test('Rubric (Rubrics.js): the list บันทึก reloads does not land on the page the pager has left', async ({ page }) => {
+    const { opened, idOf } = await openRubricsScreen(page);
+    await supersede(page, {
+      ...opened,
+      move: throughTheProgramFilter(page),
+      press: () =>
+        saveUnchanged(page, rubrics.rubricRow(page, RUBRICS[1]), `${rubrics.API}/${idOf(RUBRICS[1])}`),
+    });
+  });
+
+  test('Rubric (Rubrics.js): the list ลบ reloads does not land on the page the pager has left', async ({ page }) => {
+    const { opened } = await openRubricsScreen(page);
+    await supersede(page, {
+      ...opened,
+      move: throughTheProgramFilter(page),
+      press: () => pressAndConfirm(page, rubrics.rubricRow(page, RUBRICS[0]), 'ลบ', 'ลบ Rubric'),
+    });
   });
 });
 

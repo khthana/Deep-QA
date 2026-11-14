@@ -10,10 +10,12 @@ const { facultyContext, switchOff } = require('../support/retiring');
 const {
   openRubrics,
   programFilter: rubricFilter,
-  programPicker: rubricPicker,
-  openAddForm: openRubricForm,
   filterTo: filterRubricsTo,
 } = require('../support/rubrics-screen');
+const {
+  departmentCommittee,
+  signInAsDepartmentCommittee,
+} = require('../support/department-committee');
 const {
   openProgramSubjects,
   programFilter: pairFilter,
@@ -157,64 +159,68 @@ test.afterAll(() => {
   if (cleanupFailure) throw new Error(cleanupFailure);
 });
 
-test('the rubric form does not open on the retired curriculum the list is filtered to', async ({
-  page,
-  playwright,
-}) => {
-  const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${RETIRED}`, 'program', {
-    onFailure: report,
+test.describe('as a committee member of the whole department', () => {
+  // Until 14 พ.ย. 2569 this row signed in as the ผู้ดูแลภาควิชา, who reached
+  // both curricula. The owner's answer to #276 took the screen off that role;
+  // the same account reaches it now under a committee hat over 05
+  // (`support/department-committee.js`), made and taken back around this row
+  // alone.
+  let releaseCommittee;
+  test.beforeAll(async ({ playwright }) => {
+    releaseCommittee = await departmentCommittee(playwright);
+  });
+  test.afterAll(async () => {
+    const failure = releaseCommittee ? await releaseCommittee() : null;
+    if (failure) throw new Error(failure);
   });
 
-  try {
-    await signIn(page, ACCOUNTS.departmentAdmin05);
-    await openRubrics(page);
+  test('the rubric list still offers the retired curriculum, and lists its rubrics', async ({
+    page,
+    playwright,
+  }) => {
+    // This row was *the rubric form does not open on the retired curriculum the
+    // list is filtered to* until 14 พ.ย. 2569. The owner's answer to #276 took
+    // the form's หลักสูตร field away - a new rubric is written into the
+    // curriculum the list shows - so there is no picker left to open on the
+    // wrong value, and `234:rubricfollowstheretiredfilter` went with it. What
+    // that leaves a person who adds a rubric while the list shows a closed
+    // curriculum is a question for the owner and not a claim of this row:
+    // `docs/acceptance/21-rubrics.md` §#276 carries it.
+    const faculty = await facultyContext(playwright);
+    const switchBackOn = await switchOff(faculty, `/api/programs/${RETIRED}`, 'program', {
+      onFailure: report,
+    });
 
-    // The capability itself, read as a claim of its own: the curriculum that has
-    // been closed is still **offered** by the filter, which is what #234's
-    // second option proposed to take away. A declined option is only declined
-    // once it has been made to run (#48), and `234:rubricfilterhidestheretired`
-    // is that option — so this screen is where the rule is proved, chosen by the
-    // census rather than by the subject (#68).
-    //
-    // It is read *above* the filtering, which is necessity and not choice: a
-    // filter that no longer offers the option leaves `selectOption` with nothing
-    // to pick, and `filterTo`'s `waitForList` then dies at the timeout rather
-    // than at a claim (#139, measured 27 ตุลาคม 2569 before this line was added).
-    await expect(
-      rubricFilter(page).locator(`option[value="${RETIRED}"]`),
-      'the closed curriculum is still offered, so its rubrics can be read',
-    ).toHaveCount(1);
+    try {
+      await signInAsDepartmentCommittee(page);
+      await openRubrics(page);
 
-    await filterRubricsTo(page, RETIRED);
+      // The capability itself, read as a claim of its own: the curriculum that
+      // has been closed is still **offered** by the filter, which is what #234's
+      // second option proposed to take away. A declined option is only declined
+      // once it has been made to run (#48), and `234:rubricfilterhidestheretired`
+      // is that option — so this screen is where the rule is proved, chosen by
+      // the census rather than by the subject (#68).
+      await expect(
+        rubricFilter(page).locator(`option[value="${RETIRED}"]`),
+        'the closed curriculum is still offered, so its rubrics can be read',
+      ).toHaveCount(1);
 
-    // The precondition read where it is used and not where it was set (#51),
-    // and read before the form is opened because the form replaces the list.
-    // It is also the sentence that says the capability is still there: the
-    // rubrics of a closed curriculum are listed, which is what #234's second
-    // option would have taken away.
-    await expect(
-      rubricFilter(page),
-      'the list is filtered to the curriculum that was switched off',
-    ).toHaveValue(RETIRED);
+      // Moved away and back, because since #276 the list opens on the first
+      // curriculum, which is this one: choosing it is what proves it can be
+      // chosen rather than only that it was where the screen started.
+      await filterRubricsTo(page, LIVE);
+      await filterRubricsTo(page, RETIRED);
 
-    await openRubricForm(page);
-
-    // The arrival as a claim of its own (#213): the heading is drawn whichever
-    // curriculum the effect picks, so the mutant cannot turn the row below into
-    // a wait that dies at the timeout.
-    await expect(
-      page.getByRole('heading', { name: 'เพิ่ม Rubric' }),
-      'the add form is open',
-    ).toBeVisible();
-
-    await expect(
-      rubricPicker(page),
-      'and it starts on the curriculum this account may file a rubric in',
-    ).toHaveValue(LIVE);
-  } finally {
-    await switchBackOn();
-  }
+      await expect(
+        rubricFilter(page),
+        'the list is filtered to the curriculum that was switched off',
+      ).toHaveValue(RETIRED);
+      await expect(page.locator('table tbody tr').first()).toContainText('RUB-');
+    } finally {
+      await switchBackOn();
+    }
+  });
 });
 
 test('the pair form does not open on the retired curriculum the list is filtered to', async ({

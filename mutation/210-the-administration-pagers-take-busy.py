@@ -128,8 +128,16 @@ WITH_BUSY = (
 )
 WITHOUT_BUSY = '            onPage={setPage}\n'
 
+# ข้อมูล Rubric กลาง วาด `<Pager>` นอก fragment ตั้งแต่ #276 (14 พ.ย. 2569) ย่อหน้าจึงตื้นกว่า
+# จอข้างเคียงสองชั้น ความผิดของมัตแตนต์ยังเป็นความผิดเดิม
+RUBRICS_WITH_BUSY = (
+    '        onPage={setPage}\n'
+    '        busy={busy}\n'
+)
+RUBRICS_WITHOUT_BUSY = '        onPage={setPage}\n'
+
 MUTANTS = {
-    'rubricsnobusy': ('rubrics', WITH_BUSY, WITHOUT_BUSY),
+    'rubricsnobusy': ('rubrics', RUBRICS_WITH_BUSY, RUBRICS_WITHOUT_BUSY),
     'departmentsnobusy': ('departments', WITH_BUSY, WITHOUT_BUSY),
     'programsnobusy': ('programs', WITH_BUSY, WITHOUT_BUSY),
     'subjectsnobusy': ('subjects', WITH_BUSY, WITHOUT_BUSY),

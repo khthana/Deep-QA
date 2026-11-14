@@ -91,7 +91,7 @@ export default function OfferingForm({
 
   // The curriculum the list is filtered to, while that is still one this
   // account may open a subject in - #234, whose reasons are in
-  // `rubrics/RubricForm.js`. This form draws its picker from `usable` alone, so
+  // `rubrics/RubricForm.js` at `58d15b4`. This form draws its picker from `usable` alone, so
   // a retired curriculum arriving here was a value with no option to show it:
   // the picker read as the one still running while the draft held the closed
   // one, and the subjects were read for a curriculum the server refuses.

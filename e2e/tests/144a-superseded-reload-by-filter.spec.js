@@ -13,6 +13,10 @@ const users = require('../support/users-screen');
 const subjects = require('../support/subjects-screen');
 const pairs = require('../support/program-subjects-screen');
 const rubrics = require('../support/rubrics-screen');
+const {
+  departmentCommittee,
+  signInAsDepartmentCommittee,
+} = require('../support/department-committee');
 const offerings = require('../support/offerings-screen');
 const students = require('../support/students-screen');
 
@@ -143,13 +147,21 @@ const late = (ms) => async (route, request) => {
  * `rows` is the key of the answer's array and `key` the value a row's first
  * cell shows. `table` is the list's table, `press` sets off the handler and
  * `move` moves this row's control.
+ *
+ * `held` says which read is held where *page one with none of the filters* is
+ * not a read the screen makes: since #276 (14 พ.ย. 2569) the Rubric screen
+ * always sends its curriculum, having no *every curriculum* to start on, so its
+ * row names the curriculum the read is of - `140a`'s `supersede` has the same
+ * parameter for the same reason.
  */
-async function refilter(page, { list, table, filters, moved, rows, key, press, move }) {
+async function refilter(page, { list, table, filters, moved, rows, key, press, move, held }) {
   const isList = (url) => url.pathname === list;
-  const isHeld = (url) =>
-    isList(url) &&
-    url.searchParams.get('page') === '1' &&
-    filters.every((name) => !url.searchParams.has(name));
+  const isHeld =
+    held ??
+    ((url) =>
+      isList(url) &&
+      url.searchParams.get('page') === '1' &&
+      filters.every((name) => !url.searchParams.has(name)));
   const isMoved = (url) => isList(url) && url.searchParams.get(moved[0]) === moved[1];
 
   await reading(page, table);
@@ -347,22 +359,45 @@ test('รายวิชาในหลักสูตร (ProgramSubjects.js): 
 
 // ── Rubric ───────────────────────────────────────────────────────────────────
 
-test('Rubric (Rubrics.js): the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved', async ({
-  page,
-}) => {
-  await signIn(page, ACCOUNTS.departmentAdmin05);
-  const [first] = (await (await rubrics.openRubrics(page)).json()).rubrics;
-  await refuseRead(page, `${rubrics.API}/${first.id}`);
-  await refilter(page, {
-    list: rubrics.API,
-    table: rubrics.table(page),
-    filters: ['program_id'],
-    moved: ['program_id', PROGRAM_INTL],
-    rows: 'rubrics',
-    key: (row) => row.rubric_code,
-    press: () =>
-      rubrics.rubricRow(page, first.rubric_code).getByRole('button', { name: 'แก้ไข', exact: true }).click(),
-    move: () => rubrics.programFilter(page).selectOption(PROGRAM_INTL),
+test.describe('as a committee member of the whole department', () => {
+  // Until 14 พ.ย. 2569 these rows signed in as the ผู้ดูแลภาควิชา, the account
+  // that reached both curricula and so was offered the filter. The owner's
+  // answer to #276 took the screen off that role, and the same account now
+  // reaches it under a committee hat over its department - the fixture is
+  // `support/department-committee.js`, made and taken back around these rows
+  // alone so that no other screen in this file is signed in beside the grant.
+  let releaseCommittee;
+  test.beforeAll(async ({ playwright }) => {
+    releaseCommittee = await departmentCommittee(playwright);
+  });
+  test.afterAll(async () => {
+    const failure = releaseCommittee ? await releaseCommittee() : null;
+    if (failure) throw new Error(failure);
+  });
+
+  test('Rubric (Rubrics.js): the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved', async ({
+    page,
+  }) => {
+    await signInAsDepartmentCommittee(page);
+    // On PROGRAM by name, which the move away from is then a move of: since #276
+    // the list opens on the first curriculum in reach, not on all of them.
+    const [first] = (await (await rubrics.openRubricsOn(page, PROGRAM)).json()).rubrics;
+    await refuseRead(page, `${rubrics.API}/${first.id}`);
+    await refilter(page, {
+      list: rubrics.API,
+      table: rubrics.table(page),
+      filters: ['program_id'],
+      moved: ['program_id', PROGRAM_INTL],
+      held: (url) =>
+        url.pathname === rubrics.API &&
+        url.searchParams.get('page') === '1' &&
+        url.searchParams.get('program_id') === PROGRAM,
+      rows: 'rubrics',
+      key: (row) => row.rubric_code,
+      press: () =>
+        rubrics.rubricRow(page, first.rubric_code).getByRole('button', { name: 'แก้ไข', exact: true }).click(),
+      move: () => rubrics.programFilter(page).selectOption(PROGRAM_INTL),
+    });
   });
 });
 

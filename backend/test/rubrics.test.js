@@ -61,7 +61,17 @@ let api;
 before(async () => {
   api = await startApi('rubrics', { withSeed: true });
 });
-after(() => api.close());
+after(async () => {
+  // #276's grant comes out before the pool goes, which one hook orders and two
+  // would not.
+  if (committeeOfTheDepartment) {
+    await api.pool.query(
+      `DELETE FROM user_roles WHERE user_id = $1 AND role_id = 'PROG_MANAGER' AND scope_id = $2`,
+      [DEPT.id, DEPT.department],
+    );
+  }
+  await api.close();
+});
 
 const emailOf = (alias) => ACCOUNTS.find((account) => account.alias === alias).email;
 
@@ -107,6 +117,35 @@ async function rubric(cookie, overrides = {}) {
   });
   assert.equal(response.status, 201, `create failed: ${response.body.message}`);
   return response.body.rubric;
+}
+
+/**
+ * A committee member of the whole of department 05 - #276.
+ *
+ * Until 14 พ.ย. 2569 the account that held both curricula on this screen was
+ * the ผู้ดูแลภาควิชา. The owner took the screen off that role, and no seeded
+ * committee member holds two curricula, so the account is built: `U_DEPT`
+ * given `PROG_MANAGER` over its own department, signed in, and wearing that
+ * hat. It is also the owner's other sentence made into a fixture - a
+ * departmental administrator who sits on a committee sees the screen after
+ * switching role. Built once and taken out in the one `after` hook, below the seam.
+ */
+const DEPT = ACCOUNTS.find((account) => account.alias === 'U_DEPT');
+let committeeOfTheDepartment = null;
+async function wholeDepartmentCommittee() {
+  if (committeeOfTheDepartment) return committeeOfTheDepartment;
+  await api.pool.query(
+    `INSERT INTO user_roles (user_id, role_id, scope_id) VALUES ($1, 'PROG_MANAGER', $2)`,
+    [DEPT.id, DEPT.department],
+  );
+  const cookie = await signInAs('U_DEPT');
+  const switched = await request(api.app)
+    .put('/api/me/acting-role')
+    .set('Cookie', cookie)
+    .send({ role_id: 'PROG_MANAGER', scope_id: DEPT.department });
+  assert.equal(switched.status, 200, `switch failed: ${switched.body.message}`);
+  committeeOfTheDepartment = switched.headers['set-cookie'];
+  return committeeOfTheDepartment;
 }
 
 /** The seed's own rows, in the order the API returned them. */
@@ -286,6 +325,35 @@ test('the list is ordered by the order the curriculum set, not by the code', asy
   assert.ok(codes.indexOf('RUB-05') < codes.indexOf('RUB-04'), 'the order was ignored');
 });
 
+test('the list says the order a new rubric of the curriculum would take - #276', async () => {
+  // The owner's answer of 14 พ.ย. 2569: the add row's ลำดับ starts at the last
+  // one plus one, as the delivered screen's did. The list pages at ten, so the
+  // last order is not on the page the person is reading and the screen cannot
+  // count it - the server answers it, over the whole curriculum the list is
+  // filtered to, on every page.
+  const cookie = await signInAs('U_COM');
+  const highest = async () => {
+    const all = (await list(cookie, `?program_id=${PROGRAM}&per_page=100`)).body.rubrics;
+    return Math.max(...all.map((row) => row.display_order));
+  };
+  const before = await list(cookie, `?program_id=${PROGRAM}`);
+  assert.equal(before.body.next_order, (await highest()) + 1);
+  const second = await list(cookie, `?program_id=${PROGRAM}&page=2`);
+  assert.equal(second.body.next_order, before.body.next_order, 'a page of its own');
+
+  const made = await rubric(cookie, { display_order: before.body.next_order + 5 });
+  const after = await list(cookie, `?program_id=${PROGRAM}`);
+  assert.equal(after.body.next_order, made.display_order + 1);
+
+  // The other curriculum's orders are not this one's: 0503's committee member
+  // reads its own, which the row just made in 0501 does not move.
+  const elsewhere = await list(await signInAs('U_COM2'), `?program_id=${PROGRAM_INTL}`);
+  assert.equal(
+    elsewhere.body.next_order,
+    Math.max(...RUBRICS_INTL.map((entry) => entry.order)) + 1,
+  );
+});
+
 test('two rubrics claiming the same place are still in a settled order', async () => {
   // `display_order` is NOT NULL DEFAULT 0, so a tie is what every rubric starts
   // out in rather than an edge case, and this list pages. An ORDER BY with
@@ -336,11 +404,12 @@ test('the list pages at ten, and no rubric is on two pages or on none', async ()
 });
 
 test('the filter narrows inside the reach and never outside it', async () => {
-  // A departmental administrator holds both curricula, so the filter is a
-  // narrowing for them; the same query string from the committee member who
-  // holds neither of the other's rubrics is an empty page rather than a way of
-  // reading them.
-  const admin = await signInAs('U_DEPT');
+  // A committee member of the whole department holds both curricula, so the
+  // filter is a narrowing for them; the same query string from the committee
+  // member who holds neither of the other's rubrics is an empty page rather
+  // than a way of reading them. Until #276 the account holding both was the
+  // departmental administrator.
+  const admin = await wholeDepartmentCommittee();
   const both = (await list(admin, '?per_page=100')).body.rubrics;
   assert.ok(both.some((row) => row.program_id === PROGRAM));
   assert.ok(both.some((row) => row.program_id === PROGRAM_INTL));
@@ -405,7 +474,10 @@ test('an edit cannot move a rubric to another curriculum, however the body asks'
   // anyway - and the screen's does, because one component serves both verbs -
   // must not be able to move a rubric out from under the accounts that
   // maintain it, taking criteria that carry no curriculum of their own with it.
-  const cookie = await signInAs('U_DEPT');
+  // The account holds both curricula, so the move is refused by the rule and
+  // not by the reach - #276's committee of the department, where until then it
+  // was the departmental administrator.
+  const cookie = await wholeDepartmentCommittee();
   const mine = await rubric(cookie);
 
   const moved = await edit(cookie, mine.id, {
@@ -420,7 +492,7 @@ test('an edit cannot move a rubric to another curriculum, however the body asks'
 });
 
 test('the curricula offered are the ones the account holds', async () => {
-  const admin = await signInAs('U_DEPT');
+  const admin = await wholeDepartmentCommittee();
   const answered = await programs(admin);
   assert.equal(answered.status, 200);
   // The whole list, for #102's reason: with a curriculum seeded outside this
@@ -457,6 +529,51 @@ test('the faculty administrator and the teacher are refused the screen entirely'
       alias,
     );
   }
+});
+
+test('the departmental administrator is refused the screen in every verb - #276', async () => {
+  // The owner's answer of 14 พ.ย. 2569: the screen is the กรรมการหลักสูตร's and
+  // is taken off the ผู้ดูแลภาควิชา at the server, not only out of the menu
+  // (ADR-0002). The rubric is one the account's department holds, so a 403 here
+  // is the role and not the reach.
+  const owner = await signInAs('U_COM');
+  const mine = await rubric(owner);
+  const cookie = await signInAs('U_DEPT');
+  assert.equal((await list(cookie, `?program_id=${PROGRAM}`)).status, 403, 'listed');
+  assert.equal((await programs(cookie)).status, 403, 'read the curricula');
+  assert.equal((await one(cookie, mine.id)).status, 403, 'read one');
+  assert.equal(
+    (
+      await add(cookie, {
+        program_id: PROGRAM,
+        rubric_code: nextCode(),
+        rubric_name_th: 'ไม่ควรถูกสร้าง',
+        rubric_name_en: 'Should not exist',
+        display_order: nextOrder(),
+      })
+    ).status,
+    403,
+    'added one',
+  );
+  assert.equal(
+    (
+      await edit(cookie, mine.id, {
+        rubric_code: mine.rubric_code,
+        rubric_name_th: 'แก้โดยผู้ดูแลภาควิชา',
+        rubric_name_en: 'Edited by the department',
+        display_order: mine.display_order,
+      })
+    ).status,
+    403,
+    'edited one',
+  );
+  assert.equal((await remove(cookie, mine.id)).status, 403, 'removed one');
+  assert.equal((await one(owner, mine.id)).body.rubric.rubric_name_th, mine.rubric_name_th);
+
+  // And the same account wearing a committee hat is let in - the owner's
+  // *ก็จะเห็นตอนเปลี่ยน role*.
+  const switched = await wholeDepartmentCommittee();
+  assert.equal((await one(switched, mine.id)).status, 200);
 });
 
 test('removing a rubric removes its criteria, and says how many went', async () => {

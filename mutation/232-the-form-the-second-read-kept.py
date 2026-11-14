@@ -50,8 +50,17 @@
 from harness import main
 
 FILES = {
-    'form': 'frontend/src/components/rubrics/RubricForm.js',
+    # `RubricForm.js` was deleted on 14 พ.ย. 2569, when the owner's answer to
+    # #276 drew the Rubric form as a row of the table (`RubricRow.js`) and took
+    # its หลักสูตร field away. The key points at the file the form went to only
+    # because `save` copies every file named here; the mutants below quote the
+    # old form, match nothing there - `anchors.py` checks that they still do
+    # not - and are withdrawn to a record (`SUPERSEDED`), the claims they held
+    # having gone with the field.
+    'form': 'frontend/src/components/rubrics/RubricRow.js',
 }
+
+SUPERSEDED = {'arrayidentity', 'movesanexistingrubric', 'keepsthecurriculum'}
 
 TWO_EFFECTS = """  // The subject changed, so the form starts again: a different rubric is being
   // edited, or the form was opened to add one. This is the only thing that

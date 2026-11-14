@@ -203,6 +203,9 @@ const LIST_SCREENS = [
     edit: 'แก้ไข Rubric',
     remove: 'ลบ',
     confirm: 'ลบ Rubric',
+    // The edit row of #276, found by the form its fields name, because a row
+    // of the table has no heading to find it by.
+    editForm: (page) => page.locator('form[id^="rubric-"]:not(#rubric-new)'),
     cancelDuringSave: true,
   },
   {
@@ -233,6 +236,13 @@ const LIST_SCREENS = [
   },
 ];
 
+/**
+ * The open edit form, by its heading - or, on the one screen whose form is a
+ * row of the table since #276 (14 พ.ย. 2569), by what its entry says.
+ */
+const editForm = (page, screen) =>
+  screen.editForm ? screen.editForm(page) : page.getByRole('heading', { name: screen.edit, exact: true });
+
 for (const screen of LIST_SCREENS) {
   test.describe(`${screen.name} (${screen.file})`, () => {
     test('a superseded read that lands during a save leaves บันทึก disabled', async ({ page }) => {
@@ -246,7 +256,7 @@ for (const screen of LIST_SCREENS) {
       await button(first, 'แก้ไข').click();
       await read.sent;
       await button(second, 'แก้ไข').click();
-      await expect(page.getByRole('heading', { name: screen.edit, exact: true })).toBeVisible();
+      await expect(editForm(page, screen)).toBeVisible();
 
       const save = button(page, 'บันทึก');
       await save.click();
@@ -279,7 +289,7 @@ for (const screen of LIST_SCREENS) {
       await button(first, 'แก้ไข').click();
       // The read's `finally` commits with the form it opened, so the form on
       // the screen is the settle point.
-      await expect(page.getByRole('heading', { name: screen.edit, exact: true })).toBeVisible();
+      await expect(editForm(page, screen)).toBeVisible();
       const save = button(page, 'บันทึก');
       expect(await save.isDisabled(), 'บันทึก while the removal is out').toBe(true);
 
@@ -322,7 +332,7 @@ for (const screen of LIST_SCREENS) {
         await signIn(page, screen.account);
         await screen.open(page);
         const [first] = await twoRows(page, 'แก้ไข');
-        const heading = page.getByRole('heading', { name: screen.edit, exact: true });
+        const heading = editForm(page, screen);
         const save = button(page, 'บันทึก');
 
         await button(first, 'แก้ไข').click();

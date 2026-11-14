@@ -971,6 +971,9 @@ citation.
   attribute a table by running that file on its own. (#132)
 - **A teardown is a write like any other** — scope it to what the file wrote, not to who wrote it.
   (#134)
+- **A teardown nobody awaits is correct only while the file writes nothing** — the ticket that
+  makes the file write is the one that pays, in another file's row: the leftover is the first
+  record of the next screen that opens. Ask the database after the run, not the red row. (#276)
 - **And an undo through the seam is not always a removal** — a revoke that deactivates leaves the row,
   so a fixture asking for a key nothing held is reported as a leftover although its own cleanup was
   answered 200. The sibling fixtures that never showed in that report asked for a key the seed

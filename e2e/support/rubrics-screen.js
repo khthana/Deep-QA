@@ -19,13 +19,23 @@ const { openAt } = require('./navigation');
  * *A code is an identifier, and here that is the whole point.* `rubric_code` is
  * UNIQUE across the institution, so unlike #19's helpers nothing here has to
  * narrow the list to one curriculum before a code names one row. `filterTo` is
- * still the control an administrator uses to narrow, but a code found without
- * it is not ambiguous.
+ * still the control an account holding two curricula uses to move between
+ * them, but a code found without it is not ambiguous.
  *
- * The pickers are located by an option only each of them has rather than by
- * their labels, for `program-subjects-screen`'s reason: `Field` wraps the
- * control inside the `<label>`, so a select's accessible name is its label
- * *and* every option's text.
+ * ## Since #276 the add and edit forms are rows of the table
+ *
+ * The owner's answer of 14 พ.ย. 2569 drew them the delivered screen's way, so
+ * the helpers that open them wait for a row rather than for a heading, and the
+ * row being changed has inputs where its cells had text: `rubricRow` cannot
+ * find it while it is open, `editRow` does. The form's curriculum picker went
+ * with the form - a new rubric is written into the curriculum the list shows -
+ * so `programPicker` is gone, and `program` handed to `addRubric` moves the
+ * list there first.
+ *
+ * The list's picker is located by an option it has rather than by its label,
+ * for `program-subjects-screen`'s reason: the `<label>` wraps the control, so
+ * its accessible name is its label *and* every option's text. Until #276 the
+ * option was *ทุกหลักสูตร*'s empty value, which the picker no longer offers.
  */
 
 const RUBRICS = '/main/rubrics';
@@ -60,16 +70,24 @@ const rubricRow = (page, code) =>
     .locator('table tbody tr')
     .filter({ has: page.locator('td:first-child', { hasText: new RegExp(`^${code}(?![\\w-])`) }) });
 
-/** The form's curriculum picker — the only select offering a curriculum code. */
-const programPicker = page =>
+/** The list's own curriculum picker, drawn only when more than one is reached. */
+const programFilter = page =>
   page.getByRole('combobox').filter({ has: page.locator('option[value="0501"]') });
 
-/** The list's own curriculum filter, drawn only when more than one is reached. */
-const programFilter = page =>
-  page.getByRole('combobox').filter({ has: page.locator('option[value=""]') });
+/**
+ * The row the open form is - the add row or the edit row, whichever is drawn.
+ *
+ * Found by its field rather than by a cell's text, because the code it holds is
+ * a value and not text. At most one is open at a time.
+ */
+const editRow = page =>
+  page.locator('table tbody tr').filter({ has: page.getByRole('textbox', { name: 'รหัส Rubric' }) });
 
-/** Opens *เพิ่ม Rubric*. */
-const openAddForm = page => page.getByRole('button', { name: 'เพิ่ม Rubric', exact: true }).click();
+/** Opens *เพิ่ม Rubric*, and waits for the add row. */
+async function openAddForm(page) {
+  await page.getByRole('button', { name: 'เพิ่ม Rubric', exact: true }).click();
+  await expect(editRow(page)).toHaveCount(1);
+}
 
 /**
  * Opens the editor on one row and waits for the rubric to be read back.
@@ -86,13 +104,18 @@ async function openEditor(page, code) {
     ),
     rubricRow(page, code).getByRole('button', { name: 'แก้ไข' }).click(),
   ]);
-  await expect(page.getByRole('heading', { name: 'แก้ไข Rubric' })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'รหัส Rubric' })).toHaveValue(code);
 }
 
-/** Fills the add form and presses บันทึก, waiting for the list the save reloads. */
+/**
+ * Fills the add row and presses บันทึก, waiting for the save's own answer.
+ *
+ * `program`, where given, moves the list to that curriculum first, a new
+ * rubric being written into the one the list shows (#276).
+ */
 async function addRubric(page, { program, code, th, en, order }) {
+  if (program) await filterTo(page, program);
   await openAddForm(page);
-  if (program) await programPicker(page).selectOption(program);
   await page.getByPlaceholder(/เช่น RUB-/).fill(code);
   await page.getByPlaceholder('เช่น การนำเสนอผลงาน').fill(th);
   await page.getByPlaceholder('เช่น Presentation').fill(en);
@@ -151,17 +174,41 @@ async function filterTo(page, programId) {
   await Promise.all([waitForList(page), programFilter(page).selectOption(programId)]);
 }
 
-/** The link one row offers into its criteria — the fifth criterion's way in. */
-const criteriaLink = (page, code) => rubricRow(page, code).getByRole('link');
+/**
+ * Opens the screen on one named curriculum and hands back that list's answer.
+ *
+ * Since #276 (14 พ.ย. 2569) the list opens on the first curriculum in reach and
+ * has no *every curriculum* option, so a row that needs the rubrics of one
+ * curriculum cannot take whatever the screen started on: a spec that makes
+ * curricula of its own in the same department moves which one is first - 140a's
+ * did, and its rows opened on an empty list. The filter is moved only where the
+ * screen did not already start there, because choosing the value a select
+ * already holds asks for nothing.
+ */
+async function openRubricsOn(page, programId) {
+  const opened = await openRubrics(page);
+  if (new URL(opened.url()).searchParams.get('program_id') === programId) return opened;
+  const [answer] = await Promise.all([waitForList(page), programFilter(page).selectOption(programId)]);
+  expect(answer.status()).toBe(200);
+  return untilDrawn(page, answer);
+}
+
+/**
+ * The eye one row offers into its criteria — the fifth criterion's way in, a
+ * link since #273 and in ดำเนินการ since #276.
+ */
+const criteriaLink = (page, code) =>
+  rubricRow(page, code).getByRole('link', { name: 'ดูเกณฑ์การให้คะแนน' });
 
 module.exports = {
   RUBRICS,
   API,
+  openRubricsOn,
   table,
   waitForList,
   openRubrics,
   rubricRow,
-  programPicker,
+  editRow,
   programFilter,
   openAddForm,
   openEditor,

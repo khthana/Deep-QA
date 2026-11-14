@@ -35,8 +35,9 @@ const {
  * effect's two conditions.
  *
  * `ProgramForm` has `233a` row 2 and `233:movesanexistingprogramme`;
- * `RubricForm` has `198a` row 5 and `232:movesanexistingrubric`. The other
- * three had nothing, which is what this file is for — the code is **copied**
+ * `RubricForm` had `198a` row 5 and `232:movesanexistingrubric` until #276
+ * deleted it on 14 พ.ย. 2569, with its หลักสูตร field (the mutant is kept as a
+ * record, `SUPERSEDED`). The other three had nothing, which is what this file is for — the code is **copied**
  * rather than shared, so a mutant in one form is proved by nothing that
  * presses another (#83).
  *
