@@ -29,14 +29,18 @@
 - **`q` ในกุญแจ `readOf` ของรายชื่อนักศึกษา** — ต่างจากสี่จอของชิ้นแรก ที่นี่ไปถึงได้: ช่องค้นหาไม่ได้อยู่ในกิ่งที่
   ฟอร์มแทนที่ ฟอร์ม *เพิ่มนักศึกษาเข้าตอนเรียน* วาดอยู่ข้างรายการ ฉะนั้นคนพิมพ์คำค้นระหว่างที่การเพิ่มยังไม่กลับได้
   และกุญแจที่ถือคำค้นคือสิ่งที่กันประโยคของคำค้นเก่าไม่ให้ถูกพูดทับรายการของคำค้นใหม่ · *ยังไม่ได้ทดสอบ* ลงวันที่
-  13 พ.ย. 2569 สิ่งที่ขาดคือแถว ซึ่งต้องจับการเขียนไว้ (`hold` ของ `support/gate.js`) แล้วพิมพ์ — ตั๋ว #275
+  13 พ.ย. 2569 สิ่งที่ขาดคือแถว ซึ่งต้องจับการเขียนไว้ (`hold` ของ `support/gate.js`) แล้วพิมพ์ — ตั๋ว #275 ·
+  **14 พ.ย. 2569: ถือแล้ว** ที่ S1 ของ `275a` และ `275:s275classkeynoq`
 - **คำถามข้อที่สองของ `onImported` บนกลุ่มงาน** (`onScreen.current === drawing` ก่อนพูดประโยคของ #252) —
   `drawing` ตอบ `true` จากใน `try` ไม่ว่า `isCurrent()` จะว่าอย่างไร (#152) ข้อนี้จึงจำเป็น และทางเข้าคือการกระโดด
-  ข้ามตอนเรียนของ `268` ขณะที่มีคำค้นอยู่ · *ยังไม่ได้ทดสอบ* ลงวันที่ 13 พ.ย. 2569 ตั๋ว #275 · ข้อแรกของมันคือ
+  ข้ามตอนเรียนของ `268` ขณะที่มีคำค้นอยู่ · *ยังไม่ได้ทดสอบ* ลงวันที่ 13 พ.ย. 2569 ตั๋ว #275 · **14 พ.ย. 2569: ถือแล้ว** ที่ G4 ของ `275a` และ `275:s275groupsimportnosecond` — ทางเข้าแคบลงเพราะการแก้ข้อ 3
+  ของ #275: คำค้นถูกอ่านตอนคำตอบกลับ และหลังการกระโดดเป็นช่องว่าง จึงต้องพิมพ์บนตอนเรียนที่ไปถึงก่อนคำตอบเก่ากลับ · ข้อแรกของมันคือ
   `drawing(() => onScreen.current === drawing)` ซึ่ง `268:groupsimporthandlerstale` ทำให้พังอยู่แล้ว
 - **คำค้นของกลุ่มงานไม่อยู่ในกุญแจของประโยค** — การค้นไม่ส่งคำขอ ประโยคของการบันทึกถามคำค้นของการเรนเดอร์ที่ส่ง
   ไม่ใช่ของตอนที่คำตอบกลับ · ถ้าคนพิมพ์ระหว่างที่การบันทึกยังไม่กลับ ประโยคตัดสินด้วยคำค้นเก่า · *ยังไม่ได้ทดสอบ*
-  ลงวันที่ 13 พ.ย. 2569 ตั๋ว #275 (เพิ่มหลังรีวิววันเดียวกัน ใบเกณฑ์ถือข้อนี้อยู่แล้ว แฟ้มนี้ไม่มี)
+  ลงวันที่ 13 พ.ย. 2569 ตั๋ว #275 (เพิ่มหลังรีวิววันเดียวกัน ใบเกณฑ์ถือข้อนี้อยู่แล้ว แฟ้มนี้ไม่มี) ·
+  **14 พ.ย. 2569: แก้แล้ว** ตามคำตอบของเจ้าของงานข้อ 3 ของ #275 — ประโยคตัดสินด้วยคำค้นตอนคำตอบกลับ (`termNow`) ·
+  G1–G3 ของ `275a` · สี่ตัวข้างล่างที่อ่าน `q` ถูกเล็งใหม่ไปที่ `termNow.current`
 - **การหน่วง** — ชิ้นแรกบอกเหตุผลไว้แล้ว (#52)
 
 ## ตารางคำทำนาย (เขียนก่อนกวาด 13 พ.ย. 2569)
@@ -122,6 +126,13 @@ list: a jump to another ตอนเรียน clears the term* · **G11** *th
 - `s272bgroupsboxkept` ล้ม 1 — G11 ที่ `toHaveValue('')` ของช่อง
 
 **13 พ.ย. 2569:** `s272busersescape` ฆ่าแถว H1 ของ `tests/272c-the-search-box-on-the-history-picker.spec.js` ด้วย ที่ `total` — ทำนายและบันทึกใน `272-the-search-box-on-the-history-picker.py` (#257)
+
+## บันทึกผลกวาดหลังการเล็งใหม่ของ #275 (14 พ.ย. 2569 · `272b` ทั้งแฟ้มกับ `275a` · `_local/sweep275a.ps1`)
+
+การแก้ของ #275 ย้ายคำค้นของประโยคบนกลุ่มงานจาก `q` ไปที่ `termNow.current` · `GROUPS_SAVE` `GROUPS_IMPORT` และตัวแทนของ
+`...always` สองตัวเล็งใหม่ให้ความผิดเดิม (*เงียบเสมอ* / *บอกว่าอยู่นอกทุกครั้งที่มีคำค้น*) คงอยู่ (#203) ·
+ใน `272b` ตายตรงแถวเดิมทุกตัว: `s272bgroupssavequiet` G5 G7 G8 · `s272bgroupssavealways` G6 · `s272bgroupsimportquiet` G9 ·
+`s272bgroupsimportalways` G10 · และในแถวของ `275a` ตามที่ตารางของ `275-a-term-typed-while-a-write-is-out.py` ทำนาย
 """
 from harness import main
 
@@ -153,8 +164,9 @@ USERS_INPUT = (
 )
 CLASS_SAVE = 'outsideSearch(q, searched(student))'
 CLASS_IMPORT = '(result?.students ?? []).some(row => outsideSearch(q, searched(row)))'
-GROUPS_SAVE = 'alsoOutside(message, hidden(q, about))'
-GROUPS_IMPORT = 'hidden(q, group => groups.has(group.group_id))'
+# Re-aimed 14 Nov 2569 (#275): the term is read off `termNow` when the answer lands.
+GROUPS_SAVE = 'alsoOutside(message, hidden(termNow.current, about))'
+GROUPS_IMPORT = 'hidden(termNow.current, group => groups.has(group.group_id))'
 
 KEEPS = "  const q = search.of === sectionId ? search.q : ''\n"
 
@@ -193,12 +205,12 @@ MUTANTS = {
     's272bgroupscount': ('groups',
         '{data.groups.length} กลุ่ม · จัดกลุ่มแล้ว', '{shown.length} กลุ่ม · จัดกลุ่มแล้ว'),
     's272bgroupssavequiet': ('groups', GROUPS_SAVE, 'alsoOutside(message, Boolean(about && false))'),
-    's272bgroupssavealways': ('groups', GROUPS_SAVE, 'alsoOutside(message, Boolean(about && q.trim()))'),
+    's272bgroupssavealways': ('groups', GROUPS_SAVE, 'alsoOutside(message, Boolean(about && termNow.current.trim()))'),
     's272bgroupscreateabout': ('groups', '      group => group.group_name === typed,\n', '      () => false,\n'),
     's272bgroupsrenameabout': ('groups', '      group => group.group_id === group_id,\n', '      () => false,\n'),
     's272bgroupstakeoutabout': ('groups', '      one => one.group_id === group.group_id,\n', '      () => false,\n'),
     's272bgroupsimportquiet': ('groups', GROUPS_IMPORT, 'Boolean(groups && false)'),
-    's272bgroupsimportalways': ('groups', GROUPS_IMPORT, 'Boolean(groups && q.trim())'),
+    's272bgroupsimportalways': ('groups', GROUPS_IMPORT, 'Boolean(groups && termNow.current.trim())'),
     # The owner's answer of 13 November 2569: a jump to another ตอนเรียน clears the term.
     's272bclassjumpkeeps': ('class', KEEPS, '  const q = search.q\n'),
     's272bclassboxkept': ('class', '            <SearchBox\n              key={sectionId}\n',

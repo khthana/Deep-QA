@@ -218,6 +218,27 @@ export default function StudentGroups() {
     (drawn.current?.groups ?? []).some(group => about(group) && outsideSearch(term, searched(group)))
 
   /**
+   * The term the cards are filtered by now, for a sentence said when an answer
+   * lands - #275, the owner's answer of 14 November 2569 (ข้อ 3). The box stays
+   * live while a write or an import's reload is out, so the term can change in
+   * between, and the sentence stands over the cards of the term in the box when
+   * it is said: a handler's own `q` is the term of the render that sent it.
+   * `drawn` above is the answer's half of the same question and is read at the
+   * same moment. `SubjectStudents.js` answers the same window differently - its
+   * search is a read, and its `readOf` key drops a sentence whose read the term
+   * has replaced - because there the list itself is re-asked.
+   *
+   * It is written by an effect, so an answer landing between the commit of a
+   * new term and that effect reads the term before it - the same one-effect
+   * lag `onScreen` has. Named apart from `create`'s own `typed`, the name the
+   * person gave the group, which is a string and not this ref.
+   */
+  const termNow = useRef(q)
+  useEffect(() => {
+    termNow.current = q
+  }, [q])
+
+  /**
    * Every write ends in a reload rather than in a patch of the state it just
    * changed.
    *
@@ -239,7 +260,7 @@ export default function StudentGroups() {
     // `onScreen` names, #199's sibling. 11 October 2569 (#68)
     setWrites(count => count + 1)
     if (reloaded && onScreen.current === sent) {
-      setNotice({ error: false, message: alsoOutside(message, hidden(q, about)) })
+      setNotice({ error: false, message: alsoOutside(message, hidden(termNow.current, about)) })
     }
   }
 
@@ -400,8 +421,17 @@ export default function StudentGroups() {
               // #252's sentence, by #272's answer ข้อ 4: a group the file put
               // somebody into that the search hides. The panel draws its own
               // report, so this is the screen's only sentence for an import.
+              // The second question is needed because `drawing` answers `true`
+              // from inside its `try` whatever `isCurrent()` said (#152): after a
+              // jump the answer is never drawn, `drawn` is still the Section that
+              // was left, and a term typed on the new one would judge it. Held by
+              // `275a`'s row of that sequence (#275).
               const groups = new Set((result?.members ?? []).map(row => row.group_id))
-              if (drew && onScreen.current === drawing && hidden(q, group => groups.has(group.group_id))) {
+              if (
+                drew &&
+                onScreen.current === drawing &&
+                hidden(termNow.current, group => groups.has(group.group_id))
+              ) {
                 setNotice({ error: false, message: SOME_IMPORTED_OUTSIDE })
               }
             }}
