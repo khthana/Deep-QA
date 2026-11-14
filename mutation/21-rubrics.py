@@ -78,7 +78,7 @@ to.
 | `addcancelkept` | **ทำอะไรพัง** *ยกเลิก* ของแถวเพิ่มไม่ทำอะไร | **แถวที่ตาย** *a rubric is added through the form* ที่ `expect(editRow(page)).toHaveCount(0)` หลังกดยกเลิกครั้งแรก |
 | `editcancelkept` | **ทำอะไรพัง** *ยกเลิก* ของแถวแก้ไขไม่ทำอะไร แถวเพิ่มยังปิดได้ | **แถวที่ตาย** *a rubric is added through the form* ที่ `rubricRow(page, MINE)).toContainText('เกณฑ์ที่เพิ่มระหว่างการทดสอบ')` หลังกดยกเลิกของแถวแก้ไข |
 | `addrowatbottom` | **ทำอะไรพัง** แถวเพิ่มถูกวาดใต้รายการแทนบนสุด | **แถวที่ตาย** *a rubric is added through the form* ที่ `'the add row is the first row of the table'` |
-| `namesswapped` | **ทำอะไรพัง** ชื่ออังกฤษมาก่อนชื่อไทยในช่องเดียวกัน | **แถวที่ตาย** *the list is code, name, order and actions* ที่ `toHaveText` ของช่องชื่อ ที่อ่านชื่อไทยต่อด้วยชื่ออังกฤษ · แถวที่ 1 ใช้ `toContainText` ทีละชื่อจึงไม่ตาย |
+| `namesswapped` | **ทำอะไรพัง** ชื่ออังกฤษมาก่อนชื่อไทย (เล็งใหม่ 14 พ.ย. 2569 เมื่อแต่ละภาษาได้คอลัมน์ของตัวเอง: สลับสองช่องแทนสองส่วนของช่องเดียว) | **แถวที่ตาย** *the list is order, code, Thai name, English name and actions* ที่ `expect(cells.nth(2)).toHaveText(SEEDED[0].th)` · ก่อนเล็งใหม่ *the list is code, name, order and actions* ที่ `toHaveText` ของช่องชื่อ ที่อ่านชื่อไทยต่อด้วยชื่ออังกฤษ · แถวที่ 1 ใช้ `toContainText` ทีละชื่อจึงไม่ตาย |
 | `lastprogramfirst` | **ทำอะไรพัง** บัญชีที่ถือสองหลักสูตรเริ่มที่หลักสูตรสุดท้ายแทนหลักสูตรแรก (บัญชีหลักสูตรเดียวไม่เห็นความต่าง) | **แถวที่ตาย** *an account holding two curricula is shown one at a time* ที่ `searchParams.get('program_id')).toBe('0501')` |
 
 สองตัวที่ review ของวันเดียวกันเพิ่ม เขียนก่อนรัน:
@@ -268,13 +268,15 @@ MUTANTS = {
          "          </tbody>",
          "            {editing && !editing.id && row}\n          </tbody>"),
     ],
-    # #276 - English before Thai in the one cell.
+    # #276 - English before Thai. Re-aimed 14 พ.ย. 2569, when the owner gave
+    # each language its own column: the same mistake, made to the two cells
+    # instead of to the two spans of one.
     "namesswapped": (
         "page",
-        "                        <span>{rubric.rubric_name_th}</span>\n"
-        "                        <span className=\"text-slate-500\">{rubric.rubric_name_en}</span>",
-        "                        <span className=\"text-slate-500\">{rubric.rubric_name_en}</span>\n"
-        "                        <span>{rubric.rubric_name_th}</span>",
+        "                    <td className=\"px-4 py-3\">{rubric.rubric_name_th}</td>\n"
+        "                    <td className=\"px-4 py-3 text-slate-500\">{rubric.rubric_name_en}</td>",
+        "                    <td className=\"px-4 py-3 text-slate-500\">{rubric.rubric_name_en}</td>\n"
+        "                    <td className=\"px-4 py-3\">{rubric.rubric_name_th}</td>",
     ),
     # #276 - an account holding two curricula starts on the last one. One
     # curriculum reads the same either way, so only the two-curricula row sees it.

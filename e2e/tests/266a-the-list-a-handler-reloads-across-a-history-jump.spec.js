@@ -29,6 +29,7 @@ const {
   openRubrics,
   waitForList: waitForRubrics,
   criteriaLink,
+  CODE_CELL,
 } = require('../support/rubrics-screen');
 const {
   untilListDrawn: untilRubricCriteriaDrawn,
@@ -594,7 +595,7 @@ async function twoRubrics(page) {
   await signIn(page, ACCOUNTS.committee0501);
   await openRubrics(page);
 
-  const codes = await page.locator('table tbody tr td:first-child').allTextContents();
+  const codes = await page.locator(`table tbody tr ${CODE_CELL}`).allTextContents();
   expect(codes.length).toBeGreaterThan(1);
   const rubrics = [];
   for (const code of codes.slice(0, 2).map(cell => cell.trim())) {

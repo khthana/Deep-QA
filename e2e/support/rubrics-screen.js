@@ -59,7 +59,14 @@ async function openRubrics(page) {
 }
 
 /**
- * One row of the table, found by the code in its first cell.
+ * The cell that holds a rubric's code - the second since 14 November 2569,
+ * when the owner moved ลำดับ to the front. ลำดับ cannot be the key: two
+ * rubrics may share one. `pager.js`'s `keysOn` takes it.
+ */
+const CODE_CELL = 'td:nth-child(2)';
+
+/**
+ * One row of the table, found by the code in its code cell.
  *
  * Scoped to the table so the confirmation dialog, which repeats a code in a
  * sentence, cannot be matched instead. The lookahead stops `RUB-1` from
@@ -68,7 +75,7 @@ async function openRubrics(page) {
 const rubricRow = (page, code) =>
   page
     .locator('table tbody tr')
-    .filter({ has: page.locator('td:first-child', { hasText: new RegExp(`^${code}(?![\\w-])`) }) });
+    .filter({ has: page.locator(CODE_CELL, { hasText: new RegExp(`^${code}(?![\\w-])`) }) });
 
 /** The list's own curriculum picker, drawn only when more than one is reached. */
 const programFilter = page =>
@@ -165,7 +172,7 @@ const clearRubric = (page, rubricId) =>
 /** The codes the table is showing, in the order it draws them. */
 const listedCodes = page =>
   page
-    .locator('table tbody tr td:first-child')
+    .locator(`table tbody tr ${CODE_CELL}`)
     .allInnerTexts()
     .then(cells => cells.map(cell => cell.trim()));
 
@@ -220,4 +227,5 @@ module.exports = {
   listedCodes,
   filterTo,
   criteriaLink,
+  CODE_CELL,
 };

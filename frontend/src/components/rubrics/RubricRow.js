@@ -42,8 +42,13 @@ import { RxCross2 } from 'react-icons/rx'
  * the placeholder says what to write.
  */
 
+/**
+ * Each field says its own width - the owner's request of 14 พ.ย. 2569. Until
+ * then this carried `w-full`, which the ลำดับ field's `w-20` could not narrow,
+ * so a two-digit number had a column as wide as a name.
+ */
 const field =
-  'w-full rounded border px-2 py-1 text-sm text-gray-900 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
+  'rounded border px-2 py-1 text-sm text-gray-900 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 
 /** The delivered `SaveBT` and `CancleBT` squares (`DEEP-QA-FRONTEND/src/components/BT.js`). */
 const square =
@@ -69,9 +74,26 @@ export default function RubricRow({ draft, onChange, busy, sending, onSave, onCa
 
   return (
     <tr className="bg-blue-50/40">
+      {/* ลำดับ first and รหัส second, then one column per language - the
+          owner's request of 14 พ.ย. 2569, which `pages/Rubrics.js` draws in the
+          heading and the rows the same way. */}
       <td className="px-4 py-3 align-top">
         <input
-          className={field}
+          className={`${field} w-16`}
+          form={form}
+          type="number"
+          value={draft.display_order}
+          onChange={set('display_order')}
+          aria-label="ลำดับ"
+          step={1}
+          min={0}
+          disabled={sending}
+          required
+        />
+      </td>
+      <td className="px-4 py-3 align-top">
+        <input
+          className={`${field} w-32`}
           form={form}
           value={draft.rubric_code}
           onChange={set('rubric_code')}
@@ -85,43 +107,27 @@ export default function RubricRow({ draft, onChange, busy, sending, onSave, onCa
         />
       </td>
       <td className="px-4 py-3 align-top">
-        {/* ไทย · อังกฤษ on one line while there is room, the owner's answer of
-            14 พ.ย. 2569, and the second under the first when there is not. */}
-        <div className="flex flex-wrap gap-2">
-          <input
-            className={`${field} min-w-[12rem] flex-1`}
-            form={form}
-            value={draft.rubric_name_th}
-            onChange={set('rubric_name_th')}
-            aria-label="ชื่อ Rubric (ภาษาไทย)"
-            placeholder="เช่น การนำเสนอผลงาน"
-            maxLength={255}
-            disabled={sending}
-            required
-          />
-          <input
-            className={`${field} min-w-[12rem] flex-1`}
-            form={form}
-            value={draft.rubric_name_en}
-            onChange={set('rubric_name_en')}
-            aria-label="ชื่อ Rubric (ภาษาอังกฤษ)"
-            placeholder="เช่น Presentation"
-            maxLength={255}
-            disabled={sending}
-            required
-          />
-        </div>
+        <input
+          className={`${field} w-full min-w-[10rem]`}
+          form={form}
+          value={draft.rubric_name_th}
+          onChange={set('rubric_name_th')}
+          aria-label="ชื่อ Rubric (ภาษาไทย)"
+          placeholder="เช่น การนำเสนอผลงาน"
+          maxLength={255}
+          disabled={sending}
+          required
+        />
       </td>
       <td className="px-4 py-3 align-top">
         <input
-          className={`${field} w-20`}
+          className={`${field} w-full min-w-[10rem]`}
           form={form}
-          type="number"
-          value={draft.display_order}
-          onChange={set('display_order')}
-          aria-label="ลำดับ"
-          step={1}
-          min={0}
+          value={draft.rubric_name_en}
+          onChange={set('rubric_name_en')}
+          aria-label="ชื่อ Rubric (ภาษาอังกฤษ)"
+          placeholder="เช่น Presentation"
+          maxLength={255}
           disabled={sending}
           required
         />

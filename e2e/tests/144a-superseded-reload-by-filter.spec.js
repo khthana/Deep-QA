@@ -154,7 +154,7 @@ const late = (ms) => async (route, request) => {
  * row names the curriculum the read is of - `140a`'s `supersede` has the same
  * parameter for the same reason.
  */
-async function refilter(page, { list, table, filters, moved, rows, key, press, move, held }) {
+async function refilter(page, { list, table, cell, filters, moved, rows, key, press, move, held }) {
   const isList = (url) => url.pathname === list;
   const isHeld =
     held ??
@@ -196,7 +196,7 @@ async function refilter(page, { list, table, filters, moved, rows, key, press, m
     expect({
       page: shown.shown,
       total: shown.total,
-      keys: (await keysOn(table)).map((cell) => cell.trim()),
+      keys: (await keysOn(table, cell)).map((text) => text.trim()),
     }).toEqual({
       page: filtered.page,
       total: filtered.total,
@@ -386,6 +386,7 @@ test.describe('as a committee member of the whole department', () => {
     await refilter(page, {
       list: rubrics.API,
       table: rubrics.table(page),
+      cell: rubrics.CODE_CELL,
       filters: ['program_id'],
       moved: ['program_id', PROGRAM_INTL],
       held: (url) =>

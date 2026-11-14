@@ -25,6 +25,7 @@ const {
   criteriaLink,
   openRubrics,
   waitForList: waitForRubrics,
+  CODE_CELL,
 } = require('../support/rubrics-screen');
 const {
   untilListDrawn: untilRubricCriteriaDrawn,
@@ -388,7 +389,7 @@ test('rubric criteria the back button has left behind do not land on top of the 
 
   // Two Rubrics, read off the table's own rows: the code is the first cell and
   // the id is in the address the criteria link carries.
-  const codes = await page.locator('table tbody tr td:first-child').allTextContents();
+  const codes = await page.locator(`table tbody tr ${CODE_CELL}`).allTextContents();
   expect(codes.length).toBeGreaterThan(1);
   const rubrics = [];
   for (const code of codes.slice(0, 2).map(cell => cell.trim())) {

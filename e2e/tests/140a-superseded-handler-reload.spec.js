@@ -324,7 +324,7 @@ async function live(control, what) {
  * twelve rows that stand on page two so the import panel's move is a page move
  * pass their own (#223).
  */
-async function supersede(page, { list, table, rows, key, press, move, held }) {
+async function supersede(page, { list, table, cell, rows, key, press, move, held }) {
   const isList = (url) => url.pathname === list;
   const moveTo = move ?? {
     pages: true,
@@ -370,7 +370,7 @@ async function supersede(page, { list, table, rows, key, press, move, held }) {
     expect({
       page: shown.shown,
       total: shown.total,
-      keys: (await keysOn(table)).map((cell) => cell.trim()),
+      keys: (await keysOn(table, cell)).map((text) => text.trim()),
     }).toEqual({
       page: moved.page,
       total: moved.total,
@@ -764,7 +764,13 @@ test.describe('as a committee member of the whole department', () => {
     // and the list opens on the first one in reach since #276.
     const answer = await (await rubrics.openRubricsOn(page, PROGRAM)).json();
     return {
-      opened: { list: rubrics.API, table: rubrics.table(page), rows: 'rubrics', key: (row) => row.rubric_code },
+      opened: {
+        list: rubrics.API,
+        table: rubrics.table(page),
+        cell: rubrics.CODE_CELL,
+        rows: 'rubrics',
+        key: (row) => row.rubric_code,
+      },
       idOf: (code) => answer.rubrics.find((rubric) => rubric.rubric_code === code).id,
     };
   }

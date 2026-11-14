@@ -27,6 +27,7 @@ const {
   filterTo,
   criteriaLink,
   openRubricsOn,
+  CODE_CELL,
 } = require('../support/rubrics-screen');
 const { statedLabel } = require('../support/stated-label');
 const { saidBy } = require('../support/confirm-dialog');
@@ -155,13 +156,13 @@ test('the eleventh rubric is on the second page, and no rubric is on both', asyn
   const first = await reading(page, table(page));
   expect(first.total).toBeGreaterThan(10);
   expect(first.pages).toBeGreaterThan(1);
-  const firstKeys = await keysOn(table(page));
+  const firstKeys = await keysOn(table(page), CODE_CELL);
   expect(firstKeys).toHaveLength(10);
 
   await step(page, 'forward', waitForList);
   const second = await reading(page, table(page));
   expect(second.shown).toBe(2);
-  const secondKeys = await keysOn(table(page));
+  const secondKeys = await keysOn(table(page), CODE_CELL);
   expect(secondKeys.length).toBeGreaterThan(0);
 
   // Different pages of one list are different pages only if their keys are
@@ -198,29 +199,27 @@ test('every rubric offers a way into its criteria, and the way carries the rubri
   await expect(page).toHaveURL(new RegExp(`/main/rubrics/${target.id}/criteria$`));
 });
 
-test('the list is code, name, order and actions, and the name is both languages on one line', async ({
-  page,
-}) => {
+test('the list is order, code, Thai name, English name and actions', async ({ page }) => {
   // #276's columns: no หลักสูตร, the list being one curriculum's, and no count
-  // of criteria (*เอาออกแบบเดิม*). The name reads ไทย then อังกฤษ in one cell -
-  // whether they share a line is a width the hand walk measures; that both are
-  // there, in that order, is this row.
+  // of criteria (*เอาออกแบบเดิม*). The owner's request of 14 พ.ย. 2569 then
+  // put ลำดับ in front and gave each language its own column; how narrow the
+  // order and the code are is a width the hand walk measures.
   await signIn(page, ACCOUNTS.committee0501);
   await openRubrics(page);
   await settled(table(page));
 
   expect(await page.locator('table thead th').allInnerTexts()).toEqual([
-    'รหัส',
-    'ชื่อ Rubric',
     'ลำดับ',
+    'รหัส',
+    'ชื่อภาษาไทย',
+    'ชื่อภาษาอังกฤษ',
     'ดำเนินการ',
   ]);
-  await expect(rubricRow(page, SEEDED[0].code).locator('td').nth(1)).toHaveText(
-    `${SEEDED[0].th}${SEEDED[0].en}`,
-  );
-  await expect(rubricRow(page, SEEDED[0].code).locator('td').nth(2)).toHaveText(
-    String(SEEDED[0].order),
-  );
+  const cells = rubricRow(page, SEEDED[0].code).locator('td');
+  await expect(cells.nth(0)).toHaveText(String(SEEDED[0].order));
+  await expect(cells.nth(1)).toHaveText(SEEDED[0].code);
+  await expect(cells.nth(2)).toHaveText(SEEDED[0].th);
+  await expect(cells.nth(3)).toHaveText(SEEDED[0].en);
 });
 
 test('a rubric is added through the form, edited, and is not there until it is saved', async ({

@@ -588,10 +588,15 @@ export default function Rubrics() {
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="bg-gray-50 text-gray-600">
+            {/* ลำดับ in front, a narrow code, and a column per language - the
+                owner's request of 14 พ.ย. 2569. The code is at most twenty
+                characters (`rubrics.rubric_code varchar(20)`), and ลำดับ is a
+                whole number nobody needs four digits of. */}
             <tr>
-              <th className="px-4 py-3">รหัส</th>
-              <th className="px-4 py-3">ชื่อ Rubric</th>
-              <th className="px-4 py-3">ลำดับ</th>
+              <th className="w-20 px-4 py-3">ลำดับ</th>
+              <th className="w-40 px-4 py-3">รหัส</th>
+              <th className="px-4 py-3">ชื่อภาษาไทย</th>
+              <th className="px-4 py-3">ชื่อภาษาอังกฤษ</th>
               <th className="px-4 py-3 text-center">ดำเนินการ</th>
             </tr>
           </thead>
@@ -599,14 +604,14 @@ export default function Rubrics() {
             {editing && !editing.id && row}
             {loading && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                   กำลังโหลด…
                 </td>
               </tr>
             )}
             {!loading && data.rubrics.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                   ยังไม่มี Rubric ในหลักสูตรนี้
                 </td>
               </tr>
@@ -625,23 +630,16 @@ export default function Rubrics() {
                   />
                 ) : (
                   <tr key={rubric.id}>
-                    {/* The code leads the row because it is this table's
-                        natural key, as the code does on every other
-                        master-data screen - and because the paging helper the
-                        browser seam shares reads the first cell of each row
-                        as the key that tells two pages apart. ลำดับ could not
-                        do that job: two rubrics may hold the same one. */}
-                    <td className="px-4 py-3 font-bold text-gray-900">{rubric.rubric_code}</td>
-                    <td className="px-4 py-3">
-                      {/* ไทย · อังกฤษ on one line while there is room, and the
-                          second under the first when there is not - the
-                          owner's answer of 14 พ.ย. 2569 (#276). */}
-                      <span className="flex flex-wrap gap-x-2">
-                        <span>{rubric.rubric_name_th}</span>
-                        <span className="text-slate-500">{rubric.rubric_name_en}</span>
-                      </span>
-                    </td>
+                    {/* ลำดับ leads the row since the owner's request of
+                        14 พ.ย. 2569. The code is still the table's natural key,
+                        and is the cell the browser seam reads to tell two pages
+                        apart (`e2e/support/rubrics-screen.js`, `CODE_CELL`):
+                        ลำดับ could not do that job, two rubrics may hold the
+                        same one. */}
                     <td className="px-4 py-3 text-slate-500">{rubric.display_order}</td>
+                    <td className="px-4 py-3 font-bold text-gray-900">{rubric.rubric_code}</td>
+                    <td className="px-4 py-3">{rubric.rubric_name_th}</td>
+                    <td className="px-4 py-3 text-slate-500">{rubric.rubric_name_en}</td>
                     <td className="px-4 py-3">
                       {/* The delivered order - ดู แก้ไข ลบ (#276). The eye is the
                           fifth criterion's way in, and it carries the rubric:

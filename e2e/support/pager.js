@@ -78,10 +78,14 @@ async function reading(page, table) {
  * `tbody tr td:first-child` and not `getByRole('row')`, because the loading
  * placeholder and the "ไม่พบ…" line are rows too, and both carry a single
  * `colSpan` cell that would come back as one more "key".
+ *
+ * `cell` is for the screen whose key is not its first column: since
+ * 14 November 2569 the Rubric list leads with ลำดับ, which two rubrics may
+ * share, so its code is the second cell (`rubrics-screen.js`, `CODE_CELL`).
  */
-async function keysOn(table) {
+async function keysOn(table, cell = 'td:first-child') {
   await settled(table);
-  return table.locator('tbody tr td:first-child').allInnerTexts();
+  return table.locator(`tbody tr ${cell}`).allInnerTexts();
 }
 
 /**
