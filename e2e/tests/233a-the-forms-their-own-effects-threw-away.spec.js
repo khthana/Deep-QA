@@ -167,12 +167,15 @@ test.afterAll(async () => {
   // And then the row itself, which the revoke above does not take out:
   // `DELETE /api/users/:id/roles/:role/:scope` is `UPDATE user_roles SET
   // is_active = false` (`backend/routes/grants.js`), on purpose, so the grant
-  // stops being honoured and the record of it stays. `155a`'s and `198a`'s
-  // grants are to a key the seed already holds, so a soft revoke puts that key
-  // back as it was; this one is a key nothing had, and the full run of 26
-  // ตุลาคม 2569 reported it as `user_roles: +1
+  // stops being honoured and the record of it stays. The full run of 26
+  // ตุลาคม 2569 reported this one as `user_roles: +1
   // deptadm05/DEPT_ADMIN/01` — a spec that writes takes it out again (#132),
-  // and the only seam that can is the database.
+  // and no route can. Until 15 พ.ย. 2569 this said `155a`'s and `198a`'s grants
+  // were to a key the seed already holds; the seed has never held
+  // `multi01/PROG_MANAGER/0503`, and what took theirs out was the hold, which
+  // left it behind in a file run alone until it was awaited (#276 in `198a`,
+  // #277 in `155a`). Awaited below, the hold would take this row out too; the
+  // `DELETE` stays because it says which row this file wrote.
   try {
     await cleanUp.query(
       `DELETE FROM user_roles
@@ -185,7 +188,14 @@ test.afterAll(async () => {
   await cleanUp.end();
 
   await admin.dispose();
-  release();
+  // Awaited since 15 พ.ย. 2569 (#277). Left running past the hook, the release
+  // was still out when the run ended: run alone, the file left `deptadm05`'s
+  // `acting_epoch` behind.
+  try {
+    await release();
+  } catch (error) {
+    cleanupFailure = cleanupFailure ?? `the hold could not be released: ${error.message}`;
+  }
 });
 
 // Last, so a fixture left behind fails the file rather than the next one.

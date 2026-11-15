@@ -102,7 +102,15 @@ test.afterAll(async () => {
     }
   }
   await admin.dispose();
-  release();
+  // Awaited since 15 พ.ย. 2569 (#277). Left running past the hook, the release
+  // was still out when the run ended: run alone, the file left row 3's grant to
+  // `multi01/PROG_MANAGER/0503`, which the revoke above only marks inactive,
+  // and `multi01`'s `acting_epoch` behind.
+  try {
+    await release();
+  } catch (error) {
+    cleanupFailure = cleanupFailure ?? `the hold could not be released: ${error.message}`;
+  }
 });
 
 // Last, so a fixture left behind fails this file rather than the next one.

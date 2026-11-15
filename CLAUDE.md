@@ -976,9 +976,8 @@ citation.
   record of the next screen that opens. Ask the database after the run, not the red row. (#276)
 - **And an undo through the seam is not always a removal** — a revoke that deactivates leaves the row,
   so a fixture asking for a key nothing held is reported as a leftover although its own cleanup was
-  answered 200. The sibling fixtures that never showed in that report asked for a key the seed
-  already holds, which is what made a soft undo enough for them: the row comes out below the seam,
-  and running the file alone is what says so. (#233)
+  answered 200. The row comes out below the seam, and running the file alone is what says so.
+  (#233, #277)
 - **A comparison by key cannot see a rewrite** — a report that reads tidy has only said nothing was
   added or removed; measure the values too, then put them back. What nothing measures, nothing
   cleans. (#137)
