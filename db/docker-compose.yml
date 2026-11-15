@@ -8,7 +8,10 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS:?set DB_PASS in the repository-root .env}
       POSTGRES_DB: ${DB_NAME:?set DB_NAME in the repository-root .env}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      # Bound to loopback only - the owner's answer of 15 พ.ย. 2569, after the
+      # 16.16 upgrade (CVE-2026-116304): nothing off this machine needs the
+      # database, and 0.0.0.0 handed it to the whole network.
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       # Named, so `docker compose down` keeps the data and only
       # `docker compose down -v` throws it away.
