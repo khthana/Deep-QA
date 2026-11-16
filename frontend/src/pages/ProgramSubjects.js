@@ -70,9 +70,25 @@ const HANDED_ON = 'handed-on'
 
 export default function ProgramSubjects() {
   const [page, setPage] = useState(1)
-  const [program, setProgram] = useState('')
+  /**
+   * The curriculum picked, and the curriculum shown - 17 พ.ย. 2569.
+   *
+   * The owner's answer: the work is done one curriculum at a time, so the
+   * table has no หลักสูตร column and the filter has no *ทุกหลักสูตร* - the
+   * shape `Rubrics.js` took with #276, whose block carries the reasons. What
+   * the person picked while it is still in reach, and the first curriculum
+   * otherwise, so `program` is never empty once the curricula are read.
+   */
+  const [chosen, setChosen] = useState('')
   const [data, setData] = useState({ program_subjects: [], total: 0 })
   const [programs, setPrograms] = useState([])
+  // Whether the curricula have been asked about yet, answered or refused. The
+  // list is not read before then: with nothing picked it would be the list of
+  // every curriculum in reach, drawn for a moment and then replaced.
+  const [poolRead, setPoolRead] = useState(false)
+  const program = programs.some(entry => entry.program_id === chosen)
+    ? chosen
+    : programs[0]?.program_id ?? ''
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
   // The import window, opened by นำเข้า… in the bar (#270).
@@ -107,6 +123,8 @@ export default function ProgramSubjects() {
    * `frontend/src/pages/Students.js`.
    */
   const load = useCallback(async isCurrent => {
+    // Not before the curricula are known, for `poolRead`'s reason (17 พ.ย. 2569).
+    if (!poolRead) return true
     // Which read this is, for the sentence that may be waiting for it - #205.
     const key = readOf(page, program)
     setLoading(true)
@@ -169,7 +187,7 @@ export default function ProgramSubjects() {
         if (!handedOn && !waiting.current?.held) waiting.current = null
       }
     }
-  }, [page, program, report])
+  }, [page, program, report, poolRead])
 
   useEffect(() => {
     let current = true
@@ -264,26 +282,33 @@ export default function ProgramSubjects() {
 
   // The programmes in reach, fetched once: what this account covers is a
   // property of the grant and does not change with the page being looked at.
-  // Used three times — to name the programme each row sits in, as the pool the
-  // form's picker draws from, and as the filter's options.
+  // Used three times — as the pool the form's picker draws from, as the
+  // filter's options, and, since 17 พ.ย. 2569, to choose which curriculum the
+  // list is of. Until then it also named the programme each row sat in, in a
+  // column the one-curriculum list no longer has. A refusal lets the list be
+  // asked as well, for Rubrics.js's reason: the list's own refusal is the
+  // sentence the person reads.
   useEffect(() => {
     let cancelled = false
     listReachablePrograms()
       .then(({ programs: reachable }) => {
-        if (!cancelled) setPrograms(reachable)
+        if (!cancelled) {
+          setPrograms(reachable)
+          setPoolRead(true)
+        }
       })
-      .catch(report)
+      .catch(error => {
+        report(error)
+        if (!cancelled) setPoolRead(true)
+      })
     return () => {
       cancelled = true
     }
   }, [report])
 
-  const nameOf = programId =>
-    programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId
-
   /**
    * Which press of แก้ไข the form was last asked for - #139. แก้ไข makes a new
-   * ask, and เพิ่มรายวิชาเข้าหลักสูตร, นำออก and the import say none; a read overtaken by any of them
+   * ask, and เพิ่มรายวิชา, นำออก and the import say none; a read overtaken by any of them
    * draws neither its form nor its refusal, though the list is still reloaded.
    * `Departments.js` carries the reasons.
    */
@@ -292,7 +317,7 @@ export default function ProgramSubjects() {
   /**
    * The last thing that opened on this screen - #146, arriving here with #202.
    *
-   * เพิ่มรายวิชาเข้าหลักสูตร and แก้ไข write it, แก้ไข at the press for #139's
+   * เพิ่มรายวิชา and แก้ไข write it, แก้ไข at the press for #139's
    * reason; ยกเลิก, นำออก and the import do not. What needs it here is
    * `confirmRemoval`: the question `ConfirmDialog` asks trapped no focus until
    * 18 ตุลาคม 2569 (#204, contained by #217 that day), so both of those controls
@@ -453,9 +478,9 @@ export default function ProgramSubjects() {
         <>
           <PageHeader
             heading={<h1 className="text-lg font-medium text-primary">รายวิชาในหลักสูตร</h1>}
-            importLabel="นำเข้ารายวิชาเข้าหลักสูตร"
+            importLabel="นำเข้ารายวิชา"
             onImport={() => setImporting(true)}
-            addLabel="เพิ่มรายวิชาเข้าหลักสูตร"
+            addLabel="เพิ่มรายวิชา"
             onAdd={() => {
               asked.current = null
               showing.current = {}
@@ -479,11 +504,10 @@ export default function ProgramSubjects() {
                     // Back to the first page: page 3 of the faculty's
                     // curricula is rarely a page of one programme's.
                     setPage(1)
-                    setProgram(event.target.value)
+                    setChosen(event.target.value)
                   }}
                   className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
                 >
-                  <option value="">ทุกหลักสูตร</option>
                   {programs.map(entry => (
                     <option key={entry.program_id} value={entry.program_id}>
                       {entry.program_name_th}
@@ -547,7 +571,6 @@ export default function ProgramSubjects() {
                   <th className="px-4 py-2">ชื่อวิชา</th>
                   <th className="px-4 py-2">หน่วยกิต</th>
                   <th className="px-4 py-2">ประเภท</th>
-                  <th className="px-4 py-2">หลักสูตร</th>
                   <th className="px-4 py-2">สถานะ</th>
                   <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
@@ -555,14 +578,14 @@ export default function ProgramSubjects() {
               <tbody className="divide-y divide-gray-100">
                 {loading && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                       กำลังโหลด…
                     </td>
                   </tr>
                 )}
                 {!loading && data.program_subjects.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                       ยังไม่มีรายวิชาในหลักสูตรนี้
                     </td>
                   </tr>
@@ -589,7 +612,6 @@ export default function ProgramSubjects() {
                           {TYPES[pair.subject_type] ?? pair.subject_type}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-slate-500">{nameOf(pair.program_id)}</td>
                       <td className="px-4 py-2">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs ${

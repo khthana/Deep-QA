@@ -166,7 +166,7 @@ const SCREENS = [
     detail: /^\/api\/program-subjects\/[^/]+\/[^/]+$/,
     list: /^\/api\/program-subjects$/,
     edit: 'แก้ไขรายวิชาในหลักสูตร',
-    add: 'เพิ่มรายวิชาเข้าหลักสูตร',
+    add: 'เพิ่มรายวิชา',
     addHeading: 'เพิ่มรายวิชาเข้าหลักสูตร',
     fields: (page) => [programSubjects.typePicker(page), programSubjects.statusPicker(page)],
     fresh: (page) => page.getByPlaceholder(/เช่น 01076105/),

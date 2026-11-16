@@ -349,6 +349,12 @@ test('รายวิชาในหลักสูตร (ProgramSubjects.js): 
     table: page.locator('table').first(),
     filters: ['program_id'],
     moved: ['program_id', PROGRAM_INTL],
+    // Since 17 พ.ย. 2569 the list opens on the first curriculum and always sends it,
+    // as the Rubric row below has since #276.
+    held: (url) =>
+      url.pathname === pairs.API &&
+      url.searchParams.get('page') === '1' &&
+      url.searchParams.get('program_id') === PROGRAM,
     rows: 'program_subjects',
     key: (row) => row.subject_id,
     press: () =>

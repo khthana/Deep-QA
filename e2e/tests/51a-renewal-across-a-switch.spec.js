@@ -66,7 +66,10 @@ const {
 const TEACHER = 'อาจารย์ผู้สอน';
 const TEACHER_GRANT = { role_id: 'TEACHER', scope_id: '05' };
 const PROGRAM_SUBJECTS_MENU = 'รายวิชาในหลักสูตร';
-const PROGRAM_SUBJECTS_READ = new RegExp(`^${PROGRAM_SUBJECTS_API}$`);
+// The curricula in reach, which since 17 พ.ย. 2569 is the first read the
+// screen sends: the list waits for it, being one curriculum's. Holding the
+// list instead let this read go out first and renew the session.
+const PROGRAM_SUBJECTS_READ = new RegExp(`^${PROGRAM_SUBJECTS_API}/programs$`);
 
 /** A minute inside the renewal window, read from the threshold itself. */
 const NEARLY_OVER = RENEW_BELOW_SECONDS - 60;

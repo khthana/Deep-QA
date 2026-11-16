@@ -52,6 +52,24 @@ for which assertion, and for what each mutant is about.
 | ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
 |---|---|---|
 | `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร <ชื่อ>* อีกครั้ง | **แถวที่ตาย** `18a` row 1 *one programme is neither asked nor stated* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0)` · `18c` แถว 8 ไม่อ่านข้อความนี้แล้ว จึงไม่ตาย |
+
+## คำทำนาย (17 พ.ย. 2569) — เขียนก่อนรัน
+
+คำสั่งของเจ้าของวันนี้: *คอลัมน์หลักสูตรไม่ควรมี เพราะทำทีละหลักสูตรอยู่แล้ว* แล้วเลือก *ทำแบบหน้า Rubric* — รายการเป็นของ
+หลักสูตรเดียว ไม่มี *ทุกหลักสูตร* และเปิดที่หลักสูตรแรก (#276) มัตแตนต์สามตัวคือโค้ดที่คำตอบนั้นเอาออก ทำให้รัน (#48)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
+|---|---|---|
+| `allprograms` | **ทำอะไรพัง** ตัวกรองได้ *ทุกหลักสูตร* กลับมา (ตัวเลือกเฉย ๆ — `program` ยังคิดจาก pool จึงเปิดที่หลักสูตรแรกเหมือนเดิม) | **แถวที่ตาย** `18c` row 8 *the administrator above both curricula reaches both* ที่ `and never every curriculum at once` · แถวอื่นไม่อ่านตัวเลือกนี้ |
+| `programcolumn` | **ทำอะไรพัง** คอลัมน์ *หลักสูตร* กลับมาหลัง *ประเภท* | **แถวที่ตาย** `18c` row 8 ที่ `the list has no หลักสูตร column` · และ `18a` row 1 ที่ `CELL.status` ซึ่งอ่านช่องที่ห้า — ตายที่ข้ออ้างของแถวนั้นเอง แต่ด้วยตำแหน่งช่อง ไม่ใช่ด้วยการอ่านว่าคอลัมน์ไม่มี |
+| `lastprogramfirst` | **ทำอะไรพัง** รายการเปิดที่หลักสูตรสุดท้ายแทนหลักสูตรแรก | **แถวที่ตาย** `18c` row 8 ที่ `the list opens on the first` · `244a` แถว 2 และ 4 ที่ `the list is drawn of the retired curriculum` · `234a` แถวคู่รายวิชาที่ `filterPairsTo(page, LIVE)` (หมดเวลา — การจัดฉาก ไม่ใช่ข้ออ้าง #139) · `144a` แถวรายวิชาในหลักสูตรที่การรอคำขอที่ถูกกัก (หมดเวลา — การจัดฉาก) |
+
+ผลการกวาด (17 พ.ย. 2569) — ชุดสะอาด `18c` 3 ผ่าน:
+
+- `allprograms` — 1 ล้ม ที่ `18c` row 8 `and never every curriculum at once` ตามคำทำนาย · `18a` ไม่ตาย
+- `programcolumn` — 2 ล้ม: `18c` row 8 ที่ `the list has no หลักสูตร column` และ `18a` row 1 ที่ `CELL.status` ตามคำทำนาย
+- `lastprogramfirst` — 5 ล้ม ตามคำทำนายทุกแถว: `18c` row 8 ที่ `the list opens on the first` · `244a` แถว 2 และ 4 ที่
+  `the list is drawn of the retired curriculum` · `234a` แถวคู่รายวิชาและ `144a` แถวรายวิชาในหลักสูตร ที่การรอ (การจัดฉาก #139)
 """
 
 from harness import main
@@ -107,6 +125,39 @@ MUTANTS = {
     # 18a row 1: one programme is not offered as a choice of one. Re-aimed
     # 16 พ.ย. 2569, when the ternary became `&&` with the statement gone.
     "alwaysfilter": ("page", "{programs.length > 1 && (", "{programs.length > 0 && ("),
+    # The owner's answer of 17 พ.ย. 2569: one curriculum at a time, as Rubrics.js since
+    # #276. The three mutants are what the answer took away, made to run (#48).
+    "allprograms": (
+        "page",
+        "                  {programs.map(entry => (\n",
+        "                  <option value=\"\">ทุกหลักสูตร</option>\n"
+        "                  {programs.map(entry => (\n",
+    ),
+    "programcolumn": [
+        (
+            "page",
+            "                  <th className=\"px-4 py-2\">ประเภท</th>\n",
+            "                  <th className=\"px-4 py-2\">ประเภท</th>\n"
+            "                  <th className=\"px-4 py-2\">หลักสูตร</th>\n",
+        ),
+        (
+            "page",
+            "                          {TYPES[pair.subject_type] ?? pair.subject_type}\n"
+            "                        </span>\n"
+            "                      </td>\n",
+            "                          {TYPES[pair.subject_type] ?? pair.subject_type}\n"
+            "                        </span>\n"
+            "                      </td>\n"
+            "                      <td className=\"px-4 py-2 text-slate-500\">\n"
+            "                        {programs.find(entry => entry.program_id === pair.program_id)?.program_name_th}\n"
+            "                      </td>\n",
+        ),
+    ],
+    "lastprogramfirst": (
+        "page",
+        "    : programs[0]?.program_id ?? ''",
+        "    : programs[programs.length - 1]?.program_id ?? ''",
+    ),
     # 18a row 1 / 18c row 8: the label names the curriculum, and the mutant
     # puts its code back in front of the name - #93 took it out
     "labelwithcode": ("page",

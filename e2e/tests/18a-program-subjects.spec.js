@@ -138,7 +138,7 @@ test('row 1: one programme is neither asked nor stated, and it is the one the se
   // neither offered a choice of it nor - since the owner's answer of
   // 16 พ.ย. 2569, the work being done one department at a time - told its name.
   await page.getByRole('button', { name: 'ยกเลิก', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'เพิ่มรายวิชาเข้าหลักสูตร' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'เพิ่มรายวิชา', exact: true })).toBeVisible();
   await expect(programFilter(page)).toHaveCount(0);
   await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0);
 });

@@ -234,7 +234,7 @@ const LIST_SCREENS = [
     detail: /^\/api\/program-subjects\/\d+\/\d+$/,
     importPath: '/api/program-subjects/import',
     edit: 'แก้ไขรายวิชาในหลักสูตร',
-    addButton: 'เพิ่มรายวิชาเข้าหลักสูตร',
+    addButton: 'เพิ่มรายวิชา',
     add: 'เพิ่มรายวิชาเข้าหลักสูตร',
     remove: 'นำออก',
     shows: (page) => field(page, 'รายวิชา').inputValue(),

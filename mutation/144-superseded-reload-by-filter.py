@@ -103,8 +103,13 @@ MUTANTS = {
     'subjectsdepartmentnotfollowed': ('subjects', REF,
         '    onScreen.current = load\n  }, [page, report])\n'),
     # รายวิชาในหลักสูตร: ตัวกรองหลักสูตร
+    # Re-aimed 17 พ.ย. 2569, when `load` gained `poolRead` (the list became
+    # one curriculum's): left out of these dependencies too, the ref stayed on
+    # the first `load`, which returns before the curricula land, so every reload
+    # through it did nothing - a mutant that stops the reload rather than one
+    # that misses the filter (#203). `program` alone is left out, as the name says.
     'pairsprogramnotfollowed': ('pairs', REF,
-        '    onScreen.current = load\n  }, [page, report])\n'),
+        '    onScreen.current = load\n  }, [page, report, poolRead])\n'),
     # Rubric: ตัวกรองหลักสูตร
     'rubricsprogramnotfollowed': ('rubrics', REF,
         '    onScreen.current = load\n  }, [page, report])\n'),

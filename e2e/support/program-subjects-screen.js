@@ -72,15 +72,24 @@ const pairRow = (page, subjectId) =>
     .filter({ has: page.getByRole('cell', { name: subjectId, exact: true }) });
 
 /** The columns, by what the table's header calls them. */
-const CELL = { code: 0, name: 1, credits: 2, type: 3, program: 4, status: 5 };
+// The หลักสูตร column went on 17 พ.ย. 2569: the list is one curriculum's.
+const CELL = { code: 0, name: 1, credits: 2, type: 3, status: 4 };
 
 /** The form's programme picker — the only select offering a programme code. */
 const programPicker = page =>
   page.getByRole('combobox').filter({ has: page.locator('option[value="0501"]') });
 
-/** The list's own programme filter, drawn only when more than one is reached. */
-const programFilter = page =>
-  page.getByRole('combobox').filter({ has: page.locator('option[value=""]') });
+/**
+ * The list's own programme filter, drawn only when more than one is reached.
+ *
+ * By its label. Until 17 พ.ย. 2569 it was found by its *ทุกหลักสูตร* option, which the
+ * owner's answer took away: the list is one curriculum's now, as Rubrics.js's
+ * since #276. Found that way it would match nothing, and every `toHaveCount(0)`
+ * on it would hold whether or not a filter were drawn (#50). The form's picker
+ * carries the same label, which is safe on this screen alone: the form is drawn
+ * **in place of** the list, so the two are never on the screen together.
+ */
+const programFilter = page => page.getByRole('combobox', { name: 'หลักสูตร', exact: true });
 
 /** The form's บังคับ/เลือก picker. */
 const typePicker = page =>
@@ -102,11 +111,11 @@ const cataloguePicker = page => page.getByRole('listbox');
 const offered = picker =>
   picker.locator('option').evaluateAll(options => options.map(option => option.value));
 
-/** Opens *เพิ่มรายวิชาเข้าหลักสูตร* and waits for the catalogue's first answer. */
+/** Opens *เพิ่มรายวิชา* and waits for the catalogue's first answer. */
 async function openAddForm(page) {
   await Promise.all([
     waitForCatalogue(page),
-    page.getByRole('button', { name: 'เพิ่มรายวิชาเข้าหลักสูตร' }).click(),
+    page.getByRole('button', { name: 'เพิ่มรายวิชา', exact: true }).click(),
   ]);
 }
 

@@ -14,7 +14,6 @@ const { SUBJECTS, openSubjects, departmentPicker } = require('../support/subject
 const { PLOS, openAddForm: openOutcomeForm } = require('../support/plos-screen');
 const {
   PROGRAM_SUBJECTS,
-  openProgramSubjects,
   openAddForm: openPairForm,
 } = require('../support/program-subjects-screen');
 
@@ -481,7 +480,10 @@ test('the programme-subject form keeps what was chosen when the curricula arrive
   await holdBack(page, `^${REACH.programSubjects}$`, LATE_BY);
 
   await signIn(page, ACCOUNTS.committee0501);
-  await openProgramSubjects(page);
+  // A bare `goto`, for the outcome row's reason above: since 17 พ.ย. 2569 this list
+  // too is read *of* the curriculum the pool names, so waiting for it would
+  // close the window this row is about.
+  await page.goto(PROGRAM_SUBJECTS);
   expect(new URL(page.url()).pathname, 'the screen the form is opened on').toBe(PROGRAM_SUBJECTS);
 
   await openPairForm(page);

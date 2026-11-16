@@ -128,7 +128,7 @@ export default function ProgramSubjectForm({
   const set = key => event => setDraft(current => ({ ...current, [key]: event.target.value }))
 
   // The form's own flag and not the page's - #242. `plos/PloForm.js` carries the
-  // reasons; here the window is the same one, เพิ่มรายวิชาเข้าหลักสูตร being
+  // reasons; here the window is the same one, the bar's เพิ่มรายวิชา being
   // disabled by nothing while the list re-read a save ends with is out.
   const submit = event => {
     event.preventDefault()

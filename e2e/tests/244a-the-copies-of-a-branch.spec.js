@@ -205,17 +205,18 @@ test('an existing pair keeps its own curriculum even when that curriculum is ret
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openProgramSubjects(page);
 
-    // The precondition, asserted where it is used (#51) and counted on the
-    // option rather than read off a control that may not be there (#164): the
-    // filter is on no curriculum, so `defaultProgram` is `''` and `starting`
-    // is not this pair's curriculum. This is the whole difference between this
-    // row and row 3 — the list here is not per curriculum, so a pair filed in
-    // a retired one is listed while the form would pick nothing.
+    // The precondition, asserted where it is used (#51). Until 17 พ.ย. 2569 the list
+    // was on *ทุกหลักสูตร*, so `defaultProgram` was `''`; the owner's answer
+    // made the list one curriculum's, and it opens on the first - this retired
+    // one. `starting` is still not this pair's curriculum, because this form's
+    // pool leaves the retired curriculum out and so does not start on the
+    // filter's value (#234): the form re-picking would land on the one live
+    // curriculum. That is the difference from row 3, whose form is handed a
+    // filter value it does start on.
     await expect(
-      pairProgramFilter(page).locator('option[value=""]'),
-      'the list is drawn with no curriculum chosen',
-    ).toHaveCount(1);
-    await expect(pairProgramFilter(page), 'and that is the value it is on').toHaveValue('');
+      pairProgramFilter(page),
+      'the list is drawn of the retired curriculum',
+    ).toHaveValue(CURRICULUM);
 
     await openPairEditor(page, SUBJECT);
 
@@ -311,8 +312,9 @@ test('an existing pair still offers its own retired curriculum as a live choice'
   try {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openProgramSubjects(page);
-    await expect(pairProgramFilter(page), 'the list is drawn with no curriculum chosen').toHaveValue(
-      '',
+    // Of the retired curriculum, which the list opens on since 17 พ.ย. 2569 (row 2).
+    await expect(pairProgramFilter(page), 'the list is drawn of the retired curriculum').toHaveValue(
+      CURRICULUM,
     );
 
     await openPairEditor(page, SUBJECT);

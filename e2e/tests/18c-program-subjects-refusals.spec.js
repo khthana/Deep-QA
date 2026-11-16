@@ -112,19 +112,29 @@ test('row 8: the administrator above both curricula reaches both', async ({ page
     // A choice rather than a statement, which is the other face of the same
     // rule: two curricula are in reach, so the screen has to ask which is being
     // read.
+    // The owner's answer of 17 พ.ย. 2569: the work is done one curriculum at a time,
+    // so the list has no หลักสูตร column - read here, on the account that
+    // reaches two, where the column was the only thing telling rows apart.
+    await expect(
+      page.locator('table').first().locator('thead th'),
+      'the list has no หลักสูตร column',
+    ).toHaveText(['รหัสวิชา', 'ชื่อวิชา', 'หน่วยกิต', 'ประเภท', 'สถานะ', 'ดำเนินการ']);
+
+    // And the choice is of one curriculum at a time: no *ทุกหลักสูตร*, and the
+    // list opens on the first.
     const options = await offered(programFilter(page));
     expect(options, `${account} should be offered both curricula`).toEqual(
-      expect.arrayContaining(['', '0501', '0503']),
+      expect.arrayContaining(['0501', '0503']),
     );
+    expect(options, 'and never every curriculum at once').not.toContain('');
+    await expect(programFilter(page), 'the list opens on the first').toHaveValue('0501');
 
     // And reaching is not only listing. The editor reads the pair back from the
     // server, and a pair out of reach answers the same 404 as one that was
     // never made - so opening it on a row of each curriculum is the rule being
     // enforced rather than a menu being generous.
-    // Through the filter, which is also the only way to reach the second
-    // curriculum's rows: the list is ten to a page in `program_id, subject_id`
-    // order, so an unfiltered first page is 0501's.
-    await filterTo(page, '0501');
+    // Through the filter, which is the only way to reach the second
+    // curriculum's rows: the list is one curriculum's, and it opened on 0501.
     await openEditor(page, SEEDED);
     await page.getByRole('button', { name: 'ยกเลิก' }).click();
 

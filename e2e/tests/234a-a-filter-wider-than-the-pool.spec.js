@@ -235,6 +235,9 @@ test('the pair form does not open on the retired curriculum the list is filtered
   try {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openProgramSubjects(page);
+    // Moved away and back, for the rubric row's reason: since 17 พ.ย. 2569 the list
+    // opens on the first curriculum, which is this one.
+    await filterPairsTo(page, LIVE);
     await filterPairsTo(page, RETIRED);
 
     await expect(
