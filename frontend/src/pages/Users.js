@@ -920,13 +920,13 @@ export default function Users() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-3">รหัสผู้ใช้</th>
-                  <th className="px-4 py-3">ชื่อ-นามสกุล</th>
-                  <th className="px-4 py-3">อีเมล</th>
-                  <th className="px-4 py-3">บทบาท</th>
-                  <th className="px-4 py-3">ช่วงเวลาใช้งาน</th>
-                  <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
+                  <th className="px-4 py-2">รหัสผู้ใช้</th>
+                  <th className="px-4 py-2">ชื่อ-นามสกุล</th>
+                  <th className="px-4 py-2">อีเมล</th>
+                  <th className="px-4 py-2">บทบาท</th>
+                  <th className="px-4 py-2">ช่วงเวลาใช้งาน</th>
+                  <th className="px-4 py-2">สถานะ</th>
+                  <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -947,12 +947,12 @@ export default function Users() {
                 {!loading &&
                   data.users.map(user => (
                     <tr key={user.user_id}>
-                      <td className="px-4 py-3">{user.user_id}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">{user.user_id}</td>
+                      <td className="px-4 py-2">
                         {personName(user)}
                       </td>
-                      <td className="px-4 py-3">{user.email}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">{user.email}</td>
+                      <td className="px-4 py-2">
                         {(user.roles ?? [])
                           .map(
                             grant =>
@@ -963,8 +963,8 @@ export default function Users() {
                           )
                           .join(', ') || '—'}
                       </td>
-                      <td className="px-4 py-3">{windowOf(user)}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">{windowOf(user)}</td>
+                      <td className="px-4 py-2">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs ${
                             STATUS[user.status]?.className ?? ''
@@ -973,7 +973,7 @@ export default function Users() {
                           {STATUS[user.status]?.label ?? user.status}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td className="whitespace-nowrap px-4 py-2">
                         <RowActions>
                           <RowAction
                             kind="edit"

@@ -428,11 +428,11 @@ export default function StudentResults() {
                 </caption>
                 <thead className="border-b border-gray-200 text-xs text-slate-500">
                   <tr>
-                    <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
+                    <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
                     {series.map(one => (
                       <th
                         key={one.label}
-                        className="px-4 py-3 text-center font-medium"
+                        className="px-4 py-2 text-center font-medium"
                       >
                         {one.label}
                         {one.name && (

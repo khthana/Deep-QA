@@ -227,14 +227,14 @@ export default function OutcomeActivityMapping() {
                   <table className="w-full min-w-[36rem] text-left text-sm">
                     <thead className="border-b border-gray-200 text-xs text-slate-500">
                       <tr>
-                        <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
-                        <th className="px-4 py-3 text-center font-medium">
+                        <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
+                        <th className="px-4 py-2 text-center font-medium">
                           คะแนนเฉลี่ย (เต็ม 5)
                         </th>
-                        <th className="px-4 py-3 text-center font-medium">
+                        <th className="px-4 py-2 text-center font-medium">
                           กิจกรรมที่วัด
                         </th>
-                        <th className="px-4 py-3 text-center font-medium">
+                        <th className="px-4 py-2 text-center font-medium">
                           คะแนนที่ผูกไว้
                         </th>
                       </tr>
@@ -245,7 +245,7 @@ export default function OutcomeActivityMapping() {
                           key={clo.clo_id}
                           className="border-b border-gray-100 align-top"
                         >
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <span className="flex gap-2">
                               <span
                                 className="mt-1.5 inline-block h-3 w-3 shrink-0 rounded-sm"
@@ -263,7 +263,7 @@ export default function OutcomeActivityMapping() {
                           </td>
                           <td
                             aria-label={`เฉลี่ย ${clo.clo_number} ${score(clo.mean)}`}
-                            className="px-4 py-3 text-center text-slate-600"
+                            className="px-4 py-2 text-center text-slate-600"
                           >
                             <span className="block font-semibold">
                               {score(clo.mean)}
@@ -274,11 +274,11 @@ export default function OutcomeActivityMapping() {
                           </td>
                           <td
                             aria-label={`จำนวนกิจกรรม ${clo.clo_number} ${clo.link_count}`}
-                            className="px-4 py-3 text-center text-slate-600"
+                            className="px-4 py-2 text-center text-slate-600"
                           >
                             {clo.link_count}
                           </td>
-                          <td className="px-4 py-3 text-center text-slate-600">
+                          <td className="px-4 py-2 text-center text-slate-600">
                             {marks(clo.marks)}
                           </td>
                         </tr>
@@ -300,13 +300,13 @@ export default function OutcomeActivityMapping() {
                   <table className="w-full min-w-[40rem] text-left text-sm">
                     <thead className="border-b border-gray-200 text-xs text-slate-500">
                       <tr>
-                        <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
-                        <th className="px-4 py-3 font-medium">กิจกรรม</th>
-                        <th className="px-4 py-3 font-medium">หมวดคะแนน</th>
-                        <th className="px-4 py-3 text-center font-medium">
+                        <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
+                        <th className="px-4 py-2 font-medium">กิจกรรม</th>
+                        <th className="px-4 py-2 font-medium">หมวดคะแนน</th>
+                        <th className="px-4 py-2 text-center font-medium">
                           น้ำหนัก
                         </th>
-                        <th className="px-4 py-3 text-center font-medium">
+                        <th className="px-4 py-2 text-center font-medium">
                           คะแนน
                         </th>
                       </tr>

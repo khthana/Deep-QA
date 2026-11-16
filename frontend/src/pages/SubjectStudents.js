@@ -528,10 +528,10 @@ export default function SubjectStudents() {
               <table className="w-full min-w-[36rem] text-left text-sm">
                 <thead className="border-b border-gray-200 text-xs text-slate-500">
                   <tr>
-                    <th className="px-4 py-3 font-medium">รหัสนักศึกษา</th>
-                    <th className="px-4 py-3 font-medium">ชื่อ - นามสกุล</th>
-                    <th className="px-4 py-3 font-medium">หลักสูตร</th>
-                    <th className="px-4 py-3 text-center font-medium">ดำเนินการ</th>
+                    <th className="px-4 py-2 font-medium">รหัสนักศึกษา</th>
+                    <th className="px-4 py-2 font-medium">ชื่อ - นามสกุล</th>
+                    <th className="px-4 py-2 font-medium">หลักสูตร</th>
+                    <th className="px-4 py-2 text-center font-medium">ดำเนินการ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -568,16 +568,16 @@ export default function SubjectStudents() {
                         key={student.student_id}
                         className="border-b border-gray-100 last:border-0"
                       >
-                        <td className="px-4 py-3 text-gray-800">
+                        <td className="px-4 py-2 text-gray-800">
                           {student.student_id}
                         </td>
-                        <td className="px-4 py-3 text-gray-800">
+                        <td className="px-4 py-2 text-gray-800">
                           {student.full_name_th}
                         </td>
-                        <td className="px-4 py-3 text-slate-600">
+                        <td className="px-4 py-2 text-slate-600">
                           {student.program_name_th ?? student.program_id}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-2">
                           <RowActions>
                             <RowAction
                               kind="remove"

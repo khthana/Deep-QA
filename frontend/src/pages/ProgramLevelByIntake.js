@@ -274,13 +274,13 @@ export default function ProgramLevelByIntake() {
                 <table className="w-full min-w-[48rem] text-left text-sm">
                   <thead className="border-b border-gray-200 text-xs text-slate-500">
                     <tr>
-                      <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
-                      <th className="px-4 py-3 text-center font-medium">ประเภท</th>
-                      <th className="px-4 py-3 text-center font-medium">จำนวนที่วัดได้</th>
-                      <th className="px-4 py-3 text-center font-medium">คะแนนเฉลี่ย</th>
-                      <th className="px-4 py-3 text-center font-medium">อัตราผ่านเกณฑ์</th>
-                      <th className="px-4 py-3 text-center font-medium">ผ่าน</th>
-                      <th className="px-4 py-3 text-center font-medium">ที่มา</th>
+                      <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
+                      <th className="px-4 py-2 text-center font-medium">ประเภท</th>
+                      <th className="px-4 py-2 text-center font-medium">จำนวนที่วัดได้</th>
+                      <th className="px-4 py-2 text-center font-medium">คะแนนเฉลี่ย</th>
+                      <th className="px-4 py-2 text-center font-medium">อัตราผ่านเกณฑ์</th>
+                      <th className="px-4 py-2 text-center font-medium">ผ่าน</th>
+                      <th className="px-4 py-2 text-center font-medium">ที่มา</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -289,17 +289,17 @@ export default function ProgramLevelByIntake() {
                       const look = BANDS[plo.band]
                       return (
                         <tr key={plo.outcome_id} className="align-top">
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-2">
                             <p className="font-medium text-slate-700">{plo.outcome_code}</p>
                             <p className="text-xs text-slate-500">{plo.outcome_title}</p>
                           </td>
-                          <td className="px-4 py-3 text-center text-xs text-slate-500">
+                          <td className="px-4 py-2 text-center text-xs text-slate-500">
                             {OUTCOME_TYPES[plo.outcome_type] || plo.outcome_type}
                           </td>
-                          <td className="px-4 py-3 text-center text-slate-600">
+                          <td className="px-4 py-2 text-center text-slate-600">
                             {plo.student_count}
                           </td>
-                          <td className="px-4 py-3 text-center">
+                          <td className="px-4 py-2 text-center">
                             <span
                               className={`inline-block w-full rounded-md px-2 py-1.5 text-xs font-medium ${
                                 look ? look.cell : 'bg-slate-50 text-slate-400'
@@ -308,10 +308,10 @@ export default function ProgramLevelByIntake() {
                               {score(plo.mean)}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-center text-slate-600">
+                          <td className="px-4 py-2 text-center text-slate-600">
                             {figure(plo.pass_rate, '%')}
                           </td>
-                          <td className="px-4 py-3 text-center">
+                          <td className="px-4 py-2 text-center">
                             <span
                               aria-label={spoken(plo)}
                               className={`inline-block rounded-md px-2 py-1.5 text-xs font-medium ${mark.look}`}
@@ -319,7 +319,7 @@ export default function ProgramLevelByIntake() {
                               {mark.text}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-center">
+                          <td className="px-4 py-2 text-center">
                             <button
                               type="button"
                               onClick={() => toggle(plo)}

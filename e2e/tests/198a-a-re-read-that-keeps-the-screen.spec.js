@@ -7,14 +7,14 @@ const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { BACKEND_URL } = require('../support/env');
 const { committeeLabel, actingButton, switchTo } = require('../support/shell');
-const { statedLabel } = require('../support/stated-label');
-const { PROGRAMS } = require('../../db/seed');
+const { RUBRICS: FIRST_RUBRICS, RUBRICS_INTL: SECOND_RUBRICS } = require('../../db/seed');
 const {
   RUBRICS,
   API,
   listedCodes,
   openAddForm,
   openRubrics,
+  rubricRow,
 } = require('../support/rubrics-screen');
 const { DASHBOARD, API: TEACHING_API } = require('../support/teaching-screen');
 
@@ -105,10 +105,18 @@ const REACHABLE = `${API}/programs`;
 /** A code nothing in the seed carries, so finding it is finding what was typed. */
 const TYPED = 'RUB-198';
 
-/** What the screen says it is in, before the switch and after it. */
-const nameOf = id => PROGRAMS.find(program => program.id === id).th;
-const inFirst = page => statedLabel(page, 'หลักสูตร', nameOf(FIRST_SCOPE));
-const inSecond = page => statedLabel(page, 'หลักสูตร', nameOf(SECOND_SCOPE));
+/**
+ * Which curriculum the screen is drawing, before the switch and after it: the
+ * first-ordered seeded rubric of each, which only that curriculum's list holds
+ * (`rubrics.rubric_code` is unique across the institution) and which the first
+ * page always draws. Until 16 พ.ย. 2569 these read the curriculum's name stated
+ * beside หลักสูตร; the owner's answer took that statement off the screen, and
+ * what the list draws is the reading that is left - the list is read for the
+ * curriculum the reachable list names, so it says the same thing one step on.
+ */
+const firstOrdered = rubrics => [...rubrics].sort((a, b) => a.order - b.order)[0].code;
+const inFirst = page => rubricRow(page, firstOrdered(FIRST_RUBRICS));
+const inSecond = page => rubricRow(page, firstOrdered(SECOND_RUBRICS));
 
 /**
  * The second committee grant both this file's situations are reached through,
@@ -278,10 +286,12 @@ test('and the curricula the screen may place a rubric in are read again too', as
   await signIn(page, ACCOUNTS.multiRole);
   await openRubrics(page);
 
-  // A committee member reaches one curriculum, which the screen states beside
-  // หลักสูตร rather than offering. Until #276 the form's select was read here,
-  // as the one control drawing every reachable curriculum whatever the count;
-  // the form has no curriculum now, and the statement is that list drawn.
+  // A committee member reaches one curriculum, which the screen neither
+  // offers nor, since 16 พ.ย. 2569, states. Until #276 the form's select was
+  // read here, as the one control drawing every reachable curriculum whatever
+  // the count; then the statement beside หลักสูตร was that list drawn. Now no
+  // drawing holds the list itself, so what is read is the rubric list it
+  // chose, which is read for the curriculum the reachable list names.
   await expect(
     inFirst(page),
     'the curriculum of the hat being taken off, which makes this read a green one first (#171)',
@@ -301,10 +311,13 @@ test('and the curricula the screen may place a rubric in are read again too', as
   // list that had gained the new curriculum and kept the old one would be a
   // different defect — the server decides what is in reach (ADR-0002) and a
   // committee member reaches exactly one.
-  await expect(inSecond(page), 'the curriculum the new grant reaches is stated').toBeVisible({
+  await expect(inSecond(page), 'the curriculum the new grant reaches is drawn').toBeVisible({
     timeout: 15_000,
   });
   await expect(inFirst(page), 'and the one it does not reach is gone').toHaveCount(0);
+  // A pool that had gained the new curriculum and kept the old one draws a
+  // choice of two, which is the half the list alone cannot say.
+  await expect(page.getByRole('combobox'), 'and no choice of two is offered').toHaveCount(0);
 
   // The mechanism underneath the drawing, said out loud: the screen asked.
   expect(asked.length, 'the curricula in reach were asked for again').toBeGreaterThan(0);

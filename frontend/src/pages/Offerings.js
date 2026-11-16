@@ -832,8 +832,11 @@ export default function Offerings() {
               {/* A picker when there is a choice to make, and a statement of
                   where one is when there is not — ข้อมูลรายวิชา's control, for
                   ข้อมูลรายวิชา's reasons. A กรรมการหลักสูตร reaches one
-                  programme and is shown which. */}
-              {programs.length > 1 ? (
+                  programme and is shown which.
+                  Since 16 พ.ย. 2569 an account reaching one curriculum is shown
+                  nothing - the owner's answer: the work is done one department at
+                  a time, so the name told nobody anything (Rubrics.js, the same day). */}
+              {programs.length > 1 && (
                 <label className="flex items-center gap-2 text-sm text-slate-600">
                   หลักสูตร
                   <select
@@ -852,15 +855,6 @@ export default function Offerings() {
                     ))}
                   </select>
                 </label>
-              ) : (
-                programs.length === 1 && (
-                  <span className="flex items-center gap-2 text-sm text-slate-600">
-                    หลักสูตร
-                    <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                      {programs[0].program_name_th}
-                    </span>
-                  </span>
-                )
               )}
 
               <label className="flex items-center gap-2 text-sm text-slate-600">
@@ -916,13 +910,13 @@ export default function Offerings() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-3">รหัสวิชา</th>
-                  <th className="px-4 py-3">ชื่อวิชา</th>
-                  <th className="px-4 py-3">ปีการศึกษา</th>
-                  <th className="px-4 py-3">ภาคการศึกษา</th>
-                  <th className="px-4 py-3">ตอนเรียน</th>
-                  <th className="px-4 py-3">หลักสูตร</th>
-                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
+                  <th className="px-4 py-2">รหัสวิชา</th>
+                  <th className="px-4 py-2">ชื่อวิชา</th>
+                  <th className="px-4 py-2">ปีการศึกษา</th>
+                  <th className="px-4 py-2">ภาคการศึกษา</th>
+                  <th className="px-4 py-2">ตอนเรียน</th>
+                  <th className="px-4 py-2">หลักสูตร</th>
+                  <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -943,24 +937,24 @@ export default function Offerings() {
                 {!loading &&
                   data.offerings.map(offering => (
                     <tr key={offering.id}>
-                      <td className="px-4 py-3 font-medium text-gray-900">
+                      <td className="px-4 py-2 font-medium text-gray-900">
                         {offering.subject_id}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         {offering.subject_name_th}
                         <span className="block text-xs text-slate-500">
                           {offering.subject_name_en}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{offering.academic_year}</td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td className="px-4 py-2 text-slate-500">{offering.academic_year}</td>
+                      <td className="px-4 py-2 text-slate-500">
                         {offering.semester} — {semesterLabel(offering.semester)}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td className="px-4 py-2 text-slate-500">
                         {offering.section_count} ตอน
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{nameOf(offering.program_id)}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2 text-slate-500">{nameOf(offering.program_id)}</td>
+                      <td className="px-4 py-2">
                         <RowActions>
                           <RowAction
                             kind="open"

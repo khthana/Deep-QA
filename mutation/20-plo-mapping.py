@@ -65,6 +65,14 @@ curriculum, still opens, and shows a row of empty boxes where the Thai was.
 | `bigtype` | **ทำอะไรพัง** ตั้งเป็น 20pt — ยกขนาดโดยไม่ถามว่าคอลัมน์จ่ายอะไร | **แถวที่ตาย** รหัสพอดีคอลัมน์ **และ**คอลัมน์รายวิชา — ตายสองแถว ดูย่อหน้าใต้ตาราง · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:242` `docs/acceptance/20-outcome-to-subject-mapping.md:93` `docs/acceptance/20-outcome-to-subject-mapping.md:94` |
 | `narrowsubject` | **ทำอะไรพัง** บีบ `SUBJECT_WIDTH` จาก 72mm เหลือ 30mm | **แถวที่ตาย** คอลัมน์ *รายวิชา* ยังอ่านได้ทั้งรหัสและชื่อไทย (ตายตัวเดียว) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:243` `docs/acceptance/20-outcome-to-subject-mapping.md:94` |
 | `narrowpage` | **ทำอะไรพัง** ตั้ง `OUTCOME_WIDTH` กลับไปที่ 9mm คืออัตราที่หน้าโตต่อหนึ่งคอลัมน์ก่อน #103 | **แถวที่ตาย** หลักสูตรที่มียี่สิบข้อ (ตายตัวเดียว) · ที่มา `docs/acceptance/20-outcome-to-subject-mapping.md:244` `docs/acceptance/20-outcome-to-subject-mapping.md:356` `docs/acceptance/20-outcome-to-subject-mapping.md:95` |
+
+## คำทำนาย (16 พ.ย. 2569) — เขียนก่อนรัน
+
+คำตอบของเจ้าของวันนี้เอาข้อความ *หลักสูตร <ชื่อ>* ของบัญชีหลักสูตรเดียวออก เพราะงานทำทีละภาควิชาอยู่แล้ว มัตแตนต์ของตารางนี้คือข้อความนั้นกลับมา — โค้ดที่ถูกเอาออก (#48)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
+|---|---|---|
+| `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร <ชื่อ>* อีกครั้ง | **แถวที่ตาย** `20a` *the grid draws every subject of the curriculum against every ข้อหลัก of it* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0)` · ข้อยืนยันเหนือมันอ่านตาราง ซึ่งมัตแตนต์ไม่แตะ |
 """
 
 from harness import main
@@ -76,6 +84,23 @@ FILES = {
 }
 
 MUTANTS = {
+    # The owner's answer of 16 พ.ย. 2569: one curriculum in reach is not
+    # stated. The statement the answer took away comes back (#48).
+    "statesprogram": (
+        "screen",
+        "            </label>\n"
+        "          )}\n",
+        "            </label>\n"
+        "          )}\n"
+        "          {programs.length === 1 && (\n"
+        "            <span className=\"flex items-center gap-2 text-sm text-slate-600\">\n"
+        "              หลักสูตร\n"
+        "              <span className=\"rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900\">\n"
+        "                {programs[0].program_name_th}\n"
+        "              </span>\n"
+        "            </span>\n"
+        "          )}\n",
+    ),
     # The outcome axis stops being ข้อหลัก-only and every ข้อย่อย becomes a
     # column of its own again - the grain the rebuild had before #100, and the
     # fifty-two-column page that ticket was opened over.
@@ -174,8 +199,8 @@ MUTANTS = {
     # carried over: 1 failed, 7 passed, the death on *the grid scrolls inside
     # its own frame, and the subject column stays put*.
     "nosticky": ("screen",
-                 'className="sticky left-0 z-10 bg-white px-4 py-3"',
-                 'className="z-10 bg-white px-4 py-3"'),
+                 'className="sticky left-0 z-10 bg-white px-4 py-2"',
+                 'className="z-10 bg-white px-4 py-2"'),
 
     # The reach check on the read is dropped, so a committee member is handed
     # another curriculum's coverage. Kills the sixth criterion's row at the 403,

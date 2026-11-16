@@ -126,9 +126,9 @@ export default function GroupHistory({ fetchPage, onError }) {
         <table className="w-full min-w-[36rem] text-left text-sm">
           <thead className="border-b border-gray-200 text-xs text-slate-500">
             <tr>
-              <th className="px-4 py-3 font-medium">เมื่อ</th>
-              <th className="px-4 py-3 font-medium">สิ่งที่เกิดขึ้น</th>
-              <th className="px-4 py-3 font-medium">โดย</th>
+              <th className="px-4 py-2 font-medium">เมื่อ</th>
+              <th className="px-4 py-2 font-medium">สิ่งที่เกิดขึ้น</th>
+              <th className="px-4 py-2 font-medium">โดย</th>
             </tr>
           </thead>
           <tbody>
@@ -149,11 +149,11 @@ export default function GroupHistory({ fetchPage, onError }) {
             {!loading &&
               history.entries.map(entry => (
                 <tr key={entry.log_id} className="border-b border-gray-100 last:border-0">
-                  <td className="whitespace-nowrap px-4 py-3 text-slate-600">
+                  <td className="whitespace-nowrap px-4 py-2 text-slate-600">
                     {happenedAt(entry.created_at)}
                   </td>
-                  <td className="px-4 py-3 text-gray-800">{readsAs(entry)}</td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-2 text-gray-800">{readsAs(entry)}</td>
+                  <td className="px-4 py-2 text-slate-600">
                     {entry.performed_by_name || entry.performed_by || '—'}
                   </td>
                 </tr>

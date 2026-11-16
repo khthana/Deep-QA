@@ -547,11 +547,11 @@ export default function Students() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-3">รหัสนักศึกษา</th>
-                  <th className="px-4 py-3">ชื่อ - นามสกุล</th>
-                  <th className="px-4 py-3">หลักสูตร</th>
-                  <th className="px-4 py-3">ปีที่เข้าศึกษา</th>
-                  <th className="px-4 py-3">สถานะ</th>
+                  <th className="px-4 py-2">รหัสนักศึกษา</th>
+                  <th className="px-4 py-2">ชื่อ - นามสกุล</th>
+                  <th className="px-4 py-2">หลักสูตร</th>
+                  <th className="px-4 py-2">ปีที่เข้าศึกษา</th>
+                  <th className="px-4 py-2">สถานะ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -576,13 +576,13 @@ export default function Students() {
                 {!loading &&
                   data.students.map(student => (
                     <tr key={student.student_id}>
-                      <td className="px-4 py-3 font-medium text-gray-900">{student.student_id}</td>
-                      <td className="px-4 py-3">{student.full_name_th}</td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td className="px-4 py-2 font-medium text-gray-900">{student.student_id}</td>
+                      <td className="px-4 py-2">{student.full_name_th}</td>
+                      <td className="px-4 py-2 text-slate-500">
                         {programNameOf(student.program_id)}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{student.admission_year}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2 text-slate-500">{student.admission_year}</td>
+                      <td className="px-4 py-2">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs ${
                             student.status === 'active'

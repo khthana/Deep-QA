@@ -22,6 +22,7 @@ const {
   exportPdf,
 } = require('../support/plo-mapping-screen');
 const { isReadable, linesOf, cellsOf, overflows } = require('../support/pdf-text');
+const { statedLabel } = require('../support/stated-label');
 
 /**
  * #20 — การเชื่อมโยงผลการเรียนรู้กับรายวิชา, the coverage grid, in a browser.
@@ -193,6 +194,12 @@ test('the grid draws every subject of the curriculum against every ข้อห�
   // filled and one that drew every square empty would each pass on one of them.
   await expect(square(page, SEEDED_SUBJECT, SEEDED.code)).toHaveValue(SEEDED.level);
   await expect(square(page, SEEDED_SUBJECT, 'PLO-4')).toHaveValue('');
+
+  // The owner's answer of 16 พ.ย. 2569: a กรรมการหลักสูตร reaches one
+  // curriculum and is not told its name, the work being done one department
+  // at a time. Read after the grid, which is read for the curriculum the
+  // reachable list names, so the absence is of a screen that has it (#50).
+  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0);
 });
 
 test('a level chosen in a square is written, and survives a reload', async ({ page }) => {

@@ -238,8 +238,11 @@ export default function PloMapping() {
               for its reasons. A กรรมการหลักสูตร reaches one curriculum and is
               shown which. There is no ทุกหลักสูตร here, unlike that screen: the
               columns of one curriculum are not the columns of another, so there
-              is no grid of all of them to show. */}
-          {programs.length > 1 ? (
+              is no grid of all of them to show.
+              Since 16 พ.ย. 2569 an account reaching one curriculum is shown
+              nothing - the owner's answer: the work is done one department at
+              a time, so the name told nobody anything (Rubrics.js, the same day). */}
+          {programs.length > 1 && (
             <label className="flex items-center gap-2 text-sm text-slate-600">
               หลักสูตร
               <select
@@ -254,15 +257,6 @@ export default function PloMapping() {
                 ))}
               </select>
             </label>
-          ) : (
-            programs.length === 1 && (
-              <span className="flex items-center gap-2 text-sm text-slate-600">
-                หลักสูตร
-                <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                  {programs[0].program_name_th}
-                </span>
-              </span>
-            )
           )}
           <button
             type="button"
@@ -300,14 +294,14 @@ export default function PloMapping() {
         <table className="w-full text-left text-sm">
           <thead className="bg-gray-50 text-gray-600">
             <tr>
-              <th className="sticky left-0 z-10 min-w-[16rem] bg-gray-50 px-4 py-3">
+              <th className="sticky left-0 z-10 min-w-[16rem] bg-gray-50 px-4 py-2">
                 รายวิชา
               </th>
               {grid.outcomes.map(outcome => (
                 <th
                   key={outcome.outcome_id}
                   title={`${outcome.outcome_code} ${outcome.outcome_title}`}
-                  className="whitespace-nowrap px-2 py-3 text-center text-xs font-semibold text-gray-800"
+                  className="whitespace-nowrap px-2 py-2 text-center text-xs font-semibold text-gray-800"
                 >
                   {outcome.outcome_code}
                 </th>
@@ -351,7 +345,7 @@ export default function PloMapping() {
             {!loading &&
               grid.subjects.map(subject => (
                 <tr key={subject.subject_id}>
-                  <td className="sticky left-0 z-10 bg-white px-4 py-3">
+                  <td className="sticky left-0 z-10 bg-white px-4 py-2">
                     <span className="text-gray-900">{subject.subject_id}</span>
                     <span className="block text-xs text-slate-500">
                       {subject.subject_name_th}

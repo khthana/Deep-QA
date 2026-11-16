@@ -128,16 +128,16 @@ MUTANTS = {
     # it; the table stops drawing it.
     "weightnotshown": (
         "page",
-        "                      <td className=\"px-4 py-3 text-slate-500\">{criterion.weight}</td>",
-        "                      <td className=\"px-4 py-3 text-slate-500\" />",
+        "                      <td className=\"px-4 py-2 text-slate-500\">{criterion.weight}</td>",
+        "                      <td className=\"px-4 py-2 text-slate-500\" />",
     ),
     # Row 2, second half — all four bands are on the row. Only the top one is
     # drawn, which is exactly the half-written rubric the ticket's third
     # criterion exists to prevent, made by the screen instead of by the writer.
     "bandsnotshown": (
         "page",
-        "                      {BANDS.map(band => (\n                        <td key={band.key} className=\"min-w-48 px-4 py-3 text-slate-600\">",
-        "                      {BANDS.slice(0, 1).map(band => (\n                        <td key={band.key} className=\"min-w-48 px-4 py-3 text-slate-600\">",
+        "                      {BANDS.map(band => (\n                        <td key={band.key} className=\"min-w-48 px-4 py-2 text-slate-600\">",
+        "                      {BANDS.slice(0, 1).map(band => (\n                        <td key={band.key} className=\"min-w-48 px-4 py-2 text-slate-600\">",
     ),
     # Row 3, first half — the list is in the stated order, not in the order of
     # the names. Both parameters of this statement are still spent: it binds

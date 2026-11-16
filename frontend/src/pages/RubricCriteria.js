@@ -302,15 +302,15 @@ export default function RubricCriteria() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-3">เกณฑ์การประเมิน</th>
-                  <th className="px-4 py-3">น้ำหนัก</th>
-                  <th className="px-4 py-3">ลำดับ</th>
+                  <th className="px-4 py-2">เกณฑ์การประเมิน</th>
+                  <th className="px-4 py-2">น้ำหนัก</th>
+                  <th className="px-4 py-2">ลำดับ</th>
                   {BANDS.map(band => (
-                    <th key={band.key} className="px-4 py-3">
+                    <th key={band.key} className="px-4 py-2">
                       {band.label}
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
+                  <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -336,20 +336,20 @@ export default function RubricCriteria() {
                           name is the only thing a person recognises it by, and
                           ลำดับ could not do that job: two criteria may hold the
                           same one. */}
-                      <td className="px-4 py-3 font-bold text-gray-900">
+                      <td className="px-4 py-2 font-bold text-gray-900">
                         {criterion.criteria_name_th}
                         <span className="block text-xs font-normal text-slate-500">
                           {criterion.criteria_name_en}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{criterion.weight}</td>
-                      <td className="px-4 py-3 text-slate-500">{criterion.display_order}</td>
+                      <td className="px-4 py-2 text-slate-500">{criterion.weight}</td>
+                      <td className="px-4 py-2 text-slate-500">{criterion.display_order}</td>
                       {BANDS.map(band => (
-                        <td key={band.key} className="min-w-48 px-4 py-3 text-slate-600">
+                        <td key={band.key} className="min-w-48 px-4 py-2 text-slate-600">
                           {criterion[band.key]}
                         </td>
                       ))}
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         <RowActions>
                           <RowAction
                             kind="edit"

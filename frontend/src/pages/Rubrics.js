@@ -523,12 +523,13 @@ export default function Rubrics() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-lg font-medium text-primary">ข้อมูล Rubric กลาง</h1>
         <div className="flex flex-wrap items-center gap-3">
-          {/* A picker when there is a choice to make, and a statement of
-              where one is when there is not — ผลการเรียนรู้ระดับหลักสูตร's
-              control, for its reasons. A กรรมการหลักสูตร reaches one
-              curriculum and is shown which. No *ทุกหลักสูตร* since #276: the
-              list is one curriculum's. */}
-          {programs.length > 1 ? (
+          {/* A picker when there is a choice to make, and nothing when
+              there is not. A กรรมการหลักสูตร reaches one curriculum, and the
+              statement of which - ผลการเรียนรู้ระดับหลักสูตร's control - went
+              on 16 พ.ย. 2569 by the owner's answer: the work is done one
+              department at a time, so the name told nobody anything. No
+              *ทุกหลักสูตร* since #276: the list is one curriculum's. */}
+          {programs.length > 1 && (
             <label className="flex items-center gap-2 text-sm text-slate-600">
               หลักสูตร
               <select
@@ -548,15 +549,6 @@ export default function Rubrics() {
                 ))}
               </select>
             </label>
-          ) : (
-            programs.length === 1 && (
-              <span className="flex items-center gap-2 text-sm text-slate-600">
-                หลักสูตร
-                <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                  {programs[0].program_name_th}
-                </span>
-              </span>
-            )
           )}
           <button
             type="button"
@@ -593,11 +585,11 @@ export default function Rubrics() {
                 characters (`rubrics.rubric_code varchar(20)`), and ลำดับ is a
                 whole number nobody needs four digits of. */}
             <tr>
-              <th className="w-20 px-4 py-3">ลำดับ</th>
-              <th className="w-40 px-4 py-3">รหัส</th>
-              <th className="px-4 py-3">ชื่อภาษาไทย</th>
-              <th className="px-4 py-3">ชื่อภาษาอังกฤษ</th>
-              <th className="px-4 py-3 text-center">ดำเนินการ</th>
+              <th className="w-20 px-4 py-2">ลำดับ</th>
+              <th className="w-40 px-4 py-2">รหัส</th>
+              <th className="px-4 py-2">ชื่อภาษาไทย</th>
+              <th className="px-4 py-2">ชื่อภาษาอังกฤษ</th>
+              <th className="px-4 py-2 text-center">ดำเนินการ</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -636,11 +628,11 @@ export default function Rubrics() {
                         apart (`e2e/support/rubrics-screen.js`, `CODE_CELL`):
                         ลำดับ could not do that job, two rubrics may hold the
                         same one. */}
-                    <td className="px-4 py-3 text-slate-500">{rubric.display_order}</td>
-                    <td className="px-4 py-3 font-bold text-gray-900">{rubric.rubric_code}</td>
-                    <td className="px-4 py-3">{rubric.rubric_name_th}</td>
-                    <td className="px-4 py-3 text-slate-500">{rubric.rubric_name_en}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2 text-slate-500">{rubric.display_order}</td>
+                    <td className="px-4 py-2 font-bold text-gray-900">{rubric.rubric_code}</td>
+                    <td className="px-4 py-2">{rubric.rubric_name_th}</td>
+                    <td className="px-4 py-2 text-slate-500">{rubric.rubric_name_en}</td>
+                    <td className="px-4 py-2">
                       {/* The delivered order - ดู แก้ไข ลบ (#276). The eye is the
                           fifth criterion's way in, and it carries the rubric:
                           the criteria screen is told which by its address. */}

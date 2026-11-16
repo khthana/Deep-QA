@@ -511,12 +511,12 @@ export default function Programs() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-3">รหัสหลักสูตร</th>
-                  <th className="px-4 py-3">ชื่อหลักสูตร</th>
-                  <th className="px-4 py-3">ภาควิชา</th>
-                  <th className="px-4 py-3">ปีหลักสูตร</th>
-                  <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
+                  <th className="px-4 py-2">รหัสหลักสูตร</th>
+                  <th className="px-4 py-2">ชื่อหลักสูตร</th>
+                  <th className="px-4 py-2">ภาควิชา</th>
+                  <th className="px-4 py-2">ปีหลักสูตร</th>
+                  <th className="px-4 py-2">สถานะ</th>
+                  <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -537,8 +537,8 @@ export default function Programs() {
                 {!loading &&
                   data.programs.map(program => (
                     <tr key={program.program_id}>
-                      <td className="px-4 py-3 font-medium text-gray-900">{program.program_id}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2 font-medium text-gray-900">{program.program_id}</td>
+                      <td className="px-4 py-2">
                         {program.program_name_th}
                         {program.program_name_en && (
                           <span className="block text-xs text-slate-500">
@@ -546,11 +546,11 @@ export default function Programs() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td className="px-4 py-2 text-slate-500">
                         {nameOf(program.department_id)}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{program.revision_year ?? '—'}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2 text-slate-500">{program.revision_year ?? '—'}</td>
+                      <td className="px-4 py-2">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs ${
                             program.is_active
@@ -561,7 +561,7 @@ export default function Programs() {
                           {program.is_active ? 'ใช้งานอยู่' : 'ปิดใช้งาน'}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         <RowActions>
                           <RowAction
                             kind="edit"

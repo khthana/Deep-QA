@@ -185,22 +185,22 @@ export default function CloAssessment() {
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-200 text-xs text-slate-400">
-                      <th className="px-4 py-3 text-left font-medium">
+                      <th className="px-4 py-2 text-left font-medium">
                         ผลการเรียนรู้
                       </th>
-                      <th className="px-4 py-3 text-left font-medium">
+                      <th className="px-4 py-2 text-left font-medium">
                         เกณฑ์การบรรลุ
                       </th>
-                      <th className="px-4 py-3 text-right font-medium">
+                      <th className="px-4 py-2 text-right font-medium">
                         ผ่าน / ผู้มีคะแนน
                       </th>
-                      <th className="px-4 py-3 text-right font-medium">
+                      <th className="px-4 py-2 text-right font-medium">
                         ร้อยละ
                       </th>
-                      <th className="px-4 py-3 text-right font-medium">
+                      <th className="px-4 py-2 text-right font-medium">
                         คะแนนเฉลี่ย (เต็ม {data.rule.scale})
                       </th>
-                      <th className="px-4 py-3 text-center font-medium">
+                      <th className="px-4 py-2 text-center font-medium">
                         ผลการประเมิน
                       </th>
                     </tr>
@@ -211,7 +211,7 @@ export default function CloAssessment() {
                         key={clo.clo_id}
                         className="border-b border-gray-100 align-top last:border-0"
                       >
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-2">
                           <span className="font-medium text-slate-700">
                             {clo.clo_number}
                           </span>
@@ -219,29 +219,29 @@ export default function CloAssessment() {
                             {clo.clo_detail}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-xs text-slate-500">
+                        <td className="px-4 py-2 text-xs text-slate-500">
                           {ruleScore}
                           <span className="block">และ{ruleShare}</span>
                         </td>
                         <td
-                          className="px-4 py-3 text-right tabular-nums text-slate-700"
+                          className="px-4 py-2 text-right tabular-nums text-slate-700"
                           aria-label={`ผ่าน ${clo.clo_number} ${clo.passed_count} จาก ${clo.student_count}`}
                         >
                           {clo.passed_count} / {clo.student_count}
                         </td>
                         <td
-                          className="px-4 py-3 text-right font-medium tabular-nums text-slate-700"
+                          className="px-4 py-2 text-right font-medium tabular-nums text-slate-700"
                           aria-label={`ร้อยละ ${clo.clo_number} ${figure(clo.pass_rate)}`}
                         >
                           {figure(clo.pass_rate, '%')}
                         </td>
                         <td
-                          className="px-4 py-3 text-right tabular-nums text-slate-700"
+                          className="px-4 py-2 text-right tabular-nums text-slate-700"
                           aria-label={`เฉลี่ย ${clo.clo_number} ${score(clo.mean)}`}
                         >
                           {score(clo.mean)}
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-4 py-2 text-center">
                           <span
                             className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${chipOf(clo.passed)}`}
                             aria-label={`ผลการประเมิน ${clo.clo_number} ${verdictLabel(clo.passed)}`}

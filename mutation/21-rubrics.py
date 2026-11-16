@@ -88,6 +88,15 @@ to.
 | `addduringload` | **ทำอะไรพัง** ปุ่ม *เพิ่ม Rubric* กดได้ระหว่างที่รายการที่วาดอยู่เป็นของหลักสูตรก่อนหน้า | **แถวที่ตาย** *the add row is not offered while another curriculum is read* ที่ `expect(add).toBeDisabled()` · แถวอื่นกดปุ่มนี้หลังรายการวาดแล้วเท่านั้น จึงไม่ตาย |
 | `rowownsitsflag` | **ทำอะไรพัง** ธงที่ปิดช่องของแถวกลับไปเป็นของแถวเอง (รูปก่อน review) แถวที่ถูกวาดใหม่ระหว่างการบันทึกจึงเริ่มด้วยธงลง | **แถวที่ตาย** *an edit row drawn again while its save is out keeps its fields shut* ที่ `toBeDisabled()` ตัวที่สอง (หลังสลับกลับ) · ตัวแรกผ่าน เพราะแถวยังเป็นแถวเดิม · `242a` ไม่ตาย ไม่มีแถวไหนในนั้นวาดแถวใหม่ระหว่างการบันทึก |
 | `addorderkept` | **ทำอะไรพัง** แถวเพิ่มที่เปิดค้างข้ามการสลับหลักสูตรเก็บลำดับของหลักสูตรก่อนหน้า (ตัวเลือก ง ของคำถามที่สามของ #276 ที่เจ้าของไม่เลือก) | **แถวที่ตาย** *an add row kept open across a switch of curriculum keeps what was typed* ที่ `expect(order).toHaveValue(String(after))` · แถวอื่นไม่เปิดแถวเพิ่มข้ามการสลับ จึงไม่ตาย |
+
+## คำทำนาย (16 พ.ย. 2569) — เขียนก่อนรัน
+
+คำตอบของเจ้าของวันนี้เอาข้อความ *หลักสูตร วิศวกรรมคอมพิวเตอร์* ของบัญชีหลักสูตรเดียวออก เพราะงานทำทีละภาควิชาอยู่แล้ว
+มัตแตนต์ของตารางนี้คือข้อความนั้นกลับมา — โค้ดที่ถูกเอาออก (#48)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
+|---|---|---|
+| `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร วิศวกรรมคอมพิวเตอร์* อีกครั้ง | **แถวที่ตาย** *a committee member is not asked which curriculum, and sees its rubrics* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0)` · ข้อยืนยันเหนือมันอ่านแถวกับ combobox ซึ่งมัตแตนต์ไม่แตะ · แถวอื่นไม่อ่านข้อความนี้ จึงไม่ตาย |
 """
 
 import os
@@ -109,13 +118,31 @@ FILES = {
 SUPERSEDED = {"countnotshown"}
 
 MUTANTS = {
-    # Row 1 — a committee member is told which curriculum is theirs. The label
-    # becomes the dropdown an administrator gets, which is the control the row
-    # exists to say this account does not see.
+    # Row 1 — a committee member is not asked which curriculum. The picker is
+    # drawn for an account holding one, which is the control the row exists to
+    # say this account does not see. Re-aimed 16 พ.ย. 2569, when the ternary
+    # became `&&` with the statement gone: the same mistake.
     "alwaysadropdown": (
         "page",
-        "          {programs.length > 1 ? (",
-        "          {programs.length > 0 ? (",
+        "          {programs.length > 1 && (",
+        "          {programs.length > 0 && (",
+    ),
+    # Row 1, since the owner's answer of 16 พ.ย. 2569 — one curriculum in reach
+    # is not stated. The statement the answer took away comes back (#48).
+    "statesprogram": (
+        "page",
+        "            </label>\n"
+        "          )}\n",
+        "            </label>\n"
+        "          )}\n"
+        "          {programs.length === 1 && (\n"
+        "            <span className=\"flex items-center gap-2 text-sm text-slate-600\">\n"
+        "              หลักสูตร\n"
+        "              <span className=\"rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900\">\n"
+        "                {programs[0].program_name_th}\n"
+        "              </span>\n"
+        "            </span>\n"
+        "          )}\n",
     ),
     # Row 2 — the list is in the stated order, not in the order of the codes.
     "codeorder": (
@@ -273,10 +300,10 @@ MUTANTS = {
     # instead of to the two spans of one.
     "namesswapped": (
         "page",
-        "                    <td className=\"px-4 py-3\">{rubric.rubric_name_th}</td>\n"
-        "                    <td className=\"px-4 py-3 text-slate-500\">{rubric.rubric_name_en}</td>",
-        "                    <td className=\"px-4 py-3 text-slate-500\">{rubric.rubric_name_en}</td>\n"
-        "                    <td className=\"px-4 py-3\">{rubric.rubric_name_th}</td>",
+        "                    <td className=\"px-4 py-2\">{rubric.rubric_name_th}</td>\n"
+        "                    <td className=\"px-4 py-2 text-slate-500\">{rubric.rubric_name_en}</td>",
+        "                    <td className=\"px-4 py-2 text-slate-500\">{rubric.rubric_name_en}</td>\n"
+        "                    <td className=\"px-4 py-2\">{rubric.rubric_name_th}</td>",
     ),
     # #276 - an account holding two curricula starts on the last one. One
     # curriculum reads the same either way, so only the two-curricula row sees it.

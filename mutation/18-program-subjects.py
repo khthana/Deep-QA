@@ -44,6 +44,14 @@ for which assertion, and for what each mutant is about.
 | `unordered` | **แก้อะไร** เรียงตามประเภทแทนรหัสวิชา | **ฆ่าข้ออ้างไหน** 18b ข้อ 9 บรรทัด 202 · ที่มา `docs/acceptance/18-program-subjects.md:140` |
 | `listeveryone` | **แก้อะไร** รายการไม่ถูกจำกัดด้วย reach | **ฆ่าข้ออ้างไหน** 18c ข้อ 8 บรรทัด 90 · ที่มา `docs/acceptance/18-program-subjects.md:141` |
 | `maintainerall` | **แก้อะไร** `MAINTAINERS` รวม `FULL_ADMIN`, `TEACHER` กับ `FACULTY_ADMIN` | **ฆ่าข้ออ้างไหน** 18c ข้อ 8 บรรทัด 152 — เขียนใหม่ที่ #79 รันซ้ำแล้ว · ที่มา `docs/acceptance/18-program-subjects.md:142` |
+
+## คำทำนาย (16 พ.ย. 2569) — เขียนก่อนรัน
+
+คำตอบของเจ้าของวันนี้เอาข้อความ *หลักสูตร <ชื่อ>* ของบัญชีหลักสูตรเดียวออก เพราะงานทำทีละภาควิชาอยู่แล้ว มัตแตนต์ของตารางนี้คือข้อความนั้นกลับมา — โค้ดที่ถูกเอาออก (#48)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
+|---|---|---|
+| `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร <ชื่อ>* อีกครั้ง | **แถวที่ตาย** `18a` row 1 *one programme is neither asked nor stated* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0)` · `18c` แถว 8 ไม่อ่านข้อความนี้แล้ว จึงไม่ตาย |
 """
 
 from harness import main
@@ -58,6 +66,23 @@ FILES = {
 }
 
 MUTANTS = {
+    # The owner's answer of 16 พ.ย. 2569: one curriculum in reach is not
+    # stated. The statement the answer took away comes back (#48).
+    "statesprogram": (
+        "page",
+        "              </label>\n"
+        "            )}\n",
+        "              </label>\n"
+        "            )}\n"
+        "            {programs.length === 1 && (\n"
+        "              <span className=\"flex items-center gap-2 text-sm text-slate-600\">\n"
+        "                หลักสูตร\n"
+        "                <span className=\"rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900\">\n"
+        "                  {programs[0].program_name_th}\n"
+        "                </span>\n"
+        "              </span>\n"
+        "            )}\n",
+    ),
     # 18a row 1: the one programme in reach is chosen for the person.
     #
     # Re-aimed by #233 on 26 ตุลาคม 2569, and it is the *mistake* that is
@@ -79,8 +104,9 @@ MUTANTS = {
          "  const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''\n",
          "  const starting = filtered ? defaultProgram : ''\n"),
     ],
-    # 18a row 1: one programme is stated, not offered as a choice of one
-    "alwaysfilter": ("page", "{programs.length > 1 ? (", "{programs.length > 0 ? ("),
+    # 18a row 1: one programme is not offered as a choice of one. Re-aimed
+    # 16 พ.ย. 2569, when the ternary became `&&` with the statement gone.
+    "alwaysfilter": ("page", "{programs.length > 1 && (", "{programs.length > 0 && ("),
     # 18a row 1 / 18c row 8: the label names the curriculum, and the mutant
     # puts its code back in front of the name - #93 took it out
     "labelwithcode": ("page",
@@ -158,5 +184,9 @@ MUTANTS = {
                       "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN'];",
                       "const MAINTAINERS = ['PROG_MANAGER', 'DEPT_ADMIN', 'FULL_ADMIN', 'TEACHER', 'FACULTY_ADMIN'];"),
 }
+
+# Kept as a record: `labelwithcode` broke the statement of the one curriculum
+# in reach, which the owner's answer of 16 พ.ย. 2569 took off the screen.
+SUPERSEDED = {"labelwithcode"}
 
 main(FILES, MUTANTS)

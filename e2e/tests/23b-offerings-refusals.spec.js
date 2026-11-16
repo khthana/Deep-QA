@@ -11,6 +11,7 @@ const {
   openOfferings,
   filterToTerm,
   offeringRow,
+  programFilter,
 } = require('../support/offerings-screen');
 const { statedLabel } = require('../support/stated-label');
 
@@ -58,19 +59,30 @@ for (const [who, account] of [
 
 test('row 9: the committee of another curriculum sees none of this one', async ({ page }) => {
   await signIn(page, ACCOUNTS.committee0503);
+  // The curricula in reach are a read of their own, which the list does not
+  // wait for: held from before the screen opens, and its body taken whole,
+  // so the absences at the end are of a screen that has it (#50, #170).
+  const reach = page.waitForResponse(
+    answer =>
+      answer.request().method() === 'GET' &&
+      new URL(answer.url()).pathname === '/api/offerings/programs',
+  );
   await openOfferings(page);
-
-  // Told which curriculum, rather than asked - one programme in reach, so there
-  // is no filter that could be set to somebody else's.
-  await expect(
-    statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)'),
-  ).toBeVisible();
+  await (await reach).finished();
 
   // 0501's seeded term is real and is not theirs. The filter is the server's
   // `program_id = ANY(reach)` and not a query this screen sent.
   await filterToTerm(page, CURRENT_YEAR, SEMESTER);
   await expect(offeringRow(page, SEEDED)).toHaveCount(0);
   await expect(page.getByText('ยังไม่มีรายวิชาที่เปิดสอนตามเงื่อนไขนี้')).toBeVisible();
+
+  // One programme in reach, so no filter that could be set to somebody
+  // else's - and, since the owner's answer of 16 พ.ย. 2569, no statement of
+  // its name either: the work is done one department at a time.
+  await expect(programFilter(page)).toHaveCount(0);
+  await expect(
+    statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)'),
+  ).toHaveCount(0);
 });
 
 test('row 9: the account holding two roles gets in as the committee', async ({ page }) => {

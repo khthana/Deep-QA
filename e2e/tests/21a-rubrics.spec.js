@@ -100,19 +100,22 @@ const MINE = 'RUB-Z1';
 /** A seeded rubric of 0501 that the seed gave criteria to — see RUBRICS. */
 const WITH_CRITERIA = SEEDED.find(entry => entry.criteria > 0);
 
-test('a committee member is told which curriculum is theirs, and sees its rubrics', async ({
+test('a committee member is not asked which curriculum, and sees its rubrics', async ({
   page,
 }) => {
   // The first criterion's setting, and the seventh as the person meets it: one
-  // curriculum in reach is stated rather than asked about.
+  // curriculum in reach is neither asked about nor, since the owner's answer of
+  // 16 พ.ย. 2569, stated - the work is done one department at a time.
   await signIn(page, ACCOUNTS.committee0501);
   await openRubrics(page);
 
-  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toBeVisible();
-  await expect(page.getByRole('combobox')).toHaveCount(0);
-
   await expect(rubricRow(page, SEEDED[0].code)).toContainText(SEEDED[0].th);
   await expect(rubricRow(page, SEEDED[0].code)).toContainText(SEEDED[0].en);
+
+  // Read once the rows are drawn, so the absence is of a screen that has
+  // answered rather than of one still loading (#50).
+  await expect(page.getByRole('combobox')).toHaveCount(0);
+  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0);
 });
 
 test('the list is in the stated order, not in the order of the codes', async ({ page }) => {

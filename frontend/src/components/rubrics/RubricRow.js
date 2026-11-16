@@ -77,7 +77,7 @@ export default function RubricRow({ draft, onChange, busy, sending, onSave, onCa
       {/* ลำดับ first and รหัส second, then one column per language - the
           owner's request of 14 พ.ย. 2569, which `pages/Rubrics.js` draws in the
           heading and the rows the same way. */}
-      <td className="px-4 py-3 align-top">
+      <td className="px-4 py-2 align-top">
         <input
           className={`${field} w-16`}
           form={form}
@@ -91,7 +91,7 @@ export default function RubricRow({ draft, onChange, busy, sending, onSave, onCa
           required
         />
       </td>
-      <td className="px-4 py-3 align-top">
+      <td className="px-4 py-2 align-top">
         <input
           className={`${field} w-32`}
           form={form}
@@ -106,7 +106,7 @@ export default function RubricRow({ draft, onChange, busy, sending, onSave, onCa
           required
         />
       </td>
-      <td className="px-4 py-3 align-top">
+      <td className="px-4 py-2 align-top">
         <input
           className={`${field} w-full min-w-[10rem]`}
           form={form}
@@ -119,7 +119,7 @@ export default function RubricRow({ draft, onChange, busy, sending, onSave, onCa
           required
         />
       </td>
-      <td className="px-4 py-3 align-top">
+      <td className="px-4 py-2 align-top">
         <input
           className={`${field} w-full min-w-[10rem]`}
           form={form}
@@ -132,7 +132,7 @@ export default function RubricRow({ draft, onChange, busy, sending, onSave, onCa
           required
         />
       </td>
-      <td className="px-4 py-3 align-top">
+      <td className="px-4 py-2 align-top">
         <form
           id={form}
           onSubmit={submit}

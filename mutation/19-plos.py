@@ -103,6 +103,14 @@ about confirmation specifically.
 | `landsonthelast` | **ทำอะไรพัง** หน้าจอเลือกหลักสูตรสุดท้ายในสิทธิ์ แทนที่จะเลือกตัวแรก | **แถวที่ตาย** เข้าหน้ามาแล้วอยู่ที่หลักสูตรแรก และแถวช่อง *อยู่ใต้ข้อ* ซึ่งตั้งต้นด้วยข้อเดียวกัน · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:203` |
 | `formkeepsthetable` | **ทำอะไรพัง** ช่อง *อยู่ใต้ข้อ* อ่านจากหลักสูตรที่ตารางกรองไว้ ไม่ใช่ของหลักสูตรที่ฟอร์มอยู่ | **แถวที่ตาย** ช่อง *อยู่ใต้ข้อ* เสนอข้อของหลักสูตรที่ฟอร์มอยู่ (แถวเดียว) · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:204` |
 | `programoptional` | **ทำอะไรพัง** `GET /plos` เลิกปฏิเสธคำขอที่ไม่ระบุหลักสูตร | **แถวที่ตาย** ที่ seam ของ HTTP: *the list refuses to answer without a curriculum* — ตายแถวเดียวใน 717 แถว · ที่มา `docs/acceptance/19-programme-learning-outcomes.md:205` `docs/acceptance/19-programme-learning-outcomes.md:129` |
+
+## คำทำนาย (16 พ.ย. 2569) — เขียนก่อนรัน
+
+คำตอบของเจ้าของวันนี้เอาข้อความ *หลักสูตร <ชื่อ>* ของบัญชีหลักสูตรเดียวออก เพราะงานทำทีละภาควิชาอยู่แล้ว มัตแตนต์ของตารางนี้คือข้อความนั้นกลับมา — โค้ดที่ถูกเอาออก (#48)
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
+|---|---|---|
+| `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร <ชื่อ>* อีกครั้ง | **แถวที่ตาย** `19a` *a committee member is not asked which curriculum, and sees its own PLO-1* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0)` · แถวของ 0503 อ่านแค่ตัวกรอง จึงไม่ตาย |
 """
 
 import os
@@ -119,6 +127,23 @@ FILES = {
 }
 
 MUTANTS = {
+    # The owner's answer of 16 พ.ย. 2569: one curriculum in reach is not
+    # stated. The statement the answer took away comes back (#48).
+    "statesprogram": (
+        "page",
+        "                </label>\n"
+        "              )}\n",
+        "                </label>\n"
+        "              )}\n"
+        "              {programs.length === 1 && (\n"
+        "                <span className=\"flex items-center gap-2 text-sm text-slate-600\">\n"
+        "                  หลักสูตร\n"
+        "                  <span className=\"rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900\">\n"
+        "                    {programs[0].program_name_th}\n"
+        "                  </span>\n"
+        "                </span>\n"
+        "              )}\n",
+    ),
     # Row 3 — the list is in the stated order, not in the order of the codes.
     "codeorder": (
         "route",
@@ -225,8 +250,8 @@ MUTANTS = {
     # mutant, and a row that cannot fail is not evidence.
     "alwaysadropdown": (
         "page",
-        "              {programs.length > 1 ? (",
-        "              {programs.length > 0 ? (",
+        "              {programs.length > 1 && (",
+        "              {programs.length > 0 && (",
     ),
     # #101, row 13 — the filter offers the curricula in reach and nothing
     # wider. The option as it stood, put back. It is `ทุกหลักสูตร` and not

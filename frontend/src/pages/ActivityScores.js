@@ -530,15 +530,15 @@ export default function ActivityScores() {
                 <table className="w-full min-w-[36rem] text-left text-sm">
                   <thead className="border-b border-gray-200 text-xs text-slate-500">
                     <tr>
-                      <th className="px-4 py-3 font-medium">
+                      <th className="px-4 py-2 font-medium">
                         {entry === 'group' ? 'กลุ่ม' : 'รหัสนักศึกษา'}
                       </th>
-                      <th className="px-4 py-3 font-medium">
+                      <th className="px-4 py-2 font-medium">
                         {entry === 'group' ? 'จำนวนสมาชิก' : 'ชื่อ'}
                       </th>
                       {mode === 'clo' ? (
                         data.clo_rows.map(row => (
-                          <th key={row.clo_id} className="px-4 py-3 font-medium">
+                          <th key={row.clo_id} className="px-4 py-2 font-medium">
                             {row.clo_number}
                             <span className="ml-1 font-normal text-slate-400">
                               (เต็ม {Number(row.score)})
@@ -546,7 +546,7 @@ export default function ActivityScores() {
                           </th>
                         ))
                       ) : (
-                        <th className="px-4 py-3 font-medium">คะแนน</th>
+                        <th className="px-4 py-2 font-medium">คะแนน</th>
                       )}
                     </tr>
                   </thead>

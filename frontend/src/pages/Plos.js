@@ -573,8 +573,11 @@ export default function Plos() {
               {/* A picker when there is a choice to make, and a statement of
                   where one is when there is not — รายวิชาในหลักสูตร's control,
                   for its reasons. A กรรมการหลักสูตร reaches one curriculum and
-                  is shown which. */}
-              {programs.length > 1 ? (
+                  is shown which.
+                  Since 16 พ.ย. 2569 an account reaching one curriculum is shown
+                  nothing - the owner's answer: the work is done one department at
+                  a time, so the name told nobody anything (Rubrics.js, the same day). */}
+              {programs.length > 1 && (
                 <label className="flex items-center gap-2 text-sm text-slate-600">
                   หลักสูตร
                   <select
@@ -593,15 +596,6 @@ export default function Plos() {
                     ))}
                   </select>
                 </label>
-              ) : (
-                programs.length === 1 && (
-                  <span className="flex items-center gap-2 text-sm text-slate-600">
-                    หลักสูตร
-                    <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                      {programs[0].program_name_th}
-                    </span>
-                  </span>
-                )
               )}
               <button
                 type="button"
@@ -627,13 +621,13 @@ export default function Plos() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-3">รหัส</th>
-                  <th className="px-4 py-3">ผลการเรียนรู้</th>
-                  <th className="px-4 py-3">ประเภท</th>
-                  <th className="px-4 py-3">ลำดับ</th>
-                  <th className="px-4 py-3">หลักสูตร</th>
-                  <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
+                  <th className="px-4 py-2">รหัส</th>
+                  <th className="px-4 py-2">ผลการเรียนรู้</th>
+                  <th className="px-4 py-2">ประเภท</th>
+                  <th className="px-4 py-2">ลำดับ</th>
+                  <th className="px-4 py-2">หลักสูตร</th>
+                  <th className="px-4 py-2">สถานะ</th>
+                  <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -660,7 +654,7 @@ export default function Plos() {
                 {!loading &&
                   plos.map(plo => (
                     <tr key={plo.outcome_id}>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         {/* The indent is the nesting. `level_depth` comes from
                             the server and is the parent's plus one, so a ข้อย่อย
                             of a ข้อย่อย steps in again rather than sitting level
@@ -677,7 +671,7 @@ export default function Plos() {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         {plo.outcome_title}
                         {plo.outcome_description && (
                           <span className="block text-xs text-slate-500">
@@ -685,14 +679,14 @@ export default function Plos() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs text-blue-800">
                           {OUTCOME_TYPES[plo.outcome_type] ?? plo.outcome_type}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{plo.sequence_order}</td>
-                      <td className="px-4 py-3 text-slate-500">{nameOf(plo.program_id)}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2 text-slate-500">{plo.sequence_order}</td>
+                      <td className="px-4 py-2 text-slate-500">{nameOf(plo.program_id)}</td>
+                      <td className="px-4 py-2">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs ${
                             plo.is_active
@@ -703,7 +697,7 @@ export default function Plos() {
                           {plo.is_active ? 'ใช้งานอยู่' : 'ปิดใช้งาน'}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         <RowActions>
                           <RowAction
                             kind="edit"

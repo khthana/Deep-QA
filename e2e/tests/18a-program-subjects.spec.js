@@ -118,24 +118,29 @@ test.beforeAll(async ({ browser }) => {
   }
 });
 
-test('row 1: one programme is stated rather than asked, and it is the one the server takes', async ({
+test('row 1: one programme is neither asked nor stated, and it is the one the server takes', async ({
   page,
 }) => {
   await signIn(page, ACCOUNTS.committee0501);
   await openProgramSubjects(page);
 
-  // The list says which curriculum is being read without offering a choice
-  // there is none of - a กรรมการหลักสูตร holds exactly one.
-  await expect(programFilter(page)).toHaveCount(0);
-  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toBeVisible();
-
   await openAddForm(page);
 
-  // And the form's picker offers that one and has already chosen it. What can
-  // be chosen is what the server will accept, so the form cannot build a
-  // request that comes back refused.
+  // The form's picker offers the one curriculum and has already chosen it.
+  // What can be chosen is what the server will accept, so the form cannot
+  // build a request that comes back refused.
   expect(await offered(programPicker(page))).toEqual(['', '0501']);
   await expect(programPicker(page)).toHaveValue('0501');
+
+  // Back on the list, which the form is drawn in place of. The picker above
+  // proved the curricula in reach have landed, so the absences below are of a
+  // screen that has them (#50): a กรรมการหลักสูตร holds exactly one, and is
+  // neither offered a choice of it nor - since the owner's answer of
+  // 16 พ.ย. 2569, the work being done one department at a time - told its name.
+  await page.getByRole('button', { name: 'ยกเลิก', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'เพิ่มรายวิชาเข้าหลักสูตร' })).toBeVisible();
+  await expect(programFilter(page)).toHaveCount(0);
+  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0);
 });
 
 test('row 1: a subject chosen out of the catalogue appears in the curriculum', async ({

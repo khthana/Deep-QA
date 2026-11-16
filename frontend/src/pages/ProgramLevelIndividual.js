@@ -400,10 +400,10 @@ export default function ProgramLevelIndividual() {
                       <table className="w-full min-w-[28rem] text-left text-sm">
                         <thead className="border-b border-gray-200 text-xs text-slate-500">
                           <tr>
-                            <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
-                            <th className="px-4 py-3 text-center font-medium">ประเภท</th>
-                            <th className="px-4 py-3 text-center font-medium">คะแนน</th>
-                            <th className="px-4 py-3 text-center font-medium">ที่มา</th>
+                            <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
+                            <th className="px-4 py-2 text-center font-medium">ประเภท</th>
+                            <th className="px-4 py-2 text-center font-medium">คะแนน</th>
+                            <th className="px-4 py-2 text-center font-medium">ที่มา</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -411,14 +411,14 @@ export default function ProgramLevelIndividual() {
                             const look = BANDS[plo.band]
                             return (
                               <tr key={plo.outcome_id} className="align-top">
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-2">
                                   <p className="font-medium text-slate-700">{plo.outcome_code}</p>
                                   <p className="text-xs text-slate-500">{plo.outcome_title}</p>
                                 </td>
-                                <td className="px-4 py-3 text-center text-xs text-slate-500">
+                                <td className="px-4 py-2 text-center text-xs text-slate-500">
                                   {OUTCOME_TYPES[plo.outcome_type] || plo.outcome_type}
                                 </td>
-                                <td className="px-4 py-3 text-center">
+                                <td className="px-4 py-2 text-center">
                                   <span
                                     aria-label={spoken(data.student, plo)}
                                     className={`inline-block w-full rounded-md px-2 py-1.5 text-xs font-medium ${
@@ -433,7 +433,7 @@ export default function ProgramLevelIndividual() {
                                     {plo.flagged && <span className={FLAG}>!</span>}
                                   </span>
                                 </td>
-                                <td className="px-4 py-3 text-center">
+                                <td className="px-4 py-2 text-center">
                                   {/* Offered only where there is something to
                                       open. #40's walk found a disclosure that
                                       worked perfectly on nothing, and an

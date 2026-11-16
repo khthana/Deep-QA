@@ -173,10 +173,10 @@ export default function LearningDetails() {
                   <table className="w-full min-w-[42rem] text-left text-sm">
                     <thead className="border-b border-gray-200 text-xs text-slate-500">
                       <tr>
-                        <th className="px-4 py-3 font-medium">รหัสนักศึกษา</th>
-                        <th className="px-4 py-3 font-medium">ชื่อ</th>
+                        <th className="px-4 py-2 font-medium">รหัสนักศึกษา</th>
+                        <th className="px-4 py-2 font-medium">ชื่อ</th>
                         {data.clos.map((clo) => (
-                          <th key={clo.clo_id} className="px-4 py-3 text-center font-medium">
+                          <th key={clo.clo_id} className="px-4 py-2 text-center font-medium">
                             {clo.clo_number}
                           </th>
                         ))}
@@ -213,14 +213,14 @@ export default function LearningDetails() {
                     </tbody>
                     <tfoot className="border-t-2 border-gray-200 text-xs">
                       <tr>
-                        <td className="px-4 py-3 font-medium text-slate-500" colSpan={2}>
+                        <td className="px-4 py-2 font-medium text-slate-500" colSpan={2}>
                           คะแนนเฉลี่ย · อัตราผ่านเกณฑ์
                         </td>
                         {data.clos.map((clo) => (
                           <td
                             key={clo.clo_id}
                             aria-label={`สรุป ${clo.clo_number}`}
-                            className="px-2 py-3 text-center text-slate-600"
+                            className="px-2 py-2 text-center text-slate-600"
                           >
                             <span className="block font-semibold">{score(clo.mean)}</span>
                             <span className="block">{figure(clo.pass_rate, '%')}</span>

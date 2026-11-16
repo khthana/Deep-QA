@@ -306,14 +306,14 @@ export default function ProgramLevelCompare() {
               >
                 <thead className="border-b border-gray-200 text-xs text-slate-500">
                   <tr>
-                    <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
-                    <th className="w-24 px-4 py-3 text-center font-medium">
+                    <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
+                    <th className="w-24 px-4 py-2 text-center font-medium">
                       ประเภท
                     </th>
                     {data.years.map(year => (
                       <th
                         key={year.admission_year}
-                        className="w-28 px-4 py-3 text-center font-medium"
+                        className="w-28 px-4 py-2 text-center font-medium"
                       >
                         <span className="block text-sm text-slate-600">
                           {year.admission_year}
@@ -328,7 +328,7 @@ export default function ProgramLevelCompare() {
                 <tbody className="divide-y divide-gray-100">
                   {data.plos.map(plo => (
                     <tr key={plo.outcome_id} className="align-top">
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         <p className="font-medium text-slate-700">
                           {plo.outcome_code}
                         </p>
@@ -336,7 +336,7 @@ export default function ProgramLevelCompare() {
                           {plo.outcome_title}
                         </p>
                       </td>
-                      <td className="px-4 py-3 text-center text-xs text-slate-500">
+                      <td className="px-4 py-2 text-center text-xs text-slate-500">
                         {OUTCOME_TYPES[plo.outcome_type] || plo.outcome_type}
                       </td>
                       {plo.years.map(cell => {
@@ -344,7 +344,7 @@ export default function ProgramLevelCompare() {
                         return (
                           <td
                             key={cell.admission_year}
-                            className="px-4 py-3 text-center"
+                            className="px-4 py-2 text-center"
                           >
                             <span
                               aria-label={spoken(plo, cell)}

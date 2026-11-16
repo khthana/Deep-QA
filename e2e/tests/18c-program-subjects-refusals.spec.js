@@ -21,7 +21,6 @@ const {
   openEditor,
   save,
 } = require('../support/program-subjects-screen');
-const { statedLabel } = require('../support/stated-label');
 
 /**
  * docs/acceptance/18-program-subjects.md, criterion 8 — who reaches which
@@ -90,19 +89,18 @@ test('row 8: the committee of one curriculum is shown that one and only that one
   await signIn(page, ACCOUNTS.committee0503);
   await openProgramSubjects(page);
 
-  // Told which, rather than asked - so there is no filter to be set wrongly and
-  // no option naming a curriculum this account does not hold.
-  await expect(
-    statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)'),
-  ).toBeVisible();
-  await expect(programFilter(page)).toHaveCount(0);
-
   // Their own pairing is here, so the table loaded; the seeded pairing of 0501
   // is not, and neither is anything else 18a and 18b placed there. The filter
   // is the server's `program_id = ANY(reach)`, not a query this screen sent.
   await expect(pairRow(page, OTHERS)).toHaveCount(1);
   await expect(pairRow(page, SEEDED)).toHaveCount(0);
   expect(await total(page)).toBe(1);
+
+  // Not asked - so there is no filter to be set wrongly and no option naming a
+  // curriculum this account does not hold. Until 16 พ.ย. 2569 the row also read
+  // the curriculum's name stated in the filter's place; the owner's answer took
+  // it off the screen, and 18a row 1 holds its absence.
+  await expect(programFilter(page)).toHaveCount(0);
 });
 
 test('row 8: the administrator above both curricula reaches both', async ({ page }) => {

@@ -565,12 +565,12 @@ export default function Subjects() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-3">รหัสวิชา</th>
-                  <th className="px-4 py-3">ชื่อวิชา</th>
-                  <th className="px-4 py-3">หน่วยกิต</th>
-                  <th className="px-4 py-3">ภาควิชา</th>
-                  <th className="px-4 py-3">สถานะ</th>
-                  <th className="px-4 py-3 text-center">ดำเนินการ</th>
+                  <th className="px-4 py-2">รหัสวิชา</th>
+                  <th className="px-4 py-2">ชื่อวิชา</th>
+                  <th className="px-4 py-2">หน่วยกิต</th>
+                  <th className="px-4 py-2">ภาควิชา</th>
+                  <th className="px-4 py-2">สถานะ</th>
+                  <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -595,16 +595,16 @@ export default function Subjects() {
                 {!loading &&
                   data.subjects.map(subject => (
                     <tr key={subject.subject_id}>
-                      <td className="px-4 py-3 font-medium text-gray-900">{subject.subject_id}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2 font-medium text-gray-900">{subject.subject_id}</td>
+                      <td className="px-4 py-2">
                         {subject.subject_name_th}
                         <span className="block text-xs text-slate-500">
                           {subject.subject_name_en}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{subject.credits}</td>
-                      <td className="px-4 py-3 text-slate-500">{nameOf(subject.department_id)}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2 text-slate-500">{subject.credits}</td>
+                      <td className="px-4 py-2 text-slate-500">{nameOf(subject.department_id)}</td>
+                      <td className="px-4 py-2">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs ${
                             subject.is_active
@@ -615,7 +615,7 @@ export default function Subjects() {
                           {subject.is_active ? 'ใช้งานอยู่' : 'ปิดใช้งาน'}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         <RowActions>
                           <RowAction
                             kind="edit"

@@ -364,19 +364,19 @@ export default function SectionResults() {
               </caption>
               <thead className="border-b border-gray-200 text-xs text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 font-medium">ผลการเรียนรู้</th>
+                  <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
                   {columns.map(one => (
                     <th
                       key={one.label}
-                      className="px-4 py-3 text-center font-medium"
+                      className="px-4 py-2 text-center font-medium"
                     >
                       {one.label}
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-center font-medium">
+                  <th className="px-4 py-2 text-center font-medium">
                     อัตราผ่านเกณฑ์ปีนี้
                   </th>
-                  <th className="px-4 py-3 text-center font-medium">
+                  <th className="px-4 py-2 text-center font-medium">
                     สรุปปีนี้
                   </th>
                 </tr>

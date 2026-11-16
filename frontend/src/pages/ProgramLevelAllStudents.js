@@ -211,14 +211,14 @@ export default function ProgramLevelAllStudents() {
                 <table className="min-w-full text-left text-sm">
                   <thead className="border-b border-gray-200 text-xs text-slate-500">
                     <tr>
-                      <th className="px-4 py-3 font-medium">รหัสนักศึกษา</th>
-                      <th className="px-4 py-3 font-medium">ชื่อ – นามสกุล</th>
-                      <th className="px-4 py-3 text-center font-medium">ต่ำกว่าเกณฑ์</th>
+                      <th className="px-4 py-2 font-medium">รหัสนักศึกษา</th>
+                      <th className="px-4 py-2 font-medium">ชื่อ – นามสกุล</th>
+                      <th className="px-4 py-2 text-center font-medium">ต่ำกว่าเกณฑ์</th>
                       {data.plos.map(plo => (
                         <th
                           key={plo.outcome_id}
                           title={plo.outcome_title}
-                          className="px-2 py-3 text-center font-medium"
+                          className="px-2 py-2 text-center font-medium"
                         >
                           {plo.outcome_code}
                         </th>

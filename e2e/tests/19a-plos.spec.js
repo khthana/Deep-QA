@@ -75,8 +75,6 @@ test.afterAll(() => release());
  * its own copy of a name is a row that passes whatever the name is.
  */
 const nameOf = programId => PROGRAMS.find(program => program.id === programId).th;
-/** The word the bar puts in front of that name where there is no choice - #93. */
-const PROGRAMME = 'หลักสูตร';
 
 /** Every outcome 0503 holds — its ข้อหลัก and their ข้อย่อย. */
 const INTL_OUTCOMES = PLOS_INTL.reduce((total, plo) => total + 1 + plo.subs.length, 0);
@@ -89,18 +87,21 @@ const SECOND = 'PLO-Z1-2';
 /** A seeded outcome of 0501 that a รายวิชา maps onto — see PLO_MAPPING. */
 const MAPPED = 'PLO-12';
 
-test('a committee member is told which curriculum is theirs, and sees its own PLO-1', async ({
+test('a committee member is not asked which curriculum, and sees its own PLO-1', async ({
   page,
 }) => {
   // The first criterion's setting, and the eighth as the person meets it: one
-  // curriculum in reach is stated rather than asked about.
+  // curriculum in reach is neither asked about nor, since the owner's answer of
+  // 16 พ.ย. 2569, stated - the work is done one department at a time.
   await signIn(page, ACCOUNTS.committee0501);
   await openPlos(page);
 
-  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toBeVisible();
-  await expect(page.getByRole('combobox')).toHaveCount(0);
-
   await expect(ploRow(page, 'PLO-1')).toContainText(SEEDED[0].title);
+
+  // Read once the list is drawn - it is read for the curriculum the reachable
+  // list names, so the absences are of a screen that has that list (#50).
+  await expect(page.getByRole('combobox')).toHaveCount(0);
+  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0);
 });
 
 test('the other curriculum holds its own PLO-1, and it is a different outcome', async ({ page }) => {
@@ -110,7 +111,9 @@ test('the other curriculum holds its own PLO-1, and it is a different outcome', 
   await signIn(page, ACCOUNTS.committee0503);
   await openPlos(page);
 
-  await expect(statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)')).toBeVisible();
+  // Until 16 พ.ย. 2569 this row first read the curriculum's name stated
+  // above the list; the owner's answer took it off the screen, and the
+  // outcome drawn below is what says which curriculum is being read.
   await expect(ploRow(page, 'PLO-1')).toContainText(PLOS_INTL[0].title);
   await expect(ploRow(page, 'PLO-1')).not.toContainText(SEEDED[0].title);
 });
@@ -376,7 +379,7 @@ test('every row on screen is of the curriculum the filter names, at both setting
   }
 });
 
-test('a committee member reaching one curriculum is told which, and is given no filter', async ({
+test('a committee member reaching one curriculum is given no filter', async ({
   page,
 }) => {
   // #101's third criterion, and the one the fix could most easily have broken:
@@ -385,9 +388,10 @@ test('a committee member reaching one curriculum is told which, and is given no 
   await signIn(page, ACCOUNTS.committee0503);
   await openPlos(page);
 
-  await expect(programFilter(page)).toHaveCount(0);
-  await expect(statedLabel(page, PROGRAMME, nameOf('0503'))).toBeVisible();
   await expect(ploRow(page, 'PLO-1')).toContainText(PLOS_INTL[0].title);
+  // After the list, which is read for the curriculum the reachable list
+  // names (#50). The name stated in the filter's place went on 16 พ.ย. 2569.
+  await expect(programFilter(page)).toHaveCount(0);
 });
 
 test('the add form moved to the other curriculum is offered the ข้อหลัก of that one', async ({
