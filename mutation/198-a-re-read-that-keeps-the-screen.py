@@ -75,6 +75,15 @@ dependency ของการอ่านนั้นจำเป็น
 - `frozenvalue` — 3 ล้ม แถว 3 ที่ `the curriculum the new grant reaches is drawn` ตามคำทำนาย · แถว 1 กับ 4 ที่ตัวรอ
   `pool` (หมดเวลา) ไม่ใช่ที่ตัวรอการวาดอย่างที่ทำนายไว้สำหรับแถว 1 — ไม่มีการอ่านใหม่ คำตอบที่รอจึงไม่มา ทั้งสองเป็นการจัดฉาก (#266)
 - `nopickerdep` — 3 ล้ม ตรงตามคำทำนายทุกแถว
+
+มัตแตนต์ของแฟ้มอื่นที่อ้าง `198a` ถูกกวาดซ้ำกับ `198a` วันที่ 17 พ.ย. 2569 เพราะ `inFirst` / `inSecond` เปลี่ยน (#202):
+
+- `155:noscreendep` — 4 ผ่าน รอดตามที่แฟ้มของมันบันทึกไว้ตั้งแต่ 14 พ.ย. (#276)
+- `155:alwaysreread` — 1 ล้ม แถว 2 ที่ `toEqual([])` ของ *the landing being left was not re-read* เหมือนเดิม
+- `81:staysput` — 1 ล้ม แถว 2 ที่ `.toBe(DASHBOARD)` เหมือนเดิม
+- `234:rubricfilterhidestheretired` — 4 ผ่าน ไม่มีแถวไหนของ `198a` อ้างมัน · รันกับ `234a` ของมันเองวันเดียวกันได้
+  1 ล้ม 3 ผ่าน ที่ `Received: 0` ตามที่แฟ้มของมันบันทึก
+- `234:rubricfollowstheretiredfilter` — ไม่ได้รัน เป็น `SUPERSEDED` ตั้งแต่ #276 และ harness ปฏิเสธมัน
 """
 
 from harness import main

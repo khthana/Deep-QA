@@ -111,6 +111,10 @@ about confirmation specifically.
 | ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
 |---|---|---|
 | `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร <ชื่อ>* อีกครั้ง | **แถวที่ตาย** `19a` *a committee member is not asked which curriculum, and sees its own PLO-1* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0)` · แถวของ 0503 อ่านแค่ตัวกรอง จึงไม่ตาย |
+
+ผลการกวาด: `statesprogram` (16 พ.ย. 2569) 1 ล้ม ที่ข้อยืนยันที่ทำนายไว้ · `alwaysadropdown` (17 พ.ย. 2569) 1 ล้มที่
+`page.getByRole('combobox')).toHaveCount(0)` ของแถวแรก แล้วสเปคเป็น serial อีก 16 แถวจึงไม่ได้รัน (#67) — แถวของ
+#101 รันเดี่ยวด้วย `--grep "reaching one curriculum is given no filter"` ได้ 1 ล้มที่ `programFilter(page)).toHaveCount(0)`
 """
 
 import os

@@ -73,6 +73,8 @@ curriculum, still opens, and shows a row of empty boxes where the Thai was.
 | ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
 |---|---|---|
 | `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร <ชื่อ>* อีกครั้ง | **แถวที่ตาย** `20a` *the grid draws every subject of the curriculum against every ข้อหลัก of it* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0)` · ข้อยืนยันเหนือมันอ่านตาราง ซึ่งมัตแตนต์ไม่แตะ |
+
+ผลการกวาด (17 พ.ย. 2569, `20a`): `statesprogram` 1 ล้ม 11 ผ่าน ที่ข้อยืนยันที่ทำนายไว้
 """
 
 from harness import main

@@ -68,6 +68,8 @@ three that everybody forgets to write.
 | ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
 |---|---|---|
 | `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร <ชื่อ>* อีกครั้ง | **แถวที่ตาย** `23b` row 9 *the committee of another curriculum sees none of this one* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)'),   ).toHaveCount(0)` · ข้อยืนยันเหนือมันอ่านรายการกับตัวกรอง ซึ่งมัตแตนต์ไม่แตะ |
+
+ผลการกวาด (17 พ.ย. 2569, `23b`): `statesprogram` 1 ล้ม 5 ผ่าน ที่ข้อยืนยันที่ทำนายไว้ของแถว 9
 """
 
 from harness import main
