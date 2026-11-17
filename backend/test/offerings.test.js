@@ -111,6 +111,9 @@ const programs = (cookie) =>
 const placed = (cookie, query = '') =>
   request(api.app).get(`/api/offerings/subjects${query}`).set('Cookie', cookie);
 
+const terms = (cookie, query = '') =>
+  request(api.app).get(`/api/offerings/terms${query}`).set('Cookie', cookie);
+
 const teachers = (cookie, query = '') =>
   request(api.app).get(`/api/offerings/teachers${query}`).set('Cookie', cookie);
 
@@ -201,12 +204,13 @@ test('a committee member opens a subject for a chosen year and semester', async 
   assert.equal(again.body.message, REFUSALS.duplicateOffering);
 
   // A different semester of the same year is a different Offering, which is
-  // the whole point of the term being part of the key.
+  // the whole point of the term being part of the key. Semester 1 since #279
+  // struck ภาคฤดูร้อน, which this used to open.
   const other = await open(cookie, {
     program_id: PROGRAM_COM,
     subject_id: subject,
     academic_year: OPEN_YEAR,
-    semester: 3,
+    semester: 1,
   });
   assert.equal(other.status, 201);
 });
@@ -536,6 +540,8 @@ test('an Offering is refused when the term is not a term', async () => {
   for (const term of [
     { academic_year: '69', semester: 1 },
     { academic_year: OPEN_YEAR, semester: 4 },
+    // ภาคฤดูร้อน, struck by the owner on 17 พ.ย. 2569 (#279).
+    { academic_year: OPEN_YEAR, semester: 3 },
     { academic_year: OPEN_YEAR, semester: 0 },
     { academic_year: OPEN_YEAR, semester: 'ภาคต้น' },
     { academic_year: '', semester: 1 },
@@ -671,8 +677,9 @@ test('a subject taken out of the curriculum is named rather than copied', async 
     program_id: PROGRAM_COM,
     from_academic_year: SOURCE_YEAR,
     from_semester: 1,
-    academic_year: SOURCE_YEAR,
-    semester: 3,
+    // A term of its own, which was SOURCE_YEAR/3 until #279 struck ภาคฤดูร้อน.
+    academic_year: yearAfterSeed(5),
+    semester: 1,
   });
 
   assert.equal(copied.status, 200);
@@ -874,6 +881,21 @@ test('a copy is refused when either end is not a term, or both are the same', as
   });
   assert.equal(malformed.status, 400);
 
+  // ภาคฤดูร้อน is not a term at either end since #279 (17 พ.ย. 2569).
+  for (const ends of [
+    { from_semester: 3, semester: 2 },
+    { from_semester: 1, semester: 3 },
+  ]) {
+    const summer = await copy(cookie, {
+      program_id: PROGRAM_COM,
+      from_academic_year: SOURCE_YEAR,
+      academic_year: SOURCE_YEAR,
+      ...ends,
+    });
+    assert.equal(summer.status, 400, `${ends.from_semester} -> ${ends.semester} was accepted`);
+    assert.equal(summer.body.message, REFUSALS.invalidOffering);
+  }
+
   // And the programme is checked before either end, as it is on the form.
   const elsewhere = await copy(cookie, {
     program_id: PROGRAM_INTL,
@@ -932,4 +954,72 @@ test('an id too large for the column is ไม่พบ, not a 500', async () =>
     assert.equal(bySection.status, 404, id + ' section answered ' + bySection.status);
     assert.equal(bySection.body.message, REFUSALS.sectionNotFound);
   }
+});
+
+test('the term picker offers the terms a programme ran, and the current and next', async () => {
+  // #279, the owner's answers of 17 พ.ย. 2569. The current term is the
+  // server's (`db/term.js`), which the seed was built in too.
+  const cookie = await signInAs('U_COM');
+  await freshOffering(cookie, { semester: 2 });
+
+  const answer = await terms(cookie, `?program_id=${PROGRAM_COM}`);
+  assert.equal(answer.status, 200);
+
+  const current = { academic_year: CURRENT_YEAR, semester: SEMESTER };
+  assert.deepEqual(answer.body.current, current);
+
+  const next =
+    SEMESTER === 1
+      ? { academic_year: CURRENT_YEAR, semester: 2 }
+      : { academic_year: String(Number(CURRENT_YEAR) + 1), semester: 1 };
+  const keyOf = (term) => `${term.semester}/${term.academic_year}`;
+  const listed = answer.body.terms.map(keyOf);
+
+  assert.ok(listed.includes(keyOf(current)), `the current term is offered: ${listed}`);
+  assert.ok(listed.includes(keyOf(next)), `the next term is offered: ${listed}`);
+  // A term this programme ran is offered and says so; OPEN_YEAR is two terms
+  // past the current one at the earliest, so only an Offering can put it here.
+  const ran = answer.body.terms.find((term) => keyOf(term) === `2/${OPEN_YEAR}`);
+  assert.equal(ran?.offered, true, `2/${OPEN_YEAR} is listed as ran: ${listed}`);
+  // Each term once, newest first.
+  assert.equal(new Set(listed).size, listed.length);
+  const order = answer.body.terms.map((term) => Number(term.academic_year) * 10 + term.semester);
+  assert.deepEqual(order, [...order].sort((a, b) => b - a));
+  // No ภาคฤดูร้อน (#279).
+  assert.ok(answer.body.terms.every((term) => term.semester === 1 || term.semester === 2));
+});
+
+test('the term picker answers for a retired programme in reach, as the list does', async () => {
+  // #279, found by `234a` row 4 on 17 พ.ย. 2569: the filter offers a retired
+  // programme (`reach.js`, *Retired ones come too*) and the list reads it, so
+  // the terms of one are a read of it too, and not `programInReach`'s question,
+  // which is whether a record may be filed under it.
+  const cookie = await signInAs('U_COM');
+  await api.pool.query(`UPDATE programs SET is_active = false WHERE program_id = $1`, [
+    PROGRAM_COM,
+  ]);
+  try {
+    const answer = await terms(cookie, `?program_id=${PROGRAM_COM}`);
+    assert.equal(answer.status, 200, answer.body.message);
+    assert.ok(answer.body.terms.length >= 2, 'the current and the next term at least');
+  } finally {
+    await api.pool.query(`UPDATE programs SET is_active = true WHERE program_id = $1`, [
+      PROGRAM_COM,
+    ]);
+  }
+});
+
+test('the term picker is refused another programme, no programme and another role', async () => {
+  const cookie = await signInAs('U_COM');
+
+  const elsewhere = await terms(cookie, `?program_id=${PROGRAM_INTL}`);
+  assert.equal(elsewhere.status, 403);
+  assert.equal(elsewhere.body.message, REFUSALS.offeringNotYours);
+
+  const none = await terms(cookie);
+  assert.equal(none.status, 400);
+  assert.equal(none.body.message, REFUSALS.invalidOffering);
+
+  const faculty = await signInAs('U_FAC');
+  assert.equal((await terms(faculty, `?program_id=${PROGRAM_COM}`)).status, 403);
 });

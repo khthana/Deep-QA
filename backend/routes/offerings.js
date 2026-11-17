@@ -53,6 +53,7 @@ const { REFUSALS } = require('../auth/refusals');
 const { blankToNull, isDuplicate, isReferenced, integerId } = require('../lib/fields');
 const { pageOf } = require('../lib/paging');
 const { reachablePrograms, programInReach } = require('../lib/reach');
+const { currentTerm } = require('../../db/term');
 
 /**
  * The role that decides what runs this term.
@@ -62,8 +63,12 @@ const { reachablePrograms, programInReach } = require('../lib/reach');
  */
 const COMMITTEE = ['PROG_MANAGER'];
 
-/** `semester` on `semester_courses`, exactly: ภาคต้น ภาคปลาย ภาคฤดูร้อน. */
-const SEMESTERS = [1, 2, 3];
+/**
+ * `semester` on `semester_courses`, exactly: ภาคต้น and ภาคปลาย. ภาคฤดูร้อน (3) was
+ * struck by the owner on 17 พ.ย. 2569 (#279), system-wide, and migration 0010 narrows
+ * the column to match.
+ */
+const SEMESTERS = [1, 2];
 
 /**
  * What an Offering is, as this file reads it out: the term and its key, with
@@ -134,6 +139,21 @@ function readTerm(year, semester) {
   if (!/^\d{4}$/.test(value.academic_year ?? '')) return null;
   if (!SEMESTERS.includes(value.semester)) return null;
   return value;
+}
+
+/**
+ * The term after a term: ภาคต้น is followed by ภาคปลาย of the same year, and
+ * ภาคปลาย by ภาคต้น of the next. Two semesters only since #279.
+ */
+function nextTerm({ academic_year, semester }) {
+  return semester === 1
+    ? { academic_year, semester: 2 }
+    : { academic_year: String(Number(academic_year) + 1), semester: 1 };
+}
+
+/** Newest first: by year, then by semester, both descending. */
+function newestFirst(a, b) {
+  return Number(b.academic_year) - Number(a.academic_year) || b.semester - a.semester;
 }
 
 function offeringRoutes(pool) {
@@ -421,6 +441,62 @@ function offeringRoutes(pool) {
         [program],
       );
       return res.status(200).json({ subjects: rows });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  /**
+   * The terms the screen's term picker offers for one programme - #279, the
+   * owner's answers of 17 พ.ย. 2569.
+   *
+   * Every term this programme has an Offering in, plus the current term and the
+   * one after it, newest first; `offered` says which of them hold an Offering,
+   * because the copy's source is picked from those alone. The current term
+   * travels with the list and the screen opens on it: `teaching.js` carries why
+   * a screen must not work it out from its own clock (`db/term.js`, one rule for
+   * the whole system).
+   *
+   * Narrowed by the programme and checked against the reach the list is read
+   * with, retired programmes included: which terms a curriculum ran is a read of
+   * it, and the filter offers a retired one for reading (`reach.js`, *Retired
+   * ones come too*). `programRefusal` is the write's question - may a record be
+   * filed under it - and refused a retired programme the list still read, which
+   * left the picker empty over the last programme's rows (`234a` row 4, 17 พ.ย.
+   * 2569).
+   */
+  router.get('/offerings/terms', requireRole(...COMMITTEE), async (req, res, next) => {
+    try {
+      const program = blankToNull(req.query.program_id);
+      if (!program) return res.status(400).json({ message: REFUSALS.invalidOffering });
+      const reach = await reachablePrograms(pool, req.auth.acting.scope_id);
+      if (!reach.some((entry) => entry.program_id === program)) {
+        return res.status(403).json({ message: REFUSALS.offeringNotYours });
+      }
+
+      const { rows } = await pool.query(
+        `SELECT DISTINCT academic_year, semester
+           FROM semester_courses
+          WHERE program_id = $1`,
+        [program],
+      );
+      const now = currentTerm();
+      const current = { academic_year: now.academicYear, semester: now.semester };
+
+      const terms = new Map();
+      const keyOf = (term) => `${term.academic_year}/${term.semester}`;
+      for (const term of [current, nextTerm(current)]) {
+        terms.set(keyOf(term), { ...term, offered: false });
+      }
+      for (const row of rows) {
+        terms.set(keyOf(row), {
+          academic_year: row.academic_year,
+          semester: row.semester,
+          offered: true,
+        });
+      }
+
+      return res.status(200).json({ current, terms: [...terms.values()].sort(newestFirst) });
     } catch (error) {
       return next(error);
     }

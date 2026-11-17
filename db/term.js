@@ -22,6 +22,9 @@
  *   - There is no semester 3. The database and the Offerings filter still
  *     accept one - a summer term someone opens by hand is a real thing - but
  *     no date is ever in it, so this never returns one.
+ *     Since 17 พ.ย. 2569 they do not: the owner struck ภาคฤดูร้อน system-wide
+ *     (#279), migration 0010 narrows the column to (1, 2) and the routes refuse
+ *     3. This rule was already right and did not change.
  *
  * The academic year is Buddhist Era and turns over with the term, in June:
  * June to December take the current พ.ศ., January to May take the one before.
