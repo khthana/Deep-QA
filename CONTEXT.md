@@ -40,10 +40,10 @@ A Program Subject opened for a specific academic year and semester. One Offering
 _Avoid_: semester course, course in term
 
 **Term** (ภาคการศึกษา):
-One semester of one academic year, written `ภาค/ปี` — `1/2569` is ภาคต้น of ปีการศึกษา 2569. Semesters are 1 ภาคต้น,
-2 ภาคปลาย and 3 ภาคฤดูร้อน. An Offering belongs to exactly one Term. The **current Term** is read off the date by
-the faculty's rule (`db/term.js`): June–October is 1, November–May is 2 of the year that began in June, and no date
-is ever in 3 — a summer term is opened by hand.
+One semester of one academic year, written `ภาค/ปี` — `1/2569` is ภาคต้น of ปีการศึกษา 2569. There are two semesters,
+1 ภาคต้น and 2 ภาคปลาย; the owner struck ภาคฤดูร้อน on 17 November 2569. An Offering belongs to exactly one Term. The
+**current Term** is read off the date by the faculty's rule (`db/term.js`): June–October is 1, November–May is 2 of
+the year that began in June.
 _Avoid_: writing the year first (`2569/1`); semester alone when the year matters
 
 **Section** (กลุ่มเรียน):
