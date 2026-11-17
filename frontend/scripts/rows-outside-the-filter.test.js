@@ -122,6 +122,40 @@ test('a filtered read on a screen with nothing to say after a write is outside i
   assert.equal(verdict(code), 'outside')
 })
 
+test('a value computed from state is a filter too, which is how `Offerings` passes its term (#279)', () => {
+  const code = `
+    const Screen = () => {
+      const [chosen, setChosen] = useState('')
+      const [termsOf, setTermsOf] = useState(null)
+      const program = programs.some(entry => entry.program_id === chosen) ? chosen : ''
+      const term = termsOf?.current ?? null
+      const year = term?.academic_year ?? ''
+      const load = useCallback(async () => {
+        setData(await listOfferings({ page, per_page: PAGE_SIZE, program_id: program, academic_year: year }))
+      }, [program, year])
+      const save = async () => { ${BARE}; setNotice(said) }
+      return <Table />
+    }
+  `
+  assert.deepEqual(filters(code), ['academic_year', 'program_id'])
+  assert.equal(verdict(code), 'bare')
+})
+
+test('a function that reads state is not a filter, so a loader handed on is not one', () => {
+  const code = `
+    const Screen = () => {
+      const [program, setProgram] = useState('')
+      const reload = () => program
+      const load = useCallback(async () => {
+        setData(await listRows({ page, per_page: PAGE_SIZE, onDone: reload }))
+      }, [program])
+      const save = async () => { ${BARE}; setNotice(said) }
+      return <Table />
+    }
+  `
+  assert.deepEqual(filters(code), [])
+})
+
 test('a name the file does not hold in state is not a filter', () => {
   // A read keyed on a module constant is the same read every time, so the
   // screen cannot save outside it and there is nothing for this rule to be

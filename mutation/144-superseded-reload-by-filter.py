@@ -46,6 +46,33 @@ Playwright จับ `111a` (5 แถว) กับ `121a` (1 แถว) ด้�
 `pairsrefusalstalewins` 2 ล้ม 21 ผ่าน · `rubricsrefusalstalewins` 2 ล้ม 13 ผ่าน · `studentssavestalewins` 2 ล้ม 15 ผ่าน -
 และอีกสิบห้าตัวของหกจอนี้ยังล้มแถวเดียว ตัวเลขนั้นคือสิ่งที่ตั๋วนี้เปิดมาเพื่อวัด: ที่จุดเรียกแยกไม่ได้ ที่ effect ของ ref แยกได้
 
+## การเล็งใหม่ของ #279 — คำทำนายเขียนก่อนกวาด (17 พ.ย. 2569)
+
+จอเปิดรายวิชาเหลือตัวเลือกภาคการศึกษาตัวเดียวแบบ `ภาค/ปี` ไม่มี *ทุกปี* *ทุกภาค* *ทุกหลักสูตร* และ `load`
+รอ `poolRead` กับ `termsRead` ก่อนอ่าน มัตแตนต์สามตัวของจอนี้จึงคง `poolRead, termsRead` ไว้ในรายการ
+ทุกตัว ตัดออกแค่ตัวควบคุมที่ชื่อบอก แถวปีการศึกษาของ `144a` ย้ายจากภาคของ seed ไปภาคเดียวกันของ
+`MOVED_YEAR` และแถวภาคการศึกษาย้ายไปอีกภาคของปีเดียวกัน แต่ละการย้ายเปลี่ยนแค่ค่าเดียว
+
+| ชื่อ | คำทำนาย | เหตุผล |
+|---|---|---|
+| `offeringsyearnotfollowed` | **ล้ม** แถวปีการศึกษาของ `144a` ที่ `toEqual` · แถวอื่นของจอไม่ล้ม | การย้ายเปลี่ยน `year` อย่างเดียว ref จึงค้างที่ `load` ของภาคเดิม |
+| `offeringssemesternotfollowed` | **ล้ม** แถวภาคการศึกษาของ `144a` ที่ `toEqual` · แถวอื่นของจอไม่ล้ม | การย้ายเปลี่ยน `semester` อย่างเดียว |
+| `offeringsprogramnotfollowed` | **รอด** — เทียบเท่า | การย้ายหลักสูตรผ่าน `termsRead` เป็นเท็จ และ `year` เป็น `''` ระหว่างรอภาคของหลักสูตรใหม่ ทั้งสองยังอยู่ในรายการ ref จึงตาม `load` ตัวใหม่อยู่ดี ถ้ารอดจริงจะถอนเป็นบันทึก (`SUPERSEDED`) และแถวหลักสูตรของ `144a` เป็นตาข่าย (#47, #198) |
+
+**ผลการกวาด 17 พ.ย. 2569** ชุดเดียวกันทุกตัว: สามแถวของจอนี้ใน `144a` กับ `23a` และ `23b` รวม 15 แถว
+baseline สะอาดผ่านก่อนกวาด และ `git diff --stat` ของ `Offerings.js` กลับเท่าเดิมหลัง `restore` ทุกตัว
+ทั้งสามตรงคำทำนาย
+
+| ชื่อ | ล้ม | ผ่าน | ตายที่ |
+|---|---|---|---|
+| `offeringsyearnotfollowed` | 1 — แถวปีการศึกษาของ `144a` | 14 | `toEqual` ของการอ่านจอ ไม่ใช่การจัดฉาก |
+| `offeringssemesternotfollowed` | 1 — แถวภาคการศึกษาของ `144a` | 14 | `toEqual` เช่นกัน |
+| `offeringsprogramnotfollowed` | 0 | 15 | รอด — ถอนเป็นบันทึกข้างล่าง |
+
+แถวหลักสูตรของ `144a` จึงเป็นตาข่ายตั้งแต่วันนี้: ข้อยืนยันยังจริงและยังรัน แต่ไม่มีมัตแตนต์ที่ effect ของ ref
+แยกมันออกจากแถวภาคได้ สิ่งที่จะทำให้แยกได้อีกคือการที่หลักสูตรขยับได้โดยภาคที่อ่านแล้วไม่หายไประหว่างทาง
+เช่นถ้าภาคของทุกหลักสูตรถูกอ่านไว้พร้อมกัน
+
 ## วิธีรัน
 
     python mutation/144-superseded-reload-by-filter.py save
@@ -68,9 +95,9 @@ Playwright จับ `111a` (5 แถว) กับ `121a` (1 แถว) ด้�
 | `subjectsdepartmentnotfollowed` | ข้อมูลรายวิชา: ตัวกรองภาควิชา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the ภาควิชา filter that has moved* · ที่มา `docs/acceptance/16-subjects.md:316` |
 | `pairsprogramnotfollowed` | รายวิชาในหลักสูตร: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/18-program-subjects.md:289` |
 | `rubricsprogramnotfollowed` | Rubric: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/21-rubrics.md:270` |
-| `offeringsprogramnotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, year, semester, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:490` |
-| `offeringsyearnotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองปีการศึกษา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, program, semester, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the ปีการศึกษา filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:491` |
-| `offeringssemesternotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองภาคการศึกษา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, program, year, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the ภาคการศึกษา filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:492` |
+| `offeringsprogramnotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, year, semester, report, poolRead, termsRead])` (เล็งใหม่ 17 พ.ย. 2569) | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:490` |
+| `offeringsyearnotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองปีการศึกษา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, program, semester, report, poolRead, termsRead])` (เล็งใหม่ 17 พ.ย. 2569) | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the ปีการศึกษา filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:491` |
+| `offeringssemesternotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองภาคการศึกษา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, program, year, report, poolRead, termsRead])` (เล็งใหม่ 17 พ.ย. 2569) | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the ภาคการศึกษา filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:492` |
 | `studentsprogramnotfollowed` | ข้อมูลนักศึกษา: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list บันทึก reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/17-students.md:310` |
 """
 from harness import main
@@ -114,14 +141,29 @@ MUTANTS = {
     'rubricsprogramnotfollowed': ('rubrics', REF,
         '    onScreen.current = load\n  }, [page, report])\n'),
     # ข้อมูลการเปิดรายวิชา: ตัวกรองหลักสูตร
-    'offeringsprogramnotfollowed': ('offerings', REF,
-        '    onScreen.current = load\n  }, [page, year, semester, report])\n'),
+    #
+    # `offeringsprogramnotfollowed` stood here until 17 พ.ย. 2569 (#279), and
+    # is withdrawn by deletion rather than to `SUPERSEDED`: its anchor is `REF`,
+    # which every mutant of this file shares and which is still the code, so a
+    # record would still apply. Re-aimed to keep `poolRead, termsRead`, it was
+    # swept and survived as predicted - a curriculum move always passes through
+    # `termsRead` false and `year` empty while the new curriculum's terms are
+    # read, and both stay in the list, so the ref follows `load` anyway. The
+    # docblock's #279 table is the record (#54); `144a`'s หลักสูตร row is a net
+    # (#47, #198).
+    #
+    # The two below were re-aimed the same day, when `load` gained `poolRead`
+    # and `termsRead`: both stay in the list, as `pairs` keeps `poolRead`, or
+    # the ref stays on a `load` that returns before the curricula and the terms
+    # land and every reload through it does nothing - a mutant that stops the
+    # reload rather than one that misses the filter (#203). Only the control the
+    # name says is left out.
     # ข้อมูลการเปิดรายวิชา: ตัวกรองปีการศึกษา
     'offeringsyearnotfollowed': ('offerings', REF,
-        '    onScreen.current = load\n  }, [page, program, semester, report])\n'),
+        '    onScreen.current = load\n  }, [page, program, semester, report, poolRead, termsRead])\n'),
     # ข้อมูลการเปิดรายวิชา: ตัวกรองภาคการศึกษา
     'offeringssemesternotfollowed': ('offerings', REF,
-        '    onScreen.current = load\n  }, [page, program, year, report])\n'),
+        '    onScreen.current = load\n  }, [page, program, year, report, poolRead, termsRead])\n'),
     # ข้อมูลนักศึกษา: ตัวกรองหลักสูตร
     'studentsprogramnotfollowed': ('students', REF,
         '    onScreen.current = load\n  }, [page, report])\n'),

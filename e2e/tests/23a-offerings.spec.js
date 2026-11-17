@@ -4,6 +4,8 @@ const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { CURRENT_YEAR, SEMESTER } = require('../../db/seed');
+const { createPool } = require('../../db/pool');
+const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { downloadTemplate, headerOf, csv } = require('../support/import-panel');
@@ -27,6 +29,8 @@ const {
   startRemoval,
   confirmDialog,
   copyFromTerm,
+  NEXT,
+  closeCopy,
 } = require('../support/offerings-screen');
 
 /**
@@ -93,7 +97,22 @@ const PROGRAM = '0501';
 /** The seeded Offering, the one with enrolments and marks hanging off it. */
 const SEEDED = '01076105';
 
-const YEAR = String(Number(CURRENT_YEAR) + 1);
+/**
+ * The term this file opens its subject in. It was `CURRENT_YEAR + 1`,
+ * ภาคต้น, typed into the form; since 17 พ.ย. 2569 the form opens in the term the list
+ * shows and the picker offers a term nobody ran only if it is the current or
+ * the next (#279), so it is the next - which is CURRENT + 1 ภาคต้น from
+ * November to May and CURRENT ภาคปลาย from June to October.
+ */
+const OPEN = NEXT;
+
+/**
+ * The term row 7 copies onto, which no other file uses. A term nobody ran is
+ * not offered, so it is made a term this curriculum ran by one Offering of the
+ * seeded subject written straight into the schema - one this file's copy does
+ * not carry, so the report stays about the copy (#279).
+ */
+const COPY_TO = { year: String(Number(CURRENT_YEAR) + 6), semester: 1 };
 
 const TEACHER_ONE = 'ดร. อนันต์ สอนดี';
 const TEACHER_TWO = 'ดร. ภัทรา ว่างสอน';
@@ -142,24 +161,25 @@ test('row 1: a committee member opens a subject for a chosen year and semester',
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
 
+  await filterToTerm(page, OPEN.year, OPEN.semester);
   await openForm(page);
-  await openSubject(page, { subject: SUBJECT, year: YEAR, semester: 1 });
+  await openSubject(page, { subject: SUBJECT, ...OPEN });
 
   // Opening a subject lands on its sections rather than back on the list: an
   // Offering with no ตอนเรียน is not yet anything a teacher can reach, and the
   // next thing to do is always to add one.
   await expect(page.getByRole('button', { name: 'กลับไปหน้ารายการ' })).toBeVisible();
-  await expect(page.getByText('ยังไม่มีตอนเรียนในรายวิชาที่เปิดสอนนี้')).toBeVisible();
+  await expect(page.getByText('ยังไม่มีกลุ่มเรียนในรายวิชาที่เปิดสอนนี้')).toBeVisible();
 
   await backToList(page);
-  await filterToTerm(page, YEAR, 1);
+  await filterToTerm(page, OPEN.year, OPEN.semester);
   await expect(offeringRow(page, SUBJECT)).toHaveCount(1);
 });
 
 test('row 2: several sections, and the same number twice is refused', async ({ page }) => {
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
-  await filterToTerm(page, YEAR, 1);
+  await filterToTerm(page, OPEN.year, OPEN.semester);
   await openSections(page, SUBJECT);
 
   await addSection(page, '1');
@@ -174,13 +194,13 @@ test('row 2: several sections, and the same number twice is refused', async ({ p
   await expect(page.getByText(REFUSALS.duplicateSectionNumber)).toBeVisible();
   // Named list items only: the shell's own menu is a list too, and an
   // unqualified `listitem` count would be counting the sidebar.
-  await expect(page.getByRole('listitem', { name: /^ตอนเรียน / })).toHaveCount(2);
+  await expect(page.getByRole('listitem', { name: /^กลุ่มเรียน / })).toHaveCount(2);
 });
 
 test('row 4: teachers are assigned, and reassigning replaces them', async ({ page }) => {
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
-  await filterToTerm(page, YEAR, 1);
+  await filterToTerm(page, OPEN.year, OPEN.semester);
   await openSections(page, SUBJECT);
 
   await expect(sectionCard(page, '1').getByText('ยังไม่ได้กำหนดผู้สอน')).toBeVisible();
@@ -198,19 +218,19 @@ test('row 4: teachers are assigned, and reassigning replaces them', async ({ pag
 test('row 8: removing a section asks first, and cancelling does nothing', async ({ page }) => {
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
-  await filterToTerm(page, YEAR, 1);
+  await filterToTerm(page, OPEN.year, OPEN.semester);
   await openSections(page, SUBJECT);
 
-  await sectionCard(page, '2').getByRole('button', { name: 'ลบตอนเรียน' }).click();
+  await sectionCard(page, '2').getByRole('button', { name: 'ลบกลุ่มเรียน' }).click();
   await expect(confirmDialog(page)).toBeVisible();
 
   await page.getByRole('button', { name: 'ยกเลิก' }).click();
   await expect(confirmDialog(page)).toHaveCount(0);
   await expect(sectionCard(page, '2')).toHaveCount(1);
 
-  await sectionCard(page, '2').getByRole('button', { name: 'ลบตอนเรียน' }).click();
-  await page.getByRole('button', { name: 'ลบตอนเรียน', exact: true }).last().click();
-  await expect(page.getByText('ลบตอนเรียนเรียบร้อยแล้ว')).toBeVisible();
+  await sectionCard(page, '2').getByRole('button', { name: 'ลบกลุ่มเรียน' }).click();
+  await page.getByRole('button', { name: 'ลบกลุ่มเรียน', exact: true }).last().click();
+  await expect(page.getByText('ลบกลุ่มเรียนเรียบร้อยแล้ว')).toBeVisible();
   await expect(sectionCard(page, '2')).toHaveCount(0);
   await expect(sectionCard(page, '1')).toHaveCount(1);
 });
@@ -235,25 +255,39 @@ test('row 8: an Offering with enrolled students is refused and stays on the scre
 
   // And the section beneath it is protected for the same reason.
   await openSections(page, SEEDED);
-  await sectionCard(page, '1').getByRole('button', { name: 'ลบตอนเรียน' }).click();
-  await page.getByRole('button', { name: 'ลบตอนเรียน', exact: true }).last().click();
+  await sectionCard(page, '1').getByRole('button', { name: 'ลบกลุ่มเรียน' }).click();
+  await page.getByRole('button', { name: 'ลบกลุ่มเรียน', exact: true }).last().click();
   await expect(page.getByText(REFUSALS.sectionInUse)).toBeVisible();
   await expect(sectionCard(page, '1')).toHaveCount(1);
 });
 
 test('row 7: a whole term is copied, and the screen says what it did', async ({ page }) => {
+  // The target made a term this curriculum ran - see `COPY_TO`. Its subject is
+  // the seeded one, which `OPEN` does not hold, so nothing of it is in the copy.
+  const db = createPool({ schema: E2E_SCHEMA });
+  try {
+    await db.query(
+      `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+       VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING`,
+      [PROGRAM, SEEDED, COPY_TO.year, COPY_TO.semester],
+    );
+  } finally {
+    await db.end();
+  }
+
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
 
-  // 1 → 3: a copy onto a term this file has not touched is a copy whose
-  // report is about the copy and nothing else.
-  await copyFromTerm(page, { year: YEAR, semester: 1 }, { year: YEAR, semester: 3 });
+  // OPEN → COPY_TO: a copy onto a term this file has not touched is a copy
+  // whose report is about the copy and nothing else. Since 17 พ.ย. 2569 (#279) it is
+  // made in the popup, onto the term the list shows.
+  await copyFromTerm(page, OPEN, COPY_TO);
 
   await expect(page.getByText(/คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ 1 รายวิชา/)).toBeVisible();
+  await closeCopy(page);
 
   // The sections came with it, and so did the teaching: row 4 left one teacher
   // on section 1 and that is what the copy has to reproduce.
-  await filterToTerm(page, YEAR, 3);
   await expect(offeringRow(page, SUBJECT)).toHaveCount(1);
   await openSections(page, SUBJECT);
   await expect(sectionCard(page, '1')).toHaveCount(1);
@@ -262,7 +296,7 @@ test('row 7: a whole term is copied, and the screen says what it did', async ({ 
   // Pressing it again creates nothing and says which subjects were already
   // there — the outcome a single count would have hidden.
   await backToList(page);
-  await copyFromTerm(page, { year: YEAR, semester: 1 }, { year: YEAR, semester: 3 });
-  await expect(page.getByText('ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง')).toBeVisible();
+  await copyFromTerm(page, OPEN, COPY_TO);
+  await expect(page.getByText('ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในหน้าต่างคัดลอก')).toBeVisible();
   await expect(page.getByText(`ข้ามเพราะเปิดสอนอยู่แล้ว 1 รายวิชา — ${SUBJECT}`)).toBeVisible();
 });

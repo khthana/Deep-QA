@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
-const { byAlias, PROGRAM, SUBJECT } = require('../../db/seed');
+const { byAlias, CURRENT_YEAR, SEMESTER, PROGRAM, SUBJECT } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
@@ -823,16 +823,24 @@ test.describe('แผนพัฒนาต่อเนื่อง (ContinuousIm
  */
 test.describe('การเปิดรายวิชาในภาคการศึกษา (Offerings.js)', () => {
   const OPEN = 'เปิดรายวิชา';
-  const FORM = 'เปิดรายวิชาในภาคการศึกษา';
+  // Since #279 (17 November 2569) the heading names the term the list shows, and
+  // the form has no year and no semester of its own to type into.
+  const FORM = /^เปิดรายวิชาในภาคการศึกษา \d\/\d{4}$/;
 
   /** A body the screen's success path can read all the way through. */
   async function craftedOffering() {
     const { rows } = await db.query(
-      `SELECT sc.id, sc.subject_id, s.subject_name_th, sc.academic_year, sc.semester
+      `SELECT sc.id, sc.program_id, sc.subject_id, s.subject_name_th, sc.academic_year, sc.semester
          FROM semester_courses sc
          JOIN subjects s ON s.subject_id = sc.subject_id
+        WHERE sc.program_id = $3 AND sc.academic_year = $1 AND sc.semester = $2
         ORDER BY sc.id ASC
         LIMIT 1`,
+      // In the curriculum and the term the list opens on, and carrying its
+      // curriculum, since 17 November 2569: the list is one curriculum and one
+      // term since #279, and an answer of another - or one with no `program_id`
+      // to compare - is a row outside it, which #247 adds a sentence for.
+      [CURRENT_YEAR, SEMESTER, PROGRAM],
     );
     expect(rows, 'the seed should have opened a subject').toHaveLength(1);
     return { offering: rows[0] };
@@ -844,8 +852,6 @@ test.describe('การเปิดรายวิชาในภาคกา�
     await expect(subjectPicker(page).locator('option')).not.toHaveCount(1);
     const subject = await subjectPicker(page).locator('option').nth(1).getAttribute('value');
     await subjectPicker(page).selectOption(subject);
-    await page.locator('form input[inputmode="numeric"]').fill('2570');
-    await page.locator('form select:has(option:text-is("1 — ภาคต้น"))').selectOption('1');
 
     const write = await gate(page, /^\/api\/offerings$/, isWrite, answer);
     await button(page, OPEN).click();
@@ -866,7 +872,11 @@ test.describe('การเปิดรายวิชาในภาคกา�
 
     await button(page, OPEN).click();
     await expect(heading(page, FORM)).toBeVisible();
-    await page.locator('form input[inputmode="numeric"]').fill('2571');
+    // What is typed is the subject since #279, the year field having gone with
+    // the term fields; the form opens on no subject, so choosing one is a change.
+    await expect(subjectPicker(page).locator('option')).not.toHaveCount(1);
+    const typed = await subjectPicker(page).locator('option').nth(1).getAttribute('value');
+    await subjectPicker(page).selectOption(typed);
 
     const reloaded = waitForReload(page, '/api/offerings');
     write.open();
@@ -875,8 +885,8 @@ test.describe('การเปิดรายวิชาในภาคกา�
     await page.waitForTimeout(SETTLE_MS);
 
     expect(await heading(page, FORM).isVisible(), 'the form opened again').toBe(true);
-    expect(await page.locator('form input[inputmode="numeric"]').inputValue()).toBe('2571');
-    expect(await page.getByText(/เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน$/).count(), "the first save's banner").toBe(0);
+    expect(await subjectPicker(page).inputValue()).toBe(typed);
+    expect(await page.getByText(/เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มกลุ่มเรียน$/).count(), "the first save's banner").toBe(0);
   });
 
   test('a save refused after the screen moved on says nothing over the new form', async ({
@@ -907,7 +917,7 @@ test.describe('การเปิดรายวิชาในภาคกา�
     await write.answered;
     await reloaded;
 
-    await expect(page.getByText(/เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน$/)).toBeVisible();
+    await expect(page.getByText(/เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มกลุ่มเรียน$/)).toBeVisible();
   });
 });
 

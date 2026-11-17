@@ -178,7 +178,7 @@ test('1 an accepted section write says which Offering it added to', async ({ pag
   await openSections(page, MINE.id);
 
   await page.getByPlaceholder('เช่น 1 หรือ พ1').fill('1');
-  await page.getByRole('button', { name: 'เพิ่มตอนเรียน' }).click();
+  await page.getByRole('button', { name: 'เพิ่มกลุ่มเรียน' }).click();
 
   await moveToTheOtherPanel(page);
   await sleep(LATE_MS + SETTLE_MS);
@@ -195,7 +195,7 @@ test('2 a refused section write says which Offering refused it', async ({ page }
   await openSections(page, MINE.id);
 
   await page.getByPlaceholder('เช่น 1 หรือ พ1').fill('2');
-  await page.getByRole('button', { name: 'เพิ่มตอนเรียน' }).click();
+  await page.getByRole('button', { name: 'เพิ่มกลุ่มเรียน' }).click();
 
   await moveToTheOtherPanel(page);
   await sleep(LATE_MS + SETTLE_MS);
@@ -211,8 +211,8 @@ test('3 a section removal says which Offering it removed from', async ({ page })
   await openSections(page, MINE.id);
   await expect(sectionCard(page, '3')).toHaveCount(1);
 
-  await sectionCard(page, '3').getByRole('button', { name: 'ลบตอนเรียน' }).click();
-  await page.getByRole('button', { name: 'ลบตอนเรียน', exact: true }).last().click();
+  await sectionCard(page, '3').getByRole('button', { name: 'ลบกลุ่มเรียน' }).click();
+  await page.getByRole('button', { name: 'ลบกลุ่มเรียน', exact: true }).last().click();
   // The box covers the way out until the write answers - see the docstring.
   await dismiss(page);
 

@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS, IDS } = require('../support/accounts');
-const { byAlias, CURRENT_YEAR, FACULTY, PROGRAM, PROGRAM_INTL, SUBJECT } = require('../../db/seed');
+const { byAlias, CURRENT_YEAR, SEMESTER, FACULTY, PROGRAM, PROGRAM_INTL, SUBJECT } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
@@ -65,6 +65,27 @@ const db = createPool({ schema: E2E_SCHEMA });
 /** A term no other file opens: `23a` uses the next year, `140a` this one in terms 1 and 2, this file its ภาคฤดูร้อน. */
 const FUTURE = String(Number(CURRENT_YEAR) + 2);
 
+/**
+ * The year the ปีการศึกษา and ภาคการศึกษา rows move to, since 17 พ.ย. 2569.
+ *
+ * The two filters became one term picker that offers only the terms a
+ * curriculum ran, the current and the next (#279), and ภาคฤดูร้อน is gone. A
+ * mutant that leaves one of `year` and `semester` out of the ref's
+ * dependencies is seen only by a move that changes that one and not the other,
+ * so the rows move from the seed's term to the same semester of `MOVED_YEAR`
+ * and to the other semester of the seed's year, and both are made terms 0501
+ * ran by one Offering each, written below. Seven on from the seed: `23a` takes
+ * +1 and +6, `140a` +2, `203a` +3, `247c` +4.
+ */
+const MOVED_YEAR = String(Number(CURRENT_YEAR) + 7);
+/**
+ * 0501's, and open only in those two terms: the seed's term holds the seeded
+ * subject alone, so an anchor of that subject would make the moved list read
+ * exactly as the held one and the row would have nothing to tell apart.
+ */
+const MOVED_SUBJECT = '00144003';
+const OTHER_SEMESTER = 3 - Number(SEMESTER);
+
 /** Suspended, so the สถานะ filter has somebody to find. */
 const SUSPENDED = { id: 'e2e144', email: 'e2e.suspended.144@kmitl.ac.th' };
 /** Department 01's, so the unfiltered catalogue is not department 05's. */
@@ -86,6 +107,7 @@ test.beforeAll(async () => {
   for (const [id, department] of [
     [CIVIL_SUBJECT, '01'],
     [INTL_SUBJECT, '05'],
+    [MOVED_SUBJECT, '05'],
   ]) {
     await db.query(
       `INSERT INTO subjects (subject_id, subject_name_th, subject_name_en, credits, department_id, created_by)
@@ -99,10 +121,28 @@ test.beforeAll(async () => {
     [PROGRAM_INTL, INTL_SUBJECT, admin],
   );
   await db.query(
-    `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
-     VALUES ($1, $2, $3, 3)`,
-    [PROGRAM_INTL, INTL_SUBJECT, FUTURE],
+    `INSERT INTO program_subjects (program_id, subject_id, subject_type, created_by)
+     VALUES ($1, $2, 'required', $3)`,
+    [PROGRAM, MOVED_SUBJECT, admin],
   );
+  // In the seed's term since 17 พ.ย. 2569: the หลักสูตร row moves the curriculum and
+  // keeps the term, there being no *every term* to start from (#279).
+  await db.query(
+    `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+     VALUES ($1, $2, $3, $4)`,
+    [PROGRAM_INTL, INTL_SUBJECT, CURRENT_YEAR, SEMESTER],
+  );
+  // The two terms the ปีการศึกษา and ภาคการศึกษา rows move to - see `MOVED_YEAR`.
+  for (const [year, semester] of [
+    [MOVED_YEAR, SEMESTER],
+    [CURRENT_YEAR, OTHER_SEMESTER],
+  ]) {
+    await db.query(
+      `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+       VALUES ($1, $2, $3, $4)`,
+      [PROGRAM, MOVED_SUBJECT, year, semester],
+    );
+  }
   for (const [i, id] of INTL_STUDENTS.entries()) {
     await db.query(
       `INSERT INTO student (student_id, first_name_th, last_name_th, department_id, program_id)
@@ -430,6 +470,15 @@ async function onOfferingsScreen(page, body) {
       list: offerings.API,
       table: page.locator('table').first(),
       filters: OFFERING_FILTERS,
+      // The read held is the one the screen opens with: 0501 in the seed's term.
+      // Since 17 พ.ย. 2569 there is no read with none of the filters (#279) - `held`
+      // is Rubric's parameter for Rubric's reason.
+      held: (url) =>
+        url.pathname === offerings.API &&
+        url.searchParams.get('page') === '1' &&
+        url.searchParams.get('program_id') === PROGRAM &&
+        url.searchParams.get('academic_year') === CURRENT_YEAR &&
+        url.searchParams.get('semester') === String(SEMESTER),
       rows: 'offerings',
       key: (row) => row.subject_id,
       // `openSections`' `catch`: the panel never opened.
@@ -437,7 +486,7 @@ async function onOfferingsScreen(page, body) {
         offerings
           .offeringRow(page, first.subject_id)
           .first()
-          .getByRole('button', { name: 'ตอนเรียนและผู้สอน' })
+          .getByRole('button', { name: 'กลุ่มเรียนและผู้สอน' })
           .click(),
     });
   });
@@ -461,8 +510,9 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   await onOfferingsScreen(page, (screen) =>
     refilter(page, {
       ...screen,
-      moved: ['academic_year', FUTURE],
-      move: () => offerings.yearFilter(page).fill(FUTURE),
+      moved: ['academic_year', MOVED_YEAR],
+      move: () =>
+        offerings.termFilter(page).selectOption(offerings.termOf(MOVED_YEAR, SEMESTER)),
     }),
   );
 });
@@ -473,8 +523,9 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   await onOfferingsScreen(page, (screen) =>
     refilter(page, {
       ...screen,
-      moved: ['semester', '3'],
-      move: () => offerings.semesterFilter(page).selectOption('3'),
+      moved: ['semester', String(OTHER_SEMESTER)],
+      move: () =>
+        offerings.termFilter(page).selectOption(offerings.termOf(CURRENT_YEAR, OTHER_SEMESTER)),
     }),
   );
 });

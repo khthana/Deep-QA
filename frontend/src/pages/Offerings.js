@@ -8,7 +8,7 @@ import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import OfferingForm from '../components/offerings/OfferingForm'
 import Pager from '../components/Pager'
 import SectionsPanel from '../components/offerings/SectionsPanel'
-import { SEMESTERS, semesterLabel } from '../components/offerings/terms'
+import { termLabel } from '../components/offerings/terms'
 import {
   assignTeachers,
   copyTerm,
@@ -19,6 +19,7 @@ import {
   getOffering,
   listOfferings,
   listReachablePrograms,
+  listTerms,
   updateSection,
 } from '../api/offerings'
 
@@ -51,6 +52,15 @@ import {
  * whose every option returns the same rows. The other two are the term, and the
  * screen is almost always being read one term at a time.
  *
+ * **Two filters since 17 พ.ย. 2569** - the owner's answers in #279. The list is of one
+ * curriculum and one term at a time: no ทุกหลักสูตร, ทุกปี or ทุกภาค, and no
+ * column for any of the three. The term is one picker written `ภาค/ปี`, whose
+ * options the server gives per curriculum (`/api/offerings/terms`): every term
+ * the curriculum ran, plus the current term and the next, newest first. The
+ * screen opens on the first curriculum and on the current term, which is the
+ * server's and never this browser's clock (`teaching.js` says why). There is no
+ * ภาคฤดูร้อน (migration 0010).
+ *
  * ## What a removal means here
  *
  * Not what it means on the four screens above. There is no switching off: an
@@ -61,6 +71,10 @@ import {
  * what actually happened.
  *
  * ## What the copy panel assumes
+ *
+ * *Since 17 พ.ย. 2569 this section is a record (#54): the programme is never blank
+ * (#279), so the copy always targets the programme the list shows, and the
+ * condition below cannot arise.*
  *
  * That the person using it reaches one programme. The panel sends the filter's
  * programme, and for a committee member the filter is not a dropdown at all, so
@@ -132,16 +146,48 @@ const HANDED_ON = 'handed-on'
  * The subject's name and not its code, for #93's reason: a code in front of a
  * name is a label somebody chose from, and this is prose.
  */
+// The term written `ภาค/ปี` since 17 พ.ย. 2569 (#279).
 const aboutOffering = (offering, sentence) =>
-  `${sentence} (รายวิชา ${offering.subject_name_th} ปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester})`
+  `${sentence} (รายวิชา ${offering.subject_name_th} ภาคการศึกษา ${termLabel(offering)})`
 
 export default function Offerings() {
   const [page, setPage] = useState(1)
-  const [program, setProgram] = useState('')
-  const [year, setYear] = useState('')
-  const [semester, setSemester] = useState('')
+  const [chosen, setChosen] = useState('')
+  const [chosenTerm, setChosenTerm] = useState('')
   const [data, setData] = useState({ offerings: [], total: 0 })
   const [programs, setPrograms] = useState([])
+  /**
+   * Whether the programmes have been read - #279, 17 พ.ย. 2569, which is
+   * ProgramSubjects.js's `poolRead` for Rubrics.js's reason (#276): the list is
+   * of one curriculum, so it waits for the curricula rather than reading every
+   * one in reach first.
+   */
+  const [poolRead, setPoolRead] = useState(false)
+  /**
+   * The term picker's answer, and which programme it is of - #279. A read of
+   * another programme's terms is not this one's, so `termsRead` below asks.
+   * `termsAsked` is bumped by a copy, the one write that can add a term a copy
+   * may later be made from.
+   */
+  const [termsOf, setTermsOf] = useState(null)
+  const [termsAsked, setTermsAsked] = useState(0)
+  const [copyOpen, setCopyOpen] = useState(false)
+  // The programme the list is of: the one chosen while it is still in reach,
+  // and the first otherwise - the same rule as ProgramSubjects.js and
+  // Rubrics.js (#276).
+  const program = programs.some(entry => entry.program_id === chosen)
+    ? chosen
+    : programs[0]?.program_id ?? ''
+  // The terms are read for a programme; with none in reach there is nothing to
+  // read them for, and the list is read as it is.
+  const termsRead = program === '' ? poolRead : termsOf?.of === program
+  const terms = termsRead && termsOf ? termsOf.terms : []
+  // The term the list is of: the one chosen while this programme offers it, and
+  // the current term otherwise.
+  const term =
+    terms.find(entry => termLabel(entry) === chosenTerm) ?? (termsRead ? termsOf?.current : null)
+  const year = term?.academic_year ?? ''
+  const semester = term ? String(term.semester) : ''
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
   const [opening, setOpening] = useState(false)
@@ -193,6 +239,10 @@ export default function Offerings() {
    * `frontend/src/pages/Students.js`.
    */
   const load = useCallback(async isCurrent => {
+    // #279, 17 พ.ย. 2569 - not before the curricula and that curriculum's terms are
+    // known: the list is of one of each, and a read before them would be of
+    // every one.
+    if (!poolRead || !termsRead) return true
     // Which read this is, for the sentence that may be waiting for it - #205.
     const key = readOf(page, program, year, semester)
     setLoading(true)
@@ -261,7 +311,7 @@ export default function Offerings() {
         if (!handedOn && !waiting.current?.held) waiting.current = null
       }
     }
-  }, [page, program, year, semester, report])
+  }, [page, program, year, semester, report, poolRead, termsRead])
 
   useEffect(() => {
     let current = true
@@ -407,13 +457,38 @@ export default function Offerings() {
     let cancelled = false
     listReachablePrograms()
       .then(({ programs: reachable }) => {
-        if (!cancelled) setPrograms(reachable)
+        if (!cancelled) {
+          setPrograms(reachable)
+          setPoolRead(true)
+        }
       })
-      .catch(report)
+      .catch(error => {
+        report(error)
+        if (!cancelled) setPoolRead(true)
+      })
     return () => {
       cancelled = true
     }
   }, [report])
+
+  // The terms of the programme the list is of - #279, 17 พ.ย. 2569. Read again when
+  // the programme changes and after a copy; an answer for a programme the
+  // screen has left is dropped. A refused read leaves the picker empty and the
+  // list unread, under the refusal.
+  useEffect(() => {
+    if (!program) return undefined
+    let cancelled = false
+    listTerms(program)
+      .then(answer => {
+        if (!cancelled) setTermsOf({ of: program, current: answer.current, terms: answer.terms })
+      })
+      .catch(error => {
+        if (!cancelled) report(error)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [program, termsAsked, report])
 
   const nameOf = programId =>
     programs.find(entry => entry.program_id === programId)?.program_name_th ?? programId
@@ -555,6 +630,9 @@ export default function Offerings() {
       // is not in the list in front of them, which is one fact however many of the
       // three put it there. The year is compared as text: a `<select>` hands over a
       // string and the answer carries a number (`lib/outsideTheFilter.js`).
+      // Since #279 (17 พ.ย. 2569) the form has no term fields and opens a subject in
+      // the term the list shows, so the two term clauses no longer have a way in from
+      // this form; they stay because the answer, not the draft, is what is compared.
       const outside =
         outsideFilter(program, offering.program_id) ||
         outsideFilter(year, offering.academic_year) ||
@@ -564,7 +642,7 @@ export default function Offerings() {
         // label-code: the notice says what was just created, and the next thing the person
         // does is find that offering by its code in the registrar's list (#93)
         message: alsoOutside(
-          `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มตอนเรียน`,
+          `เปิดรายวิชา ${offering.subject_id} ${offering.subject_name_th} ในภาคการศึกษา ${termLabel(offering)} เรียบร้อยแล้ว ขั้นต่อไปคือเพิ่มกลุ่มเรียน`,
           outside
         ),
       }
@@ -597,12 +675,12 @@ export default function Offerings() {
    * sentence over a form reads as being about that form. `Departments.js`
    * carries the reasons.
    */
-  const runCopy = async terms => {
+  const runCopy = async copiedTerms => {
     const sent = showing.current
     setNotice(null)
     setWriting(true)
     try {
-      const target = program || programs[0]?.program_id
+      const target = program
       // Guarded rather than sent as `undefined`. คัดลอก only needs two years to
       // become pressable, and the programme list arrives on its own request, so
       // a fast hand on a slow connection would send a copy with no programme in
@@ -611,8 +689,10 @@ export default function Offerings() {
         setNotice({ error: true, message: 'กำลังโหลดรายชื่อหลักสูตร กรุณาลองอีกครั้ง' })
         return
       }
-      const answer = await copyTerm({ ...terms, program_id: target })
+      const answer = await copyTerm({ ...copiedTerms, program_id: target })
       setCopied(answer)
+      // A term copied into is a term a later copy may be made from (#279).
+      if (answer.created.length > 0) setTermsAsked(asked => asked + 1)
       // #247 - the **second** save on this screen, and the one the census cannot
       // tell from the first, because it asks the file and not each sentence
       // (`frontend/scripts/rows-outside-the-filter.js` says so). *ไปยังภาค
@@ -626,14 +706,15 @@ export default function Offerings() {
       // Only the branch that created something is wrapped - *ไม่มีรายวิชาใดถูก
       // คัดลอก* is no row outside anything.
       const outside =
-        outsideFilter(year, terms.academic_year) || outsideFilter(semester, terms.semester)
+        outsideFilter(year, copiedTerms.academic_year) ||
+        outsideFilter(semester, copiedTerms.semester)
       const said = {
         error: false,
         message:
           answer.created.length === 0
-            ? 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง'
+            ? 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในหน้าต่างคัดลอก'
             : alsoOutside(
-                `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,
+                `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} กลุ่มเรียน`,
                 outside
               ),
       }
@@ -695,7 +776,7 @@ export default function Offerings() {
           // measured ways in, and the only one whose way to another panel
           // needs ยกเลิก pressed first: since #217 the question covers
           // กลับไปหน้ารายการ until the write answers.
-          setNotice({ error: false, message: aboutOffering(viewing, 'ลบตอนเรียนเรียบร้อยแล้ว') })
+          setNotice({ error: false, message: aboutOffering(viewing, 'ลบกลุ่มเรียนเรียบร้อยแล้ว') })
         }
         await refresh(viewing.id, ask)
       } else {
@@ -758,13 +839,13 @@ export default function Offerings() {
           onAddSection={number =>
             onSection(async () => {
               await createSection(viewing.id, { section_number: number })
-              return `เพิ่มตอนเรียน ${number} เรียบร้อยแล้ว`
+              return `เพิ่มกลุ่มเรียน ${number} เรียบร้อยแล้ว`
             })
           }
           onRenameSection={(section, number) =>
             onSection(async () => {
               await updateSection(viewing.id, section.section_id, { section_number: number })
-              return `แก้ไขเลขตอนเรียนเป็น ${number} เรียบร้อยแล้ว`
+              return `แก้ไขเลขกลุ่มเรียนเป็น ${number} เรียบร้อยแล้ว`
             })
           }
           onRemoveSection={section => {
@@ -775,25 +856,25 @@ export default function Offerings() {
             onSection(async () => {
               await assignTeachers(viewing.id, section.section_id, userIds)
               return userIds.length === 0
-                ? `นำผู้สอนออกจากตอนเรียน ${section.section_number} เรียบร้อยแล้ว`
-                : `กำหนดผู้สอน ${userIds.length} คนให้ตอนเรียน ${section.section_number} เรียบร้อยแล้ว`
+                ? `นำผู้สอนออกจากกลุ่มเรียน ${section.section_number} เรียบร้อยแล้ว`
+                : `กำหนดผู้สอน ${userIds.length} คนให้กลุ่มเรียน ${section.section_number} เรียบร้อยแล้ว`
             })
           }
         />
 
         <ConfirmDialog
           open={Boolean(removing)}
-          title="ยืนยันการลบตอนเรียน"
+          title="ยืนยันการลบกลุ่มเรียน"
           message={
             removing?.section
-              ? `ต้องการลบตอนเรียน ${removing.section.section_number} ใช่หรือไม่ ผู้สอนที่กำหนดไว้จะถูกนำออกไปด้วย${
+              ? `ต้องการลบกลุ่มเรียน ${removing.section.section_number} ใช่หรือไม่ ผู้สอนที่กำหนดไว้จะถูกนำออกไปด้วย${
                   removing.section.student_count > 0
-                    ? ` ตอนเรียนนี้มีนักศึกษาลงทะเบียนอยู่ ${removing.section.student_count} คน ระบบจะไม่อนุญาตให้ลบ`
+                    ? ` กลุ่มเรียนนี้มีนักศึกษาลงทะเบียนอยู่ ${removing.section.student_count} คน ระบบจะไม่อนุญาตให้ลบ`
                     : ''
                 }`
               : ''
           }
-          confirmLabel="ลบตอนเรียน"
+          confirmLabel="ลบกลุ่มเรียน"
           busy={busy}
           onConfirm={confirmRemoval}
           onCancel={() => {
@@ -813,8 +894,7 @@ export default function Offerings() {
         <OfferingForm
           programs={programs}
           defaultProgram={program}
-          defaultYear={year}
-          defaultSemester={semester}
+          term={term}
           busy={busy}
           onSave={save}
           onCancel={() => {
@@ -835,7 +915,8 @@ export default function Offerings() {
                   programme and is shown which.
                   Since 16 พ.ย. 2569 an account reaching one curriculum is shown
                   nothing - the owner's answer: the work is done one department at
-                  a time, so the name told nobody anything (Rubrics.js, the same day). */}
+                  a time, so the name told nobody anything (Rubrics.js, the same day).
+                  Since 17 พ.ย. 2569 there is no ทุกหลักสูตร (#279). */}
               {programs.length > 1 && (
                 <label className="flex items-center gap-2 text-sm text-slate-600">
                   หลักสูตร
@@ -843,11 +924,10 @@ export default function Offerings() {
                     value={program}
                     onChange={event => {
                       setPage(1)
-                      setProgram(event.target.value)
+                      setChosen(event.target.value)
                     }}
                     className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
                   >
-                    <option value="">ทุกหลักสูตร</option>
                     {programs.map(entry => (
                       <option key={entry.program_id} value={entry.program_id}>
                         {entry.program_name_th}
@@ -858,38 +938,38 @@ export default function Offerings() {
               )}
 
               <label className="flex items-center gap-2 text-sm text-slate-600">
-                ปีการศึกษา
-                <input
-                  value={year}
-                  onChange={event => {
-                    setPage(1)
-                    setYear(event.target.value)
-                  }}
-                  placeholder="ทุกปี"
-                  inputMode="numeric"
-                  maxLength={4}
-                  className="w-24 rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-                />
-              </label>
-
-              <label className="flex items-center gap-2 text-sm text-slate-600">
                 ภาคการศึกษา
                 <select
-                  value={semester}
+                  value={term ? termLabel(term) : ''}
                   onChange={event => {
                     setPage(1)
-                    setSemester(event.target.value)
+                    setChosenTerm(event.target.value)
                   }}
+                  disabled={!term}
                   className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
                 >
-                  <option value="">ทุกภาค</option>
-                  {SEMESTERS.map(term => (
-                    <option key={term.value} value={term.value}>
-                      {term.value} — {term.label}
+                  {terms.map(entry => (
+                    <option key={termLabel(entry)} value={termLabel(entry)}>
+                      {termLabel(entry)}
                     </option>
                   ))}
                 </select>
               </label>
+
+              {/* #279, 17 พ.ย. 2569: a button on the top bar that opens the copy as a
+                  popup, where it used to be a panel under the list. */}
+              <button
+                type="button"
+                onClick={() => {
+                  setNotice(null)
+                  setCopied(null)
+                  setCopyOpen(true)
+                }}
+                disabled={!term}
+                className="rounded-lg border border-primary px-5 py-2.5 text-sm font-medium text-primary hover:bg-blue-50 disabled:opacity-60"
+              >
+                คัดลอกจากภาคการศึกษาก่อน
+              </button>
 
               <button
                 type="button"
@@ -899,7 +979,10 @@ export default function Offerings() {
                   setNotice(null)
                   setOpening(true)
                 }}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
+                // #279: the form opens a subject in the term the list shows, so
+                // it waits for that term as the picker and the copy do.
+                disabled={!term}
+                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover disabled:opacity-60"
               >
                 เปิดรายวิชา
               </button>
@@ -912,24 +995,21 @@ export default function Offerings() {
                 <tr>
                   <th className="px-4 py-2">รหัสวิชา</th>
                   <th className="px-4 py-2">ชื่อวิชา</th>
-                  <th className="px-4 py-2">ปีการศึกษา</th>
-                  <th className="px-4 py-2">ภาคการศึกษา</th>
-                  <th className="px-4 py-2">ตอนเรียน</th>
-                  <th className="px-4 py-2">หลักสูตร</th>
+                  <th className="px-4 py-2">กลุ่มเรียน</th>
                   <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {loading && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                       กำลังโหลด…
                     </td>
                   </tr>
                 )}
                 {!loading && data.offerings.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                       ยังไม่มีรายวิชาที่เปิดสอนตามเงื่อนไขนี้
                     </td>
                   </tr>
@@ -946,19 +1026,12 @@ export default function Offerings() {
                           {offering.subject_name_en}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-slate-500">{offering.academic_year}</td>
-                      <td className="px-4 py-2 text-slate-500">
-                        {offering.semester} — {semesterLabel(offering.semester)}
-                      </td>
-                      <td className="px-4 py-2 text-slate-500">
-                        {offering.section_count} ตอน
-                      </td>
-                      <td className="px-4 py-2 text-slate-500">{nameOf(offering.program_id)}</td>
+                      <td className="px-4 py-2 text-slate-500">{offering.section_count}</td>
                       <td className="px-4 py-2">
                         <RowActions>
                           <RowAction
                             kind="open"
-                            label="ตอนเรียนและผู้สอน"
+                            label="กลุ่มเรียนและผู้สอน"
                             onClick={() => openSections(offering)}
                           />
                           <RowAction
@@ -987,8 +1060,26 @@ export default function Offerings() {
             busy={busy}
           />
 
-          <CopyTermPanel busy={busy} report={copied} onCopy={runCopy} />
         </>
+      )}
+
+      {term && (
+        <CopyTermPanel
+          open={copyOpen}
+          target={term}
+          programName={programs.length > 1 ? nameOf(program) : ''}
+          sources={terms.filter(
+            entry =>
+              entry.offered &&
+              (Number(entry.academic_year) < Number(term.academic_year) ||
+                (entry.academic_year === term.academic_year &&
+                  Number(entry.semester) < Number(term.semester)))
+          )}
+          busy={busy}
+          report={copied}
+          onCopy={runCopy}
+          onClose={() => setCopyOpen(false)}
+        />
       )}
 
       <ConfirmDialog
@@ -998,7 +1089,7 @@ export default function Offerings() {
           removing?.offering
             // label-code: the question names the record about to be destroyed, where two of them
             // sharing a name is the whole reason the code is in the sentence (#93)
-            ? `ต้องการยกเลิกการเปิดรายวิชา ${removing.offering.subject_id} ${removing.offering.subject_name_th} ปีการศึกษา ${removing.offering.academic_year} ภาคการศึกษา ${removing.offering.semester} ใช่หรือไม่ ตอนเรียนทั้งหมดและการกำหนดผู้สอนจะถูกลบไปด้วย หากมีนักศึกษาลงทะเบียนหรือมีการบันทึกคะแนนแล้ว ระบบจะไม่อนุญาตให้ลบ`
+            ? `ต้องการยกเลิกการเปิดรายวิชา ${removing.offering.subject_id} ${removing.offering.subject_name_th} ภาคการศึกษา ${termLabel(removing.offering)} ใช่หรือไม่ กลุ่มเรียนทั้งหมดและการกำหนดผู้สอนจะถูกลบไปด้วย หากมีนักศึกษาลงทะเบียนหรือมีการบันทึกคะแนนแล้ว ระบบจะไม่อนุญาตให้ลบ`
             : ''
         }
         confirmLabel="ยกเลิกการเปิดรายวิชา"

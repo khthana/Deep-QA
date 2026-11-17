@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
-import { SEMESTERS, isYear } from './terms'
+import { termLabel } from './terms'
 import { listOfferableSubjects } from '../../api/offerings'
 
 /**
  * The form that opens a รายวิชา for a term — #23's first criterion.
+ *
+ * **Since 17 พ.ย. 2569 the term is not a field** - the owner's answer in #279: the form
+ * opens a subject in the term the list is showing, named in its heading, and a
+ * person who wants another term picks it on the list first. So a save can no
+ * longer land outside the term the list is on; the หลักสูตร is still a field
+ * here, and still can (#247).
  *
  * There is no edit half to this one, and that is the difference from every form
  * before it. All four fields are the key: the หลักสูตร, the รายวิชา, the
@@ -64,8 +70,7 @@ function Field({ label, children, hint }) {
 export default function OfferingForm({
   programs,
   defaultProgram,
-  defaultYear,
-  defaultSemester,
+  term,
   busy,
   onSave,
   onCancel,
@@ -73,17 +78,12 @@ export default function OfferingForm({
   const usable = programs.filter(program => program.is_active !== false)
   const onlyOne = usable.length === 1 ? usable[0] : null
 
-  // Every field starts empty, the semester included. `1` looks like a harmless
-  // default and is not: the effect below fills a field only when it is falsy,
-  // so a semester that starts at `1` can never be replaced by the term the list
-  // is being read at, and the form opens on ภาคต้น while the list behind it
-  // shows ภาคปลาย. `''` is the honest starting value; the effect supplies `1`
-  // when there is nothing better.
+  // The term is not in the draft since 17 พ.ย. 2569 (#279): it is the list's, handed
+  // in as `term`, and it cannot change while the form is drawn because the
+  // picker is drawn in the branch this form replaces.
   const [draft, setDraft] = useState({
     program_id: '',
     subject_id: '',
-    academic_year: '',
-    semester: '',
   })
   const [subjects, setSubjects] = useState([])
   const [loading, setLoading] = useState(false)
@@ -117,10 +117,8 @@ export default function OfferingForm({
       // Whatever the list is being read at: opening a subject is almost always
       // the next thing after looking at the term it belongs to.
       program_id: current.program_id || filteredProgram || onlyOne?.program_id || '',
-      academic_year: current.academic_year || defaultYear || '',
-      semester: current.semester || defaultSemester || 1,
     }))
-  }, [filteredProgram, defaultYear, defaultSemester, onlyOne])
+  }, [filteredProgram, onlyOne])
 
   useEffect(() => {
     if (!draft.program_id) {
@@ -153,8 +151,7 @@ export default function OfferingForm({
       ...(key === 'program_id' ? { subject_id: '' } : {}),
     }))
 
-  const complete =
-    draft.program_id && draft.subject_id && isYear(draft.academic_year) && draft.semester
+  const complete = draft.program_id && draft.subject_id
 
   const submit = event => {
     event.preventDefault()
@@ -162,14 +159,16 @@ export default function OfferingForm({
     onSave({
       program_id: draft.program_id,
       subject_id: draft.subject_id,
-      academic_year: String(draft.academic_year).trim(),
-      semester: Number(draft.semester),
+      academic_year: term.academic_year,
+      semester: Number(term.semester),
     }).finally(() => setSending(false))
   }
 
   return (
     <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-medium text-primary">เปิดรายวิชาในภาคการศึกษา</h2>
+      <h2 className="mb-4 text-lg font-medium text-primary">
+        เปิดรายวิชาในภาคการศึกษา {termLabel(term)}
+      </h2>
 
       <form onSubmit={submit} className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
@@ -218,32 +217,6 @@ export default function OfferingForm({
             </select>
           </Field>
 
-          <Field label="ปีการศึกษา" hint="พ.ศ. สี่หลัก เช่น 2568">
-            <input
-              value={draft.academic_year}
-              onChange={set('academic_year')}
-              className={field}
-              disabled={sending}
-              inputMode="numeric"
-              maxLength={4}
-              required
-            />
-          </Field>
-
-          <Field label="ภาคการศึกษา">
-            <select
-              value={draft.semester}
-              onChange={set('semester')}
-              className={field}
-              disabled={sending}
-            >
-              {SEMESTERS.map(term => (
-                <option key={term.value} value={term.value}>
-                  {term.value} — {term.label}
-                </option>
-              ))}
-            </select>
-          </Field>
         </div>
 
         <div className="flex justify-end gap-3 pt-2">

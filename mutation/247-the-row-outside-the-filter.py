@@ -105,12 +105,27 @@ OFFERINGS_COPY_ASKS = (
     '        outsideFilter(year, terms.academic_year) || '
     'outsideFilter(semester, terms.semester)\n'
 )
+# Re-aimed 17 พ.ย. 2569 (#279): the handler's argument is `copiedTerms` and the
+# two calls are on two lines. The mistake is the one above, kept (#203).
+OFFERINGS_COPY_ASKS_279 = (
+    '      const outside =\n'
+    '        outsideFilter(year, copiedTerms.academic_year) ||\n'
+    '        outsideFilter(semester, copiedTerms.semester)\n'
+)
 OFFERINGS_COPY_SAYS = (
     '            : alsoOutside(\n'
     '                `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,\n'
     '                outside\n'
     '              ),\n'
 )
+
+# Withdrawn to a record 17 พ.ย. 2569 (#279): the copy is made in a popup whose
+# target is the term the list shows and is not a field, so a copy into a term
+# the list is not on cannot be made and *outside* is false on every copy. The
+# sentence `offeringscopynosuffix` would leave bare is never owed the suffix;
+# `247c` row 1 is a net that reads the mechanism instead (#203), and its
+# anchor is the code as it stood, kept as the record (#54).
+SUPERSEDED = {'offeringscopynosuffix'}
 
 MUTANTS = {
     # ข้อ ก: พูดประโยคของจอเฉย ๆ — พฤติกรรมก่อน 29 ต.ค. 2569
@@ -131,10 +146,10 @@ MUTANTS = {
         "  const term = String(filters.q ?? '')\n"
         '  return Boolean(term) && !matchesSearch(term.toLowerCase(), draft)\n'),
     # การบันทึกที่สองของ `Offerings`: ข้อ ก และ *ต่อทุกครั้ง* ที่เส้นทางการคัดลอก
-    'offeringscopyalwayssays': ('offerings', OFFERINGS_COPY_ASKS,
+    'offeringscopyalwayssays': ('offerings', OFFERINGS_COPY_ASKS_279,
         '      const outside =\n'
-        '        outsideFilter(year, terms.academic_year) || '
-        'outsideFilter(semester, terms.semester) || true\n'),
+        '        outsideFilter(year, copiedTerms.academic_year) ||\n'
+        '        outsideFilter(semester, copiedTerms.semester) || true\n'),
     'offeringscopynosuffix': ('offerings', OFFERINGS_COPY_SAYS,
         '            : `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${answer.created.length} รายวิชา รวม ${answer.sections} ตอนเรียน`,\n'),
 }

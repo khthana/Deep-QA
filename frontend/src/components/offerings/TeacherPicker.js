@@ -71,7 +71,7 @@ export default function TeacherPicker({ section, busy, onSave, onCancel }) {
     <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-sm font-medium text-gray-900">
-          ผู้สอนของตอนเรียน {section.section_number}
+          ผู้สอนของกลุ่มเรียน {section.section_number}
         </h3>
         <input
           value={term}
@@ -104,7 +104,7 @@ export default function TeacherPicker({ section, busy, onSave, onCancel }) {
 
       <p className="mt-3 text-xs text-slate-500">
         เลือกไว้ {chosen.length} คน — การบันทึกจะแทนที่รายชื่อผู้สอนเดิมทั้งหมด
-        ตอนเรียนที่ยังไม่มีผู้สอนก็บันทึกได้
+        กลุ่มเรียนที่ยังไม่มีผู้สอนก็บันทึกได้
       </p>
 
       <div className="mt-3 flex justify-end gap-3">

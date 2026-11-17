@@ -3,6 +3,9 @@
 const { expect } = require('@playwright/test');
 const { reading, untilDrawn } = require('./pager');
 const { openAt } = require('./navigation');
+const { byAlias, CURRENT_YEAR, SEMESTER, PROGRAM } = require('../../db/seed');
+const { createPool } = require('../../db/pool');
+const { E2E_SCHEMA } = require('./env');
 
 /**
  * การเปิดรายวิชาในภาคการศึกษา — #23, as a browser reaches it.
@@ -24,6 +27,11 @@ const { openAt } = require('./navigation');
  * `<label>`, so a select's accessible name is its label *and* every option's
  * text. `ทุกภาค` belongs to the list's filter and to nothing else; the copy
  * panel's two selects and the form's have no blank option.
+ *
+ * Since 17 พ.ย. 2569 the list's pickers are found by their names instead (#279): there
+ * is no `ทุกภาค`, `ทุกปี` or `ทุกหลักสูตร` left to build a locator on, the
+ * term is one `<select>` written `ภาค/ปี`, and the screen's own pickers are not
+ * wrapped in a `Field`. The copy is a popup with one picker, its source.
  */
 
 const OFFERINGS = '/main/course-in-term';
@@ -53,9 +61,37 @@ async function openOfferings(page) {
   return untilDrawn(page, response);
 }
 
-const yearFilter = page => page.getByPlaceholder('ทุกปี');
+/**
+ * The term picker - one `<select>` written `ภาค/ปี` since 17 พ.ย. 2569 (#279), where
+ * there were a year box and a semester picker, each with a blank for *every*.
+ * Found by its name: the old locators were built on the blank options, which
+ * the screen no longer draws, so they would match nothing and every negative
+ * read through them would pass for nothing.
+ */
+const termFilter = page => page.getByRole('combobox', { name: 'ภาคการศึกษา', exact: true });
 
-const semesterFilter = page => page.locator('select:has(option:text-is("ทุกภาค"))');
+/**
+ * The term after a term, by the server's own rule (`nextTerm` in
+ * `backend/routes/offerings.js`): ภาคต้น is followed by ภาคปลาย of the same
+ * year, ภาคปลาย by ภาคต้น of the next. Two semesters since #279.
+ */
+const nextTerm = ({ year, semester }) =>
+  Number(semester) === 1
+    ? { year: String(year), semester: 2 }
+    : { year: String(Number(year) + 1), semester: 1 };
+
+/**
+ * The term after the current one - one of the two terms the picker offers
+ * whether or not anything was opened in it (#279), so the one a row can open a
+ * subject in through the form. Derived from the seed's term, which is the
+ * server's (`db/term.js`), never written as a literal: which term is next
+ * changes with the date.
+ */
+const NEXT = nextTerm({ year: CURRENT_YEAR, semester: SEMESTER });
+
+/** `ภาค/ปี`, the way the picker writes a term. */
+const termOf = (year, semester) => `${semester}/${year}`;
+
 
 /**
  * The list's own curriculum filter, drawn only when more than one is reached.
@@ -68,7 +104,8 @@ const semesterFilter = page => page.locator('select:has(option:text-is("ทุ�
  * Located by `ทุกหลักสูตร`, the one option nothing else on the screen carries:
  * the ภาคการศึกษา filter has a blank option too, so `option[value=""]` finds two.
  */
-const programFilter = page => page.locator('select:has(option:text-is("ทุกหลักสูตร"))');
+// By its name since 17 พ.ย. 2569: there is no ทุกหลักสูตร to build it on (#279).
+const programFilter = page => page.getByRole('combobox', { name: 'หลักสูตร', exact: true });
 
 /** Narrows the list to one curriculum through the screen's own filter. */
 async function filterToProgram(page, programId) {
@@ -98,11 +135,15 @@ function waitForOfferable(page) {
  * term's rows.
  */
 async function filterToTerm(page, year, semester) {
-  await Promise.all([waitForList(page), yearFilter(page).fill(String(year))]);
-  await Promise.all([
-    waitForList(page),
-    semesterFilter(page).selectOption(String(semester)),
-  ]);
+  // A term the picker already shows is no move and no read, so it is not
+  // waited for - waiting would hang on a read nobody is going to make (#77).
+  const wanted = termOf(year, semester);
+  await expect(
+    termFilter(page).locator(`option[value="${wanted}"]`),
+    `the term picker offers ${wanted}: a term this curriculum ran, or the current or the next`,
+  ).toHaveCount(1);
+  if ((await termFilter(page).inputValue()) === wanted) return;
+  await Promise.all([waitForList(page), termFilter(page).selectOption(wanted)]);
 }
 
 /**
@@ -132,10 +173,9 @@ const listTable = page => page.locator('table').first();
  * hands back as many rows as the term has; a caller that means *the one row in
  * that year* says so.
  */
-const offeringTermRow = (page, { code, year }) =>
-  offeringRow(page, code).filter({
-    has: page.getByRole('cell', { name: String(year), exact: true }),
-  });
+// The list has no year column since 17 พ.ย. 2569 (#279): the term is the picker's,
+// so a row of a term is a row of the list once the picker is on that term.
+const offeringTermRow = (page, { code }) => offeringRow(page, code);
 
 /** The form that opens a subject for a term. */
 async function openForm(page) {
@@ -154,10 +194,18 @@ const subjectPicker = page => page.locator('form select:has(option:text-is("เ�
  * at all, so the wait is on the picker having options rather than on a request.
  */
 async function openSubject(page, { subject, year, semester }) {
+  // The form has no term fields since 17 พ.ย. 2569 (#279): it opens a subject in the
+  // term the list shows, so a caller filters to the term first, and the
+  // heading is read here so an arrangement that did not is an arrangement
+  // failure and not a row of the wrong term.
+  if (year !== undefined) {
+    await expect(
+      page.getByRole('heading', { name: `เปิดรายวิชาในภาคการศึกษา ${termOf(year, semester)}` }),
+      'the form opens in the term the caller filtered to',
+    ).toBeVisible();
+  }
   await expect(subjectPicker(page).locator(`option[value="${subject}"]`)).toHaveCount(1);
   await subjectPicker(page).selectOption(subject);
-  await page.locator('form input[inputmode="numeric"]').fill(String(year));
-  await page.locator('form select:has(option:text-is("1 — ภาคต้น"))').selectOption(String(semester));
 
   await Promise.all([
     waitForDetail(page),
@@ -191,87 +239,77 @@ async function oneOfferableSubjectCode(page) {
 }
 
 /**
- * Opens one subject in as many terms as it takes for the unfiltered list to
- * have a second page, and says what it built.
+ * Opens more Offerings than a page holds in **one** term, moves the list to
+ * that term, and says what it built.
  *
  * #267's answer ง (5 พ.ย. 2569): the second page this screen's pager rows need
- * is a **fixture** and not a seed change. `semester_courses` is unique on
+ * is a **fixture** and not a seed change. Until 17 พ.ย. 2569 it came out of one placed
+ * pair opened in eleven terms, the list being unfiltered on arrival. Since #279
+ * the list is one term and has no *every term*, so eleven terms are eleven
+ * lists of one row each and none of them has a page two; and a term nobody ran
+ * is not offered by the picker, so the form cannot open one either. The rows
+ * are therefore eleven **subjects** in one term, written straight into the
+ * schema: `semester_courses` is unique on
  * `(program_id, subject_id, academic_year, semester)`
- * (`db/migrations/0002_offerings_and_learning_outcomes.sql:96`), so eleven rows
- * come out of one placed pair by varying the term — no new subject, no new
- * pair, nothing a `PRIMARY KEY` refuses, which is where `ProgramSubjects` and
- * this screen part company. And the list is unfiltered on arrival
- * (`Offerings.js` opens with `year = ''` and `semester = ''`), so every row
- * this builds is in the list the screen draws first.
+ * (`db/migrations/0002_offerings_and_learning_outcomes.sql:96`), so one term
+ * holds one row per subject and the subjects have to be the caller's own.
  *
- * The rows go out again with the schema the calling file holds (#132, #134):
- * each is an Offering with no section at all, which `DELETE /offerings/:id`
- * answers `204` for.
- *
- * Two things are the caller's, so that two files cannot collide in one term:
- * the years, and the knowledge that **the last of them is kept for one row of
- * its own**. That row is what a caller presses — a year holding exactly one
- * Offering is found by its year cell whatever else the list is showing — and it
- * is the first row the list draws, the order being `academic_year DESC`.
- *
- * The subject is read out of the form's own picker rather than from the seed,
- * because what may be opened here is what `GET /offerings/subjects` says is
- * placed and still switched on, and an earlier file in the run can have closed
- * the seeded entry (`16a` row 82). An empty picker fails an assertion rather
- * than the timeout the first submit would die at (#139).
+ * Two things are the caller's, so that two files cannot collide: the year,
+ * which is ภาคต้น of it, and `codes`, which are made subjects of department 05
+ * and placed in 0501. The first code is the row the caller presses, the list
+ * ordering a term's rows by `subject_id`. They go out again with the schema
+ * the calling file holds (#132, #134), which is why the caller must hold it.
  */
-async function moreThanOnePage(page, { years, perPage = 10 }) {
-  const table = listTable(page);
-  const spareYear = years[years.length - 1];
-  const terms = [
-    { year: spareYear, semester: 1 },
-    ...years
-      .slice(0, -1)
-      .flatMap(year => [1, 2, 3].map(semester => ({ year, semester }))),
-  ];
-
-  const start = await reading(page, table);
-  expect(
-    terms.length,
-    'enough terms of its own to fill a page, with one kept for the row that is pressed',
-  ).toBeGreaterThan(perPage - start.total);
-
-  let code;
-  let made = start.total;
-  for (const term of terms) {
-    // Stop as soon as there is a second page. The second clause reads as a
-    // guard on every pass and can only hold on the first one, the spare being
-    // `terms[0]`: it says *build the spare whatever the list already holds*, so
-    // that a run whose earlier files left a full page still leaves this file a
-    // row of its own to press.
-    if (made > perPage && term.year !== spareYear) break;
-    await openForm(page);
-    code = code ?? (await oneOfferableSubjectCode(page));
-    await openSubject(page, { subject: code, ...term });
-    await backToList(page);
-    made += 1;
+async function moreThanOnePage(page, { year, codes, perPage = 10 }) {
+  expect(codes.length, 'more codes than a page holds').toBeGreaterThan(perPage);
+  const db = createPool({ schema: E2E_SCHEMA });
+  try {
+    const admin = byAlias('U_ADMIN');
+    for (const code of codes) {
+      await db.query(
+        `INSERT INTO subjects (subject_id, subject_name_th, subject_name_en, credits, department_id, created_by)
+         VALUES ($1, $2, $3, 3, '05', $4)`,
+        [code, `วิชาของตัวแบ่งหน้า ${code}`, `Paging subject ${code}`, admin],
+      );
+      await db.query(
+        `INSERT INTO program_subjects (program_id, subject_id, subject_type, created_by)
+         VALUES ($1, $2, 'required', $3)`,
+        [PROGRAM, code, admin],
+      );
+      await db.query(
+        `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+         VALUES ($1, $2, $3, 1)`,
+        [PROGRAM, code, String(year)],
+      );
+    }
+  } finally {
+    await db.end();
   }
 
+  // The picker read its terms when the screen opened, before this term had a
+  // row, so the screen is opened again to be offered it.
+  await openOfferings(page);
+  await filterToTerm(page, String(year), 1);
+  const table = listTable(page);
   await expect
     .poll(async () => (await reading(page, table)).total, {
-      message: 'the total the line reads out, once this file has its own terms',
+      message: 'the total the line reads out, once this file has its own term',
     })
-    .toBe(made);
+    .toBe(codes.length);
 
-  const spare = { code, year: spareYear, semester: 1 };
+  const spare = { code: [...codes].sort()[0], year: String(year), semester: 1 };
   await expect(
     offeringTermRow(page, spare),
-    'one row in the spare year, which is what the caller presses - a sibling file writing that year would make this an arrangement failure and not a red claim (#129)',
+    'the row the caller presses, on page one',
   ).toHaveCount(1);
-
-  return { total: made, spare };
+  return { total: codes.length, spare };
 }
 
 /** From a row to that Offering's sections. */
 async function openSections(page, code) {
   await Promise.all([
     waitForDetail(page),
-    offeringRow(page, code).getByRole('button', { name: 'ตอนเรียนและผู้สอน' }).click(),
+    offeringRow(page, code).getByRole('button', { name: 'กลุ่มเรียนและผู้สอน' }).click(),
   ]);
   await expect(page.getByRole('button', { name: 'กลับไปหน้ารายการ' })).toBeVisible();
 }
@@ -284,7 +322,7 @@ const backToList = page =>
 
 /** One section's card, named by its number — see the note in SectionsPanel. */
 const sectionCard = (page, number) =>
-  page.getByRole('listitem', { name: `ตอนเรียน ${number}`, exact: true });
+  page.getByRole('listitem', { name: `กลุ่มเรียน ${number}`, exact: true });
 
 /**
  * Adds a section and waits for the panel to have been read back.
@@ -296,7 +334,7 @@ async function addSection(page, number) {
   await page.getByPlaceholder('เช่น 1 หรือ พ1').fill(number);
   await Promise.all([
     waitForDetail(page),
-    page.getByRole('button', { name: 'เพิ่มตอนเรียน' }).click(),
+    page.getByRole('button', { name: 'เพิ่มกลุ่มเรียน' }).click(),
   ]);
 }
 
@@ -344,25 +382,41 @@ const confirmDialog = page => page.getByRole('heading', { name: /^ยืนย�
  * - which shifts the pair by one and silently copies a term nobody asked about,
  * reporting nothing and failing an assertion three lines further down.
  */
-async function copyControls(page) {
-  const [fromYear, toYear] = await page.getByPlaceholder('ปีการศึกษา').all();
-  const [fromTerm, toTerm] = await page
-    .locator('select:has(option:text-is("1 — ภาคต้น")):not(:has(option[value=""]))')
-    .all();
-  return { fromYear, toYear, fromTerm, toTerm };
+/**
+ * The copy popup - #279, 17 พ.ย. 2569: a button on the top bar opens it, its target is
+ * the term the list shows and its source is picked from the terms this
+ * curriculum ran before that one.
+ */
+const copyDialog = page => page.getByRole('dialog', { name: 'คัดลอกจากภาคการศึกษาก่อน' });
+
+const copySource = page => copyDialog(page).getByRole('combobox', { name: 'จากภาคการศึกษา' });
+
+async function openCopy(page) {
+  await page.getByRole('button', { name: 'คัดลอกจากภาคการศึกษาก่อน', exact: true }).click();
+  await expect(copyDialog(page)).toBeVisible();
 }
 
-/** Fills both ends and presses คัดลอก, waiting for the report to have arrived. */
+/** Closes the popup once the copy has answered and `busy` is down. */
+async function closeCopy(page) {
+  const close = copyDialog(page).getByRole('button', { name: 'ปิด', exact: true });
+  await expect(close).toBeEnabled();
+  await close.click();
+  await expect(copyDialog(page)).toHaveCount(0);
+}
+
+/**
+ * Copies `from` onto `to`: filters the list to `to`, opens the popup, picks
+ * `from` and presses คัดลอก. The popup is left open with its report, for the
+ * caller to read and then `closeCopy`.
+ */
 async function copyFromTerm(page, from, to) {
-  const { fromYear, toYear, fromTerm, toTerm } = await copyControls(page);
-  await fromYear.fill(String(from.year));
-  await fromTerm.selectOption(String(from.semester));
-  await toYear.fill(String(to.year));
-  await toTerm.selectOption(String(to.semester));
+  await filterToTerm(page, to.year, to.semester);
+  await openCopy(page);
+  await copySource(page).selectOption(`${from.year}:${from.semester}`);
 
   await Promise.all([
     page.waitForResponse(answer => new URL(answer.url()).pathname === `${API}/copy`),
-    page.getByRole('button', { name: 'คัดลอก' }).click(),
+    copyDialog(page).getByRole('button', { name: 'คัดลอก', exact: true }).click(),
   ]);
 }
 
@@ -372,8 +426,10 @@ module.exports = {
   waitForList,
   waitForDetail,
   openOfferings,
-  yearFilter,
-  semesterFilter,
+  termFilter,
+  termOf,
+  nextTerm,
+  NEXT,
   programFilter,
   filterToProgram,
   waitForOfferable,
@@ -394,6 +450,9 @@ module.exports = {
   teachersOf,
   startRemoval,
   confirmDialog,
-  copyControls,
+  copyDialog,
+  copySource,
+  openCopy,
+  closeCopy,
   copyFromTerm,
 };

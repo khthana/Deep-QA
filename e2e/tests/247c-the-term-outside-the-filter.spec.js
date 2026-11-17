@@ -2,7 +2,9 @@
 
 const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
-const { CURRENT_YEAR, SEMESTER } = require('../../db/seed');
+const { byAlias, CURRENT_YEAR, SEMESTER, PROGRAM } = require('../../db/seed');
+const { createPool } = require('../../db/pool');
+const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { OUTSIDE_THE_FILTER } = require('../support/outside-the-filter');
@@ -11,7 +13,10 @@ const {
   openOfferings,
   filterToTerm,
   offeringRow,
-  copyControls,
+  termOf,
+  copyDialog,
+  copySource,
+  openCopy,
 } = require('../support/offerings-screen');
 
 /**
@@ -46,7 +51,31 @@ const {
  * built out of a value is a claim about the DOM and this one would be false
  * (#118). The first draft of row 1 failed exactly there, which is the reason
  * written down rather than the reason guessed at.
+ *
+ * ## Since 17 พ.ย. 2569 (#279)
+ *
+ * The owner's answer in #279 made the copy a popup whose **target is the term
+ * the list shows**, named in the popup and not a field. A copy into a term the
+ * list is not on can no longer be made, so `outside` is false on every copy and
+ * row 1's claim has no way in: the mutant that held it,
+ * `247:offeringscopynosuffix`, is withdrawn to a record. Row 1 stays as a net
+ * and reads the **mechanism** instead (#203) - the popup has one picker, the
+ * source, and the request it sends names the term the list is on - with the
+ * condition that would make the old claim reachable again: a target the person
+ * can pick inside the popup.
+ *
+ * Row 2 is the control and keeps its claim. Its term has to be one the picker
+ * offers, which since #279 is a term the curriculum ran, the current or the
+ * next, so one Offering of this file's own subject is written into it first
+ * and the precondition reads *that one and nothing else* where it read *empty*.
  */
+
+/**
+ * This file's own subject, placed in 0501 and opened only in row 2's term:
+ * the seed's term holds the seeded subject alone, so an anchor of that subject
+ * would be skipped by the copy and leave it opening nothing.
+ */
+const ANCHOR = '00247301';
 
 /** The term the seed fills, which is what there is to copy. */
 const SOURCE = { year: CURRENT_YEAR, semester: SEMESTER };
@@ -57,18 +86,41 @@ const YEAR = String(Number(CURRENT_YEAR) + 4);
 let release;
 test.beforeAll(async () => {
   release = await hold();
+  const admin = byAlias('U_ADMIN');
+  const db = createPool({ schema: E2E_SCHEMA });
+  try {
+    await db.query(
+      `INSERT INTO subjects (subject_id, subject_name_th, subject_name_en, credits, department_id, created_by)
+       VALUES ($1, 'วิชาของแถว #247c', 'Subject for #247c', 3, '05', $2)`,
+      [ANCHOR, admin],
+    );
+    await db.query(
+      `INSERT INTO program_subjects (program_id, subject_id, subject_type, created_by)
+       VALUES ($1, $2, 'required', $3)`,
+      [PROGRAM, ANCHOR, admin],
+    );
+    await db.query(
+      `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+       VALUES ($1, $2, $3, 2)`,
+      [PROGRAM, ANCHOR, YEAR],
+    );
+  } finally {
+    await db.end();
+  }
 });
 test.afterAll(() => release());
 
 /**
- * Filters the table to a term of this file's own year and reads the answer to
- * say it is empty.
+ * Filters the table to row 2's term and reads the answer to say it holds the
+ * anchor and nothing else.
  *
- * The precondition is read off the answer and not off the table: an empty list
- * is drawn as a sentence rather than as rows, so counting rows would pass on an
- * empty term and on a full one alike (#164).
+ * The precondition is read off the answer and not off the table: a term
+ * another spec had filled would make the row true for the wrong reason (#129),
+ * and counting drawn rows cannot tell a sentence in the first cell from a row
+ * (#164). It read *empty* until 17 พ.ย. 2569, when a term nobody ran stopped
+ * being one the picker offers (#279).
  */
-async function filterToEmptyTerm(page, semester) {
+async function filterToAnchoredTerm(page, semester) {
   const [answered] = await Promise.all([
     page.waitForResponse(
       a =>
@@ -79,73 +131,74 @@ async function filterToEmptyTerm(page, semester) {
     ),
     filterToTerm(page, YEAR, semester),
   ]);
-  const { total } = await answered.json();
-  expect(total, 'the precondition: nothing is in this term, so the list is the copy or nothing').toBe(
-    0,
-  );
+  const { offerings } = await answered.json();
+  expect(
+    offerings.map(row => row.subject_id),
+    'the precondition: this term holds the anchor alone, so the list is the copy and the anchor',
+  ).toEqual([ANCHOR]);
 }
 
 /**
- * Fills both ends of the copy panel and presses คัดลอก, handing back what the
- * answer said.
+ * Picks the seed's term as the source in the popup and presses คัดลอก, handing
+ * back the request and what the answer said.
  *
  * `copyFromTerm` in the support module does the same and throws the report
  * away; these rows need it, because what the sentence has to be is built from
  * the count the server reported and not from a number typed into the row - a
  * pinned count would be a claim about the seed and not about the sentence.
  */
-async function copyInto(page, to) {
-  const { fromYear, toYear, fromTerm, toTerm } = await copyControls(page);
-  await fromYear.fill(String(SOURCE.year));
-  await fromTerm.selectOption(String(SOURCE.semester));
-  await toYear.fill(String(to.year));
-  await toTerm.selectOption(String(to.semester));
+async function copyInto(page) {
+  await openCopy(page);
+  await copySource(page).selectOption(`${SOURCE.year}:${SOURCE.semester}`);
 
   const [answer] = await Promise.all([
     page.waitForResponse(
       a => new URL(a.url()).pathname === `${API}/copy` && a.request().method() === 'POST',
     ),
-    page.getByRole('button', { name: 'คัดลอก' }).click(),
+    copyDialog(page).getByRole('button', { name: 'คัดลอก', exact: true }).click(),
   ]);
   expect(answer.status()).toBe(200);
   const report = await answer.json();
   expect(report.created.length, 'the precondition of both claims: the copy opened rows').toBeGreaterThan(0);
-  return report;
+  return { asked: answer.request().postDataJSON(), report };
 }
 
 const copied = report =>
-  `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${report.created.length} รายวิชา รวม ${report.sections} ตอนเรียน`;
+  `คัดลอกเรียบร้อยแล้ว เปิดรายวิชาใหม่ ${report.created.length} รายวิชา รวม ${report.sections} กลุ่มเรียน`;
 
 test('row 1: a term copied into a term the table is not on', async ({ page }) => {
+  // A net since 17 พ.ย. 2569 (#279) - see the docblock. What it reads is why
+  // the claim has no way in: the popup offers a source and nothing else, names
+  // the term the list is on as its target, and sends that term. The copy is not
+  // pressed, so this row writes nothing; the request is read off the press in
+  // row 2, which is the one that copies.
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
-
-  // Looking at one term of next year and copying into another: the sequence is
-  // the ticket's, with the source term kept out of the list for the reason in
-  // the docblock above.
-  await filterToEmptyTerm(page, 3);
-
-  const report = await copyInto(page, { year: YEAR, semester: 1 });
+  await filterToTerm(page, YEAR, 2);
+  await openCopy(page);
 
   await expect(
-    page.getByRole('status'),
-    "the copy's own report, and the shared sentence saying the rows are not in this list",
-  ).toHaveText(`${copied(report)} ${OUTSIDE_THE_FILTER}`);
-
-  // And they are not: the table is still the empty term it was filtered to.
+    copyDialog(page).getByRole('combobox'),
+    'one picker in the popup, the source - the target is not a field',
+  ).toHaveCount(1);
+  await expect(copySource(page)).toHaveCount(1);
   await expect(
-    offeringRow(page, report.created[0].subject_id),
-    'the list the sentence stands over holds none of the rows the copy opened',
-  ).toHaveCount(0);
+    copyDialog(page).getByText(`คัดลอกมายังภาคการศึกษา ${termOf(YEAR, 2)}`),
+    'the popup names the term the list is on as where the copy goes',
+  ).toBeVisible();
 });
 
 test('row 2: a term copied into the term the table is on', async ({ page }) => {
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
 
-  await filterToEmptyTerm(page, 2);
+  await filterToAnchoredTerm(page, 2);
 
-  const report = await copyInto(page, { year: YEAR, semester: 2 });
+  const { asked, report } = await copyInto(page);
+  expect(
+    { year: asked.academic_year, semester: asked.semester },
+    'the copy goes to the term the list is on - the mechanism row 1 stands on (#279)',
+  ).toEqual({ year: YEAR, semester: 2 });
 
   await expect(
     page.getByRole('status'),

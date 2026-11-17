@@ -329,9 +329,9 @@ test.describe('ตอนเรียนและผู้สอน (SectionsPane
     await signIn(page, ACCOUNTS.committee0501);
     await openOfferings(page);
 
-    const row = firstRow(page, 'ตอนเรียนและผู้สอน');
+    const row = firstRow(page, 'กลุ่มเรียนและผู้สอน');
     await expect(row).toBeVisible();
-    await button(row, 'ตอนเรียนและผู้สอน').click();
+    await button(row, 'กลุ่มเรียนและผู้สอน').click();
     await expect(button(page, 'กลับไปหน้ารายการ')).toBeVisible();
 
     const box = sectionNumber(page);
@@ -339,7 +339,7 @@ test.describe('ตอนเรียนและผู้สอน (SectionsPane
     await box.fill(NUMBER);
 
     const write = await gate(page, SECTIONS, isWrite, { refusal: REFUSED });
-    await button(page, 'เพิ่มตอนเรียน').click();
+    await button(page, 'เพิ่มกลุ่มเรียน').click();
     await write.sent;
 
     // The claim this screen is its own mechanism for: closing a field says

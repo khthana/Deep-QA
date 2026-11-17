@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
-const { byAlias, CURRENT_YEAR, PROGRAM, PROGRAM_INTL } = require('../../db/seed');
+const { byAlias, CURRENT_YEAR, SEMESTER, PROGRAM, PROGRAM_INTL } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
@@ -243,6 +243,15 @@ test.beforeAll(async () => {
       [PROGRAM, id, FUTURE],
     );
   }
+  // One Offering in ภาคปลาย of `FUTURE`, so the term picker offers it - since
+  // 17 พ.ย. 2569 it offers only the terms a curriculum ran, the current and the next
+  // (#279). The save and the copy are made on it: the subject they open is not
+  // open there, and the copy has a term before it to come from.
+  await db.query(
+    `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+     VALUES ($1, $2, $3, 2)`,
+    [PROGRAM, PLACED[0], FUTURE],
+  );
   for (const [i, code] of RUBRICS.entries()) {
     await db.query(
       `INSERT INTO rubrics (rubric_code, rubric_name_th, rubric_name_en, program_id, display_order, created_by)
@@ -824,9 +833,28 @@ test.describe('as a committee member of the whole department', () => {
 
 // ── ข้อมูลการเปิดรายวิชา ──────────────────────────────────────────────────────
 
-async function openOfferingsScreen(page) {
+/**
+ * Signs in, opens the screen and moves it to `term` of the fixture's year,
+ * handing back that term's answer.
+ *
+ * Since 17 พ.ย. 2569 the list opens on the current term and has no *every term* (#279),
+ * so the fixture's eleven Offerings of ภาคต้น `FUTURE` - the second page every
+ * pager row needs - are a move away rather than in the first list drawn.
+ */
+async function openOfferingsScreen(page, term = { year: FUTURE, semester: 1 }) {
   await signIn(page, ACCOUNTS.committee0501);
-  const answer = await (await offerings.openOfferings(page)).json();
+  await offerings.openOfferings(page);
+  const [moved] = await Promise.all([
+    page.waitForResponse(
+      (a) =>
+        new URL(a.url()).pathname === offerings.API &&
+        a.request().method() === 'GET' &&
+        new URL(a.url()).searchParams.get('academic_year') === term.year &&
+        new URL(a.url()).searchParams.get('semester') === String(term.semester),
+    ),
+    offerings.filterToTerm(page, term.year, term.semester),
+  ]);
+  const answer = await (await untilDrawn(page, moved)).json();
   return {
     opened: {
       list: offerings.API,
@@ -845,6 +873,10 @@ const offeringDetail = /^\/api\/offerings\/\d+$/;
  * `disabled={busy}` - the move #210 gave this screen's save row on 19 ตุลาคม
  * 2569 and #223 gave its other two writing rows.
  *
+ * Since 17 พ.ย. 2569 it is the term picker, the box and the semester picker having
+ * become one `<select>` (#279), and it moves the list to the seed's term. Not
+ * `disabled={busy}` either, so the move is the same move.
+ *
  * The fixture's offerings are all in `FUTURE` and the seed's in the current
  * year, so the two reads answer different rows. Named once: a locator built out
  * of a source string is a claim about the DOM (#118), and one written twice is
@@ -852,10 +884,12 @@ const offeringDetail = /^\/api\/offerings\/\d+$/;
  */
 const throughTheYearFilter = (page) => ({
   reads: (url) =>
-    url.pathname === offerings.API && url.searchParams.get('academic_year') === CURRENT_YEAR,
+    url.pathname === offerings.API &&
+    url.searchParams.get('academic_year') === CURRENT_YEAR &&
+    url.searchParams.get('semester') === String(SEMESTER),
   press: async () =>
-    (await live(offerings.yearFilter(page), 'the ปีการศึกษา filter')).fill(
-      CURRENT_YEAR,
+    (await live(offerings.termFilter(page), 'the ภาคการศึกษา picker')).selectOption(
+      offerings.termOf(CURRENT_YEAR, SEMESTER),
     ),
 });
 
@@ -877,7 +911,7 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
       offerings
         .offeringRow(page, first.subject_id)
         .first()
-        .getByRole('button', { name: 'ตอนเรียนและผู้สอน' })
+        .getByRole('button', { name: 'กลุ่มเรียนและผู้สอน' })
         .click(),
   });
 });
@@ -905,7 +939,9 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   // panel. The panel's read is held until well after the row has read the
   // list, because the harm is the window between the two: a panel drawn over
   // the list would leave nothing to read, with the defect in place or not.
-  const { opened } = await openOfferingsScreen(page);
+  // On ภาคปลาย of `FUTURE` since 17 พ.ย. 2569: the form opens in the term the list
+  // shows (#279), and PLACED[3] is open in ภาคต้น already.
+  const { opened } = await openOfferingsScreen(page, { year: FUTURE, semester: 2 });
   await page.route((url) => offeringDetail.test(url.pathname), late(HELD_MS * 5));
   await supersede(page, {
     ...opened,
@@ -918,8 +954,6 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
       await offerings.openForm(page);
       await expect(offerings.subjectPicker(page).locator(`option[value="${PLACED[3]}"]`)).toHaveCount(1);
       await offerings.subjectPicker(page).selectOption(PLACED[3]);
-      await page.locator('form input[inputmode="numeric"]').fill(FUTURE);
-      await page.locator('form select:has(option:text-is("1 — ภาคต้น"))').selectOption('3');
       await page.getByRole('button', { name: 'เปิดรายวิชา', exact: true }).click();
     },
   });
@@ -929,14 +963,25 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   page,
 }) => {
   // `runCopy` — the copy panel sits under the list and never takes it away.
-  const { opened } = await openOfferingsScreen(page);
+  //
+  // Since 17 พ.ย. 2569 the copy is made in a popup onto the term the list shows
+  // (#279), so the list is moved to ภาคปลาย of `FUTURE` before the press and
+  // the press is the popup's own: moving the list inside it would be a read the
+  // row holds. The popup is modal and cannot be closed while the copy is out,
+  // so the term picker under it is a way in the tool has and a person does not
+  // (#47, #86) - `selectOption` asks the `<select>` and not what is drawn over
+  // it. The claim is kept for that reason and written down rather than dropped.
+  const { opened } = await openOfferingsScreen(page, { year: FUTURE, semester: 2 });
   await supersede(page, {
     ...opened,
     // Re-aimed at the filter by #223: `runCopy` holds `writing` until its own
     // reload has answered, so ถัดไป is dead for the whole window.
     move: throughTheYearFilter(page),
-    press: () =>
-      offerings.copyFromTerm(page, { year: FUTURE, semester: 1 }, { year: FUTURE, semester: 2 }),
+    press: async () => {
+      await offerings.openCopy(page);
+      await offerings.copySource(page).selectOption(`${FUTURE}:1`);
+      await offerings.copyDialog(page).getByRole('button', { name: 'คัดลอก', exact: true }).click();
+    },
   });
 });
 

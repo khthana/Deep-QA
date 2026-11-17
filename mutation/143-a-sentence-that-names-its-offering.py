@@ -76,14 +76,16 @@ MUTANTS = {
     # (ตั้งแต่ #217 คำถามคลุมปุ่มกลับไปหน้ารายการไว้จนการเขียนตอบ)
     'bareremoval': (
         'offerings',
-        "          setNotice({ error: false, message: aboutOffering(viewing, 'ลบตอนเรียนเรียบร้อยแล้ว') })\n",
-        "          setNotice({ error: false, message: 'ลบตอนเรียนเรียบร้อยแล้ว' })\n",
+        # Re-aimed 17 พ.ย. 2569 (#279): the screen says กลุ่มเรียน since the owner's answer.
+        "          setNotice({ error: false, message: aboutOffering(viewing, 'ลบกลุ่มเรียนเรียบร้อยแล้ว') })\n",
+        "          setNotice({ error: false, message: 'ลบกลุ่มเรียนเรียบร้อยแล้ว' })\n",
     ),
     # ครึ่งที่เป็นเทอม: ชื่อรายวิชาอย่างเดียวไม่ได้บอกว่า Offering ไหน
     # เพราะรายวิชาหนึ่งถูกเปิดได้หลายภาค และวันนี้มีรายวิชาที่ถูกเปิดสองภาคอยู่จริง
     'nameonly': (
         'offerings',
-        '  `${sentence} (รายวิชา ${offering.subject_name_th} ปีการศึกษา ${offering.academic_year} ภาคการศึกษา ${offering.semester})`\n',
+        # Re-aimed 17 พ.ย. 2569 (#279): the term is written `ภาค/ปี` since the owner's answer.
+        '  `${sentence} (รายวิชา ${offering.subject_name_th} ภาคการศึกษา ${termLabel(offering)})`\n',
         '  `${sentence} (รายวิชา ${offering.subject_name_th})`\n',
     ),
 }

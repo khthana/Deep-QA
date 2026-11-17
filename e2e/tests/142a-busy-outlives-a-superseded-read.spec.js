@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
-const { byAlias, PROGRAM, SUBJECT } = require('../../db/seed');
+const { byAlias, CURRENT_YEAR, SEMESTER, PROGRAM, SUBJECT } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
@@ -110,6 +110,13 @@ test.beforeAll(async () => {
     `INSERT INTO program_subjects (program_id, subject_id, subject_type, created_by)
      VALUES ($1, $2, 'required', $3)`,
     [PROGRAM, SECOND.id, byAlias('U_ADMIN')],
+  );
+  // Opened in the seed's term too, since 17 November 2569: the offerings rows
+  // need two rows in one list, and the list is one term since #279 - as `139a`.
+  await db.query(
+    `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+     VALUES ($1, $2, $3, $4)`,
+    [PROGRAM, SECOND.id, CURRENT_YEAR, SEMESTER],
   );
 });
 test.afterAll(async () => {
@@ -383,9 +390,9 @@ const OFFERINGS = {
   file: 'Offerings.js',
   detail: /^\/api\/offerings\/\d+$/,
   sections: /^\/api\/offerings\/\d+\/sections$/,
-  open: 'ตอนเรียนและผู้สอน',
+  open: 'กลุ่มเรียนและผู้สอน',
   back: 'กลับไปหน้ารายการ',
-  add: 'เพิ่มตอนเรียน',
+  add: 'เพิ่มกลุ่มเรียน',
   cancel: 'ยกเลิกการเปิด',
   confirm: 'ยกเลิกการเปิดรายวิชา',
 };

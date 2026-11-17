@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
 import TeacherPicker from './TeacherPicker'
-import { semesterLabel } from './terms'
+import { termLabel } from './terms'
 
 /**
  * The ตอนเรียน of one Offering — #23's second, third and fourth criteria.
@@ -79,8 +79,7 @@ export default function SectionsPanel({
             {offering.subject_id} {offering.subject_name_th}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            ปีการศึกษา {offering.academic_year} ภาคการศึกษา {offering.semester} (
-            {semesterLabel(offering.semester)}) · หลักสูตร {offering.program_id}
+            ภาคการศึกษา {termLabel(offering)} · หลักสูตร {offering.program_id}
           </p>
         </div>
         <button
@@ -105,7 +104,7 @@ export default function SectionsPanel({
         className="flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-4"
       >
         <label className="block">
-          <span className="mb-1 block text-sm text-gray-500">เลขตอนเรียน</span>
+          <span className="mb-1 block text-sm text-gray-500">เลขกลุ่มเรียน</span>
           <input
             value={adding}
             onChange={event => setAdding(event.target.value)}
@@ -120,13 +119,13 @@ export default function SectionsPanel({
           disabled={busy || !adding.trim()}
           className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover disabled:opacity-60"
         >
-          เพิ่มตอนเรียน
+          เพิ่มกลุ่มเรียน
         </button>
       </form>
 
       {sections.length === 0 && (
         <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
-          ยังไม่มีตอนเรียนในรายวิชาที่เปิดสอนนี้
+          ยังไม่มีกลุ่มเรียนในรายวิชาที่เปิดสอนนี้
         </p>
       )}
 
@@ -139,7 +138,7 @@ export default function SectionsPanel({
         {sections.map(section => (
           <li
             key={section.section_id}
-            aria-label={`ตอนเรียน ${section.section_number}`}
+            aria-label={`กลุ่มเรียน ${section.section_number}`}
             className="rounded-xl border border-gray-200 p-4"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -186,11 +185,11 @@ export default function SectionsPanel({
                     </button>
                   </form>
                 ) : (
-                  <h3 className="font-medium text-gray-900">ตอนเรียน {section.section_number}</h3>
+                  <h3 className="font-medium text-gray-900">กลุ่มเรียน {section.section_number}</h3>
                 )}
                 <p className="mt-1 text-sm text-slate-500">
                   นักศึกษาลงทะเบียน {section.student_count} คน
-                  {section.student_count > 0 && ' — ลบตอนเรียนนี้ไม่ได้'}
+                  {section.student_count > 0 && ' — ลบกลุ่มเรียนนี้ไม่ได้'}
                 </p>
               </div>
 
@@ -203,7 +202,7 @@ export default function SectionsPanel({
                   }}
                   className="rounded-lg px-3 py-1.5 text-sm text-primary hover:bg-blue-50"
                 >
-                  แก้ไขเลขตอน
+                  แก้ไขเลขกลุ่มเรียน
                 </button>
                 <button
                   type="button"
@@ -221,7 +220,7 @@ export default function SectionsPanel({
                   onClick={() => onRemoveSection(section)}
                   className="rounded-lg px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
                 >
-                  ลบตอนเรียน
+                  ลบกลุ่มเรียน
                 </button>
               </div>
             </div>

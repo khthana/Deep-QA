@@ -166,6 +166,12 @@ test('row 2: the longest confirmation in the system keeps all three compounds wh
   // asks for the fix to be checked against it rather than only against #41's. It carries three of the compounds ICU splits:
   // `ปีการศึกษา`, `ภาคการศึกษา` and `ผู้สอน`, the last two of which #41's
   // sentence does not contain at all.
+  //
+  // Since 17 พ.ย. 2569 the sentence writes its term `ภาค/ปี` and says
+  // กลุ่มเรียน (#279), so `ปีการศึกษา` is no longer in it and `กลุ่มเรียน` is -
+  // which ICU splits as `กลุ่ม|เรียน`, asked of `Intl.Segmenter('th')` the same
+  // day rather than assumed (#117). The character counts above are the
+  // September ones and were not re-counted.
   await signIn(page, ACCOUNTS.committee0501);
   await offerings.openOfferings(page);
 
@@ -175,7 +181,7 @@ test('row 2: the longest confirmation in the system keeps all three compounds wh
   const { lines, text, shown } = await drawn(page);
   expect(lines.length, `the sentence has to wrap:\n${shown}`).toBeGreaterThan(1);
 
-  for (const word of ['ปีการศึกษา', 'ภาคการศึกษา', 'ผู้สอน']) {
+  for (const word of ['กลุ่มเรียน', 'ภาคการศึกษา', 'ผู้สอน']) {
     expect(text, 'the longest message should contain every compound this row names').toContain(word);
     expect(splitOf(lines, word), `lines drawn:\n${shown}`).toBeNull();
   }

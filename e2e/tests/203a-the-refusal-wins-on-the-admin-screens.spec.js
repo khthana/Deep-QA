@@ -8,7 +8,6 @@ const {
   PROGRAMS,
   SUBJECT,
   PROGRAM,
-  CURRENT_YEAR,
   RUBRICS,
 } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
@@ -139,9 +138,6 @@ const SAVED = 'บันทึกข้อมูลเรียบร้อย�
 
 /** The outcome the `Plos` rows act on, which the seed gives every curriculum. */
 const OUTCOME = 'PLO-1';
-
-/** A term nothing is open in, so the form the `Offerings` save row fills is valid. */
-const FUTURE = String(Number(CURRENT_YEAR) + 3);
 
 const button = (scope, name) => scope.getByRole('button', { name, exact: true });
 
@@ -612,8 +608,9 @@ test.describe('ข้อมูลการเปิดรายวิชา (Off
       'the curriculum should offer this รายวิชา',
     ).toHaveCount(1);
     await offerings.subjectPicker(page).selectOption(SUBJECT.id);
-    await page.locator('form input[inputmode="numeric"]').fill(FUTURE);
-    await page.locator('form select:has(option:text-is("1 — ภาคต้น"))').selectOption('1');
+    // No term to fill since 17 พ.ย. 2569: the form opens in the term the list
+    // shows (#279). The write is answered by the gate, so the subject already
+    // being open in that term is never asked of the server.
 
     await theRefusalWins(page, {
       write: /^\/api\/offerings$/,
@@ -635,14 +632,15 @@ test.describe('ข้อมูลการเปิดรายวิชา (Off
       write: /^\/api\/offerings\/copy$/,
       list: /^\/api\/offerings$/,
       success: NOTHING_COPIED,
-      sentence: 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในกล่องด้านล่าง',
+      sentence: 'ไม่มีรายวิชาใดถูกคัดลอก รายละเอียดอยู่ในหน้าต่างคัดลอก',
       what: 'the banner of the copy',
-      press: () =>
-        offerings.copyFromTerm(
-          page,
-          { year: CURRENT_YEAR, semester: 1 },
-          { year: FUTURE, semester: 1 },
-        ),
+      // In the popup since 17 พ.ย. 2569, onto the term the list is on and from
+      // the nearest term before it, which the popup picks itself (#279). The
+      // write is answered by the gate, so which term that is says nothing.
+      press: async () => {
+        await offerings.openCopy(page);
+        await offerings.copyDialog(page).getByRole('button', { name: 'คัดลอก', exact: true }).click();
+      },
     });
   });
 

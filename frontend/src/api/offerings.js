@@ -40,6 +40,12 @@ export const listOfferings = (params = {}) => get(`/api/offerings${query(params)
 export const listReachablePrograms = () => get('/api/offerings/programs')
 
 /**
+ * The terms the list's picker offers for one programme, and the current one -
+ * #279, 17 พ.ย. 2569. The server says which term is current (`db/term.js`).
+ */
+export const listTerms = programId => get(`/api/offerings/terms${query({ program_id: programId })}`)
+
+/**
  * What the server scopes to the acting grant, and what takes **no argument** to
  * say which rows it means: a list of rows the screen filters is not this one,
  * because that read moves with the landing's own dependency list, while this one

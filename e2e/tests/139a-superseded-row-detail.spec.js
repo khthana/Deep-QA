@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
-const { byAlias, PROGRAM, SUBJECT } = require('../../db/seed');
+const { byAlias, CURRENT_YEAR, SEMESTER, PROGRAM, SUBJECT } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
@@ -121,6 +121,14 @@ test.beforeAll(async () => {
     `INSERT INTO program_subjects (program_id, subject_id, subject_type, created_by)
      VALUES ($1, $2, 'required', $3)`,
     [PROGRAM, SECOND.id, byAlias('U_ADMIN')],
+  );
+  // Opened in the seed's term too, since 17 พ.ย. 2569: the offerings rows need two rows
+  // in one list, and the list is one term since #279 - the seed's two Offerings
+  // of `01076105` are in two terms and so in two lists.
+  await db.query(
+    `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+     VALUES ($1, $2, $3, $4)`,
+    [PROGRAM, SECOND.id, CURRENT_YEAR, SEMESTER],
   );
 });
 test.afterAll(async () => {
@@ -601,9 +609,11 @@ const OFFERINGS = {
   name: 'ข้อมูลการเปิดรายวิชา',
   file: 'Offerings.js',
   detail: /^\/api\/offerings\/\d+$/,
-  open: 'ตอนเรียนและผู้สอน',
+  open: 'กลุ่มเรียนและผู้สอน',
   back: 'กลับไปหน้ารายการ',
-  form: 'เปิดรายวิชาในภาคการศึกษา',
+  // With the term after it since 17 พ.ย. 2569 (#279): the form says which term it
+  // opens in.
+  form: /^เปิดรายวิชาในภาคการศึกษา \d\/\d{4}$/,
 };
 
 /**
@@ -616,8 +626,9 @@ async function panelShows(page) {
     .getByRole('heading', { level: 2 })
     .filter({ hasText: /^\d{8} / })
     .innerText();
-  const line = await page.getByText(/^ปีการศึกษา \d+ ภาคการศึกษา \d/).innerText();
-  const [, year, semester] = line.match(/^ปีการศึกษา (\d+) ภาคการศึกษา (\d)/);
+  // Written `ภาค/ปี` since 17 พ.ย. 2569 (#279).
+  const line = await page.getByText(/^ภาคการศึกษา \d\/\d+/).innerText();
+  const [, semester, year] = line.match(/^ภาคการศึกษา (\d)\/(\d+)/);
   return { title: title.trim(), term: `${year}/${semester}` };
 }
 
@@ -773,16 +784,15 @@ test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
       .locator('table')
       .first()
       .locator('tbody tr')
-      .filter({ has: page.getByRole('cell', { name: offering.subject_id, exact: true }) })
-      .filter({ hasText: `${offering.semester} — ` })
-      .filter({ hasText: String(offering.academic_year) });
+      .filter({ has: page.getByRole('cell', { name: offering.subject_id, exact: true }) });
     const [opened] = await Promise.all([
       waitForDetail(page),
       row.first().getByRole('button', { name: OFFERINGS.open, exact: true }).click(),
     ]);
     const { offering: shown } = await opened.json();
-    // The row filter above narrows by subject, term and year; this says it
-    // landed on the Offering the list answer named.
+    // The row filter above narrows by subject inside the one term the list
+    // shows - by term and year as well until 17 พ.ย. 2569, when they stopped being
+    // columns (#279); this says it landed on the Offering the list answer named.
     expect(shown.id).toBe(offering.id);
     const [taken] = shown.sections;
 
@@ -794,7 +804,7 @@ test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
           answer.request().method() === 'POST',
       );
       await page.getByPlaceholder('เช่น 1 หรือ พ1').fill(taken.section_number);
-      await page.getByRole('button', { name: 'เพิ่มตอนเรียน' }).click();
+      await page.getByRole('button', { name: 'เพิ่มกลุ่มเรียน' }).click();
       expect((await refused).status()).toBe(409);
 
       await Promise.all([

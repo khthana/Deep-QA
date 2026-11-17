@@ -85,8 +85,13 @@ const PAGE_SIZE = 10;
  * file's own, the last kept for the one row that is pressed. Far enough ahead
  * that no seed and no other spec plans a term in them, which is what keeps this
  * file's rows out of every other file's reading (#132).
+ *
+ * Since 17 พ.ย. 2569 one year, its ภาคต้น holding eleven subjects of this file's own:
+ * the list is one term since #279, so a second page is eleven rows of one term
+ * and not one row of eleven (`moreThanOnePage` says why).
  */
-const PAGING_YEARS = [2590, 2591, 2592, 2593];
+const PAGING_YEAR = 2590;
+const PAGING_SUBJECTS = Array.from({ length: 11 }, (unused, i) => `00210${String(i).padStart(3, '0')}`);
 
 async function untilAtLeast(page, table, total) {
   await expect.poll(async () => (await reading(page, table)).total).toBeGreaterThanOrEqual(total);
@@ -183,7 +188,8 @@ const SCREENS = [
     // years are this file's own so that no other file shares a term with it.
     // The last of them holds the one row this row presses - see
     // `moreThanOnePage`.
-    secondPage: page => offerings.moreThanOnePage(page, { years: PAGING_YEARS }),
+    secondPage: page =>
+      offerings.moreThanOnePage(page, { year: PAGING_YEAR, codes: PAGING_SUBJECTS }),
     // The fixture's own row, in the one year holding a single Offering: it has
     // no section and nothing points at it, so the removal really lands, where
     // the seeded Offerings carry 113 enrolments and their marks and are refused

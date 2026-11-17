@@ -82,7 +82,7 @@ const BYSTANDER = '00250002';
 const CANCELLED_SAID = 'ยกเลิกการเปิดรายวิชาเรียบร้อยแล้ว';
 
 /** The two controls a row of the table carries, which the net counts. */
-const INTO_THE_PANEL = 'ตอนเรียนและผู้สอน';
+const INTO_THE_PANEL = 'กลุ่มเรียนและผู้สอน';
 const CANCEL = 'ยกเลิกการเปิด';
 
 const OFFERINGS_LIST = /^\/api\/offerings$/;

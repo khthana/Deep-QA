@@ -1,14 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
-import { SEMESTERS, isYear } from './terms'
+import useModalFocus from '../useModalFocus'
+import { termLabel } from './terms'
 
 /**
  * Copying a whole term onto another — #23's seventh criterion.
  *
- * Two terms and a button. What makes it worth its own panel is the answer: the
- * server reports four outcomes and this reads out every one that is not empty,
- * because a single count would hide the three that need doing something about.
+ * A popup since 17 พ.ย. 2569 - the owner's answer in #279: a button on the top
+ * bar, คัดลอกจากภาคการศึกษาก่อน, opens it, where it used to be a panel under the
+ * list with both terms typed in. The file keeps its name so the records that
+ * cite it still find it (#54).
+ *
+ * **The target is not a field.** It is the term the list is showing, handed in
+ * as `target` and named in the heading with the curriculum, and a person who
+ * wants another target picks it on the list first. The source is picked from
+ * `sources`: the terms this curriculum ran that are older than the target, the
+ * nearest first and chosen by default. With none, the popup says so and คัดลอก
+ * stays disabled.
+ *
+ * What makes it worth its own box is the answer: the server reports four
+ * outcomes and this reads out every one that is not empty, because a single
+ * count would hide the three that need doing something about.
  *
  * *สร้างแล้ว* is the copy. *มีอยู่แล้ว* is a subject already open in the target
  * term, which is a skip and not an error — pressing this twice has to be safe,
@@ -19,126 +32,153 @@ import { SEMESTERS, isYear } from './terms'
  * a reason the rest of the term should not be opened, so the copy goes ahead
  * and names them.
  *
- * The panel keeps the last report on the screen until the next copy. A report
- * that vanished on the next render would be a report nobody read.
+ * The report stays in the popup until the person closes it, and the popup
+ * closes only when they do. While the copy is out it cannot be closed and the
+ * source cannot be changed (#228): ปิด, Escape and the picker all wait for
+ * `busy` to come down.
  */
 
 const field =
-  'rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
+  'rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 
-function Term({ label, year, semester, onYear, onSemester }) {
+const keyOf = term => `${term.academic_year}:${term.semester}`
+
+export default function CopyTermPanel({
+  open,
+  target,
+  programName,
+  sources,
+  busy,
+  report,
+  onCopy,
+  onClose,
+}) {
+  const box = useRef(null)
+  const titleId = useId()
+  const [from, setFrom] = useState('')
+
+  // The nearest earlier term, each time the popup opens: `sources` arrives
+  // newest first. A choice the person made survives while it is still offered.
+  const offered = sources.some(term => keyOf(term) === from)
+  const chosen = offered ? from : sources[0] ? keyOf(sources[0]) : ''
+  useEffect(() => {
+    if (!open) setFrom('')
+  }, [open])
+
+  const close = () => {
+    if (!busy) onClose()
+  }
+  useModalFocus(box, open, close)
+
+  if (!open) return null
+
+  const source = sources.find(term => keyOf(term) === chosen)
+
   return (
-    <div>
-      <span className="mb-1 block text-sm text-gray-500">{label}</span>
-      <div className="flex gap-2">
-        <input
-          value={year}
-          onChange={event => onYear(event.target.value)}
-          placeholder="ปีการศึกษา"
-          inputMode="numeric"
-          maxLength={4}
-          className={`w-32 ${field}`}
-        />
-        <select value={semester} onChange={event => onSemester(event.target.value)} className={field}>
-          {SEMESTERS.map(term => (
-            <option key={term.value} value={term.value}>
-              {term.value} — {term.label}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  )
-}
-
-export default function CopyTermPanel({ busy, report, onCopy }) {
-  const [from, setFrom] = useState({ year: '', semester: 1 })
-  const [to, setTo] = useState({ year: '', semester: 2 })
-
-  const sameTerm =
-    from.year === to.year && Number(from.semester) === Number(to.semester)
-  const ready = isYear(from.year) && isYear(to.year) && !sameTerm
-
-  return (
-    <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-medium text-primary">คัดลอกการเปิดรายวิชาจากภาคการศึกษาก่อน</h2>
-      <p className="mt-1 text-sm text-slate-500">
-        ระบบจะคัดลอกรายวิชาที่เปิดสอน ตอนเรียน และผู้สอน จากภาคการศึกษาต้นทางมายังปลายทาง
-        รายวิชาที่เปิดไว้แล้วจะถูกข้าม ไม่ถูกเขียนทับ
-      </p>
-
-      <div className="mt-4 flex flex-wrap items-end gap-4">
-        <Term
-          label="จากภาคการศึกษา"
-          year={from.year}
-          semester={from.semester}
-          onYear={year => setFrom(current => ({ ...current, year }))}
-          onSemester={semester => setFrom(current => ({ ...current, semester }))}
-        />
-        <Term
-          label="ไปยังภาคการศึกษา"
-          year={to.year}
-          semester={to.semester}
-          onYear={year => setTo(current => ({ ...current, year }))}
-          onSemester={semester => setTo(current => ({ ...current, semester }))}
-        />
-        <button
-          type="button"
-          disabled={busy || !ready}
-          onClick={() =>
-            onCopy({
-              from_academic_year: from.year.trim(),
-              from_semester: Number(from.semester),
-              academic_year: to.year.trim(),
-              semester: Number(to.semester),
-            })
-          }
-          className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover disabled:opacity-60"
-        >
-          คัดลอก
-        </button>
-      </div>
-
-      {sameTerm && isYear(from.year) && (
-        <p className="mt-2 text-sm text-amber-700">
-          ต้นทางและปลายทางเป็นภาคการศึกษาเดียวกัน กรุณาเลือกให้ต่างกัน
+    <ContentMotionDIV className="fixed inset-0 z-[9998] !m-0 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+      <div
+        ref={box}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl focus:outline-none"
+      >
+        <h2 id={titleId} className="text-lg font-semibold text-primary">
+          คัดลอกจากภาคการศึกษาก่อน
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          คัดลอกมายังภาคการศึกษา {termLabel(target)}
+          {programName ? ` หลักสูตร ${programName}` : ''}
         </p>
-      )}
+        <p className="mt-1 text-sm text-slate-500">
+          ระบบจะคัดลอกรายวิชาที่เปิดสอน กลุ่มเรียน และผู้สอน จากภาคการศึกษาต้นทางมายังภาคนี้
+          รายวิชาที่เปิดไว้แล้วจะถูกข้าม ไม่ถูกเขียนทับ
+        </p>
 
-      {report && (
-        <div className="mt-4 space-y-1 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
-          <p>
-            เปิดรายวิชาใหม่ {report.created.length} รายวิชา รวม {report.sections} ตอนเรียน
+        {sources.length === 0 ? (
+          <p className="mt-4 text-sm text-amber-700">
+            หลักสูตรนี้ยังไม่มีภาคการศึกษาก่อนหน้าที่เปิดรายวิชาไว้ จึงไม่มีอะไรให้คัดลอก
           </p>
-          {report.skipped_existing.length > 0 && (
+        ) : (
+          <label className="mt-4 block">
+            <span className="mb-1 block text-sm text-gray-500">จากภาคการศึกษา</span>
+            <select
+              value={chosen}
+              onChange={event => setFrom(event.target.value)}
+              disabled={busy}
+              className={field}
+            >
+              {sources.map(term => (
+                <option key={keyOf(term)} value={keyOf(term)}>
+                  {termLabel(term)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {report && (
+          <div className="mt-4 space-y-1 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
             <p>
-              ข้ามเพราะเปิดสอนอยู่แล้ว {report.skipped_existing.length} รายวิชา —{' '}
-              {report.skipped_existing.join(', ')}
+              เปิดรายวิชาใหม่ {report.created.length} รายวิชา รวม {report.sections} กลุ่มเรียน
             </p>
-          )}
-          {report.skipped_unplaced.length > 0 && (
-            <p className="text-amber-700">
-              ข้ามเพราะไม่อยู่ในหลักสูตรแล้ว {report.skipped_unplaced.length} รายวิชา —{' '}
-              {report.skipped_unplaced.join(', ')}
-            </p>
-          )}
-          {report.skipped_closed?.length > 0 && (
-            <p className="text-amber-700">
-              ข้ามเพราะรายวิชาถูกปิดในคลังรายวิชาแล้ว {report.skipped_closed.length} รายวิชา —{' '}
-              {report.skipped_closed.join(', ')}
-            </p>
-          )}
-          {report.dropped_teachers.length > 0 && (
-            <p className="text-amber-700">
-              ไม่ได้คัดลอกผู้สอน {report.dropped_teachers.length} รายการ
-              เพราะบัญชีถูกระงับการใช้งาน —{' '}
-              {report.dropped_teachers
-                .map(dropped => `${dropped.subject_id} ตอน ${dropped.section_number}`)
-                .join(', ')}
-            </p>
-          )}
+            {report.skipped_existing.length > 0 && (
+              <p>
+                ข้ามเพราะเปิดสอนอยู่แล้ว {report.skipped_existing.length} รายวิชา —{' '}
+                {report.skipped_existing.join(', ')}
+              </p>
+            )}
+            {report.skipped_unplaced.length > 0 && (
+              <p className="text-amber-700">
+                ข้ามเพราะไม่อยู่ในหลักสูตรแล้ว {report.skipped_unplaced.length} รายวิชา —{' '}
+                {report.skipped_unplaced.join(', ')}
+              </p>
+            )}
+            {report.skipped_closed?.length > 0 && (
+              <p className="text-amber-700">
+                ข้ามเพราะรายวิชาถูกปิดในคลังรายวิชาแล้ว {report.skipped_closed.length} รายวิชา —{' '}
+                {report.skipped_closed.join(', ')}
+              </p>
+            )}
+            {report.dropped_teachers.length > 0 && (
+              <p className="text-amber-700">
+                ไม่ได้คัดลอกผู้สอน {report.dropped_teachers.length} รายการ
+                เพราะบัญชีถูกระงับการใช้งาน —{' '}
+                {report.dropped_teachers
+                  .map(dropped => `${dropped.subject_id} กลุ่มเรียน ${dropped.section_number}`)
+                  .join(', ')}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={close}
+            disabled={busy}
+            className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+          >
+            ปิด
+          </button>
+          <button
+            type="button"
+            disabled={busy || !source}
+            onClick={() =>
+              onCopy({
+                from_academic_year: source.academic_year,
+                from_semester: Number(source.semester),
+                academic_year: target.academic_year,
+                semester: Number(target.semester),
+              })
+            }
+            className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary_hover disabled:opacity-60"
+          >
+            คัดลอก
+          </button>
         </div>
-      )}
+      </div>
     </ContentMotionDIV>
   )
 }

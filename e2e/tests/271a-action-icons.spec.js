@@ -102,7 +102,7 @@ test('row 6: the grants table - ยกเลิกบทบาท', async ({ pag
 test('row 7: รายวิชาที่เปิดสอน - ตอนเรียนและผู้สอน and ยกเลิกการเปิด', async ({ page }) => {
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
-  await isAnIcon(named(page, 'ตอนเรียนและผู้สอน'), 'ตอนเรียนและผู้สอน');
+  await isAnIcon(named(page, 'กลุ่มเรียนและผู้สอน'), 'กลุ่มเรียนและผู้สอน');
   await isAnIcon(named(page, 'ยกเลิกการเปิด'), 'ยกเลิกการเปิด');
 });
 

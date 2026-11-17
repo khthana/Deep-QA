@@ -51,6 +51,17 @@
  *     // outside-the-filter: <why this screen's form cannot write outside its
  *     // own filter> (#NNN)
  *
+ * **Read 17 พ.ย. 2569 (#279):** the rule above read six, with nothing red. #279
+ * made `Offerings.js` hand the list values computed from state rather than
+ * state, and so took it out of question 1. Following a `const` computed from
+ * state (`stateIn`) brought it back, and with it three more the rule had not
+ * been seeing: `ProgramSubjects.js` and `SubjectStudents.js`, which say the
+ * sentence, and `Rubrics.js`, whose marker of 14 พ.ย. 2569 had gone unread
+ * since it was written (#93, #141). That makes ten, nine saying and one
+ * marked. When each of the three fell out was not measured. It was proved both
+ * ways on real sites, `alsoOutside` renamed in `Offerings.js` and then in
+ * `ProgramSubjects.js`, each going red alone and named (#141, #230).
+ *
  * None carries one as of 29 ตุลาคม 2569, because all seven say the sentence. A
  * marker is a claim like any other (#141), so each would be printed with its
  * reason and the day that screen's picker opens the marker is an exemption with
@@ -212,17 +223,60 @@ const keyOf = property => {
   return null
 }
 
-/** Everything the file holds in `useState`, by the name the value is bound to. */
+/** Does this expression read any of these names, outside a function inside it? */
+function reads(expression, names) {
+  if (!expression || typeof expression !== 'object') return false
+  if (Array.isArray(expression)) return expression.some(item => reads(item, names))
+  if (typeof expression.type !== 'string') return false
+  if (SKIPPED_INSIDE.has(expression.type)) return false
+  if (expression.type === 'Identifier') return names.has(expression.name)
+  return Object.keys(expression).some(
+    key => key !== 'loc' && !key.endsWith('Comments') && reads(expression[key], names)
+  )
+}
+
+/** Function bodies are not a value's derivation: a loader reads state, it is not state. */
+const SKIPPED_INSIDE = new Set(['ArrowFunctionExpression', 'FunctionExpression'])
+
+/**
+ * Everything the file holds in `useState`, by the name the value is bound to -
+ * and every `const` computed from those, followed until nothing new is added.
+ *
+ * The second half is #279's (17 พ.ย. 2569): `Offerings.js` stopped handing the
+ * list a state and started handing it values *derived* from state - `program`
+ * from `chosen` and the curricula in reach, `year` and `semester` from the term
+ * picker's answer - and the population went from seven to six with the exit
+ * code green, which is #208's blind census met again. A value computed from the
+ * filter's state is the filter as much as the state is. A function is not
+ * followed into (`SKIPPED_INSIDE`): a loader that reads state is not a filter.
+ */
 function stateIn(ast) {
   const names = new Set()
+  const derived = []
   walk(ast, node => {
     if (node.type !== 'VariableDeclarator') return
-    if (!node.init || node.init.type !== 'CallExpression') return
-    if (nameOf(node.init.callee) !== 'useState') return
-    if (!node.id || node.id.type !== 'ArrayPattern') return
-    const first = node.id.elements[0]
-    if (first && first.type === 'Identifier') names.add(first.name)
+    if (!node.init) return
+    if (node.init.type === 'CallExpression' && nameOf(node.init.callee) === 'useState') {
+      if (!node.id || node.id.type !== 'ArrayPattern') return
+      const first = node.id.elements[0]
+      if (first && first.type === 'Identifier') names.add(first.name)
+      return
+    }
+    if (node.id && node.id.type === 'Identifier' && !SKIPPED_INSIDE.has(node.init.type)) {
+      derived.push(node)
+    }
   })
+  let grew = true
+  while (grew) {
+    grew = false
+    for (const node of derived) {
+      if (names.has(node.id.name)) continue
+      if (reads(node.init, names)) {
+        names.add(node.id.name)
+        grew = true
+      }
+    }
+  }
   return names
 }
 
