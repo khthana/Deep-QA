@@ -39,10 +39,16 @@ and PLO mappings hang off.
 A Program Subject opened for a specific academic year and semester. One Offering splits into Sections.
 _Avoid_: semester course, course in term
 
-**Section** (ตอนเรียน):
+**Term** (ภาคการศึกษา):
+One semester of one academic year, written `ภาค/ปี` — `1/2569` is ภาคต้น of ปีการศึกษา 2569. Semesters are 1 ภาคต้น,
+2 ภาคปลาย and 3 ภาคฤดูร้อน. An Offering belongs to exactly one Term. The **current Term** is read off the date:
+June–November is 1, December–April is 2 of the year that began in June, and May is 3.
+_Avoid_: writing the year first (`2569/1`); semester alone when the year matters
+
+**Section** (กลุ่มเรียน):
 A teaching group within an Offering, with its own teachers, enrolled students, activities and scores.
-_Avoid_: class, course, กลุ่มเรียน — the older Thai term, too easily read as **Work Group** (กลุ่มงาน); the
-rebuild says ตอนเรียน everywhere
+_Avoid_: ตอนเรียน — the rebuild's earlier word, replaced by the owner on 17 November 2569 with the delivered
+system's กลุ่มเรียน; กลุ่ม alone, which is too easily read as **Work Group** (กลุ่มงาน); class, course
 
 ### Learning outcomes
 
@@ -117,7 +123,7 @@ _Avoid_: session, period
 **Work Group** (กลุ่มงาน):
 A group of at most 10 students within a Section for group Activities. A student belongs to at most one Work Group per
 Section.
-_Avoid_: team, student group
+_Avoid_: team, student group, กลุ่ม alone — a **Section** is a กลุ่มเรียน
 
 **Evidence** (หลักฐานการประเมิน):
 A PDF attached to an Activity — the brief itself, or a sample of work at each of the four achievement bands.
