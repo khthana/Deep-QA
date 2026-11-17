@@ -23,7 +23,7 @@ const {
  * The backend suite proves the same rules at the routes, and for most of this
  * ticket that is the stronger seam: whether a CLO belongs to a year is a fact
  * about a row. What is here is the part that is only true if a person sitting
- * in front of the screen would find it true — that two ผู้สอน of two ตอนเรียน
+ * in front of the screen would find it true — that two ผู้สอน of two กลุ่มเรียน
  * are looking at one list, that an edit made in one browser appears in the
  * other, that cancelling a removal removes nothing, and that a refusal from the
  * server reaches the page instead of being swallowed.
@@ -69,14 +69,14 @@ const DRAFT = {
   วิธีการวัดผล: 'ตรวจผลงาน',
 };
 
-/** teacher.one@ teaching ตอนเรียน 1 of the current term, which is where most rows start. */
+/** teacher.one@ teaching กลุ่มเรียน 1 of the current term, which is where most rows start. */
 async function asTeacherOne(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
   return section;
 }
 
-/** multi.role@ with the teaching hat on, and their ตอนเรียน of the same Offering. */
+/** multi.role@ with the teaching hat on, and their กลุ่มเรียน of the same Offering. */
 async function asMultiRole(page) {
   await signIn(page, ACCOUNTS.multiRole);
   expect((await switchTo(page, 'อาจารย์ผู้สอน')).status()).toBe(200);
@@ -92,12 +92,12 @@ test('row 1: the set opens under a section and names the year it belongs to', as
   const { offering, clos } = await answer.json();
   expect(clos).toHaveLength(9);
 
-  // The address is the ตอนเรียน and the record is the Offering's, which is the
+  // The address is the กลุ่มเรียน and the record is the Offering's, which is the
   // whole of ADR-0003 meeting ADR-0004 on one screen.
   expect(new URL(page.url()).pathname).toBe(`${DASHBOARD}/${section}/courseOutcomes`);
   expect(await codesOnScreen(page)).toEqual(clos.map(clo => clo.clo_number));
   // Anchored at the element's start since #116: the trail above now says
-  // *ตอนเรียน 1 · ปีการศึกษา <year>* too, so a substring read matches the
+  // *กลุ่มเรียน 1 · ปีการศึกษา <year>* too, so a substring read matches the
   // crumb as well as this screen's own subject line. The statement is the
   // stronger claim anyway - the year *opens* that line (#93).
   await expect(
@@ -127,14 +127,14 @@ test('row 3: an edit made in one section is what the other section reads', async
   page,
   browser,
 }) => {
-  // The fourth criterion. The write goes in through ตอนเรียน 1 and is read back
-  // through ตอนเรียน 2, in another browser context, by another person - which
+  // The fourth criterion. The write goes in through กลุ่มเรียน 1 and is read back
+  // through กลุ่มเรียน 2, in another browser context, by another person - which
   // is the only arrangement in which "visible from another Section" means what
   // the ticket means by it.
   const mine = await asTeacherOne(page);
   await openClos(page, mine);
 
-  const detail = 'แก้จากตอนเรียนที่หนึ่ง เพื่อให้ตอนเรียนที่สองอ่านเจอ';
+  const detail = 'แก้จากกลุ่มเรียนที่หนึ่ง เพื่อให้กลุ่มเรียนที่สองอ่านเจอ';
   await cloCard(page, 'CLO-1').getByRole('button', { name: 'แก้ไข CLO-1' }).click();
   const original = await page.getByLabel('รายละเอียดผลการเรียนรู้', { exact: true }).inputValue();
   expect((await submitClo(page, { รายละเอียดผลการเรียนรู้: detail }, 'PUT')).status()).toBe(200);

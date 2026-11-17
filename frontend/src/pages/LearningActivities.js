@@ -11,9 +11,9 @@ import RowAction from '../components/RowAction'
 /**
  * กิจกรรมการเรียนรู้ในรายวิชา — ticket #32.
  *
- * Every piece of assessed work in this ตอนเรียน, filed under the หมวดคะแนน it
+ * Every piece of assessed work in this กลุ่มเรียน, filed under the หมวดคะแนน it
  * counts towards. The two grains meet on this screen and the sentence under
- * the heading says so: the work is this Section's (two ตอนเรียน of one
+ * the heading says so: the work is this Section's (two กลุ่มเรียน of one
  * รายวิชา may assess differently), the categories it is filed under are the
  * Offering's and shared with every sibling Section.
  *
@@ -201,9 +201,9 @@ export default function LearningActivities() {
               belongs, for CourseOutcomes' reason.
             */}
             <p className="mt-2 text-sm text-slate-500">
-              ตอนเรียนที่ {data.section.section_number} · ปีการศึกษา {data.section.academic_year} ·
-              กิจกรรมเป็นของตอนเรียนนี้ แต่ละตอนเรียนมีกิจกรรมของตัวเอง
-              และหมวดคะแนนที่ใช้จัดกลุ่มเป็นของรายวิชาที่เปิดสอน ใช้ร่วมกันทุกตอนเรียน
+              กลุ่มเรียนที่ {data.section.section_number} · ปีการศึกษา {data.section.academic_year} ·
+              กิจกรรมเป็นของกลุ่มเรียนนี้ แต่ละกลุ่มเรียนมีกิจกรรมของตัวเอง
+              และหมวดคะแนนที่ใช้จัดกลุ่มเป็นของรายวิชาที่เปิดสอน ใช้ร่วมกันทุกกลุ่มเรียน
             </p>
           </div>
 
@@ -236,7 +236,7 @@ export default function LearningActivities() {
 
           {data.activities.length === 0 && (
             <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
-              ยังไม่มีกิจกรรมการเรียนรู้ของตอนเรียนนี้
+              ยังไม่มีกิจกรรมการเรียนรู้ของกลุ่มเรียนนี้
             </p>
           )}
 
@@ -347,7 +347,7 @@ export default function LearningActivities() {
         title="ลบกิจกรรมการเรียนรู้"
         message={
           removing
-            ? `ต้องการลบ ${removing.activity_name} หรือไม่ การลบจะเอาการเชื่อมโยงผลการเรียนรู้ของกิจกรรมนี้ไปด้วย และกิจกรรมของตอนเรียนอื่นไม่ถูกกระทบ`
+            ? `ต้องการลบ ${removing.activity_name} หรือไม่ การลบจะเอาการเชื่อมโยงผลการเรียนรู้ของกิจกรรมนี้ไปด้วย และกิจกรรมของกลุ่มเรียนอื่นไม่ถูกกระทบ`
             : ''
         }
         confirmLabel="ลบ"

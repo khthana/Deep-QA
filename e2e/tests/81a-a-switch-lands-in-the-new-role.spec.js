@@ -41,7 +41,7 @@ const {
  * or, at least, *move only when the current route is not in the new menu*. The
  * second needs a predicate for *is this path in this menu*, and `menus.js`'
  * own docstring says why that predicate is not a lookup: the teacher's second
- * group is about one open ตอนเรียน and is sliced out of the menu until one is
+ * group is about one open กลุ่มเรียน and is sliced out of the menu until one is
  * open, so for every teacher sub-page the honest answer is *it depends what is
  * open* — the predicate would hold a copy of `SidebarItem`'s slicing rule, and
  * a copy of a rule holds none of the rule's letters. The first candidate needs

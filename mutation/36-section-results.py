@@ -109,7 +109,7 @@ MUTANTS = {
         "  const count = axes.length",
     ),
     # The screen stops clearing `loading` when the read is refused, so a ผู้สอน
-    # who types another ตอนเรียน's address reads the refusal with
+    # who types another กลุ่มเรียน's address reads the refusal with
     # *กำลังโหลดข้อมูล…* under it, for ever. This is the defect #43's hand-walk
     # found on two screens; it is here as a mutant because the fix is a single
     # line that a later edit removes without noticing. Kills row 4.

@@ -3,7 +3,7 @@
 /**
  * The Teacher's own Sections - ticket #24.
  *
- * Every Teacher screen after this one works from one ตอนเรียน: its students,
+ * Every Teacher screen after this one works from one กลุ่มเรียน: its students,
  * its work groups, its activities, its scores. This file is where a Teacher
  * finds out which ones are theirs, and where the server decides whether a
  * `section_id` someone is holding is one of them.

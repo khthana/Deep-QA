@@ -75,7 +75,7 @@ MUTANTS = {
     # The dashboard stops being about a term. The parameters are kept so the
     # query still takes three - a mutant that changed the shape of the call
     # would fail for a reason that is not the claim. teacher.one@ teaches
-    # ตอนเรียน 1 of the same subject in this year and the year before, so the
+    # กลุ่มเรียน 1 of the same subject in this year and the year before, so the
     # list goes from one row to two: that pair is the whole discriminator, and
     # a seed that happened to give every teacher one Section would make this
     # mutant invisible.
@@ -166,13 +166,13 @@ MUTANTS = {
     "notoken": ("sidebar",
                 "                          subPath = sub.path.replace(SECTION_TOKEN, section)",
                 "                          subPath = sub.path"),
-    # The empty state stops naming the term. "You have no ตอนเรียน" and "you
-    # have no ตอนเรียน in ภาคต้น 2569" are different pieces of news to somebody
+    # The empty state stops naming the term. "You have no กลุ่มเรียน" and "you
+    # have no กลุ่มเรียน in ภาคต้น 2569" are different pieces of news to somebody
     # who taught two of them last term, and the screen still reads perfectly
     # well without the term - which is how a sentence like this rots.
     "termlessempty": ("dashboard",
-                      "            ยังไม่มีตอนเรียนที่ได้รับมอบหมายใน{termLabel}",
-                      "            ยังไม่มีตอนเรียนที่ได้รับมอบหมาย"),
+                      "            ยังไม่มีกลุ่มเรียนที่ได้รับมอบหมายใน{termLabel}",
+                      "            ยังไม่มีกลุ่มเรียนที่ได้รับมอบหมาย"),
     # The inherited behaviour restored: the chosen Section written down as well
     # as put in the address. Nothing reads it, so every row about *navigation*
     # still passes - which is the point. A remembered Section that agrees with
@@ -193,12 +193,12 @@ MUTANTS = {
     "staydashboard": ("dashboard",
                       "                  navigate(`/teacher/teacherDashboard/${section.section_id}`)",
                       "                  navigate(`/teacher/teacherDashboard`)"),
-    # The open Section stops saying which ตอนเรียน it is. The address is still
+    # The open Section stops saying which กลุ่มเรียน it is. The address is still
     # right and the subject is still named, so a row that read only the URL
-    # would call this screen correct - and a lecturer teaching two ตอนเรียน of
+    # would call this screen correct - and a lecturer teaching two กลุ่มเรียน of
     # one subject would have no way to tell which one is in front of them.
     "nosectionnumber": ("section",
-                        "            ตอนเรียน {section.section_number} · {semesterLabel(section.semester)}{' '}",
+                        "            กลุ่มเรียน {section.section_number} · {semesterLabel(section.semester)}{' '}",
                         "            {semesterLabel(section.semester)}{' '}"),
 }
 

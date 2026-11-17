@@ -26,16 +26,16 @@ const {
  *
  * Every sentence a section write ends in is drawn on the banner above the
  * screen, and nothing beside the panel is disabled while that write is out: so
- * กลับไปหน้ารายการ and then ตอนเรียนและผู้สอน of another Offering can both be
+ * กลับไปหน้ารายการ and then กลุ่มเรียนและผู้สอน of another Offering can both be
  * pressed first, and the answer arrives over somebody else's panel. #143 read
  * that from the code in September and said so; measured on 21 ตุลาคม 2569 with
  * a probe, all three ways in it names do it:
  *
  * | way in                                   | on the list | over B's panel |
  * |------------------------------------------|-------------|----------------|
- * | เพิ่มตอนเรียน, accepted (`onSection`)      | says it     | says it        |
+ * | เพิ่มกลุ่มเรียน, accepted (`onSection`)      | says it     | says it        |
  * | a duplicate number, refused (`onSection`) | —           | says it        |
- * | ลบตอนเรียน (`confirmRemoval`)              | says it     | says it        |
+ * | ลบกลุ่มเรียน (`confirmRemoval`)              | says it     | says it        |
  *
  * The owner's answer of 21 ตุลาคม 2569 is #143's third option: **the sentence
  * names the Offering**. The first option (drop it once another panel is open)

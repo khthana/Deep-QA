@@ -12,16 +12,16 @@ const { openDashboard, sectionCard } = require('../support/teaching-screen');
 /**
  * #272 ชิ้นที่สี่ — ช่องค้นหาของ *รายวิชาที่สอน* (`frontend/src/pages/TeacherDashboard.js`)
  *
- * คำตอบของเจ้าของงาน 13 พฤศจิกายน 2569: ค้นรหัส ชื่อไทย และชื่ออังกฤษ ไม่ค้นเลขตอนเรียนและจำนวนนักศึกษา ·
+ * คำตอบของเจ้าของงาน 13 พฤศจิกายน 2569: ค้นรหัส ชื่อไทย และชื่ออังกฤษ ไม่ค้นเลขกลุ่มเรียนและจำนวนนักศึกษา ·
  * ทางเลือกที่ไม่ถูกเลือก: รหัสกับชื่อไทยอย่างระบบที่ส่งมอบ
  * (`DEEP-QA-FRONTEND/src/components/content/TeacherContent/TeacherDashboard/TeacherDashboard.js`, `filteredCourses`)
- * และทุกอย่างที่การ์ดแสดง · กรองในเบราว์เซอร์ เพราะ `GET /api/teaching/sections` ตอบทุกตอนเรียนของภาคนี้ในครั้งเดียว
+ * และทุกอย่างที่การ์ดแสดง · กรองในเบราว์เซอร์ เพราะ `GET /api/teaching/sections` ตอบทุกกลุ่มเรียนของภาคนี้ในครั้งเดียว
  * และไม่มีอะไรบนจอนี้แบ่งหน้า
  *
  * ## ทำไมมีวิชาที่สองในแฟ้มนี้
  *
  * seed เปิดสอนวิชาเดียว (`01076105`) จึงไม่มีอาจารย์คนไหนมีการ์ดสองวิชาให้ช่องค้นเลือกระหว่างกัน · `beforeAll`
- * จึงขึ้นทะเบียนวิชา `Z0272001` วางในหลักสูตร 0501 เปิดสอนในภาคปัจจุบัน และมอบตอนเรียนที่ 1 ให้ `teacher.one@`
+ * จึงขึ้นทะเบียนวิชา `Z0272001` วางในหลักสูตร 0501 เปิดสอนในภาคปัจจุบัน และมอบกลุ่มเรียนที่ 1 ให้ `teacher.one@`
  * ผ่านเส้นทางของจอที่เป็นเจ้าของข้อเท็จจริงเหล่านั้น อย่าง `20a` และ `support/hold.js` เอาออกเมื่อแฟ้มจบ (#134)
  *
  * ## ลำดับของแต่ละแถว
@@ -31,8 +31,8 @@ const { openDashboard, sectionCard } = require('../support/teaching-screen');
  *
  * ## สิ่งที่แฟ้มนี้ไม่ได้พูด (#123)
  *
- * - **ไม่ได้พูดว่าเลขตอนเรียนไม่ถูกค้น** — การ์ดทั้งสองเป็นตอนเรียนที่ 1 และ `1` อยู่ในรหัสทั้งสอง จึงไม่มีเลขตอนเรียน
- *   ที่ทำให้สองแบบตอบต่างกันโดยไม่ต้องสร้างตอนเรียนที่สอง · จำนวนนักศึกษามีแถว D5 (รีวิว 13 พ.ย. 2569)
+ * - **ไม่ได้พูดว่าเลขกลุ่มเรียนไม่ถูกค้น** — การ์ดทั้งสองเป็นกลุ่มเรียนที่ 1 และ `1` อยู่ในรหัสทั้งสอง จึงไม่มีเลขกลุ่มเรียน
+ *   ที่ทำให้สองแบบตอบต่างกันโดยไม่ต้องสร้างกลุ่มเรียนที่สอง · จำนวนนักศึกษามีแถว D5 (รีวิว 13 พ.ย. 2569)
  * - **ไม่ได้พูดเรื่องหน้าตาและจำนวนมิลลิวินาทีของการหน่วง** — `272a` ด้วยเหตุผลเดียวกัน (#52)
  */
 
@@ -49,7 +49,7 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** `Z0272001` in the catalogue, in หลักสูตร 0501, open this term, ตอนเรียน 1 taught by `teacher.one@`. */
+/** `Z0272001` in the catalogue, in หลักสูตร 0501, open this term, กลุ่มเรียน 1 taught by `teacher.one@`. */
 test.beforeAll(async ({ playwright }) => {
   const asMaintainer = await playwright.request.newContext();
   const asCommittee = await playwright.request.newContext();
@@ -138,7 +138,7 @@ test('D3: the English name is searched, in any case', async ({ page }) => {
 test('D4: a term nothing holds says so', async ({ page }) => {
   await search(page, 'ไม่มีวิชานี้');
   await expect(page.getByText('ไม่พบรายวิชาตามคำค้น', { exact: true }), 'the sentence').toBeVisible();
-  await expect(page.getByRole('button').filter({ hasText: 'ตอนเรียน' }), 'no card is left').toHaveCount(0);
+  await expect(page.getByRole('button').filter({ hasText: 'กลุ่มเรียน' }), 'no card is left').toHaveCount(0);
 });
 
 test('D5: the count of students is not searched', async ({ page }) => {

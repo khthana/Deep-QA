@@ -35,12 +35,12 @@ const {
  * ## สองกลไก
  *
  * *รายชื่อนักศึกษา* แบ่งหน้าที่เซิร์ฟเวอร์ (`?q=` ของ `backend/routes/enrolment.js`)
- * แถวแรกจึงหานักศึกษาที่อยู่หน้าสี่ของรายชื่อที่ยังไม่ค้น *กลุ่มงาน* ได้ทุกกลุ่มของตอนเรียน
+ * แถวแรกจึงหานักศึกษาที่อยู่หน้าสี่ของรายชื่อที่ยังไม่ค้น *กลุ่มงาน* ได้ทุกกลุ่มของกลุ่มเรียน
  * ในคำตอบเดียวและไม่แบ่งหน้า จึงกรองในเบราว์เซอร์ — แถวของมันไม่ได้นับคำขอ นับการ์ด
  *
  * ## ตัวเลขบนหัวจอไม่ตามคำค้น
  *
- * *นักศึกษา N คน* ของรายชื่อ และ *N กลุ่ม* ของกลุ่มงาน เป็นของทั้งตอนเรียน ซึ่งการ์ดตอนเรียน
+ * *นักศึกษา N คน* ของรายชื่อ และ *N กลุ่ม* ของกลุ่มงาน เป็นของทั้งกลุ่มเรียน ซึ่งการ์ดกลุ่มเรียน
  * บนหน้าแรกก็แสดง (`SubjectStudents.js` §*The counts*) คำค้นจึงไม่ขยับมัน — บนรายชื่อนั่น
  * คือฟิลด์ใหม่ `enrolled` ในคำตอบ เพราะ `total` กลายเป็นยอดที่ค้นได้ ซึ่ง pager ใช้
  *
@@ -246,7 +246,7 @@ test('the class list: an enrolment the term does not find says #247’s sentence
   await searchClass(page, 'zz272-nothing');
   const student = await enrolCode(page, '65010001');
   await expect(notice(page)).toHaveText(
-    `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว ${OUTSIDE_THE_FILTER}`,
+    `เพิ่ม ${student.student_id} ${student.full_name_th} เข้ากลุ่มเรียนแล้ว ${OUTSIDE_THE_FILTER}`,
   );
   await expect(classRow(page, '65010001')).toHaveCount(0);
 });
@@ -258,7 +258,7 @@ test('the class list: an enrolment the term finds says only its own sentence', a
   const student = await enrolCode(page, '65010002');
   await expect(classRow(page, '65010002'), 'the list holds the student').toHaveCount(1);
   await expect(notice(page)).toHaveText(
-    `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
+    `เพิ่ม ${student.student_id} ${student.full_name_th} เข้ากลุ่มเรียนแล้ว`,
   );
 });
 
@@ -462,7 +462,7 @@ test('the groups: a file the term finds says nothing', async ({ page }) => {
   await expect(notice(page), 'and the screen adds nothing').toHaveCount(0);
 });
 
-// ------------------------------------------------- a jump to another ตอนเรียน
+// ------------------------------------------------- a jump to another กลุ่มเรียน
 
 /**
  * The owner's answer of 13 November 2569: a jump to another Section clears the
@@ -485,7 +485,7 @@ async function jumpBack(page, isRead) {
   return answer;
 }
 
-test('the class list: a jump to another ตอนเรียน clears the term', async ({ page }) => {
+test('the class list: a jump to another กลุ่มเรียน clears the term', async ({ page }) => {
   await signIn(page, ACCOUNTS.teacherOne);
   await enrolment.openEnrolment(page, LAST_YEAR);
   await markDocument(page);
@@ -502,7 +502,7 @@ test('the class list: a jump to another ตอนเรียน clears the term
   await expect(page.getByRole('searchbox', { name: CLASS_BOX })).toHaveValue('');
 });
 
-test('the groups: a jump to another ตอนเรียน clears the term', async ({ page }) => {
+test('the groups: a jump to another กลุ่มเรียน clears the term', async ({ page }) => {
   await signIn(page, ACCOUNTS.teacherOne);
   // A group last year's Section holds whatever the seed gives it, so that a
   // term left standing has something to hide (#129). `hold()` takes it out.

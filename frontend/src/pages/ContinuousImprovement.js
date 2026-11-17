@@ -23,7 +23,7 @@ import {
  * ## The grain, and why the heading says it
  *
  * The record belongs to the (Program, Subject, academic year) behind the
- * ตอนเรียน in the address and not to the ตอนเรียน itself — ADR-0003, and the
+ * กลุ่มเรียน in the address and not to the กลุ่มเรียน itself — ADR-0003, and the
  * schema was already at that grain before the rebuild. So the two ผู้สอน of two
  * classes write one narrative between them, and what one saves the other sees.
  * That is the fifth criterion and it is also the thing most likely to surprise
@@ -291,7 +291,7 @@ export default function ContinuousImprovement() {
                 a word. */}
             <p className="mt-2 text-sm text-slate-500">
               ปีการศึกษา {data.offering.academic_year} ·
-              ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้แผนเดียวกันนี้
+              ทุกกลุ่มเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้แผนเดียวกันนี้
               และปีการศึกษาอื่นมีแผนของตัวเอง
             </p>
           </div>
@@ -425,7 +425,7 @@ export default function ContinuousImprovement() {
         title="ลบบันทึกของแผนการปรับปรุง"
         message={
           removing
-            ? `ต้องการลบ${labelOf(removing.detail_type)}ของ ${removing.clo_number} ในปีการศึกษา ${data?.offering.academic_year} หรือไม่ ทุกตอนเรียนของรายวิชานี้จะไม่เห็นข้อความนี้อีก`
+            ? `ต้องการลบ${labelOf(removing.detail_type)}ของ ${removing.clo_number} ในปีการศึกษา ${data?.offering.academic_year} หรือไม่ ทุกกลุ่มเรียนของรายวิชานี้จะไม่เห็นข้อความนี้อีก`
             : ''
         }
         confirmLabel="ลบ"

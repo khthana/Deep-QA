@@ -590,7 +590,7 @@ test('a search narrows the class list to the students whose code or name holds i
   assert.deepEqual(byCode.body.students.map((student) => student.student_id), [far.student_id]);
   assert.equal(byCode.body.total, 1, 'the count is the search count');
   // The heading's *นักศึกษา N คน* is the whole class, which the dashboard's
-  // ตอนเรียน card shows too (`SubjectStudents.js`, *The counts*), so the class
+  // กลุ่มเรียน card shows too (`SubjectStudents.js`, *The counts*), so the class
   // size is its own field and a search does not move it.
   const unsearched = await list(cookie, section, '');
   assert.equal(byCode.body.enrolled, unsearched.body.total, 'the class size is not the search count');

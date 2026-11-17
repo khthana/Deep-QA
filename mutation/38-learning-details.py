@@ -192,7 +192,7 @@ MUTANTS = {
     "columnfeetnoverdict": ("screen",
                             "                              {clo.passed === null ? '\u2014' : clo.passed ? 'Y' : 'N'}",
                             "                              {''}"),
-    # A ตอนเรียน that is not the reader's is drawn as an empty page rather than
+    # A กลุ่มเรียน that is not the reader's is drawn as an empty page rather than
     # refused - no roll, no marks, no sentence saying why. Nothing leaks, so it
     # looks harmless; what it costs is the difference between *you do not teach
     # this* and *there is nothing here*, and ADR-0002's answer arriving as a

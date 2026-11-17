@@ -13,7 +13,7 @@ const { startApi, inCloOrder } = require('./helpers');
  * docs/acceptance/36-section-results.md — the server half.
  *
  * #36 asks the same question of a Section that #38 does and answers it in one
- * line per outcome rather than one line per student: how did this ตอนเรียน do
+ * line per outcome rather than one line per student: how did this กลุ่มเรียน do
  * against each of its CLOs. The arithmetic is therefore not new — BR-18's scale
  * of five, BR-17's sixty per cent, the blank that is not a nought — and this
  * file does not re-prove it. `learning-details.test.js` owns those rules, and a
@@ -24,9 +24,9 @@ const { startApi, inCloOrder } = require('./helpers');
  * years**, and it turns on two decisions that no rule in `docs/01`–`05` makes
  * for us.
  *
- * ## Whose ตอนเรียน a prior year is
+ * ## Whose กลุ่มเรียน a prior year is
  *
- * Every ตอนเรียน of the Subject in that year, pooled into one figure — not the
+ * Every กลุ่มเรียน of the Subject in that year, pooled into one figure — not the
  * ones this ผู้สอน happened to teach. R079 asks whether *the Subject* is
  * improving, and a Subject taught by three people in 2568 has one answer to
  * that and not three. It is a widening of what a ผู้สอน may read, so it is
@@ -64,11 +64,11 @@ let priorSection;
 before(async () => {
   api = await startApi('section_results', { withSeed: true });
   teacherOne = await teaching('U_TEACH');
-  // `U_MULTI` and not `U_TEACH2`: the second teacher account holds no ตอนเรียน
+  // `U_MULTI` and not `U_TEACH2`: the second teacher account holds no กลุ่มเรียน
   // in the current year at all, so a refusal from it would prove only that it
-  // teaches nothing. `U_MULTI` teaches ตอนเรียน 2 of this very Subject, which
+  // teaches nothing. `U_MULTI` teaches กลุ่มเรียน 2 of this very Subject, which
   // is the refusal worth having — being inside the same Offering is not being
-  // inside the same ตอนเรียน.
+  // inside the same กลุ่มเรียน.
   stranger = await teaching('U_MULTI');
   section = await seededSection('U_TEACH', CURRENT_YEAR);
   theirs = await seededSection('U_MULTI', CURRENT_YEAR);
@@ -307,7 +307,7 @@ test('a Section with no marks yet answers with its outcomes and says it is empty
   });
 });
 
-test('the prior year of the same Subject is offered, and is not one ตอนเรียน of it', async () => {
+test('the prior year of the same Subject is offered, and is not one กลุ่มเรียน of it', async () => {
   const response = await results(section, teacherOne);
   const offered = response.body.available_years;
 
@@ -318,7 +318,7 @@ test('the prior year of the same Subject is offered, and is not one ตอนเ
   );
 
   // Pooled, and the pooling is the point: the count is every student of that
-  // year's Subject, not the roll of the one ตอนเรียน this ผู้สอน taught.
+  // year's Subject, not the roll of the one กลุ่มเรียน this ผู้สอน taught.
   const { rows } = await api.pool.query(
     `SELECT count(DISTINCT scr.student_id)::int AS students,
             count(DISTINCT cs.section_id)::int AS sections
@@ -335,7 +335,7 @@ test('the prior year of the same Subject is offered, and is not one ตอนเ
   assert.equal(offered[0].student_count, rows[0].students);
   assert.equal(offered[0].section_count, rows[0].sections);
 
-  // Nothing about the answer names a ตอนเรียน of that year, or who taught it.
+  // Nothing about the answer names a กลุ่มเรียน of that year, or who taught it.
   assert.equal(JSON.stringify(offered).includes('section_id'), false);
   assert.equal(JSON.stringify(offered).includes('teacher'), false);
 });
@@ -416,12 +416,12 @@ test('the current year and a year that does not exist are both refused', async (
   assert.equal(never.body.message, REFUSALS.yearNotComparable);
 });
 
-test('a ผู้สอน is refused a ตอนเรียน they do not teach, and the refusal is the server’s', async () => {
+test('a ผู้สอน is refused a กลุ่มเรียน they do not teach, and the refusal is the server’s', async () => {
   const other = await results(theirs, teacherOne);
   assert.equal(other.status, 404);
   assert.equal(other.body.message, REFUSALS.sectionNotFound);
 
-  // Both ways: the ตอนเรียน of the same Offering that the other ผู้สอน teaches
+  // Both ways: the กลุ่มเรียน of the same Offering that the other ผู้สอน teaches
   // is refused to this one, and this one's is refused to them.
   const mine = await results(section, stranger);
   assert.equal(mine.status, 404);
@@ -433,12 +433,12 @@ test('a ผู้สอน is refused a ตอนเรียน they do not tea
   assert.equal(unauthenticated.status, 401);
 });
 
-test('a student who has left the ตอนเรียน stops counting, as they do on #38’s screen', async () => {
+test('a student who has left the กลุ่มเรียน stops counting, as they do on #38’s screen', async () => {
   // The review found this one. #38 walks the roll and looks marks up against
   // it, so an unenrolled student simply is not a row there. This route folds
   // from the marks outward, and without a join back to `student_course` a mark
   // left behind by somebody who has gone on counting toward the mean here and
-  // not there — the same ตอนเรียน carrying two different
+  // not there — the same กลุ่มเรียน carrying two different
   // *คะแนนเฉลี่ยรายคนรายข้อ* on two screens, which is exactly the drift
   // `lib/attainment.js`' own header exists to warn about.
   const roll = await rollOf(section);
@@ -469,7 +469,7 @@ test('a student who has left the ตอนเรียน stops counting, as the
   }
 });
 
-test('the class list of this ตอนเรียน is served by an endpoint that exists', async () => {
+test('the class list of this กลุ่มเรียน is served by an endpoint that exists', async () => {
   // The ticket's seventh criterion. The inherited hook called an endpoint that
   // was never written and then discarded its answer unconditionally, so this
   // screen and #37's both drew an empty class in every case. There is no such

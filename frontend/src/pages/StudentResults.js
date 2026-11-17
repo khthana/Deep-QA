@@ -25,7 +25,7 @@ import { getLearningDetails } from '../api/learningDetails'
  * normalisation as the Section results. The cheapest way to satisfy that is a
  * test; the honest way is to make it impossible to break, and that is what
  * reading `/learning-details` does. The heatmap already folds every student of
- * this ตอนเรียน against every outcome of it, behind the same guard, with the
+ * this กลุ่มเรียน against every outcome of it, behind the same guard, with the
  * Section's own mean per outcome in `clos[]` — which is exactly and entirely
  * what a radar of one student against the class needs.
  *
@@ -42,7 +42,7 @@ import { getLearningDetails } from '../api/learningDetails'
  *
  * ## The roll arrives with the chart, which is why the picker can be searched
  *
- * The class list endpoint pages at ten. A ตอนเรียน of fifty-seven behind a
+ * The class list endpoint pages at ten. A กลุ่มเรียน of fifty-seven behind a
  * picker that pages is a person clicking *ถัดไป* five times to find one
  * student. Reading the heatmap's answer instead means the whole roll is already
  * here, so the search box filters what is in memory, choosing a student makes
@@ -58,7 +58,7 @@ import { getLearningDetails } from '../api/learningDetails'
  */
 
 /** What the Section's own line is called, in the chart, the legend and the table. */
-const AVERAGE = 'ค่าเฉลี่ยของตอนเรียน'
+const AVERAGE = 'ค่าเฉลี่ยของกลุ่มเรียน'
 
 /** Whether this student has been measured on any of the outcomes given. */
 const hasAnyScore = (student, clos) =>
@@ -80,7 +80,7 @@ export default function StudentResults() {
   const [chosen, setChosen] = useState([])
   const [term, setTerm] = useState('')
 
-  // Which read is the current one. Moving between two ตอนเรียน quickly puts two
+  // Which read is the current one. Moving between two กลุ่มเรียน quickly puts two
   // reads in flight and this screen is not remounted between them, so without
   // the ticket the slower one wins whichever it was - the defect #68 names on
   // another screen and #36 guards against on this one's sibling.
@@ -114,7 +114,7 @@ export default function StudentResults() {
     load()
   }, [load])
 
-  // A ตอนเรียน changing under the screen must not leave the previous one's
+  // A กลุ่มเรียน changing under the screen must not leave the previous one's
   // codes ticked. They would match nobody on the new roll and draw nothing,
   // which reads as a chart that has stopped working.
   useEffect(() => {
@@ -213,7 +213,7 @@ export default function StudentResults() {
           ผลลัพธ์การเรียนรู้รายบุคคล
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
+          กลุ่มเรียน {data.section.section_number} · ปีการศึกษา{' '}
           {data.section.academic_year} · {data.summary.student_count} คน ·{' '}
           {data.clos.length} ผลการเรียนรู้ · คะแนนทุกข้อเทียบเป็นคะแนนเต็ม 5
         </p>
@@ -225,7 +225,7 @@ export default function StudentResults() {
         // everything rather than as a class nobody has marked yet.
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <p className="text-sm font-medium text-slate-600">
-            ยังไม่มีคะแนนในตอนเรียนนี้
+            ยังไม่มีคะแนนในกลุ่มเรียนนี้
           </p>
           <p className="mt-2 text-sm text-slate-500">
             เมื่อบันทึกคะแนนกิจกรรมการเรียนรู้แล้ว
@@ -313,7 +313,7 @@ export default function StudentResults() {
               ผลการเรียนรู้รายข้อ (เต็ม 5)
             </h2>
             <p className="mt-1 text-xs text-slate-400">
-              เส้นพื้นหลังคือค่าเฉลี่ยของทั้งตอนเรียน
+              เส้นพื้นหลังคือค่าเฉลี่ยของทั้งกลุ่มเรียน
               เลือกนักศึกษาเพื่อวางเส้นของแต่ละคนทับลงไป
             </p>
 
@@ -343,7 +343,7 @@ export default function StudentResults() {
               <RadarChart
                 axes={axes}
                 series={series}
-                title={`ผลการเรียนรู้รายข้อของนักศึกษาที่เลือก เทียบกับค่าเฉลี่ยของตอนเรียน ${data.section.section_number} เป็นคะแนนเต็ม 5`}
+                title={`ผลการเรียนรู้รายข้อของนักศึกษาที่เลือก เทียบกับค่าเฉลี่ยของกลุ่มเรียน ${data.section.section_number} เป็นคะแนนเต็ม 5`}
               />
 
               <ul className="space-y-2">
@@ -391,7 +391,7 @@ export default function StudentResults() {
               // chart, where the sentence would have been pointing at nothing.
               <p className="mt-4 text-sm text-slate-900">
                 เลือกนักศึกษาจากรายการ ครั้งละไม่เกิน {MAX_STUDENTS} คน
-                เพื่อวางเส้นของแต่ละคนทับบนค่าเฉลี่ยของตอนเรียน
+                เพื่อวางเส้นของแต่ละคนทับบนค่าเฉลี่ยของกลุ่มเรียน
               </p>
             )}
 
@@ -405,7 +405,7 @@ export default function StudentResults() {
                 {neverMarked.length > 0 && (
                   <p>
                     {neverMarked.map(nameOf).join(' · ')}{' '}
-                    ยังไม่มีคะแนนที่บันทึกไว้ในตอนเรียนนี้
+                    ยังไม่มีคะแนนที่บันทึกไว้ในกลุ่มเรียนนี้
                     จึงยังไม่มีเส้นบนกราฟ
                     และช่องในตารางเว้นว่างไว้
                   </p>
@@ -424,7 +424,7 @@ export default function StudentResults() {
             <div className="mt-6 overflow-x-auto">
               <table className="w-full min-w-[36rem] text-left text-sm">
                 <caption className="sr-only">
-                  คะแนนรายข้อของนักศึกษาที่เลือก เทียบกับค่าเฉลี่ยของตอนเรียน
+                  คะแนนรายข้อของนักศึกษาที่เลือก เทียบกับค่าเฉลี่ยของกลุ่มเรียน
                 </caption>
                 <thead className="border-b border-gray-200 text-xs text-slate-500">
                   <tr>

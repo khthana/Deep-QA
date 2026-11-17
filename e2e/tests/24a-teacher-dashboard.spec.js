@@ -19,7 +19,7 @@ const {
  * docs/acceptance/24-teacher-dashboard.md — the half a browser can prove.
  *
  * The backend suite proves the same rules at the routes. What is here is what
- * only a browser shows: that the ตอนเรียน a person chose is in the address and
+ * only a browser shows: that the กลุ่มเรียน a person chose is in the address and
  * survives a reload, that a Section belonging to somebody else is refused on
  * the screen and not merely at the route, and that the account holding two
  * grants has to put the teaching one on before any of it is reachable.
@@ -62,7 +62,7 @@ async function mySectionIds(page) {
 }
 
 test('row 1: the dashboard is this term, and only the sections of this term', async ({ page }) => {
-  // teacher.one@ teaches one ตอนเรียน this term and one in the year before, so
+  // teacher.one@ teaches one กลุ่มเรียน this term and one in the year before, so
   // a screen that ignored the term would show two cards rather than one.
   await signIn(page, ACCOUNTS.teacherOne);
   const answer = await openDashboard(page);
@@ -86,7 +86,7 @@ test('row 2: a teacher assigned to nothing is told which term was looked in', as
   expect(answer.status()).toBe(200);
   expect((await answer.json()).sections).toEqual([]);
 
-  await expect(page.getByText(new RegExp(`ยังไม่มีตอนเรียน.*${termLabel()}`))).toBeVisible();
+  await expect(page.getByText(new RegExp(`ยังไม่มีกลุ่มเรียน.*${termLabel()}`))).toBeVisible();
   await expect(sectionCard(page, SUBJECT)).toHaveCount(0);
 });
 
@@ -102,12 +102,12 @@ test('row 3: choosing a section puts its id in the address', async ({ page }) =>
   expect(sectionInUrl(page)).toMatch(/^\d+$/);
 
   // The screen's own statement, and not the two words on their own. Until #116
-  // the words `ตอนเรียน 1` were on the page exactly once, so a substring match
+  // the words `กลุ่มเรียน 1` were on the page exactly once, so a substring match
   // was unambiguous *because of* a thing nobody had written yet: the trail now
   // says them too. The repair is to read the sentence this screen draws —
-  // ตอนเรียน, the term and the headcount in one element — which is the stronger
+  // กลุ่มเรียน, the term and the headcount in one element — which is the stronger
   // claim and the one this row was always making.
-  await expect(page.getByText(new RegExp(`^ตอนเรียน 1 · ${termLabel()} · `))).toBeVisible();
+  await expect(page.getByText(new RegExp(`^กลุ่มเรียน 1 · ${termLabel()} · `))).toBeVisible();
 });
 
 test('row 3: a section-specific menu entry leads to that section and not to a placeholder', async ({

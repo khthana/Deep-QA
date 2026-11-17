@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Ticket #25: the class list of one ตอนเรียน.
+ * Ticket #25: the class list of one กลุ่มเรียน.
  *
  * #17 built the central register — where a student first exists. This is the
  * other half of that sentence: who, of the people the register holds, is in
@@ -19,7 +19,7 @@
  * *The grain is the Section, and this is the file where that is not a
  * simplification.* #27's CLOs hang off the Offering because ADR-0003 puts them
  * at (Program, Subject, ปีการศึกษา), and `clos.js` resolves a Section id into
- * that triple on every request. Enrolment does not: two ตอนเรียน of one
+ * that triple on every request. Enrolment does not: two กลุ่มเรียน of one
  * Offering are two different class lists, which is the whole reason a Section
  * exists. So `sectionOf` below stops at the Section and never reaches the
  * Offering, and a route here that borrowed `offeringOf` would quietly return
@@ -123,7 +123,7 @@ async function sectionOf(pool, req, sectionId) {
  * Section that does not exist gets, deliberately the same.
  *
  * Module-level and exported beside `sectionOf`, because the two are one act:
- * resolve the ตอนเรียน, or refuse it. #26 was about to be the fourth verbatim
+ * resolve the กลุ่มเรียน, or refuse it. #26 was about to be the fourth verbatim
  * copy, and `lib/fields.js` documents the rule it would have broken - extract
  * at the third. #104 folded in the two copies that were still in
  * `teachingPlan.js` and `activities.js`; it left the refusal here rather than
@@ -194,7 +194,7 @@ function enrolmentRoutes(pool) {
         const search = searchOf(req);
         // Two counts in one read: `total` is what the search found, which the
         // pager pages, and `enrolled` is the whole class, which the heading's
-        // *นักศึกษา N คน* says and the dashboard's ตอนเรียน card says too - so a
+        // *นักศึกษา N คน* says and the dashboard's กลุ่มเรียน card says too - so a
         // search does not move it (`SubjectStudents.js`, *The counts*).
         const counted = await pool.query(
           `SELECT count(*) FILTER (WHERE ${held})::int AS total,

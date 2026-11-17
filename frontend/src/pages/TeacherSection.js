@@ -7,9 +7,9 @@ import { getMySection } from '../api/teaching'
 import { semesterLabel } from '../components/offerings/terms'
 
 /**
- * ตอนเรียนที่เปิดอยู่ — ticket #24, the Section in context.
+ * กลุ่มเรียนที่เปิดอยู่ — ticket #24, the Section in context.
  *
- * The screen a ผู้สอน lands on after choosing a ตอนเรียน, and the one every
+ * The screen a ผู้สอน lands on after choosing a กลุ่มเรียน, and the one every
  * Section-specific menu entry hangs under. Its whole job is to resolve the id
  * in the address into a Section this account actually teaches, and to say which
  * one is open.
@@ -94,12 +94,12 @@ export default function TeacherSection() {
           </h1>
           <p className="text-sm text-slate-400">{section.subject_name_en}</p>
           <p className="mt-3 text-sm text-slate-500">
-            ตอนเรียน {section.section_number} · {semesterLabel(section.semester)}{' '}
+            กลุ่มเรียน {section.section_number} · {semesterLabel(section.semester)}{' '}
             ปีการศึกษา {section.academic_year} · นักศึกษา {section.student_count} คน
           </p>
 
           <p className="mt-6 text-sm text-slate-500">
-            เมนูข้อมูลรายวิชาทางด้านซ้ายทำงานกับตอนเรียนนี้
+            เมนูข้อมูลรายวิชาทางด้านซ้ายทำงานกับกลุ่มเรียนนี้
           </p>
         </div>
       )}

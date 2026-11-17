@@ -893,7 +893,7 @@ const throughTheYearFilter = (page) => ({
     ),
 });
 
-test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused ตอนเรียนและผู้สอน reloads does not land on the page the pager has left', async ({
+test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused กลุ่มเรียนและผู้สอน reloads does not land on the page the pager has left', async ({
   page,
 }) => {
   // `openSections`' `catch`: the panel never opened.
@@ -1144,12 +1144,12 @@ test('รายชื่อนักศึกษาของรายวิช�
   const opened = await openWhereTheJumpIsPossible(page);
   const code = enrolment.SPARE_CODES[2];
   await Promise.all([enrolment.waitForList(page), enrolment.enrol(page, code)]);
-  await expect(page.getByRole('button', { name: `นำ ${code} ออกจากตอนเรียน` })).toBeVisible();
+  await expect(page.getByRole('button', { name: `นำ ${code} ออกจากกลุ่มเรียน` })).toBeVisible();
   await supersede(page, {
     ...opened,
     move: throughTheSectionJump(page),
     press: async () => {
-      await page.getByRole('button', { name: `นำ ${code} ออกจากตอนเรียน` }).click();
+      await page.getByRole('button', { name: `นำ ${code} ออกจากกลุ่มเรียน` }).click();
       await page.getByRole('button', { name: 'นำออก', exact: true }).click();
     },
   });

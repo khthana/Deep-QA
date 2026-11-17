@@ -401,14 +401,14 @@ test('the grid of a กิจกรรม the picker has left behind does not la
   // `ActivityScores.js:179`. The ticket files this under *`useParams`*; only
   // `sectionId` comes from the route. `activityId` is state, and the `<select>`
   // that sets it is on the screen — so this is #68's family, and the seeded
-  // ตอนเรียน has six pieces of work to switch between.
+  // กลุ่มเรียน has six pieces of work to switch between.
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
 
   const opened = await (await openScores(page, section)).json();
   const picker = activityPicker(page);
   const others = await pickerIds(picker, opened.activity.id);
-  expect(others.length, 'this ตอนเรียน should offer more than one กิจกรรม').toBeGreaterThan(1);
+  expect(others.length, 'this กลุ่มเรียน should offer more than one กิจกรรม').toBeGreaterThan(1);
   const [heldId, fastId] = others;
 
   const forActivity = (url, activityId) =>

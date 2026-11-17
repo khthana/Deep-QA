@@ -11,7 +11,7 @@ import RowAction from '../components/RowAction'
 /**
  * แผนการสอน — ticket #31.
  *
- * The week-by-week plan of one ตอนเรียน: what is taught in which week of the
+ * The week-by-week plan of one กลุ่มเรียน: what is taught in which week of the
  * semester, with optional prose under each topic. The grain is the opposite
  * of every other screen in this menu — the plan belongs to THIS Section, two
  * Sections of one Offering may differ — and the sentence under the heading
@@ -184,15 +184,15 @@ export default function TeachingPlan() {
             <h1 className="mt-1 text-xl font-semibold text-primary">แผนการสอน</h1>
             {/*
               The grain, in words — and here the words are the OTHER ones.
-              Every sibling screen says ทุกตอนเรียน…ใช้ชุดเดียวกัน; this one
+              Every sibling screen says ทุกกลุ่มเรียน…ใช้ชุดเดียวกัน; this one
               is the screen that would make that sentence a lie if it copied
               it. The line break falls before แต่ละ, where a space belongs,
               for CourseOutcomes' reason.
             */}
             <p className="mt-2 text-sm text-slate-500">
-              ตอนเรียนที่ {data.section.section_number} · ปีการศึกษา {data.section.academic_year} ·
-              แผนการสอนเป็นของตอนเรียนนี้โดยเฉพาะ
-              แต่ละตอนเรียนมีแผนของตัวเอง
+              กลุ่มเรียนที่ {data.section.section_number} · ปีการศึกษา {data.section.academic_year} ·
+              แผนการสอนเป็นของกลุ่มเรียนนี้โดยเฉพาะ
+              แต่ละกลุ่มเรียนมีแผนของตัวเอง
             </p>
           </div>
 
@@ -222,7 +222,7 @@ export default function TeachingPlan() {
 
           {data.weeks.length === 0 && (
             <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
-              ยังไม่มีแผนการสอนของตอนเรียนนี้
+              ยังไม่มีแผนการสอนของกลุ่มเรียนนี้
             </p>
           )}
 
@@ -286,7 +286,7 @@ export default function TeachingPlan() {
         title="ลบหัวข้อในแผนการสอน"
         message={
           removing
-            ? `ต้องการลบสัปดาห์ที่ ${removing.week_no} (${removing.title}) หรือไม่ สัปดาห์อื่นจะไม่ถูกเปลี่ยนเลข และแผนของตอนเรียนอื่นไม่ถูกกระทบ`
+            ? `ต้องการลบสัปดาห์ที่ ${removing.week_no} (${removing.title}) หรือไม่ สัปดาห์อื่นจะไม่ถูกเปลี่ยนเลข และแผนของกลุ่มเรียนอื่นไม่ถูกกระทบ`
             : ''
         }
         confirmLabel="ลบ"

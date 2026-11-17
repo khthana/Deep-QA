@@ -66,7 +66,7 @@ const { blankToNull, integerId, round2 } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { sectionOf, notThisSection } = require('./enrolment');
 
-/** A ผู้สอน's own ตอนเรียน, as in `enrolment.js`, `activities.js` and `workGroups.js`. */
+/** A ผู้สอน's own กลุ่มเรียน, as in `enrolment.js`, `activities.js` and `workGroups.js`. */
 const TEACHING = ['TEACHER'];
 
 /** The two identifying columns every marks file carries, whichever toggle wrote it. */
@@ -296,8 +296,8 @@ function activityScoreRoutes(pool) {
    * Everything is decided here and nothing is written, which is what lets one
    * bad cell refuse a whole class's save without a transaction to unwind. The
    * refusals are the ticket's own: the ceiling of a whole Activity, the ceiling
-   * of one outcome's share of it, a student who is not in this ตอนเรียน, and a
-   * group that is not this ตอนเรียน's.
+   * of one outcome's share of it, a student who is not in this กลุ่มเรียน, and a
+   * group that is not this กลุ่มเรียน's.
    */
   async function plan(sectionId, activity, cloRows, body) {
     const mode = body?.mode === 'clo' ? 'clo' : 'activity';
@@ -391,7 +391,7 @@ function activityScoreRoutes(pool) {
     const marks = [...latest.values()];
 
     // Postgres takes 65535 parameters in one statement; at four apiece this is
-    // far under it for any ตอนเรียน, and chunked so that it stays under it for
+    // far under it for any กลุ่มเรียน, and chunked so that it stays under it for
     // one nobody has imagined yet.
     for (let from = 0; from < marks.length; from += 500) {
       const batch = marks.slice(from, from + 500);
@@ -483,7 +483,7 @@ function activityScoreRoutes(pool) {
    * They are whole-file questions — a count, a set of codes, a set of names, a
    * list of columns — and each answers with which of the four failed, because a
    * single "this file does not match" would be true of all four and would leave
-   * the reader to work out which. Only once the file is *about* this ตอนเรียน
+   * the reader to work out which. Only once the file is *about* this กลุ่มเรียน
    * does the per-row report take over, and then it is about the numbers.
    */
   function reconcile(headers, records, roll, cloRows) {

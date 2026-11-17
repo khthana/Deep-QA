@@ -61,7 +61,7 @@ FILES = {
 }
 
 MUTANTS = {
-    # The list stops being this ตอนเรียน's: every group in the database is
+    # The list stops being this กลุ่มเรียน's: every group in the database is
     # drawn, and the ones from the Section next door arrive holding nobody,
     # because the member query is still scoped. This is `offeringgrain` of #25
     # one table over - the failure where a screen quietly shows a colleague's
@@ -178,7 +178,7 @@ MUTANTS = {
                                "            <GroupHistory\n"
                                "              key={writes}\n",
                                "            <GroupHistory\n"),
-    # A ตอนเรียน that is not this account's answers with an empty screen rather
+    # A กลุ่มเรียน that is not this account's answers with an empty screen rather
     # than a refusal, so the address bar becomes a way of learning which ids
     # exist. Bound to the list route's own use of the shared refusal, because
     # `notThisSection` itself lives in `enrolment.js` now and mutating it there

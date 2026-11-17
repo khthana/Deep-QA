@@ -14,7 +14,7 @@ import { getSectionResults } from '../api/sectionResults'
 /**
  * ผลลัพธ์การเรียนรู้รายวิชา — #36.
  *
- * How this ตอนเรียน did against each of its CLOs, as one shape, with previous
+ * How this กลุ่มเรียน did against each of its CLOs, as one shape, with previous
  * years of the same รายวิชา laid over it.
  *
  * ## The chart is not the data
@@ -40,7 +40,7 @@ import { getSectionResults } from '../api/sectionResults'
  *
  * Not a filter over data already here. The comparison years are computed from
  * marks the browser has never seen — an entire cohort of a past year — and
- * fetching them only when asked keeps the first paint about this ตอนเรียน.
+ * fetching them only when asked keeps the first paint about this กลุ่มเรียน.
  *
  * ## The note under the table states the rule it was judged by
  *
@@ -108,7 +108,7 @@ export default function SectionResults() {
     } catch (error) {
       if (ticket !== latest.current) return
       // A refused *overlay* must not take the screen with it. The base read
-      // failing means this ตอนเรียน cannot be shown at all and the screen goes
+      // failing means this กลุ่มเรียน cannot be shown at all and the screen goes
       // blank under the refusal; a year failing means only that year failed, so
       // the chart stays and the tick goes back to what is drawn. Blanking both
       // stranded the bad year in state with no control left to clear it, and
@@ -194,7 +194,7 @@ export default function SectionResults() {
           ผลลัพธ์การเรียนรู้รายวิชา
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
+          กลุ่มเรียน {data.section.section_number} · ปีการศึกษา{' '}
           {data.section.academic_year} · {data.clos.length} ผลการเรียนรู้ ·
           คะแนนทุกข้อเทียบเป็นคะแนนเต็ม 5
         </p>
@@ -204,7 +204,7 @@ export default function SectionResults() {
         {card(
           'จำนวนนักศึกษา',
           `${data.summary.student_count} คน`,
-          'ที่ลงทะเบียนตอนเรียนนี้'
+          'ที่ลงทะเบียนกลุ่มเรียนนี้'
         )}
         {card(
           'คะแนนเฉลี่ยรายคนรายข้อ',
@@ -224,7 +224,7 @@ export default function SectionResults() {
         // all until there is something to draw.
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <p className="text-sm font-medium text-slate-600">
-            ยังไม่มีคะแนนในตอนเรียนนี้
+            ยังไม่มีคะแนนในกลุ่มเรียนนี้
           </p>
           <p className="mt-2 text-sm text-slate-500">
             เมื่อบันทึกคะแนนกิจกรรมการเรียนรู้แล้ว
@@ -244,7 +244,7 @@ export default function SectionResults() {
               </legend>
               <p className="mt-1 text-xs text-slate-400">
                 แสดงเฉพาะปีที่มีผลการเรียนรู้รายวิชาชุดเดียวกันกับปีนี้
-                ตัวเลขของแต่ละปีรวบจากทุกตอนเรียนของรายวิชาในปีนั้น
+                ตัวเลขของแต่ละปีรวบจากทุกกลุ่มเรียนของรายวิชาในปีนั้น
               </p>
               <div className="mt-2 flex flex-wrap gap-4">
                 {data.available_years.map(year => (
@@ -261,7 +261,7 @@ export default function SectionResults() {
                     />
                     ปีการศึกษา {year.academic_year}
                     <span className="text-xs text-slate-400">
-                      ({year.section_count} ตอนเรียน · {year.student_count} คน)
+                      ({year.section_count} กลุ่มเรียน · {year.student_count} คน)
                     </span>
                   </label>
                 ))}
@@ -322,7 +322,7 @@ export default function SectionResults() {
             <RadarChart
               axes={axes}
               series={series}
-              title={`ผลการเรียนรู้รายข้อของตอนเรียน ${data.section.section_number} เทียบเป็นคะแนนเต็ม 5`}
+              title={`ผลการเรียนรู้รายข้อของกลุ่มเรียน ${data.section.section_number} เทียบเป็นคะแนนเต็ม 5`}
             />
 
             <ul className="space-y-2">

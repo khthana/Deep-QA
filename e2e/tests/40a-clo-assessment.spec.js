@@ -37,7 +37,7 @@ const {
  *   sentence and the figure beside it cannot describe different rules;
  * - that a PDF actually reaches the person's disk with a Thai face **embedded**
  *   in it rather than merely named;
- * - and that a ตอนเรียน with no marks says so instead of drawing a column of
+ * - and that a กลุ่มเรียน with no marks says so instead of drawing a column of
  *   dashes.
  *
  * ## The seed passes everything, so the failing rows build the failure
@@ -74,7 +74,7 @@ test.afterEach(async () => {
     await db.query('DELETE FROM course_sections_teacher WHERE section_id = $1', [sectionId]);
     await db.query('DELETE FROM course_sections WHERE section_id = $1', [sectionId]);
   }
-  // After the ตอนเรียน that point at them, and in the order they were made.
+  // After the กลุ่มเรียน that point at them, and in the order they were made.
   for (const offeringId of invented.offerings) {
     await db.query('DELETE FROM semester_courses WHERE id = $1', [offeringId]);
   }
@@ -127,10 +127,10 @@ async function unmeasuredOutcome(number) {
 }
 
 /**
- * A ตอนเรียน of a รายวิชา whose outcomes nobody has written yet.
+ * A กลุ่มเรียน of a รายวิชา whose outcomes nobody has written yet.
  *
- * A whole Offering rather than a bare ตอนเรียน, because outcomes hang off
- * (program, subject, year) and not off the ตอนเรียน — ADR-0003 — so the only
+ * A whole Offering rather than a bare กลุ่มเรียน, because outcomes hang off
+ * (program, subject, year) and not off the กลุ่มเรียน — ADR-0003 — so the only
  * way to have none is to ask about a year nobody has written any for. The
  * same shape `backend/test/clo-assessment.test.js` builds, and for the same
  * reason: every seeded outcome has marks and mappings pointing at it, so
@@ -162,7 +162,7 @@ async function outcomelessSection(year) {
   return bare;
 }
 
-/** A ตอนเรียน of the same Offering with nothing marked in it. */
+/** A กลุ่มเรียน of the same Offering with nothing marked in it. */
 async function bareSection(number) {
   const { rows } = await db.query(
     `INSERT INTO course_sections (semester_course_id, section_number)
@@ -258,7 +258,7 @@ test('row 5: the export hands over a PDF with a Thai face embedded in it', async
 
   const download = await exportPdf(page);
 
-  // The name says which ตอนเรียน of which รายวิชา in which year, because a
+  // The name says which กลุ่มเรียน of which รายวิชา in which year, because a
   // course file collects these and a folder of `assessment.pdf` is a folder
   // nobody can sort. Asserted against the answer's own values rather than a
   // pattern: `assessment-.+\.pdf` was the first version of this line and it
@@ -297,7 +297,7 @@ test('row 6: the rubric is behind a disclosure, and is not what the criterion co
   await expect(bands.first()).toBeVisible();
 });
 
-test('row 7: a ตอนเรียน with nothing marked says so instead of a column of dashes', async ({
+test('row 7: a กลุ่มเรียน with nothing marked says so instead of a column of dashes', async ({
   page,
 }) => {
   const bare = await bareSection('90');
@@ -310,7 +310,7 @@ test('row 7: a ตอนเรียน with nothing marked says so instead of a
   await expect(page.getByRole('button', { name: 'บันทึกเป็น PDF' })).toBeDisabled();
 });
 
-test('row 8: the ตอนเรียน of another account is refused rather than reported', async ({ page }) => {
+test('row 8: the กลุ่มเรียน of another account is refused rather than reported', async ({ page }) => {
   // The session from `beforeEach` is dropped first: `signIn` fills the form on
   // `/`, and an account already signed in never sees one.
   await page.context().clearCookies();

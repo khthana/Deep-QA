@@ -6,7 +6,7 @@
  * ผลการเรียนรู้รายวิชา: what a รายวิชา teaches towards in one ปีการศึกษา, each
  * one tied to a PLO of the หลักสูตร. ADR-0003 is the whole design of this file
  * in one sentence — the set belongs to a (Program, Subject, academic year) and
- * not to a ตอนเรียน — and five things follow from it that are decisions rather
+ * not to a กลุ่มเรียน — and five things follow from it that are decisions rather
  * than shape.
  *
  * *The caller arrives holding a Section and the record is not at that grain.*

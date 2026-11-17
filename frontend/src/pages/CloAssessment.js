@@ -114,7 +114,7 @@ export default function CloAssessment() {
                 การประเมินผลการเรียนรู้
               </h1>
               <p className="mt-2 text-sm text-slate-500">
-                ตอนเรียน {data.section.section_number} · ภาคการศึกษา{' '}
+                กลุ่มเรียน {data.section.section_number} · ภาคการศึกษา{' '}
                 {data.section.semester} · ปีการศึกษา{' '}
                 {data.section.academic_year}
               </p>
@@ -161,7 +161,7 @@ export default function CloAssessment() {
               className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center"
             >
               <p className="text-sm font-medium text-slate-600">
-                ตอนเรียนนี้ยังไม่มีคะแนน จึงยังประเมินผลการเรียนรู้ไม่ได้
+                กลุ่มเรียนนี้ยังไม่มีคะแนน จึงยังประเมินผลการเรียนรู้ไม่ได้
               </p>
               <p className="mt-1 text-xs text-slate-400">
                 บันทึกคะแนนกิจกรรมแล้วรายงานนี้จะคำนวณให้เอง

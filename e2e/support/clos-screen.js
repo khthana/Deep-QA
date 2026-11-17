@@ -8,8 +8,8 @@ const { openAt } = require('./navigation');
 /**
  * ผลการเรียนรู้รายวิชา — #27, as a browser reaches it.
  *
- * The screen hangs under a ตอนเรียน's address, and the set it shows does not
- * belong to that ตอนเรียน. ADR-0003 puts it at the (หลักสูตร, รายวิชา,
+ * The screen hangs under a กลุ่มเรียน's address, and the set it shows does not
+ * belong to that กลุ่มเรียน. ADR-0003 puts it at the (หลักสูตร, รายวิชา,
  * ปีการศึกษา) grain and ADR-0004 makes the Section id the only context a
  * Teacher screen carries, so the address is `<section>/courseOutcomes` and the
  * record behind it is the Offering's. Every helper here takes a section id for
@@ -86,10 +86,10 @@ async function untilClosDrawn(page, response) {
 }
 
 /**
- * Goes to the screen for one ตอนเรียน and hands back the read a row is about to assert on.
+ * Goes to the screen for one กลุ่มเรียน and hands back the read a row is about to assert on.
  *
  * The drawing is waited for only on an answer that succeeded: the refusal rows
- * open somebody else's ตอนเรียน and there is no list on that screen to wait for.
+ * open somebody else's กลุ่มเรียน and there is no list on that screen to wait for.
  */
 async function openClos(page, sectionId) {
   return openAt(page, path(sectionId), async fresh => {

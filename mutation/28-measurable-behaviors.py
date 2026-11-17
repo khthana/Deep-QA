@@ -154,7 +154,7 @@ MUTANTS = {
                       "        onConfirm={remove}\n        onCancel={() => setRemoving(null)}",
                       "        onConfirm={remove}\n        onCancel={remove}"),
     # The teaching register leaves the WHERE clause of `offeringOf` - in
-    # clos.js, where #28 imports it from - so anybody's ตอนเรียน resolves.
+    # clos.js, where #28 imports it from - so anybody's กลุ่มเรียน resolves.
     # Kills row 7 at the 404 that answers 200. `$2::text IS NOT NULL` keeps the
     # parameter bound and typed, 25:anysection's lesson.
     # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one

@@ -192,7 +192,7 @@ MUTANTS = {
     ),
     # The file is called the same thing every time. It downloads, it opens, it
     # is entirely correct - and a course file collecting one of these per
-    # ตอนเรียน per year ends up a folder of documents distinguishable only by
+    # กลุ่มเรียน per year ends up a folder of documents distinguishable only by
     # opening each one, with the browser appending (1), (2), (3) to keep them
     # apart.
     #
@@ -206,7 +206,7 @@ MUTANTS = {
         "    'assessment.pdf'",
     ),
     # The screen stops clearing `loading` when the read is refused, so a ผู้สอน
-    # who types another ตอนเรียน's address reads the refusal with
+    # who types another กลุ่มเรียน's address reads the refusal with
     # *กำลังโหลดข้อมูล…* under it, for ever.
     #
     # This is the defect #43's hand-walk found. It is not one mutant covering
@@ -220,7 +220,7 @@ MUTANTS = {
         "    }",
         "    }",
     ),
-    # A ตอนเรียน with nothing marked gets the table anyway: nine outcomes, every
+    # A กลุ่มเรียน with nothing marked gets the table anyway: nine outcomes, every
     # figure an em dash, no sentence saying why. It is a report inviting a
     # person to look for meaning in the fact that term has not started.
     # Kills row 7.

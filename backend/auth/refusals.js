@@ -404,7 +404,7 @@ const REFUSALS = {
   studentProgramNotYours: 'ไม่สามารถบันทึกนักศึกษาในหลักสูตรนี้ได้',
 
   // Offerings and Sections - #23. The screen that opens a รายวิชา for a term and
-  // splits it into ตอนเรียน. Four things about this block are decisions rather
+  // splits it into กลุ่มเรียน. Four things about this block are decisions rather
   // than wording.
   //
   // `subjectNotInProgram` is #18's `subjectNotInCatalogue` one tier down. The
@@ -434,10 +434,10 @@ const REFUSALS = {
   subjectClosed: 'รายวิชานี้ถูกปิดการใช้งานในคลังรายวิชาแล้ว จึงเปิดสอนไม่ได้',
   offeringNotYours: 'ไม่สามารถจัดการการเปิดสอนในหลักสูตรที่ไม่ได้รับผิดชอบได้',
   offeringInUse: 'รายวิชาที่เปิดสอนนี้มีนักศึกษาลงทะเบียน มีการบันทึกคะแนน หรือมีแผนการสอนรายสัปดาห์แล้ว จึงลบไม่ได้',
-  sectionNotFound: 'ไม่พบตอนเรียนที่ระบุ',
-  duplicateSectionNumber: 'ตอนเรียนนี้มีอยู่ในรายวิชาที่เปิดสอนนี้แล้ว',
-  invalidSection: 'ข้อมูลตอนเรียนไม่ครบถ้วนหรือไม่ถูกต้อง',
-  sectionInUse: 'ตอนเรียนนี้มีนักศึกษาลงทะเบียน มีการบันทึกคะแนน หรือมีแผนการสอนรายสัปดาห์แล้ว จึงลบไม่ได้',
+  sectionNotFound: 'ไม่พบกลุ่มเรียนที่ระบุ',
+  duplicateSectionNumber: 'กลุ่มเรียนนี้มีอยู่ในรายวิชาที่เปิดสอนนี้แล้ว',
+  invalidSection: 'ข้อมูลกลุ่มเรียนไม่ครบถ้วนหรือไม่ถูกต้อง',
+  sectionInUse: 'กลุ่มเรียนนี้มีนักศึกษาลงทะเบียน มีการบันทึกคะแนน หรือมีแผนการสอนรายสัปดาห์แล้ว จึงลบไม่ได้',
   teacherNotRegistered: 'ไม่พบผู้ใช้งานตามรหัสที่ระบุ ผู้สอนต้องถูกลงทะเบียนเป็นผู้ใช้งานก่อนจึงจะกำหนดให้สอนได้',
   teacherNotActive: 'บัญชีผู้ใช้งานนี้ถูกระงับการใช้งาน จึงกำหนดให้สอนไม่ได้',
 
@@ -525,7 +525,7 @@ const REFUSALS = {
     'ข้อมูลแผนการปรับปรุงไม่ครบถ้วนหรือไม่ถูกต้อง กรุณาตรวจสอบผลการเรียนรู้ หัวข้อ และข้อความ',
 
   // Section enrolment - #25. The class list a Teacher builds for their own
-  // ตอนเรียน. None of these is one of #17's, which is the whole point of the
+  // กลุ่มเรียน. None of these is one of #17's, which is the whole point of the
   // block: the register and the class list are two different questions about
   // one student code, and the sentences have to say which one is being
   // answered. The one key this block does *not* add is the spreadsheet naming
@@ -552,16 +552,16 @@ const REFUSALS = {
   // looks for both itself, before the DELETE, and each names its own way out.
   studentNotInRegister:
     'ไม่พบรหัสนี้ในทะเบียนนักศึกษากลาง กรุณาเพิ่มนักศึกษาที่หน้าข้อมูลนักศึกษากลางก่อน',
-  duplicateEnrolment: 'นักศึกษาคนนี้อยู่ในตอนเรียนนี้แล้ว',
+  duplicateEnrolment: 'นักศึกษาคนนี้อยู่ในกลุ่มเรียนนี้แล้ว',
   enrolmentHasScores:
-    'นักศึกษาคนนี้มีคะแนนบันทึกไว้แล้ว จึงนำออกจากตอนเรียนไม่ได้',
+    'นักศึกษาคนนี้มีคะแนนบันทึกไว้แล้ว จึงนำออกจากกลุ่มเรียนไม่ได้',
   enrolmentInGroup:
-    'นักศึกษาคนนี้อยู่ในกลุ่มงานของตอนเรียนนี้ จึงนำออกไม่ได้ ให้นำออกจากกลุ่มก่อน',
+    'นักศึกษาคนนี้อยู่ในกลุ่มงานของกลุ่มเรียนนี้ จึงนำออกไม่ได้ ให้นำออกจากกลุ่มก่อน',
   invalidEnrolment:
     'รหัสนักศึกษาไม่ถูกต้อง กรุณาตรวจสอบรหัสนักศึกษา (ตัวเลข 8 หลัก)',
 
   // Work groups - #26. กลุ่มงาน, Section-bound like the class list above and
-  // for the same reason: two ตอนเรียน are two rooms, and a group spanning them
+  // for the same reason: two กลุ่มเรียน are two rooms, and a group spanning them
   // would be a group nobody can meet with.
   //
   // Three of these are functions, which is more than any other block here, and
@@ -589,15 +589,15 @@ const REFUSALS = {
   // stay enrolled, and their marks were never the group's.
   groupNotFound: 'ไม่พบกลุ่มงานที่ระบุ',
   invalidGroup: 'ชื่อกลุ่มงานไม่ถูกต้อง กรุณาตั้งชื่อกลุ่ม ความยาวไม่เกิน 100 ตัวอักษร',
-  duplicateGroupName: 'ชื่อกลุ่มงานนี้มีอยู่ในตอนเรียนนี้แล้ว',
+  duplicateGroupName: 'ชื่อกลุ่มงานนี้มีอยู่ในกลุ่มเรียนนี้แล้ว',
   groupFull: (groupName) =>
     `กลุ่ม "${groupName}" มีนักศึกษาครบ 10 คนแล้ว กลุ่มงานหนึ่งกลุ่มรับได้ไม่เกิน 10 คน`,
   studentInAnotherGroup: (groupName) =>
-    `นักศึกษาคนนี้อยู่ในกลุ่ม "${groupName}" ของตอนเรียนนี้แล้ว หนึ่งคนอยู่ได้กลุ่มเดียว หากต้องการเปลี่ยนกลุ่มให้ใช้คำสั่งย้ายมากลุ่มนี้`,
-  studentNotEnrolled: 'นักศึกษาคนนี้ไม่ได้อยู่ในตอนเรียนนี้ กรุณาเพิ่มเข้าตอนเรียนก่อนจึงจะจัดกลุ่มได้',
+    `นักศึกษาคนนี้อยู่ในกลุ่ม "${groupName}" ของกลุ่มเรียนนี้แล้ว หนึ่งคนอยู่ได้กลุ่มเดียว หากต้องการเปลี่ยนกลุ่มให้ใช้คำสั่งย้ายมากลุ่มนี้`,
+  studentNotEnrolled: 'นักศึกษาคนนี้ไม่ได้อยู่ในกลุ่มเรียนนี้ กรุณาเพิ่มเข้ากลุ่มเรียนก่อนจึงจะจัดกลุ่มได้',
   studentNotInGroup: 'ไม่พบนักศึกษาคนนี้ในกลุ่มงานนี้',
   studentNotGrouped:
-    'นักศึกษาคนนี้ยังไม่ได้อยู่ในกลุ่มใดของตอนเรียนนี้ จึงย้ายไม่ได้ ให้เพิ่มเข้ากลุ่มแทน',
+    'นักศึกษาคนนี้ยังไม่ได้อยู่ในกลุ่มใดของกลุ่มเรียนนี้ จึงย้ายไม่ได้ ให้เพิ่มเข้ากลุ่มแทน',
   studentAlreadyHere: 'นักศึกษาคนนี้อยู่ในกลุ่มนี้อยู่แล้ว',
 
   // Weighting scheme - #30. สัดส่วนคะแนน, saved whole because the hundred
@@ -773,7 +773,7 @@ const REFUSALS = {
   //
   // The four import sentences are the ticket's own list — count, code, name,
   // columns — and each says which of the four failed, because "ไฟล์ไม่ตรงกับ
-  // ตอนเรียนนี้" is true of all four and useful for none.
+  // กลุ่มเรียนนี้" is true of all four and useful for none.
   activityHasNoClo:
     'กิจกรรมนี้ยังไม่ได้เชื่อมโยงกับผลการเรียนรู้ จึงบันทึกคะแนนไม่ได้ กรุณาเพิ่มผลการเรียนรู้ให้กิจกรรมนี้ที่หน้ากิจกรรมการเรียนรู้ในรายวิชาก่อน',
   markOverActivity: (fullMark) =>
@@ -782,11 +782,11 @@ const REFUSALS = {
     `คะแนนของผลการเรียนรู้ ${cloNumber} ต้องไม่เกิน ${ceiling} ซึ่งเป็นคะแนนที่กิจกรรมนี้แบ่งให้ข้อนั้น`,
   invalidMark: 'คะแนนไม่ถูกต้อง กรุณากรอกเป็นตัวเลขตั้งแต่ 0 ขึ้นไป หรือเว้นว่างไว้หากยังไม่ให้คะแนน',
   markStudentNotEnrolled: (studentId) =>
-    `รหัส ${studentId} ไม่ได้อยู่ในตอนเรียนนี้ จึงบันทึกคะแนนให้ไม่ได้`,
+    `รหัส ${studentId} ไม่ได้อยู่ในกลุ่มเรียนนี้ จึงบันทึกคะแนนให้ไม่ได้`,
   marksCountMismatch: (expected, found) =>
-    `จำนวนนักศึกษาในไฟล์ไม่ตรงกับตอนเรียนนี้ ตอนเรียนนี้มี ${expected} คน แต่ไฟล์มี ${found} แถว`,
+    `จำนวนนักศึกษาในไฟล์ไม่ตรงกับกลุ่มเรียนนี้ กลุ่มเรียนนี้มี ${expected} คน แต่ไฟล์มี ${found} แถว`,
   marksStudentMissing: (studentId) =>
-    `ไฟล์ไม่มีรหัส ${studentId} ซึ่งเป็นนักศึกษาของตอนเรียนนี้ ไฟล์ต้องมีครบทุกคน`,
+    `ไฟล์ไม่มีรหัส ${studentId} ซึ่งเป็นนักศึกษาของกลุ่มเรียนนี้ ไฟล์ต้องมีครบทุกคน`,
   marksNameMismatch: (studentId, expected) =>
     `ชื่อของรหัส ${studentId} ในไฟล์ไม่ตรงกับทะเบียน ซึ่งบันทึกไว้ว่า "${expected}"`,
   marksCloColumns: (expected) =>

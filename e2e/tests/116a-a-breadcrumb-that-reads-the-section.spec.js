@@ -27,13 +27,13 @@ const { openAt } = require('../support/navigation');
  * row built on it would pass either way. Id 3 is number *1*, of 2568/1, and it
  * is the one place the two disagree.
  *
- * The label is the ticket's target sentence, *ตอนเรียน 1 · ปีการศึกษา 2569*, and the
+ * The label is the ticket's target sentence, *กลุ่มเรียน 1 · ปีการศึกษา 2569*, and the
  * year is not decoration there: it is the only half that tells `section_id` 1
- * and 3 apart, both of which are *ตอนเรียน 1*.
+ * and 3 apart, both of which are *กลุ่มเรียน 1*.
  *
- * It also disposes of the ticket's own fallback. It offers *ตอนเรียน {id}* as
+ * It also disposes of the ticket's own fallback. It offers *กลุ่มเรียน {id}* as
  * the cheap version, "without waiting for data from the server" — which on this
- * Section would read *ตอนเรียน 3*, a sentence about a class that does not
+ * Section would read *กลุ่มเรียน 3*, a sentence about a class that does not
  * exist. There is no truthful label in the address alone.
  *
  * ## Why it is reachable at all
@@ -71,8 +71,8 @@ const OTHER_YEAR = 3;
 const THIS_YEAR = 1;
 
 /** What the trail should say at each of the two, and the ticket's own sentence. */
-const LAST_YEAR_LABEL = 'ตอนเรียน 1 · ปีการศึกษา 2568';
-const THIS_YEAR_LABEL = 'ตอนเรียน 1 · ปีการศึกษา 2569';
+const LAST_YEAR_LABEL = 'กลุ่มเรียน 1 · ปีการศึกษา 2568';
+const THIS_YEAR_LABEL = 'กลุ่มเรียน 1 · ปีการศึกษา 2569';
 
 /** Section 2 belongs to another account, so the server answers 404 for this one. */
 const NOT_THEIRS = 2;

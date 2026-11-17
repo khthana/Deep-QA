@@ -59,7 +59,7 @@ const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
 const { cloOrder } = require('../lib/cloOrder');
 
-/** A ผู้สอน's own ตอนเรียน, as in `enrolment.js`, `activities.js` and `outcomeActivityMap.js`. */
+/** A ผู้สอน's own กลุ่มเรียน, as in `enrolment.js`, `activities.js` and `outcomeActivityMap.js`. */
 const TEACHING = ['TEACHER'];
 
 function cloAssessmentRoutes(pool) {
@@ -167,13 +167,13 @@ function cloAssessmentRoutes(pool) {
     async (req, res, next) => {
       try {
         // Two readings of one permission, as in `outcomeActivityMap.js`: the
-        // ตอนเรียน is what the heading says and what the marks belong to, the
+        // กลุ่มเรียน is what the heading says and what the marks belong to, the
         // Offering is what the outcomes and their criteria belong to. Either
         // coming back empty is the same refusal.
         //
         // In sequence rather than in parallel, which is the one place this
         // route's shape differs from #39's, and it is not about speed:
-        // nothing should ask what Offering a ตอนเรียน belongs to before
+        // nothing should ask what Offering a กลุ่มเรียน belongs to before
         // establishing that this account teaches it.
         //
         // It used to be load-bearing for a second reason as well. `sectionOf`
@@ -221,7 +221,7 @@ function cloAssessmentRoutes(pool) {
           // copy of it that stops being true in silence.
           rule: { scale: SCALE, pass_score: PASS, pass_percent: OUTCOME_PASS_PERCENT },
           clos: lines,
-          // Nobody has been measured on anything yet, which is every ตอนเรียน
+          // Nobody has been measured on anything yet, which is every กลุ่มเรียน
           // before its first marking. The outcomes still travel — they are what
           // the report is *about*, and what the screen does with them is the
           // screen's business rather than this route's. It happens to replace

@@ -54,7 +54,7 @@ const {
 const MADE = 'ควิซท้ายบท (จอ 33a)';
 const EDITED = 'ควิซท้ายบท แก้ไขแล้ว (จอ 33a)';
 
-/** teacher.one@ teaching ตอนเรียน 1 of the current term. */
+/** teacher.one@ teaching กลุ่มเรียน 1 of the current term. */
 async function asTeacherOne(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);

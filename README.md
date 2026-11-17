@@ -8,7 +8,7 @@ evidence for TABEE accreditation.
 authorisation layer are done, and the screens on top of them now run from the master data through the outcomes to a
 Section's own teaching: accounts, grants and activity history; departments, curricula, subjects, the student register
 and the subjects of a curriculum; programme learning outcomes, the map from outcomes to subjects, rubrics and their
-criteria; offerings and sections; and — inside one ตอนเรียน — its class list, the work groups that class is divided
+criteria; offerings and sections; and — inside one กลุ่มเรียน — its class list, the work groups that class is divided
 into, its course learning outcomes with their measurable behaviours and achievement criteria, its weighting scheme,
 its weekly teaching plan, and its assessed work with the outcomes each piece of it is attributed to. Two test suites
 run against them: `backend`'s 531 tests at the HTTP surface and `e2e`'s 242 in a real browser, with 305 mutations
@@ -190,10 +190,10 @@ database and the accounts it opens have nothing behind them; nothing here is a c
 | `U_DEPT2` | `dept.admin.01@kmitl.ac.th` | ผู้ดูแลระบบระดับภาควิชา | ภาควิชา `01` — **cross-scope** |
 | `U_COM` | `prog.manager@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0501` |
 | `U_COM2` | `prog.manager.0503@kmitl.ac.th` | กรรมการหลักสูตร | หลักสูตร `0503` — **cross-scope** |
-| `U_TEACH` | `teacher.one@kmitl.ac.th` | อาจารย์ผู้สอน | ตอนเรียน 1 of `01076105` |
+| `U_TEACH` | `teacher.one@kmitl.ac.th` | อาจารย์ผู้สอน | กลุ่มเรียน 1 of `01076105` |
 | `U_TEACH2` | `teacher.two@kmitl.ac.th` | อาจารย์ผู้สอน | **teaches nothing** |
 | `U_EXT` | `external.assessor@tabee-review.org` | ผู้ประเมินภายนอก | หลักสูตร `0501` |
-| `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and ตอนเรียน 2 |
+| `U_MULTI` | `multi.role@kmitl.ac.th` | กรรมการหลักสูตร **and** อาจารย์ผู้สอน | `0501` and กลุ่มเรียน 2 |
 | `U_CROSS` | `cross.scope@kmitl.ac.th` | อาจารย์ผู้สอน | in ภาควิชา `05`, granted over ภาควิชา `01` — **cross-scope grant** (#130) |
 | `U_NONKMITL` | `assessor@tabee-review.org` | ผู้ประเมินภายนอก | R010 — and a window **open at the far end** (#48) |
 | `U_EXT_CLOSED` | `past.assessor@tabee-review.org` | ผู้ประเมินภายนอก | **window closed** — cannot sign in at all (#48) |

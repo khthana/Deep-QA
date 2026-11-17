@@ -70,7 +70,7 @@ test.describe.configure({ mode: 'serial' });
 
 /**
  * This file files and places a subject and opens Offerings for it, with
- * their ตอนเรียน and teachers - taken out again when the file ends (#134).
+ * their กลุ่มเรียน and teachers - taken out again when the file ends (#134).
  *
  * `support/hold.js` says what it puts back, and what it does not.
  */
@@ -166,7 +166,7 @@ test('row 1: a committee member opens a subject for a chosen year and semester',
   await openSubject(page, { subject: SUBJECT, ...OPEN });
 
   // Opening a subject lands on its sections rather than back on the list: an
-  // Offering with no ตอนเรียน is not yet anything a teacher can reach, and the
+  // Offering with no กลุ่มเรียน is not yet anything a teacher can reach, and the
   // next thing to do is always to add one.
   await expect(page.getByRole('button', { name: 'กลับไปหน้ารายการ' })).toBeVisible();
   await expect(page.getByText('ยังไม่มีกลุ่มเรียนในรายวิชาที่เปิดสอนนี้')).toBeVisible();

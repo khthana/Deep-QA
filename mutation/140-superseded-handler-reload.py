@@ -381,7 +381,7 @@ MUTANTS = {
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => true)\n'),
-    # ข้อมูลการเปิดรายวิชา: ตอนเรียนและผู้สอน ที่ถูกปฏิเสธ
+    # ข้อมูลการเปิดรายวิชา: กลุ่มเรียนและผู้สอน ที่ถูกปฏิเสธ
     'offeringsrefusalstalewins': ('offerings',
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n',
         '      if (asked.current === ask) report(error)\n      const drawing = onScreen.current\n      await drawing(() => true)\n'),

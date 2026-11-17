@@ -272,14 +272,14 @@ test('the code is unique within the year and free in another one', async () => {
 
 test('an edit made from one Section is what the other Section reads', async () => {
   // The fourth criterion, and the one a shared read cannot fake: the write goes
-  // in through ตอนเรียน 1 and comes out through ตอนเรียน 2.
+  // in through กลุ่มเรียน 1 and comes out through กลุ่มเรียน 2.
   const mine = await teaching('U_TEACH');
   const theirs = await teaching('U_MULTI');
   const here = await seededSection('U_TEACH', CURRENT_YEAR);
   const there = await seededSection('U_MULTI', CURRENT_YEAR);
 
   const target = (await list(mine, here)).body.clos[0];
-  const detail = 'แก้จากตอนเรียนที่หนึ่ง เพื่อให้ตอนเรียนที่สองอ่านเจอ';
+  const detail = 'แก้จากกลุ่มเรียนที่หนึ่ง เพื่อให้กลุ่มเรียนที่สองอ่านเจอ';
   const saved = await change(mine, here, target.clo_id, { ...target, clo_detail: detail });
   assert.equal(saved.status, 200, saved.body.message);
 

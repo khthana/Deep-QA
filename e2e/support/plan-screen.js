@@ -9,11 +9,11 @@ const { openAt } = require('./navigation');
 /**
  * แผนการสอน — #31, as a browser reaches it.
  *
- * The screen hangs one level under a ตอนเรียน's address, and — alone in this
+ * The screen hangs one level under a กลุ่มเรียน's address, and — alone in this
  * menu — what it shows belongs to that Section too: two Sections of one
  * Offering hold two plans. The seed makes the grain readable from the rows
  * themselves (`composePlanWeek` bakes the section number and year into every
- * title), so a spec can assert "this list is ตอนเรียน 1's" by reading the
+ * title), so a spec can assert "this list is กลุ่มเรียน 1's" by reading the
  * screen rather than by trusting the address.
  *
  * Cards are labelled `สัปดาห์ที่ <n> · <title>` — number AND title, because
@@ -61,7 +61,7 @@ async function untilPlanDrawn(page, response) {
  * Goes to one Section's plan and hands back the read a row asserts on.
  *
  * The drawing is waited for only on an answer that succeeded: the refusal rows
- * open somebody else's ตอนเรียน and there is no plan on that screen to wait for.
+ * open somebody else's กลุ่มเรียน and there is no plan on that screen to wait for.
  */
 async function openPlan(page, sectionId) {
   return openAt(page, path(sectionId), async fresh => {

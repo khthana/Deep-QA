@@ -11,7 +11,7 @@ const { openAt } = require('./navigation');
  * One read and no writes, so every helper here is a reader.
  *
  * The read is **#38's**, not one of this screen's own. The grain #37 needs —
- * every student of this ตอนเรียน against every outcome of it, plus the
+ * every student of this กลุ่มเรียน against every outcome of it, plus the
  * Section's mean per outcome — is exactly what the heatmap already computes
  * behind exactly this guard, and `backend/lib/attainment.js` is explicit that
  * the query stays in the route because *what counts as the marks in scope* is
@@ -29,7 +29,7 @@ const path = (sectionId) => `${DASHBOARD}/${sectionId}/studentResults`;
 const API = (sectionId) => `/api/teaching/sections/${sectionId}/learning-details`;
 
 /** The label the Section's own line carries, in the chart and in the table. */
-const AVERAGE = 'ค่าเฉลี่ยของตอนเรียน';
+const AVERAGE = 'ค่าเฉลี่ยของกลุ่มเรียน';
 
 /**
  * Waits until what the answer carried is what the picker is showing — #174.
@@ -43,7 +43,7 @@ const AVERAGE = 'ค่าเฉลี่ยของตอนเรียน';
  *
  * - One box per student the answer carried, which is this screen's own count
  *   (#68): next door on #36 the same-looking read counts outcomes.
- * - The subject line, which is the clause that holds for a ตอนเรียน with nobody
+ * - The subject line, which is the clause that holds for a กลุ่มเรียน with nobody
  *   on the roll, where the count is `0` before the screen has drawn anything
  *   and after.
  *
@@ -55,7 +55,7 @@ const AVERAGE = 'ค่าเฉลี่ยของตอนเรียน';
  */
 async function untilRollDrawn(page, response) {
   const answered = await response.json();
-  // A ตอนเรียน nobody has marked draws a sentence where the picker and the chart
+  // A กลุ่มเรียน nobody has marked draws a sentence where the picker and the chart
   // go, so there is no box to count — the roll is only offered beside a chart.
   if (!answered.empty) {
     await expect(page.locator('input[type="checkbox"][aria-label]')).toHaveCount(
@@ -70,7 +70,7 @@ async function untilRollDrawn(page, response) {
  * Opens the screen and hands back the read, whatever it answered.
  *
  * The drawing is waited for only on an answer that succeeded: the refusal rows
- * open somebody else's ตอนเรียน and there is no roll on that screen to wait for.
+ * open somebody else's กลุ่มเรียน and there is no roll on that screen to wait for.
  */
 async function openStudentResults(page, sectionId) {
   return openAt(page, path(sectionId), async (fresh) => {

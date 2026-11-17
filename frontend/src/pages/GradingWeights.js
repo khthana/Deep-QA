@@ -220,7 +220,7 @@ export default function GradingWeights() {
                 */}
                 <p className="mt-2 text-sm text-slate-500">
                   ปีการศึกษา {data.offering.academic_year} ·
-                  ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
+                  ทุกกลุ่มเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
                   และปีการศึกษาอื่นมีชุดของตัวเอง
                 </p>
                 <p className="mt-1 text-sm text-slate-500">
@@ -238,7 +238,7 @@ export default function GradingWeights() {
             mounted, which is every other handler's situation. What this screen
             lacks today is a way to change `sectionId` while that reload is out,
             so the flag is unproved rather than unneeded - sheet 30 says
-            ยังไม่ได้ทดสอบ, and the first link between ตอนเรียน on this route
+            ยังไม่ได้ทดสอบ, and the first link between กลุ่มเรียน on this route
             makes it a row.
 
             4 November 2569 (#266) - *a way to change `sectionId` while that
@@ -401,7 +401,7 @@ export default function GradingWeights() {
         title="ลบหมวดคะแนน"
         message={
           removing
-            ? `ต้องการนำ${removing.name ? `หมวด "${removing.name}"` : 'หมวดใหม่'}ออกจากสัดส่วนคะแนนหรือไม่ การลบมีผลเมื่อกดบันทึก และทุกตอนเรียนของรายวิชานี้จะใช้ชุดที่แก้แล้ว`
+            ? `ต้องการนำ${removing.name ? `หมวด "${removing.name}"` : 'หมวดใหม่'}ออกจากสัดส่วนคะแนนหรือไม่ การลบมีผลเมื่อกดบันทึก และทุกกลุ่มเรียนของรายวิชานี้จะใช้ชุดที่แก้แล้ว`
             : ''
         }
         confirmLabel="ลบ"

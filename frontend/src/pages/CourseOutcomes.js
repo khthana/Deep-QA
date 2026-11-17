@@ -17,7 +17,7 @@ import RowAction from '../components/RowAction'
  * ผลการเรียนรู้รายวิชา — ticket #27.
  *
  * What this รายวิชา teaches towards in one ปีการศึกษา, each outcome tied to a
- * ผลการเรียนรู้ของหลักสูตร. Reached from a ตอนเรียน and belonging to none of
+ * ผลการเรียนรู้ของหลักสูตร. Reached from a กลุ่มเรียน and belonging to none of
  * them: ADR-0003 puts the set at the (หลักสูตร, รายวิชา, ปีการศึกษา) grain, and
  * this screen's whole job on top of the list is to make that visible, because a
  * Teacher who does not know it will not understand why their colleague's edit
@@ -26,7 +26,7 @@ import RowAction from '../components/RowAction'
  * ## The line at the top is the point of the screen
  *
  * The heading says the รายวิชา and the ปีการศึกษา, and then a sentence says in
- * words that every ตอนเรียน of this Offering shares this set. Both the third
+ * words that every กลุ่มเรียน of this Offering shares this set. Both the third
  * and the fourth criteria are about a person's expectations rather than about
  * data — the data is correct either way — and the only place to meet an
  * expectation is before it is formed.
@@ -34,7 +34,7 @@ import RowAction from '../components/RowAction'
  * ## Who last changed it
  *
  * The seventh criterion, and it is on every row rather than behind a hover or a
- * detail pane. Two ผู้สอน of two ตอนเรียน edit one list and the last write wins
+ * detail pane. Two ผู้สอน of two กลุ่มเรียน edit one list and the last write wins
  * (ADR-0003); the name and the time are how the loser finds out. `updated_by`
  * is a `user_id` on the wire and a person on the screen — the server does the
  * join, because a screen fetching a name per row would be nine round trips for
@@ -229,7 +229,7 @@ export default function CourseOutcomes() {
             */}
             <p className="mt-2 text-sm text-slate-500">
               ปีการศึกษา {data.offering.academic_year} ·
-              ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
+              ทุกกลุ่มเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
               และปีการศึกษาอื่นมีชุดของตัวเอง
             </p>
           </div>
@@ -354,7 +354,7 @@ export default function CourseOutcomes() {
         title="ลบผลการเรียนรู้รายวิชา"
         message={
           removing
-            ? `ต้องการลบ ${removing.clo_number} ออกจากปีการศึกษา ${data?.offering.academic_year} หรือไม่ ทุกตอนเรียนของรายวิชานี้จะไม่เห็นข้อนี้อีก`
+            ? `ต้องการลบ ${removing.clo_number} ออกจากปีการศึกษา ${data?.offering.academic_year} หรือไม่ ทุกกลุ่มเรียนของรายวิชานี้จะไม่เห็นข้อนี้อีก`
             : ''
         }
         confirmLabel="ลบ"

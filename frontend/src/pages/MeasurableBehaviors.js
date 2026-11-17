@@ -22,7 +22,7 @@ import RowAction from '../components/RowAction'
  * with a ระดับพุทธิพิสัย and the kind of learning activity it is assessed in.
  * Reached from a CLO's card on #27's screen, and inheriting that screen's
  * grain whole: the set belongs to the CLO, the CLO belongs to the Offering,
- * and neither belongs to the ตอนเรียน in the address. The heading says so for
+ * and neither belongs to the กลุ่มเรียน in the address. The heading says so for
  * the reason #27's does — the data is correct either way, and the only place
  * to meet an expectation is before it is formed.
  *
@@ -197,7 +197,7 @@ export default function MeasurableBehaviors() {
               with one space, and Thai does not space inside a word.
             */}
             <p className="mt-2 text-sm text-slate-500">
-              ปีการศึกษา {data.offering.academic_year} · ทุกตอนเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
+              ปีการศึกษา {data.offering.academic_year} · ทุกกลุ่มเรียนของรายวิชานี้ในปีการศึกษาเดียวกันใช้ชุดเดียวกันนี้
               และปีการศึกษาอื่นมีชุดของตัวเอง
             </p>
           </div>
@@ -290,7 +290,7 @@ export default function MeasurableBehaviors() {
         title="ลบพฤติกรรมบ่งชี้"
         message={
           removing
-            ? `ต้องการลบข้อ ${removing.behavior_no} ของ ${data?.clo.clo_number} หรือไม่ ข้อที่เหลือจะถูกจัดลำดับใหม่ และทุกตอนเรียนของรายวิชานี้จะไม่เห็นข้อนี้อีก`
+            ? `ต้องการลบข้อ ${removing.behavior_no} ของ ${data?.clo.clo_number} หรือไม่ ข้อที่เหลือจะถูกจัดลำดับใหม่ และทุกกลุ่มเรียนของรายวิชานี้จะไม่เห็นข้อนี้อีก`
             : ''
         }
         confirmLabel="ลบ"

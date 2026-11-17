@@ -117,7 +117,7 @@ async function attribution() {
   return rows;
 }
 
-test('the map answers with every outcome of the Offering and every Activity of the ตอนเรียน', async () => {
+test('the map answers with every outcome of the Offering and every Activity of the กลุ่มเรียน', async () => {
   const response = await map(section, teacherOne);
   assert.equal(response.status, 200);
 
@@ -231,7 +231,7 @@ test('the marks of a link follow the Activity’s own mark, and the per cent doe
   }
 });
 
-test('an Activity of another ตอนเรียน is not in the map, and neither are its links', async () => {
+test('an Activity of another กลุ่มเรียน is not in the map, and neither are its links', async () => {
   const { activities, links } = (await map(section, teacherOne)).body;
 
   const { rows: mine } = await api.pool.query(
@@ -439,7 +439,7 @@ test('a mark left blank is left out of the mean here too, and not read as a noug
   assert.equal(after.student_count, before.student_count - 1);
 });
 
-test('a ตอนเรียน with no Activities answers empty rather than with an empty diagram', async () => {
+test('a กลุ่มเรียน with no Activities answers empty rather than with an empty diagram', async () => {
   const { rows: made } = await api.pool.query(
     `INSERT INTO course_sections (semester_course_id, section_number)
      SELECT cs.semester_course_id, $2 FROM course_sections cs WHERE cs.section_id = $1
@@ -458,7 +458,7 @@ test('a ตอนเรียน with no Activities answers empty rather than wi
     assert.deepEqual(response.body.activities, []);
     assert.deepEqual(response.body.links, []);
     // The outcomes are still there: they belong to the Offering and not to the
-    // Activities, and a ตอนเรียน that has set no work still has outcomes to set
+    // Activities, and a กลุ่มเรียน that has set no work still has outcomes to set
     // it against.
     assert.ok(response.body.clos.length > 0);
   } finally {
@@ -467,13 +467,13 @@ test('a ตอนเรียน with no Activities answers empty rather than wi
   }
 });
 
-test('a ตอนเรียน this account does not teach is refused, and the refusal is the server’s', async () => {
+test('a กลุ่มเรียน this account does not teach is refused, and the refusal is the server’s', async () => {
   const response = await map(theirs, teacherTwo);
   assert.equal(response.status, 404);
   assert.equal(response.body.message, REFUSALS.sectionNotFound);
 });
 
-test('a ตอนเรียน that is not a ตอนเรียน is refused the same way', async () => {
+test('a กลุ่มเรียน that is not a กลุ่มเรียน is refused the same way', async () => {
   const response = await map(999999, teacherOne);
   assert.equal(response.status, 404);
   assert.equal(response.body.message, REFUSALS.sectionNotFound);

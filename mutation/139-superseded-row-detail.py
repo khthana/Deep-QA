@@ -378,7 +378,7 @@ MUTANTS = {
     'plosfiltercancels': ('plos',
         '      if (asked.current === ask) setEditing(current)\n',
         '      if (asked.current === ask && onScreen.current === program) setEditing(current)\n'),
-    # Offering: a second ตอนเรียนและผู้สอน - any ask at all lets the late panel draw
+    # Offering: a second กลุ่มเรียนและผู้สอน - any ask at all lets the late panel draw
     'offeringssecondwins': ('offerings',
         '      if (asked.current === ask) setViewing(offering)\n',
         '      if (asked.current !== null) setViewing(offering)\n'),

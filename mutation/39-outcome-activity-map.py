@@ -204,7 +204,7 @@ MUTANTS = {
         "                <div className=\"overflow-x-auto\">\n                  <div className=\"min-w-[52rem]\">",
         "                <div>\n                  <div className=\"min-w-[52rem]\">",
     ),
-    # A ตอนเรียน with no work set in it gets the diagram anyway: nine outcomes in
+    # A กลุ่มเรียน with no work set in it gets the diagram anyway: nine outcomes in
     # a column, nothing opposite them, and no sentence saying why. It is a
     # picture inviting a person to look for meaning in the fact that term has
     # not started. Kills row 8.
@@ -214,7 +214,7 @@ MUTANTS = {
         "          {false ? (",
     ),
     # The screen stops clearing `loading` when the read is refused, so a ผู้สอน
-    # who types another ตอนเรียน's address reads the refusal with
+    # who types another กลุ่มเรียน's address reads the refusal with
     # *กำลังโหลดข้อมูล…* under it, for ever.
     #
     # This is the defect #43's hand-walk found. It is not one mutant covering

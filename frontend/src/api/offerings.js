@@ -4,7 +4,7 @@ import { del, get, post, put, query } from './client'
  * The Offering and Section calls — #23.
  *
  * รายวิชาที่เปิดสอน: which of a หลักสูตร's subjects run in a given ปีการศึกษา
- * and ภาคการศึกษา, split into ตอนเรียน, each given to one or more ผู้สอน.
+ * and ภาคการศึกษา, split into กลุ่มเรียน, each given to one or more ผู้สอน.
  *
  * Three things about this screen differ from every one before it and all three
  * show up here.

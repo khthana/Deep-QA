@@ -4,11 +4,11 @@ import { del, get, post, query } from './client'
  * รายชื่อนักศึกษาของรายวิชา — #25.
  *
  * Every call is addressed by `sectionId` and every record belongs to that
- * ตอนเรียน alone. That is the difference between this module and `clos.js`
+ * กลุ่มเรียน alone. That is the difference between this module and `clos.js`
  * beside it, and it is worth stating because the two screens are reached the
  * same way and look alike: a CLO belongs to the Offering behind the Section
- * (ADR-0003), so two ตอนเรียน share one set; an enrolment belongs to the
- * Section itself, so two ตอนเรียน of one รายวิชา are two different class lists
+ * (ADR-0003), so two กลุ่มเรียน share one set; an enrolment belongs to the
+ * Section itself, so two กลุ่มเรียน of one รายวิชา are two different class lists
  * and nothing here is shared with the one next door.
  *
  * The register is somewhere else. A code this system has never seen is not a

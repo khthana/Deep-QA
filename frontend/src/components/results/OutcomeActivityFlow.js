@@ -86,7 +86,7 @@ const BODY = 400
 const GAP = 16
 /**
  * How tall a node with nothing attached is, when there is nothing to measure it
- * against — an empty ตอนเรียน, where every node is blank.
+ * against — an empty กลุ่มเรียน, where every node is blank.
  *
  * Otherwise it takes the height of the smallest node in its own column that
  * *does* carry something: see `stackedColumn`.

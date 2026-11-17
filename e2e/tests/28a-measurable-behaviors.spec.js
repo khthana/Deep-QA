@@ -23,7 +23,7 @@ const {
  *
  * The backend suite proves the grain and the two closed lists at the routes.
  * What is here is what is only true in front of the screen: that the way in
- * from a CLO's card lands on that CLO, that two ผู้สอน of two ตอนเรียน read
+ * from a CLO's card lands on that CLO, that two ผู้สอน of two กลุ่มเรียน read
  * one list, that an edit made in one browser appears in the other, that the
  * numbers a person sees close up when a row is removed, that cancelling
  * removes nothing, and that a refusal from the server reaches the page.
@@ -54,14 +54,14 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** teacher.one@ teaching ตอนเรียน 1 of the current term. */
+/** teacher.one@ teaching กลุ่มเรียน 1 of the current term. */
 async function asTeacherOne(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
   return section;
 }
 
-/** multi.role@ with the teaching hat on, and their ตอนเรียน of the same Offering. */
+/** multi.role@ with the teaching hat on, and their กลุ่มเรียน of the same Offering. */
 async function asMultiRole(page) {
   await signIn(page, ACCOUNTS.multiRole);
   expect((await switchTo(page, 'อาจารย์ผู้สอน')).status()).toBe(200);
@@ -99,7 +99,7 @@ test('row 1: the card link lands on that CLO, and the list is numbered from one'
   expect(behaviors).toHaveLength(2);
   expect(await numbersOnScreen(page)).toEqual([1, 2]);
   // Anchored at the element's start since #116: the trail above now says
-  // *ตอนเรียน 1 · ปีการศึกษา <year>* too, so a substring read matches the
+  // *กลุ่มเรียน 1 · ปีการศึกษา <year>* too, so a substring read matches the
   // crumb as well as this screen's own subject line. The statement is the
   // stronger claim anyway - the year *opens* that line (#93).
   await expect(
@@ -132,14 +132,14 @@ test('row 3: an edit made in one section is what the other section reads', async
   page,
   browser,
 }) => {
-  // The write goes in through ตอนเรียน 1 and is read back through ตอนเรียน 2
+  // The write goes in through กลุ่มเรียน 1 and is read back through กลุ่มเรียน 2
   // in another browser context — 27a row 3, one tier down. The edit keeps its
   // number: what moves is the substance.
   const mine = await asTeacherOne(page);
   const clo = cloNumbered(await myClos(page, mine), 'CLO-1');
   await openBehaviors(page, mine, clo.clo_id);
 
-  const detail = 'แก้พฤติกรรมจากตอนเรียนที่หนึ่ง เพื่อให้ตอนเรียนที่สองอ่านเจอ';
+  const detail = 'แก้พฤติกรรมจากกลุ่มเรียนที่หนึ่ง เพื่อให้กลุ่มเรียนที่สองอ่านเจอ';
   await behaviorCard(page, 1).getByRole('button', { name: 'แก้ไขข้อ 1' }).click();
   const original = await page.getByLabel('รายละเอียดพฤติกรรม', { exact: true }).inputValue();
   expect((await submitBehavior(page, { detail }, 'PUT')).status()).toBe(200);

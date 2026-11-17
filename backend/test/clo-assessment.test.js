@@ -107,7 +107,7 @@ const details = (sectionId, cookie) =>
   request(api.app).get(`/api/teaching/sections/${sectionId}/learning-details`).set('Cookie', cookie);
 
 /**
- * Every mark of this ตอนเรียน, kept so a test can put them all back.
+ * Every mark of this กลุ่มเรียน, kept so a test can put them all back.
  *
  * Three of the tests below rewrite marks to stand a threshold on its edge.
  * Restoring from a snapshot rather than from a remembered handful is what
@@ -183,7 +183,7 @@ test('the report answers with every outcome of the Offering, in reading order', 
   assert.equal(response.status, 200);
 
   // ADR-0003's grain: the outcomes belong to the (Program, Subject, year), not
-  // to the ตอนเรียน, and not to whatever the marks happen to reach.
+  // to the กลุ่มเรียน, and not to whatever the marks happen to reach.
   const { rows: outcomes } = await api.pool.query(
     `SELECT c.clo_number, c.clo_detail FROM subject_clo c
        JOIN semester_courses sc
@@ -391,7 +391,7 @@ test('and one student more than that has', async () => {
   assert.equal(line.passed, true);
 });
 
-test('the report names the Subject, ตอนเรียน, year and semester the PDF has to carry', async () => {
+test('the report names the Subject, กลุ่มเรียน, year and semester the PDF has to carry', async () => {
   const { body } = await report(section, teacherOne);
 
   const { rows } = await api.pool.query(
@@ -417,7 +417,7 @@ test('the report names the Subject, ตอนเรียน, year and semester 
   assert.ok(body.subject.subject_name_th.length > 0);
 });
 
-test('the per-outcome figures are the ones #38 reports for the same ตอนเรียน', async () => {
+test('the per-outcome figures are the ones #38 reports for the same กลุ่มเรียน', async () => {
   const mine = (await report(section, teacherOne)).body;
   const theirs38 = (await details(section, teacherOne)).body;
 
@@ -435,7 +435,7 @@ test('the per-outcome figures are the ones #38 reports for the same ตอนเ
   }
 });
 
-test('a ตอนเรียน with no marks yet says so instead of reporting a column of blanks', async () => {
+test('a กลุ่มเรียน with no marks yet says so instead of reporting a column of blanks', async () => {
   await api.pool.query(
     `UPDATE activity_scores s SET score = NULL
        FROM activities a
@@ -496,7 +496,7 @@ test('a รายวิชา whose outcomes nobody has written yet is its own a
   }
 });
 
-test('the ตอนเรียน of another account is refused, and refused the same way a missing one is', async () => {
+test('the กลุ่มเรียน of another account is refused, and refused the same way a missing one is', async () => {
   const refused = await report(section, teacherTwo);
   assert.equal(refused.status, 404);
   assert.equal(refused.body.message, REFUSALS.sectionNotFound);
@@ -506,7 +506,7 @@ test('the ตอนเรียน of another account is refused, and refused th
   assert.equal(missing.body.message, REFUSALS.sectionNotFound);
 
   // ADR-0002 in the only form a single account can show it: the first call
-  // above and this one differ by nothing but the ตอนเรียน asked for, and both
+  // above and this one differ by nothing but the กลุ่มเรียน asked for, and both
   // are refused, because neither belongs to this account. The positive half —
   // that the same URL answers 200 for the ผู้สอน who does teach it — is every
   // other test in this file.

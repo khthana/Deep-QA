@@ -13,7 +13,7 @@ const { E2E_SCHEMA } = require('./env');
  * Two things make this screen's helpers unlike every one before it.
  *
  * *There are two views behind one address.* The list is the term being planned;
- * `openSections` goes from a row to that Offering's ตอนเรียน and `back` returns.
+ * `openSections` goes from a row to that Offering's กลุ่มเรียน and `back` returns.
  * Nothing navigates, so a helper that waited for a URL would wait for ever.
  *
  * *There are two grains, and one subject code names several rows.* The seed

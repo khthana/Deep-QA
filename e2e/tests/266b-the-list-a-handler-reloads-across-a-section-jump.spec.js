@@ -455,7 +455,7 @@ test.afterAll(() => release());
 
 for (const screen of SCREENS) {
   for (const one of screen.cases) {
-    test(`${screen.name} (${screen.page}.js): the list ${one.what} reloads does not land on the ตอนเรียน the jump went to`, async ({
+    test(`${screen.name} (${screen.page}.js): the list ${one.what} reloads does not land on the กลุ่มเรียน the jump went to`, async ({
       page,
     }) => {
       await signIn(page, ACCOUNTS.teacherOne);

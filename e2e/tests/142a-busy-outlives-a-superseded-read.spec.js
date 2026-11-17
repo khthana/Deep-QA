@@ -373,7 +373,7 @@ for (const screen of LIST_SCREENS) {
 
 /**
  * ข้อมูลการเปิดรายวิชา: the same three orders in its own words. The read is
- * ตอนเรียนและผู้สอน, the write the panel's เพิ่มตอนเรียน — whose button is
+ * กลุ่มเรียนและผู้สอน, the write the panel's เพิ่มกลุ่มเรียน — whose button is
  * disabled by the flag while the number it was sent with is still in the box —
  * and the removal the list's ยกเลิกการเปิด.
  *
@@ -400,7 +400,7 @@ const OFFERINGS = {
 const sectionNumber = (page) => page.getByPlaceholder('เช่น 1 หรือ พ1');
 
 test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
-  test('a superseded read that lands during a section write leaves เพิ่มตอนเรียน disabled', async ({
+  test('a superseded read that lands during a section write leaves เพิ่มกลุ่มเรียน disabled', async ({
     page,
   }) => {
     await signIn(page, ACCOUNTS.committee0501);
@@ -430,14 +430,14 @@ test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
     read.open();
     await read.answered;
     await page.waitForTimeout(SETTLE_MS);
-    expect(await add.isDisabled(), 'เพิ่มตอนเรียน while the section write is out').toBe(true);
+    expect(await add.isDisabled(), 'เพิ่มกลุ่มเรียน while the section write is out').toBe(true);
 
     write.open();
     await expect(page.getByText(REFUSED)).toBeVisible();
     await expect(add).toBeEnabled();
   });
 
-  test('a read of the same panel after กลับไปหน้ารายการ leaves เพิ่มตอนเรียน disabled while its section write is out', async ({
+  test('a read of the same panel after กลับไปหน้ารายการ leaves เพิ่มกลุ่มเรียน disabled while its section write is out', async ({
     page,
   }) => {
     await signIn(page, ACCOUNTS.committee0501);
@@ -465,7 +465,7 @@ test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
     await sectionNumber(page).fill('91');
 
     const add = button(page, OFFERINGS.add);
-    expect(await add.isDisabled(), 'เพิ่มตอนเรียน while the section write is out').toBe(true);
+    expect(await add.isDisabled(), 'เพิ่มกลุ่มเรียน while the section write is out').toBe(true);
 
     write.open();
     await write.answered;

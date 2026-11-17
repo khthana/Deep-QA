@@ -7,7 +7,7 @@ import api, { del, get } from './client'
  * evidence row and is reached by its id alone, because the two callers who
  * open one arrive from different places. A Teacher comes from their own
  * Section's screen; a committee member comes from #42's drill-down, where they
- * are looking at a figure and not at a ตอนเรียน they teach.
+ * are looking at a figure and not at a กลุ่มเรียน they teach.
  *
  * ## Why the upload is FormData and the imports are not
  *

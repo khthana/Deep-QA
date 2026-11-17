@@ -693,7 +693,7 @@ test.describe('แผนพัฒนาต่อเนื่อง (ContinuousIm
     return write;
   }
 
-  /** The screen, on a ตอนเรียน whose plan has more than one outcome to write about. */
+  /** The screen, on a กลุ่มเรียน whose plan has more than one outcome to write about. */
   async function openTwoOutcomes(page) {
     await signIn(page, ACCOUNTS.teacherOne);
     const [sectionId] = await improvement.mySectionIds(page);

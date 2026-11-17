@@ -492,7 +492,7 @@ async function onOfferingsScreen(page, body) {
   });
 }
 
-test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused ตอนเรียนและผู้สอน reloads does not land on the หลักสูตร filter that has moved', async ({
+test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused กลุ่มเรียนและผู้สอน reloads does not land on the หลักสูตร filter that has moved', async ({
   page,
 }) => {
   await onOfferingsScreen(page, (screen) =>
@@ -504,7 +504,7 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   );
 });
 
-test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused ตอนเรียนและผู้สอน reloads does not land on the ปีการศึกษา filter that has moved', async ({
+test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused กลุ่มเรียนและผู้สอน reloads does not land on the ปีการศึกษา filter that has moved', async ({
   page,
 }) => {
   await onOfferingsScreen(page, (screen) =>
@@ -517,7 +517,7 @@ test('ข้อมูลการเปิดรายวิชา (Offerings.js
   );
 });
 
-test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused ตอนเรียนและผู้สอน reloads does not land on the ภาคการศึกษา filter that has moved', async ({
+test('ข้อมูลการเปิดรายวิชา (Offerings.js): the list a refused กลุ่มเรียนและผู้สอน reloads does not land on the ภาคการศึกษา filter that has moved', async ({
   page,
 }) => {
   await onOfferingsScreen(page, (screen) =>

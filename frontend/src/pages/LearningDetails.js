@@ -122,13 +122,13 @@ export default function LearningDetails() {
             </p>
             <h1 className="mt-1 text-xl font-semibold text-primary">รายละเอียดผลการเรียนรู้</h1>
             <p className="mt-2 text-sm text-slate-500">
-              ตอนเรียน {data.section.section_number} · ปีการศึกษา {data.section.academic_year} ·{' '}
+              กลุ่มเรียน {data.section.section_number} · ปีการศึกษา {data.section.academic_year} ·{' '}
               {data.clos.length} ผลการเรียนรู้
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {card('จำนวนนักศึกษา', `${data.summary.student_count} คน`, 'ที่ลงทะเบียนตอนเรียนนี้')}
+            {card('จำนวนนักศึกษา', `${data.summary.student_count} คน`, 'ที่ลงทะเบียนกลุ่มเรียนนี้')}
             {card(
               'คะแนนเฉลี่ยรายคนรายข้อ',
               score(data.summary.mean, ' / 5'),
@@ -146,7 +146,7 @@ export default function LearningDetails() {
             // empty cells invites a teacher to look for a pattern in the fact
             // that nobody has marked anything.
             <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-              <p className="text-sm font-medium text-slate-600">ยังไม่มีคะแนนในตอนเรียนนี้</p>
+              <p className="text-sm font-medium text-slate-600">ยังไม่มีคะแนนในกลุ่มเรียนนี้</p>
               <p className="mt-2 text-sm text-slate-500">
                 เมื่อบันทึกคะแนนกิจกรรมการเรียนรู้แล้ว ผลการเรียนรู้ของนักศึกษาจะแสดงที่นี่
               </p>

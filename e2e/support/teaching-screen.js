@@ -5,16 +5,16 @@ const { expect } = require('@playwright/test');
 const { openAt } = require('./navigation');
 
 /**
- * รายวิชาที่สอน and the ตอนเรียน behind it — #24, as a browser reaches it.
+ * รายวิชาที่สอน and the กลุ่มเรียน behind it — #24, as a browser reaches it.
  *
  * One thing here is unlike every screen before it: the address carries the
  * context. `/teacher/teacherDashboard` is the list, and
- * `/teacher/teacherDashboard/<section_id>` is one ตอนเรียน open — ADR-0004, and
+ * `/teacher/teacherDashboard/<section_id>` is one กลุ่มเรียน open — ADR-0004, and
  * the reason a reload keeps the Section is that it never left the URL.
  *
  * So the helpers below take a section id rather than a name. A name would not
  * be enough to find one: the seed teaches the same subject in two academic
- * years, so `OBJECT ORIENTED PROGRAMMING` ตอนเรียน 1 is two different Sections
+ * years, so `OBJECT ORIENTED PROGRAMMING` กลุ่มเรียน 1 is two different Sections
  * and the id is the only thing that separates them. That is the argument
  * ADR-0004 makes, stated once more here because a helper written the other way
  * would look reasonable.
@@ -65,7 +65,7 @@ const openSection = (page, sectionId) =>
 const sectionCard = (page, subjectCode) =>
   page.getByRole('button').filter({ hasText: subjectCode });
 
-/** Chooses a ตอนเรียน the way a person does, and waits for the context to resolve. */
+/** Chooses a กลุ่มเรียน the way a person does, and waits for the context to resolve. */
 async function chooseSection(page, subjectCode) {
   const [response] = await Promise.all([
     waitForSection(page),

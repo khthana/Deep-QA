@@ -13,7 +13,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 /**
- * The ตอนเรียน the teacher currently has open, read out of the address — or
+ * The กลุ่มเรียน the teacher currently has open, read out of the address — or
  * null, which is the dashboard.
  *
  * This read `localStorage.selectedCourse` and `localStorage.section` until #24.
@@ -48,7 +48,7 @@ function SidebarItem({
     const menu = MENUS[role] ?? []
     let menuData = menu
 
-    // The teacher's second group is about one ตอนเรียน, so it appears only once
+    // The teacher's second group is about one กลุ่มเรียน, so it appears only once
     // one is open — #24's third and fourth criteria. What decides that is the
     // address and nothing else, so the group appears and disappears exactly
     // when the route does.
@@ -207,7 +207,7 @@ function SidebarItem({
                           if (role === 'TEACHER') {
                             const section = openSection(location.pathname)
 
-                            // ถ้ายังไม่ได้เลือกตอนเรียน ไม่ต้องแสดง Submenu ของตอนเรียนนั้น
+                            // ถ้ายังไม่ได้เลือกกลุ่มเรียน ไม่ต้องแสดง Submenu ของกลุ่มเรียนนั้น
                             if (!section) return null
 
                             subPath = sub.path.replace(SECTION_TOKEN, section)

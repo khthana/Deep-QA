@@ -319,7 +319,7 @@ test('row 7: a Section with no marks says so instead of drawing a grid of dashes
 
   await openDetails(page, section);
 
-  await expect(page.getByText('ยังไม่มีคะแนนในตอนเรียนนี้')).toBeVisible();
+  await expect(page.getByText('ยังไม่มีคะแนนในกลุ่มเรียนนี้')).toBeVisible();
   await expect(page.locator('table')).toHaveCount(0);
 });
 
@@ -342,7 +342,7 @@ test('row 9: an outcome nobody has been asked about is not counted as one that p
   await expect(summaryOf(page, 'CLO-92')).not.toContainText('Y');
 });
 
-test('row 8: the ตอนเรียน of another account is refused rather than drawn', async ({ page }) => {
+test('row 8: the กลุ่มเรียน of another account is refused rather than drawn', async ({ page }) => {
   await page.context().clearCookies();
   await signIn(page, ACCOUNTS.teacherTwo);
 

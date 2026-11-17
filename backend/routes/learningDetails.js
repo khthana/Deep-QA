@@ -72,7 +72,7 @@ const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
 const { cloOrder } = require('../lib/cloOrder');
 
-/** A ผู้สอน's own ตอนเรียน, as in `enrolment.js`, `activities.js` and `activityScores.js`. */
+/** A ผู้สอน's own กลุ่มเรียน, as in `enrolment.js`, `activities.js` and `activityScores.js`. */
 const TEACHING = ['TEACHER'];
 
 function learningDetailRoutes(pool) {

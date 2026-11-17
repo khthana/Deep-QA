@@ -133,7 +133,7 @@ test('S1: the class list does not say an add judged by the term it was sent unde
   await expect(page.getByLabel('รหัสนักศึกษา', { exact: true })).toBeEnabled();
 
   await expect(
-    page.getByText(`เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`, { exact: true }),
+    page.getByText(`เพิ่ม ${student.student_id} ${student.full_name_th} เข้ากลุ่มเรียนแล้ว`, { exact: true }),
     'the sentence of the term the add was sent under',
   ).toHaveCount(0);
 });
@@ -205,7 +205,7 @@ test("G3: a file imported under no term, with a term typed before its reload lan
   await expect(notice(page), 'judged by the term in the box').toHaveText(SOME_IMPORTED_OUTSIDE);
 });
 
-test("G4: an import's reload that lands after a jump says nothing on the ตอนเรียน the jump went to", async ({
+test("G4: an import's reload that lands after a jump says nothing on the กลุ่มเรียน the jump went to", async ({
   page,
 }) => {
   await signIn(page, ACCOUNTS.teacherOne);
@@ -252,6 +252,6 @@ test("G4: an import's reload that lands after a jump says nothing on the ตอ�
 
   await expect(
     page.getByText(SOME_IMPORTED_OUTSIDE, { exact: true }),
-    "the import's sentence, about the ตอนเรียน that was left",
+    "the import's sentence, about the กลุ่มเรียน that was left",
   ).toHaveCount(0);
 });

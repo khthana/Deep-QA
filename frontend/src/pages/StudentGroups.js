@@ -62,11 +62,11 @@ const searched = group => [
  *
  * #25's screen takes a typed code, because the register it draws from holds
  * thousands of people and a dropdown of them would be unusable. This one draws
- * from fifty-seven — the ตอนเรียน's own roll — so it offers them, and each
+ * from fifty-seven — the กลุ่มเรียน's own roll — so it offers them, and each
  * option says which group the person is already in.
  *
  * That is not a convenience. BR-07 lets somebody belong to one group per
- * ตอนเรียน, so the interesting question at the moment of choosing is exactly
+ * กลุ่มเรียน, so the interesting question at the moment of choosing is exactly
  * "where are they now", and a picker that hid it would make the server's
  * refusal look arbitrary. It is also what makes the two verbs choosable: a
  * person the picker shows as อยู่ในกลุ่มที่ 2 is added with **ย้ายมากลุ่มนี้**
@@ -392,7 +392,7 @@ export default function StudentGroups() {
                 </p>
                 <h1 className="mt-1 text-xl font-semibold text-primary">กลุ่มงานนักศึกษา</h1>
                 <p className="mt-2 text-sm text-slate-500">
-                  ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
+                  กลุ่มเรียน {data.section.section_number} · ปีการศึกษา{' '}
                   {data.section.academic_year} · {data.groups.length} กลุ่ม · จัดกลุ่มแล้ว{' '}
                   {placed} คน · ยังไม่มีกลุ่ม {ungrouped.length} คน
                 </p>
@@ -444,8 +444,8 @@ export default function StudentGroups() {
           >
             <h2 className="mb-1 text-lg font-medium text-primary">สร้างกลุ่มงาน</h2>
             <p className="mb-4 text-sm text-slate-500">
-              ตั้งชื่อกลุ่มไม่ซ้ำกันภายในตอนเรียนนี้ หนึ่งกลุ่มมีนักศึกษาได้ไม่เกิน{' '}
-              {data.max_group_size} คน และนักศึกษาหนึ่งคนอยู่ได้กลุ่มเดียวต่อหนึ่งตอนเรียน
+              ตั้งชื่อกลุ่มไม่ซ้ำกันภายในกลุ่มเรียนนี้ หนึ่งกลุ่มมีนักศึกษาได้ไม่เกิน{' '}
+              {data.max_group_size} คน และนักศึกษาหนึ่งคนอยู่ได้กลุ่มเดียวต่อหนึ่งกลุ่มเรียน
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <label className="sr-only" htmlFor="group_name">
@@ -496,7 +496,7 @@ export default function StudentGroups() {
           <div className="grid gap-4 md:grid-cols-2">
             {data.groups.length === 0 && (
               <p className="text-sm text-slate-500">
-                ยังไม่มีกลุ่มงานในตอนเรียนนี้
+                ยังไม่มีกลุ่มงานในกลุ่มเรียนนี้
               </p>
             )}
             {data.groups.length > 0 && shown.length === 0 && (
@@ -643,7 +643,7 @@ export default function StudentGroups() {
               ยังไม่มีกลุ่ม {ungrouped.length} คน
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              นักศึกษาที่ลงทะเบียนในตอนเรียนนี้แล้วแต่ยังไม่ได้อยู่กลุ่มใด
+              นักศึกษาที่ลงทะเบียนในกลุ่มเรียนนี้แล้วแต่ยังไม่ได้อยู่กลุ่มใด
             </p>
             <ul className="mt-3 flex flex-wrap gap-2">
               {ungrouped.length === 0 && (
@@ -667,7 +667,7 @@ export default function StudentGroups() {
         title="ลบกลุ่มงาน"
         message={
           removingGroup
-            ? `ต้องการลบ ${removingGroup.group_name} หรือไม่ นักศึกษา ${removingGroup.member_count} คนในกลุ่มนี้จะถูกนำออกจากกลุ่มและบันทึกไว้ในประวัติ ทุกคนยังอยู่ในตอนเรียนตามเดิม`
+            ? `ต้องการลบ ${removingGroup.group_name} หรือไม่ นักศึกษา ${removingGroup.member_count} คนในกลุ่มนี้จะถูกนำออกจากกลุ่มและบันทึกไว้ในประวัติ ทุกคนยังอยู่ในกลุ่มเรียนตามเดิม`
             : ''
         }
         confirmLabel="ลบกลุ่ม"

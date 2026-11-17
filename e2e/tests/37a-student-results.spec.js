@@ -31,7 +31,7 @@ const {
  *
  * #37 computes nothing. Its read is #38's, and every rule inside it — the scale
  * of five, the blank that is not a nought, the guard that refuses another
- * account's ตอนเรียน — is proved once in `backend/test/learning-details.test.js`
+ * account's กลุ่มเรียน — is proved once in `backend/test/learning-details.test.js`
  * and is not repeated here. That is the whole reason this ticket has no route
  * of its own: the fifth criterion asks that the normalisation be the Section
  * results', and sharing the read makes it so by construction rather than by an
@@ -372,7 +372,7 @@ test('a Subject with more than ten outcomes draws ten of them and says how many 
 }) => {
   // The seed holds nine outcomes, so the fourth criterion's situation has to be
   // built. Two more take the Offering past the cap. They are added to the
-  // Offering rather than to the ตอนเรียน because that is the grain a CLO has —
+  // Offering rather than to the กลุ่มเรียน because that is the grain a CLO has —
   // ADR-0003 — and they carry no marks, which is beside the point here: the cap
   // is about how many labels fit round a circle, not about what is on them.
   await pastTheCap(db, restore, await offeringOf(db, section));
@@ -398,7 +398,7 @@ test('a Subject with more than ten outcomes draws ten of them and says how many 
   }
 });
 
-test('a ผู้สอน who types another ตอนเรียน’s address is refused, and is not left waiting', async ({
+test('a ผู้สอน who types another กลุ่มเรียน’s address is refused, and is not left waiting', async ({
   page,
 }) => {
   // The guard is #38's and is proved at the HTTP seam. What is only provable
@@ -414,7 +414,7 @@ test('a ผู้สอน who types another ตอนเรียน’s addres
       ORDER BY cs.section_id LIMIT 1`,
     [section],
   );
-  expect(rows.length, 'the seed should hold a ตอนเรียน this ผู้สอน does not teach').toBe(1);
+  expect(rows.length, 'the seed should hold a กลุ่มเรียน this ผู้สอน does not teach').toBe(1);
 
   await page.goto(path(rows[0].section_id));
   await expect(page.getByText(REFUSALS.sectionNotFound)).toBeVisible();

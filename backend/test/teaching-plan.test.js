@@ -206,7 +206,7 @@ test('a week may hold a second topic — the number is not a key', async () => {
   );
   // Two rows of one week keep insertion order: the seeded topic first.
   const ofWeekTwo = weeks.filter((row) => row.week_no === 2);
-  assert.match(ofWeekTwo[0].title, /^คลาสและอ็อบเจกต์ \(ตอนเรียนที่/);
+  assert.match(ofWeekTwo[0].title, /^คลาสและอ็อบเจกต์ \(กลุ่มเรียนที่/);
   assert.equal(ofWeekTwo[1].title, 'คลาสและอ็อบเจกต์ (หัวข้อที่สอง)');
 
   const gone = await remove(cookie, section.id, created.body.week.id);

@@ -4,7 +4,7 @@ import { get, post, put, query } from './client'
  * คะแนนกิจกรรมการเรียนรู้ — #34.
  *
  * Addressed by the Section *and* the Activity, because a mark is only ever
- * about one piece of work in one ตอนเรียน, and because the server pairs the two
+ * about one piece of work in one กลุ่มเรียน, and because the server pairs the two
  * before it looks at either: an Activity id belonging to the Section next door
  * is ไม่พบ through this address rather than somebody else's marks.
  *

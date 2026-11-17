@@ -10,7 +10,7 @@ const { openAt } = require('./navigation');
 /**
  * พฤติกรรมที่วัดผลได้ตาม CLO — #28, as a browser reaches it.
  *
- * The screen hangs two levels under a ตอนเรียน's address — the Section proves
+ * The screen hangs two levels under a กลุ่มเรียน's address — the Section proves
  * the caller may be here, the CLO owns the rows — and what it shows belongs to
  * the CLO alone, so everything `clos-screen.js` says about the grain holds
  * here by inheritance. Helpers take the section id and the clo id together for
@@ -71,7 +71,7 @@ async function openBehaviors(page, sectionId, cloId) {
 }
 
 /**
- * The CLO set of a ตอนเรียน, over the context's own request — the ids a row
+ * The CLO set of a กลุ่มเรียน, over the context's own request — the ids a row
  * needs to build a behaviours address, asked the way `mySectionIds` asks.
  */
 async function myClos(page, sectionId) {

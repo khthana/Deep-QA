@@ -47,7 +47,7 @@ const { CARD_SCREENS, pencils, boxOf } = require('../support/card-screens');
  *    completed (#227), which `150a`'s own sequence is the way in to.
  * 3. **กลุ่มงานนักศึกษา** — a page holding three forms and no component to put
  *    a flag in, so the flag holds **which** of them sent the write.
- * 4. **ตอนเรียนและผู้สอน** — the form that emptied its own field at the press.
+ * 4. **กลุ่มเรียนและผู้สอน** — the form that emptied its own field at the press.
  *    Closing a field says nothing where the value has already gone, so the
  *    claim here is the number staying in the box, and still being there when
  *    the answer is a refusal.
@@ -315,9 +315,9 @@ test.describe('กลุ่มงานนักศึกษา (StudentGroups.j
   });
 });
 
-// ── 4 · ตอนเรียนและผู้สอน (SectionsPanel.js) ────────────────────────────────
+// ── 4 · กลุ่มเรียนและผู้สอน (SectionsPanel.js) ────────────────────────────────
 
-test.describe('ตอนเรียนและผู้สอน (SectionsPanel.js)', () => {
+test.describe('กลุ่มเรียนและผู้สอน (SectionsPanel.js)', () => {
   const SECTIONS = /^\/api\/offerings\/\d+\/sections$/;
   const NUMBER = '93';
 
@@ -335,7 +335,7 @@ test.describe('ตอนเรียนและผู้สอน (SectionsPane
     await expect(button(page, 'กลับไปหน้ารายการ')).toBeVisible();
 
     const box = sectionNumber(page);
-    await expect(box, 'the เลขตอนเรียน box').toBeEnabled();
+    await expect(box, 'the เลขกลุ่มเรียน box').toBeEnabled();
     await box.fill(NUMBER);
 
     const write = await gate(page, SECTIONS, isWrite, { refusal: REFUSED });

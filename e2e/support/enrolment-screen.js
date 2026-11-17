@@ -10,8 +10,8 @@ const { openAt } = require('./navigation');
 /**
  * รายชื่อนักศึกษาของรายวิชา — #25, as a browser reaches it.
  *
- * The screen hangs under a ตอนเรียน's address and, unlike `clos-screen.js`
- * beside it, what it shows really does belong to that ตอนเรียน. Two Sections of
+ * The screen hangs under a กลุ่มเรียน's address and, unlike `clos-screen.js`
+ * beside it, what it shows really does belong to that กลุ่มเรียน. Two Sections of
  * one Offering are two class lists. So every helper here takes a section id and
  * none of them is shared with the sibling Section — a row that passed against
  * either one would not be saying anything.
@@ -19,7 +19,7 @@ const { openAt } = require('./navigation');
  * The codes the rows enrol are the prior-year cohort's, and they are written
  * down rather than discovered. `65010001` exists in the register — #17's own
  * suite reads it back by name for the same reason — and it is enrolled in last
- * year's ตอนเรียน rather than this one, so it is the one thing this screen
+ * year's กลุ่มเรียน rather than this one, so it is the one thing this screen
  * needs and cannot get from the current-year cohort: a student the register
  * holds who is not already in the class. A repeating student is what that looks
  * like on paper, which is why it is a legitimate enrolment and not a fixture
@@ -38,11 +38,11 @@ const waitForList = page =>
   );
 
 /**
- * Goes to the class list of one ตอนเรียน and hands back the read a row asserts on,
+ * Goes to the class list of one กลุ่มเรียน and hands back the read a row asserts on,
  * once the list is drawn.
  *
  * Asserts the answer was 200, which it did not before #135: every caller opens
- * a ตอนเรียน its own account teaches, and a count the pager can be waited for
+ * a กลุ่มเรียน its own account teaches, and a count the pager can be waited for
  * only exists on an answer that succeeded.
  */
 async function openEnrolment(page, sectionId) {
@@ -80,7 +80,7 @@ async function mySectionIds(page) {
 const listTable = page => page.locator('table').filter({ hasText: 'รหัสนักศึกษา' });
 
 /**
- * Codes the register holds that this term's ตอนเรียน does not.
+ * Codes the register holds that this term's กลุ่มเรียน does not.
  *
  * The prior-year cohort, taken from the front. Written down rather than read
  * out of the database because a browser test has no pool, and read as a fact
@@ -114,7 +114,7 @@ async function enrol(page, code) {
  * removal still leaves the row drawn for the length of a round trip.
  */
 async function removeStudent(page, code, { confirm = true } = {}) {
-  await page.getByRole('button', { name: `นำ ${code} ออกจากตอนเรียน` }).click();
+  await page.getByRole('button', { name: `นำ ${code} ออกจากกลุ่มเรียน` }).click();
   const isRemoval = url => /\/api\/teaching\/sections\/\d+\/students\/\d+$/.test(new URL(url).pathname);
 
   if (!confirm) {

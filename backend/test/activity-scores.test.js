@@ -213,7 +213,7 @@ test('the screen reads the groups of the Section, so group entry has rows to typ
   }
 });
 
-test('a ตอนเรียน that is not this account’s is refused, and says so', async () => {
+test('a กลุ่มเรียน that is not this account’s is refused, and says so', async () => {
   const activity = await activityNamed(theirs, MIDTERM);
   const response = await read(teacherOne, theirs, activity.id);
 
@@ -359,7 +359,7 @@ test('a group’s mark is written to every member of that group', async () => {
   }
 });
 
-test('a group of another ตอนเรียน is refused through this one’s address', async () => {
+test('a group of another กลุ่มเรียน is refused through this one’s address', async () => {
   const activity = await activityNamed(current, PROJECT);
   const { rows } = await api.pool.query(
     'SELECT group_id FROM student_group WHERE section_id <> $1 LIMIT 1',
@@ -377,7 +377,7 @@ test('a group of another ตอนเรียน is refused through this one’
   assert.equal(refused.body.message, REFUSALS.groupNotFound);
 });
 
-test('a student who is not enrolled in this ตอนเรียน is refused', async () => {
+test('a student who is not enrolled in this กลุ่มเรียน is refused', async () => {
   const activity = await activityNamed(prior, MIDTERM);
   const elsewhere = await roll(theirs);
 
@@ -430,7 +430,7 @@ test('one bad mark in a list refuses the whole list, and the good ones are not w
   assert.deepEqual(await marksOf(activity.id, good.student_id), held, 'the good row is not written');
 });
 
-test('a teacher is refused on a ตอนเรียน they do not teach, at the server', async () => {
+test('a teacher is refused on a กลุ่มเรียน they do not teach, at the server', async () => {
   const activity = await activityNamed(prior, MIDTERM);
   const students = await roll(prior);
 
@@ -473,7 +473,7 @@ async function goodFile(sectionId, score) {
     .join('\n');
 }
 
-test('a file that agrees with the ตอนเรียน records every mark', async () => {
+test('a file that agrees with the กลุ่มเรียน records every mark', async () => {
   const activity = await activityNamed(prior, MIDTERM);
   const students = await roll(prior);
   const rowsBefore = await markCount(activity.id);
@@ -489,7 +489,7 @@ test('a file that agrees with the ตอนเรียน records every mark', 
   }
 });
 
-test('a file with fewer students than the ตอนเรียน is refused, and the message says so', async () => {
+test('a file with fewer students than the กลุ่มเรียน is refused, and the message says so', async () => {
   const activity = await activityNamed(prior, MIDTERM);
   const students = await roll(prior);
   const short = ['student_id,full_name_th,score']
@@ -503,7 +503,7 @@ test('a file with fewer students than the ตอนเรียน is refused, a
   assert.match(response.body.message, new RegExp(String(students.length)));
 });
 
-test('a file naming a student the ตอนเรียน does not hold is refused, and names the code', async () => {
+test('a file naming a student the กลุ่มเรียน does not hold is refused, and names the code', async () => {
   const activity = await activityNamed(prior, MIDTERM);
   const students = await roll(prior);
   const wrong = ['student_id,full_name_th,score']

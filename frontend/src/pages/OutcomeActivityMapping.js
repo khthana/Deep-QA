@@ -125,7 +125,7 @@ export default function OutcomeActivityMapping() {
               ความเชื่อมโยงผลการเรียนรู้และกิจกรรม
             </h1>
             <p className="mt-2 text-sm text-slate-500">
-              ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
+              กลุ่มเรียน {data.section.section_number} · ปีการศึกษา{' '}
               {data.section.academic_year}
             </p>
           </div>
@@ -139,7 +139,7 @@ export default function OutcomeActivityMapping() {
             {card(
               'กิจกรรมการเรียนรู้',
               `${data.counts.activities} กิจกรรม`,
-              'ของตอนเรียนนี้'
+              'ของกลุ่มเรียนนี้'
             )}
             {card(
               'ความเชื่อมโยง',
@@ -154,7 +154,7 @@ export default function OutcomeActivityMapping() {
             // that no work has been set yet.
             <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
               <p className="text-sm font-medium text-slate-600">
-                ยังไม่มีกิจกรรมการเรียนรู้ในตอนเรียนนี้
+                ยังไม่มีกิจกรรมการเรียนรู้ในกลุ่มเรียนนี้
               </p>
               <p className="mt-2 text-sm text-slate-500">
                 เมื่อสร้างกิจกรรมและผูกกับผลการเรียนรู้แล้ว

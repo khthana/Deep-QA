@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Ticket #26: กลุ่มงาน — who works with whom inside one ตอนเรียน.
+ * Ticket #26: กลุ่มงาน — who works with whom inside one กลุ่มเรียน.
  *
  * #25 built the class list. This divides it. What makes the ticket more than a
  * second junction table is that two of its rules are rules the database cannot
@@ -25,7 +25,7 @@
  * were one act. Making the person choose the verb is what makes the log true.
  *
  * *The grain is the Section, exactly as in `enrolment.js`.* A group belongs to
- * one ตอนเรียน; the two ตอนเรียน of one Offering divide their own rolls, and
+ * one กลุ่มเรียน; the two กลุ่มเรียน of one Offering divide their own rolls, and
  * `sectionOf` is imported from #25 rather than copied for
  * [#104](https://github.com/khthana/Deep-QA/issues/104)'s reason. Every group
  * id from a URL is then looked up by `(group_id, section_id)` and never by id
@@ -61,8 +61,8 @@
  * So every writing route takes one lock before it counts, and it is the same
  * lock for all of them: the `course_sections` row this screen is addressed by,
  * `FOR UPDATE`, as the first statement after BEGIN. Grouping is serialised per
- * ตอนเรียน, which is exactly the scope both rules are stated in - BR-06 counts
- * one group of it and BR-07 counts one student in it - and a ตอนเรียน has one
+ * กลุ่มเรียน, which is exactly the scope both rules are stated in - BR-06 counts
+ * one group of it and BR-07 counts one student in it - and a กลุ่มเรียน has one
  * or two teachers, so nothing a person does here waits on anybody.
  *
  * It was two finer locks first, taken in one order: the student's own
@@ -84,7 +84,7 @@ const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const { sectionOf, notThisSection } = require('./enrolment');
 
-/** A ผู้สอน's own ตอนเรียน, as in `enrolment.js` and `teaching.js`. */
+/** A ผู้สอน's own กลุ่มเรียน, as in `enrolment.js` and `teaching.js`. */
 const TEACHING = ['TEACHER'];
 
 /**
@@ -288,7 +288,7 @@ function workGroupRoutes(pool) {
   }
 
   /**
-   * Every group of this ตอนเรียน, with its members, and the roll they come from
+   * Every group of this กลุ่มเรียน, with its members, and the roll they come from
    * — the first criterion, and the shape the whole screen is drawn from.
    *
    * Not paged, alone among the lists in this system, and deliberately. The

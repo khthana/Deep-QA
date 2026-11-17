@@ -211,7 +211,7 @@ MUTANTS = {
     's272bgroupstakeoutabout': ('groups', '      one => one.group_id === group.group_id,\n', '      () => false,\n'),
     's272bgroupsimportquiet': ('groups', GROUPS_IMPORT, 'Boolean(groups && false)'),
     's272bgroupsimportalways': ('groups', GROUPS_IMPORT, 'Boolean(groups && termNow.current.trim())'),
-    # The owner's answer of 13 November 2569: a jump to another ตอนเรียน clears the term.
+    # The owner's answer of 13 November 2569: a jump to another กลุ่มเรียน clears the term.
     's272bclassjumpkeeps': ('class', KEEPS, '  const q = search.q\n'),
     's272bclassboxkept': ('class', '            <SearchBox\n              key={sectionId}\n',
         '            <SearchBox\n'),

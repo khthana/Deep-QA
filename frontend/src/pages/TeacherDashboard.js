@@ -18,7 +18,7 @@ import { useScreenGeneration } from '../context/ScreenGeneration'
  * `filteredCourses`) and everything the card draws.
  *
  * In the browser and not on the server, like `StudentGroups.js`:
- * `listMySections` answers every ตอนเรียน of the term at once and nothing here
+ * `listMySections` answers every กลุ่มเรียน of the term at once and nothing here
  * is paged, so the cards in hand are all the cards there are.
  */
 const searched = section => [
@@ -30,7 +30,7 @@ const searched = section => [
 /**
  * รายวิชาที่สอน — ticket #24, the first screen a ผู้สอน sees.
  *
- * The ตอนเรียน this account teaches in the current term, and nothing else.
+ * The กลุ่มเรียน this account teaches in the current term, and nothing else.
  * Choosing one is what puts a Section in context; every Teacher screen after
  * this one works from that choice, and none of them is reachable before it.
  *
@@ -59,7 +59,7 @@ const searched = section => [
  *
  * ## The empty state
  *
- * A lecturer with no ตอนเรียน this term is not an error and must not read like
+ * A lecturer with no กลุ่มเรียน this term is not an error and must not read like
  * one. What they need to know is which term was looked in and who opens a
  * subject for a term, because the answer is that the กรรมการหลักสูตร has not
  * assigned them one — nothing they can fix from here, and a sentence that
@@ -143,10 +143,10 @@ export default function TeacherDashboard() {
       {!loading && sections.length === 0 && (
         <div className="rounded-xl border border-slate-100 bg-white p-8 text-center">
           <p className="text-base font-medium text-primary">
-            ยังไม่มีตอนเรียนที่ได้รับมอบหมายใน{termLabel}
+            ยังไม่มีกลุ่มเรียนที่ได้รับมอบหมายใน{termLabel}
           </p>
           <p className="mt-2 text-sm text-slate-500">
-            ตอนเรียนจะปรากฏที่นี่เมื่อกรรมการหลักสูตรเปิดรายวิชาในภาคการศึกษานี้และกำหนดให้ท่านเป็นผู้สอน
+            กลุ่มเรียนจะปรากฏที่นี่เมื่อกรรมการหลักสูตรเปิดรายวิชาในภาคการศึกษานี้และกำหนดให้ท่านเป็นผู้สอน
           </p>
         </div>
       )}
@@ -176,7 +176,7 @@ export default function TeacherDashboard() {
                   {section.subject_name_en}
                 </span>
                 <span className="mt-4 flex items-center justify-between text-sm text-slate-500">
-                  <span>ตอนเรียน {section.section_number}</span>
+                  <span>กลุ่มเรียน {section.section_number}</span>
                   <span>{section.student_count} คน</span>
                 </span>
               </button>

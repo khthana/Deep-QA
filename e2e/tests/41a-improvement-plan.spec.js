@@ -72,14 +72,14 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** teacher.one@ teaching ตอนเรียน 1 of the current term. */
+/** teacher.one@ teaching กลุ่มเรียน 1 of the current term. */
 async function asTeacherOne(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
   return section;
 }
 
-/** multi.role@ with the teaching hat on, and their ตอนเรียน of the same Offering. */
+/** multi.role@ with the teaching hat on, and their กลุ่มเรียน of the same Offering. */
 async function asMultiRole(page) {
   await signIn(page, ACCOUNTS.multiRole);
   expect((await switchTo(page, 'อาจารย์ผู้สอน')).status()).toBe(200);
@@ -87,7 +87,7 @@ async function asMultiRole(page) {
   return section;
 }
 
-/** Every entry of a ตอนเรียน's plan, gone — the state the seed leaves. */
+/** Every entry of a กลุ่มเรียน's plan, gone — the state the seed leaves. */
 async function wipe(page, sectionId) {
   const { entries } = await planOf(page, sectionId);
   for (const entry of entries) await clearEntry(page, sectionId, entry.entry_id);
@@ -327,7 +327,7 @@ test('row 8: with no earlier year written in, the reference panel is not drawn a
   await expect(referencePanel(page)).toHaveCount(0);
 });
 
-test('row 9: a ตอนเรียน the account does not teach is refused on the screen', async ({ page }) => {
+test('row 9: a กลุ่มเรียน the account does not teach is refused on the screen', async ({ page }) => {
   // The sixth criterion, reached the only way a browser can reach it: by
   // typing the address. The register decides, per ADR-0002, and the sentence
   // that comes back is #24's rather than anything about a plan.

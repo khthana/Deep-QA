@@ -418,7 +418,7 @@ export default function ActivityScores() {
                 </p>
                 <h1 className="mt-1 text-xl font-semibold text-primary">คะแนนกิจกรรมการเรียนรู้</h1>
                 <p className="mt-2 text-sm text-slate-500">
-                  ตอนเรียน {list.section.section_number} · ปีการศึกษา {list.section.academic_year} ·{' '}
+                  กลุ่มเรียน {list.section.section_number} · ปีการศึกษา {list.section.academic_year} ·{' '}
                   {list.activities.length} กิจกรรม
                 </p>
               </div>
@@ -432,7 +432,7 @@ export default function ActivityScores() {
               open={importing}
               onClose={() => setImporting(false)}
               title="นำเข้าคะแนนจากไฟล์"
-              subtitle="ดาวน์โหลดแบบฟอร์มของกิจกรรมนี้ กรอกคะแนนแล้วอัปโหลดกลับเข้ามา ไฟล์ต้องมีนักศึกษาครบทุกคนของตอนเรียนนี้ รหัสและชื่อต้องตรงกับทะเบียน และคอลัมน์คะแนนต้องตรงกับที่เลือกไว้ มิฉะนั้นจะถูกปฏิเสธทั้งไฟล์"
+              subtitle="ดาวน์โหลดแบบฟอร์มของกิจกรรมนี้ กรอกคะแนนแล้วอัปโหลดกลับเข้ามา ไฟล์ต้องมีนักศึกษาครบทุกคนของกลุ่มเรียนนี้ รหัสและชื่อต้องตรงกับทะเบียน และคอลัมน์คะแนนต้องตรงกับที่เลือกไว้ มิฉะนั้นจะถูกปฏิเสธทั้งไฟล์"
               templateName="activity-marks-template.csv"
               target={`${sectionId}/${activityId}`}
               fetchTemplate={() => scoresTemplate(sectionId, activityId, { mode })}
@@ -496,7 +496,7 @@ export default function ActivityScores() {
 
           {data && entry === 'group' && data.groups.length === 0 && (
             <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
-              ตอนเรียนนี้ยังไม่มีกลุ่มงาน กรุณาสร้างกลุ่มที่หน้ากลุ่มงานนักศึกษาก่อน
+              กลุ่มเรียนนี้ยังไม่มีกลุ่มงาน กรุณาสร้างกลุ่มที่หน้ากลุ่มงานนักศึกษาก่อน
             </p>
           )}
 

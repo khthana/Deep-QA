@@ -11,7 +11,7 @@ const { openAt } = require('./navigation');
 /**
  * แผนการปรับปรุงอย่างต่อเนื่อง — #41, as a browser reaches it.
  *
- * One level under a ตอนเรียน's address, like #40's report: the Section proves
+ * One level under a กลุ่มเรียน's address, like #40's report: the Section proves
  * the caller may be here and the record belongs to the Offering behind it
  * (ADR-0003, ADR-0004). So the helpers take a section id and never a year —
  * except `myEarlierSection`, which exists because this is the first screen
@@ -42,13 +42,13 @@ const waitForPlan = page =>
     answer => API.test(new URL(answer.url()).pathname) && answer.request().method() === 'GET',
   );
 
-/** Goes to one ตอนเรียน's plan and hands back the read a row asserts on. */
+/** Goes to one กลุ่มเรียน's plan and hands back the read a row asserts on. */
 async function openPlan(page, sectionId) {
   return openAt(page, path(sectionId), waitForPlan);
 }
 
 /**
- * A ตอนเรียน of an earlier ปีการศึกษา that this account also teaches.
+ * A กลุ่มเรียน of an earlier ปีการศึกษา that this account also teaches.
  *
  * #24's dashboard lists the current term only — that is its rule and not an
  * oversight — so `mySectionIds` cannot answer this, and a browser test has no
@@ -180,7 +180,7 @@ async function removeSection(page, type, { confirm = true } = {}) {
 }
 
 /**
- * Every entry of one ตอนเรียน's plan, over the context's own request.
+ * Every entry of one กลุ่มเรียน's plan, over the context's own request.
  *
  * A row that has just written through the screen and wants to know what is in
  * the record — asked the way `mySectionIds` asks, so that nothing here is

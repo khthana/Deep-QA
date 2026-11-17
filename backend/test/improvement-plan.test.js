@@ -13,7 +13,7 @@ const { startApi, OVERWIDE_IDS } = require('./helpers');
  * docs/acceptance/41-continuous-improvement-plan.md — the server half.
  *
  * Two sentences carry most of this file. The record belongs to a (Program,
- * Subject, academic year) and not to a ตอนเรียน, which is ADR-0003 and is what
+ * Subject, academic year) and not to a กลุ่มเรียน, which is ADR-0003 and is what
  * the fifth criterion asks to see; and last year's entries hang off last year's
  * CLO rows, which are different rows with the same numbers, which is what the
  * fourth criterion asks to see. The second follows from the first and is the

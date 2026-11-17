@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * Ticket #32: กิจกรรมการเรียนรู้ — the assessed work of one ตอนเรียน.
+ * Ticket #32: กิจกรรมการเรียนรู้ — the assessed work of one กลุ่มเรียน.
  *
  * *Two grains in one answer, and neither borrows the other's.* An Activity is
  * the Section's (`activities.section_id`, the same shape as #31's plan — two
- * ตอนเรียน of one Offering assess differently and are meant to), while the
+ * กลุ่มเรียน of one Offering assess differently and are meant to), while the
  * หมวดคะแนน it is filed under is the Offering's (ADR-0003, #30 — every
  * Section of the Offering divides marks on one basis). So the read answers
  * `{ section, categories, activities }`: the categories are the scheme, in

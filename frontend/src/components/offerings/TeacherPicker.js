@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { searchTeachers } from '../../api/offerings'
 
 /**
- * Who teaches one ตอนเรียน — #23's fourth and fifth criteria.
+ * Who teaches one กลุ่มเรียน — #23's fourth and fifth criteria.
  *
  * A replacement rather than an addition, which is why this is a set of ticks
  * and a บันทึก rather than an "เพิ่มผู้สอน" button: the fourth criterion asks

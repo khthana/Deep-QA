@@ -374,7 +374,7 @@ test.describe('SubjectStudents.js', () => {
     await button(page, 'เพิ่มนักศึกษา').click();
     await refuseTheReload(page, gates);
 
-    await onlyTheRefusal(page, 'เข้าตอนเรียนแล้ว', 'the banner of the enrolment');
+    await onlyTheRefusal(page, 'เข้ากลุ่มเรียนแล้ว', 'the banner of the enrolment');
   });
 
   test('a removal whose reload is refused says the refusal and not that it removed', async ({
@@ -393,7 +393,7 @@ test.describe('SubjectStudents.js', () => {
     await button(page, 'นำออก').click();
     await refuseTheReload(page, gates);
 
-    await onlyTheRefusal(page, 'ออกจากตอนเรียนแล้ว', 'the banner of the removal');
+    await onlyTheRefusal(page, 'ออกจากกลุ่มเรียนแล้ว', 'the banner of the removal');
   });
 
   /**
@@ -431,7 +431,7 @@ test.describe('SubjectStudents.js', () => {
     const gates = await gateTheWriteAndItsReload(page, enrolment.API, enrolment.API, {
       student: { student_id: enrolment.SPARE_CODES[0], full_name_th: 'ชื่อของแถว 152' },
     });
-    const watch = await watchForTheSentence(page, 'เข้าตอนเรียนแล้ว');
+    const watch = await watchForTheSentence(page, 'เข้ากลุ่มเรียนแล้ว');
     await button(page, 'เพิ่มนักศึกษา').click();
     await refuseTheReload(page, gates, { held: 300 });
 
@@ -440,7 +440,7 @@ test.describe('SubjectStudents.js', () => {
     // precondition is asserted where it is used).
     expect(pageOf(gates.reload.request), 'the page the refused read asked for').toBe('1');
     await neverSaid(watch, 'frames saying the enrolment had happened');
-    await onlyTheRefusal(page, 'เข้าตอนเรียนแล้ว', 'the banner of the enrolment');
+    await onlyTheRefusal(page, 'เข้ากลุ่มเรียนแล้ว', 'the banner of the enrolment');
   });
 
   test('an enrolment from another page says it enrolled once the first page is drawn', async ({
@@ -472,7 +472,7 @@ test.describe('SubjectStudents.js', () => {
     expect(pageOf(read.request()), 'the page the read asked for').toBe('1');
 
     await expect(
-      page.getByText('เข้าตอนเรียนแล้ว'),
+      page.getByText('เข้ากลุ่มเรียนแล้ว'),
       'the banner of the enrolment, said by the read that drew',
     ).toBeVisible();
     expect(await page.getByText(REFUSED).count(), 'nothing was refused here').toBe(0);
@@ -527,7 +527,7 @@ test.describe('SubjectStudents.js', () => {
     // the read the removal asks for.
     const gates = await gateTheWriteAndItsReload(page, REMOVAL, enrolment.API);
     await bin.click();
-    const watch = await watchForTheSentence(page, 'ออกจากตอนเรียนแล้ว');
+    const watch = await watchForTheSentence(page, 'ออกจากกลุ่มเรียนแล้ว');
     await button(page, 'นำออก').click();
     await refuseTheReload(page, gates, { held: 300 });
 
@@ -539,6 +539,6 @@ test.describe('SubjectStudents.js', () => {
       'the page the refused read asked for, which is the page they are on',
     ).toBe('2');
     await neverSaid(watch, 'frames saying the removal had happened');
-    await onlyTheRefusal(page, 'ออกจากตอนเรียนแล้ว', 'the banner of the removal');
+    await onlyTheRefusal(page, 'ออกจากกลุ่มเรียนแล้ว', 'the banner of the removal');
   });
 });

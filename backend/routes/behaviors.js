@@ -10,7 +10,7 @@
  * *A behaviour is authorised by its CLO and by nothing else.*
  * `subject_clo_measurable_behavior` carries a `clo_id` and no Section, year or
  * Program of its own, so the whole of ADR-0003 arrives by inheritance: the
- * caller stands in a ตอนเรียน, `offeringOf` resolves it to the Offering
+ * caller stands in a กลุ่มเรียน, `offeringOf` resolves it to the Offering
  * through the teaching register (ADR-0002), and `cloOf` pins the CLO to that
  * Offering. Both are #27's own functions, imported rather than asked again
  * here — `rubricCriteria.js` does the same with `reachableRubric`, and for the

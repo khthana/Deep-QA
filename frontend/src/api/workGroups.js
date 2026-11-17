@@ -4,8 +4,8 @@ import { del, get, post, put, query } from './client'
  * กลุ่มงานนักศึกษา — #26.
  *
  * Every call is addressed by `sectionId`, as `enrolment.js` beside it is and
- * for the same reason: a กลุ่มงาน belongs to one ตอนเรียน, not to the รายวิชา
- * behind it. Two ตอนเรียน of one Offering divide their own rolls.
+ * for the same reason: a กลุ่มงาน belongs to one กลุ่มเรียน, not to the รายวิชา
+ * behind it. Two กลุ่มเรียน of one Offering divide their own rolls.
  *
  * The two verbs that look alike are the point of the module. `addToGroup` puts
  * somebody in a group they are not yet in and is refused, naming the group, if
@@ -18,7 +18,7 @@ import { del, get, post, put, query } from './client'
  * server holds; the address names where they are going and nothing else.
  */
 
-/** Every group of this ตอนเรียน, its members, and the roll they are drawn from. */
+/** Every group of this กลุ่มเรียน, its members, and the roll they are drawn from. */
 export const listGroups = sectionId => get(`/api/teaching/sections/${sectionId}/groups`)
 
 /** One new group, by the name typed into the box. */
@@ -31,7 +31,7 @@ export const renameGroup = (sectionId, groupId, groupName) =>
     group_name: groupName,
   })
 
-/** The group disbanded. Its members stay in the ตอนเรียน; the confirmation is the screen's. */
+/** The group disbanded. Its members stay in the กลุ่มเรียน; the confirmation is the screen's. */
 export const deleteGroup = (sectionId, groupId) =>
   del(`/api/teaching/sections/${sectionId}/groups/${groupId}`)
 
@@ -49,7 +49,7 @@ export const moveToGroup = (sectionId, groupId, studentId) =>
 export const removeFromGroup = (sectionId, groupId, studentId) =>
   del(`/api/teaching/sections/${sectionId}/groups/${groupId}/students/${studentId}`)
 
-/** One page of what has happened to this ตอนเรียน's groups, newest first. */
+/** One page of what has happened to this กลุ่มเรียน's groups, newest first. */
 export const listGroupHistory = (sectionId, params = {}) =>
   get(`/api/teaching/sections/${sectionId}/groups/history${query(params)}`)
 

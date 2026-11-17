@@ -138,7 +138,7 @@ function evidenceRoutes(pool) {
   const notFound = (res) => res.status(404).json({ message: REFUSALS.evidenceNotFound });
 
   /**
-   * Resolves the ตอนเรียน in the path, or refuses - **before the body is read**.
+   * Resolves the กลุ่มเรียน in the path, or refuses - **before the body is read**.
    *
    * The order is the point. `acceptFile` buffers up to fifty megabytes into
    * this process's memory, and if the ownership check came after it, any

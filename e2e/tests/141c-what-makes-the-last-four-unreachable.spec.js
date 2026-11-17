@@ -173,7 +173,7 @@ const SETTLE_MS = 500;
 
 let section;
 
-/** One กิจกรรม of this ตอนเรียน, by the name the seed gave it. */
+/** One กิจกรรม of this กลุ่มเรียน, by the name the seed gave it. */
 async function activityNamed(name) {
   const { rows } = await db.query(
     'SELECT id FROM activities WHERE section_id = $1 AND activity_name = $2',

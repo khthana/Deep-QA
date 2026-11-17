@@ -84,7 +84,7 @@ async function untilScoresDrawn(page, response) {
   return response;
 }
 
-/** Opens the marks screen of one ตอนเรียน and hands back the marks read. */
+/** Opens the marks screen of one กลุ่มเรียน and hands back the marks read. */
 async function openScores(page, sectionId) {
   return openAt(page, path(sectionId), async fresh => {
     const response = await waitForScores(fresh, sectionId);

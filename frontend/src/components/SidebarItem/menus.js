@@ -56,7 +56,7 @@ export const firstEntry = menu => (menu[0]?.sub ? menu[0].sub[0] : menu[0])
  * did not change at all. A menu that grows is not a landing that moves, and
  * neither half of that sentence is checkable from here.
  *
- * The teacher's second group is about one ตอนเรียน and is not in the menu
+ * The teacher's second group is about one กลุ่มเรียน and is not in the menu
  * until one is open (#24), but it is never the first entry either way, so the
  * landing does not have to know about sections: the group that answers here is
  * the one that is always drawn.

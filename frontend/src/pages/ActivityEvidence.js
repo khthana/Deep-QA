@@ -22,7 +22,7 @@ import RowAction from '../components/RowAction'
  * The files that make one Activity's assessment defensible at accreditation:
  * the brief, and a work sample at each of the four achievement bands. Reached
  * from the Activity's card on #32's screen, and inheriting that screen's grain
- * whole — the work is this ตอนเรียน's, so its evidence is too.
+ * whole — the work is this กลุ่มเรียน's, so its evidence is too.
  *
  * ## Opening a file is a request, not a link
  *

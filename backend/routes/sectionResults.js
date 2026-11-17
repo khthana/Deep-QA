@@ -13,7 +13,7 @@
  * queries — one Section, and one whole prior year — and the two decisions that
  * say which prior years may be asked for at all.
  *
- * ## A prior year is every ตอนเรียน of the Subject, pooled
+ * ## A prior year is every กลุ่มเรียน of the Subject, pooled
  *
  * Not the ones this ผู้สอน taught. R079 asks whether *the รายวิชา* is improving,
  * and a รายวิชา taught by three people in one year has one answer to that
@@ -21,10 +21,10 @@
  * also disappear the moment somebody new took the subject over, which is
  * exactly when the question is worth asking.
  *
- * That is wider than the guard on the base ตอนเรียน, so it is bounded on
+ * That is wider than the guard on the base กลุ่มเรียน, so it is bounded on
  * purpose and the bound is the shape of the answer rather than a check that
  * could be forgotten: **the pooled year is the only grain that exists here.**
- * There is no parameter that names a ตอนเรียน of another year, nothing in the
+ * There is no parameter that names a กลุ่มเรียน of another year, nothing in the
  * response carries a `section_id`, and a student of a past year is never a row.
  * A reader learns how the Subject did and nothing about anybody who taught or
  * sat it. ADR-0002 carries the decision, for #35's reason: an authorisation
@@ -71,7 +71,7 @@ const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
 const { cloOrder } = require('../lib/cloOrder');
 
-/** A ผู้สอน's own ตอนเรียน, as in `learningDetails.js` and everywhere else Section-grained. */
+/** A ผู้สอน's own กลุ่มเรียน, as in `learningDetails.js` and everywhere else Section-grained. */
 const TEACHING = ['TEACHER'];
 
 /**
@@ -96,7 +96,7 @@ function sectionResultRoutes(pool) {
    *
    * Not only the ones some Activity reaches — an outcome nothing assesses is a
    * blank axis, and a blank axis is worth seeing, for the reason #38 gives at
-   * length. The grain is the Offering's and not the ตอนเรียน's: ADR-0003.
+   * length. The grain is the Offering's and not the กลุ่มเรียน's: ADR-0003.
    */
   async function outcomesOf(programId, subjectId, academicYear) {
     const { rows } = await pool.query(
@@ -111,10 +111,10 @@ function sectionResultRoutes(pool) {
 
   /**
    * What each student earned and what was available to them, per outcome,
-   * across every ตอนเรียน given.
+   * across every กลุ่มเรียน given.
    *
    * The array of Section ids is the whole difference between the base year and
-   * a comparison year: one id for the ตอนเรียน on screen, every id of the
+   * a comparison year: one id for the กลุ่มเรียน on screen, every id of the
    * Subject for a year being compared. `WHERE s.score IS NOT NULL` is the blank
    * rule — a row that is not there contributes to neither half of the fraction.
    *
@@ -130,7 +130,7 @@ function sectionResultRoutes(pool) {
    *   #38 gets that for free by walking its roll and looking marks up against
    *   it; this route folds from the marks outward, so without the join a
    *   student marked and later unenrolled would go on raising the mean here and
-   *   not there, and one ตอนเรียน would carry two different
+   *   not there, and one กลุ่มเรียน would carry two different
    *   *คะแนนเฉลี่ยรายคนรายข้อ* on two screens. That is the drift
    *   `lib/attainment.js` warns about, one level below where it warns.
    * - **the CLO's own (program, subject, year)** - the outcome a mark is
@@ -180,7 +180,7 @@ function sectionResultRoutes(pool) {
   }
 
   /**
-   * Every ตอนเรียน of one Subject in each of the years given, and how many
+   * Every กลุ่มเรียน of one Subject in each of the years given, and how many
    * students sat it - all of them in one query.
    *
    * One query and not one per year, because there is deliberately no cap on how
@@ -188,10 +188,10 @@ function sectionResultRoutes(pool) {
    * otherwise fire ten queries to paint a picker nobody has ticked yet.
    *
    * `count(DISTINCT e.student_id)` and not a sum of rolls. A student enrolled in
-   * two ตอนเรียน of one year is one student in that year, and `foldBy` already
+   * two กลุ่มเรียน of one year is one student in that year, and `foldBy` already
    * pools them as one - so summing the rolls would put a denominator on screen
    * that the mean beside it was not computed against. The `LEFT JOIN` keeps a
-   * ตอนเรียน with nobody on it inside the section count, where it belongs.
+   * กลุ่มเรียน with nobody on it inside the section count, where it belongs.
    */
   async function yearsOf(offering, academicYears) {
     if (academicYears.length === 0) return [];
@@ -212,7 +212,7 @@ function sectionResultRoutes(pool) {
   }
 
   /**
-   * The prior years this ตอนเรียน's chart can honestly carry, newest first.
+   * The prior years this กลุ่มเรียน's chart can honestly carry, newest first.
    *
    * One query answers all three conditions at once — earlier than this year,
    * the same set of CLO numbers, and at least one mark — because asking them
@@ -265,7 +265,7 @@ function sectionResultRoutes(pool) {
     requireRole(...TEACHING),
     async (req, res, next) => {
       try {
-        // Two readings of the same permission, as #38 does it: the ตอนเรียน is
+        // Two readings of the same permission, as #38 does it: the กลุ่มเรียน is
         // what the heading says and the Offering is what the outcomes belong
         // to. Either coming back empty is the same refusal, and neither is
         // read from anything the caller sent but the id in the path.

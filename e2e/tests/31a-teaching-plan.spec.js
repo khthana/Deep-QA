@@ -27,7 +27,7 @@ const {
  * The backend suite proves the grain, the shape checks and the delete guard
  * at the routes. What is here is what is only true in front of the screen:
  * that the menu entry lands on this Section's plan drawn in calendar order,
- * that two ตอนเรียน of one Offering read two plans and an edit in one never
+ * that two กลุ่มเรียน of one Offering read two plans and an edit in one never
  * reaches the other, that added topics land where the calendar puts them and
  * a removal takes only itself, that cancelling removes nothing, and that the
  * server's refusals — the in-use guard and the shape check — reach the page
@@ -59,14 +59,14 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** teacher.one@ teaching ตอนเรียน 1 of the current term. */
+/** teacher.one@ teaching กลุ่มเรียน 1 of the current term. */
 async function asTeacherOne(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
   return section;
 }
 
-/** multi.role@ with the teaching hat on, and their ตอนเรียน of the same Offering. */
+/** multi.role@ with the teaching hat on, and their กลุ่มเรียน of the same Offering. */
 async function asMultiRole(page) {
   await signIn(page, ACCOUNTS.multiRole);
   expect((await switchTo(page, 'อาจารย์ผู้สอน')).status()).toBe(200);
@@ -112,8 +112,8 @@ test('row 2: two sections of one offering hold two plans, and an edit stays in i
 }) => {
   // The ticket's own line, on two screens belonging to two people — the exact
   // opposite of 28a row 3. The titles carry the section number, so "different
-  // plan" is read off the cards; then a real edit goes in through ตอนเรียน 1
-  // and ตอนเรียน 2 is read again to see it did NOT arrive.
+  // plan" is read off the cards; then a real edit goes in through กลุ่มเรียน 1
+  // and กลุ่มเรียน 2 is read again to see it did NOT arrive.
   const mine = await asTeacherOne(page);
   const answered = await (await openPlan(page, mine)).json();
   expect(await headingsOnScreen(page)).toEqual(seededLabels(answered.section));
@@ -128,14 +128,14 @@ test('row 2: two sections of one offering hold two plans, and an edit stays in i
   expect(await headingsOnScreen(theirs)).toEqual(theirSeeded);
   expect(theirSeeded).not.toEqual(seededLabels(answered.section));
 
-  // The edit: week 3 of ตอนเรียน 1 gets a new title...
+  // The edit: week 3 of กลุ่มเรียน 1 gets a new title...
   const weeks = planWeeksFor(answered.section.section_number, answered.section.academic_year);
-  const marker = 'หัวข้อที่แก้จากตอนเรียนที่หนึ่ง ตอนเรียนที่สองต้องไม่เห็น';
+  const marker = 'หัวข้อที่แก้จากกลุ่มเรียนที่หนึ่ง กลุ่มเรียนที่สองต้องไม่เห็น';
   await page.getByRole('button', { name: `แก้ไข${cardLabel(weeks[2])}`, exact: true }).click();
   expect((await submitWeek(page, { title: marker }, 'PUT')).status()).toBe(200);
   await expect(page.getByRole('heading', { name: `สัปดาห์ที่ 3 · ${marker}` })).toBeVisible();
 
-  // ...and ตอนเรียน 2, read afresh, still says what its own seed says.
+  // ...and กลุ่มเรียน 2, read afresh, still says what its own seed says.
   await openPlan(theirs, theirSection);
   expect(await headingsOnScreen(theirs)).toEqual(theirSeeded);
   await expect(theirs.getByText(marker)).toHaveCount(0);

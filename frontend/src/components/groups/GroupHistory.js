@@ -142,7 +142,7 @@ export default function GroupHistory({ fetchPage, onError }) {
             {!loading && history.entries.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
-                  ยังไม่มีการเปลี่ยนแปลงกลุ่มงานในตอนเรียนนี้
+                  ยังไม่มีการเปลี่ยนแปลงกลุ่มงานในกลุ่มเรียนนี้
                 </td>
               </tr>
             )}

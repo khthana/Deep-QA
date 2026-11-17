@@ -79,7 +79,7 @@ const IMPORT_PATH = () => `/api/teaching/sections/${section}/groups/import`;
 
 const cleanUp = createPool({ schema: E2E_SCHEMA });
 
-/** The ตอนเรียน every row works in, and the students the seed leaves loose in it. */
+/** The กลุ่มเรียน every row works in, and the students the seed leaves loose in it. */
 let section;
 let tail;
 
@@ -357,7 +357,7 @@ test('row 10: the template is this screen’s, a good file lands, a bad one is r
   expect(await ungroupedOn(page)).toContain(tail[6]);
 });
 
-test('row 11: the groups of a ตอนเรียน that is not this account’s are refused', async ({
+test('row 11: the groups of a กลุ่มเรียน that is not this account’s are refused', async ({
   page,
 }) => {
   // Signed in over the top of `beforeEach`'s teacher.one, so the address being

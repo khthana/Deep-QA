@@ -27,7 +27,7 @@ const {
  * The backend suite proves the hundred rule against crafted requests, the
  * pairing of ids to the Offering, the rename swap and the whole import
  * grammar. What is here is what is only true in front of the screen: that
- * the menu entry lands on the scheme, that two ผู้สอน of two ตอนเรียน read
+ * the menu entry lands on the scheme, that two ผู้สอน of two กลุ่มเรียน read
  * one draft, that the running total follows the keys, that the server's
  * refusals — the total in its sentence, the in-use category by name — reach
  * the page, that cancelling a removal removes nothing, and that the import
@@ -57,14 +57,14 @@ const SEEDED = [
   { score_category: 'สอบปลายภาค', weight: '30' },
 ];
 
-/** teacher.one@ teaching ตอนเรียน 1 of the current term. */
+/** teacher.one@ teaching กลุ่มเรียน 1 of the current term. */
 async function asTeacherOne(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
   return section;
 }
 
-/** multi.role@ with the teaching hat on, and their ตอนเรียน of the same Offering. */
+/** multi.role@ with the teaching hat on, and their กลุ่มเรียน of the same Offering. */
 async function asMultiRole(page) {
   await signIn(page, ACCOUNTS.multiRole);
   expect((await switchTo(page, 'อาจารย์ผู้สอน')).status()).toBe(200);

@@ -4,7 +4,7 @@
  * Offerings and Sections — ticket #23.
  *
  * รายวิชาที่เปิดสอน: which of a หลักสูตร's subjects actually run in a given
- * ปีการศึกษา and ภาคการศึกษา, split into ตอนเรียน, each given to one or more
+ * ปีการศึกษา and ภาคการศึกษา, split into กลุ่มเรียน, each given to one or more
  * ผู้สอน. CONTEXT.md keeps the Offering and the Section apart and so does this
  * file: the Offering is the subject-in-a-term, the Section is a class within
  * it, and everything on the Teacher side of the system hangs off the second.
@@ -825,7 +825,7 @@ function offeringRoutes(pool) {
         .json({ section: await loadSection(pool, offering.id, rows[0].section_id) });
     } catch (error) {
       // The third criterion, answered by the database: the constraint is
-      // `(semester_course_id, section_number)`, so ตอนเรียน 1 exists once under
+      // `(semester_course_id, section_number)`, so กลุ่มเรียน 1 exists once under
       // this Offering and freely under every other one.
       if (isDuplicate(error)) {
         return res.status(409).json({ message: REFUSALS.duplicateSectionNumber });

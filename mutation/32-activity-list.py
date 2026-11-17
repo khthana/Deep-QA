@@ -116,7 +116,7 @@ MUTANTS = {
                        "  ).map(category => ({"),
     # The Section filter stops filtering - $1 stays bound, the OR is always
     # true - so every Section's work of every year arrives as one list. Kills
-    # rows 1 and 4 at the lists that should be this ตอนเรียน's alone.
+    # rows 1 and 4 at the lists that should be this กลุ่มเรียน's alone.
     "graincrossed": ("route",
                      "        WHERE a.section_id = $1\n",
                      "        WHERE a.section_id = $1 OR $1 IS NOT NULL\n"),

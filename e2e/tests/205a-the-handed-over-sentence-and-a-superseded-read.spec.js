@@ -140,7 +140,7 @@ test.describe('SubjectStudents.js', () => {
     ).toBe(0);
     expect(await page.getByRole('button', { name: /^นำ / }).count()).toBeGreaterThan(0);
     expect(
-      await page.getByText('เข้าตอนเรียนแล้ว').count(),
+      await page.getByText('เข้ากลุ่มเรียนแล้ว').count(),
       'the banner of the enrolment, said by the read that drew',
     ).toBe(1);
   });
@@ -226,7 +226,7 @@ test.describe('SubjectStudents.js', () => {
     expect((await reading(page, table)).shown, 'the page the handover drew').toBe(1);
     expect(await page.getByRole('button', { name: /^นำ / }).count()).toBeGreaterThan(0);
     expect(
-      await page.getByText('เข้าตอนเรียนแล้ว').count(),
+      await page.getByText('เข้ากลุ่มเรียนแล้ว').count(),
       'the banner of the enrolment, said by the read it was handed to',
     ).toBe(1);
   });
@@ -278,7 +278,7 @@ test.describe('SubjectStudents.js', () => {
 
     expect(await page.getByRole('button', { name: /^นำ / }).count()).toBeGreaterThan(0);
     expect(
-      await page.getByText('เข้าตอนเรียนแล้ว').count(),
+      await page.getByText('เข้ากลุ่มเรียนแล้ว').count(),
       'the banner of the enrolment, over a list it is not about',
     ).toBe(0);
   });

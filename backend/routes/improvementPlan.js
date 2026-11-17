@@ -24,7 +24,7 @@
  * has not started a cycle — a row saying they did would be a year in the record
  * with nothing in it, which is the shape an accreditation panel reads as an
  * abandoned one. `ON CONFLICT (subject_id, program_id, academic_year)` is what
- * makes the create-on-demand safe when two ผู้สอน of two ตอนเรียน press save at
+ * makes the create-on-demand safe when two ผู้สอน of two กลุ่มเรียน press save at
  * the same second; the constraint covering exactly those three columns is not
  * decoration, and migration 0002 says so at the table.
  *

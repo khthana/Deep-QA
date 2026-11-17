@@ -99,7 +99,7 @@ test('row 6: the grants table - ยกเลิกบทบาท', async ({ pag
   await isAnIcon(named(grantsTable(page), 'ยกเลิกบทบาท'), 'ยกเลิกบทบาท');
 });
 
-test('row 7: รายวิชาที่เปิดสอน - ตอนเรียนและผู้สอน and ยกเลิกการเปิด', async ({ page }) => {
+test('row 7: รายวิชาที่เปิดสอน - กลุ่มเรียนและผู้สอน and ยกเลิกการเปิด', async ({ page }) => {
   await signIn(page, ACCOUNTS.committee0501);
   await openOfferings(page);
   await isAnIcon(named(page, 'กลุ่มเรียนและผู้สอน'), 'กลุ่มเรียนและผู้สอน');
@@ -128,11 +128,11 @@ test('row 10: เกณฑ์ของ Rubric - แก้ไข and ลบ', asy
   await isAnIcon(named(page, 'ลบ'), 'ลบ');
 });
 
-test('row 11: นักศึกษาในตอนเรียน - นำออก', async ({ page }) => {
+test('row 11: นักศึกษาในกลุ่มเรียน - นำออก', async ({ page }) => {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
   await openEnrolment(page, section);
-  const button = listTable(page).getByRole('button', { name: /^นำ .+ ออกจากตอนเรียน$/ }).first();
+  const button = listTable(page).getByRole('button', { name: /^นำ .+ ออกจากกลุ่มเรียน$/ }).first();
   const word = await button.getAttribute('aria-label');
   await isAnIcon(button, word);
 });

@@ -5,7 +5,7 @@ import TeacherPicker from './TeacherPicker'
 import { termLabel } from './terms'
 
 /**
- * The ตอนเรียน of one Offering — #23's second, third and fourth criteria.
+ * The กลุ่มเรียน of one Offering — #23's second, third and fourth criteria.
  *
  * The second grain of this screen. An Offering is the subject-in-a-term; a
  * Section is a class within it, and the number is a label rather than a count —
@@ -30,7 +30,7 @@ import { termLabel } from './terms'
  * says it cannot measure - the marker below is read from the file, so it has to
  * be read as a sentence about the form it names and not about this file.
  *
- * **เพิ่มตอนเรียน closes its field, and keeps the number in it.** The flag is
+ * **เพิ่มกลุ่มเรียน closes its field, and keeps the number in it.** The flag is
  * this form's own, so a rename opened while the add is out is live. The number
  * is cleared **where the save succeeded** rather than at the press - the shape
  * `TeacherPicker`'s box below is given, and #228's own sentence read on this
@@ -151,7 +151,7 @@ export default function SectionsPanel({
                   // `components/LoginForm.js`'s shape one grain in (#203's ninth
                   // reading, and the reason markers exist rather than
                   // exemptions). The day this form stays open across its own
-                  // save it needs the flag เพิ่มตอนเรียน above has. Read as a
+                  // save it needs the flag เพิ่มกลุ่มเรียน above has. Read as a
                   // sentence about this form: the marker is read from the file
                   // and this file holds two, which is one of the six things
                   // `save-window-fields.js` says it cannot measure (#249)

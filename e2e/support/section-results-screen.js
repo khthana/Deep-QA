@@ -66,7 +66,7 @@ async function untilChartDrawn(page, response) {
  * Opens the screen and hands back the read, whatever it answered.
  *
  * The drawing is waited for only on an answer that succeeded: the refusal rows
- * open somebody else's ตอนเรียน and there is no chart on that screen to wait for.
+ * open somebody else's กลุ่มเรียน and there is no chart on that screen to wait for.
  */
 async function openResults(page, sectionId) {
   return openAt(page, path(sectionId), async (fresh) => {

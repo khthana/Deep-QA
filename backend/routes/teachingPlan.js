@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Ticket #31: the week-by-week teaching plan of one ตอนเรียน.
+ * Ticket #31: the week-by-week teaching plan of one กลุ่มเรียน.
  *
  * *The grain is the Section, and the import says so.* #28–#30 resolve their
  * Section id up to the Offering because ADR-0003 puts outcomes and the

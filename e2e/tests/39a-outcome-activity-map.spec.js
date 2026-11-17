@@ -25,7 +25,7 @@ const {
  *
  * The backend suite owns the answer: which outcomes and which Activities are
  * in it, what a link carries, that a node with nothing attached is still a
- * node, and that another account's ตอนเรียน is refused. Repeating any of that
+ * node, and that another account's กลุ่มเรียน is refused. Repeating any of that
  * here would be asserting one rule in two places, and the second place is the
  * one that goes stale.
  *
@@ -119,7 +119,7 @@ async function unassessedOutcome(number) {
 }
 
 /**
- * A piece of work in this ตอนเรียน that is attributed to no outcome.
+ * A piece of work in this กลุ่มเรียน that is attributed to no outcome.
  *
  * The seed ships one of these — #32 needs an Activity nothing points at, so
  * that something in the whole dataset can be deleted — and row 3 read it for a
@@ -139,7 +139,7 @@ async function unattributedActivity(name) {
   return rows[0].id;
 }
 
-/** A ตอนเรียน of the same Offering with nothing set in it yet. */
+/** A กลุ่มเรียน of the same Offering with nothing set in it yet. */
 async function bareSection(number) {
   const { rows } = await db.query(
     `INSERT INTO course_sections (semester_course_id, section_number)
@@ -353,7 +353,7 @@ test('row 7: the diagram scrolls in its own frame, so a narrow window never move
   expect(measured.pageScrollsSideways).toBe(false);
 });
 
-test('row 8: a ตอนเรียน with no Activities says so instead of drawing half a diagram', async ({
+test('row 8: a กลุ่มเรียน with no Activities says so instead of drawing half a diagram', async ({
   page,
 }) => {
   const bare = await bareSection('91');
@@ -361,12 +361,12 @@ test('row 8: a ตอนเรียน with no Activities says so instead of dr
   const response = await openMap(page, bare);
   expect(response.status()).toBe(200);
 
-  await expect(page.getByText('ยังไม่มีกิจกรรมการเรียนรู้ในตอนเรียนนี้')).toBeVisible();
+  await expect(page.getByText('ยังไม่มีกิจกรรมการเรียนรู้ในกลุ่มเรียนนี้')).toBeVisible();
   await expect(page.locator('svg[role="img"]')).toHaveCount(0);
   await expect(page.locator('table')).toHaveCount(0);
 });
 
-test('row 9: the ตอนเรียน of another account is refused rather than drawn', async ({ page }) => {
+test('row 9: the กลุ่มเรียน of another account is refused rather than drawn', async ({ page }) => {
   await page.context().clearCookies();
   await signIn(page, ACCOUNTS.teacherTwo);
 

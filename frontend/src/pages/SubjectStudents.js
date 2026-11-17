@@ -22,7 +22,7 @@ import {
 /**
  * รายชื่อนักศึกษาของรายวิชา — ticket #25.
  *
- * Who is in this ตอนเรียน. A ผู้สอน builds the list by typing a code or by
+ * Who is in this กลุ่มเรียน. A ผู้สอน builds the list by typing a code or by
  * uploading a file of them, and takes somebody back out when they were added by
  * mistake.
  *
@@ -47,7 +47,7 @@ import {
  * nothing on a server can tell a considered DELETE from a slip. What the server
  * decides is whether the removal is allowed at all, and it refuses two states
  * this screen does not reword — a student who already has marks in this
- * ตอนเรียน, and one who is in one of its กลุ่มงาน. Both sentences name their own
+ * กลุ่มเรียน, and one who is in one of its กลุ่มงาน. Both sentences name their own
  * way out, and a screen guessing between them would guess wrong the day a third
  * is added.
  *
@@ -55,7 +55,7 @@ import {
  *
  * `total` is the whole class and is read from the server rather than from
  * `students.length`, which is one page of ten. It is on the screen because the
- * ตอนเรียน card on the dashboard shows the same number, and two places showing
+ * กลุ่มเรียน card on the dashboard shows the same number, and two places showing
  * one number is how somebody notices when a list has silently lost a row.
  *
  * Since #272 (13 November 2569) the list can be searched, and `total` is then
@@ -180,7 +180,7 @@ export default function SubjectStudents() {
         // held-sentence: the deferral the owner settled on 29 ตุลาคม 2569 (#246) is
         // not here, because no form is drawn in place of this list. The return draws the
         // table under `{data && (` and nothing replaces it: the writes of this screen -
-        // *เพิ่มนักศึกษาเข้าตอนเรียน* and the removal - are a dialog **over** the list, so a read
+        // *เพิ่มนักศึกษาเข้ากลุ่มเรียน* and the removal - are a dialog **over** the list, so a read
         // that lands while one is open has drawn the very thing its sentence is about.
         // Measured 29 ตุลาคม 2569 (#246). The day this screen draws a form in place of
         // the table, this marker is an exemption and nothing will say so (#93, #141):
@@ -346,7 +346,7 @@ export default function SubjectStudents() {
       const said = {
         error: false,
         message: alsoOutside(
-          `เพิ่ม ${student.student_id} ${student.full_name_th} เข้าตอนเรียนแล้ว`,
+          `เพิ่ม ${student.student_id} ${student.full_name_th} เข้ากลุ่มเรียนแล้ว`,
           outsideSearch(q, searched(student)),
         ),
       }
@@ -378,7 +378,7 @@ export default function SubjectStudents() {
       setRemoving(null)
       const said = {
         error: false,
-        message: `นำ ${student.student_id} ${student.full_name_th} ออกจากตอนเรียนแล้ว`,
+        message: `นำ ${student.student_id} ${student.full_name_th} ออกจากกลุ่มเรียนแล้ว`,
       }
       // **The owner's answer, 19 ตุลาคม 2569 (#209): this handler no longer
       // decides anything about the page.** The last student on the last page
@@ -436,7 +436,7 @@ export default function SubjectStudents() {
                   รายชื่อนักศึกษาของรายวิชา
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                  ตอนเรียน {data.section.section_number} · ปีการศึกษา{' '}
+                  กลุ่มเรียน {data.section.section_number} · ปีการศึกษา{' '}
                   {data.section.academic_year} · นักศึกษา{' '}
                   {data.enrolled} คน
                 </p>
@@ -492,7 +492,7 @@ export default function SubjectStudents() {
             className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
           >
             <h2 className="mb-1 text-lg font-medium text-primary">
-              เพิ่มนักศึกษาเข้าตอนเรียน
+              เพิ่มนักศึกษาเข้ากลุ่มเรียน
             </h2>
             <p className="mb-4 text-sm text-slate-500">
               กรอกรหัสนักศึกษา 8 หลัก
@@ -558,7 +558,7 @@ export default function SubjectStudents() {
                       >
                         {q.trim()
                           ? 'ไม่พบนักศึกษาตามคำค้น'
-                          : 'ยังไม่มีนักศึกษาในตอนเรียนนี้'}
+                          : 'ยังไม่มีนักศึกษาในกลุ่มเรียนนี้'}
                       </td>
                     </tr>
                   )}
@@ -581,7 +581,7 @@ export default function SubjectStudents() {
                           <RowActions>
                             <RowAction
                               kind="remove"
-                              label={`นำ ${student.student_id} ออกจากตอนเรียน`}
+                              label={`นำ ${student.student_id} ออกจากกลุ่มเรียน`}
                               onClick={() => setRemoving(student)}
                             />
                           </RowActions>
@@ -607,10 +607,10 @@ export default function SubjectStudents() {
 
       <ConfirmDialog
         open={Boolean(removing)}
-        title="นำนักศึกษาออกจากตอนเรียน"
+        title="นำนักศึกษาออกจากกลุ่มเรียน"
         message={
           removing
-            ? `ต้องการนำ ${removing.student_id} ${removing.full_name_th} ออกจากตอนเรียนนี้หรือไม่ ข้อมูลนักศึกษาในทะเบียนกลางจะยังคงอยู่`
+            ? `ต้องการนำ ${removing.student_id} ${removing.full_name_th} ออกจากกลุ่มเรียนนี้หรือไม่ ข้อมูลนักศึกษาในทะเบียนกลางจะยังคงอยู่`
             : ''
         }
         confirmLabel="นำออก"

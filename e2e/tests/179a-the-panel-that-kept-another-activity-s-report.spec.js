@@ -125,7 +125,7 @@ test.beforeEach(async ({ page }) => {
   if (section === undefined) [section] = await mySectionIds(page);
 });
 
-/** One กิจกรรม of this ตอนเรียน, by the name the seed gave it. */
+/** One กิจกรรม of this กลุ่มเรียน, by the name the seed gave it. */
 async function activityNamed(name) {
   const { rows } = await db.query(
     'SELECT id FROM activities WHERE section_id = $1 AND activity_name = $2',
@@ -135,7 +135,7 @@ async function activityNamed(name) {
   return rows[0];
 }
 
-/** Everybody enrolled in this ตอนเรียน, in the order a file has to list them. */
+/** Everybody enrolled in this กลุ่มเรียน, in the order a file has to list them. */
 async function roll() {
   const { rows } = await db.query(
     `SELECT sc.student_id, s.full_name_th FROM student_course sc
@@ -147,7 +147,7 @@ async function roll() {
 }
 
 /**
- * A file this ตอนเรียน agrees with, with one mark over the full mark on its
+ * A file this กลุ่มเรียน agrees with, with one mark over the full mark on its
  * second row — so it passes every whole-file check, is refused per row, and
  * writes nothing. `34a` row 9's file, and its line 3.
  */

@@ -118,7 +118,7 @@ test.describe('รายชื่อนักศึกษาของราย�
 
     await expect(next(page), 'the premise: it is pressable with nothing out').toBeEnabled();
     const write = await gate(page, REMOVAL, isWrite, { success: DONE });
-    await button(page, `นำ ${code} ออกจากตอนเรียน`).click();
+    await button(page, `นำ ${code} ออกจากกลุ่มเรียน`).click();
     await button(page, 'นำออก').click();
     await write.sent;
 

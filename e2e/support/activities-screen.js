@@ -9,10 +9,10 @@ const { openAt } = require('./navigation');
 /**
  * กิจกรรมการเรียนรู้ — #32, as a browser reaches it.
  *
- * The screen hangs one level under a ตอนเรียน's address and shows two grains
+ * The screen hangs one level under a กลุ่มเรียน's address and shows two grains
  * at once: the Activities are this Section's, the หมวดคะแนน they are grouped
  * under are the Offering's. The seed makes the first readable off the rows
- * themselves — the deletable fixture's name carries its ตอนเรียน and year —
+ * themselves — the deletable fixture's name carries its กลุ่มเรียน and year —
  * and the second is read by comparing two Sections' group headings.
  *
  * Cards are labelled `กิจกรรม <name>`, groups `หมวด <category>`: an Activity

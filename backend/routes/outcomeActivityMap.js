@@ -60,7 +60,7 @@ const { offeringOf } = require('./clos');
 const { sectionOf, notThisSection } = require('./enrolment');
 const { cloOrder } = require('../lib/cloOrder');
 
-/** A ผู้สอน's own ตอนเรียน, as in `enrolment.js`, `activities.js` and `learningDetails.js`. */
+/** A ผู้สอน's own กลุ่มเรียน, as in `enrolment.js`, `activities.js` and `learningDetails.js`. */
 const TEACHING = ['TEACHER'];
 
 /** The marks attached to one node, to the hundredth its parts were rounded to. */
@@ -97,7 +97,7 @@ function outcomeActivityMapRoutes(pool) {
   }
 
   /**
-   * Every Activity of the ตอนเรียน, in the order #32's list draws them.
+   * Every Activity of the กลุ่มเรียน, in the order #32's list draws them.
    *
    * By หมวดคะแนน first, because that is the order the ผู้สอน built them in and
    * the order they are looked for in. The category is LEFT-joined: #32's screen
@@ -186,7 +186,7 @@ function outcomeActivityMapRoutes(pool) {
     async (req, res, next) => {
       try {
         // Two readings of one permission, as in `learningDetails.js`: the
-        // ตอนเรียน is what the heading says and what the Activities belong to,
+        // กลุ่มเรียน is what the heading says and what the Activities belong to,
         // the Offering is what the outcomes belong to. Either coming back empty
         // is the same refusal.
         const [section, offering] = await Promise.all([
@@ -234,7 +234,7 @@ function outcomeActivityMapRoutes(pool) {
           // The lists' own lengths rather than three `count(*)`s, so the cards
           // cannot say one thing while the diagram beneath them draws another.
           counts: { clos: clos.length, activities: activities.length, links: links.length },
-          // A ตอนเรียน with no Activities, which is every ตอนเรียน in the week
+          // A กลุ่มเรียน with no Activities, which is every กลุ่มเรียน in the week
           // before term. Not *no links*: an Activity attributed to nothing is
           // work that exists and is worth seeing unattached.
           empty: activities.length === 0,

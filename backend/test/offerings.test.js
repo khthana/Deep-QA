@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Ticket #23: opening a รายวิชา for a term, and splitting it into ตอนเรียน.
+ * Ticket #23: opening a รายวิชา for a term, and splitting it into กลุ่มเรียน.
  *
  * The same one seam as every other suite here: the HTTP surface in-process
  * against a real PostgreSQL, signing in for real.

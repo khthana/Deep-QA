@@ -76,7 +76,7 @@ const { DASHBOARD } = require('../support/teaching-screen');
  *
  * | จอ | เงื่อนไขของ route | ที่วัดได้ 5 พ.ย. 2569 |
  * |---|---|---|
- * | `26` | ทุกบรรทัดต้องเป็นนักศึกษาที่ลงทะเบียนในตอนเรียนนั้น และ**ยังไม่อยู่ในกลุ่มใด** | ลงทะเบียน 57 คน · 6 กลุ่ม · **ยังไม่มีกลุ่ม 11 คน** ไฟล์บรรทัดเดียว → `201` |
+ * | `26` | ทุกบรรทัดต้องเป็นนักศึกษาที่ลงทะเบียนในกลุ่มเรียนนั้น และ**ยังไม่อยู่ในกลุ่มใด** | ลงทะเบียน 57 คน · 6 กลุ่ม · **ยังไม่มีกลุ่ม 11 คน** ไฟล์บรรทัดเดียว → `201` |
  * | `30` | ไฟล์**แทนที่ทั้งชุด** รวมต้องได้ 100 · ห้ามหมวดซ้ำ · ห้ามตัดหมวดที่กิจกรรมชี้อยู่ | 3 หมวด รวม 100 (โครงงาน 40 · สอบกลางภาค 30 · สอบปลายภาค 30) ไฟล์ที่กล่าวทั้งสามหมวดด้วยน้ำหนักเดิม → `201` |
  *
  * The weights file is **the scheme restated**: every category it already holds,
@@ -202,7 +202,7 @@ test.beforeAll(async () => {
 test.afterAll(() => release());
 
 for (const screen of SCREENS) {
-  test(`${screen.name} (${screen.page}.js): the list ${screen.what} reloads does not land on the ตอนเรียน the jump went to`, async ({
+  test(`${screen.name} (${screen.page}.js): the list ${screen.what} reloads does not land on the กลุ่มเรียน the jump went to`, async ({
     page,
   }) => {
     await signIn(page, ACCOUNTS.teacherOne);

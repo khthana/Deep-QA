@@ -33,7 +33,7 @@ const {
  * guards at the routes. What is here is what is only true in front of the
  * screen: that the menu entry lands on this Section's list, that the work is
  * drawn under the category it counts towards and an empty category is still
- * drawn, that two ตอนเรียน show two lists under one scheme, that the one
+ * drawn, that two กลุ่มเรียน show two lists under one scheme, that the one
  * deletable Activity can be deleted and takes only itself, that cancelling
  * removes nothing, and that both refusals — marks and evidence — reach the
  * page in the server's own words.
@@ -49,7 +49,7 @@ const {
  * ## Which Activity the rows touch
  *
  * Only the seed's one deletable fixture is ever deleted — the row nothing
- * points at, whose name carries its ตอนเรียน and year. Every other Activity
+ * points at, whose name carries its กลุ่มเรียน and year. Every other Activity
  * carries a cohort's marks, and deleting one is what the guard exists to
  * refuse.
  */
@@ -66,14 +66,14 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => release());
 
-/** teacher.one@ teaching ตอนเรียน 1 of the current term. */
+/** teacher.one@ teaching กลุ่มเรียน 1 of the current term. */
 async function asTeacherOne(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
   return section;
 }
 
-/** multi.role@ with the teaching hat on, and their ตอนเรียน of the same Offering. */
+/** multi.role@ with the teaching hat on, and their กลุ่มเรียน of the same Offering. */
 async function asMultiRole(page) {
   await signIn(page, ACCOUNTS.multiRole);
   expect((await switchTo(page, 'อาจารย์ผู้สอน')).status()).toBe(200);
@@ -176,7 +176,7 @@ test('row 4: two sections of one offering show two lists under one scheme', asyn
 }) => {
   // The eighth criterion on two screens belonging to two people: the group
   // headings match word for word (the scheme is the Offering's), and the
-  // deletable fixture names a different ตอนเรียน on each (the work is not).
+  // deletable fixture names a different กลุ่มเรียน on each (the work is not).
   const mine = await asTeacherOne(page);
   const here = await (await openActivities(page, mine)).json();
   const myGroups = await groupsOnScreen(page);

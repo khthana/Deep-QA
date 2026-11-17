@@ -90,7 +90,7 @@ const CLO_CRITERIA = 'เกณฑ์การบรรลุผล';
 const OTHER_YEAR = 3;
 
 /** What the trail says for it, read from the row that proved it. */
-const LAST_YEAR_LABEL = 'ตอนเรียน 1 · ปีการศึกษา 2568';
+const LAST_YEAR_LABEL = 'กลุ่มเรียน 1 · ปีการศึกษา 2568';
 
 /**
  * An id no seed row carries, for the three refusal rows -- #185 row 4, #191

@@ -109,12 +109,12 @@ MUTANTS = {
                   "                  least(count(*), 10)::int AS enrolled\n"),
     # The teaching register leaves the WHERE clause, so any Section resolves for
     # anybody signed in. Kills the first row 9 at the 404 - the class list of a
-    # colleague's ตอนเรียน opens, and ADR-0002 is gone with it.
+    # colleague's กลุ่มเรียน opens, and ADR-0002 is gone with it.
     #
     # `$2::text` and not a bare `$2`, which was the first draft: postgres cannot
     # infer a type for a parameter whose only use is `IS NOT NULL`, so every
     # call to `sectionOf` answered 500 and all twelve rows died - including the
-    # eleven that have nothing to do with whose ตอนเรียน it is. `::text` and not
+    # eleven that have nothing to do with whose กลุ่มเรียน it is. `::text` and not
     # `::int`, which was the second: a user id here is `teach01`, and the cast
     # that looked right for a key is the one the third tier of ADR-0001 is about.
     #
@@ -132,19 +132,19 @@ MUTANTS = {
                    "      ${THIS_ACCOUNTS_SECTION}`,",
                    "      WHERE cs.section_id = $1 AND $2::text IS NOT NULL`,"),
     # Authorisation intact, grain widened: the list is drawn from the Offering
-    # the way `clos.js` resolves one, so both ตอนเรียน of this รายวิชา show all
+    # the way `clos.js` resolves one, so both กลุ่มเรียน of this รายวิชา show all
     # 113. Kills the second row 9 at the disjointness of the two class lists,
     # and nothing else.
     #
     # It was written expecting row 1 to die at `total < 113` as well, and it does
     # not: the count is its own query and its WHERE has no alias, so this widens
-    # the *rows* while leaving the *number* the ตอนเรียน's. The screen reads 57
+    # the *rows* while leaving the *number* the กลุ่มเรียน's. The screen reads 57
     # over a list of 113 - which is why `total < 113` is not evidence about the
     # grain, and `pagecount` is the mutant that row rests on.
     #
     # Re-aimed 13 November 2569 (#272): the rows' WHERE is the `where` the
     # search built, and the count's is its own again, so widening `where`
-    # still widens the rows and leaves the number the ตอนเรียน's.
+    # still widens the rows and leaves the number the กลุ่มเรียน's.
     "offeringgrain": ("route",
                       "        const where = `WHERE sc.section_id = $1 AND ${held}`;\n",
                       "        const where = `WHERE sc.section_id IN (SELECT section_id FROM course_sections\n"

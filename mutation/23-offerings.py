@@ -180,7 +180,7 @@ MUTANTS = {
                  "    for (const userId of userIds) {"),
     # The section create made idempotent: a number already used under this
     # Offering updates the row it collides with and answers 201. Every count on
-    # the screen stays right - there is still one ตอนเรียน 1 - so a test that
+    # the screen stays right - there is still one กลุ่มเรียน 1 - so a test that
     # only counts the cards is happy. What is lost is the refusal itself, and
     # with it the person's chance to learn that the number is taken.
     "dupupsert": ("routes",
@@ -202,7 +202,7 @@ MUTANTS = {
     for (const userId of userIds) {""",
                  """    await executor.query(`DELETE FROM course_sections_teacher WHERE section_id = $1`, [sectionId]);
     for (const userId of []) {"""),
-    # The copy reproduces the Offerings and not the ตอนเรียน under them. The
+    # The copy reproduces the Offerings and not the กลุ่มเรียน under them. The
     # report still says how many subjects were opened, and the term looks
     # copied from the list - it is one screen further in that the term turns
     # out to have nothing anybody can be enrolled in.
@@ -248,7 +248,7 @@ MUTANTS = {
     # The create leaves the person on the list instead of opening the new
     # Offering's sections. The Offering is made either way and the banner still
     # says so, so nothing at the HTTP surface notices; what is lost is the
-    # first criterion's second half, that an Offering with no ตอนเรียน is not
+    # first criterion's second half, that an Offering with no กลุ่มเรียน is not
     # yet anything a teacher can reach and the next step is always to add one.
     # Measured on 17 September 2569 (#139): with no read of the Offering at all,
     # row 1 dies at `openSubject`'s wait for that read, not at its assertion.

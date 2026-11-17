@@ -26,7 +26,7 @@ import {
 /**
  * การเปิดรายวิชาในภาคการศึกษา — ticket #23.
  *
- * Which of a หลักสูตร's subjects run in a given term, split into ตอนเรียน, each
+ * Which of a หลักสูตร's subjects run in a given term, split into กลุ่มเรียน, each
  * given to ผู้สอน. This is the only screen the กรรมการหลักสูตร holds alone —
  * every other role, Faculty Admin included, is refused at the server, and the
  * sidebar offers the entry to that role only. Nothing in this file checks a
@@ -109,14 +109,14 @@ const HANDED_ON = 'handed-on'
  * ## What was measured
  *
  * Nothing beside the panel is disabled while a section write is out:
- * กลับไปหน้ารายการ and then ตอนเรียนและผู้สอน of another Offering can both be
+ * กลับไปหน้ารายการ and then กลุ่มเรียนและผู้สอน of another Offering can both be
  * pressed first, and the answer then arrives over somebody else's panel. The
  * banner is deliberately not guarded against that - the sentence is about a
  * write the person made and not about the panel they are now looking at, which
  * is the decision of 1 October 2026 that `asked` is documented with - so #143
  * asked whether such a sentence is readable at all. Measured at the browser
  * seam on 21 ตุลาคม 2569, all three of its ways in do it: an accepted
- * เพิ่มตอนเรียน, a refused one, and ลบตอนเรียน, each on the list and over
+ * เพิ่มกลุ่มเรียน, a refused one, and ลบกลุ่มเรียน, each on the list and over
  * another Offering's panel. `143a-a-sentence-that-names-its-offering.spec.js`
  * carries the measurement and the rows.
  *
@@ -384,7 +384,7 @@ export default function Offerings() {
    * ref can be true of the panel, on that path and on `confirmRemoval`'s
    * cancellation path, which clears `viewing` before it hands anything over. So
    * the main path still takes the person into the panel with its sentence
-   * standing, on purpose - the sentence says *ขั้นต่อไปคือเพิ่มตอนเรียน* and the
+   * standing, on purpose - the sentence says *ขั้นต่อไปคือเพิ่มกลุ่มเรียน* and the
    * panel is that next step - and what the unreachable window would have
    * produced is the same picture with a sentence about the **list** on it. The
    * owner was given that difference before either answer: the two are two kinds
@@ -497,7 +497,7 @@ export default function Offerings() {
    * Which press the panel was last asked for - #139.
    *
    * `refresh` below opens the panel and reads it back after every section write,
-   * and nothing beside it is disabled while its read is out: ตอนเรียนและผู้สอน
+   * and nothing beside it is disabled while its read is out: กลุ่มเรียนและผู้สอน
    * again, on this row or another, เปิดรายวิชา, ยกเลิกการเปิด and
    * กลับไปหน้ารายการ can each be pressed first. Drawn unasked, a late answer
    * opened the panel of an Offering the person had moved away from - over the

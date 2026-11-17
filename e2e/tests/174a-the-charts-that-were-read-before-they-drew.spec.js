@@ -36,7 +36,7 @@ const clos = require('../support/clos-screen');
 /** The outcome every cohort in the seed has been measured against. */
 const OUTCOME = 'PLO-2';
 
-/** teacher.one@ and the ตอนเรียน their dashboard opens on. */
+/** teacher.one@ and the กลุ่มเรียน their dashboard opens on. */
 async function teacherSection(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);

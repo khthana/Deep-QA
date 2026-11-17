@@ -234,7 +234,7 @@ export default function MainPage() {
    * typed or followed it, and a Section that is somebody else's is answered 404
    * (`api/teaching.js` says why it is the same sentence as one that does not
    * exist). The screen below words that refusal; a trail that invented
-   * *ตอนเรียน 2* from the id would be the ticket's own rejected fallback, a
+   * *กลุ่มเรียน 2* from the id would be the ticket's own rejected fallback, a
    * sentence about a class that does not exist. An expired session is announced
    * by `api/client.js` wherever the person has got to, and is not this catch's
    * business either.
@@ -247,8 +247,8 @@ export default function MainPage() {
    * adding one and not by removing this. The line stays because it says at the
    * site what a refusal must not do, and because it is that mutant's anchor.
    *
-   * What the label says is the ticket's own sentence — *ตอนเรียน 1 · ปีการศึกษา 2569* — and
-   * not the fallback it offered beside it. *ตอนเรียน {id}*, "without waiting for
+   * What the label says is the ticket's own sentence — *กลุ่มเรียน 1 · ปีการศึกษา 2569* — and
+   * not the fallback it offered beside it. *กลุ่มเรียน {id}*, "without waiting for
    * data from the server", is a sentence about a class that does not exist as
    * soon as the id and the number disagree; and the year is the half that tells
    * two Sections of the same number apart, which `section_id` 1 and 3 are.
@@ -270,7 +270,7 @@ export default function MainPage() {
         if (isCurrent()) {
           setSectionLabel({
             id: sectionIdInPath,
-            text: `ตอนเรียน ${data.section.section_number} · ปีการศึกษา ${data.section.academic_year}`,
+            text: `กลุ่มเรียน ${data.section.section_number} · ปีการศึกษา ${data.section.academic_year}`,
           })
         }
       } catch (refusal) {

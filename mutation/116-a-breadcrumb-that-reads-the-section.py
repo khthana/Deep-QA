@@ -98,7 +98,7 @@ MUTANTS = {
     "idwins": ("shell",
         "        label = sectionLabel.text\n",
         "        label = decodedPath\n"),
-    # ป้ายขึ้นเฉพาะจอที่ลึกกว่าหน้าดัชนีของตอนเรียน
+    # ป้ายขึ้นเฉพาะจอที่ลึกกว่าหน้าดัชนีของกลุ่มเรียน
     "skipstheindex": ("shell",
         "      if (sectionCrumb && index === sectionCrumb.index && sectionLabel?.id === sectionCrumb.id) {\n",
         "      if (sectionCrumb && index === sectionCrumb.index && sectionLabel?.id === sectionCrumb.id && pathnames.length > 3) {\n"),
@@ -108,16 +108,16 @@ MUTANTS = {
         "      if (sectionCrumb && index === sectionCrumb.index && sectionLabel?.id === sectionCrumb.id && pathnames.length === 3) {\n"),
     # ป้ายมีแต่หมายเลข ซึ่งคือ "อย่างน้อยที่สุด" ของตั๋วในส่วนที่เซิร์ฟเวอร์ตอบมาแล้ว
     "yeardropped": ("shell",
-        "            text: `ตอนเรียน ${data.section.section_number} · ปีการศึกษา ${data.section.academic_year}`,\n",
-        "            text: `ตอนเรียน ${data.section.section_number}`,\n"),
+        "            text: `กลุ่มเรียน ${data.section.section_number} · ปีการศึกษา ${data.section.academic_year}`,\n",
+        "            text: `กลุ่มเรียน ${data.section.section_number}`,\n"),
     # ปีมาจากนาฬิกา ไม่ใช่จากคำตอบ (พ.ศ. ของปีนี้) — ถูกที่ id 1 และผิดที่ id 3
     "yearistoday": ("shell",
-        "            text: `ตอนเรียน ${data.section.section_number} · ปีการศึกษา ${data.section.academic_year}`,\n",
-        "            text: `ตอนเรียน ${data.section.section_number} · ปีการศึกษา ${new Date().getFullYear() + 543}`,\n"),
+        "            text: `กลุ่มเรียน ${data.section.section_number} · ปีการศึกษา ${data.section.academic_year}`,\n",
+        "            text: `กลุ่มเรียน ${data.section.section_number} · ปีการศึกษา ${new Date().getFullYear() + 543}`,\n"),
     # การปฏิเสธแต่งป้ายขึ้นจาก id ซึ่งคือข้อเสนอที่ตั๋วเสนอและถูกปฏิเสธ
     "refusalinvents": ("shell",
         "        if (isCurrent()) setSectionLabel(null)\n",
-        "        if (isCurrent()) setSectionLabel({ id: sectionIdInPath, text: `ตอนเรียน ${sectionIdInPath}` })\n"),
+        "        if (isCurrent()) setSectionLabel({ id: sectionIdInPath, text: `กลุ่มเรียน ${sectionIdInPath}` })\n"),
 }
 
 main(FILES, MUTANTS)

@@ -78,13 +78,13 @@ const SUBJECT = '01076105';
  * broke was the teardown. Teardown that shares a defect with the subject
  * cannot be evidence about the subject.
  *
- * Scoped to teacher.one's own ตอนเรียน rather than deleting the codes outright:
- * `65010001` is seeded into last year's ตอนเรียน, which is what makes it a code the
+ * Scoped to teacher.one's own กลุ่มเรียน rather than deleting the codes outright:
+ * `65010001` is seeded into last year's กลุ่มเรียน, which is what makes it a code the
  * register holds and this class does not, and a blanket delete would quietly
  * take that fact away from every run after the first.
  *
  * And scoped to this term, which the account alone is not: teacher.one also
- * teaches that last-year ตอนเรียน, so the first version removed exactly the
+ * teaches that last-year กลุ่มเรียน, so the first version removed exactly the
  * seeded enrolments the sentence above protects - three rows, after the
  * first test of the file, found by #134's census rather than by any row here.
  */
@@ -109,14 +109,14 @@ test.afterAll(async () => {
   await cleanUp.end();
 });
 
-/** teacher.one@ and their ตอนเรียน of the current term, where every row starts. */
+/** teacher.one@ and their กลุ่มเรียน of the current term, where every row starts. */
 async function asTeacherOne(page) {
   await signIn(page, ACCOUNTS.teacherOne);
   const [section] = await mySectionIds(page);
   return section;
 }
 
-/** multi.role@ with the teaching hat on, and their ตอนเรียน of the same Offering. */
+/** multi.role@ with the teaching hat on, and their กลุ่มเรียน of the same Offering. */
 async function asMultiRole(page) {
   await signIn(page, ACCOUNTS.multiRole);
   expect((await switchTo(page, 'อาจารย์ผู้สอน')).status()).toBe(200);
@@ -124,7 +124,7 @@ async function asMultiRole(page) {
   return section;
 }
 
-test('row 1: the class list opens under a ตอนเรียน and pages ten at a time', async ({ page }) => {
+test('row 1: the class list opens under a กลุ่มเรียน and pages ten at a time', async ({ page }) => {
   const section = await asTeacherOne(page);
   const answer = await openEnrolment(page, section);
   expect(answer.status()).toBe(200);
@@ -150,7 +150,7 @@ test('row 1: the total the pager reads out is the whole class, not the page', as
   await openEnrolment(page, section);
 
   const { total } = await reading(page, listTable(page));
-  // The seed alternates 113 students across two ตอนเรียน, so neither is ten
+  // The seed alternates 113 students across two กลุ่มเรียน, so neither is ten
   // and neither is 113. A screen counting its own rows would say 10.
   expect(total).toBeGreaterThan(10);
   expect(total).toBeLessThan(113);
@@ -165,7 +165,7 @@ test('row 2: a Teacher enrols a student by code and they appear in the list', as
   const { total: before } = await reading(page, listTable(page));
   expect((await enrol(page, code)).status()).toBe(201);
 
-  await expect(page.getByText(new RegExp(`เพิ่ม ${code} .* เข้าตอนเรียนแล้ว`))).toBeVisible();
+  await expect(page.getByText(new RegExp(`เพิ่ม ${code} .* เข้ากลุ่มเรียนแล้ว`))).toBeVisible();
   const { total: after } = await reading(page, listTable(page));
   expect(after).toBe(before + 1);
 
@@ -351,13 +351,13 @@ test('row 8: a spreadsheet with an unknown code reports that row and applies not
   expect(await keysOn(listTable(page))).not.toContain(SPARE_CODES[0]);
 });
 
-test('row 9: a ตอนเรียน this account does not teach is refused, at the server', async ({
+test('row 9: a กลุ่มเรียน this account does not teach is refused, at the server', async ({
   browser,
 }) => {
   // Two contexts, because a cookie belongs to a browser profile rather than to
   // a tab — 24a row 6, and #94 is where that cost a hand-walk. The address is
   // learned as multi.role@ and then typed in as teacher.one@, which is the only
-  // way this can be tried: somebody else's ตอนเรียน is on nobody's dashboard.
+  // way this can be tried: somebody else's กลุ่มเรียน is on nobody's dashboard.
   const theirContext = await browser.newContext();
   const theirPage = await theirContext.newPage();
   const theirs = await asMultiRole(theirPage);
@@ -377,11 +377,11 @@ test('row 9: a ตอนเรียน this account does not teach is refused, 
   await myContext.close();
 });
 
-test('row 9: the subject the two ตอนเรียน share does not make them one class list', async ({
+test('row 9: the subject the two กลุ่มเรียน share does not make them one class list', async ({
   browser,
 }) => {
   // The Section is the grain, and this is where that is visible rather than
-  // argued: #27's CLOs are one set across both ตอนเรียน of this Offering, and
+  // argued: #27's CLOs are one set across both กลุ่มเรียน of this Offering, and
   // the class lists are two. A route that resolved the Offering the way
   // `clos.js` does would put all 113 on both screens.
   const mine = await browser.newContext();
@@ -413,7 +413,7 @@ test('#106: the หลักสูตร column reads each student’s programme
   // holds for that row's student.
   //
   // Every seeded student is in 0501, whose name is also department 05's, so
-  // one student of 0503 is written into the register and the ตอนเรียน here;
+  // one student of 0503 is written into the register and the กลุ่มเรียน here;
   // without them a column that drew one programme's name for everyone would
   // read right on every row. The code sorts ahead of both cohorts, so it is on
   // the first page. Both rows are written straight into the store rather than

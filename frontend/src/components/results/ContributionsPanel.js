@@ -48,7 +48,7 @@ export default function ContributionsPanel({ drill, heading, nothing, onOpenEvid
                   <li key={activity.id} className="rounded-lg border border-gray-100 bg-gray-50 p-3">
                     <p className="text-sm text-slate-700">{activity.activity_name}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      ตอนเรียน {activity.section_id} · คะแนนเต็ม {activity.score_number} ·{' '}
+                      กลุ่มเรียน {activity.section_id} · คะแนนเต็ม {activity.score_number} ·{' '}
                       {activity.clos.map(clo => clo.clo_number).join(' · ')}
                     </p>
                     {activity.evidence.length > 0 ? (

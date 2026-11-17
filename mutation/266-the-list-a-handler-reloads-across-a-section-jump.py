@@ -330,39 +330,39 @@ GROUPS_AFTER_ALWAYS = (
 )
 
 MUTANTS = {
-    # เขียนอะไรก็ได้บนจอกลุ่มงาน แล้วกระโดดออกไปตอนเรียนอื่น: คำตอบของตอนเรียนเดิมวาดทับ
+    # เขียนอะไรก็ได้บนจอกลุ่มงาน แล้วกระโดดออกไปกลุ่มเรียนอื่น: คำตอบของกลุ่มเรียนเดิมวาดทับ
     "groupswritehandlerstale": ("groups", GROUPS_AFTER, GROUPS_AFTER_ALWAYS),
-    # บันทึกผลการเรียนรู้รายวิชา แล้วกระโดดออกไปตอนเรียนอื่น
+    # บันทึกผลการเรียนรู้รายวิชา แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "clossavehandlerstale": ("clos",
         AFTER_FORM_CLOSED + PAIR,
         AFTER_FORM_CLOSED + PAIR_ALWAYS),
-    # ลบผลการเรียนรู้รายวิชา แล้วกระโดดออกไปตอนเรียนอื่น
+    # ลบผลการเรียนรู้รายวิชา แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "closremovehandlerstale": ("clos",
         AFTER_DIALOG_CLOSED + PAIR,
         AFTER_DIALOG_CLOSED + PAIR_ALWAYS),
-    # บันทึกสัดส่วนคะแนน แล้วกระโดดออกไปตอนเรียนอื่น
+    # บันทึกสัดส่วนคะแนน แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "weightssavehandlerstale": ("weights", PAIR, PAIR_ALWAYS),
-    # บันทึกแผนการสอน แล้วกระโดดออกไปตอนเรียนอื่น
+    # บันทึกแผนการสอน แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "plansavehandlerstale": ("plan",
         AFTER_FORM_CLOSED + PAIR,
         AFTER_FORM_CLOSED + PAIR_ALWAYS),
-    # ลบหัวข้อออกจากแผนการสอน แล้วกระโดดออกไปตอนเรียนอื่น
+    # ลบหัวข้อออกจากแผนการสอน แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "planremovehandlerstale": ("plan",
         AFTER_DIALOG_CLOSED + PAIR,
         AFTER_DIALOG_CLOSED + PAIR_ALWAYS),
-    # บันทึกกิจกรรมการเรียนรู้ แล้วกระโดดออกไปตอนเรียนอื่น
+    # บันทึกกิจกรรมการเรียนรู้ แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "activitiessavehandlerstale": ("activities",
         AFTER_FORM_CLOSED + PAIR,
         AFTER_FORM_CLOSED + PAIR_ALWAYS),
-    # ลบกิจกรรมการเรียนรู้ แล้วกระโดดออกไปตอนเรียนอื่น
+    # ลบกิจกรรมการเรียนรู้ แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "activitiesremovehandlerstale": ("activities",
         AFTER_DIALOG_CLOSED + PAIR,
         AFTER_DIALOG_CLOSED + PAIR_ALWAYS),
-    # บันทึกบันทึกของแผนการปรับปรุง แล้วกระโดดออกไปตอนเรียนอื่น
+    # บันทึกบันทึกของแผนการปรับปรุง แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "improvementsavehandlerstale": ("improvement",
         AFTER_FORM_CLOSED + PAIR,
         AFTER_FORM_CLOSED + PAIR_ALWAYS),
-    # ลบบันทึกของแผนการปรับปรุง แล้วกระโดดออกไปตอนเรียนอื่น
+    # ลบบันทึกของแผนการปรับปรุง แล้วกระโดดออกไปกลุ่มเรียนอื่น
     "improvementremovehandlerstale": ("improvement",
         AFTER_DIALOG_CLOSED + PAIR,
         AFTER_DIALOG_CLOSED + PAIR_ALWAYS),

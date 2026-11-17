@@ -156,7 +156,7 @@ export function exportAssessmentToPdf({ section, subject, rule, clos }) {
   doc.setFont(FAMILY, 'normal')
   doc.setFontSize(BODY)
   doc.text(
-    `ตอนเรียน ${section.section_number} · ภาคการศึกษา ${section.semester} · ปีการศึกษา ${section.academic_year}`,
+    `กลุ่มเรียน ${section.section_number} · ภาคการศึกษา ${section.semester} · ปีการศึกษา ${section.academic_year}`,
     width / 2,
     31,
     { align: 'center' }

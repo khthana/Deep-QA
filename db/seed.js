@@ -640,7 +640,7 @@ const SCORE_RATIOS = [
  * rows have to work with. `db/test/seed.test.js` exempts it by name from the
  * two invariants it is deliberately outside of, and pins what it is instead.
  *
- * The name bakes the ตอนเรียน and the year for the plan's reason: Activities
+ * The name bakes the กลุ่มเรียน and the year for the plan's reason: Activities
  * are Section-bound, and a walk should be able to read that off the screen
  * rather than trust the address.
  */
@@ -680,7 +680,7 @@ const unmarkedActivityDates = (year) => {
 };
 
 const unmarkedActivityName = (sectionNumber, year) =>
-  `แบบฝึกหัดท้ายบท (ตอนเรียนที่ ${sectionNumber} ปีการศึกษา ${year})`;
+  `แบบฝึกหัดท้ายบท (กลุ่มเรียนที่ ${sectionNumber} ปีการศึกษา ${year})`;
 
 const ACTIVITIES = [
   {
@@ -758,7 +758,7 @@ const PLAN_REFERENCED_ACTIVITY = 'สอบกลางภาค';
 function composePlanWeek(spec, sectionNumber, year) {
   return {
     week_no: spec.week_no,
-    title: `${spec.title} (ตอนเรียนที่ ${sectionNumber} ปีการศึกษา ${year})`,
+    title: `${spec.title} (กลุ่มเรียนที่ ${sectionNumber} ปีการศึกษา ${year})`,
     description: spec.description,
     remark: spec.remark,
   };
@@ -1388,7 +1388,7 @@ async function seedAssessment(client, { section, students, cloIds, ratioIds, yea
         ratioIds.get(spec.category),
         spec.type,
         spec.name,
-        `${spec.name} ของตอนเรียนที่ ${section.number} ปีการศึกษา ${year}`,
+        `${spec.name} ของกลุ่มเรียนที่ ${section.number} ปีการศึกษา ${year}`,
         spec.score,
       ],
     });

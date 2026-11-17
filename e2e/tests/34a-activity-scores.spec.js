@@ -101,7 +101,7 @@ test.afterAll(async () => {
   await db.end();
 });
 
-/** One Activity of this ตอนเรียน, by the name the seed gave it. */
+/** One Activity of this กลุ่มเรียน, by the name the seed gave it. */
 async function activityNamed(name) {
   const { rows } = await db.query(
     'SELECT id, score_number FROM activities WHERE section_id = $1 AND activity_name = $2',
@@ -136,7 +136,7 @@ async function totalOf(activityId, studentId) {
 const importPath = (activityId) =>
   `/api/teaching/sections/${section}/activities/${activityId}/scores/import`;
 
-/** Two groups of this ตอนเรียน that have members, and who is in each. */
+/** Two groups of this กลุ่มเรียน that have members, and who is in each. */
 async function twoGroups() {
   const { rows } = await db.query(
     `SELECT g.group_id, g.group_name,
@@ -356,7 +356,7 @@ test('row 7: saving the same student twice corrects the mark rather than adding 
   expect(await totalOf(midterm.id, student.student_id)).toBe(12.5);
 });
 
-test('row 8: a file that agrees with the ตอนเรียน records every mark, and one that does not is refused whole', async ({
+test('row 8: a file that agrees with the กลุ่มเรียน records every mark, and one that does not is refused whole', async ({
   page,
 }) => {
   const midterm = await activityNamed(MIDTERM);
@@ -393,7 +393,7 @@ test('row 8: a file that agrees with the ตอนเรียน records every 
   // so a mutant that lets a rejected file through dies at whichever of these
   // comes first — and only one of them is the claim that nothing was written.
   expect(await totalOf(midterm.id, students[0].student_id)).toBe(72);
-  await expect(page.getByText(/จำนวนนักศึกษาในไฟล์ไม่ตรงกับตอนเรียนนี้/)).toBeVisible();
+  await expect(page.getByText(/จำนวนนักศึกษาในไฟล์ไม่ตรงกับกลุ่มเรียนนี้/)).toBeVisible();
 });
 
 test('row 9: a file with a mark over the full mark reports the line it is on', async ({ page }) => {
@@ -422,7 +422,7 @@ test('row 9: a file with a mark over the full mark reports the line it is on', a
   expect(await totalOf(midterm.id, students[0].student_id)).toBe(before);
 });
 
-test('row 10: the ตอนเรียน of another account is refused rather than drawn', async ({ page }) => {
+test('row 10: the กลุ่มเรียน of another account is refused rather than drawn', async ({ page }) => {
   await page.context().clearCookies();
   await signIn(page, ACCOUNTS.teacherTwo);
 

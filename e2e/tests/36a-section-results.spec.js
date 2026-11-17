@@ -37,7 +37,7 @@ const { addYear, openResults, path, yearBox } = require('../support/section-resu
  * - an outcome nobody was measured on leaves a **gap** in the line rather than
  *   a point at the centre, which is the same *blank is not a nought* rule the
  *   arithmetic keeps and the easiest place in the application to break it;
- * - a ผู้สอน who types another ตอนเรียน's address is refused **and is not left
+ * - a ผู้สอน who types another กลุ่มเรียน's address is refused **and is not left
  *   reading กำลังโหลดข้อมูล… underneath the refusal**, which is the defect #43's
  *   hand-walk found on two screens and which no green suite had seen.
  */
@@ -205,7 +205,7 @@ test('an outcome nobody was measured on leaves a gap, not a point at the centre'
   await expect(tableCell(page, 'CLO-2', thisYear)).toHaveText('—');
 });
 
-test('a ตอนเรียน with no comparable year draws its own chart and offers no picker', async ({
+test('a กลุ่มเรียน with no comparable year draws its own chart and offers no picker', async ({
   page,
 }) => {
   // The oldest year of a Subject has nothing behind it, so `available_years`
@@ -235,7 +235,7 @@ test('a ตอนเรียน with no comparable year draws its own chart and
   const body = await answer.json();
   expect(body.available_years).toEqual([]);
 
-  // The screen still draws — it is a ตอนเรียน with marks, and having no year to
+  // The screen still draws — it is a กลุ่มเรียน with marks, and having no year to
   // compare against is not having nothing to show.
   await expect(page.locator('svg[role="img"]')).toHaveCount(1);
   const drawn = await pointsOf(page);
@@ -246,7 +246,7 @@ test('a ตอนเรียน with no comparable year draws its own chart and
   await expect(page.getByText('กำลังโหลดข้อมูล')).toHaveCount(0);
 });
 
-test('a ผู้สอน who types another ตอนเรียน’s address is refused, and is not left waiting', async ({
+test('a ผู้สอน who types another กลุ่มเรียน’s address is refused, and is not left waiting', async ({
   page,
 }) => {
   const { rows } = await db.query(
@@ -257,7 +257,7 @@ test('a ผู้สอน who types another ตอนเรียน’s addres
       ORDER BY cs.section_id LIMIT 1`,
     [section],
   );
-  expect(rows.length, 'the seed should hold a ตอนเรียน this ผู้สอน does not teach').toBe(1);
+  expect(rows.length, 'the seed should hold a กลุ่มเรียน this ผู้สอน does not teach').toBe(1);
 
   await page.goto(path(rows[0].section_id));
   await expect(page.getByText(REFUSALS.sectionNotFound)).toBeVisible();

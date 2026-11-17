@@ -61,7 +61,7 @@ const {
  *   รายวิชาในหลักสูตร — also found by that review: the panel sits beside the
  *   table, and the late form took it off the screen in the middle of an upload;
  * - on the Offering panel the first four under its own words — another
- *   ตอนเรียนและผู้สอน, its refusal, เปิดรายวิชา, ยกเลิกการเปิด — the same row
+ *   กลุ่มเรียนและผู้สอน, its refusal, เปิดรายวิชา, ยกเลิกการเปิด — the same row
  *   pressed again, whose older reading of the Offering was drawn over the newer,
  *   and **กลับไปหน้ารายการ** after a section write whose read-back is still out:
  *   the panel came back by itself.
@@ -600,7 +600,7 @@ for (const screen of LIST_SCREENS) {
 /**
  * ข้อมูลการเปิดรายวิชา, whose read is `refresh` and whose place is a panel.
  *
- * The same five ways in under different words — ตอนเรียนและผู้สอน on another
+ * The same five ways in under different words — กลุ่มเรียนและผู้สอน on another
  * row, its refusal, เปิดรายวิชา, ยกเลิกการเปิด, the same row pressed again — and
  * a sixth the list screens do not have, because `refresh` is also how every
  * section write reads the panel back.
@@ -648,7 +648,7 @@ async function panelDrawn(page) {
 }
 
 test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
-  test('a second ตอนเรียนและผู้สอน is the panel that stays open', async ({ page }) => {
+  test('a second กลุ่มเรียนและผู้สอน is the panel that stays open', async ({ page }) => {
     await signIn(page, ACCOUNTS.committee0501);
     await openOfferings(page);
     const [first, second] = await twoRows(page, OFFERINGS.open);
@@ -753,8 +753,8 @@ test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
 
       // The panel's own dialog is a different one, drawn from `removing` too. With
       // `offeringscancelkeepsask` applied the late panel opens and the question
-      // turns into ยืนยันการลบตอนเรียน over the first Offering, with no sentence
-      // and a ลบตอนเรียน button (seen on the failure's screenshot, 17 September
+      // turns into ยืนยันการลบกลุ่มเรียน over the first Offering, with no sentence
+      // and a ลบกลุ่มเรียน button (seen on the failure's screenshot, 17 September
       // 2569). Behind that button `confirmRemoval` still reads `kind: 'offering'`
       // and would cancel the second Offering - read from the code, not pressed.
       expect(await panelDrawn(page)).toEqual({
@@ -826,7 +826,7 @@ test.describe(`${OFFERINGS.name} (${OFFERINGS.file})`, () => {
     }
   });
 
-  test('ตอนเรียนและผู้สอน pressed again on the same row draws the later reading', async ({
+  test('กลุ่มเรียนและผู้สอน pressed again on the same row draws the later reading', async ({
     page,
   }) => {
     // Both presses ask for the same Offering, so what tells the two readings

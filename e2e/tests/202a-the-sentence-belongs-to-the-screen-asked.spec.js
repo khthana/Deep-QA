@@ -396,7 +396,7 @@ test.describe('รายชื่อนักศึกษาของราย�
   const CODE = '65019902';
   const NAME = 'ทดสอบ แถวสองศูนย์สอง';
   const ENROLLED = { student: { student_id: CODE, full_name_th: NAME } };
-  const SAID_ENROLLED = `เพิ่ม ${CODE} ${NAME} เข้าตอนเรียนแล้ว`;
+  const SAID_ENROLLED = `เพิ่ม ${CODE} ${NAME} เข้ากลุ่มเรียนแล้ว`;
   const REMOVAL = /^\/api\/teaching\/sections\/\d+\/students\/\d+$/;
 
   /** Opens the screen on page one, and says so — the premise of the two rows
@@ -497,7 +497,7 @@ test.describe('รายชื่อนักศึกษาของราย�
     const write = await gate(page, REMOVAL, isWrite, { success: DONE });
     const read = await heldReload(page);
 
-    await button(page, `นำ ${code} ออกจากตอนเรียน`).click();
+    await button(page, `นำ ${code} ออกจากกลุ่มเรียน`).click();
     await button(page, 'นำออก').click();
     await write.sent;
     write.open();
@@ -545,7 +545,7 @@ test.describe('รายชื่อนักศึกษาของราย�
     await read.answered;
     await page.waitForTimeout(SETTLE_MS);
 
-    const said = new RegExp(`นำ ${code} .+ ออกจากตอนเรียนแล้ว`);
+    const said = new RegExp(`นำ ${code} .+ ออกจากกลุ่มเรียนแล้ว`);
     expect(await page.getByText(said).count(), "the removal's sentence").toBe(0);
     expect(await whereTheyAre(page), 'the screen the sentence was not said on').toEqual(LANDED);
   });
@@ -557,6 +557,6 @@ test.describe('รายชื่อนักศึกษาของราย�
     read.open();
     await read.answered;
 
-    await expect(page.getByText(new RegExp(`นำ ${code} .+ ออกจากตอนเรียนแล้ว`))).toBeVisible();
+    await expect(page.getByText(new RegExp(`นำ ${code} .+ ออกจากกลุ่มเรียนแล้ว`))).toBeVisible();
   });
 });

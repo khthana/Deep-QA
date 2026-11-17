@@ -188,7 +188,7 @@ MUTANTS = {
             : null,""",
         "          previous: { academic_year: year, entries: await entriesOf(offering, year) },",
     ),
-    # The register admits only ตอนเรียน 1 of an Offering, which is what an
+    # The register admits only กลุ่มเรียน 1 of an Offering, which is what an
     # assumption that a รายวิชา has one class per year looks like in SQL. The
     # first teacher sees everything and the second is told their own class does
     # not exist - and the fifth criterion, that the narrative is shared, is
@@ -205,7 +205,7 @@ MUTANTS = {
         "      WHERE cs.section_id = $1 AND cst.user_id = $2 AND cs.section_number = '1'`,",
     ),
     # The register stops asking who is calling. Every ผู้สอน reaches every
-    # ตอนเรียน in the institution, reads its narrative and can edit it - and
+    # กลุ่มเรียน in the institution, reads its narrative and can edit it - and
     # nothing anywhere says so, because a screen that answers is a screen that
     # looks like it was meant to. ADR-0002 in one clause. Kills row 9.
     # Re-aimed 29 Sep 2569 (#104): the register's WHERE clause is one

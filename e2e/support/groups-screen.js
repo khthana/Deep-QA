@@ -10,7 +10,7 @@ const { openAt } = require('./navigation');
  * กลุ่มงานนักศึกษา — #26, as a browser reaches it.
  *
  * The screen is Section-bound like `enrolment-screen.js` beside it, so every
- * helper takes a section id and none of them is shared with the ตอนเรียน next
+ * helper takes a section id and none of them is shared with the กลุ่มเรียน next
  * door.
  *
  * What is different here, and what these helpers exist to make sayable, is
@@ -32,7 +32,7 @@ const waitForList = (page, sectionId) =>
       answer.request().method() === 'GET',
   );
 
-/** Opens the groups screen of one ตอนเรียน and hands back the read a row asserts on. */
+/** Opens the groups screen of one กลุ่มเรียน and hands back the read a row asserts on. */
 async function openGroups(page, sectionId) {
   return openAt(page, path(sectionId), (fresh) => waitForList(fresh, sectionId));
 }

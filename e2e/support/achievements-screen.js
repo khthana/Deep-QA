@@ -10,7 +10,7 @@ const { openAt } = require('./navigation');
 /**
  * เกณฑ์การบรรลุผลตาม CLO — #29, as a browser reaches it.
  *
- * The screen hangs two levels under a ตอนเรียน's address exactly as #28's
+ * The screen hangs two levels under a กลุ่มเรียน's address exactly as #28's
  * does — the Section proves the caller may be here, the CLO owns the rows —
  * so everything `behaviors-screen.js` says holds here one table over, and the
  * helpers keep its shapes: `mySectionIds` re-exported from the
