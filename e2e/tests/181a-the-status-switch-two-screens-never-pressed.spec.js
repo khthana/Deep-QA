@@ -249,7 +249,7 @@ test('14 item 3: closing a department is not a silent revocation', async ({ page
 });
 
 test('15 item 4: a curriculum is closed from its own form as well', async ({ page }) => {
-  await signIn(page, ACCOUNTS.facultyAdmin);
+  await signIn(page, ACCOUNTS.departmentAdmin05);
   await openPrograms(page);
 
   await expect(program.status(page)).toHaveText(ACTIVE);
@@ -271,7 +271,7 @@ test('15 item 5: closing a curriculum is not a silent revocation either', async 
   // this one curriculum. Written here rather than left for later because it is
   // the same sentence as its department half, and half a sentence deferred is a
   // decision nobody can find (#119).
-  await signIn(page, ACCOUNTS.facultyAdmin);
+  await signIn(page, ACCOUNTS.departmentAdmin05);
   await openPrograms(page);
 
   try {
@@ -303,7 +303,7 @@ test('15 item 5: closing a curriculum is not a silent revocation either', async 
 });
 
 test('15 items 4 and 5: a curriculum with data under it is closed, and reopened from its form', async ({ page }) => {
-  await signIn(page, ACCOUNTS.facultyAdmin);
+  await signIn(page, ACCOUNTS.departmentAdmin05);
   await openPrograms(page);
 
   await expect(program.status(page)).toHaveText(ACTIVE);

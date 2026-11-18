@@ -163,12 +163,18 @@ const SCREENS = [
   },
   {
     name: 'Programs',
-    account: ACCOUNTS.facultyAdmin,
+    account: ACCOUNTS.departmentAdmin05,
     open: programs.openPrograms,
     path: '/api/programs',
     label: 'ค้นหาหลักสูตร',
-    term: 'civil',
-    found: '0101',
+    // Read off department 05 since #282 (18 พ.ย. 2569), the only one this
+    // screen's account reaches: `0503`'s English name holds the term and
+    // `0501`'s does not. It was `civil` / `0101` while the faculty
+    // administrator, who reached department 01 too, held this screen; the
+    // write rows below still search their own records' `Civil Search`.
+    term: 'international',
+    termFor: 'civil',
+    found: '0503',
     hidden: '0501',
     rowOf: programs.programRow,
     nothing: 'ไม่พบหลักสูตรตามคำค้น',
@@ -176,8 +182,7 @@ const SCREENS = [
     add: async (page, record) => {
       await page.getByRole('button', { name: 'เพิ่มหลักสูตร' }).click();
       await fill(page, 'รหัสหลักสูตร', record.program_id);
-      // By role: the label wraps the select, so its text carries the options (#180).
-      await page.getByRole('combobox', { name: 'ภาควิชา' }).selectOption(record.department_id);
+      // No department to pick since #282: the server files it under the grant's.
       await fill(page, 'ชื่อหลักสูตร (ไทย)', record.program_name_th);
       await fill(page, 'ชื่อหลักสูตร (อังกฤษ)', record.program_name_en);
       await fill(page, 'ปีหลักสูตร (พ.ศ.)', record.revision_year);
@@ -188,7 +193,6 @@ const SCREENS = [
       program_id: id,
       program_name_th: `หลักสูตรทดสอบ ${id}`,
       program_name_en: matching ? `Civil Search ${id}` : `Search ${id}`,
-      department_id: '05',
       revision_year: '2569',
     }),
     ids: { saveOutside: 'K271', saveInside: 'K272', importOutside: 'K273', importInside: 'K274' },

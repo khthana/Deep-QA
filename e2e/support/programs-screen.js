@@ -96,12 +96,13 @@ async function save(page) {
 }
 
 /**
- * The status badge of one row - the fifth cell, as the table's own header
- * orders them (รหัส · ชื่อ · ภาควิชา · ปี · สถานะ · ดำเนินการ) - one further along than the departments
- * table's, which is why each screen says its own index here.
+ * The status badge of one row - the fourth cell, as the table's own header
+ * orders them (รหัส · ชื่อ · ปี · สถานะ · ดำเนินการ). It was the fifth until
+ * #282 (18 พ.ย. 2569) took the ภาควิชา column out; each screen says its own
+ * index here.
  */
 const statusOf = (page, programId) =>
-  programRow(page, programId).getByRole('cell').nth(4);
+  programRow(page, programId).getByRole('cell').nth(3);
 
 /**
  * Deletes one programme through the screen's own confirmation, and waits for

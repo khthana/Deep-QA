@@ -171,7 +171,7 @@ const LIST_SCREENS = [
   {
     name: 'ข้อมูลหลักสูตร',
     file: 'Programs.js',
-    account: ACCOUNTS.facultyAdmin,
+    account: ACCOUNTS.departmentAdmin05,
     open: (page) => openPrograms(page),
     detail: /^\/api\/programs\/\d+$/,
     edit: 'แก้ไขหลักสูตร',

@@ -3,41 +3,21 @@ import { del, get, post, put, query } from './client'
 /**
  * The programme calls — #15.
  *
- * Short, because the server does the deciding. A department *is* sent, unlike
- * #14's faculty: a programme has to be filed under one and only the person
- * knows which, so it is named by the request and then checked against the
- * reach derived from the acting grant (ADR-0002 refuses authority read from a
- * body, not a target named by one).
+ * Short, because the server does the deciding. No department is sent since
+ * #282 (18 พ.ย. 2569): the server files a programme under the department of the
+ * acting grant, and `listReachableDepartments`, which drew the form's picker
+ * and named each row's department, went with the picker.
  */
 
 /** One page of programmes, with the total so a pager can be drawn. */
 export const listPrograms = (params = {}) => get(`/api/programs${query(params)}`)
 
 /**
- * The departments this account reaches, each with its `is_active`.
- *
- * Read from the programmes routes rather than from `/api/departments`, which
- * belongs to the faculty administrator alone — a department administrator
- * belongs on this screen and would be refused by that one. What comes back is
- * the same reach the server checks against, so the picker cannot offer a
- * choice that would then be turned down.
- *
- * Retired ones come too, and are the screen's only way of naming the
- * department a programme already filed under one lives in. Deciding which of
- * them may be *picked* is the form's job, not this call's.
- */
-export const listReachableDepartments = () => get('/api/programs/departments')
-
-/**
  * What the server scopes to the acting grant, and what takes **no argument** to
- * say which rows it means: a list of rows the screen filters is not this one,
- * because that read moves with the landing's own dependency list, while this one
- * has no prop a landing could hand down to move it. So a landing screen that
- * draws it reads the screen generation itself -
- * `frontend/scripts/landing-generations.js` says why, and goes red for a read
- * that does not (#230).
+ * say which rows it means - `frontend/scripts/landing-generations.js` reads it
+ * (#230). Empty since #282 took `listReachableDepartments` away.
  */
-export const GRANT_SCOPED = ['listReachableDepartments']
+export const GRANT_SCOPED = []
 
 /**
  * One programme, read back from the server.

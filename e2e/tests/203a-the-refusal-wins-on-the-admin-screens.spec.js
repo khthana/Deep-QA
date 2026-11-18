@@ -215,7 +215,7 @@ const SCREENS = [
   {
     name: 'ข้อมูลหลักสูตร',
     file: 'Programs.js',
-    account: ACCOUNTS.facultyAdmin,
+    account: ACCOUNTS.departmentAdmin05,
     open: (page) => programs.openPrograms(page),
     list: /^\/api\/programs$/,
     write: /^\/api\/programs\/[^/]+$/,

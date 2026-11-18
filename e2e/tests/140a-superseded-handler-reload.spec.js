@@ -605,7 +605,7 @@ const MASTER = [
   {
     name: 'ข้อมูลหลักสูตร',
     file: 'Programs.js',
-    account: ACCOUNTS.facultyAdmin,
+    account: ACCOUNTS.departmentAdmin05,
     open: programs.openPrograms,
     list: programs.API,
     rows: 'programs',
@@ -615,12 +615,13 @@ const MASTER = [
     removed: (page) => programs.programRow(page, PROGRAMS[10]),
     remove: 'ลบ',
     confirm: 'ลบหลักสูตร',
+    // Four fields since #282 (18 พ.ย. 2569): the template has no department.
     importPath: `${programs.API}/import`,
-    importLine: 'ZP140,หลักสูตรนำเข้าของแถว #140,Imported for #140,05,2565',
+    importLine: 'ZP140,หลักสูตรนำเข้าของแถว #140,Imported for #140,2565',
     moves: [
-      'ZP223A,หลักสูตรที่การนำเข้าแซงด้วย A,Imported for #223 A,05,2565',
-      'ZP223B,หลักสูตรที่การนำเข้าแซงด้วย B,Imported for #223 B,05,2565',
-      'ZP223C,หลักสูตรที่การนำเข้าแซงด้วย C,Imported for #223 C,05,2565',
+      'ZP223A,หลักสูตรที่การนำเข้าแซงด้วย A,Imported for #223 A,2565',
+      'ZP223B,หลักสูตรที่การนำเข้าแซงด้วย B,Imported for #223 B,2565',
+      'ZP223C,หลักสูตรที่การนำเข้าแซงด้วย C,Imported for #223 C,2565',
     ],
   },
   {

@@ -328,8 +328,9 @@ function ploRoutes(pool) {
 
   /**
    * The curricula this caller reaches — the screen's picker, drawn from here
-   * rather than from `/api/programs`, which belongs to the two administrators
-   * (#15) and would refuse the committee member this screen is mainly for.
+   * rather than from `/api/programs`, which belongs to the Department Admin
+   * alone since #282 (to the two administrators before that, #15) and would
+   * refuse the committee member this screen is mainly for.
    */
   router.get('/plos/programs', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {

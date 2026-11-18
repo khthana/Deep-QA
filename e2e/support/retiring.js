@@ -22,7 +22,8 @@ const { BACKEND_URL } = require('./env');
  * caller, which is where `e2e/support/rubrics-screen.js`'s own header says the
  * twin query in `reach.js` was extracted.
  *
- * It is built over HTTP and not through a screen for `233a` row 2's reason: a
+ * It is built over HTTP and not through a screen for the reason `233a` row 2
+ * gave until #282 withdrew it: a
  * mutant that has the frontend broken cannot stop a restore made below the seam
  * (#181), and `workers: 1` means nothing else is reading the record while a row
  * holds it switched off.
@@ -34,20 +35,34 @@ const { BACKEND_URL } = require('./env');
  */
 
 /**
- * Signs in the administrator who may switch a department or a curriculum off.
+ * Signs in the administrator who may switch a department off.
  *
- * `backend/routes/programs` and `backend/routes/departments` name
- * `FACULTY_ADMIN` and `DEPT_ADMIN` and answer anybody else 403, which is what
- * `198a` row 5 measured: the system administrator who makes other files'
- * fixtures may not make this one.
+ * `backend/routes/departments` names `FACULTY_ADMIN` and answers anybody else
+ * 403, which is what `198a` row 5 measured: the system administrator who makes
+ * other files' fixtures may not make this one. Until #282 (18 พ.ย. 2569) this
+ * account switched curricula off too; the programmes routes now name
+ * `DEPT_ADMIN` alone, so a curriculum is `departmentContext`'s.
  */
 async function facultyContext(playwright) {
-  const faculty = await playwright.request.newContext();
-  const inn = await faculty.post(`${BACKEND_URL}/api/auth/login`, {
-    data: { email: ACCOUNTS.facultyAdmin, password: PASSWORD },
+  return signedIn(playwright, ACCOUNTS.facultyAdmin, 'the administrator who may switch a department off');
+}
+
+/**
+ * Signs in the administrator who may switch a curriculum of department 05 off
+ * - every curriculum a caller of this file retires is `0501` (#282).
+ */
+async function departmentContext(playwright) {
+  return signedIn(playwright, ACCOUNTS.departmentAdmin05, 'the administrator who may switch a curriculum off');
+}
+
+/** A request context signed in as `email`; `who` names it if the sign-in is refused. */
+async function signedIn(playwright, email, who) {
+  const context = await playwright.request.newContext();
+  const inn = await context.post(`${BACKEND_URL}/api/auth/login`, {
+    data: { email, password: PASSWORD },
   });
-  expect(inn.status(), 'the administrator who may switch a parent off').toBe(200);
-  return faculty;
+  expect(inn.status(), who).toBe(200);
+  return context;
 }
 
 /**
@@ -71,17 +86,17 @@ async function facultyContext(playwright) {
  * transport error thrown out of `put` would land inside the caller's `finally`
  * and replace the row's own error, which is the exact failure #181 is about.
  */
-async function switchOff(faculty, path, key, { onFailure } = {}) {
+async function switchOff(administrator, path, key, { onFailure } = {}) {
   if (typeof onFailure !== 'function') {
     throw new Error('switchOff needs an onFailure to report a failed restore to - #181');
   }
 
-  const read = await faculty.get(`${BACKEND_URL}${path}`);
+  const read = await administrator.get(`${BACKEND_URL}${path}`);
   expect(read.status(), `the ${key} this row switches off for a moment`).toBe(200);
   const body = await read.json();
   const record = body[key];
 
-  const off = await faculty.put(`${BACKEND_URL}${path}`, {
+  const off = await administrator.put(`${BACKEND_URL}${path}`, {
     data: { ...record, is_active: false },
   });
   expect(off.status(), `switching the ${key} off`).toBe(200);
@@ -90,7 +105,7 @@ async function switchOff(faculty, path, key, { onFailure } = {}) {
 
   return async () => {
     try {
-      const on = await faculty.put(`${BACKEND_URL}${path}`, {
+      const on = await administrator.put(`${BACKEND_URL}${path}`, {
         data: { ...record, is_active: true },
       });
       if (on.status() !== 200) {
@@ -99,9 +114,9 @@ async function switchOff(faculty, path, key, { onFailure } = {}) {
     } catch (error) {
       onFailure(`the ${key} could not be switched back on: ${error.message}`);
     } finally {
-      await faculty.dispose().catch(() => {});
+      await administrator.dispose().catch(() => {});
     }
   };
 }
 
-module.exports = { facultyContext, switchOff };
+module.exports = { facultyContext, departmentContext, switchOff };

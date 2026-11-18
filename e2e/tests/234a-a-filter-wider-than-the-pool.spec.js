@@ -6,7 +6,7 @@ const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
 const { hold } = require('../support/hold');
-const { facultyContext, switchOff } = require('../support/retiring');
+const { departmentContext, switchOff } = require('../support/retiring');
 const {
   openRubrics,
   programFilter: rubricFilter,
@@ -186,8 +186,8 @@ test.describe('as a committee member of the whole department', () => {
     // that leaves a person who adds a rubric while the list shows a closed
     // curriculum is a question for the owner and not a claim of this row:
     // `docs/acceptance/21-rubrics.md` §#276 carries it.
-    const faculty = await facultyContext(playwright);
-    const switchBackOn = await switchOff(faculty, `/api/programs/${RETIRED}`, 'program', {
+    const owner = await departmentContext(playwright);
+    const switchBackOn = await switchOff(owner, `/api/programs/${RETIRED}`, 'program', {
       onFailure: report,
     });
 
@@ -227,8 +227,8 @@ test('the pair form does not open on the retired curriculum the list is filtered
   page,
   playwright,
 }) => {
-  const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${RETIRED}`, 'program', {
+  const owner = await departmentContext(playwright);
+  const switchBackOn = await switchOff(owner, `/api/programs/${RETIRED}`, 'program', {
     onFailure: report,
   });
 
@@ -265,8 +265,8 @@ test('the outcome form does not open on the retired curriculum the list is filte
   page,
   playwright,
 }) => {
-  const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${RETIRED}`, 'program', {
+  const owner = await departmentContext(playwright);
+  const switchBackOn = await switchOff(owner, `/api/programs/${RETIRED}`, 'program', {
     onFailure: report,
   });
 
@@ -378,9 +378,9 @@ test('the offering form reads the subjects of a curriculum this account may open
   try {
     expect(made.status(), 'the committee grant that reaches more than one curriculum').toBe(201);
 
-    const faculty = await facultyContext(playwright);
+    const owner = await departmentContext(playwright);
     const switchBackOn = await switchOff(
-      faculty,
+      owner,
       `/api/programs/${RETIRED_IN_ROW_4}`,
       'program',
       { onFailure: report },

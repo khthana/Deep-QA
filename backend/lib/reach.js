@@ -8,7 +8,8 @@
  * at all: the list a picker is drawn from, and the yes-or-no a write is checked
  * against. #16 needs both, word for word, and #17 onwards will need them again
  * - every screen a Faculty Admin and a Department Admin share asks the same two
- * questions of the same table.
+ * questions of the same table. (Programmes stopped being one of those screens
+ * on 18 พ.ย. 2569: #282 left them to the Department Admin alone.)
  *
  * They are here rather than in `auth/authorise` because they are queries, not
  * guards: `coveredScopes` answers "what does this grant reach", and these two
@@ -17,8 +18,9 @@
  * put there from the database, and never from a request body.
  *
  * What is deliberately *not* here is the refusal key. `departmentNotYours`
- * names หลักสูตร and #16's names รายวิชา, and a helper that owned the message
- * would have to grow a parameter for every screen's spelling - `lib/importer`
+ * named หลักสูตร (until #282 replaced it with `departmentRetired`) and #16's
+ * names รายวิชา, and a helper that owned the message would have to grow a
+ * parameter for every screen's spelling - `lib/importer`
  * declined the same thing for the same reason. These answer in facts and the
  * route says what the fact means.
  */

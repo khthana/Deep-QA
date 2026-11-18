@@ -14,17 +14,13 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * refuses to read it on an edit and the field is disabled here to say so before
  * the person types.
  *
- * The department *is* a field, unlike #14's faculty, and it is a picker rather
- * than a box: what it offers is drawn from the list the server said this
- * account reaches, so the form cannot be made to name a department the save
- * would then be refused for.
- *
- * A retired department is offered only when it is the one this programme is
- * already filed under, and disabled there. That is the fourth criterion read
- * for the department - switched off "stops appearing in selection lists" - and
- * the exception is the reason retiring a department does not freeze every
- * programme beneath it: the person can still fix a name, or move the programme
- * out, without the picker being empty and the save impossible.
+ * There is no department field since #282 (the owner's answer of 18 พ.ย.
+ * 2569): only a Department Admin reaches this screen, and holds one
+ * department, so the server files a new programme under the grant's department
+ * and an edit never moves one. The picker it replaced, with its pool, its
+ * auto-pick of the only department and its effect that followed a re-read of
+ * the pool (#233), went with it; `docs/acceptance/15-programs.md` §#282 says
+ * which rows and mutants went too.
  *
  * Switching a programme off is how one is retired when PLOs, Program Subjects,
  * students and graded work still point at it - and is also what the server does
@@ -53,7 +49,6 @@ const EMPTY = {
   program_id: '',
   program_name_th: '',
   program_name_en: '',
-  department_id: '',
   revision_year: '',
   is_active: true,
 }
@@ -72,81 +67,19 @@ function Field({ label, children, hint }) {
   )
 }
 
-export default function ProgramForm({ value, departments, busy, onSave, onCancel }) {
+export default function ProgramForm({ value, busy, onSave, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
   const [sending, setSending] = useState(false)
   const editing = Boolean(value?.program_id)
-
-  // The one department there is to file under, when there is only one. Retired
-  // ones do not count: auto-picking one would put the form in a state the
-  // server refuses before the person has touched anything.
-  const usable = departments.filter(department => department.is_active !== false)
-  const onlyOne = usable.length === 1 ? usable[0] : null
-
-  // A department to start on, so adding one to a faculty with a single
-  // department is not a choice the person has to make by hand. A string, so
-  // that re-reading the pool and getting the same answer back moves nothing -
-  // which is the whole of #233 in one line. There is no filter above this
-  // screen, so unlike `RubricForm`'s there is nothing else to start from: a
-  // faculty with several departments is one where nobody picks for the person.
-  const starting = onlyOne ? onlyOne.department_id : ''
-
-  // The pool as a value rather than as an array - #232's shape, and its
-  // reasons are written out in `rubrics/RubricForm.js` at `58d15b4`. `departments` is a new
-  // array on every answer, so an effect depending on it, or on anything
-  // derived from it by identity, re-ran whenever the screen read the pool
-  // again. On this screen that read is the one `Programs.js` names the
-  // generation in, which is how a form typed and not saved was thrown away by
-  // its own effect on a switch of hats that stays put - the one thing #198
-  // narrowed the remount in order to keep.
-  const pool = usable.map(department => department.department_id).join(' ')
 
   // The subject changed, so the form starts again: another programme is being
   // edited, or the form was opened to add one. `value` is state in the screen
   // above and is not derived from any answer here, so a re-read cannot move it.
   useEffect(() => {
-    setDraft(current => ({
-      ...EMPTY,
-      // Kept rather than emptied, which is where this parts company with
-      // `RubricForm`: with no filter above the screen, a department picked by
-      // hand is the only memory this form has of one, and `value` changing
-      // means another programme rather than another pool.
-      department_id: current.department_id,
-      ...value,
-    }))
+    setDraft({ ...EMPTY, ...value })
   }, [value])
 
-  // And the department follows the pool, which is the half a re-read may move.
-  // The field is left alone while it names something still in reach, and
-  // re-picked when it does not: the pool is what this hat may file a programme
-  // under, so a value outside it is one the server refuses (ADR-0002), and
-  // nothing here may pick a retired one - that would put the form in a refused
-  // state before the person had touched anything.
-  //
-  // An existing programme is not moved at all. That branch is not decoration:
-  // `GET /api/programs/departments` answers with retired departments too
-  // (`reachableDepartments`), the pool keeps them out, and a programme filed in
-  // one therefore holds a `department_id` the pool does not contain - so
-  // without it the form would say the programme sits somewhere it does not, and
-  // a save would move it. `233a` row 2 holds that, and
-  // `233:movesanexistingprogramme` is the mutant.
-  useEffect(() => {
-    if (editing) return
-    setDraft(current =>
-      current.department_id && pool.split(' ').includes(current.department_id)
-        ? current
-        : { ...current, department_id: starting },
-    )
-  }, [editing, pool, starting])
-
   const set = key => event => setDraft(current => ({ ...current, [key]: event.target.value }))
-
-  // The retired department this programme already sits in is kept in the list
-  // so the picker can show where it lives; every other retired one is left out,
-  // because nothing may be filed under it.
-  const offered = departments.filter(
-    department => department.is_active !== false || department.department_id === draft.department_id,
-  )
 
   // `sending` is put up here and down in the `finally` below, rather than being
   // read from `busy` - #228. `DepartmentForm.js`'s head comment has the reason
@@ -171,7 +104,6 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
       program_id: draft.program_id.trim(),
       program_name_th: draft.program_name_th.trim(),
       program_name_en: draft.program_name_en.trim(),
-      department_id: draft.department_id,
       revision_year: draft.revision_year.trim(),
       is_active: draft.is_active,
     }).finally(() => setSending(false))
@@ -194,27 +126,6 @@ export default function ProgramForm({ value, departments, busy, onSave, onCancel
               maxLength={10}
               required
             />
-          </Field>
-          <Field label="ภาควิชา">
-            <select
-              className={field}
-              value={draft.department_id}
-              onChange={set('department_id')}
-              disabled={sending}
-              required
-            >
-              <option value="">เลือกภาควิชา</option>
-              {offered.map(department => (
-                <option
-                  key={department.department_id}
-                  value={department.department_id}
-                  disabled={department.is_active === false}
-                >
-                  {department.department_name_th}
-                  {department.is_active === false && ' (ปิดใช้งาน)'}
-                </option>
-              ))}
-            </select>
           </Field>
           <Field label="ชื่อหลักสูตร (ไทย)">
             <input

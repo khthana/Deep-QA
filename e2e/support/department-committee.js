@@ -21,7 +21,7 @@ const { createPool } = require('../../db/pool');
  * ผู้ดูแลภาควิชา เป็นกรรมการหลักสูตร ก็จะเห็นตอนเปลี่ยน role*.
  *
  * **The grant is made and taken back over HTTP, and its row taken out below
- * the seam** - `233a`'s shape, for `233a`'s reasons: a mutant in the frontend
+ * the seam** - the shape `233a`'s fixture had until #282, for its reasons: a mutant in the frontend
  * cannot stop a grant made this way being taken back (#181), and the revoke is
  * `UPDATE ... SET is_active = false` (`backend/routes/grants.js`), which leaves
  * a row behind for a key the seed never held (#132, #233). It is an instrument

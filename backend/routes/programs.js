@@ -12,25 +12,22 @@
  * Three things run through it, and two of them differ from #14 in ways that
  * are easy to copy wrong.
  *
- * *Two roles, one reach.* The ticket names both: a Faculty Admin manages
- * programmes in any department of the faculty, a Department Admin only in
- * their own. What separates them is not the role list - both are on it - but
- * `coveredScopes`, which turns an acting grant into the set of identifiers it
- * reaches. A faculty grant reaches its departments and their programmes; a
- * department grant reaches its own. The second criterion and the third are
- * therefore the same line of SQL read twice. `FULL_ADMIN` is absent for
- * ADR-0002's stated reason: curriculum routes do not list it, and a programme
- * is curriculum.
+ * *One role, one department.* The ticket named two administrators; since #282
+ * (the owner's answer of 18 พ.ย. 2569, "ผู้ดูแลระดับคณะ ... ให้ทำข้อมูลภาควิชา
+ * อย่างเดียว") only the Department Admin maintains programmes, and holds one
+ * department. `coveredScopes` still turns the acting grant into what it
+ * reaches, so a programme in another department answers as though it were not
+ * there. `FULL_ADMIN` is absent for ADR-0002's stated reason: curriculum routes
+ * do not list it, and a programme is curriculum.
  *
- * *The department is named by the body, and that is not a body deciding
- * authority.* A programme has to be filed under some department and only the
- * caller knows which, so `department_id` arrives on the request - and is then
- * checked against the reach loaded from the database before anything is
- * written. The distinction ADR-0002 draws is between authority derived from
- * the body, which never happens, and a target named by it, which is verified.
- * Editing checks both ends: the programme as it stands must be reachable, and
- * so must the department it is being moved to, or a move would be a way of
- * pushing a record out of one's own reach - or of adopting somebody else's.
+ * *The department is the grant's, not the body's.* Until #282 a programme's
+ * department arrived on the request and was checked against the reach; with one
+ * department in reach there is nothing to name, so a programme is filed under
+ * the department of the grant that records it (`req.auth.acting.scope_id`) and
+ * a `department_id` in a body or a spreadsheet is not read at all - which is
+ * ADR-0002's rule with the one exception it used to permit taken away. An edit
+ * cannot move a programme either: `reachable` pins it to the grant's
+ * department before the edit is read, and the edit writes no department.
  *
  * *Removal deactivates when something depends on the record.* #14 refused the
  * delete and said so; the fourth criterion here says the opposite - a
@@ -56,7 +53,7 @@ const { blankToNull, isDuplicate } = require('../lib/fields');
 const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const { holding, searchOf } = require('../lib/search');
-const { departmentInReach, reachableDepartments } = require('../lib/reach');
+const { departmentInReach } = require('../lib/reach');
 const { deleteOrDeactivate } = require('../lib/removal');
 const { revisionYearRefusal } = require('../lib/revisionYear');
 const { forgetRevokedGrants, isGranted } = require('../lib/scopeGrants');
@@ -64,29 +61,27 @@ const { forgetRevokedGrants, isGranted } = require('../lib/scopeGrants');
 /**
  * The roles that maintain programmes.
  *
- * Both of the ticket's administrators are here, and the confinement of the
- * second is not. CONTEXT.md gives the Faculty Admin "master data and outcomes
- * within one Faculty" and the Department Admin the same "confined to one
- * Department" - and a role list can only say who, not where. Where is
+ * The Department Admin alone, since #282 (18 พ.ย. 2569): the owner took
+ * programmes off the Faculty Admin, who keeps departments and accounts, and
+ * CONTEXT.md says so. A role list can only say who, not where. Where is
  * `coveredScopes`, below, on every route.
  *
  * `PROG_MANAGER` is absent: the Curriculum Committee "owns one Program" - its
  * PLOs, its Program Subjects, its Offerings - which is work inside a programme
  * and not the creating and retiring of programmes themselves.
  */
-const MAINTAINERS = ['FACULTY_ADMIN', 'DEPT_ADMIN'];
+const MAINTAINERS = ['DEPT_ADMIN'];
 
 /** What a programme is, as this file reads it out. */
 const RETURNED = 'program_id, program_name_th, program_name_en, department_id, revision_year, is_active';
 
-/** The template's columns, and the fields the import reads from a row. */
-const IMPORT_COLUMNS = [
-  'program_id',
-  'program_name_th',
-  'program_name_en',
-  'department_id',
-  'revision_year',
-];
+/**
+ * The template's columns, and the fields the import reads from a row. No
+ * `department_id` since #282: the row lands in the grant's department, and an
+ * old template that still carries the column imports with it ignored, because
+ * `csv.js` keeps unknown headers and `readProgram` does not read it.
+ */
+const IMPORT_COLUMNS = ['program_id', 'program_name_th', 'program_name_en', 'revision_year'];
 
 /**
  * One programme's worth of fields, from a form or from a spreadsheet row.
@@ -108,7 +103,6 @@ function readProgram(source, { editing = false } = {}) {
     program_id: blankToNull(source.program_id),
     program_name_th: blankToNull(source.program_name_th),
     program_name_en: blankToNull(source.program_name_en),
-    department_id: blankToNull(source.department_id),
     revision_year: blankToNull(source.revision_year),
   };
 
@@ -121,9 +115,6 @@ function readProgram(source, { editing = false } = {}) {
   if (values.program_name_en && values.program_name_en.length > 200) {
     return { ok: false, reason: 'invalidProgram' };
   }
-  // A department is what a programme is owned by, so it is required when one is
-  // created; on an edit an absent column means "leave it where it is".
-  if (!editing && !values.department_id) return { ok: false, reason: 'invalidProgram' };
   if (values.revision_year && !/^\d{4}$/.test(values.revision_year)) return { ok: false, reason: 'invalidProgram' };
   // #177, and asked second on purpose: `25` has no year in it to do arithmetic
   // with, so the shape gate keeps the generic sentence it has always answered
@@ -143,25 +134,22 @@ function programRoutes(pool) {
   const router = express.Router();
 
   /**
-   * The department this request may file a programme under.
+   * Whether a new programme may be filed under the grant's department - #282.
    *
-   * Named by the body and checked here against the reach derived from the
-   * acting grant, which is the shape ADR-0002 permits. A department that does
-   * not exist and a department in somebody else's faculty answer the same,
-   * because telling them apart would answer a question the caller has no
-   * business asking.
+   * The department is the acting grant's scope, so the only thing left to ask
+   * is whether it is still switched on: a retired department keeps the
+   * programmes already under it (an edit below does not ask this) and takes no
+   * new ones. Until #282 the same `false` answered *a department you named that
+   * is not yours*, which is untrue once nobody names one, so the sentence is the
+   * owner's of 18 พ.ย. 2569 and says the department is retired.
    *
    * Returns a REFUSALS key or null, which is also `importRows`'s `verify`
    * contract - so the same check covers the typed row and the imported one.
-   * The question itself is `lib/reach`, shared with #16; what a `false` means
-   * is this file's, because the sentence names หลักสูตร.
    */
-  async function departmentRefusal(req, departmentId, { mustBeActive = true } = {}) {
-    if (!departmentId) return 'invalidProgram';
-    const held = await departmentInReach(pool, req.auth.acting.scope_id, departmentId, {
-      mustBeActive,
-    });
-    return held ? null : 'departmentNotYours';
+  async function retiredRefusal(req) {
+    const own = req.auth.acting.scope_id;
+    const open = await departmentInReach(pool, own, own, { mustBeActive: true });
+    return open ? null : 'departmentRetired';
   }
 
   /**
@@ -228,56 +216,23 @@ function programRoutes(pool) {
     }
   });
 
-  /**
-   * The departments this caller reaches — what the form's picker is drawn from,
-   * and the first criterion's "a chosen Department" made choosable. It is the
-   * screen's only way of turning a department identifier into a name, so it
-   * reports every department in reach and lets the form decide which of them
-   * may be chosen.
-   *
-   * It lives here rather than being read from `/departments` because that
-   * screen belongs to the faculty administrator alone (#14, CONTEXT.md), and a
-   * department administrator who legitimately reaches this screen would be
-   * refused by it. Same reach as everything else in this file, so what the
-   * picker offers is exactly what `departmentRefusal` will accept - a form
-   * cannot be made to name a department the server would then turn down.
-   *
-   * Retired departments are reported rather than hidden, each with its
-   * `is_active`. The fourth criterion's "stops appearing in selection lists" is
-   * about the selection list, and the selection list is the form: hiding a
-   * retired department here would also empty the picker of the programmes
-   * already filed under it and blank the department column on the list, so the
-   * screen would be unable to name where a programme lives. The form offers a
-   * retired department only as the one a programme is already under, and
-   * `departmentRefusal` still turns down a create or a move into it.
-   *
-   * Not paged: it is a dropdown, and a faculty has departments in the dozens.
-   */
-  router.get('/programs/departments', requireRole(...MAINTAINERS), async (req, res, next) => {
-    try {
-      const departments = await reachableDepartments(pool, req.auth.acting.scope_id);
-      return res.status(200).json({ departments });
-    } catch (error) {
-      return next(error);
-    }
-  });
+  // `GET /programs/departments`, the form's department picker and the list's
+  // department column, was taken out by #282 (18 พ.ย. 2569): the screen draws
+  // neither, so nothing asks it. `/programs/departments` now reaches the route
+  // below as a programme code and answers as one that does not exist.
 
   /**
    * The template — the seventh criterion. Declared before `/programs/:id`
    * because Express matches in order and the parameter would otherwise swallow
    * the word.
    *
-   * `department_id` *is* among its columns, unlike #14's, and for the reason
-   * given at the top of the file: a faculty administrator importing twenty
-   * programmes is importing them into several departments, and only the
-   * spreadsheet knows which.
+   * No `department_id` since #282: see `IMPORT_COLUMNS`.
    */
   router.get('/programs/import-template', requireRole(...MAINTAINERS), (req, res) =>
     sendTemplate(res, 'programs-template.csv', IMPORT_COLUMNS, {
       program_id: '0505',
       program_name_th: 'วิศวกรรมสารสนเทศ',
       program_name_en: 'Information Engineering',
-      department_id: '05',
       revision_year: '2565',
     }),
   );
@@ -287,24 +242,22 @@ function programRoutes(pool) {
    *
    * The mechanism is `lib/importer`, shared with accounts and departments. What
    * is here is what is about programmes: how a row is read, that the identifier
-   * must not repeat within the file, that each row's department has to be one
-   * this caller reaches, and what writing one means. The department check is
-   * `verify` rather than something inside `insert` because a row naming a
-   * department outside the caller's reach is a refusal about authority, and
-   * belongs where the authority checks are.
+   * must not repeat within the file, that the grant's department still takes
+   * new programmes, and what writing one means. Every row lands in that
+   * department (#282), whatever a `department_id` column in the file says.
    */
   router.post('/programs/import', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
+      const department = req.auth.acting.scope_id;
       const result = await importRows(pool, req.body, {
-        // `department_id` alone would not tell this file from a departments one -
-        // both templates carry it. The two names beside it are what does.
-        required: ['program_id', 'program_name_th', 'department_id'],
+        // The two names are what tell this file from a departments one.
+        required: ['program_id', 'program_name_th'],
         readRow: (record) => {
           const draft = readProgram(record);
           return draft.ok ? { ok: true, draft: draft.values } : draft;
         },
         keys: [{ of: (v) => v.program_id, message: REFUSALS.duplicateProgramId }],
-        verify: (values) => departmentRefusal(req, values.department_id),
+        verify: () => retiredRefusal(req),
         insert: async (client, values) => {
           try {
             const { rows } = await client.query(
@@ -315,7 +268,7 @@ function programRoutes(pool) {
                 values.program_id,
                 values.program_name_th,
                 values.program_name_en,
-                values.department_id,
+                department,
                 values.revision_year,
               ],
             );
@@ -351,13 +304,13 @@ function programRoutes(pool) {
     }
   });
 
-  /** Adding one — the first criterion, under a department the caller reaches. */
+  /** Adding one — the first criterion, under the grant's department (#282). */
   router.post('/programs', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const draft = readProgram(req.body ?? {});
       if (!draft.ok) return res.status(400).json({ message: sentenceOf(draft) });
 
-      const refusal = await departmentRefusal(req, draft.values.department_id);
+      const refusal = await retiredRefusal(req);
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
 
       // `is_active` is deliberately not read here. A programme is created
@@ -371,7 +324,7 @@ function programRoutes(pool) {
           draft.values.program_id,
           draft.values.program_name_th,
           draft.values.program_name_en,
-          draft.values.department_id,
+          req.auth.acting.scope_id,
           draft.values.revision_year,
         ],
       );
@@ -392,18 +345,16 @@ function programRoutes(pool) {
    *
    * The identifier is not among the fields that can change: five tables
    * reference it, so "renaming" it is a migration and not an edit on a form.
-   * The department can change, and that is why it is checked twice - the
-   * programme as it stands has to be reachable, and so does the department it
-   * is going to. Without the second check a department administrator could file
-   * somebody else's programme under their own department, or push their own out
-   * of their reach and lose it.
+   * Neither, since #282, is the department: the programme has to be reachable,
+   * which pins it to the grant's one department, and the edit does not write
+   * that column - so there is no move to check, and a `department_id` in the
+   * body is not read. A programme under a department that has since been
+   * retired stays editable, or retiring a department would freeze its
+   * programmes and switching one of them off would be impossible.
    *
-   * The one field left alone when the request does not carry it is the
-   * department: a programme has to be filed somewhere, and blanking that is not
-   * something anybody meant by leaving a column out. Everything else replaces,
-   * as a PUT's fields do - including the year, which the form has to be able to
-   * clear. Reading an absent year as "leave it" would have made an emptied box
-   * answer "บันทึกเรียบร้อย" and change nothing.
+   * Every field replaces, as a PUT's fields do - including the year, which the
+   * form has to be able to clear. Reading an absent year as "leave it" would
+   * have made an emptied box answer "บันทึกเรียบร้อย" and change nothing.
    */
   router.put('/programs/:programId', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
@@ -413,23 +364,12 @@ function programRoutes(pool) {
       const draft = readProgram(req.body ?? {}, { editing: true });
       if (!draft.ok) return res.status(400).json({ message: sentenceOf(draft) });
 
-      // A department that has since been retired may keep the programmes
-      // already filed under it - otherwise retiring a department would freeze
-      // its programmes, and switching one of them off would be impossible. It
-      // is only a *move* into a retired department that is refused.
-      const department = draft.values.department_id ?? existing.department_id;
-      const refusal = await departmentRefusal(req, department, {
-        mustBeActive: department !== existing.department_id,
-      });
-      if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
-
       const { rows } = await pool.query(
         `UPDATE programs
             SET program_name_th = $2,
                 program_name_en = $3,
-                department_id = $4,
-                revision_year = $5,
-                is_active = coalesce($6, is_active),
+                revision_year = $4,
+                is_active = coalesce($5, is_active),
                 updated_at = now()
           WHERE program_id = $1
           RETURNING ${RETURNED}`,
@@ -437,7 +377,6 @@ function programRoutes(pool) {
           existing.program_id,
           draft.values.program_name_th,
           draft.values.program_name_en,
-          department,
           draft.values.revision_year,
           typeof req.body?.is_active === 'boolean' ? req.body.is_active : null,
         ],

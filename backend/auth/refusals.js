@@ -189,9 +189,12 @@ const REFUSALS = {
   // exist and the one in a department this administrator does not hold, for the
   // same reason `departmentNotFound` does: a different answer for the second
   // would turn the route into a way of listing other departments' programmes.
-  // `departmentNotYours` is the refusal for the other direction - the body
-  // names the department a programme is to be filed under, and a department
-  // administrator naming somebody else's is refused rather than obeyed.
+  // `departmentRetired` is #282's (the owner's wording of 18 พ.ย. 2569): a
+  // programme is filed under the department of the grant that records it, so
+  // the one refusal left about the department is that it has been switched off.
+  // It replaced `departmentNotYours`, *ไม่สามารถจัดการหลักสูตรนอกภาควิชาที่
+  // รับผิดชอบได้*, which answered a department named in the body and was untrue
+  // once nobody names one.
   programNotFound: 'ไม่พบหลักสูตรที่ระบุ',
   // #44. The one query string on the programme reports that names the size of
   // the answer rather than which answer. A reader reaches it by widening the
@@ -202,7 +205,7 @@ const REFUSALS = {
     `ช่วงปีรับเข้าที่เลือกกว้างเกินไป เปรียบเทียบได้ครั้งละไม่เกิน ${years} รุ่น`,
   duplicateProgramId: 'รหัสหลักสูตรนี้ถูกใช้งานแล้ว',
   invalidProgram: 'ข้อมูลหลักสูตรไม่ครบถ้วนหรือไม่ถูกต้อง',
-  departmentNotYours: 'ไม่สามารถจัดการหลักสูตรนอกภาควิชาที่รับผิดชอบได้',
+  departmentRetired: 'ภาควิชาของคุณถูกปิดใช้งาน จึงเพิ่มหลักสูตรใหม่ไม่ได้',
 
   // Subjects - #16. The catalogue entry, and the same three shapes as
   // programmes above: not found covers both the subject that does not exist and
@@ -210,9 +213,10 @@ const REFUSALS = {
   // the code is what the registrar knows a subject by, and
   // `subjectDepartmentNotYours` is the body naming a department this
   // administrator does not hold. It is a separate key from
-  // `departmentNotYours` rather than a reuse of it because the sentence names
-  // what is being managed, and a person told "หลักสูตร" while adding a รายวิชา
-  // would go looking for a programme they never touched.
+  // `departmentNotYours` (programmes', until #282) rather than a reuse of it
+  // because the sentence names what is being managed, and a person told
+  // "หลักสูตร" while adding a รายวิชา would go looking for a programme they
+  // never touched.
   subjectNotFound: 'ไม่พบรายวิชาที่ระบุ',
   duplicateSubjectId: 'รหัสวิชานี้ถูกใช้งานแล้ว',
   invalidSubject: 'ข้อมูลรายวิชาไม่ครบถ้วนหรือไม่ถูกต้อง',

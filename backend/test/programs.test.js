@@ -37,18 +37,13 @@ const { startApi } = require('./helpers');
  * The template's columns, written out here rather than imported from the route.
  *
  * A test that compared the served header against the constant the route built
- * it from would pass whatever that constant said. Naming the five columns
+ * it from would pass whatever that constant said. Naming the four columns
  * independently is what makes the seventh criterion's template an assertion
- * instead of a tautology - and `department_id` is deliberately among them,
- * unlike #14's, because a programme's department is the caller's to name.
+ * instead of a tautology. `department_id` was among them until #282 (18 พ.ย.
+ * 2569): a programme is filed under the department of the grant that records
+ * it, so there is no department for the file to name.
  */
-const COLUMNS = [
-  'program_id',
-  'program_name_th',
-  'program_name_en',
-  'department_id',
-  'revision_year',
-];
+const COLUMNS = ['program_id', 'program_name_th', 'program_name_en', 'revision_year'];
 
 const [DEPT_COMPUTER, DEPT_CIVIL] = DEPARTMENTS.map((department) => department.id);
 const [SEEDED] = PROGRAMS;
@@ -90,9 +85,6 @@ const remove = (cookie, id) =>
 const template = (cookie) =>
   request(api.app).get('/api/programs/import-template').set('Cookie', cookie);
 
-const pickable = (cookie) =>
-  request(api.app).get('/api/programs/departments').set('Cookie', cookie);
-
 const importCsv = (cookie, csv) =>
   request(api.app)
     .post('/api/programs/import')
@@ -110,18 +102,22 @@ const csvOf = (rows) =>
 test('an administrator adds, edits and removes a programme under a department', async () => {
   // The first criterion, end to end, on a programme this test owns and nothing
   // else references - so the removal really is a deletion.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
+  // No department in the body: since #282 it is the grant's.
   const added = await create(cookie, {
     program_id: 'T5001',
     program_name_th: 'วิศวกรรมหุ่นยนต์',
     program_name_en: 'Robotics Engineering',
-    department_id: DEPT_COMPUTER,
     revision_year: '2566',
   });
   assert.equal(added.status, 201, added.body.message);
   assert.equal(added.body.program.program_name_th, 'วิศวกรรมหุ่นยนต์');
-  assert.equal(added.body.program.department_id, DEPT_COMPUTER);
+  assert.equal(
+    added.body.program.department_id,
+    DEPT_COMPUTER,
+    'filed under the grant’s department',
+  );
   assert.equal(added.body.program.revision_year, '2566');
   assert.equal(added.body.program.is_active, true);
 
@@ -133,7 +129,7 @@ test('an administrator adds, edits and removes a programme under a department', 
   assert.equal(edited.status, 200, edited.body.message);
   assert.equal(edited.body.program.program_name_th, 'วิศวกรรมหุ่นยนต์และระบบอัตโนมัติ');
   assert.equal(edited.body.program.revision_year, '2567');
-  // Not sent, so left where it was rather than blanked.
+  // An edit writes no department, so it is where it was.
   assert.equal(edited.body.program.department_id, DEPT_COMPUTER);
 
   const removed = await remove(cookie, 'T5001');
@@ -141,25 +137,46 @@ test('an administrator adds, edits and removes a programme under a department', 
   assert.equal((await read(cookie, 'T5001')).status, 404);
 });
 
-test('a faculty administrator manages programmes in any department of the faculty', async () => {
-  // The second criterion. Both seeded departments belong to ENG, and U_FAC's
-  // grant is scoped to ENG - so the programme in the department they are not
-  // otherwise associated with is theirs to make and theirs to read back.
+test('the Faculty Admin is refused by the server on every endpoint — #282', async () => {
+  // The owner's answer of 18 พ.ย. 2569, which replaced the second criterion
+  // ("a Faculty Admin manages programmes in any department of the faculty"):
+  // the faculty administrator keeps departments and accounts, and reaches no
+  // programme. At the server, not only by a missing menu entry (#49).
   const cookie = await signInAs('U_FAC');
 
-  const civil = await create(cookie, {
-    program_id: 'T0101',
-    program_name_th: 'วิศวกรรมโยธา',
-    department_id: DEPT_CIVIL,
-  });
-  assert.equal(civil.status, 201, civil.body.message);
-  assert.equal(civil.body.program.department_id, DEPT_CIVIL);
+  try {
+    const answers = await Promise.all([
+      list(cookie),
+      read(cookie, SEEDED.id),
+      create(cookie, { program_id: 'F0501', program_name_th: 'ไม่ควรเกิด' }),
+      edit(cookie, SEEDED.id, { program_name_th: 'ไม่ควรเกิด' }),
+      remove(cookie, SEEDED.id),
+      template(cookie),
+      importCsv(cookie, csvOf([{ program_id: 'F0502', program_name_th: 'ไม่ควรเกิด' }])),
+    ]);
 
-  // And the seeded programme in the other department is reachable in the same
-  // session, which is what "any department" means.
-  assert.equal((await read(cookie, SEEDED.id)).status, 200);
+    for (const answer of answers) {
+      assert.equal(answer.status, 403, `${answer.request.method} ${answer.request.url}`);
+      assert.equal(answer.body.message, REFUSALS.forbidden);
+    }
 
-  assert.equal((await remove(cookie, 'T0101')).status, 204);
+    const admin = await signInAs('U_DEPT');
+    assert.equal((await read(admin, 'F0501')).status, 404);
+    assert.equal((await read(admin, 'F0502')).status, 404);
+    const untouched = await read(admin, SEEDED.id);
+    assert.equal(untouched.body.program.program_name_th, SEEDED.th);
+    assert.equal(untouched.body.program.is_active, true);
+  } finally {
+    // Below the seam, because what this restores is what a mutant let through:
+    // under `282:s282facultymaintains` the rename of `0501` stayed and failed
+    // four later tests that read its name, which counted one kill five times
+    // (measured 18 พ.ย. 2569; #89, #181).
+    await api.pool.query(`DELETE FROM programs WHERE program_id IN ('F0501', 'F0502')`);
+    await api.pool.query(
+      'UPDATE programs SET program_name_th = $2, is_active = true WHERE program_id = $1',
+      [SEEDED.id, SEEDED.th],
+    );
+  }
 });
 
 test('a department administrator is confined to their own department by the server', async () => {
@@ -174,24 +191,16 @@ test('a department administrator is confined to their own department by the serv
   assert.equal((await edit(cookie, SEEDED.id, { program_name_th: 'ไม่ควรเกิด' })).status, 404);
   assert.equal((await remove(cookie, SEEDED.id)).status, 404);
 
-  // Creating one under a department they do not hold is refused in as many
-  // words, because the department they named is not a secret to them.
-  const elsewhere = await create(cookie, {
-    program_id: 'X0501',
-    program_name_th: 'ไม่ควรเกิด',
-    department_id: DEPT_COMPUTER,
-  });
-  assert.equal(elsewhere.status, 403);
-  assert.equal(elsewhere.body.message, REFUSALS.departmentNotYours);
-
-  // Their own department is theirs, so the refusal above is about the scope and
-  // not about the role.
+  // Their own department is theirs, so the refusals above are about the scope
+  // and not about the role. (A creation naming somebody else's department was
+  // refused here until #282; the body's department is no longer read, which
+  // the test *a department named in the body is not read* below holds.)
   const own = await create(cookie, {
     program_id: 'T0102',
     program_name_th: 'วิศวกรรมโยธาและสิ่งแวดล้อม',
-    department_id: DEPT_CIVIL,
   });
   assert.equal(own.status, 201, own.body.message);
+  assert.equal(own.body.program.department_id, DEPT_CIVIL);
 
   // And the list they see is their own department's, not the faculty's. Before
   // #102 the only row here was `T0102` - the one this caller had just made -
@@ -206,10 +215,9 @@ test('a department administrator is confined to their own department by the serv
   );
 
   // Nothing they were refused happened.
-  const admin = await signInAs('U_FAC');
-  assert.equal((await read(admin, 'X0501')).status, 404);
+  const admin = await signInAs('U_DEPT');
   assert.equal((await read(admin, SEEDED.id)).body.program.program_name_th, SEEDED.th);
-  assert.equal((await remove(admin, 'T0102')).status, 204);
+  assert.equal((await remove(cookie, 'T0102')).status, 204);
 });
 
 test('and the boundary runs the other way, on a curriculum no test made', async () => {
@@ -237,38 +245,42 @@ test('and the boundary runs the other way, on a curriculum no test made', async 
 
   // Nothing they were refused happened: the row is still there, under its own
   // name, for an account that may see it.
-  const admin = await signInAs('U_FAC');
+  const admin = await signInAs('U_DEPT2');
   assert.equal((await read(admin, CIVIL.id)).body.program.program_name_th, CIVIL.th);
 });
 
 test('a department administrator cannot move a programme out of their reach', async () => {
-  // The other end of the third criterion. Editing names a department too, and a
-  // department administrator who could name any of them would have a way of
-  // pushing a record out of their own reach - or, run the other way, of
-  // adopting one that is not theirs.
-  const admin = await signInAs('U_FAC');
+  // The other end of the third criterion. Until #282 an edit could name a
+  // department and was refused when it named somebody else's; since then the
+  // edit writes no department, so the move does not happen and the save of the
+  // other fields does - the body's department is not read, rather than refused.
+  const cookie = await signInAs('U_DEPT2');
   assert.equal(
     (
-      await create(admin, {
+      await create(cookie, {
         program_id: 'T0103',
         program_name_th: 'วิศวกรรมสำรวจ',
-        department_id: DEPT_CIVIL,
       })
     ).status,
     201,
   );
 
-  const cookie = await signInAs('U_DEPT2');
-  const moved = await edit(cookie, 'T0103', {
-    program_name_th: 'วิศวกรรมสำรวจ',
-    department_id: DEPT_COMPUTER,
-  });
+  try {
+    const moved = await edit(cookie, 'T0103', {
+      program_name_th: 'วิศวกรรมสำรวจและแผนที่',
+      department_id: DEPT_COMPUTER,
+    });
 
-  assert.equal(moved.status, 403);
-  assert.equal(moved.body.message, REFUSALS.departmentNotYours);
-  assert.equal((await read(cookie, 'T0103')).body.program.department_id, DEPT_CIVIL);
-
-  assert.equal((await remove(admin, 'T0103')).status, 204);
+    assert.equal(moved.status, 200, moved.body.message);
+    const after = (await read(cookie, 'T0103')).body.program;
+    assert.equal(after.department_id, DEPT_CIVIL, 'still in the editor’s own department');
+    assert.equal(after.program_name_th, 'วิศวกรรมสำรวจและแผนที่');
+  } finally {
+    // Below the seam: under `282:s282putmoves` the row is in `05`, out of this
+    // caller's reach, and a removal over HTTP left it for the pagination test
+    // to count (measured 18 พ.ย. 2569; #89, #181).
+    await api.pool.query(`DELETE FROM programs WHERE program_id = 'T0103'`);
+  }
 });
 
 test('a referenced programme is deactivated instead of deleted', async () => {
@@ -276,7 +288,7 @@ test('a referenced programme is deactivated instead of deleted', async () => {
   // seeded PLOs, Program Subjects, students and Offerings, every one of those
   // references is ON DELETE RESTRICT, and the answer is not a refusal: the row
   // is switched off and the caller is told so.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const removed = await remove(cookie, SEEDED.id);
 
@@ -310,38 +322,37 @@ test('a referenced programme is deactivated instead of deleted', async () => {
   assert.equal(on.body.program.revision_year, SEEDED.revision_year);
 });
 
-test('the form is offered exactly the departments the caller may use', async () => {
-  // The picker the first criterion's "chosen Department" comes from. What it
-  // offers has to be what the server will accept, or the form has a way of
-  // producing a refusal by being used as intended - so the two are the same
-  // reach, asserted from both ends.
-  const faculty = await signInAs('U_FAC');
-  const both = await pickable(faculty);
-  assert.equal(both.status, 200);
-  assert.deepEqual(
-    both.body.departments.map((row) => row.department_id).sort(),
-    [DEPT_CIVIL, DEPT_COMPUTER].sort(),
-  );
-
-  const department = await signInAs('U_DEPT2');
-  const own = await pickable(department);
-  assert.deepEqual(
-    own.body.departments.map((row) => row.department_id),
-    [DEPT_CIVIL],
-  );
-
-  // Nothing on that list is refused, and what is not on it is.
-  const allowed = await create(department, {
+test('a department named in the body is not read: the programme lands in the grant’s — #282', async () => {
+  // The owner's answer of 18 พ.ย. 2569: no department on the form, and a
+  // programme filed under the department of the grant that records it. A body
+  // that still names one - an old client, or somebody typing a request - names
+  // somebody else's here, and the row lands in `01` all the same. Until #282
+  // that request was refused with `departmentNotYours`; the picker it was
+  // asked of (`GET /programs/departments`) is gone, and that path now reaches
+  // the one-programme route as a code nobody has.
+  const cookie = await signInAs('U_DEPT2');
+  const made = await create(cookie, {
     program_id: 'T0104',
     program_name_th: 'วิศวกรรมทรัพยากรน้ำ',
-    department_id: own.body.departments[0].department_id,
+    department_id: DEPT_COMPUTER,
   });
-  assert.equal(allowed.status, 201, allowed.body.message);
-  assert.equal((await remove(department, 'T0104')).status, 204);
+  try {
+    assert.equal(made.status, 201, made.body.message);
+    assert.equal(made.body.program.department_id, DEPT_CIVIL);
+    assert.equal((await read(await signInAs('U_DEPT'), 'T0104')).status, 404, 'not in 05');
+
+    const picker = await request(api.app).get('/api/programs/departments').set('Cookie', cookie);
+    assert.equal(picker.status, 404);
+    assert.equal(picker.body.message, REFUSALS.programNotFound);
+  } finally {
+    // Below the seam, for the same reason as the move above: under
+    // `282:s282bodydepartment` the row lands in `05` (#89, #181).
+    await api.pool.query(`DELETE FROM programs WHERE program_id = 'T0104'`);
+  }
 });
 
 test('a duplicate identifier is refused rather than overwriting', async () => {
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const clash = await create(cookie, {
     program_id: SEEDED.id,
@@ -354,16 +365,15 @@ test('a duplicate identifier is refused rather than overwriting', async () => {
   assert.equal((await read(cookie, SEEDED.id)).body.program.program_name_th, SEEDED.th);
 });
 
-test('a programme with no name, no department or an unreadable year is refused', async () => {
-  const cookie = await signInAs('U_FAC');
+test('a programme with no name or an unreadable year is refused', async () => {
+  // A programme with no department was refused here too until #282; the
+  // department is now the grant's, so a body without one is the normal case
+  // (the first test in this file).
+  const cookie = await signInAs('U_DEPT');
 
-  const nameless = await create(cookie, { program_id: 'T9001', department_id: DEPT_COMPUTER });
+  const nameless = await create(cookie, { program_id: 'T9001' });
   assert.equal(nameless.status, 400);
   assert.equal(nameless.body.message, REFUSALS.invalidProgram);
-
-  const homeless = await create(cookie, { program_id: 'T9002', program_name_th: 'ไม่มีภาค' });
-  assert.equal(homeless.status, 400);
-  assert.equal(homeless.body.message, REFUSALS.invalidProgram);
 
   const undated = await create(cookie, {
     program_id: 'T9003',
@@ -374,13 +384,13 @@ test('a programme with no name, no department or an unreadable year is refused',
   assert.equal(undated.status, 400);
   assert.equal(undated.body.message, REFUSALS.invalidProgram);
 
-  for (const id of ['T9001', 'T9002', 'T9003']) assert.equal((await read(cookie, id)).status, 404);
+  for (const id of ['T9001', 'T9003']) assert.equal((await read(cookie, id)).status, 404);
 });
 
 test('the list paginates beyond ten rows', async () => {
   // The eighth criterion. The seed has two programmes, so the file makes enough
   // of its own to have a second page at all, then clears them up.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
   const made = Array.from({ length: 11 }, (unused, index) => `Q${String(index).padStart(3, '0')}`);
   for (const id of made) {
     const added = await create(cookie, {
@@ -396,7 +406,9 @@ test('the list paginates beyond ten rows', async () => {
   assert.equal(first.body.programs.length, 10);
   assert.equal(first.body.page, 1);
   assert.equal(first.body.per_page, 10);
-  assert.equal(first.body.total, made.length + PROGRAMS.length);
+  // The 05 administrator's list: the seed's 05 programmes and these (#282).
+  const seeded05 = PROGRAMS.filter((program) => program.department === DEPT_COMPUTER).length;
+  assert.equal(first.body.total, made.length + seeded05);
 
   const second = await list(cookie, '?page=2');
   assert.equal(second.body.page, 2);
@@ -408,10 +420,10 @@ test('the list paginates beyond ten rows', async () => {
 });
 
 test('the template downloads and matches what the importer accepts', async (t) => {
-  t.after(async () => remove(await signInAs('U_FAC'), '0505'));
+  t.after(async () => remove(await signInAs('U_DEPT'), '0505'));
   // The seventh criterion, in both halves: the header is what this file names,
   // and the file it hands back is one the importer will take.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const response = await template(cookie);
 
@@ -430,9 +442,10 @@ test('the template downloads and matches what the importer accepts', async (t) =
 });
 
 test('a valid spreadsheet imports every row', async () => {
-  // The seventh criterion's first half, across two departments in one file -
-  // which is the reason the template carries a department column at all.
-  const cookie = await signInAs('U_FAC');
+  // The seventh criterion's first half. Every row lands in the grant's
+  // department (#282); until then the file carried a department column, so one
+  // file could fill several.
+  const cookie = await signInAs('U_DEPT');
 
   const response = await importCsv(
     cookie,
@@ -441,10 +454,9 @@ test('a valid spreadsheet imports every row', async () => {
         program_id: 'I0501',
         program_name_th: 'วิศวกรรมซอฟต์แวร์',
         program_name_en: 'Software Engineering',
-        department_id: DEPT_COMPUTER,
         revision_year: '2565',
       },
-      { program_id: 'I0102', program_name_th: 'วิศวกรรมขนส่ง', department_id: DEPT_CIVIL },
+      { program_id: 'I0102', program_name_th: 'วิศวกรรมขนส่ง' },
     ]),
   );
 
@@ -452,8 +464,8 @@ test('a valid spreadsheet imports every row', async () => {
   assert.equal(response.body.created, 2);
   assert.deepEqual(response.body.errors, []);
   assert.deepEqual(
-    response.body.programs.map((row) => row.department_id).sort(),
-    [DEPT_CIVIL, DEPT_COMPUTER].sort(),
+    response.body.programs.map((row) => row.department_id),
+    [DEPT_COMPUTER, DEPT_COMPUTER],
   );
   // The English name and the year are optional, as the columns are.
   const sparse = (await read(cookie, 'I0102')).body.program;
@@ -468,17 +480,19 @@ test('a spreadsheet with bad rows reports each failure and applies nothing', asy
   // transaction: the person fixes their file and uploads it again rather than
   // working out which half of it took. Five different failures, one good row
   // among them, and the good row must not survive.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const response = await importCsv(
     cookie,
     csvOf([
-      { program_id: 'B001', program_name_th: 'ดี', department_id: DEPT_COMPUTER }, // line 2
-      { program_id: '', program_name_th: 'ไม่มีรหัส', department_id: DEPT_COMPUTER }, // line 3
-      { program_id: 'B002', program_name_th: '', department_id: DEPT_COMPUTER }, // line 4
-      { program_id: 'B003', program_name_th: 'ภาคไม่มีจริง', department_id: 'ZZ' }, // line 5
-      { program_id: 'B001', program_name_th: 'ซ้ำ', department_id: DEPT_COMPUTER }, // line 6
-      { program_id: SEEDED.id, program_name_th: 'ชนของเดิม', department_id: DEPT_COMPUTER }, // line 7
+      { program_id: 'B001', program_name_th: 'ดี' }, // line 2
+      { program_id: '', program_name_th: 'ไม่มีรหัส' }, // line 3
+      { program_id: 'B002', program_name_th: '' }, // line 4
+      // A department that does not exist was this line's failure until #282,
+      // when the file stopped naming one; an unreadable year takes its place.
+      { program_id: 'B003', program_name_th: 'ปีพัง', revision_year: '25' }, // line 5
+      { program_id: 'B001', program_name_th: 'ซ้ำ' }, // line 6
+      { program_id: SEEDED.id, program_name_th: 'ชนของเดิม' }, // line 7
     ]),
   );
 
@@ -492,8 +506,7 @@ test('a spreadsheet with bad rows reports each failure and applies nothing', asy
   );
   assert.equal(response.body.errors[0].message, REFUSALS.invalidProgram);
   assert.equal(response.body.errors[1].message, REFUSALS.invalidProgram);
-  // The department check reaches every imported row, not only the typed one.
-  assert.equal(response.body.errors[2].message, REFUSALS.departmentNotYours);
+  assert.equal(response.body.errors[2].message, REFUSALS.invalidProgram);
   // The duplicate within the file names the line it collides with, which is
   // what the database's own 23505 could not have said.
   assert.equal(response.body.errors[3].message, `${REFUSALS.duplicateProgramId} (ซ้ำกับบรรทัดที่ 2)`);
@@ -504,25 +517,37 @@ test('a spreadsheet with bad rows reports each failure and applies nothing', asy
   assert.equal((await read(cookie, 'B001')).status, 404);
 });
 
-test('an imported row cannot name a department the caller does not hold', async () => {
+test('an old template’s department column is not read: the rows land in the grant’s — #282', async () => {
   // The third criterion again, on the import - because a rule the form enforces
-  // and the spreadsheet does not is a rule with a way around it.
+  // and the spreadsheet does not is a rule with a way around it. Until #282 a
+  // row naming somebody else's department was refused; the template no longer
+  // carries the column, and a file made from the old one still imports, with
+  // the column ignored rather than obeyed or refused (`csv.js` keeps unknown
+  // headers and `readProgram` does not read this one).
   const cookie = await signInAs('U_DEPT2');
 
   const response = await importCsv(
     cookie,
-    csvOf([{ program_id: 'X0502', program_name_th: 'ไม่ควรเกิด', department_id: DEPT_COMPUTER }]),
+    [
+      'program_id,program_name_th,program_name_en,department_id,revision_year',
+      `X0502,แม่แบบเก่า,,${DEPT_COMPUTER},`,
+    ].join('\r\n'),
   );
 
-  assert.equal(response.status, 400);
-  assert.equal(response.body.errors[0].message, REFUSALS.departmentNotYours);
-
-  const admin = await signInAs('U_FAC');
-  assert.equal((await read(admin, 'X0502')).status, 404);
+  try {
+    assert.equal(response.status, 201, response.body.message);
+    assert.deepEqual(
+      response.body.programs.map((row) => [row.program_id, row.department_id]),
+      [['X0502', DEPT_CIVIL]],
+    );
+    assert.equal((await read(await signInAs('U_DEPT'), 'X0502')).status, 404, 'not in 05');
+  } finally {
+    await remove(cookie, 'X0502');
+  }
 });
 
 test('an empty file is refused as such', async () => {
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const response = await importCsv(cookie, csvOf([]));
 
@@ -536,7 +561,7 @@ test('a departments file uploaded here is refused as the wrong template', async 
   // carry, so the file is not refused for having nothing in common with this
   // one - it is refused because `program_id` and `program_name_th`, which
   // `readProgram` requires of every row, are not in the header at all.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const response = await importCsv(
     cookie,
@@ -570,7 +595,6 @@ test('the Central Admin is refused by the server on every endpoint', async () =>
     edit(cookie, SEEDED.id, { program_name_th: 'ไม่ควรเกิด' }),
     remove(cookie, SEEDED.id),
     template(cookie),
-    pickable(cookie),
     importCsv(
       cookie,
       csvOf([
@@ -584,7 +608,7 @@ test('the Central Admin is refused by the server on every endpoint', async () =>
     assert.equal(answer.body.message, REFUSALS.forbidden);
   }
 
-  const admin = await signInAs('U_FAC');
+  const admin = await signInAs('U_DEPT');
   assert.equal((await read(admin, 'C0501')).status, 404);
   assert.equal((await read(admin, 'C0502')).status, 404);
   const untouched = await read(admin, SEEDED.id);
@@ -606,7 +630,7 @@ test('an edit that empties the year empties it', async () => {
   // The form sends every box on every save, so a year that arrives blank is a
   // year somebody cleared. Reading it as "leave the old one" would have told
   // the person their edit was saved while the table kept the old value.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
   const id = 'T5009';
   await create(cookie, {
     program_id: id,
@@ -615,7 +639,10 @@ test('an edit that empties the year empties it', async () => {
     revision_year: '2565',
   });
 
-  const cleared = await edit(cookie, id, { program_name_th: 'หลักสูตรทดสอบปี', revision_year: '' });
+  const cleared = await edit(cookie, id, {
+    program_name_th: 'หลักสูตรทดสอบปี',
+    revision_year: '',
+  });
   assert.equal(cleared.status, 200);
   assert.equal(cleared.body.program.revision_year, null);
   assert.equal((await read(cookie, id)).body.program.revision_year, null);
@@ -627,7 +654,7 @@ test('a creation cannot ask for a programme that is already switched off', async
   // Retiring one is the fourth criterion and happens on an edit or a removal.
   // Nothing in the ticket asks for a programme to be born inactive, so the
   // field is not read on a creation.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
   const id = 'T5010';
   const added = await create(cookie, {
     program_id: id,
@@ -641,31 +668,34 @@ test('a creation cannot ask for a programme that is already switched off', async
   assert.equal((await remove(cookie, id)).status, 204);
 });
 
-test('a retired department is reported as retired, and nothing new may be filed under it', async () => {
+test('nothing new may be filed under a retired department, and the sentence says it is retired — #282', async () => {
   // The fourth criterion's second half, read for the department a programme is
-  // chosen into: a record that is switched off "stops appearing in selection
-  // lists". The selection list is the form, not this response - the screen has
-  // no other way to name the department a programme already sits in, so the
-  // department is reported with its `is_active` and the form is what declines
-  // to offer it. What the writes accept is asserted here as before.
-  const cookie = await signInAs('U_FAC');
+  // filed under. Since #282 that department is the administrator's own, so the
+  // refusal is the owner's sentence of 18 พ.ย. 2569 - *ภาควิชาของคุณถูกปิดใช้งาน*
+  // - and not `departmentNotYours`, which said the department was somebody
+  // else's. Written out rather than read from REFUSALS for COLUMNS' reason.
+  const RETIRED = 'ภาควิชาของคุณถูกปิดใช้งาน จึงเพิ่มหลักสูตรใหม่ไม่ได้';
+  const cookie = await signInAs('U_DEPT2');
   await api.pool.query('UPDATE departments SET is_active = false WHERE department_id = $1', [
     DEPT_CIVIL,
   ]);
 
   try {
-    const offered = await pickable(cookie);
-    const retired = offered.body.departments.find((row) => row.department_id === DEPT_CIVIL);
-    assert.ok(retired, 'the retired department is still named');
-    assert.equal(retired.is_active, false);
-
     const refused = await create(cookie, {
       program_id: 'T5011',
       program_name_th: 'หลักสูตรในภาควิชาที่ปิดแล้ว',
-      department_id: DEPT_CIVIL,
     });
     assert.equal(refused.status, 403);
-    assert.equal(refused.body.message, REFUSALS.departmentNotYours);
+    assert.equal(refused.body.message, RETIRED);
+
+    // The same refusal reaches a spreadsheet row, through `verify`.
+    const imported = await importCsv(
+      cookie,
+      csvOf([{ program_id: 'T5013', program_name_th: 'นำเข้าในภาควิชาที่ปิดแล้ว' }]),
+    );
+    assert.equal(imported.status, 400);
+    assert.deepEqual(imported.body.errors, [{ line: 2, message: RETIRED }]);
+    for (const id of ['T5011', 'T5013']) assert.equal((await read(cookie, id)).status, 404);
 
     // But a programme already filed under it is still editable, or retiring a
     // department would freeze the programmes underneath it.
@@ -675,7 +705,10 @@ test('a retired department is reported as retired, and nothing new may be filed 
        VALUES ($1, 'หลักสูตรเดิมของภาควิชานี้', $2)`,
       [id, DEPT_CIVIL],
     );
-    const edited = await edit(cookie, id, { program_name_th: 'ชื่อใหม่', is_active: false });
+    const edited = await edit(cookie, id, {
+      program_name_th: 'ชื่อใหม่',
+      is_active: false,
+    });
     assert.equal(edited.status, 200);
     assert.equal(edited.body.program.is_active, false);
     assert.equal((await remove(cookie, id)).status, 204);
@@ -703,13 +736,13 @@ const logOf = async (userId) => {
   return rows;
 };
 
-const FAC = ACCOUNTS.find((account) => account.alias === 'U_FAC').id;
+const DEPT = ACCOUNTS.find((account) => account.alias === 'U_DEPT').id;
 
 const said = (rows) => rows.map((row) => [row.activity, row.target_kind, row.target_id]);
 
 test('adding, editing and removing a programme each write one line — #58', async () => {
-  const cookie = await signInAs('U_FAC');
-  const before = (await logOf(FAC)).length;
+  const cookie = await signInAs('U_DEPT');
+  const before = (await logOf(DEPT)).length;
 
   assert.equal(
     (
@@ -724,7 +757,7 @@ test('adding, editing and removing a programme each write one line — #58', asy
   assert.equal((await edit(cookie, 'L101', { program_name_th: 'หลักสูตรบันทึกใหม่' })).status, 200);
   assert.equal((await remove(cookie, 'L101')).status, 204);
 
-  assert.deepEqual(said((await logOf(FAC)).slice(before)), [
+  assert.deepEqual(said((await logOf(DEPT)).slice(before)), [
     ['CREATE_PROGRAM', 'PROGRAM', 'L101'],
     ['UPDATE_PROGRAM', 'PROGRAM', 'L101'],
     ['DELETE_PROGRAM', 'PROGRAM', 'L101'],
@@ -736,14 +769,14 @@ test('a removal the database turns into a deactivation says so — #58', async (
   // happened to the record, so they are two codes. `DELETE_PROGRAM` on a
   // programme that is still there and still referenced would be a line saying
   // the opposite of what the same request answered the caller.
-  const cookie = await signInAs('U_FAC');
-  const before = (await logOf(FAC)).length;
+  const cookie = await signInAs('U_DEPT');
+  const before = (await logOf(DEPT)).length;
 
   const answer = await remove(cookie, SEEDED.id);
   assert.equal(answer.status, 200);
   assert.equal(answer.body.deactivated, true);
 
-  assert.deepEqual(said((await logOf(FAC)).slice(before)), [
+  assert.deepEqual(said((await logOf(DEPT)).slice(before)), [
     ['DEACTIVATE_PROGRAM', 'PROGRAM', SEEDED.id],
   ]);
 
@@ -753,20 +786,28 @@ test('a removal the database turns into a deactivation says so — #58', async (
 });
 
 test('an import writes a line per row, sharing one timestamp — #58', async () => {
-  const cookie = await signInAs('U_FAC');
-  const before = (await logOf(FAC)).length;
+  const cookie = await signInAs('U_DEPT');
+  const before = (await logOf(DEPT)).length;
 
   try {
     const imported = await importCsv(
       cookie,
       csvOf([
-        { program_id: 'L102', program_name_th: 'หลักสูตรนำเข้าหนึ่ง', department_id: DEPT_COMPUTER },
-        { program_id: 'L103', program_name_th: 'หลักสูตรนำเข้าสอง', department_id: DEPT_COMPUTER },
+        {
+          program_id: 'L102',
+          program_name_th: 'หลักสูตรนำเข้าหนึ่ง',
+          department_id: DEPT_COMPUTER,
+        },
+        {
+          program_id: 'L103',
+          program_name_th: 'หลักสูตรนำเข้าสอง',
+          department_id: DEPT_COMPUTER,
+        },
       ]),
     );
     assert.equal(imported.status, 201);
 
-    const written = (await logOf(FAC)).slice(before);
+    const written = (await logOf(DEPT)).slice(before);
     assert.deepEqual(said(written), [
       ['IMPORT_PROGRAMS', 'PROGRAM', 'L102'],
       ['IMPORT_PROGRAMS', 'PROGRAM', 'L103'],
@@ -789,7 +830,7 @@ test('a programme somebody manages is deactivated instead of deleted — #60', a
   // a reason that is not this one. The seed's only such programme is `0101` and
   // it carries no grant, which is why no green suite has ever produced a
   // dangling grant: nothing in the seed can express the case.
-  const admin = await signInAs('U_FAC');
+  const admin = await signInAs('U_DEPT');
   const holder = ACCOUNTS.find((one) => one.alias === 'U_TEACH2');
 
   // Both of them, and whether or not the row passes. The `finally` below takes
@@ -870,7 +911,7 @@ test('a revision year that is not a plausible Buddhist-era one is refused, and t
   // from `lib/revisionYear.js`, for the reason COLUMNS is at the top of this
   // file: a test that asked the constant what the constant says would pass
   // whatever it said.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   // The mistake the ticket opens with: four digits, and a year this column
   // cannot mean. It is diagnosable, so the sentence does the arithmetic.
@@ -943,7 +984,7 @@ test('the same year refusal reaches an edit and a spreadsheet row — #177', asy
   // form, the edit and the import all read, so the sentence is the same one in
   // all three - the import's by way of `sentenceOf`, which is how a refusal
   // that names a value has reached a line number since #125.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
 
   const made = await create(cookie, {
     program_id: 'T7708',
@@ -985,7 +1026,7 @@ test('the same year refusal reaches an edit and a spreadsheet row — #177', asy
 test('a search narrows the list to the programmes whose code, name or year holds it - #272', async () => {
   // The owner's answer of 12 November 2569, as on departments: code, both
   // names and the revision year the table shows, any case, the count following.
-  const cookie = await signInAs('U_FAC');
+  const cookie = await signInAs('U_DEPT');
   const made = [
     {
       program_id: 'K001',

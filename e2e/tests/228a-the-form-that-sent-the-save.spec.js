@@ -83,7 +83,7 @@ const SCREENS = [
   },
   {
     name: 'ข้อมูลหลักสูตร (ProgramForm.js)',
-    account: ACCOUNTS.facultyAdmin,
+    account: ACCOUNTS.departmentAdmin05,
     open: page => programs.openPrograms(page),
     openEditor: page => programs.openEditor(page, '0501'),
     write: /^\/api\/programs\/[^/]+$/,

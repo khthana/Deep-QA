@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
-const { facultyContext, switchOff } = require('../support/retiring');
+const { facultyContext, departmentContext, switchOff } = require('../support/retiring');
 const { openSubjects, subjectRow, departmentPicker } = require('../support/subjects-screen');
 const {
   openProgramSubjects,
@@ -34,7 +34,8 @@ const {
  * a value the pool does not contain — the one shape that separates the
  * effect's two conditions.
  *
- * `ProgramForm` has `233a` row 2 and `233:movesanexistingprogramme`;
+ * `ProgramForm` had `233a` row 2 and `233:movesanexistingprogramme` until
+ * #282 took its department field away on 18 พ.ย. 2569 (both kept as records);
  * `RubricForm` had `198a` row 5 and `232:movesanexistingrubric` until #276
  * deleted it on 14 พ.ย. 2569, with its หลักสูตร field (the mutant is kept as a
  * record, `SUPERSEDED`). The other three had nothing, which is what this file is for — the code is **copied**
@@ -74,7 +75,8 @@ const {
  *
  * `pages/Subjects.js` has no filter at all — `starting` is `onlyOne` or
  * nothing — so a faculty administrator who reaches two departments of which
- * one is retired is row 1, which is `233a` row 2 on another form.
+ * one is retired is row 1, which is what `233a` row 2 was on another form
+ * until #282 withdrew it.
  *
  * ## What this file does not measure
  *
@@ -100,7 +102,7 @@ const OUTCOME = 'PLO-1';
  * The schema, remembered and put back — #134.
  *
  * Each row below also restores what it switched off in its own `finally`, for
- * `233a` row 2's reasons: a mutant in the frontend cannot stop a restore made
+ * `233a`'s old row 2's reasons (withdrawn by #282): a mutant in the frontend cannot stop a restore made
  * over HTTP. This is the other half, and it is what puts a record back when a
  * row fails before its own restore runs.
  *
@@ -168,8 +170,8 @@ test('an existing subject keeps its own department even when that department is 
       'the editor for that subject is open',
     ).toBeVisible();
 
-    // The claim first and the picker's half second, which is `233a` row 2's
-    // order and for its reason: `movesanexistingsubject` re-picks the field,
+    // The claim first and the picker's half second, which was `233a` row 2's
+    // order (withdrawn by #282) and for its reason: `movesanexistingsubject` re-picks the field,
     // and the option is drawn only because the field holds it — `offered` keeps
     // a retired department when it is `draft.department_id` — so a precondition
     // read above the claim takes the red and leaves the claim itself unread
@@ -196,8 +198,8 @@ test('an existing pair keeps its own curriculum even when that curriculum is ret
   page,
   playwright,
 }) => {
-  const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program', {
+  const owner = await departmentContext(playwright);
+  const switchBackOn = await switchOff(owner, `/api/programs/${CURRICULUM}`, 'program', {
     onFailure: report,
   });
 
@@ -236,8 +238,8 @@ test('the outcome form is handed its own curriculum by the filter, which is why 
   page,
   playwright,
 }) => {
-  const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program', {
+  const owner = await departmentContext(playwright);
+  const switchBackOn = await switchOff(owner, `/api/programs/${CURRICULUM}`, 'program', {
     onFailure: report,
   });
 
@@ -304,8 +306,8 @@ test('an existing pair still offers its own retired curriculum as a live choice'
   page,
   playwright,
 }) => {
-  const faculty = await facultyContext(playwright);
-  const switchBackOn = await switchOff(faculty, `/api/programs/${CURRICULUM}`, 'program', {
+  const owner = await departmentContext(playwright);
+  const switchBackOn = await switchOff(owner, `/api/programs/${CURRICULUM}`, 'program', {
     onFailure: report,
   });
 

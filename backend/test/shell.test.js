@@ -502,7 +502,7 @@ test("the screens the external assessor's set leaves out", async (t) => {
   const EXCLUDED = [
     ['/api/users', 'U_ADMIN'],
     ['/api/departments', 'U_FAC'],
-    ['/api/programs', 'U_FAC'],
+    ['/api/programs', 'U_DEPT'], // the Faculty Admin's until #282
     ['/api/subjects', 'U_DEPT'],
     ['/api/students', 'U_DEPT'],
     ['/api/program-subjects', 'U_COM'],

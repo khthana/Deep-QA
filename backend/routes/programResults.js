@@ -156,8 +156,9 @@ function programResultRoutes(pool) {
   /**
    * The curricula this caller reaches — the screen's first picker.
    *
-   * Drawn from here rather than from `/api/programs`, which belongs to the two
-   * administrators (#15) and would refuse both the committee member this
+   * Drawn from here rather than from `/api/programs`, which belongs to the
+   * Department Admin alone since #282 (to the two administrators before that,
+   * #15) and would refuse both the committee member this
    * screen is mainly for and the assessor reviewing it. `plos.js` and
    * `programSubjects.js` each answer the same question at their own path for
    * the same reason.

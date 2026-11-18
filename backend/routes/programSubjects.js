@@ -241,8 +241,9 @@ function programSubjectRoutes(pool) {
   /**
    * The programmes this caller reaches — the list's filter and the form's
    * picker, both drawn from here rather than from `/api/programs`, which
-   * belongs to the two administrators (#15) and would refuse the committee
-   * member this screen is mainly for.
+   * belongs to the Department Admin alone since #282 (to the two
+   * administrators before that, #15) and would refuse the committee member
+   * this screen is mainly for.
    */
   router.get('/program-subjects/programs', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {

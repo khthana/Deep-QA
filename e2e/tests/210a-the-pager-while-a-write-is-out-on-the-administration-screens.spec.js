@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS } = require('../support/accounts');
-const { DEPARTMENTS, RUBRICS } = require('../../db/seed');
+const { RUBRICS } = require('../../db/seed');
 const { signIn } = require('../support/auth');
 const { gate, isWrite } = require('../support/gate');
 const { dismiss, panel } = require('../support/confirm-dialog');
@@ -134,7 +134,7 @@ const SCREENS = [
   },
   {
     name: 'ข้อมูลหลักสูตร (Programs.js)',
-    account: ACCOUNTS.facultyAdmin,
+    account: ACCOUNTS.departmentAdmin05,
     open: page => programs.openPrograms(page),
     table: page => programs.listTable(page),
     write: /^\/api\/programs\/[^/]+$/,
@@ -146,7 +146,8 @@ const SCREENS = [
       const rows = Array.from(
         { length: PAGE_SIZE + 1 - total },
         (unused, i) =>
-          `9${String(i).padStart(3, '0')},หลักสูตรทดสอบแบ่งหน้า ${i},Paging ${i},${DEPARTMENTS[0].id},2569`,
+          // No department field since #282: the template has four columns.
+          `9${String(i).padStart(3, '0')},หลักสูตรทดสอบแบ่งหน้า ${i},Paging ${i},2569`,
       );
       await programs.importPrograms(page, csv(header, ...rows));
       await untilAtLeast(page, table, PAGE_SIZE + 1);

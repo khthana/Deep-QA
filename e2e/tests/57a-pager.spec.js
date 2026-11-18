@@ -223,7 +223,7 @@ test.describe('ข้อมูลหลักสูตร — row 4', () => {
   let codes = [];
 
   test.beforeEach(async ({ page }) => {
-    await signIn(page, ACCOUNTS.facultyAdmin);
+    await signIn(page, ACCOUNTS.departmentAdmin05);
     await programs.openPrograms(page);
   });
 
@@ -237,8 +237,9 @@ test.describe('ข้อมูลหลักสูตร — row 4', () => {
       page,
       csv(
         header,
+        // No department field since #282: the template has four columns.
         ...codes.map(
-          (code, i) => `${code},หลักสูตรทดสอบแบ่งหน้า ${i},Paging Test ${i},05,2565`,
+          (code, i) => `${code},หลักสูตรทดสอบแบ่งหน้า ${i},Paging Test ${i},2565`,
         ),
       ),
     );

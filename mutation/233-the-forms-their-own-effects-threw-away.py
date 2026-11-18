@@ -54,6 +54,19 @@
 ไม่ใช่ของ #234 ด้วย — การเล็งใหม่ซื่อตรงเมื่อมันรักษาความผิดไว้ ไม่ใช่เมื่อมันหาบรรทัดเจอ (#203)
 กวาดซ้ำวันเดียวกัน: ตัวละ 1 ตก 4 ผ่าน คือแถว 4 และแถว 5 ตามลำดับ ซึ่งเป็นแถวที่ตารางบอกไว้
 
+## ถอนเป็นบันทึก 18 พ.ย. 2569 (#282)
+
+เจ้าของงานเอาช่องภาควิชาออกจาก `ProgramForm` และเอาจอหลักสูตรออกจากผู้ดูแลระดับคณะ pool, `starting` และ effect
+ที่สามตัวแรกในตารางข้างบนแก้จึงไม่มีอยู่แล้ว ทั้งสามจึงอยู่ใน `SUPERSEDED` เป็นบันทึก (#54) และ `233a` แถว 1 กับ 2
+ถูกเอาออกพร้อมกัน แถวที่เหลือเลื่อนจาก 3 4 5 เป็น 1 2 3 — ตารางกับบันทึกการกวาดข้างบนอ้างเลขเดิม
+
+- ข้ออ้างของ `programmearrayidentity` (สิ่งที่พิมพ์รอดการอ่าน pool รอบสอง) **ไปถึงไม่ได้เชิงโครงสร้าง** เพราะ
+  `Programs.js` ไม่อ่าน pool อีกเลย ไม่ใช่ *ยังไม่ได้ทดสอบ* (#102)
+- ข้ออ้างของ `movesanexistingprogramme` (หลักสูตรที่มีอยู่แล้วคงภาควิชาของตัวเอง) ย้ายไปอยู่ที่ server — การแก้ไขไม่เขียน
+  `department_id` เลย ถือโดย `backend/test/programs.test.js` *a department administrator cannot move a programme
+  out of their reach* และมัตแตนต์ของมันคือ `282:s282putmoves`
+- `keepsthedepartment` เป็นตัวควบคุมของแถว 1 จึงไปพร้อมแถวนั้น
+
 ## วิธีรัน
 
     python mutation/233-the-forms-their-own-effects-threw-away.py save
@@ -128,6 +141,12 @@ DIAGNOSED_DEPARTMENT = (
 
 ON_VALUE = "  }, [value])\n"
 
+# Withdrawn to records on 18 พ.ย. 2569 (#282): the owner took the department
+# field off `ProgramForm`, and with it the pool, `starting` and the effect these
+# three edit, so none of them has an anchor left. The rows they killed went too
+# (`233a`'s old rows 1 and 2); where the claim went is in the docstring.
+SUPERSEDED = {'programmearrayidentity', 'movesanexistingprogramme', 'keepsthedepartment'}
+
 MUTANTS = {
     'programmearrayidentity': [
         ('programme', DEPARTMENT_STARTING, ''),
@@ -145,8 +164,11 @@ MUTANTS = {
         ('programme', DEPARTMENT_GUARD, ''),
         ('programme', KEPT_DEPARTMENT,
          '      department_id: starting || current.department_id,\n'),
-        ('programme', ON_VALUE,
-         '    // eslint-disable-next-line react-hooks/exhaustive-deps\n' + ON_VALUE),
+        # Quoted with the line above it since 18 พ.ย. 2569 (#282): `}, [value])`
+        # alone is still in the form #282 left, so the record read as applicable.
+        # The pair is the code this mutant was written against, which is gone.
+        ('programme', '    }))\n' + ON_VALUE,
+         '    }))\n' + '    // eslint-disable-next-line react-hooks/exhaustive-deps\n' + ON_VALUE),
     ],
     'subjectarrayidentity': [
         ('subject', DEPARTMENT_STARTING, ''),

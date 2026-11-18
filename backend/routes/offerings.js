@@ -402,8 +402,9 @@ function offeringRoutes(pool) {
   /**
    * The programmes this caller reaches — the list's filter and the form's
    * picker, drawn from here rather than from `/api/programs`, which belongs to
-   * the two administrators (#15) and would refuse the committee member this
-   * screen is entirely for.
+   * the Department Admin alone since #282 (to the two administrators before
+   * that, #15) and would refuse the committee member this screen is entirely
+   * for.
    */
   router.get('/offerings/programs', requireRole(...COMMITTEE), async (req, res, next) => {
     try {

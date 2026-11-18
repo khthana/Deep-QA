@@ -65,7 +65,7 @@ test('row 1: ข้อมูลภาควิชา - แก้ไข and ล�
 });
 
 test('row 2: ข้อมูลหลักสูตร - แก้ไข and ลบ', async ({ page }) => {
-  await signIn(page, ACCOUNTS.facultyAdmin);
+  await signIn(page, ACCOUNTS.departmentAdmin05);
   await openPrograms(page);
   await isAnIcon(named(page, 'แก้ไข'), 'แก้ไข');
   await isAnIcon(named(page, 'ลบ'), 'ลบ');

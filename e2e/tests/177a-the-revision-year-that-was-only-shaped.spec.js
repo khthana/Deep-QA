@@ -44,9 +44,8 @@ async function enterAProgrammeRevisedIn(page, year) {
   await expect(page.getByRole('heading', { name: 'เพิ่มหลักสูตร' })).toBeVisible();
 
   await page.getByLabel('รหัสหลักสูตร', { exact: true }).fill('T7721');
-  // `getByRole` and not `getByLabel` on the picker, for 55a's reason: the label
-  // wraps the whole `<select>`, so its text counts every option's text too.
-  await page.getByRole('combobox', { name: 'ภาควิชา' }).selectOption('05');
+  // No department to pick since #282 (18 พ.ย. 2569): the server files the
+  // programme under the acting grant's department.
   await page
     .getByLabel('ชื่อหลักสูตร (ไทย)', { exact: true })
     .fill('หลักสูตรที่กรอกปีเป็น ค.ศ.');
@@ -67,7 +66,7 @@ async function saveAndWaitForTheAnswer(page) {
 
 test.describe('#177: a common-era year typed into a Buddhist-era field', () => {
   test.beforeEach(async ({ page }) => {
-    await signIn(page, ACCOUNTS.facultyAdmin);
+    await signIn(page, ACCOUNTS.departmentAdmin05);
     await openPrograms(page);
   });
 

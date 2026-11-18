@@ -38,8 +38,9 @@ const { openPrograms, programRow, waitForList } = require('../support/programs-s
  * ด้วยค่าเดิมก็คือการเขียน ไฟล์นี้จึงยึดสคีมาไว้ตอนเริ่มและคืนตอนจบ (#137)
  */
 
-// เตี้ยพอให้ฟอร์มล้นพื้นที่เนื้อหา — เหตุผลอยู่ในหัวไฟล์
-test.use({ viewport: { width: 900, height: 400 } });
+// เตี้ยพอให้ฟอร์มล้นพื้นที่เนื้อหา — เหตุผลอยู่ในหัวไฟล์ · 400 จนถึง 18 พ.ย. 2569 เมื่อ #282
+// เอาช่องภาควิชาออกจากฟอร์ม ฟอร์มสั้นลง และที่ 400 หัวข้อยังอยู่ในจอหลังเลื่อน (วัดวันนั้น)
+test.use({ viewport: { width: 900, height: 320 } });
 
 /**
  * This file saves a programme the seed wrote - put back when the file ends (#137).
@@ -69,7 +70,7 @@ async function expectScrolledPastHeading(page, heading) {
 
 test.describe('แถบแจ้งผลหลังบันทึกจากก้นฟอร์มยาว — #55', () => {
   test.beforeEach(async ({ page }) => {
-    await signIn(page, ACCOUNTS.facultyAdmin);
+    await signIn(page, ACCOUNTS.departmentAdmin05);
     await openPrograms(page);
   });
 
@@ -77,9 +78,7 @@ test.describe('แถบแจ้งผลหลังบันทึกจา�
     await page.getByRole('button', { name: 'เพิ่มหลักสูตร' }).click();
 
     await page.getByLabel('รหัสหลักสูตร', { exact: true }).fill('0501');
-    // `getByRole` ไม่ใช่ `getByLabel` ที่นี่: ป้ายหุ้ม `<select>` ไว้ทั้งก้อน
-    // ข้อความของป้ายจึงนับรวมข้อความของทุก option เข้าไปด้วย และ exact ก็ไม่ตรงกับอะไรเลย
-    await page.getByRole('combobox', { name: 'ภาควิชา' }).selectOption('05');
+    // ไม่มีช่องภาควิชาให้เลือกตั้งแต่ #282 (18 พ.ย. 2569) เซิร์ฟเวอร์ใส่ภาควิชาของสิทธิ์ให้เอง
     await page
       .getByLabel('ชื่อหลักสูตร (ไทย)', { exact: true })
       .fill('หลักสูตรที่ใช้รหัสซ้ำ');
@@ -115,7 +114,6 @@ test.describe('แถบแจ้งผลหลังบันทึกจา�
     await page.getByRole('button', { name: 'เพิ่มหลักสูตร' }).click();
 
     await page.getByLabel('รหัสหลักสูตร', { exact: true }).fill('0501');
-    await page.getByRole('combobox', { name: 'ภาควิชา' }).selectOption('05');
     await page
       .getByLabel('ชื่อหลักสูตร (ไทย)', { exact: true })
       .fill('หลักสูตรที่ใช้รหัสซ้ำ');

@@ -16,7 +16,6 @@ import {
   importPrograms,
   importTemplate,
   listPrograms,
-  listReachableDepartments,
   updateProgram,
 } from '../api/programs'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
@@ -25,11 +24,13 @@ import { outsideSearch } from '../lib/outsideTheSearch'
 /**
  * ข้อมูลหลักสูตร — ticket #15.
  *
- * The degree curricula a department offers. The first screen two roles share:
- * the faculty administrator sees every department's, the department
- * administrator sees their own. Neither of them is told so by this file - the
- * server filters the list and refuses the writes, and what arrives is simply
- * what that account may see (ADR-0002). The Central Admin reaches none of it.
+ * The degree curricula a department offers, maintained by its Department Admin
+ * alone since #282 (the owner's answer of 18 พ.ย. 2569, which took the screen
+ * off the Faculty Admin). That administrator holds one department, so the table
+ * has no department column and the form no department field: the server files
+ * a new programme under the grant's department. The server filters the list
+ * and refuses the writes, and what arrives is simply what that account may see
+ * (ADR-0002). The Central Admin and the Faculty Admin reach none of it.
  *
  * The paging is server-side, as on ข้อมูลผู้ใช้งาน and ข้อมูลภาควิชา.
  *
@@ -80,7 +81,6 @@ export default function Programs() {
   // keystroke: `components/SearchBox.js` holds what is being typed.
   const [q, setQ] = useState('')
   const [data, setData] = useState({ programs: [], total: 0 })
-  const [departments, setDepartments] = useState([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
   // The import window, opened by นำเข้า… in the bar (#270).
@@ -282,32 +282,9 @@ export default function Programs() {
    * is (#206).
    */
 
-  // The departments in reach: what this account covers is a property of the
-  // grant and does not change with the page being looked at - but it does
-  // change with the grant, so this read names the generation too (#198). Used
-  // twice - to name the department each row sits in, and as the pool the form's
-  // picker draws from - so a list left at the old hat's names rows wrongly as
-  // well as offering the wrong choice. `Rubrics.js` carries the same pair for
-  // curricula and is where the browser seam proves it (#68, #171).
-  useEffect(() => {
-    let cancelled = false
-    listReachableDepartments()
-      .then(({ departments: reachable }) => {
-        if (!cancelled) setDepartments(reachable)
-      })
-      .catch(report)
-    return () => {
-      cancelled = true
-    }
-    // `generation` is not read in the body, so the rule calls it unnecessary;
-    // it is the reason to ask again, and `context/ScreenGeneration.js` says
-    // why that is a dependency here rather than an effect of its own.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [report, generation])
-
-  const nameOf = departmentId =>
-    departments.find(department => department.department_id === departmentId)
-      ?.department_name_th ?? departmentId
+  // The departments in reach were read here until #282 (18 พ.ย. 2569), to name
+  // each row's department and to draw the form's picker. Neither is drawn now,
+  // so the read and `GET /api/programs/departments` went together.
 
   /**
    * Which press of แก้ไข the form was last asked for - #139. แก้ไข makes a new
@@ -435,7 +412,6 @@ export default function Programs() {
       {editing ? (
         <ProgramForm
           value={editing}
-          departments={departments}
           busy={busy}
           onSave={save}
           onCancel={() => {
@@ -513,7 +489,6 @@ export default function Programs() {
                 <tr>
                   <th className="px-4 py-2">รหัสหลักสูตร</th>
                   <th className="px-4 py-2">ชื่อหลักสูตร</th>
-                  <th className="px-4 py-2">ภาควิชา</th>
                   <th className="px-4 py-2">ปีหลักสูตร</th>
                   <th className="px-4 py-2">สถานะ</th>
                   <th className="px-4 py-2 text-center">ดำเนินการ</th>
@@ -522,14 +497,14 @@ export default function Programs() {
               <tbody className="divide-y divide-gray-100">
                 {loading && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                       กำลังโหลด…
                     </td>
                   </tr>
                 )}
                 {!loading && data.programs.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                       {q.trim() ? 'ไม่พบหลักสูตรตามคำค้น' : 'ยังไม่มีหลักสูตรในระบบ'}
                     </td>
                   </tr>
@@ -545,9 +520,6 @@ export default function Programs() {
                             {program.program_name_en}
                           </span>
                         )}
-                      </td>
-                      <td className="px-4 py-2 text-slate-500">
-                        {nameOf(program.department_id)}
                       </td>
                       <td className="px-4 py-2 text-slate-500">{program.revision_year ?? '—'}</td>
                       <td className="px-4 py-2">
