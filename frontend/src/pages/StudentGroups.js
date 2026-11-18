@@ -445,7 +445,7 @@ export default function StudentGroups() {
             <h2 className="mb-1 text-lg font-medium text-primary">สร้างกลุ่มงาน</h2>
             <p className="mb-4 text-sm text-slate-500">
               ตั้งชื่อกลุ่มไม่ซ้ำกันภายในกลุ่มเรียนนี้ หนึ่งกลุ่มมีนักศึกษาได้ไม่เกิน{' '}
-              {data.max_group_size} คน และนักศึกษาหนึ่งคนอยู่ได้กลุ่มเดียวต่อหนึ่งกลุ่มเรียน
+              {data.max_group_size} คน และนักศึกษาหนึ่งคนอยู่ได้กลุ่มเดียว
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <label className="sr-only" htmlFor="group_name">
