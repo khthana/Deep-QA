@@ -437,4 +437,26 @@ test.describe('while the terms of another curriculum are out', () => {
       'nor that the curriculum has nothing open: nobody has read it',
     ).toBe(0);
   });
+
+  // Review of #279 (ก), 18 พ.ย. 2569: on the first opening no list read has run,
+  // so `loading` is still the `true` it started at and only a refusal that
+  // outranks it keeps the loading line away. Row 10 cannot reach this - it
+  // opens on a drawn list before it switches.
+  test('row 11: where the terms are refused on the first opening, the refusal is said with no loading line', async ({
+    page,
+  }) => {
+    await signInAsDepartmentCommittee(page);
+    const held = await gate(page, /^\/api\/offerings\/terms$/, isGet, { refusal: REFUSAL });
+    await page.goto(OFFERINGS);
+    await held.sent;
+    held.open();
+    await held.answered;
+
+    await expect(page.getByText(REFUSAL, { exact: true }), 'the refusal is said').toBeVisible();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(
+      await listTable(page).getByRole('cell', { name: 'กำลังโหลด…', exact: true }).count(),
+      'and on the first opening nothing says it is loading either',
+    ).toBe(0);
+  });
 });

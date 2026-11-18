@@ -198,7 +198,10 @@ export default function Offerings() {
   // the terms are out, and draws nothing under a refusal of them - the refusal
   // is what the screen says (`report`), and no read of the list is coming.
   const termsRefused = program !== '' && !termsRead && termsRefusedOf === program
-  const listOut = loading || (program !== '' && !termsRead && !termsRefused)
+  // A refusal outranks `loading`, which no read lowers when `load` is never let
+  // past its terms - on the first opening, and after a switch made while the
+  // list read was still out (review of #279 (ก), 18 พ.ย. 2569).
+  const listOut = !termsRefused && (loading || (program !== '' && !termsRead))
   const listDrawn = !listOut && !termsRefused
   const [notice, setNotice] = useState(null)
   const [opening, setOpening] = useState(false)

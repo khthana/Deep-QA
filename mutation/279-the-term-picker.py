@@ -38,12 +38,17 @@
 - `s279termsoutstale` — #279 (ก) 18 พ.ย. 2569: ระหว่างที่ภาคของหลักสูตรที่ย้ายไปยังไม่กลับ แถวของหลักสูตรที่ออกมา
   ถูกวาดใต้ชื่อหลักสูตรใหม่ · แถว 9
 - `s279refusedstale` — ภาคของหลักสูตรใหม่ถูกปฏิเสธ แล้วแถวของหลักสูตรเดิมถูกวาดใต้คำปฏิเสธ · แถว 10
-- `s279refusedloading` — คำปฏิเสธไม่ถูกจำ รายการจึงบอก *กำลังโหลด…* ตลอดไปทั้งที่ไม่มีอะไรจะมา · แถว 10
+- `s279refusedloading` — คำปฏิเสธไม่ถูกจำ รายการจึงบอก *กำลังโหลด…* ตลอดไปทั้งที่ไม่มีอะไรจะมา · แถว 10 11
+- `s279refusedfirstopen` — review ของ #279 (ก) 18 พ.ย. 2569: `loading` อยู่เหนือคำปฏิเสธ ภาคที่ถูกปฏิเสธตั้งแต่เปิดจอ
+  ครั้งแรกจึงถูกพูดใต้บรรทัด *กำลังโหลด…* ที่ไม่มีอะไรลดลง คือโค้ดของ #279 (ก) ก่อน review (#115) · แถว 11
 
 ## ที่ที่ไม่มีมัตแตนต์ และเหตุผล (#102, #123)
 
 - **ตัวแบ่งหน้าถูกซ่อนระหว่างที่ภาคยังไม่ได้อ่าน** (#279 (ก)) และ **คำปฏิเสธถูกล้างเมื่อถามภาคของหลักสูตรนั้นอีกครั้ง**
   — ไม่มีแถวไหนอ่านสองข้อนี้ จึง *ยังไม่ได้ทดสอบ* ไม่ใช่ *พิสูจน์แล้ว* (#102) วันที่ 18 พ.ย. 2569
+- **แถว 10 *nor that the curriculum has nothing open*** — ในฉากของแถว 10 `data` ยังถือแถวของหลักสูตรเดิม
+  สถานะว่างจึงไม่ถูกวาดแม้ใต้ `s279refusedstale` assertion นี้ล้มไม่ได้ เป็นตาข่าย ไม่ใช่ข้ออ้างที่พิสูจน์แล้ว
+  (review 18 พ.ย. 2569)
 - **คำว่า กลุ่มเรียน** — ข้ออ้างอยู่ที่ตัวควบคุมที่ถูกกด (`23a` และไฟล์อื่นที่กดปุ่มเดียวกัน) ซึ่งเป็นตัวระบุตำแหน่ง
   (#85, #111) ไม่ใช่ข้ออ้างที่มัตแตนต์จะพิสูจน์แยกได้
 - **การคัดลอกไปภาคที่รายการไม่ได้แสดง** — ไม่มีทางเข้าแล้ว `247:offeringscopynosuffix` ถอนเป็นบันทึก และ `247c`
@@ -77,6 +82,17 @@
 | `s279termsoutstale` | 9 | *no row of the curriculum left, under the name of the one moved to* | ที่เหลือ · 10: ภาคถูกปฏิเสธ `termsRefused` จึงยังปิดรายการ |
 | `s279refusedstale` | 10 | *no row of the curriculum left, under the refusal of the one moved to* | ที่เหลือ · 9: ภาคยังค้าง `listOut` จึงยังปิดรายการ |
 | `s279refusedloading` | 10 | *and nothing says it is still loading: nothing is coming* | ที่เหลือ · 9: ไม่มีการปฏิเสธ |
+
+### ส่วนเพิ่มจาก review ของ #279 (ก) (เขียนก่อนกวาด 18 พ.ย. 2569)
+
+แถว 11 เปิดจอครั้งแรกโดยภาคถูกปฏิเสธ ยังไม่มีการอ่านรายการ `loading` จึงยังเป็น `true` ตั้งต้น
+
+| มัตแตนต์ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
+|---|---|---|---|
+| `s279refusedfirstopen` | 11 | *and on the first opening nothing says it is loading either* | 9: ไม่มีการปฏิเสธ · 10: รายการแรกกลับแล้ว `loading` จึงเป็น `false` |
+| `s279termsoutstale` (ย้ายสมอ) | 9 | เหมือนเดิม | 10 11: `!termsRefused` ยังปิดบรรทัดกำลังโหลด |
+| `s279refusedloading` | 10 11 | 10 เหมือนเดิม · 11 *and on the first opening nothing says it is loading either* | 9 |
+| `s279refusedstale` | 10 | เหมือนเดิม | 11: `data` ตั้งต้นว่าง ไม่มีแถว และแถว 11 ไม่อ่านสถานะว่าง |
 
 มัตแตนต์สองตัวในแฟ้มอื่นที่ #279 (ก) ย้ายสมอ: `250:rowswhileloading` ควรฆ่า `250a` เหมือนเดิม และ `279a` แถว 9 เพิ่ม
 เพราะแถวของมันถูกวาดทุกครั้งที่ไม่มีการปฏิเสธ รวมถึงตอนที่ภาคยังค้าง ส่วน `210:offeringsnobusy` ควรฆ่า `210a`
@@ -162,9 +178,17 @@ MUTANTS = {
         '      if (!reach) {\n'),
     # #279 (ก) คำตอบของเจ้าของงาน 18 พ.ย. 2569 - แถว 9 และ 10 ของ `279a`
     # รายการของหลักสูตรที่ออกมาแล้วถูกวาดใต้ชื่อหลักสูตรใหม่ ขณะที่ภาคของหลักสูตรใหม่ยังไม่กลับ
+    # Re-aimed 18 พ.ย. 2569 to the line the review rewrote: it still drops only
+    # the terms clause, and keeps the refusal outranking `loading` (#203).
     's279termsoutstale': ('screen',
-        "  const listOut = loading || (program !== '' && !termsRead && !termsRefused)\n",
-        '  const listOut = loading\n'),
+        "  const listOut = !termsRefused && (loading || (program !== '' && !termsRead))\n",
+        '  const listOut = !termsRefused && loading\n'),
+    # The line as #279 (ก) first wrote it, before the review: `loading` outranks
+    # the refusal, so a refusal on the first opening is said under a loading
+    # line that nothing lowers. The fix made to run (#115).
+    's279refusedfirstopen': ('screen',
+        "  const listOut = !termsRefused && (loading || (program !== '' && !termsRead))\n",
+        "  const listOut = loading || (program !== '' && !termsRead && !termsRefused)\n"),
     # ภาคของหลักสูตรใหม่ถูกปฏิเสธ แล้วรายการของหลักสูตรเดิมถูกวาดใต้คำปฏิเสธ
     's279refusedstale': ('screen',
         '  const listDrawn = !listOut && !termsRefused\n',
