@@ -234,16 +234,30 @@ test('row 5: a group filled to ten refuses the eleventh, naming the limit', asyn
   for (const code of tail.slice(0, room)) {
     expect((await place(page, section, biggest, code, 'add')).status()).toBe(201);
   }
+
+  // The settle point (#283). `place` hands back the write's answer, and every
+  // write ends in a reload (`after` in `StudentGroups.js`), so a single read of
+  // the badge here could land before the tenth was drawn: one red in four on
+  // 18 พ.ย. 2569, and `members: 9` in eight runs of eight with the renderer
+  // slowed four- and eightfold on 19 พ.ย. (#136). Retrying, so it fails with
+  // the badge the screen is showing (#209). It reads only the members half:
+  // the ceiling is a claim, and read here `26:ceilingoffbyone` killed the row
+  // at its precondition, so the refusal below was never read under it (#233).
+  await expect(
+    card(page, biggest).getByText(/^\d+\/\d+$/),
+    'the screen has drawn the group at ten',
+  ).toHaveText(new RegExp(`^${MAX_GROUP_SIZE}/`));
+
+  const eleventh = await place(page, section, biggest, tail[room], 'add');
+  expect(eleventh.status(), 'the eleventh is refused').toBe(409);
+  await said(page, REFUSALS.groupFull(biggest));
+  expect(await membersOn(page, biggest)).toHaveLength(MAX_GROUP_SIZE);
+  expect(await ungroupedOn(page)).toContain(tail[room]);
+  // And the badge says the ceiling is ten, read after the refusal (#233).
   expect(await fullness(page, biggest)).toEqual({
     members: MAX_GROUP_SIZE,
     ceiling: MAX_GROUP_SIZE,
   });
-
-  const eleventh = await place(page, section, biggest, tail[room], 'add');
-  expect(eleventh.status()).toBe(409);
-  await said(page, REFUSALS.groupFull(biggest));
-  expect(await membersOn(page, biggest)).toHaveLength(MAX_GROUP_SIZE);
-  expect(await ungroupedOn(page)).toContain(tail[room]);
 });
 
 test('row 6: a move empties one card and fills the other, and reads as a move', async ({
