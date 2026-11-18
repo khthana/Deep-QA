@@ -139,15 +139,18 @@ Manages user accounts and permission grants system-wide, and nothing else. Delib
 data — see [ADR-0002](./docs/adr/0002-server-side-rbac.md).
 
 **Faculty Admin** (ผู้ดูแลระดับคณะ, `FACULTY_ADMIN`):
-Owns master data and outcomes within one Faculty. The only role that may manage Departments. Reaches neither the
-Subject catalogue nor the central student register, both of which are the Department Admin's below — the two things a
-Department Admin may do that this role may not.
+Manages the Departments of one Faculty, and the user accounts within it — and nothing else: the only role that may
+manage Departments, and reaches no Program, Subject or student record. Programs were taken off this role by the owner
+on 18 November 2569 ("ผู้ดูแลระดับคณะ ... ให้ทำข้อมูลภาควิชาอย่างเดียว"), which leaves every Program screen to the
+Department Admin, who holds one Department.
 
 **Department Admin** (ผู้ดูแลระดับภาควิชา, `DEPT_ADMIN`):
-As Faculty Admin, but confined to one Department and excluding Department records themselves. The only role that
+Confined to one Department, and the only role that maintains its Programs: a Program is filed under the Department of
+the admin who records it, so there is no Department to choose (18 November 2569). The only role that
 maintains Subjects: a subject is what a department teaches, so the department that teaches it owns its catalogue
 entry, and a Faculty Admin is refused that screen the way a Department Admin is refused Departments (#61). Placing a
-subject into a curriculum is a different thing and stays open to both — that is Program Subjects, not the catalogue.
+subject into a curriculum is a different thing — that is Program Subjects, shared with the Curriculum Committee and
+closed to the Faculty Admin since #79.
 Also the only role that maintains the central student register (#17), on the same argument and with the same two
 roles refused: a student is admitted to a Department, and a Curriculum Committee owns what a Program teaches rather
 than who is admitted to it. Enrolling a student already in the register into a Section is the Teacher's, not this.
