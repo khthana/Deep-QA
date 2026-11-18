@@ -136,12 +136,20 @@ RUBRICS_WITH_BUSY = (
 )
 RUBRICS_WITHOUT_BUSY = '        onPage={setPage}\n'
 
+# การเปิดรายวิชาวาด `<Pager>` ใต้เงื่อนไขตั้งแต่ #279 (ก) (18 พ.ย. 2569) ย่อหน้าจึงลึกกว่า
+# จอข้างเคียงสองช่อง ความผิดของมัตแตนต์ยังเป็นความผิดเดิม
+OFFERINGS_WITH_BUSY = (
+    '              onPage={setPage}\n'
+    '              busy={busy}\n'
+)
+OFFERINGS_WITHOUT_BUSY = '              onPage={setPage}\n'
+
 MUTANTS = {
     'rubricsnobusy': ('rubrics', RUBRICS_WITH_BUSY, RUBRICS_WITHOUT_BUSY),
     'departmentsnobusy': ('departments', WITH_BUSY, WITHOUT_BUSY),
     'programsnobusy': ('programs', WITH_BUSY, WITHOUT_BUSY),
     'subjectsnobusy': ('subjects', WITH_BUSY, WITHOUT_BUSY),
-    'offeringsnobusy': ('offerings', WITH_BUSY, WITHOUT_BUSY),
+    'offeringsnobusy': ('offerings', OFFERINGS_WITH_BUSY, OFFERINGS_WITHOUT_BUSY),
 }
 
 main(FILES, MUTANTS)

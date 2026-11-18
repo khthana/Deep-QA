@@ -23,6 +23,7 @@ const {
   termOf,
   programFilter,
   listTable,
+  offeringRow,
   openForm,
   subjectPicker,
   copyDialog,
@@ -314,4 +315,126 @@ test('row 8: before the terms are known nothing that needs a term can be pressed
   held.open();
   await held.answered;
   await expect(termFilter(page)).toBeEnabled();
+});
+
+/**
+ * #279 (ก), the owner's answer of 18 พ.ย. 2569: while the terms of the
+ * curriculum just moved to are out, the list says it is loading rather than
+ * leaving the rows of the curriculum it left under the new one's name; and
+ * where those terms are refused, the refusal is what the screen says, over no
+ * rows at all.
+ *
+ * Two curricula, so the department committee (`row 2`'s instrument). The rows
+ * of the curriculum being left are this describe's own subject, opened in the
+ * current term of `PROGRAM` and taken out again afterwards, so the precondition
+ * - *there is a row to leave behind* - does not lean on whatever the seed holds.
+ */
+test.describe('while the terms of another curriculum are out', () => {
+  const SHOWN = '00279003';
+  const REFUSAL = 'แถว #279 (ก): การอ่านภาคการศึกษาของหลักสูตรนี้ถูกปฏิเสธ';
+  let releaseCommittee;
+
+  test.beforeAll(async ({ playwright }) => {
+    const admin = byAlias('U_ADMIN');
+    const db = createPool({ schema: E2E_SCHEMA });
+    try {
+      await db.query(
+        `INSERT INTO subjects (subject_id, subject_name_th, subject_name_en, credits, department_id, created_by)
+         VALUES ($1, $2, $3, 3, '05', $4)`,
+        [SHOWN, `วิชาของแถว #279 ${SHOWN}`, `Subject for #279 ${SHOWN}`, admin],
+      );
+      await db.query(
+        `INSERT INTO program_subjects (program_id, subject_id, subject_type, created_by)
+         VALUES ($1, $2, 'required', $3)`,
+        [PROGRAM, SHOWN, admin],
+      );
+      await db.query(
+        `INSERT INTO semester_courses (program_id, subject_id, academic_year, semester)
+         VALUES ($1, $2, $3, $4)`,
+        [PROGRAM, SHOWN, CURRENT_YEAR, SEMESTER],
+      );
+    } finally {
+      await db.end();
+    }
+    releaseCommittee = await departmentCommittee(playwright);
+  });
+
+  test.afterAll(async () => {
+    const trouble = releaseCommittee ? await releaseCommittee() : null;
+    const db = createPool({ schema: E2E_SCHEMA });
+    try {
+      await db.query('DELETE FROM semester_courses WHERE subject_id = $1', [SHOWN]);
+      await db.query('DELETE FROM program_subjects WHERE subject_id = $1', [SHOWN]);
+      await db.query('DELETE FROM subjects WHERE subject_id = $1', [SHOWN]);
+    } finally {
+      await db.end();
+    }
+    if (trouble) throw new Error(trouble);
+  });
+
+  /** Opens on `PROGRAM` with this describe's row drawn, and hands back the other curriculum. */
+  async function openOnShown(page) {
+    await signInAsDepartmentCommittee(page);
+    await openOfferings(page);
+    await expect(programFilter(page), 'the screen opens on the curriculum the row is in').toHaveValue(
+      PROGRAM,
+    );
+    await expect(
+      offeringRow(page, SHOWN),
+      'the precondition: a row of the curriculum about to be left',
+    ).toHaveCount(1);
+    return programFilter(page).locator(`option:not([value="${PROGRAM}"])`).first().getAttribute('value');
+  }
+
+  test('row 9: while the terms of the curriculum moved to are out, the list says it is loading and keeps no row of the one left', async ({
+    page,
+  }) => {
+    const other = await openOnShown(page);
+    const held = await gate(page, /^\/api\/offerings\/terms$/, isGet);
+    await programFilter(page).selectOption(other);
+    await held.sent;
+    await page.waitForTimeout(SETTLE_MS);
+
+    // Read once, at the settle point: nothing but the code under test takes
+    // this row away, so a retrying negative would wait for the very thing on
+    // trial (#50, #214).
+    expect(
+      await offeringRow(page, SHOWN).count(),
+      'no row of the curriculum left, under the name of the one moved to',
+    ).toBe(0);
+    await expect(
+      listTable(page).getByRole('cell', { name: 'กำลังโหลด…', exact: true }),
+      'the list says it is loading',
+    ).toBeVisible();
+
+    held.open();
+    await held.answered;
+  });
+
+  test('row 10: where the terms of the curriculum moved to are refused, the refusal is said over no rows', async ({
+    page,
+  }) => {
+    const other = await openOnShown(page);
+    const held = await gate(page, /^\/api\/offerings\/terms$/, isGet, { refusal: REFUSAL });
+    await programFilter(page).selectOption(other);
+    await held.sent;
+    held.open();
+    await held.answered;
+
+    await expect(page.getByText(REFUSAL, { exact: true }), 'the refusal is said').toBeVisible();
+    expect(
+      await offeringRow(page, SHOWN).count(),
+      'no row of the curriculum left, under the refusal of the one moved to',
+    ).toBe(0);
+    expect(
+      await listTable(page).getByRole('cell', { name: 'กำลังโหลด…', exact: true }).count(),
+      'and nothing says it is still loading: nothing is coming',
+    ).toBe(0);
+    expect(
+      await listTable(page)
+        .getByRole('cell', { name: 'ยังไม่มีรายวิชาที่เปิดสอนตามเงื่อนไขนี้', exact: true })
+        .count(),
+      'nor that the curriculum has nothing open: nobody has read it',
+    ).toBe(0);
+  });
 });

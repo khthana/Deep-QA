@@ -35,9 +35,15 @@
 - `s279termsaskwrite` — `/offerings/terms` ตรวจหลักสูตรด้วย `programInReach` ซึ่งเป็นคำถามของการเขียน คือโค้ดของ
   #279 ก่อน `234a` แถว 4 จับได้ 17 พ.ย. 2569 (#115) · `backend/test/offerings.test.js`
   *the term picker answers for a retired programme in reach* และ `234a` แถว 4
+- `s279termsoutstale` — #279 (ก) 18 พ.ย. 2569: ระหว่างที่ภาคของหลักสูตรที่ย้ายไปยังไม่กลับ แถวของหลักสูตรที่ออกมา
+  ถูกวาดใต้ชื่อหลักสูตรใหม่ · แถว 9
+- `s279refusedstale` — ภาคของหลักสูตรใหม่ถูกปฏิเสธ แล้วแถวของหลักสูตรเดิมถูกวาดใต้คำปฏิเสธ · แถว 10
+- `s279refusedloading` — คำปฏิเสธไม่ถูกจำ รายการจึงบอก *กำลังโหลด…* ตลอดไปทั้งที่ไม่มีอะไรจะมา · แถว 10
 
 ## ที่ที่ไม่มีมัตแตนต์ และเหตุผล (#102, #123)
 
+- **ตัวแบ่งหน้าถูกซ่อนระหว่างที่ภาคยังไม่ได้อ่าน** (#279 (ก)) และ **คำปฏิเสธถูกล้างเมื่อถามภาคของหลักสูตรนั้นอีกครั้ง**
+  — ไม่มีแถวไหนอ่านสองข้อนี้ จึง *ยังไม่ได้ทดสอบ* ไม่ใช่ *พิสูจน์แล้ว* (#102) วันที่ 18 พ.ย. 2569
 - **คำว่า กลุ่มเรียน** — ข้ออ้างอยู่ที่ตัวควบคุมที่ถูกกด (`23a` และไฟล์อื่นที่กดปุ่มเดียวกัน) ซึ่งเป็นตัวระบุตำแหน่ง
   (#85, #111) ไม่ใช่ข้ออ้างที่มัตแตนต์จะพิสูจน์แยกได้
 - **การคัดลอกไปภาคที่รายการไม่ได้แสดง** — ไม่มีทางเข้าแล้ว `247:offeringscopynosuffix` ถอนเป็นบันทึก และ `247c`
@@ -63,6 +69,18 @@
 | `s279openbeforeterm` | 8 | *the form, which opens a subject in the term shown* | ที่เหลือ |
 | `s279termsaskwrite` | backend *retired programme in reach* · `234a` 4 | backend `answer.status` 200 · `234a` 4 ที่ `waitForList` ของ `filterOfferingsTo` (ตายที่การจัดฉาก ไม่ใช่ที่ข้ออ้าง #266) | `279a` ทุกแถว `247c`: หลักสูตรที่อ่านเปิดอยู่ |
 | `s279copytargetnotshown` | `247c` 2 | *the copy goes to the term the list is on* | `247c` 1: ไม่กดคัดลอก · `279a` ทุกแถว: แถว 7 ตอบด้วย gate |
+
+### ส่วนเพิ่มของ #279 (ก) (เขียนก่อนกวาด 18 พ.ย. 2569)
+
+| มัตแตนต์ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
+|---|---|---|---|
+| `s279termsoutstale` | 9 | *no row of the curriculum left, under the name of the one moved to* | ที่เหลือ · 10: ภาคถูกปฏิเสธ `termsRefused` จึงยังปิดรายการ |
+| `s279refusedstale` | 10 | *no row of the curriculum left, under the refusal of the one moved to* | ที่เหลือ · 9: ภาคยังค้าง `listOut` จึงยังปิดรายการ |
+| `s279refusedloading` | 10 | *and nothing says it is still loading: nothing is coming* | ที่เหลือ · 9: ไม่มีการปฏิเสธ |
+
+มัตแตนต์สองตัวในแฟ้มอื่นที่ #279 (ก) ย้ายสมอ: `250:rowswhileloading` ควรฆ่า `250a` เหมือนเดิม และ `279a` แถว 9 เพิ่ม
+เพราะแถวของมันถูกวาดทุกครั้งที่ไม่มีการปฏิเสธ รวมถึงตอนที่ภาคยังค้าง ส่วน `210:offeringsnobusy` ควรฆ่า `210a`
+แถวเดิมของมันเท่านั้น
 """
 from harness import main
 
@@ -142,6 +160,19 @@ MUTANTS = {
         '      if (!reach.some((entry) => entry.program_id === program)) {\n',
         '      const reach = await programInReach(pool, req.auth.acting.scope_id, program);\n'
         '      if (!reach) {\n'),
+    # #279 (ก) คำตอบของเจ้าของงาน 18 พ.ย. 2569 - แถว 9 และ 10 ของ `279a`
+    # รายการของหลักสูตรที่ออกมาแล้วถูกวาดใต้ชื่อหลักสูตรใหม่ ขณะที่ภาคของหลักสูตรใหม่ยังไม่กลับ
+    's279termsoutstale': ('screen',
+        "  const listOut = loading || (program !== '' && !termsRead && !termsRefused)\n",
+        '  const listOut = loading\n'),
+    # ภาคของหลักสูตรใหม่ถูกปฏิเสธ แล้วรายการของหลักสูตรเดิมถูกวาดใต้คำปฏิเสธ
+    's279refusedstale': ('screen',
+        '  const listDrawn = !listOut && !termsRefused\n',
+        '  const listDrawn = !listOut\n'),
+    # คำปฏิเสธไม่ถูกจำ รายการจึงบอกว่ากำลังโหลดตลอดไป ทั้งที่ไม่มีอะไรจะมา
+    's279refusedloading': ('screen',
+        '        setTermsRefusedOf(program)\n',
+        ''),
 }
 
 main(FILES, MUTANTS)

@@ -171,6 +171,9 @@ export default function Offerings() {
    */
   const [termsOf, setTermsOf] = useState(null)
   const [termsAsked, setTermsAsked] = useState(0)
+  // The programme whose terms read was refused, so the list can say that and
+  // not *loading* - #279 (ก) below.
+  const [termsRefusedOf, setTermsRefusedOf] = useState(null)
   const [copyOpen, setCopyOpen] = useState(false)
   // The programme the list is of: the one chosen while it is still in reach,
   // and the first otherwise - the same rule as ProgramSubjects.js and
@@ -189,6 +192,14 @@ export default function Offerings() {
   const year = term?.academic_year ?? ''
   const semester = term ? String(term.semester) : ''
   const [loading, setLoading] = useState(true)
+  // #279 (ก), the owner's answer of 18 พ.ย. 2569: while this programme's terms
+  // are unread, what `data` holds is the list of the programme that was left,
+  // so it is not drawn under this one's name. The list says it is loading while
+  // the terms are out, and draws nothing under a refusal of them - the refusal
+  // is what the screen says (`report`), and no read of the list is coming.
+  const termsRefused = program !== '' && !termsRead && termsRefusedOf === program
+  const listOut = loading || (program !== '' && !termsRead && !termsRefused)
+  const listDrawn = !listOut && !termsRefused
   const [notice, setNotice] = useState(null)
   const [opening, setOpening] = useState(false)
   const [viewing, setViewing] = useState(null)
@@ -478,12 +489,19 @@ export default function Offerings() {
   useEffect(() => {
     if (!program) return undefined
     let cancelled = false
+    // A programme refused before and asked again is out, not refused, until
+    // this read answers.
+    setTermsRefusedOf(null)
     listTerms(program)
       .then(answer => {
-        if (!cancelled) setTermsOf({ of: program, current: answer.current, terms: answer.terms })
+        if (cancelled) return
+        setTermsRefusedOf(null)
+        setTermsOf({ of: program, current: answer.current, terms: answer.terms })
       })
       .catch(error => {
-        if (!cancelled) report(error)
+        if (cancelled) return
+        setTermsRefusedOf(program)
+        report(error)
       })
     return () => {
       cancelled = true
@@ -1000,21 +1018,21 @@ export default function Offerings() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {loading && (
+                {listOut && (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                       กำลังโหลด…
                     </td>
                   </tr>
                 )}
-                {!loading && data.offerings.length === 0 && (
+                {listDrawn && data.offerings.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                       ยังไม่มีรายวิชาที่เปิดสอนตามเงื่อนไขนี้
                     </td>
                   </tr>
                 )}
-                {!loading &&
+                {listDrawn &&
                   data.offerings.map(offering => (
                     <tr key={offering.id}>
                       <td className="px-4 py-2 font-medium text-gray-900">
@@ -1051,14 +1069,18 @@ export default function Offerings() {
             </table>
           </div>
 
-          <Pager
-            page={page}
-            shown={data.page}
-            total={data.total}
-            perPage={PAGE_SIZE}
-            onPage={setPage}
-            busy={busy}
-          />
+          {/* The pager counts the list `data` holds, which is another programme's
+              while this one's terms are unread - #279 (ก). */}
+          {(program === '' || termsRead) && (
+            <Pager
+              page={page}
+              shown={data.page}
+              total={data.total}
+              perPage={PAGE_SIZE}
+              onPage={setPage}
+              busy={busy}
+            />
+          )}
 
         </>
       )}
