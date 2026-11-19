@@ -30,6 +30,26 @@
 |---|---|---|---|
 | `s287genericrefusal` | `23a` *row 8: an Offering with enrolled students is refused and stays on the screen* | `expect(page.getByText(REFUSALS.offeringInUse)).toBeVisible()` | `23a` แถวก่อนแถว 8 ทั้งหมด · `118a` `139a` `140a` `142a` `203a` `210a` `250a` `271a` ทั้งไฟล์ |
 | `s287rowtakenaway` | `23a` *row 8: an Offering with enrolled students is refused and stays on the screen* | `expect(offeringRow(page, SEEDED)).toHaveCount(1)` — แถบแดงเหนือมันผ่าน | เหมือนข้างบน |
+
+ผลการกวาด (19 พ.ย. 2569, เก้าไฟล์) — ทั้งสองคำทำนายตรง:
+
+- `s287genericrefusal` ล้ม 1 ไม่ได้รัน 1 ผ่าน 157 ที่ `23a-offerings.spec.js:250` `toBeVisible()` ของ `REFUSALS.offeringInUse` (element(s) not found)
+- `s287rowtakenaway` ล้ม 1 ไม่ได้รัน 1 ผ่าน 157 ที่ `23a-offerings.spec.js:254` `toHaveCount(1)` (Received: 0) — แถบแดงที่ :250 ผ่าน
+
+## สองตัวของครึ่งกลุ่มเรียน และคำทำนาย (19 พ.ย. 2569) — เขียนก่อนรัน (#255)
+
+เกณฑ์ข้อแปดพูดถึง *ทั้งระดับการเปิดสอนและระดับกลุ่มเรียน* และข้อยืนยันของกลุ่มเรียนในแถว 8 อยู่ใต้ของการเปิดสอน สองตัวข้างบนจึงไม่เคย
+ทำให้มันถูกอ่าน (#88) ⚙ ที่อ้างแค่สองตัวนั้นจะเกินครึ่งหนึ่งของแถว จึงเขียนคู่ของมันในกิ่งกลุ่มเรียนของ `catch` เดียวกัน
+
+- `s287sectiongeneric` — ประโยคทั่วไปแทนประโยคของ server เฉพาะเมื่อการลบกลุ่มเรียนถูกปฏิเสธ
+- `s287cardtakenaway` — การ์ดกลุ่มเรียนหายจากแผงเมื่อการลบถูกปฏิเสธ แทนการอ่านแผงกลับ (`refresh`)
+
+กวาดกับ `23a` และ spec อื่นที่กด *ลบกลุ่มเรียน* (`139a` `143a`) ซึ่งลบกลุ่มเรียนที่ลบได้ จึงไม่ถึงกิ่งนี้
+
+| มัตแตนต์ | แถวที่ตาย | ตายที่ (คำทำนาย) | แถวที่ควรรอด |
+|---|---|---|---|
+| `s287sectiongeneric` | `23a` *row 8: an Offering with enrolled students is refused and stays on the screen* | `expect(page.getByText(REFUSALS.sectionInUse)).toBeVisible()` — สองข้อของการเปิดสอนเหนือมันผ่าน | `23a` แถวอื่น · `139a` `143a` ทั้งไฟล์ |
+| `s287cardtakenaway` | `23a` *row 8: an Offering with enrolled students is refused and stays on the screen* | `expect(sectionCard(page, '1')).toHaveCount(1)` — แถบแดงของกลุ่มเรียนเหนือมันผ่าน | เหมือนข้างบน |
 """
 from harness import main
 
@@ -62,6 +82,21 @@ MUTANTS = {
         "        setData(d => ({ ...d, offerings: d.offerings.filter(o => o.id !== gone) }))\n"
         "      }\n"
         "      report(error)\n"),
+    # The section branch's twins. `error` stays referenced on the Offering
+    # branch (#101).
+    "s287sectiongeneric": ("page",
+        CATCH,
+        "      const wasSection = removing.kind === 'section'\n"
+        "      setRemoving(null)\n"
+        "      report(wasSection ? { message: 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง' } : error)\n"),
+    # The refused section's card dropped from the panel instead of the panel
+    # being read back. `refresh` and `ask` stay referenced by the success path.
+    "s287cardtakenaway": ("page",
+        "      if (wasSection && viewing) await refresh(viewing.id, ask).catch(report)\n",
+        "      if (wasSection && viewing) {\n"
+        "        const gone = removing.section.section_id\n"
+        "        setViewing(v => ({ ...v, sections: v.sections.filter(s => s.section_id !== gone) }))\n"
+        "      }\n"),
 }
 
 main(FILES, MUTANTS)
