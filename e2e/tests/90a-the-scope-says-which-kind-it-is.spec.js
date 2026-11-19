@@ -87,7 +87,8 @@ const scopePicker = page => page.getByRole('combobox', { name: 'ขอบเข�
 const offered = page => scopePicker(page).locator('option').allTextContents();
 
 /**
- * The picker's own read. `useGrantable` asks when the form or the panel
+ * A `grantable` answer - the picker's own, or the Users screen's if that one
+ * is still in flight (see below). `useGrantable` asks when the form or the panel
  * mounts, so the picker is visible - holding only its placeholder - until the
  * answer lands. Matched by the request and not by its status (#116); armed
  * before the press that mounts it.
@@ -111,7 +112,7 @@ const waitForGrantable = page =>
  */
 async function offeredOnceDrawn(page, answering) {
   const answer = await answering;
-  expect(answer.status()).toBe(200);
+  expect(answer.status(), 'the scope list was answered').toBe(200);
   const { scopes } = await answer.json();
   await expect(
     scopePicker(page).locator('option'),
