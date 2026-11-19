@@ -72,6 +72,54 @@
 |---|---|---|---|
 | `s284importnotverified` | backend *a retired department keeps its subjects* | `imported.status` 400 (ได้ 201) — การสร้างข้างบนยังถูกปฏิเสธ จึงผ่านสองข้อแรก | `284a` ทุกแถว: ไม่มีการนำเข้าใต้ภาควิชาที่ปิด · `16a` แถว 89: ภาควิชา `05` เปิดอยู่ · backend ที่เหลือ |
 | `s284retirededitrefused` | backend แถวเดียวกัน · `16a` แถว 97 | backend `edited.status` 200 (ได้ 403) · `16a` 97 *บันทึกข้อมูลเรียบร้อยแล้ว* ที่ไม่ขึ้น (ข้อแรกของแถวหลังเปิดฟอร์ม) | `284a` ทุกแถว: ไม่มีการแก้ไข · `16a` แถวอื่น: ภาควิชาเปิดอยู่ตอนแก้ · backend ที่เหลือ: แก้ในภาควิชาที่เปิด |
+
+## บันทึกการกวาด 19 พ.ย. 2569
+
+ต้นไม้ถูกถามด้วย md5 ของ `git diff -- frontend backend` ก่อนรันทุกตัว (#268) · backend คือ `backend/test/subjects.test.js`
+ทั้งแฟ้ม (23 แถว) · e2e คือ `284a` กับ `16a` ทั้งสองแฟ้ม (8 แถว) · รันสะอาดก่อนและหลังผ่านครบ
+
+| มัตแตนต์ | backend | e2e | ตรงคำทำนาย |
+|---|---|---|---|
+| `s284bodydepartment` | ตาย *a department named in the body is not read* เท่านั้น | รอด | ใช่ |
+| `s284importcolumn` | ตาย *an old template’s department column is not read* เท่านั้น | รอด | ใช่ |
+| `s284putmoves` | ตาย *cannot move a subject out of their reach* เท่านั้น | รอด | ใช่ |
+| `s284listfilter` | ตาย *a `?department_id=` on the list is not read* เท่านั้น | รอด | ใช่ |
+| `s284oldsentence` | ตาย *a retired department keeps its subjects* | ตาย `284a` แถว 2 *the screen says why, in the owner’s words* | ใช่ |
+| `s284retiredaccepted` | ตายแถวเดียวกัน | ตาย `284a` แถว 2 *the server refuses it* | ใช่ |
+| `s284templatecolumn` | ตาย *the template downloads and matches what the importer accepts* เท่านั้น | ตาย `284a` แถว 1 *the template carries no department column* · `16a` แถว 89 รอดตามที่ทำนาย | ใช่ |
+| `s284departmentcolumn` | รอด | ตาย `284a` แถว 1 *with no department column* | ใช่ |
+| `s284filterbox` | รอด | ตาย `284a` แถว 1 *with no department filter* | ใช่ |
+| `s284filterstated` | รอด | ตาย `284a` แถว 1 *and no statement of the one department* | ใช่ |
+| `s284departmentfield` | รอด | ตาย `284a` แถว 1 *and has no department field* | ใช่ |
+| `s284importnotverified` | ตาย *a retired department keeps its subjects* ที่ `imported.status` (คาด 400 ได้ 201) | รอด | ใช่ |
+| `s284retirededitrefused` | ตายแถวเดียวกันที่ `edited.status` (คาด 200 ได้ 403) | ตาย `16a` แถว 97 *the edit is taken in a retired department* — หลังแก้ (ดูข้างล่าง) | ใช่ หลังแก้ |
+
+สามอย่างที่การกวาดพบ:
+
+- **`s284retirededitrefused` ฆ่า `16a` แถว 97 ในรอบแรกที่ `page.waitForResponse` timeout** ไม่ใช่ที่ประโยค *บันทึกข้อมูลเรียบร้อยแล้ว*
+  ที่ตารางทำนาย เพราะ `save` ของ `support/subjects-screen.js` รอการอ่านรายการใหม่ ซึ่งการแก้ไขที่ถูกปฏิเสธไม่ขอ —
+  การตายที่การรอของสิ่งที่มัตแตนต์ทำให้ไม่มีอยู่ ไม่ใช่การพิสูจน์ (#139) แถวจึงอ่านสถานะของ PUT เองก่อนประโยค
+  แล้วกวาดซ้ำ ตายที่ข้อยืนยันของแถว
+- **การรัน e2e รอบแรกของ `s284importnotverified` ใช้ไม่ได้** — ระบบหยุดตัวรอของการกวาดเพราะหน่วยความจำเหลือน้อย
+  แต่สคริปต์ยังเดินอยู่ และการเคลียร์พอร์ตกับ `restore` ที่ตามมาตัดเซิร์ฟเวอร์ทิ้งกลางรอบ (*Target crashed*) รันซ้ำตัวเดียวแล้วรอด
+  ตามคำทำนาย — การรันที่ถูกหยุดอาจยังไม่หยุด (#146, #152) ถามเครื่องว่าอะไรยังมีชีวิตก่อนแตะต้นไม้
+- **สองตัวที่รีวิวเพิ่มคือสิ่งที่สิบเอ็ดตัวแรกไม่มี** — ครึ่งนำเข้าของคำปฏิเสธ ซึ่ง `s284retiredaccepted` ตายก่อนถึงเพราะแถวอ่านการสร้างก่อน (#88)
+  และครึ่งแก้ไขของภาควิชาที่ปิด ซึ่ง `M7` กับ `M13` ของ `16` เคยค้ำ และการถอนสองตัวนั้นทิ้งแถว 97 ไว้โดยไม่มีอะไรพิสูจน์ (#210)
+
+### กวาดซ้ำเจ็ดตัวที่ #284 เล็งใหม่ (19 พ.ย. 2569)
+
+การเล็งใหม่เอา `department` ออกจาก `readOf` และจากการอ่านรายการทั้งสองครึ่งของมัตแตนต์ สมอยังตรง แต่การตรวจสมอบอกไม่ได้ว่ายังพิสูจน์อะไร (#107, #68)
+จึงกวาดแต่ละตัวกับแถวของจอรายวิชาในแฟ้มของมัน (`--grep` ชื่อจอ — มัตแตนต์ใน `Subjects.js` ไปไม่ถึงจออื่น)
+
+| มัตแตนต์ | แถวที่รัน | ผล | เทียบตารางของแฟ้มมัน |
+|---|---|---|---|
+| `140:subjectssavestalewins` | `140a` สี่แถวของรายวิชา | ล้ม 1 *the list บันทึก reloads…* ที่ `toEqual` ของแถว | ตรง |
+| `140:subjectsremovestalewins` | เดียวกัน | ล้ม 1 *the list ลบ reloads…* ที่ `toEqual` ของแถว | ตรง |
+| `146:subjectssavesaysanyway` | `146a` ห้าแถวของรายวิชา | ล้ม 1 *a save that lands while the next row is being read says nothing* ที่ *the first save's banner* | แถวที่มันถูกเขียนให้ตาย แต่ **หนึ่ง ไม่ใช่สาม** ของบันทึก 12 ต.ค. 2569 (`docs/acceptance/16-subjects.md:646`) — บันทึกนั้นเป็นของรูปก่อนที่มัตแตนต์ถูกปรับเป็นรูป `waiting.current` และอีกสองแถวในนั้นคือแถวที่ `subjectsclosewins` ค้ำ วันนี้วัดไม่ได้ว่าลดลงก่อน #284 หรือไม่ เพราะไม่ได้รันที่คอมมิตก่อนหน้า (#141) แต่การเล็งใหม่ไม่เปลี่ยนความหมายของมัน — `readOf` ทั้งสองครึ่งเสียช่องเดียวกัน |
+| `203:subjectssaveanyway` | `203a` สองแถวของรายวิชา | ล้ม 1 ที่ *the banner of the save* | ตรง |
+| `203:subjectsremovalanyway` | เดียวกัน | ล้ม 1 ที่ *the banner of the removal* | ตรง |
+| `272:s272subjnoq` | `272a` เจ็ดแถวของรายวิชา | ล้ม 7 ที่ `waitForResponse` (การจัดฉาก) | ตรง — หกแถวของตารางกับแถว h ที่บันทึกของแฟ้มนั้นจดไว้แล้ว |
+| `57:subjpage` | `57a` row 5 | ล้ม 1 ที่ `toEqual` ของแถว | ตรง |
 """
 from harness import main
 

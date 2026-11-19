@@ -13,6 +13,7 @@ const {
 } = require('../support/departments-screen');
 const {
   SUBJECTS,
+  API,
   waitForList,
   openSubjects,
   importSubjects,
@@ -232,7 +233,20 @@ test('row 97: a department retired afterwards still says where its subjects live
     // other direction, an add form offering nothing to file under. The form has
     // no picker now; the refusal of a new subject in a retired own department
     // is `284a` row 2, with the owner's sentence.
-    await save(page);
+    //
+    // The PUT's own answer is read before the sentence, so a refusal dies here
+    // with its status rather than in `save`'s wait for a reload that a refused
+    // edit never asks for (#139) - which is where `284:s284retirededitrefused`
+    // first killed this row, at a timeout instead of at the claim.
+    const [edited] = await Promise.all([
+      page.waitForResponse(
+        response =>
+          new URL(response.url()).pathname === `${API}/${CIVIL.subject_id}` &&
+          response.request().method() === 'PUT',
+      ),
+      page.getByRole('button', { name: 'บันทึก' }).click(),
+    ]);
+    expect(edited.status(), 'the edit is taken in a retired department').toBe(200);
     await expect(page.getByText('บันทึกข้อมูลเรียบร้อยแล้ว')).toBeVisible();
   } finally {
     // Put it back, whatever happened above: every other spec file in this
