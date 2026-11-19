@@ -37,7 +37,7 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-// #290's width and `width` prop - `DepartmentForm.js` has the reason. Copied
+// #290's width and `width` prop - `docs/ui-form-layout.md` has the rules. Copied
 // rather than shared, as `Field` itself is: one change of layout is not also a
 // merge (#68).
 const CHOICE = 'md:w-40'
