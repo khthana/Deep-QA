@@ -1023,3 +1023,40 @@ test('the term picker is refused another programme, no programme and another rol
   const faculty = await signInAs('U_FAC');
   assert.equal((await terms(faculty, `?program_id=${PROGRAM_COM}`)).status, 403);
 });
+
+test('an Offering whose section has an enrolment and no weekly plan is refused with the reason, not a 500', async () => {
+  // #281 - the eighth criterion's 23503 branch. Since the seed gained weekly
+  // plans (0915c32, 29 August 2569) every Offering a row tried to remove was
+  // refused by `hasSyllabus` before the DELETE, so nothing reached the catch
+  // that turns the database's RESTRICT into `offeringInUse`, and
+  // `23:norestrictcatch` survived both seams. This row reaches it: a section
+  // with one enrolment (`student_course` is RESTRICT on `course_sections`) and
+  // no plan. The enrolment is written below the seam, as `placedSubject`
+  // writes its placement, because what an enrolment *is* belongs to another
+  // screen's routes.
+  const cookie = await signInAs('U_COM');
+  const fresh = await freshOffering(cookie);
+  const section = (await addSection(cookie, fresh.id, { section_number: '1' })).body.section;
+  const {
+    rows: [student],
+  } = await api.pool.query(`SELECT student_id FROM student ORDER BY student_id LIMIT 1`);
+  assert.ok(student, 'the seed should hold a student to enrol');
+  await api.pool.query(`INSERT INTO student_course (student_id, section_id) VALUES ($1, $2)`, [
+    student.student_id,
+    section.section_id,
+  ]);
+  // The precondition the row exists for: nothing here is a weekly plan, so the
+  // refusal below cannot be `hasSyllabus`'s.
+  const {
+    rows: [{ plans }],
+  } = await api.pool.query(
+    `SELECT count(*)::int AS plans FROM course_syllabus WHERE section_id = $1`,
+    [section.section_id],
+  );
+  assert.equal(plans, 0, 'no weekly plan, so the refusal cannot be hasSyllabus');
+
+  const refused = await close(cookie, fresh.id);
+  assert.equal(refused.status, 409, 'the enrolment protects the Offering');
+  assert.equal(refused.body.message, REFUSALS.offeringInUse);
+  assert.equal((await read(cookie, fresh.id)).status, 200);
+});
