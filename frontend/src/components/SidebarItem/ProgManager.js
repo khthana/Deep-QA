@@ -2,6 +2,7 @@ import {
   HiOutlineClipboardDocumentCheck, // ข้อมูล Rubric กลาง
   HiOutlineAcademicCap, // หลักสูตร
   HiOutlineSquare3Stack3D, // รายวิชาในหลักสูตร
+  HiOutlineIdentification, // ข้อมูลนักศึกษากลาง
   HiOutlineCalendarDays, // การเปิดรายวิชาในภาคการศึกษา
   HiOutlineChartBar, // ผลการเรียนรู้
   HiOutlineKey, // กำหนดผลการเรียนรู้ระดับหลักสูตร PLO
@@ -30,6 +31,15 @@ export const PROG_MANAGER = [
         label: 'รายวิชาในหลักสูตร',
         path: '/main/course-in-program',
         icon: <HiOutlineSquare3Stack3D />,
+      },
+      {
+        // #292 (20 พ.ย. 2569): back where the delivered menu had it, after
+        // รายวิชาในหลักสูตร. The server decides what the committee sees here -
+        // its own หลักสูตร - and this entry is the convenience, not the rule.
+        key: 'ข้อมูลนักศึกษากลาง',
+        label: 'ข้อมูลนักศึกษากลาง',
+        path: '/main/student-data',
+        icon: <HiOutlineIdentification />,
       },
       {
         key: 'การเปิดรายวิชาในภาคการศึกษา',

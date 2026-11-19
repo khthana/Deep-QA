@@ -320,6 +320,9 @@ citation.
   turned one ticket's four forms into four forms **and** four screens' guards; had they said only
   *unreachable today*, the half they prescribed would have been left undone with nothing to say
   so. (#242)
+- **A role added to a guard is a claim about every clause below it** — #68 from the other side: not
+  another caller but another reach, and the clauses were written in the grain of the roles already
+  there. (#292)
 - **A guard written for one caller is a claim about every caller** — find the others before
   writing the comment that says they are safe, because that comment is the claim, and a caller
   passed by reference is invisible to a grep for the call. (#68, #133)

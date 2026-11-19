@@ -37,6 +37,12 @@ import {
  * delivered and neither reaches it now — enforced at the server, as ADR-0002
  * asks, with the menu entry removed as a convenience rather than as the rule.
  *
+ * #292 (20 พ.ย. 2569) dated that paragraph: the owner gave the กรรมการหลักสูตร
+ * the register back, read and write, for its own หลักสูตร. Nothing on this
+ * screen changed for it — the server answers a committee its one หลักสูตร as
+ * the filter's options and the department behind it as the stated ภาควิชา, so
+ * the shape below holds for that grant as it does for a department's.
+ *
  * The two filters the ticket asks for are not two dropdowns. An account that
  * reaches this screen reaches one department, so ภาควิชา is stated rather than
  * offered — the same shape ข้อมูลรายวิชา settled on, and for the same reason: a

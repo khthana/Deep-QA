@@ -44,10 +44,15 @@
  * for neither. A student who leaves is a `status`, and the ticket that needs it
  * can add it.
  *
- * Authorisation is DEPT_ADMIN alone, which the advisor settled the same way
- * #61 settled the subject catalogue: the register is departmental master data,
- * and neither the faculty administrator above it nor the programme committee
- * beside it maintains it. docs/05 A07 named three roles and now names one.
+ * Authorisation was DEPT_ADMIN alone after #17, which the advisor settled the
+ * same way #61 settled the subject catalogue: the register is departmental
+ * master data, and neither the faculty administrator above it nor the programme
+ * committee beside it maintains it. docs/05 A07 named three roles and then one.
+ *
+ * #292 (20 พ.ย. 2569) gave the committee back half of that: the owner decided
+ * a กรรมการหลักสูตร reads and writes the register for its own หลักสูตร, as the
+ * delivered menu had it. The faculty administrator stays refused. What that
+ * cost is `IN_REACH` below rather than a role in a list.
  */
 
 const express = require('express');
@@ -61,7 +66,29 @@ const { pageOf } = require('../lib/paging');
 const { holding, searchOf } = require('../lib/search');
 const { reachableDepartments, reachablePrograms, programInReach } = require('../lib/reach');
 
-const MAINTAINERS = ['DEPT_ADMIN'];
+const MAINTAINERS = ['DEPT_ADMIN', 'PROG_MANAGER'];
+
+/**
+ * Whether a student row is inside the reach bound at `$n` - #292.
+ *
+ * A department grant's reach holds its department and every programme in it,
+ * and a committee grant's holds its programme and nothing else (`coveredScopes`).
+ * So asking only `department_id` answers a committee nothing at all, and asking
+ * the department *of* the committee's programme would answer them every
+ * programme beside theirs. Asking both columns is exactly each grant's own
+ * reach: for a department or faculty grant the `program_id` half adds no row,
+ * because every programme it reaches sits in a department it reaches.
+ *
+ * It leans on ADR-0001's codes not colliding across tiers - a department is
+ * `05`, a programme `0501` - so a programme code in the reach can never be
+ * read as a department's, nor the other way round.
+ *
+ * Written once because three places ask it - the list, the read and
+ * `refuseWrite` - and a copy that kept the old clause would be the overwrite
+ * hole `refuseWrite` describes, for one grant.
+ */
+const IN_REACH = (n) =>
+  `($${n}::text[] IS NULL OR department_id = ANY($${n}) OR program_id = ANY($${n}))`;
 
 /** `full_name_th` is generated, and comes back so a list need not concatenate. */
 const RETURNED = `student_id, first_name_th, last_name_th, full_name_th,
@@ -204,7 +231,7 @@ function studentRoutes(pool) {
 
     const reach = await coveredScopes(pool, scopeId);
     const { rows } = await pool.query(
-      `SELECT ($2::text[] IS NULL OR department_id = ANY($2)) AS mine
+      `SELECT ${IN_REACH(2)} AS mine
          FROM student WHERE student_id = $1`,
       [values.student_id, reach],
     );
@@ -232,7 +259,7 @@ function studentRoutes(pool) {
       const search = searchOf(req);
 
       // #272: the search box, over what the table shows of a student.
-      const where = `WHERE ($1::text[] IS NULL OR department_id = ANY($1))
+      const where = `WHERE ${IN_REACH(1)}
                        AND ($2::text IS NULL OR department_id = $2)
                        AND ($3::text IS NULL OR program_id = $3)
                        AND ${holding(4, ['student_id', 'full_name_th', 'admission_year'])}`;
@@ -295,7 +322,32 @@ function studentRoutes(pool) {
    */
   router.get('/students/departments', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
-      const departments = await reachableDepartments(pool, req.auth.acting.scope_id);
+      // #292: a committee grant reaches no department, and `reachableDepartments`
+      // answers it nothing - which would leave ภาควิชา blank on the screen and
+      // every row's department unnamed. The departments its programmes sit in
+      // are added here, for naming only: no write reads this list, because the
+      // department is derived from the หลักสูตร (`refuseWrite`). Not in
+      // `lib/reach`, where every other screen's picker would start offering
+      // the committee a department to file things under.
+      const scopeId = req.auth.acting.scope_id;
+      const [covered, programs] = await Promise.all([
+        reachableDepartments(pool, scopeId),
+        reachablePrograms(pool, scopeId),
+      ]);
+      const named = new Set(covered.map((department) => department.department_id));
+      const behind = [...new Set(programs.map((program) => program.department_id))].filter(
+        (id) => !named.has(id),
+      );
+      const { rows: added } = behind.length
+        ? await pool.query(
+            `SELECT department_id, department_name_th, department_name_en, is_active
+               FROM departments WHERE department_id = ANY($1) ORDER BY department_id ASC`,
+            [behind],
+          )
+        : { rows: [] };
+      const departments = [...covered, ...added].sort((a, b) =>
+        a.department_id.localeCompare(b.department_id),
+      );
       return res.status(200).json({ departments });
     } catch (error) {
       return next(error);
@@ -382,7 +434,7 @@ function studentRoutes(pool) {
       const { rows } = await pool.query(
         `SELECT ${RETURNED} FROM student
           WHERE student_id = $1
-            AND ($2::text[] IS NULL OR department_id = ANY($2))`,
+            AND ${IN_REACH(2)}`,
         [req.params.studentId, reach],
       );
       if (!rows[0]) return res.status(404).json({ message: REFUSALS.studentNotFound });

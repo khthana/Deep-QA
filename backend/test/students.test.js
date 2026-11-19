@@ -478,9 +478,12 @@ test('an administrator of another department sees and writes nothing here', asyn
  * and then read back from a maintainer's session to show that nothing the
  * refused account asked for happened.
  *
- * Three roles reach the register in docs/05 A07 as delivered and one reaches it
- * now, so three of these four walks are a change being recorded rather than a
- * rule being restated. `prefix` keeps the codes the attempts create apart.
+ * Three roles reach the register in docs/05 A07 as delivered and one reached it
+ * after #17, so two of these walks were a change being recorded rather than a
+ * rule being restated. The committee's walk is gone since #292 (20 พ.ย. 2569),
+ * when the owner gave the register back to it for its own หลักสูตร - its rows
+ * are at the bottom of this file. `prefix` keeps the codes the attempts create
+ * apart.
  */
 const refusedEverything = async (account, prefix) => {
   const cookie = await signInAs(account);
@@ -511,12 +514,6 @@ test('the faculty administrator is refused the register', async () => {
   // The advisor settled #17 the way #61 settled the catalogue: the register is
   // departmental master data. docs/05 A07 named this role and no longer does.
   await refusedEverything('U_FAC', '61');
-});
-
-test('the programme committee is refused the register', async () => {
-  // A08 as delivered reached this screen, which is the larger half of the same
-  // ruling: a committee owns what a หลักสูตร teaches, not who is admitted to it.
-  await refusedEverything('U_COM', '62');
 });
 
 test('a teacher is refused the register', async () => {
@@ -687,4 +684,130 @@ test('a search narrows the register to the students whose code, name or intake h
   } finally {
     await api.pool.query('DELETE FROM student WHERE student_id = ANY($1)', [made]);
   }
+});
+
+/**
+ * #292 (20 พ.ย. 2569): the owner gave the register back to the programme
+ * committee - read and write, its own หลักสูตร only - reversing #17's ruling.
+ *
+ * The situation these rows need is a student in the *same department* and a
+ * different หลักสูตร, because that is the one a department-grained reach lets
+ * through: a committee grant's reach is `[program_id]` and nothing else, so a
+ * route still filtering on `department_id` alone answers an empty list, and one
+ * widened to the department answers the 0503 student too. Both are wrong, and
+ * only a student in `0503` of department `05` tells them apart from the fix.
+ *
+ * At the bottom of the file because the committee writes into `0501`, and the
+ * rows above count it.
+ */
+const committeeCase = async (fn) => {
+  const sibling = '62030001';
+  const made = ['62110001', '62110002', '62110003'];
+  await api.pool.query(
+    `INSERT INTO student (student_id, first_name_th, last_name_th, department_id, program_id, admission_year)
+     VALUES ($1, 'ของ', 'หลักสูตรข้างเคียง', $2, $3, '2562')`,
+    [sibling, DEPT_COMPUTER, PROG_INTL],
+  );
+  try {
+    await fn({ sibling, made });
+  } finally {
+    await forget([sibling, ...made]);
+  }
+};
+
+const countIn = async (programId) =>
+  (await api.pool.query('SELECT count(*)::int AS n FROM student WHERE program_id = $1', [programId]))
+    .rows[0].n;
+
+test('the programme committee reads its own หลักสูตร and no other - #292', async () => {
+  await committeeCase(async ({ sibling }) => {
+    const cookie = await signInAs('U_COM');
+    const own = await countIn(PROG_MAIN);
+
+    const theirs = await list(cookie, '?per_page=100');
+    assert.equal(theirs.status, 200);
+    assert.equal(theirs.body.total, own);
+    assert.ok(!idsOf(theirs.body).includes(sibling));
+    assert.ok(theirs.body.students.every((student) => student.program_id === PROG_MAIN));
+
+    // The filters sit inside the reach for this grant as for a department's.
+    assert.equal((await list(cookie, `?program_id=${PROG_INTL}`)).body.total, 0);
+    assert.equal((await list(cookie, `?department_id=${DEPT_COMPUTER}`)).body.total, own);
+    assert.equal((await list(cookie, `?department_id=${DEPT_CIVIL}`)).body.total, 0);
+
+    assert.equal((await read(cookie, SEEDED_CODE)).status, 200);
+    const refused = await read(cookie, sibling);
+    assert.equal(refused.status, 404);
+    assert.equal(refused.body.message, REFUSALS.studentNotFound);
+
+    // The picker offers the one หลักสูตร, and the department behind it is
+    // namable - the screen states it, and an empty list would leave it blank.
+    assert.deepEqual(
+      (await pickable(cookie)).body.programs.map((program) => program.program_id),
+      [PROG_MAIN],
+    );
+    const named = await namable(cookie);
+    assert.equal(named.status, 200);
+    assert.deepEqual(
+      named.body.departments.map((department) => department.department_id),
+      [DEPT_COMPUTER],
+    );
+
+    assert.equal((await template(cookie)).status, 200);
+  });
+});
+
+test('the other committee reads the sibling and not 0501 - #292', async () => {
+  // The same rule from the other หลักสูตร, so a route that answered one
+  // programme for every committee grant would fail here.
+  await committeeCase(async ({ sibling }) => {
+    const cookie = await signInAs('U_COM2');
+    const theirs = await list(cookie, '?per_page=100');
+    assert.equal(theirs.body.total, await countIn(PROG_INTL));
+    assert.ok(idsOf(theirs.body).includes(sibling));
+    assert.equal((await read(cookie, sibling)).status, 200);
+    assert.equal((await read(cookie, SEEDED_CODE)).status, 404);
+  });
+});
+
+test('the programme committee writes into its own หลักสูตร and no other - #292', async () => {
+  await committeeCase(async ({ sibling, made: [typed, imported, elsewhere] }) => {
+    const cookie = await signInAs('U_COM');
+
+    const added = await create(cookie, draftOf(typed));
+    assert.equal(added.status, 201);
+    assert.equal(added.body.student.program_id, PROG_MAIN);
+    assert.equal(added.body.student.department_id, DEPT_COMPUTER);
+
+    const intl = await create(cookie, draftOf(elsewhere, { program_id: PROG_INTL }));
+    assert.equal(intl.status, 403);
+    assert.equal(intl.body.message, REFUSALS.studentProgramNotYours);
+
+    // An import both creates and overwrites, and the overwriting half is the
+    // one a department-grained ownership check refuses for this grant.
+    const file = await importCsv(
+      cookie,
+      csvOf([draftOf(imported), draftOf(typed, { first_name_th: 'แก้ชื่อ' })]),
+    );
+    assert.equal(file.status, 201, JSON.stringify(file.body));
+
+    // The sibling is in this caller's department and not their หลักสูตร:
+    // naming 0501 for it would move somebody else's student into it.
+    const moved = await importCsv(cookie, csvOf([draftOf(sibling)]));
+    assert.equal(moved.status, 400);
+    assert.deepEqual(moved.body.errors, [{ line: 2, message: REFUSALS.studentNotYours }]);
+    const typedOver = await create(cookie, draftOf(sibling));
+    assert.equal(typedOver.status, 403);
+    assert.equal(typedOver.body.message, REFUSALS.studentNotYours);
+
+    const { rows } = await api.pool.query(
+      'SELECT student_id, program_id, first_name_th FROM student WHERE student_id = ANY($1) ORDER BY student_id',
+      [[sibling, typed, imported, elsewhere]],
+    );
+    assert.deepEqual(rows, [
+      { student_id: sibling, program_id: PROG_INTL, first_name_th: 'ของ' },
+      { student_id: typed, program_id: PROG_MAIN, first_name_th: 'แก้ชื่อ' },
+      { student_id: imported, program_id: PROG_MAIN, first_name_th: `นักศึกษา${imported}` },
+    ]);
+  });
 });
