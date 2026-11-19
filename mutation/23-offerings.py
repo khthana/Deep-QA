@@ -70,6 +70,19 @@ three that everybody forgets to write.
 | `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร <ชื่อ>* อีกครั้ง | **แถวที่ตาย** `23b` row 9 *the committee of another curriculum sees none of this one* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์ (หลักสูตรนานาชาติ)'),   ).toHaveCount(0)` · ข้อยืนยันเหนือมันอ่านรายการกับตัวกรอง ซึ่งมัตแตนต์ไม่แตะ |
 
 ผลการกวาด (17 พ.ย. 2569, `23b`): `statesprogram` 1 ล้ม 5 ผ่าน ที่ข้อยืนยันที่ทำนายไว้ของแถว 9
+
+## คำทำนายของ #288 (19 พ.ย. 2569) — เขียนก่อนรัน (#255)
+
+`nosectioncatch` คือการดัก 23503 ของการลบ**กลุ่มเรียน**ที่ถูกเอาออก คู่ของ `norestrictcatch` ฝั่งการเปิดสอน (#281)
+ตั๋วอ้างว่าไม่มีแถวไปถึงการดักนี้ เพราะกลุ่มเรียนที่ทุกแถวลบมีแผนการสอน และ `hasSyllabus` ปฏิเสธด้วยประโยคเดียวกันก่อน
+การกวาดมีสองรอบ รอบแรกถามข้ออ้างของตั๋วกับชุดทดสอบที่ `HEAD` รอบสองถามแถวใหม่
+
+| มัตแตนต์ | รอบ | แฟ้ม | ตายที่ (คำทำนาย) |
+|---|---|---|---|
+| `nosectioncatch` | 1 (ก่อนแถวใหม่) | `backend/test/offerings.test.js` | **รอดทั้งแฟ้ม** — แถว *an Offering with enrolled students is protected, and an unused one is removed* ลบกลุ่มเรียนของ seed ที่มีแผนการสอน จึงได้ `sectionInUse` จาก `hasSyllabus` |
+| `nosectioncatch` | 1 | `23a` | **รอดทั้งแฟ้ม** — แถว 8 ครึ่งหลังถึงคำปฏิเสธผ่าน `hasSyllabus` ด้วยเหตุผลเดียวกัน |
+| `nosectioncatch` | 2 (หลังแถวใหม่) | `backend/test/offerings.test.js` | **ล้ม 1** ที่แถวใหม่ *a section with an enrolment and no weekly plan is refused with the reason, not a 500* ที่ *the enrolment protects the section* (ได้ 500) — ข้อตั้งต้นที่นับแผนการสอนเป็น 0 อยู่เหนือมันและมัตแตนต์ไม่แตะ |
+| `nosyllabus` | 2 | `backend/test/offerings.test.js` | แถวใหม่**ผ่าน** — กลุ่มเรียนนั้นไม่มีแผนการสอน `hasSyllabus` ตอบไม่ใช่อยู่แล้ว การฆ่าของมันอยู่ที่เดิม |
 """
 
 from harness import main
@@ -231,6 +244,16 @@ MUTANTS = {
           return res.status(409).json({ message: REFUSALS.offeringInUse });""",
                         """        if (false) {
           return res.status(409).json({ message: REFUSALS.offeringInUse });"""),
+    # #288: the 23503 catch on the *section* removal dropped - the twin of
+    # `norestrictcatch`. The database still refuses and the section stays;
+    # what goes is the reason, and the person is told the generic failure.
+    # Every row that removes a referenced section removes one with a weekly
+    # plan, which `hasSyllabus` refuses first with the same sentence.
+    "nosectioncatch": ("routes",
+                       """          if (isReferenced(error)) {
+            return res.status(409).json({ message: REFUSALS.sectionInUse });""",
+                       """          if (false) {
+            return res.status(409).json({ message: REFUSALS.sectionInUse });"""),
     # The reach clause dropped from the list, leaving the three filters the
     # screen sends. Every account still has to be a committee member to get
     # here, so `wideopen`'s rows stay green; what breaks is the other half of
