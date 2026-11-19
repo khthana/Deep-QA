@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { holdBack, wentThroughTheWindow } = require('../support/late-answer');
-const { SUBJECTS, openSubjects, departmentPicker } = require('../support/subjects-screen');
+const { SUBJECTS, openSubjects } = require('../support/subjects-screen');
 const { PLOS, openAddForm: openOutcomeForm } = require('../support/plos-screen');
 const {
   PROGRAM_SUBJECTS,
@@ -73,18 +73,21 @@ const {
  * raced the mount's answer like the other three and was **untested rather than
  * unreachable**. Since #282 there is no pool and no answer to race, so that
  * window is gone rather than untested.
+ *
+ * **Row 1 is a net since 19 พ.ย. 2569 (#284).** The owner took the department
+ * field off `SubjectForm`, so `Subjects.js` reads no pool and there is no
+ * answer for what was typed to race: the claim is structurally unreachable
+ * rather than untested (#102), and `233:subjectarrayidentity` is a record. The
+ * row is kept rather than deleted so the rows after it keep their numbers,
+ * which ninety-odd records cite; it now asserts the **mechanism** - nothing
+ * asks for the departments in reach, and the form draws no field to re-pick -
+ * and the condition that would re-date it is a department field back on the
+ * form (#203).
  */
-
-/**
- * Department 01: the single department `deptadm01` reaches, which is why row 1
- * signs in as that account. Until #282 this file also lent `deptadm05` a grant
- * to 01, for the two programme rows; that account then reached two and so had
- * no `onlyOne` at all.
- */
-const DEPT_01 = '01';
 
 /** The pool each screen reads, by the path the request names. */
 const REACH = {
+  // Gone since #284; row 1 asserts nothing asks for it.
   subjects: '/api/subjects/departments',
   plos: '/api/plos/programs',
   programSubjects: '/api/program-subjects/programs',
@@ -116,14 +119,16 @@ const LATE_BY = 15_000;
 /** What a read on the far side of the window is allowed to wait. */
 const PAST_THE_WINDOW = 25_000;
 
-test('the subject form keeps what was typed when the departments it may file under arrive after it was opened', async ({
+test('the subject form reads no departments since #284, so what was typed has no answer to race (a net)', async ({
   page,
 }) => {
-  // The second way in, which needs neither a second grant nor a switch: the
-  // pool is read once on mount, and that answer alone moves `onlyOne` from
-  // `null` to an object. Held back from inside the document (#170), because the
-  // window is one round trip and rerunning the row does not widen it (#136).
-  await holdBack(page, `^${REACH.subjects}$`, LATE_BY);
+  // Every request for the departments in reach, from the moment the page
+  // exists: the read this row used to hold back (#170) and the one whose
+  // absence is now the claim.
+  const asked = [];
+  page.on('request', request => {
+    if (new URL(request.url()).pathname === REACH.subjects) asked.push(request.url());
+  });
 
   await signIn(page, ACCOUNTS.departmentAdmin01);
   await openSubjects(page);
@@ -131,33 +136,19 @@ test('the subject form keeps what was typed when the departments it may file und
 
   await page.getByRole('button', { name: 'เพิ่มรายวิชา' }).click();
 
-  // The precondition, counted on the options rather than read off the control,
-  // because a reader that asks what a control holds cannot tell an absent
-  // control from an empty one (#164). The list's own ภาควิชา is a statement and
-  // not a second combobox while one department is reached, so this locator is
-  // the form's picker alone.
-  await expect(
-    departmentPicker(page).locator(`option[value="${DEPT_01}"]`),
-    'the pool has not been handed on yet',
-  ).toHaveCount(0);
-
+  // The control, seen green before the absences are read (#171): the form is
+  // open and takes what is typed.
   const code = page.getByLabel('รหัสวิชา', { exact: true });
   await code.fill(TYPED.subject);
+  await expect(code, 'the add form is open and holds what was typed').toHaveValue(TYPED.subject);
 
-  // The answer's drawing is the settle point (#132): the option is what the
-  // pool answer put on the screen.
+  // The mechanism, which is what a net asserts (#203): no field for a late
+  // answer to re-pick, and no read for it to be the answer of.
   await expect(
-    departmentPicker(page).locator(`option[value="${DEPT_01}"]`),
-    'the pool has been handed on and the form drawn from it',
-  ).toHaveCount(1, { timeout: PAST_THE_WINDOW });
-
-  await expect(code, 'and what was typed survived it').toHaveValue(TYPED.subject);
-  await expect(departmentPicker(page), 'the single department it may be filed under').toHaveValue(
-    DEPT_01,
-  );
-
-  // The fixture is only a fixture if the screen went through it (#51).
-  await wentThroughTheWindow(page);
+    page.getByRole('combobox', { name: 'ภาควิชา' }),
+    'the form draws no department field',
+  ).toHaveCount(0);
+  expect(asked, 'and nothing asked for the departments in reach').toEqual([]);
 });
 
 test('the outcome form keeps what was typed when the curricula it may write into arrive after it was opened', async ({

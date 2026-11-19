@@ -80,7 +80,7 @@ test.beforeAll(async ({ browser }) => {
       csv(
         header,
         ...CODES.map(
-          (code, index) => `${code},วิชานำเข้าทดสอบ ${index + 1},Imported Test ${index + 1},3,05,,`,
+          (code, index) => `${code},วิชานำเข้าทดสอบ ${index + 1},Imported Test ${index + 1},3,,`,
         ),
       ),
     );

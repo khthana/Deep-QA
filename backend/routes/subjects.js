@@ -12,7 +12,8 @@
  *
  * It is #15 read again for a different table, and the three things that run
  * through that file run through this one - two roles sharing one reach, a
- * department named by the body and checked against the database, and a removal
+ * department checked against the database (named by the body until #284, the
+ * grant's own since), and a removal
  * that deactivates when something depends on the record. What is genuinely
  * different is worth naming, because each of the four is a place copying #15
  * would have been wrong.
@@ -35,13 +36,18 @@
  * where they meant to be told what they left out. So it is read as digits and
  * refused as `invalidSubject` when it is not.
  *
- * *The list is filterable by department.* The seventh criterion asks for it,
- * and #61 has since narrowed who ever sees a choice: one department administers
- * this catalogue and the filter has one option to offer them. It stays because
- * it is the reach expressed as a query - the filter narrows within the reach
- * and never widens it, so a department outside the reach matches nothing rather
- * than answering with somebody else's catalogue - and because a later grant
- * covering two departments would need it back.
+ * *The department is the grant's, not the body's* (#284, the owner's answer of
+ * 19 พ.ย. 2569, the same as #282's for programmes). The Department Admin holds
+ * one department (CONTEXT.md), so a department named by a body or a
+ * spreadsheet had one value it could correctly be. A subject is filed under the
+ * department of the grant that records it (`req.auth.acting.scope_id`), a
+ * `department_id` in a body or a file is not read, and an edit writes no
+ * department: `reachable` pins the subject to the reach before the edit is read.
+ * The `?department_id=` filter on the list and `GET /subjects/departments`
+ * went with it. Until then this paragraph said the filter stayed "because a
+ * later grant covering two departments would need it back"; the owner's answer
+ * is that nobody holds such a grant, and the one place that built one was
+ * `144a`'s fixture.
  */
 
 const express = require('express');
@@ -54,7 +60,7 @@ const { importRows, sendImport, sendTemplate } = require('../lib/importer');
 const { pageOf } = require('../lib/paging');
 const { holding, searchOf } = require('../lib/search');
 const { deleteOrDeactivate } = require('../lib/removal');
-const { departmentInReach, reachableDepartments } = require('../lib/reach');
+const { departmentInReach } = require('../lib/reach');
 
 /**
  * The role that maintains the catalogue — one of them, settled by #61.
@@ -89,7 +95,6 @@ const IMPORT_COLUMNS = [
   'subject_name_th',
   'subject_name_en',
   'credits',
-  'department_id',
   'description_th',
   'description_en',
 ];
@@ -115,7 +120,6 @@ function readSubject(source, { editing = false } = {}) {
     credits: blankToNull(source.credits),
     description_th: blankToNull(source.description_th),
     description_en: blankToNull(source.description_en),
-    department_id: blankToNull(source.department_id),
   };
 
   if (!editing && !values.subject_id) return { ok: false, reason: 'invalidSubject' };
@@ -133,9 +137,8 @@ function readSubject(source, { editing = false } = {}) {
   if (!/^\d{1,2}$/.test(credits)) return { ok: false, reason: 'invalidSubject' };
   values.credits = Number(credits);
 
-  // A department is what a subject is owned by, so it is required when one is
-  // created; on an edit an absent column means "leave it where it is".
-  if (!editing && !values.department_id) return { ok: false, reason: 'invalidSubject' };
+  // No department is read: it is the grant's (#284). Until then a create
+  // without one was refused here as `invalidSubject`.
 
   return { ok: true, values };
 }
@@ -147,9 +150,10 @@ function readSubject(source, { editing = false } = {}) {
  * client its transaction is on, and both take the same seven columns in the
  * same order - so the statement is written once and handed the executor, rather
  * than copied into the route and into the importer's `insert` where the two
- * could drift a column apart.
+ * could drift a column apart. The department is handed in apart from the
+ * values because it is never one of them: it is the grant's (#284).
  */
-async function insertSubject(executor, values) {
+async function insertSubject(executor, values, department) {
   const { rows } = await executor.query(
     `INSERT INTO subjects
        (subject_id, subject_name_th, subject_name_en, credits,
@@ -162,7 +166,7 @@ async function insertSubject(executor, values) {
       values.credits,
       values.description_th,
       values.description_en,
-      values.department_id,
+      department,
     ],
   );
   return rows[0];
@@ -172,22 +176,23 @@ function subjectRoutes(pool) {
   const router = express.Router();
 
   /**
-   * The department this request may file a subject under.
+   * Whether the grant's own department still takes new subjects.
    *
-   * Named by the body and checked against the reach derived from the acting
-   * grant, which is the shape ADR-0002 permits: authority is never read from a
-   * body, a target named by one is verified. Returns a REFUSALS key or null,
-   * which is also `importRows`'s `verify` contract - so the same check covers
-   * the typed row and the imported one. The question itself is `lib/reach`,
-   * shared with #15; what a refusal *says* is this file's, because the sentence
-   * names รายวิชา.
+   * The department is the grant's (#284), so the one thing left to ask about it
+   * is whether it is still switched on: a retired department keeps the subjects
+   * already under it (an edit below does not ask this) and takes no new ones.
+   * Until #284 the department was named by the body and checked against the
+   * reach here, and a `false` answered *a department that is not yours* -
+   * `subjectDepartmentNotYours`, which is untrue once nobody names one. The
+   * sentence is the owner's of 19 พ.ย. 2569, #282's with รายวิชา for หลักสูตร.
+   *
+   * Returns a REFUSALS key or null, which is also `importRows`'s `verify`
+   * contract - so the same check covers the typed row and the imported one.
    */
-  async function departmentRefusal(req, departmentId, { mustBeActive = true } = {}) {
-    if (!departmentId) return 'invalidSubject';
-    const held = await departmentInReach(pool, req.auth.acting.scope_id, departmentId, {
-      mustBeActive,
-    });
-    return held ? null : 'subjectDepartmentNotYours';
+  async function retiredRefusal(req) {
+    const own = req.auth.acting.scope_id;
+    const open = await departmentInReach(pool, own, own, { mustBeActive: true });
+    return open ? null : 'subjectDepartmentRetired';
   }
 
   /**
@@ -211,10 +216,10 @@ function subjectRoutes(pool) {
   /**
    * The list — the seventh criterion, both halves.
    *
-   * Ten to a page with the total, and `?department_id=` to narrow it. The
-   * filter is applied *inside* the reach rather than instead of it: a caller
-   * who names a department they do not hold gets an empty page, not somebody
-   * else's catalogue.
+   * Ten to a page with the total, inside the reach. `?department_id=` narrowed
+   * it within the reach until #284 (19 พ.ย. 2569), when the owner took the
+   * screen's department filter away with the column: it had one option for
+   * every account that reaches this screen.
    *
    * Inactive subjects are shown as well as active ones, deliberately: this is
    * the screen one is switched back on from, and a management list that hid
@@ -226,26 +231,23 @@ function subjectRoutes(pool) {
       const reach = await coveredScopes(pool, req.auth.acting.scope_id);
       const { page, perPage, offset } = pageOf(req);
       const activeOnly = ['1', 'true'].includes(String(req.query.active));
-      const department = blankToNull(req.query.department_id) ?? null;
       const search = searchOf(req);
 
       // #272: the search box, over what the table shows of a subject.
       const where = `WHERE ($1::text[] IS NULL OR department_id = ANY($1))
                        AND ($2::boolean IS NOT TRUE OR is_active)
-                       AND ($3::text IS NULL OR department_id = $3)
-                       AND ${holding(4, ['subject_id', 'subject_name_th', 'subject_name_en', 'credits'])}`;
+                       AND ${holding(3, ['subject_id', 'subject_name_th', 'subject_name_en', 'credits'])}`;
 
       const counted = await pool.query(`SELECT count(*)::int AS total FROM subjects ${where}`, [
         reach,
         activeOnly,
-        department,
         search,
       ]);
       const { rows } = await pool.query(
         `SELECT ${RETURNED} FROM subjects ${where}
           ORDER BY subject_id ASC
-          LIMIT $5 OFFSET $6`,
-        [reach, activeOnly, department, search, perPage, offset],
+          LIMIT $4 OFFSET $5`,
+        [reach, activeOnly, search, perPage, offset],
       );
 
       return res.status(200).json({
@@ -259,24 +261,9 @@ function subjectRoutes(pool) {
     }
   });
 
-  /**
-   * The departments this caller reaches — what the form's picker and the list's
-   * filter are both drawn from.
-   *
-   * Read from here rather than from `/api/departments`, which belongs to the
-   * faculty administrator alone (#14): a department administrator legitimately
-   * reaches this screen and would be refused by that one. The query is
-   * `lib/reach`, shared with #15, so what the picker offers is exactly what
-   * `departmentRefusal` will accept.
-   */
-  router.get('/subjects/departments', requireRole(...MAINTAINERS), async (req, res, next) => {
-    try {
-      const departments = await reachableDepartments(pool, req.auth.acting.scope_id);
-      return res.status(200).json({ departments });
-    } catch (error) {
-      return next(error);
-    }
-  });
+  // `GET /subjects/departments` stood here until #284 (19 พ.ย. 2569): the
+  // departments in reach, which drew the form's picker, the list's filter and
+  // the department column. None of the three is drawn now.
 
   /**
    * The template — the sixth criterion. Declared before `/subjects/:id` because
@@ -289,7 +276,6 @@ function subjectRoutes(pool) {
       subject_name_th: 'โครงสร้างข้อมูลและอัลกอริทึม',
       subject_name_en: 'DATA STRUCTURES AND ALGORITHMS',
       credits: '3',
-      department_id: '05',
       description_th: 'โครงสร้างข้อมูลพื้นฐานและการวิเคราะห์อัลกอริทึม',
       description_en: 'Fundamental data structures and algorithm analysis',
     }),
@@ -300,24 +286,26 @@ function subjectRoutes(pool) {
    *
    * The mechanism is `lib/importer`, shared with accounts, departments and
    * programmes. What is here is what is about subjects: how a row is read, that
-   * the code must not repeat within the file, that each row's department has to
-   * be one this caller reaches, and what writing one means.
+   * the code must not repeat within the file, that the grant's department still
+   * takes new subjects, and what writing one means. Every row lands in that
+   * department (#284), whatever a `department_id` column in the file says.
    */
   router.post('/subjects/import', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
+      const department = req.auth.acting.scope_id;
       const result = await importRows(pool, req.body, {
         // Both names and the credits, which `readSubject` refuses a row without.
         // The two descriptions are optional and so are not here.
-        required: ['subject_id', 'subject_name_th', 'subject_name_en', 'credits', 'department_id'],
+        required: ['subject_id', 'subject_name_th', 'subject_name_en', 'credits'],
         readRow: (record) => {
           const draft = readSubject(record);
           return draft.ok ? { ok: true, draft: draft.values } : draft;
         },
         keys: [{ of: (v) => v.subject_id, message: REFUSALS.duplicateSubjectId }],
-        verify: (values) => departmentRefusal(req, values.department_id),
+        verify: () => retiredRefusal(req),
         insert: async (client, values) => {
           try {
-            const row = await insertSubject(client, values);
+            const row = await insertSubject(client, values, department);
             // Inside the row's savepoint - #58, as in every import here.
             await recordActivity(client, req.auth.userId, 'IMPORT_SUBJECTS', onSubject(row.subject_id));
             return { ok: true, row };
@@ -345,19 +333,19 @@ function subjectRoutes(pool) {
     }
   });
 
-  /** Adding one — the first criterion, under a department the caller reaches. */
+  /** Adding one — the first criterion, under the grant's department (#284). */
   router.post('/subjects', requireRole(...MAINTAINERS), async (req, res, next) => {
     try {
       const draft = readSubject(req.body ?? {});
       if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
 
-      const refusal = await departmentRefusal(req, draft.values.department_id);
+      const refusal = await retiredRefusal(req);
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
 
       // `is_active` is deliberately not read here. A subject is added to the
       // catalogue because it is being taught; retiring one is the fourth
       // criterion and happens on an edit or on a removal, not at birth.
-      const subject = await insertSubject(pool, draft.values);
+      const subject = await insertSubject(pool, draft.values, req.auth.acting.scope_id);
       await recordActivity(pool, req.auth.userId, 'CREATE_SUBJECT', onSubject(subject.subject_id));
       return res.status(201).json({ subject });
     } catch (error) {
@@ -374,11 +362,12 @@ function subjectRoutes(pool) {
    *
    * The code is not among the fields that can change: `program_subjects` and
    * the Offerings beneath it reference it, and a transcript names it, so
-   * "renaming" a subject is a migration and not an edit on a form. The
-   * department can change, and is therefore checked twice - the subject as it
-   * stands has to be reachable, and so does the department it is moving to, or
-   * a move would be a way of pushing a record out of one's own reach or of
-   * adopting somebody else's.
+   * "renaming" a subject is a migration and not an edit on a form. Nor is the
+   * department, since #284: the subject has to be reachable, which pins it to
+   * the grant's department, and the edit writes none. Until then a body could
+   * move a subject to another department in reach, checked against the reach
+   * and refused into a retired one; with one department in reach there was
+   * nowhere to move it.
    *
    * Everything else replaces, as a PUT's fields do, including the two
    * descriptions - which the form has to be able to clear. Reading an absent
@@ -393,16 +382,9 @@ function subjectRoutes(pool) {
       const draft = readSubject(req.body ?? {}, { editing: true });
       if (!draft.ok) return res.status(400).json({ message: REFUSALS[draft.reason] });
 
-      // A department that has since been retired may keep the subjects already
+      // A department that has since been retired keeps the subjects already
       // filed under it - otherwise retiring a department would freeze its
-      // catalogue. It is only a *move* into a retired department that is
-      // refused.
-      const department = draft.values.department_id ?? existing.department_id;
-      const refusal = await departmentRefusal(req, department, {
-        mustBeActive: department !== existing.department_id,
-      });
-      if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
-
+      // catalogue - so nothing about the department is asked here.
       const { rows } = await pool.query(
         `UPDATE subjects
             SET subject_name_th = $2,
@@ -410,8 +392,7 @@ function subjectRoutes(pool) {
                 credits = $4,
                 description_th = $5,
                 description_en = $6,
-                department_id = $7,
-                is_active = coalesce($8, is_active),
+                is_active = coalesce($7, is_active),
                 updated_at = now()
           WHERE subject_id = $1
           RETURNING ${RETURNED}`,
@@ -422,7 +403,6 @@ function subjectRoutes(pool) {
           draft.values.credits,
           draft.values.description_th,
           draft.values.description_en,
-          department,
           typeof req.body?.is_active === 'boolean' ? req.body.is_active : null,
         ],
       );

@@ -103,8 +103,8 @@ MUTANTS = {
                  "listPrograms({ page, per_page: PAGE_SIZE, q })",
                  "listPrograms({ page: 1, per_page: PAGE_SIZE, q })"),
     "subjpage": ("subjects",
-                 "listSubjects({ page, per_page: PAGE_SIZE, department_id: department, q })",
-                 "listSubjects({ page: 1, per_page: PAGE_SIZE, department_id: department, q })"),
+                 "listSubjects({ page, per_page: PAGE_SIZE, q })",
+                 "listSubjects({ page: 1, per_page: PAGE_SIZE, q })"),
 
     # The last row of the last page deleted and the screen left standing on the
     # page that is now empty — the table reading "there are none" of a list that

@@ -3,43 +3,22 @@ import { del, get, post, put, query } from './client'
 /**
  * The subject calls — #16.
  *
- * #15's shape for a different table, with one addition the ticket asks for: the
- * list takes a `department_id`. Since #61 the only role that reaches these
- * calls is the ผู้ดูแลภาควิชา, who reaches one department, so the filter has one
- * value to take — it is kept because it is the reach expressed as a query. It
- * narrows within what the account already reaches and cannot widen it; the
- * server applies it inside the same reach it filters by (ADR-0002).
+ * #15's shape for a different table. The list took a `department_id` filter
+ * until #284 (19 พ.ย. 2569), and the form sent a department; neither does now.
+ * The server files a subject under the department of the acting grant, and
+ * `listReachableDepartments`, which drew the form's picker, the filter and the
+ * department column, went with all three.
  */
 
 /** One page of subjects, with the total so a pager can be drawn. */
 export const listSubjects = (params = {}) => get(`/api/subjects${query(params)}`)
 
 /**
- * The departments this account reaches, each with its `is_active`.
- *
- * Read from the subjects routes rather than from `/api/departments`, which
- * belongs to the faculty administrator alone — the department administrator
- * this screen belongs to would be refused by that one, and since #61 the two
- * screens have no reader in common. What comes back is
- * the same reach the server checks against, so neither the picker nor the
- * filter can name a choice that would then be turned down.
- *
- * Retired ones come too, and are the screen's only way of naming the department
- * a subject already filed under one lives in. Deciding which of them may be
- * *picked* is the form's job, not this call's.
- */
-export const listReachableDepartments = () => get('/api/subjects/departments')
-
-/**
  * What the server scopes to the acting grant, and what takes **no argument** to
- * say which rows it means: a list of rows the screen filters is not this one,
- * because that read moves with the landing's own dependency list, while this one
- * has no prop a landing could hand down to move it. So a landing screen that
- * draws it reads the screen generation itself -
- * `frontend/scripts/landing-generations.js` says why, and goes red for a read
- * that does not (#230).
+ * say which rows it means - `frontend/scripts/landing-generations.js` reads it
+ * (#230). Empty since #284 took `listReachableDepartments` away.
  */
-export const GRANT_SCOPED = ['listReachableDepartments']
+export const GRANT_SCOPED = []
 
 /**
  * One subject, read back from the server.

@@ -73,6 +73,12 @@ baseline สะอาดผ่านก่อนกวาด และ `git diff
 แยกมันออกจากแถวภาคได้ สิ่งที่จะทำให้แยกได้อีกคือการที่หลักสูตรขยับได้โดยภาคที่อ่านแล้วไม่หายไประหว่างทาง
 เช่นถ้าภาคของทุกหลักสูตรถูกอ่านไว้พร้อมกัน
 
+## ถอน `subjectsdepartmentnotfollowed` (19 พ.ย. 2569, #284)
+
+เจ้าของงานเอาตัวกรองภาควิชาออกจากข้อมูลรายวิชาพร้อมคอลัมน์ ตัวควบคุมที่มัตแตนต์นี้พูดถึงจึงไม่มีอยู่แล้ว มันถูกลบออกจาก
+`MUTANTS` (ไม่ใช่ `SUPERSEDED` ด้วยเหตุผลเดียวกับ `offeringsprogramnotfollowed`: สมอของมันคือ `REF` ซึ่งยังเป็นโค้ด)
+และแถวภาควิชาของ `144a` ถูกเอาออกพร้อมกัน แถวในตารางข้างบนเป็นบันทึกของวันที่กวาด (#54)
+
 ## วิธีรัน
 
     python mutation/144-superseded-reload-by-filter.py save
@@ -127,8 +133,14 @@ MUTANTS = {
     'usersstatusnotfollowed': ('users', REF,
         '    onScreen.current = load\n  }, [page, filters.q, filters.role])\n'),
     # ข้อมูลรายวิชา: ตัวกรองภาควิชา
-    'subjectsdepartmentnotfollowed': ('subjects', REF,
-        '    onScreen.current = load\n  }, [page, report])\n'),
+    #
+    # `subjectsdepartmentnotfollowed` stood here until 19 พ.ย. 2569 (#284), and
+    # is withdrawn by deletion rather than to `SUPERSEDED` for
+    # `offeringsprogramnotfollowed`'s reason: its anchor is `REF`, which is
+    # still the code, so a record would still apply - and would now leave out
+    # `q` rather than the department. The owner took the department filter off
+    # ข้อมูลรายวิชา with the column, so the control it was about is gone, and
+    # `144a`'s ภาควิชา row went with it. Sheet 16 §#284 is the record.
     # รายวิชาในหลักสูตร: ตัวกรองหลักสูตร
     # Re-aimed 17 พ.ย. 2569, when `load` gained `poolRead` (the list became
     # one curriculum's): left out of these dependencies too, the ref stayed on

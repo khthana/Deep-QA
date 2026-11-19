@@ -170,7 +170,7 @@ const SCREENS = [
       const rows = Array.from(
         { length: PAGE_SIZE + 1 - total },
         (unused, i) =>
-          `9999${String(i).padStart(4, '0')},รายวิชาทดสอบแบ่งหน้า ${i},Paging ${i},3,05,,`,
+          `9999${String(i).padStart(4, '0')},รายวิชาทดสอบแบ่งหน้า ${i},Paging ${i},3,,`,
       );
       await subjects.importSubjects(page, csv(header, ...rows));
       await untilAtLeast(page, table, PAGE_SIZE + 1);

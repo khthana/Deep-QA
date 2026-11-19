@@ -6,7 +6,7 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { facultyContext, departmentContext, switchOff } = require('../support/retiring');
-const { openSubjects, subjectRow, departmentPicker } = require('../support/subjects-screen');
+const { openSubjects, subjectRow } = require('../support/subjects-screen');
 const {
   openProgramSubjects,
   openEditor: openPairEditor,
@@ -77,6 +77,17 @@ const {
  * nothing — so a faculty administrator who reaches two departments of which
  * one is retired is row 1, which is what `233a` row 2 was on another form
  * until #282 withdrew it.
+ *
+ * **Row 1 is a net since 19 พ.ย. 2569 (#284).** The owner took the department
+ * field off `SubjectForm`, and with it the effect and the branch this row was
+ * about; `244:movesanexistingsubject` is a record. The claim - an existing
+ * subject keeps its own department - moved to the server, where an edit writes
+ * no department: `backend/test/subjects.test.js` *a department administrator
+ * cannot move a subject out of their reach* holds it and `284:s284putmoves` is
+ * its mutant. The row is kept so rows 2 to 4 keep their numbers, and asserts
+ * the mechanism: the editor of a subject in a retired department draws no
+ * department field, and the answer it was drawn from still names that
+ * department. A department field back on the form re-dates it (#203).
  *
  * ## What this file does not measure
  *
@@ -152,8 +163,9 @@ test('an existing subject keeps its own department even when that department is 
     await openSubjects(page);
 
     // Read afresh by the screen rather than edited out of the row the table is
-    // holding (`Subjects.js:249`), so the form is drawn from this answer.
-    await Promise.all([
+    // holding (`Subjects.js:249` when this was written; `openEditor` since), so
+    // the form is drawn from this answer.
+    const [read] = await Promise.all([
       page.waitForResponse(
         answer =>
           new URL(answer.url()).pathname === `/api/subjects/${SUBJECT}` &&
@@ -161,6 +173,7 @@ test('an existing subject keeps its own department even when that department is 
       ),
       subjectRow(page, SUBJECT).getByRole('button', { name: 'แก้ไข' }).click(),
     ]);
+    const { subject: opened } = await read.json();
 
     // The arrival read as a claim of its own, which the `openEditor` helpers
     // the other two rows use do for them (#213). Not a precondition the mutant
@@ -170,25 +183,17 @@ test('an existing subject keeps its own department even when that department is 
       'the editor for that subject is open',
     ).toBeVisible();
 
-    // The claim first and the picker's half second, which was `233a` row 2's
-    // order (withdrawn by #282) and for its reason: `movesanexistingsubject` re-picks the field,
-    // and the option is drawn only because the field holds it — `offered` keeps
-    // a retired department when it is `draft.department_id` — so a precondition
-    // read above the claim takes the red and leaves the claim itself unread
-    // (#88).
-    //
-    // This administrator reaches department `05` alone, so with `05` switched
-    // off the pool is **empty** and `starting` is `''`. That is what the branch
-    // under test stops this form from writing over a subject that already
-    // exists.
+    // A net since #284 - see the head of the file. What the editor was drawn
+    // from still names the retired department, and the form draws nothing a
+    // re-pick could write over: the department lives on the server, which an
+    // edit does not move.
+    expect(opened.department_id, 'the subject is still filed in the retired department').toBe(
+      DEPT_05,
+    );
     await expect(
-      departmentPicker(page),
-      'the subject still says which department it is in',
-    ).toHaveValue(DEPT_05);
-    await expect(
-      departmentPicker(page).locator(`option[value="${DEPT_05}"]`),
-      'and the department it sits in is still drawn as an option',
-    ).toHaveCount(1);
+      page.getByRole('combobox', { name: 'ภาควิชา' }),
+      'and the editor draws no department field to re-pick',
+    ).toHaveCount(0);
   } finally {
     await switchBackOn();
   }

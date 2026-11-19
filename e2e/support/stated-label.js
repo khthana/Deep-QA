@@ -17,7 +17,8 @@
  * There is **no space** between the word and the name in the element's text:
  * JSX drops the newline between the word and the `<span>`, so `textContent` is
  * the two run together, although `gap-2` draws them apart. A read written with
- * the space in it finds nothing, on all six screens - measured.
+ * the space in it finds nothing, on all six screens - measured. (Five since
+ * #284 took ข้อมูลรายวิชา's ภาควิชา statement away on 19 พ.ย. 2569.)
  *
  * And the read has to be of **this** element rather than of the name anywhere
  * on the page. Until #93 the label read `0501 <name>`, which was unique by

@@ -4,12 +4,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
-import {
-  alsoOutside,
-  outsideFilter,
-  someImportedOutside,
-  SOME_IMPORTED_OUTSIDE,
-} from '../lib/outsideTheFilter'
+import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import { outsideSearch } from '../lib/outsideTheSearch'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
@@ -21,7 +16,6 @@ import {
   getSubject,
   importSubjects,
   importTemplate,
-  listReachableDepartments,
   listSubjects,
   updateSubject,
 } from '../api/subjects'
@@ -42,15 +36,13 @@ import {
  * here is simply what that account may see. The Central Admin reaches none of
  * it either.
  *
- * What this screen has that ข้อมูลหลักสูตร does not is a filter by department,
- * which the ticket asks for. Since #61 every account that reaches the screen
- * reaches one department, so what it draws is the name rather than a dropdown —
- * the row is always there, so the screen says which catalogue is being read no
- * matter who is reading it, and nobody is handed a control whose every option
- * returns the same rows. The dropdown it falls back from is kept rather than
- * deleted: it is the same control รายวิชาในหลักสูตร draws live, and a grant
- * covering two departments would need it back. It narrows within the account's
- * reach and cannot widen it either way.
+ * It had a filter by department until #284 (the owner's answer of 19 พ.ย.
+ * 2569), drawn since #61 as the one department's name rather than a dropdown,
+ * a department column and a department field on the form. Every account that
+ * reaches the screen holds one department, so the server files a new subject
+ * under the grant's department and the screen names none: the filter, the
+ * column, the field and the read of the departments in reach went together,
+ * as #282 took them off ข้อมูลหลักสูตร.
  *
  * The list shows retired subjects as well as current ones, deliberately: this
  * is the screen one is switched back on from. Removing one asks first, and may
@@ -65,7 +57,7 @@ const PAGE_SIZE = 10
  * What a read of this list is *of*, which is what a sentence handed to
  * `waiting` names - #205. `Departments.js` carries the reasons.
  */
-const readOf = (page, department, q) => `${page}:${department}:${q}`
+const readOf = (page, q) => `${page}:${q}`
 
 /**
  * `load`'s third answer - #209. `Departments.js` carries the reasons: a read
@@ -89,11 +81,9 @@ const HANDED_ON = 'handed-on'
 
 export default function Subjects() {
   const [page, setPage] = useState(1)
-  const [department, setDepartment] = useState('')
   // The search the list is on - #272, `Departments.js` carries the reasons.
   const [q, setQ] = useState('')
   const [data, setData] = useState({ subjects: [], total: 0 })
-  const [departments, setDepartments] = useState([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
   // The import window, opened by นำเข้า… in the bar (#270).
@@ -129,14 +119,14 @@ export default function Subjects() {
    */
   const load = useCallback(async isCurrent => {
     // Which read this is, for the sentence that may be waiting for it - #205.
-    const key = readOf(page, department, q)
+    const key = readOf(page, q)
     setLoading(true)
     // Whether this read handed the page on rather than drawing it - #209. The
     // sentence that was waiting for it belongs to the read that follows, so the
     // `finally` below must not clear it.
     let handedOn = false
     try {
-      const answer = await listSubjects({ page, per_page: PAGE_SIZE, department_id: department, q })
+      const answer = await listSubjects({ page, per_page: PAGE_SIZE, q })
       if (isCurrent()) {
         // #209 - the owner's answer of 19 ตุลาคม 2569: whether the page the
         // person is on still exists is the server's to say, not this screen's,
@@ -150,7 +140,7 @@ export default function Subjects() {
         if (answer.page > lastPage) {
           handedOn = true
           if (waiting.current && waiting.current.of === key) {
-            waiting.current = { of: readOf(lastPage, department, q), said: waiting.current.said }
+            waiting.current = { of: readOf(lastPage, q), said: waiting.current.said }
           }
           setPage(lastPage)
           return HANDED_ON
@@ -190,7 +180,7 @@ export default function Subjects() {
         if (!handedOn && !waiting.current?.held) waiting.current = null
       }
     }
-  }, [page, department, q, report])
+  }, [page, q, report])
 
   useEffect(() => {
     let current = true
@@ -249,9 +239,9 @@ export default function Subjects() {
     if (editing) return
     const held = waiting.current
     if (!held?.held) return
-    if (held.of === readOf(page, department, q)) setNotice(held.said)
+    if (held.of === readOf(page, q)) setNotice(held.said)
     waiting.current = null
-  }, [editing, page, department, q])
+  }, [editing, page, q])
 
   /**
    * The page the pager is on now - #206. A removal steps the page back only
@@ -283,25 +273,10 @@ export default function Subjects() {
    * is (#206).
    */
 
-  // The departments in reach, fetched once: what this account covers is a
-  // property of the grant and does not change with the page being looked at.
-  // Used three times — to name the department each row sits in, as the pool the
-  // form's picker draws from, and as the filter's options.
-  useEffect(() => {
-    let cancelled = false
-    listReachableDepartments()
-      .then(({ departments: reachable }) => {
-        if (!cancelled) setDepartments(reachable)
-      })
-      .catch(report)
-    return () => {
-      cancelled = true
-    }
-  }, [report])
-
-  const nameOf = departmentId =>
-    departments.find(entry => entry.department_id === departmentId)?.department_name_th ??
-    departmentId
+  // The departments in reach were read here until #284 (19 พ.ย. 2569), to name
+  // each row's department, to draw the form's picker and to give the filter its
+  // options. None of the three is drawn now, so the read and
+  // `GET /api/subjects/departments` went together.
 
   /**
    * Which press of แก้ไข the form was last asked for - #139. แก้ไข makes a new
@@ -353,14 +328,11 @@ export default function Subjects() {
       } else {
         await createSubject(draft)
       }
-      // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The ภาควิชา field is open
-      // on an add and on an edit (it carries only `sending`), so a subject can be
-      // written into a department the table is not filtered to.
-      // `lib/outsideTheFilter.js` carries the measured population.
-      // #272 - and the search is a filter like the department (ข้อ 4).
-      const outside =
-        outsideFilter(department, draft.department_id) ||
-        outsideSearch(q, searched({ ...editing, ...draft }))
+      // #272 - a saved subject the search does not find is said to be outside
+      // it. The ภาควิชา half (#247, ข้อ จ) went with the field in #284: the
+      // server files a subject under the grant's department, which is the
+      // only department this list holds.
+      const outside = outsideSearch(q, searched({ ...editing, ...draft }))
       const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       if (showing.current === sent) setEditing(null)
       // #203 - the sentence waits for the read that draws it, and #209 has it
@@ -368,7 +340,7 @@ export default function Subjects() {
       // past the end, and only `load` can re-key the sentence for the read it
       // hands to. `Departments.js` carries the reasons.
       if (showing.current === sent) {
-        waiting.current = { of: readOf(onPage.current, department, q), said }
+        waiting.current = { of: readOf(onPage.current, q), said }
       }
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
@@ -424,7 +396,7 @@ export default function Subjects() {
       // outlives the gap it documented is an exemption (#141). The read that
       // draws says the sentence, keyed on itself (#205, #208).
       if (showing.current === sent) {
-        waiting.current = { of: readOf(onPage.current, department, q), said }
+        waiting.current = { of: readOf(onPage.current, q), said }
       }
       const reader = onScreen.current
       await reader(() => onScreen.current === reader)
@@ -443,7 +415,6 @@ export default function Subjects() {
       {editing ? (
         <SubjectForm
           value={editing}
-          departments={departments}
           busy={busy}
           onSave={save}
           onCancel={() => {
@@ -476,44 +447,6 @@ export default function Subjects() {
                 setQ(term)
               }}
             />
-            {/* A picker when there is a choice to make, and a statement of
-                where one is when there is not. A department administrator
-                reaches one department: a dropdown whose two options - "ทุก
-                ภาควิชา" and their own - return the same rows would be a control
-                that does nothing, and leaving it out entirely would take the
-                answer to "which catalogue am I reading?" off the screen. So
-                the label stays and only the control it carries changes. */}
-            {departments.length > 1 ? (
-              <label className="flex items-center gap-2 text-sm text-slate-600">
-                ภาควิชา
-                <select
-                  value={department}
-                  onChange={event => {
-                    // Back to the first page: page 3 of the faculty's
-                    // catalogue is rarely a page of one department's.
-                    setPage(1)
-                    setDepartment(event.target.value)
-                  }}
-                  className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-                >
-                  <option value="">ทุกภาควิชา</option>
-                  {departments.map(entry => (
-                    <option key={entry.department_id} value={entry.department_id}>
-                      {entry.department_name_th}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : (
-              departments.length === 1 && (
-                <span className="flex items-center gap-2 text-sm text-slate-600">
-                  ภาควิชา
-                  <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-                    {departments[0].department_name_th}
-                  </span>
-                </span>
-              )
-            )}
           </PageHeader>
 
           <ImportPanel
@@ -528,21 +461,17 @@ export default function Subjects() {
             onImported={result => {
               // #252, 30 ตุลาคม 2569 - the owner's answer ข้อ ง. The rows a file
               // makes take their keys from the file, so an import writes outside
-              // this table's filter exactly as an *add* does, and the panel's own
-              // green line is in another module and says nothing about it. The
-              // screen is the only place that knows what its table is filtered
-              // to, so the screen says it, out of the answer the panel now hands
-              // over. Handed to `load` rather than said here, which is the rule
-              // the save above follows (#238, #203): the sentence is keyed for
-              // the list it is about - page one, where the reload is going - and
-              // `load` is the only thing that says it.
-              const outside = someImportedOutside(
-                department,
-                result?.subjects?.map(row => row.department_id),
-              ) || (result?.subjects ?? []).some(row => outsideSearch(q, searched(row)))
-              if (outside) {
+              // this table's search exactly as an *add* does (#272), and the
+              // panel's own green line is in another module and says nothing
+              // about it. Handed to `load` rather than said here, which is the
+              // rule the save above follows (#238, #203): the sentence is keyed
+              // for the list it is about - page one, where the reload is going -
+              // and `load` is the only thing that says it. Its department half
+              // went with the file's department column in #284.
+              const rows = result?.subjects
+              if (Array.isArray(rows) && rows.some(row => outsideSearch(q, searched(row)))) {
                 waiting.current = {
-                  of: readOf(1, department, q),
+                  of: readOf(1, q),
                   said: { error: false, message: SOME_IMPORTED_OUTSIDE },
                 }
               }
@@ -568,7 +497,6 @@ export default function Subjects() {
                   <th className="px-4 py-2">รหัสวิชา</th>
                   <th className="px-4 py-2">ชื่อวิชา</th>
                   <th className="px-4 py-2">หน่วยกิต</th>
-                  <th className="px-4 py-2">ภาควิชา</th>
                   <th className="px-4 py-2">สถานะ</th>
                   <th className="px-4 py-2 text-center">ดำเนินการ</th>
                 </tr>
@@ -576,19 +504,15 @@ export default function Subjects() {
               <tbody className="divide-y divide-gray-100">
                 {loading && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                       กำลังโหลด…
                     </td>
                   </tr>
                 )}
                 {!loading && data.subjects.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                      {q.trim()
-                        ? 'ไม่พบรายวิชาตามคำค้น'
-                        : department
-                          ? 'ยังไม่มีรายวิชาในภาควิชานี้'
-                          : 'ยังไม่มีรายวิชาในระบบ'}
+                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                      {q.trim() ? 'ไม่พบรายวิชาตามคำค้น' : 'ยังไม่มีรายวิชาในระบบ'}
                     </td>
                   </tr>
                 )}
@@ -603,7 +527,6 @@ export default function Subjects() {
                         </span>
                       </td>
                       <td className="px-4 py-2 text-slate-500">{subject.credits}</td>
-                      <td className="px-4 py-2 text-slate-500">{nameOf(subject.department_id)}</td>
                       <td className="px-4 py-2">
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs ${

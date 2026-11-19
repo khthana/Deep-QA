@@ -39,28 +39,20 @@ const importSubjects = (page, text, name = 'subjects.csv') =>
  * One row of the table, found by the code in its first cell.
  *
  * By cell rather than by `hasText`, for `departmentRow`'s reason: a code is a
- * prefix of nothing here, but the department column and the confirmation
- * dialog both repeat one, and a row matched loosely would make a count
- * assertion true by accident.
+ * prefix of nothing here, but the confirmation dialog repeats one (and the
+ * department column did, until #284), and a row matched loosely would make a
+ * count assertion true by accident.
  */
 const subjectRow = (page, subjectId) =>
   page
     .getByRole('row')
     .filter({ has: page.getByRole('cell', { name: subjectId, exact: true }) });
 
-/**
- * The form's department picker.
- *
- * By role **and name** since #180, which put a second combobox on this form -
- * the status field, a checkbox until then - and made every read through this
- * locator a strict-mode violation. It was unfiltered because `Field` wraps the
- * whole control in the `<label>`, which is true of `getByLabel` and not of the
- * name here: a wrapping label's text content carries the `<option>`s with it,
- * while the accessible name is the label's own words. Measured on #180's first
- * run - the snapshot printed `combobox "สถานะ"` for a label whose text was
- * `สถานะใช้งานอยู่ปิดใช้งาน`.
+/*
+ * `departmentPicker`, the form's department combobox, stood here until #284
+ * (19 พ.ย. 2569): the owner took the field off the form, and a subject is
+ * filed under the department of the grant that records it.
  */
-const departmentPicker = page => page.getByRole('combobox', { name: 'ภาควิชา' });
 
 /**
  * The form's status control, a `select` since #180.
@@ -71,7 +63,12 @@ const departmentPicker = page => page.getByRole('combobox', { name: 'ภาค�
  * field's shape and wording are hand-walked, which is why there is no mutant
  * for this form's options in `180-the-status-field-shape.py`.
  *
- * By the **role and name** for `departmentPicker`'s reason, above.
+ * By role **and name** since #180, which put a second combobox on this form:
+ * `Field` wraps the whole control in the `<label>`, so a wrapping label's text
+ * content carries the `<option>`s with it, while the accessible name is the
+ * label's own words. Measured on #180's first run - the snapshot printed
+ * `combobox "สถานะ"` for a label whose text was `สถานะใช้งานอยู่ปิดใช้งาน`.
+ * (The other combobox was the department picker, which #284 took away.)
  */
 const statusField = page => page.getByRole('combobox', { name: 'สถานะ' });
 
@@ -79,12 +76,12 @@ const statusField = page => page.getByRole('combobox', { name: 'สถานะ'
  * Opens the เพิ่มรายวิชา form and fills every box the acceptance row names.
  *
  * By label rather than by position, so a field added to the form later cannot
- * silently shift what this fills. The picker is the one exception, above.
+ * silently shift what this fills. No department since #284: the server files
+ * the subject under the grant's, and a `department_id` on `subject` is ignored.
  */
 async function fillNewSubject(page, subject) {
   await page.getByRole('button', { name: 'เพิ่มรายวิชา' }).click();
   await page.getByLabel('รหัสวิชา', { exact: true }).fill(subject.subject_id);
-  await departmentPicker(page).selectOption(subject.department_id);
   await page.getByLabel('ชื่อวิชา (ไทย)', { exact: true }).fill(subject.subject_name_th);
   await page.getByLabel('ชื่อวิชา (อังกฤษ)', { exact: true }).fill(subject.subject_name_en);
   await page.getByLabel('หน่วยกิต', { exact: true }).fill(String(subject.credits));
@@ -128,7 +125,6 @@ module.exports = {
   openSubjects,
   importSubjects,
   subjectRow,
-  departmentPicker,
   statusField,
   fillNewSubject,
   save,

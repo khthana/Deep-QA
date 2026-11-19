@@ -65,6 +65,14 @@ effect ที่เลือกค่าให้เองย้ายมัน�
 `movesanexistingsubject` 1 ตก 3 ผ่าน · `movesanexistingpair` 2 ตก 2 ผ่าน แต่ละแถวตกที่ข้ออ้าง
 ของตัวเอง
 
+## ถอนเป็นบันทึก 19 พ.ย. 2569 (#284)
+
+`movesanexistingsubject` อยู่ใน `SUPERSEDED` เป็นบันทึก (#54): เจ้าของงานเอาช่องภาควิชาออกจาก `SubjectForm`
+effect ที่มันแก้จึงไม่มีอยู่แล้ว ข้ออ้างของมัน (รายวิชาที่มีอยู่แล้วคงภาควิชาของตัวเอง) ย้ายไปอยู่ที่ server — การแก้ไข
+ไม่เขียน `department_id` เลย ถือโดย `backend/test/subjects.test.js` *a department administrator cannot move a
+subject out of their reach* และมัตแตนต์ของมันคือ `284:s284putmoves` แบบเดียวกับที่ #282 ทำกับ
+`movesanexistingprogramme` และ `244a` แถว 1 ถูกเอาออกพร้อมกัน — `docs/acceptance/16-subjects.md` §#284
+
 ## วิธีรัน
 
     python mutation/244-the-copies-of-a-branch.py save
@@ -120,6 +128,10 @@ PROGRAM_NO_GUARD = """  useEffect(() => {
     )
   }, [pool, starting])
 """
+
+# Withdrawn to a record on 19 พ.ย. 2569 (#284): the department field and the
+# effect this edits left `SubjectForm`; the docstring says where the claim went.
+SUPERSEDED = {'movesanexistingsubject'}
 
 MUTANTS = {
     'movesanexistingsubject': [

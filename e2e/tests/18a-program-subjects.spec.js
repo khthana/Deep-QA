@@ -99,8 +99,8 @@ test.beforeAll(async ({ browser }) => {
       page,
       csv(
         header,
-        `${PLACED},วิศวกรรมหลักสูตรหนึ่ง,Curriculum Engineering One,3,05,,`,
-        `${RETIRED},วิศวกรรมหลักสูตรสอง,Curriculum Engineering Two,3,05,,`,
+        `${PLACED},วิศวกรรมหลักสูตรหนึ่ง,Curriculum Engineering One,3,,`,
+        `${RETIRED},วิศวกรรมหลักสูตรสอง,Curriculum Engineering Two,3,,`,
       ),
     );
     await expect(page.getByText('นำเข้าสำเร็จ 2 รายการ')).toBeVisible();
@@ -110,7 +110,7 @@ test.beforeAll(async ({ browser }) => {
     await openSubjects(page);
     await importSubjects(
       page,
-      csv(header, `${CROSS},คณิตศาสตร์วิศวกรรมทดสอบ,Engineering Mathematics Test,3,01,,`),
+      csv(header, `${CROSS},คณิตศาสตร์วิศวกรรมทดสอบ,Engineering Mathematics Test,3,,`),
     );
     await expect(page.getByText('นำเข้าสำเร็จ 1 รายการ')).toBeVisible();
   } finally {

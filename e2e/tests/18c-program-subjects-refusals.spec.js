@@ -70,7 +70,7 @@ test.beforeAll(async ({ browser }) => {
     const subjects = headerOf(await downloadTemplate(page));
     await importSubjects(
       page,
-      csv(subjects, `${OTHERS},วิชาของหลักสูตรนานาชาติ,International Programme Subject,3,05,,`),
+      csv(subjects, `${OTHERS},วิชาของหลักสูตรนานาชาติ,International Programme Subject,3,,`),
     );
     await expect(page.getByText('นำเข้าสำเร็จ 1 รายการ')).toBeVisible();
 

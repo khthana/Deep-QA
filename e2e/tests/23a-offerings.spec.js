@@ -133,7 +133,7 @@ test.beforeAll(async ({ browser }) => {
     const subjects = headerOf(await downloadTemplate(page));
     const made = await importSubjects(
       page,
-      csv(subjects, `${SUBJECT},วิชาสำหรับการเปิดสอน,Offering Test Subject,3,05,,`),
+      csv(subjects, `${SUBJECT},วิชาสำหรับการเปิดสอน,Offering Test Subject,3,,`),
     );
     // Asserted on the answer rather than on the toast. This runs tenth in a
     // full suite and first in a single-file one, and when it failed there it

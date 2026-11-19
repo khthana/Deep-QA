@@ -301,7 +301,7 @@ test.describe('ข้อมูลรายวิชา — row 5', () => {
 
     await subjects.importSubjects(
       page,
-      csv(header, ...codes.map((code, i) => `${code},รายวิชาทดสอบแบ่งหน้า ${i},Paging Test ${i},3,05,,`)),
+      csv(header, ...codes.map((code, i) => `${code},รายวิชาทดสอบแบ่งหน้า ${i},Paging Test ${i},3,,`)),
     );
     await expect(page.getByText(`นำเข้าสำเร็จ ${add} รายการ`)).toBeVisible();
 

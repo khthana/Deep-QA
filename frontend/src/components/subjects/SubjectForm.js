@@ -24,10 +24,11 @@ import ContentMotionDIV from '../ContentMotionDIV'
  * one would reach a NOT NULL column and come back as a system error rather than
  * as "you left this out".
  *
- * A retired department is offered only when it is the one this subject is
- * already filed under, and disabled there — the same rule #15's form applies,
- * and the reason retiring a department does not freeze the catalogue beneath
- * it.
+ * There is no department field since #284 (the owner's answer of 19 พ.ย.
+ * 2569, #282's for this screen): only a Department Admin reaches it, and holds
+ * one department, so the server files a new subject under the grant's
+ * department and an edit never moves one. The picker it replaced, with its
+ * pool and its auto-pick of the only department, went with it.
  *
  * Every field is sent on every save, blank ones included, because the server
  * reads a PUT as a replacement: an emptied description is an intentionally
@@ -53,7 +54,6 @@ const EMPTY = {
   credits: '',
   description_th: '',
   description_en: '',
-  department_id: '',
   is_active: true,
 }
 
@@ -71,66 +71,22 @@ function Field({ label, children, hint }) {
   )
 }
 
-export default function SubjectForm({ value, departments, busy, onSave, onCancel }) {
+export default function SubjectForm({ value, busy, onSave, onCancel }) {
   const [draft, setDraft] = useState(EMPTY)
   const [sending, setSending] = useState(false)
   const editing = Boolean(value?.subject_id)
 
-  // The one department there is to file under, when there is only one. Retired
-  // ones do not count: auto-picking one would put the form in a state the
-  // server refuses before the person has touched anything.
-  const usable = departments.filter(department => department.is_active !== false)
-  const onlyOne = usable.length === 1 ? usable[0] : null
-
-  // A department to start on, so adding a subject in a faculty with a single
-  // department is not a choice the person has to make by hand. A string, so a
-  // re-read that returns the same answer moves nothing - #233. As on
-  // `ProgramForm`, there is no filter above this screen to start from instead.
-  const starting = onlyOne ? onlyOne.department_id : ''
-
-  // The pool as a value rather than as an array - #232's shape, whose reasons
-  // are in `rubrics/RubricForm.js` at `58d15b4`. `ProgramForm.js` carries this screen's own
-  // version of them; the difference here is `credits`, which belongs to the
-  // effect keyed on `value` because it is read out of the answer that opened
-  // the form and not out of the pool.
-  const pool = usable.map(department => department.department_id).join(' ')
-
   // The subject changed, so the form starts again.
   useEffect(() => {
-    setDraft(current => ({
+    setDraft({
       ...EMPTY,
-      // Kept rather than emptied, for `ProgramForm.js`'s reason: with no
-      // filter above the screen, a department picked by hand is the only
-      // memory this form has of one.
-      department_id: current.department_id,
       ...value,
       // The server answers with a number and the boxes hold text.
       credits: value?.credits === undefined || value?.credits === null ? '' : String(value.credits),
-    }))
+    })
   }, [value])
 
-  // And the department follows the pool, which is the half a re-read may move.
-  // `ProgramForm.js` has the reasons, including why an existing subject is left
-  // where it is: `GET /api/subjects/departments` answers with retired
-  // departments too, so a subject filed in one holds a value the pool does not
-  // contain.
-  useEffect(() => {
-    if (editing) return
-    setDraft(current =>
-      current.department_id && pool.split(' ').includes(current.department_id)
-        ? current
-        : { ...current, department_id: starting },
-    )
-  }, [editing, pool, starting])
-
   const set = key => event => setDraft(current => ({ ...current, [key]: event.target.value }))
-
-  // The retired department this subject already sits in is kept in the list so
-  // the picker can show where it lives; every other retired one is left out,
-  // because nothing may be filed under it.
-  const offered = departments.filter(
-    department => department.is_active !== false || department.department_id === draft.department_id,
-  )
 
   // `sending` is put up here and down in the `finally` below, rather than being
   // read from `busy` - #228. `DepartmentForm.js`'s head comment has the reason
@@ -158,7 +114,6 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
       credits: draft.credits.trim(),
       description_th: draft.description_th?.trim() ?? '',
       description_en: draft.description_en?.trim() ?? '',
-      department_id: draft.department_id,
       is_active: draft.is_active,
     }).finally(() => setSending(false))
   }
@@ -181,27 +136,6 @@ export default function SubjectForm({ value, departments, busy, onSave, onCancel
               placeholder="01076105"
               required
             />
-          </Field>
-          <Field label="ภาควิชา">
-            <select
-              className={field}
-              value={draft.department_id}
-              onChange={set('department_id')}
-              disabled={sending}
-              required
-            >
-              <option value="">เลือกภาควิชา</option>
-              {offered.map(department => (
-                <option
-                  key={department.department_id}
-                  value={department.department_id}
-                  disabled={department.is_active === false}
-                >
-                  {department.department_name_th}
-                  {department.is_active === false && ' (ปิดใช้งาน)'}
-                </option>
-              ))}
-            </select>
           </Field>
           <Field label="ชื่อวิชา (ไทย)">
             <input

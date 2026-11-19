@@ -297,11 +297,11 @@ MUTANTS = {
     'subjectsrefusalwins': ('subjects', REPORTED, REPORTED_ANY),
     'subjectssavesaysanyway': ('subjects',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
-        '      waiting.current = { of: readOf(onPage.current, department, q), said }\n'
+        '      waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n'),
     # ผู้ใช้งาน

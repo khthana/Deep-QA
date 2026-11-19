@@ -211,16 +211,18 @@ const REFUSALS = {
   // programmes above: not found covers both the subject that does not exist and
   // the one in another department, a duplicate code is its own refusal because
   // the code is what the registrar knows a subject by, and
-  // `subjectDepartmentNotYours` is the body naming a department this
-  // administrator does not hold. It is a separate key from
-  // `departmentNotYours` (programmes', until #282) rather than a reuse of it
-  // because the sentence names what is being managed, and a person told
-  // "หลักสูตร" while adding a รายวิชา would go looking for a programme they
-  // never touched.
+  // `subjectDepartmentRetired` is #284's (the owner's wording of 19 พ.ย. 2569,
+  // #282's sentence with รายวิชา for หลักสูตร): a subject is filed under the
+  // department of the grant that records it, so the one refusal left about
+  // the department is that it has been switched off. It is a separate key from
+  // `departmentRetired` because the sentence names what is being managed. It
+  // replaced `subjectDepartmentNotYours`, *ไม่สามารถจัดการรายวิชานอกภาควิชาที่
+  // รับผิดชอบได้*, which answered a department named in the body and was untrue
+  // once nobody names one.
   subjectNotFound: 'ไม่พบรายวิชาที่ระบุ',
   duplicateSubjectId: 'รหัสวิชานี้ถูกใช้งานแล้ว',
   invalidSubject: 'ข้อมูลรายวิชาไม่ครบถ้วนหรือไม่ถูกต้อง',
-  subjectDepartmentNotYours: 'ไม่สามารถจัดการรายวิชานอกภาควิชาที่รับผิดชอบได้',
+  subjectDepartmentRetired: 'ภาควิชาของคุณถูกปิดใช้งาน จึงเพิ่มรายวิชาใหม่ไม่ได้',
 
   // Program Subjects - #18. The pair, not the two tables: `programNotYours` is
   // the หลักสูตร named by the body or the path being one this grant does not

@@ -349,30 +349,11 @@ test('ข้อมูลผู้ใช้งาน (Users.js): the list บั�
 });
 
 // ── ข้อมูลรายวิชา ─────────────────────────────────────────────────────────────
-
-test('ข้อมูลรายวิชา (Subjects.js): the list a refused แก้ไข reloads does not land on the ภาควิชา filter that has moved', async ({
-  page,
-}) => {
-  // Only a Department Admin reaches the catalogue, and a Department Admin at a
-  // department reaches one — so the filter is drawn for nobody the seed signs
-  // in as. A Department Admin granted at the faculty reaches two.
-  await widened(IDS.departmentAdmin01, 'DEPT_ADMIN', ['01', FACULTY.id], async () => {
-    await signIn(page, ACCOUNTS.departmentAdmin01);
-    await subjects.openSubjects(page);
-    await refuseRead(page, `${subjects.API}/${SUBJECT.id}`);
-    await refilter(page, {
-      list: subjects.API,
-      table: subjects.listTable(page),
-      filters: ['department_id'],
-      moved: ['department_id', '05'],
-      rows: 'subjects',
-      key: (row) => row.subject_id,
-      press: () =>
-        subjects.subjectRow(page, SUBJECT.id).getByRole('button', { name: 'แก้ไข', exact: true }).click(),
-      move: () => page.getByLabel('ภาควิชา').selectOption('05'),
-    });
-  });
-});
+//
+// Its row - *the list a refused แก้ไข reloads does not land on the ภาควิชา
+// filter that has moved* - stood here until #284 (19 พ.ย. 2569), when the owner
+// took the department filter off the screen with the column, and
+// `144:subjectsdepartmentnotfollowed` went with it. Sheet 16 §#284.
 
 // ── รายวิชาในหลักสูตร ─────────────────────────────────────────────────────────
 

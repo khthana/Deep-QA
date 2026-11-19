@@ -221,8 +221,8 @@ MUTANTS = {
         'listDepartments({ page, per_page: PAGE_SIZE })'),
     's272prognoq': ('prog', 'listPrograms({ page, per_page: PAGE_SIZE, q })',
         'listPrograms({ page, per_page: PAGE_SIZE })'),
-    's272subjnoq': ('subj', 'department_id: department, q })',
-        'department_id: department })'),
+    's272subjnoq': ('subj', 'listSubjects({ page, per_page: PAGE_SIZE, q })',
+        'listSubjects({ page, per_page: PAGE_SIZE })'),
     's272studnoq': ('stud', 'program_id: program, q })',
         'program_id: program })'),
 

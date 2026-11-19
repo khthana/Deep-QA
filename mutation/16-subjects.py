@@ -35,12 +35,24 @@ for which assertion, and for what each mutant is about.
 | `M13` | **ทำอะไร** ภาควิชาที่ปิดแล้วถูกเสนอให้เลือกได้ — ยังมีป้าย ยังถูกเลือกอยู่ แต่ไม่ถูกปฏิเสธ (`disabled={false}`) **มีแต่ assertion ของ attribute ที่เห็นมันได้** | **ฆ่าที่** ข้ออ้างว่าตัวเลือกนั้นกดไม่ได้ ซึ่งเป็นหนึ่งในสองข้ออ้างที่ *มีตัวฆ่าเป็นของตัวเอง* คู่กับ `M14` · ใบรับงานจดว่า **สิบสี่ตัวกลายพันธุ์ สิบสี่ตัวถูกฆ่าตรงจุดที่ตั้งใจ** (บรรทัด 144) ไม่ได้จดจำนวนแถวต่อตัว · ที่มา `docs/acceptance/16-subjects.md:144` |
 | `M14` | **ทำอะไร** ป้ายที่บอกว่าทำไมตัวเลือกนั้นเลือกไม่ได้ หายไป (ถอด ` (ปิดใช้งาน)` ท้ายตัวเลือกออก) | **ฆ่าที่** ข้ออ้างว่าตัวเลือกนั้นบอกเหตุผลด้วยคำ ซึ่งเป็นอีกข้อหนึ่งของสองข้อที่มีตัวฆ่าเป็นของตัวเอง คู่กับ `M13` · ใบรับงานจดว่า **สิบสี่ตัวกลายพันธุ์ สิบสี่ตัวถูกฆ่าตรงจุดที่ตั้งใจ** (บรรทัด 144) ไม่ได้จดจำนวนแถวต่อตัว · ที่มา `docs/acceptance/16-subjects.md:144` |
 | `M12` | **ทำอะไร** หน่วยกิตที่พิมพ์ในฟอร์มหายไประหว่างทางลงฐานข้อมูล (`values.credits = 0`) | **ฆ่าที่** ข้ออ้างว่าหน่วยกิตที่พิมพ์คือหน่วยกิตที่ถูกบันทึก · ใบรับงานจดว่า **สิบสี่ตัวกลายพันธุ์ สิบสี่ตัวถูกฆ่าตรงจุดที่ตั้งใจ** (บรรทัด 144) ไม่ได้จดจำนวนแถวต่อตัว · ที่มา `docs/acceptance/16-subjects.md:144` |
+
+## ถอนเป็นบันทึก 19 พ.ย. 2569 (#284)
+
+เจ้าของงานเอาคอลัมน์ภาควิชา ตัวกรอง และช่องภาควิชาของฟอร์มออกจากข้อมูลรายวิชา รายวิชาใหม่ลงภาควิชาของสิทธิ์ที่บันทึก
+มัตแตนต์เจ็ดตัวในตารางข้างบนแก้สิ่งที่ไม่มีอยู่แล้ว (#54 — แถวของมันยังเป็นบันทึกของวันที่กวาด):
+
+- `M2` `M7` `M8` `M13` `M14` แก้ picker ของ `SubjectForm` และ `M10` แก้ป้ายชื่อภาควิชาที่ตัวกรองวาด สมอของทั้งหก
+  ไม่มีแล้ว จึงอยู่ใน `SUPERSEDED`
+- `M1` แก้ `reachableDepartments` ใน `backend/lib/reach.js` ซึ่ง**ยังเป็นโค้ด** เพราะ `GET /students/departments`
+  ยังเรียกมัน (#17) จึงถูก**ลบ**ออกจาก `MUTANTS` แทน — record ใน `SUPERSEDED` จะยัง apply ได้ ซึ่ง `anchors.py`
+  ปฏิเสธ ข้ออ้างของมัน (*picker เสนอเฉพาะภาควิชาที่สิทธิ์ครอบ*) ไม่มีที่บนจอนี้แล้ว
+- ข้ออ้างที่ M7 กับ M13 ค้ำ (รายวิชาในภาควิชาที่ปิดแล้วยังแก้ได้) ย้ายไปที่ server ทั้งหมด: การแก้ไขไม่ถามเรื่องภาควิชาเลย
+  และ `backend/test/subjects.test.js` *a retired department keeps its subjects…* ถือมัน
 """
 
 from harness import main
 
 FILES = {
-    'reach': 'backend/lib/reach.js',
     'subjects': 'backend/routes/subjects.js',
     'page': 'frontend/src/pages/Subjects.js',
     'form': 'frontend/src/components/subjects/SubjectForm.js',
@@ -48,11 +60,13 @@ FILES = {
 
 # One list of edits per mutant, as in mutate13.py.
 
+# Withdrawn to records on 19 พ.ย. 2569 (#284): the department picker, the
+# filter's label and the column left the screen. `M1` was deleted instead,
+# because `reachableDepartments` is still the students' code and a record of it
+# would still apply - the docstring says so.
+SUPERSEDED = {'M2', 'M7', 'M8', 'M10', 'M13', 'M14'}
+
 MUTANTS = {
- # the pool the picker draws from not narrowed to what the grant covers
- 'M1': [('reach',
-   "      WHERE ($1::text[] IS NULL OR department_id = ANY($1))\n      ORDER BY department_id ASC",
-   "      WHERE ($1::text[] IS NULL OR TRUE)\n      ORDER BY department_id ASC")],
  # the single department not chosen for the person
  'M2': [('form',
    "  const onlyOne = usable.length === 1 ? usable[0] : null",

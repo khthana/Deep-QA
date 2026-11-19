@@ -44,16 +44,17 @@ const { startApi } = require('./helpers');
  * The template's columns, written out here rather than imported from the route.
  *
  * A test that compared the served header against the constant the route built
- * it from would pass whatever that constant said. Naming the seven columns
+ * it from would pass whatever that constant said. Naming the six columns
  * independently is what makes the sixth criterion's template an assertion
- * instead of a tautology.
+ * instead of a tautology. `department_id` was among them until #284 (19 พ.ย.
+ * 2569): a subject is filed under the department of the grant that records it,
+ * so there is no department for the file to name.
  */
 const COLUMNS = [
   'subject_id',
   'subject_name_th',
   'subject_name_en',
   'credits',
-  'department_id',
   'description_th',
   'description_en',
 ];
@@ -93,9 +94,6 @@ const remove = (cookie, id) =>
 const template = (cookie) =>
   request(api.app).get('/api/subjects/import-template').set('Cookie', cookie);
 
-const pickable = (cookie) =>
-  request(api.app).get('/api/subjects/departments').set('Cookie', cookie);
-
 const importCsv = (cookie, csv) =>
   request(api.app)
     .post('/api/subjects/import')
@@ -110,13 +108,15 @@ const csvOf = (rows) =>
     ...rows.map((row) => COLUMNS.map((column) => row[column] ?? '').join(',')),
   ].join('\r\n');
 
-/** The fields every well-formed row needs, so a test only writes what it means. */
+/**
+ * The fields every well-formed row needs, so a test only writes what it means.
+ * No department since #284: it is the grant's.
+ */
 const draftOf = (id, extra = {}) => ({
   subject_id: id,
   subject_name_th: `รายวิชา ${id}`,
   subject_name_en: `Subject ${id}`,
   credits: '3',
-  department_id: DEPT_COMPUTER,
   ...extra,
 });
 
@@ -143,7 +143,6 @@ const refusedEverything = async (account, prefix) => {
     edit(cookie, SUBJECT.id, { subject_name_th: 'ไม่ควรเกิด' }),
     remove(cookie, SUBJECT.id),
     template(cookie),
-    pickable(cookie),
     importCsv(cookie, csvOf([draftOf(imported)])),
   ]);
 
@@ -181,7 +180,7 @@ test('an administrator adds, edits and removes a subject', async () => {
   assert.equal(added.body.subject.subject_name_en, 'SOFTWARE ENGINEERING LABORATORY');
   assert.equal(added.body.subject.credits, 1);
   assert.equal(added.body.subject.description_th, 'ปฏิบัติการตามหัวข้อในวิชาบรรยาย');
-  assert.equal(added.body.subject.department_id, DEPT_COMPUTER);
+  assert.equal(added.body.subject.department_id, DEPT_COMPUTER, 'filed under the grant’s');
   assert.equal(added.body.subject.is_active, true);
 
   const edited = await edit(cookie, 'T0000001', {
@@ -195,7 +194,7 @@ test('an administrator adds, edits and removes a subject', async () => {
   assert.equal(edited.body.subject.credits, 2);
   // Not sent, so cleared - a PUT replaces, and the form sends every box.
   assert.equal(edited.body.subject.description_en, null);
-  // Except the department, which is where the record lives rather than a field.
+  // Except the department, which an edit does not write (#284).
   assert.equal(edited.body.subject.department_id, DEPT_COMPUTER);
 
   const removed = await remove(cookie, 'T0000001');
@@ -242,16 +241,13 @@ test('a department administrator is confined to their own department by the serv
   assert.equal((await edit(cookie, SUBJECT.id, { subject_name_th: 'ไม่ควรเกิด' })).status, 404);
   assert.equal((await remove(cookie, SUBJECT.id)).status, 404);
 
-  // Creating one under a department they do not hold is refused in as many
-  // words, because the department they named is not a secret to them.
-  const elsewhere = await create(cookie, draftOf('T0500001'));
-  assert.equal(elsewhere.status, 403);
-  assert.equal(elsewhere.body.message, REFUSALS.subjectDepartmentNotYours);
-
-  // Their own department is theirs, so the refusal above is about the scope and
-  // not about the role.
-  const own = await create(cookie, draftOf('T0100002', { department_id: DEPT_CIVIL }));
+  // Their own department is theirs, so the refusals above are about the scope
+  // and not about the role. (A creation naming somebody else's department was
+  // refused here until #284; the body's department is no longer read, which
+  // the test *a department named in the body is not read* below holds.)
+  const own = await create(cookie, draftOf('T0100002'));
   assert.equal(own.status, 201, own.body.message);
+  assert.equal(own.body.subject.department_id, DEPT_CIVIL);
 
   // And the list they see is their own department's, not the faculty's.
   const seen = await list(cookie, '?per_page=100');
@@ -263,35 +259,37 @@ test('a department administrator is confined to their own department by the serv
   // Nothing they were refused happened - looked at by the administrator of the
   // department they reached into, who since #61 is the only account that can.
   const neighbour = await signInAs('U_DEPT');
-  assert.equal((await read(neighbour, 'T0500001')).status, 404);
   assert.equal((await read(neighbour, SUBJECT.id)).body.subject.subject_name_th, SUBJECT.th);
   // And their own is theirs to clear away.
   assert.equal((await remove(cookie, 'T0100002')).status, 204);
 });
 
 test('a department administrator cannot move a subject out of their reach', async () => {
-  // The other end of the third criterion. Editing names a department too, and a
-  // department administrator who could name any of them would have a way of
-  // pushing a record out of their own reach - or of adopting one that is not
-  // theirs.
+  // The other end of the third criterion. Until #284 an edit could name a
+  // department and was refused when it named somebody else's; since then the
+  // edit writes no department, so the move does not happen and the save of the
+  // other fields does - the body's department is not read, rather than refused.
   const cookie = await signInAs('U_DEPT2');
-  assert.equal(
-    (await create(cookie, draftOf('T0100003', { department_id: DEPT_CIVIL }))).status,
-    201,
-  );
+  assert.equal((await create(cookie, draftOf('T0100003'))).status, 201);
 
-  const moved = await edit(cookie, 'T0100003', {
-    subject_name_th: 'รายวิชา T0100003',
-    subject_name_en: 'Subject T0100003',
-    credits: '3',
-    department_id: DEPT_COMPUTER,
-  });
+  try {
+    const moved = await edit(cookie, 'T0100003', {
+      subject_name_th: 'รายวิชา T0100003 ใหม่',
+      subject_name_en: 'Subject T0100003',
+      credits: '3',
+      department_id: DEPT_COMPUTER,
+    });
 
-  assert.equal(moved.status, 403);
-  assert.equal(moved.body.message, REFUSALS.subjectDepartmentNotYours);
-  assert.equal((await read(cookie, 'T0100003')).body.subject.department_id, DEPT_CIVIL);
-
-  assert.equal((await remove(cookie, 'T0100003')).status, 204);
+    assert.equal(moved.status, 200, moved.body.message);
+    const after = (await read(cookie, 'T0100003')).body.subject;
+    assert.equal(after.department_id, DEPT_CIVIL, 'still in the editor’s own department');
+    assert.equal(after.subject_name_th, 'รายวิชา T0100003 ใหม่');
+  } finally {
+    // Below the seam: under a mutant that writes the body's department the row
+    // is in `05`, out of this caller's reach, and a removal over HTTP would
+    // leave it for the pagination test to count (#89, #181).
+    await api.pool.query(`DELETE FROM subjects WHERE subject_id = 'T0100003'`);
+  }
 });
 
 test('a referenced subject is deactivated instead of deleted', async () => {
@@ -332,7 +330,9 @@ test('a referenced subject is deactivated instead of deleted', async () => {
   assert.equal(on.body.subject.credits, SUBJECT.credits);
 });
 
-test('a subject with no name, no credits, no department or too long a code is refused', async () => {
+test('a subject with no name, no credits or too long a code is refused', async () => {
+  // A subject with no department was refused here too until #284; the
+  // department is now the grant's, so a body without one is the normal case.
   const cookie = await signInAs('U_DEPT');
 
   const cases = {
@@ -346,7 +346,6 @@ test('a subject with no name, no credits, no department or too long a code is re
     T9000003: { credits: '' },
     T9000004: { credits: '3.5' },
     T9000005: { credits: 'สาม' },
-    T9000006: { department_id: '' },
   };
 
   for (const [id, broken] of Object.entries(cases)) {
@@ -363,11 +362,11 @@ test('a subject with no name, no credits, no department or too long a code is re
   assert.equal(tooLong.body.message, REFUSALS.invalidSubject);
 });
 
-test('the list paginates beyond ten rows, and the filter keeps to the one department in reach', async () => {
-  // The seventh criterion, both halves, as they read after #61: eleven subjects
-  // in the one department this account administers, so there is a second page
-  // to reach, and a filter that still applies - to the department in reach it
-  // takes nothing away, and the department out of reach is the test below.
+test('the list paginates beyond ten rows', async () => {
+  // The seventh criterion: eleven subjects in the one department this account
+  // administers, so there is a second page to reach. Its other half, the
+  // department filter, went with the column in #284 - the test below holds that
+  // a `?department_id=` is now not read at all.
   const cookie = await signInAs('U_DEPT');
   const computer = Array.from(
     { length: 11 },
@@ -392,82 +391,63 @@ test('the list paginates beyond ten rows, and the filter keeps to the one depart
   const seen = new Set(first.body.subjects.map((row) => row.subject_id));
   assert.ok(second.body.subjects.every((row) => !seen.has(row.subject_id)));
 
-  const filtered = await list(cookie, `?department_id=${DEPT_COMPUTER}&per_page=100`);
-  assert.equal(filtered.body.total, first.body.total);
-
-  // That assertion on its own would pass on a route that read the parameter and
-  // threw it away, because the department asked for is the only one this account
-  // has. The department it does not reach is what tells the two answers apart.
-  const elsewhere = await list(cookie, `?department_id=${DEPT_CIVIL}&per_page=100`);
-  assert.equal(elsewhere.body.total, 0);
-  assert.deepEqual(elsewhere.body.subjects, []);
-
   for (const id of computer) assert.equal((await remove(cookie, id)).status, 204);
 });
 
-test('the department filter narrows the reach and never widens it', async () => {
-  // A department administrator who asks for somebody else's department is shown
-  // nothing rather than that department's catalogue: the filter is applied
-  // inside the reach, not instead of it.
+test('a `?department_id=` on the list is not read, and still never widens it — #284', async () => {
+  // The owner's answer of 19 พ.ย. 2569 took the department filter away with
+  // the column: it had one option for every account that reaches this screen.
+  // So the parameter is not read - the department the caller holds is not
+  // narrowed to nothing by naming the other one - and the reach still bounds
+  // the list, so naming the other one shows none of that department's rows.
   const cookie = await signInAs('U_DEPT2');
-  // A subject of their own first, so that the empty page below is the filter
-  // refusing to widen and not a department that had nothing to show anyway.
-  assert.equal(
-    (await create(cookie, draftOf('T0100006', { department_id: DEPT_CIVIL }))).status,
-    201,
-  );
-  assert.equal((await list(cookie)).body.total, 1);
+  assert.equal((await create(cookie, draftOf('T0100006'))).status, 201);
 
-  const answer = await list(cookie, `?department_id=${DEPT_COMPUTER}&per_page=100`);
+  try {
+    const answer = await list(cookie, `?department_id=${DEPT_COMPUTER}&per_page=100`);
+    assert.equal(answer.status, 200);
+    assert.deepEqual(
+      answer.body.subjects.map((row) => row.subject_id),
+      ['T0100006'],
+      'the caller’s own department, not narrowed and not widened',
+    );
 
-  assert.equal(answer.status, 200);
-  assert.equal(answer.body.total, 0);
-  assert.deepEqual(answer.body.subjects, []);
-
-  // A query string may name the same parameter twice, in which case Express
-  // hands the route an array rather than a string. It has to be as harmless as
-  // any other unusable filter - an empty page - rather than a system error or a
-  // way of asking for two departments at once.
-  const twice = await list(
-    cookie,
-    `?department_id=${DEPT_CIVIL}&department_id=${DEPT_COMPUTER}&per_page=100`,
-  );
-  assert.equal(twice.status, 200);
-  assert.deepEqual(twice.body.subjects, []);
-
-  assert.equal((await remove(cookie, 'T0100006')).status, 204);
+    // A query string may name the same parameter twice, in which case Express
+    // hands the route an array rather than a string; unread, it is as harmless.
+    const twice = await list(
+      cookie,
+      `?department_id=${DEPT_CIVIL}&department_id=${DEPT_COMPUTER}&per_page=100`,
+    );
+    assert.equal(twice.status, 200);
+    assert.equal(twice.body.total, 1);
+  } finally {
+    await api.pool.query(`DELETE FROM subjects WHERE subject_id = 'T0100006'`);
+  }
 });
 
-test('the form is offered exactly the departments the caller may use', async () => {
-  // The picker the first criterion's department comes from, and the same list
-  // the filter is drawn from. What it offers has to be what the server will
-  // accept, or the form has a way of producing a refusal by being used as
-  // intended - so the two are the same reach, asserted from both ends.
-  //
-  // Since #61 that reach is one department, and each administrator is offered
-  // their own rather than the same one: the endpoint answers from the grant, so
-  // two accounts asking the identical question are given different lists.
-  const computer = await signInAs('U_DEPT');
-  const one = await pickable(computer);
-  assert.equal(one.status, 200);
-  assert.deepEqual(
-    one.body.departments.map((row) => row.department_id),
-    [DEPT_COMPUTER],
-  );
+test('a department named in the body is not read: the subject lands in the grant’s — #284', async () => {
+  // The owner's answer of 19 พ.ย. 2569: no department on the form, and a
+  // subject filed under the department of the grant that records it. A body
+  // that still names one - an old client, or somebody typing a request - names
+  // somebody else's here, and the row lands in `01` all the same. Until #284
+  // that request was refused with `subjectDepartmentNotYours`; the picker it
+  // was asked of (`GET /subjects/departments`) is gone, and that path now
+  // reaches the one-subject route as a code nobody has.
+  const cookie = await signInAs('U_DEPT2');
+  const made = await create(cookie, draftOf('T0100004', { department_id: DEPT_COMPUTER }));
+  try {
+    assert.equal(made.status, 201, made.body.message);
+    assert.equal(made.body.subject.department_id, DEPT_CIVIL);
+    assert.equal((await read(await signInAs('U_DEPT'), 'T0100004')).status, 404, 'not in 05');
 
-  const department = await signInAs('U_DEPT2');
-  const own = await pickable(department);
-  assert.deepEqual(
-    own.body.departments.map((row) => row.department_id),
-    [DEPT_CIVIL],
-  );
-
-  const allowed = await create(
-    department,
-    draftOf('T0100004', { department_id: own.body.departments[0].department_id }),
-  );
-  assert.equal(allowed.status, 201, allowed.body.message);
-  assert.equal((await remove(department, 'T0100004')).status, 204);
+    const picker = await request(api.app).get('/api/subjects/departments').set('Cookie', cookie);
+    assert.equal(picker.status, 404);
+    assert.equal(picker.body.message, REFUSALS.subjectNotFound);
+  } finally {
+    // Below the seam: under a mutant that reads the body's department the row
+    // lands in `05` and would be counted by that administrator's list (#89, #181).
+    await api.pool.query(`DELETE FROM subjects WHERE subject_id = 'T0100004'`);
+  }
 });
 
 test('the template downloads and matches what the importer accepts', async () => {
@@ -494,10 +474,9 @@ test('the template downloads and matches what the importer accepts', async () =>
 });
 
 test('a valid spreadsheet imports every row', async () => {
-  // The sixth criterion's first half. Both rows name the department the caller
-  // administers, because since #61 that is the only value they may write; the
-  // column is still carried and still checked, and the row that names somebody
-  // else's department is the test two below.
+  // The sixth criterion's first half. Every row lands in the grant's
+  // department (#284); until then the file carried a department column, checked
+  // against the reach, and an old template's column is the test two below.
   const cookie = await signInAs('U_DEPT');
 
   const response = await importCsv(
@@ -508,7 +487,6 @@ test('a valid spreadsheet imports every row', async () => {
         subject_name_th: 'วิศวกรรมซอฟต์แวร์',
         subject_name_en: 'SOFTWARE ENGINEERING',
         credits: '3',
-        department_id: DEPT_COMPUTER,
         description_th: 'กระบวนการพัฒนาซอฟต์แวร์',
       },
       {
@@ -516,7 +494,6 @@ test('a valid spreadsheet imports every row', async () => {
         subject_name_th: 'ระบบฐานข้อมูล',
         subject_name_en: 'DATABASE SYSTEMS',
         credits: '3',
-        department_id: DEPT_COMPUTER,
       },
     ]),
   );
@@ -549,7 +526,9 @@ test('a spreadsheet with bad rows reports each failure and applies nothing', asy
       draftOf('B0000001'), // line 2, and the good row
       draftOf('B0000002', { credits: 'สาม' }), // line 3
       draftOf('B0000003', { subject_name_en: '' }), // line 4
-      draftOf('B0000004', { department_id: 'ZZ' }), // line 5
+      // A department that does not exist was this line's failure until #284,
+      // when the file stopped naming one; a fractional credit takes its place.
+      draftOf('B0000004', { credits: '3.5' }), // line 5
       draftOf('B0000001', { subject_name_th: 'ซ้ำ' }), // line 6
       draftOf(SUBJECT.id, { subject_name_th: 'ชนของเดิม' }), // line 7
     ]),
@@ -565,8 +544,7 @@ test('a spreadsheet with bad rows reports each failure and applies nothing', asy
   );
   assert.equal(response.body.errors[0].message, REFUSALS.invalidSubject);
   assert.equal(response.body.errors[1].message, REFUSALS.invalidSubject);
-  // The department check reaches every imported row, not only the typed one.
-  assert.equal(response.body.errors[2].message, REFUSALS.subjectDepartmentNotYours);
+  assert.equal(response.body.errors[2].message, REFUSALS.invalidSubject);
   // The duplicate within the file names the line it collides with, which is
   // what the database's own 23505 could not have said.
   assert.equal(
@@ -580,18 +558,33 @@ test('a spreadsheet with bad rows reports each failure and applies nothing', asy
   assert.equal((await read(cookie, 'B0000001')).status, 404);
 });
 
-test('an imported row cannot name a department the caller does not hold', async () => {
+test('an old template’s department column is not read: the rows land in the grant’s — #284', async () => {
   // The third criterion again, on the import - because a rule the form enforces
-  // and the spreadsheet does not is a rule with a way around it.
+  // and the spreadsheet does not is a rule with a way around it. Until #284 a
+  // row naming somebody else's department was refused; the template no longer
+  // carries the column, and a file made from the old one still imports, with
+  // the column ignored rather than obeyed or refused (`csv.js` keeps unknown
+  // headers and `readSubject` does not read this one).
   const cookie = await signInAs('U_DEPT2');
 
-  const response = await importCsv(cookie, csvOf([draftOf('X0500001')]));
+  const response = await importCsv(
+    cookie,
+    [
+      'subject_id,subject_name_th,subject_name_en,credits,department_id,description_th,description_en',
+      `X0500001,แม่แบบเก่า,Old template,3,${DEPT_COMPUTER},,`,
+    ].join('\r\n'),
+  );
 
-  assert.equal(response.status, 400);
-  assert.equal(response.body.errors[0].message, REFUSALS.subjectDepartmentNotYours);
-
-  const admin = await signInAs('U_DEPT');
-  assert.equal((await read(admin, 'X0500001')).status, 404);
+  try {
+    assert.equal(response.status, 201, response.body.message);
+    assert.deepEqual(
+      response.body.subjects.map((row) => [row.subject_id, row.department_id]),
+      [['X0500001', DEPT_CIVIL]],
+    );
+    assert.equal((await read(await signInAs('U_DEPT'), 'X0500001')).status, 404, 'not in 05');
+  } finally {
+    await api.pool.query(`DELETE FROM subjects WHERE subject_id = 'X0500001'`);
+  }
 });
 
 test('an empty file is refused as such', async () => {
@@ -632,26 +625,30 @@ test('a creation cannot ask for a subject that is already switched off', async (
   assert.equal((await remove(cookie, 'T0000002')).status, 204);
 });
 
-test('a retired department keeps its subjects, and nothing new may be filed under it', async () => {
-  // The fourth criterion read for the department a subject sits in: a record
-  // that is switched off "stops appearing in selection lists". The selection
-  // list is the form, not this response - the screen has no other way to name
-  // the department a subject lives in - so the department is reported with its
-  // `is_active` and the form is what declines to offer it.
+test('a retired department keeps its subjects, and the sentence says nothing new may be filed — #284', async () => {
+  // The fourth criterion read for the department a subject sits in. Since #284
+  // that department is the administrator's own, so the refusal is the owner's
+  // sentence of 19 พ.ย. 2569 - #282's, with รายวิชา for หลักสูตร - and not
+  // `subjectDepartmentNotYours`, which said the department was somebody
+  // else's. Written out rather than read from REFUSALS for COLUMNS' reason.
+  const RETIRED = 'ภาควิชาของคุณถูกปิดใช้งาน จึงเพิ่มรายวิชาใหม่ไม่ได้';
   const cookie = await signInAs('U_DEPT2');
   await api.pool.query('UPDATE departments SET is_active = false WHERE department_id = $1', [
     DEPT_CIVIL,
   ]);
 
   try {
-    const offered = await pickable(cookie);
-    const retired = offered.body.departments.find((row) => row.department_id === DEPT_CIVIL);
-    assert.ok(retired, 'the retired department is still named');
-    assert.equal(retired.is_active, false);
-
-    const refused = await create(cookie, draftOf('T0100005', { department_id: DEPT_CIVIL }));
+    const refused = await create(cookie, draftOf('T0100005'));
     assert.equal(refused.status, 403);
-    assert.equal(refused.body.message, REFUSALS.subjectDepartmentNotYours);
+    assert.equal(refused.body.message, RETIRED);
+
+    // The same refusal reaches a spreadsheet row, through `verify`.
+    const imported = await importCsv(cookie, csvOf([draftOf('T0100007')]));
+    assert.equal(imported.status, 400);
+    assert.deepEqual(imported.body.errors, [{ line: 2, message: RETIRED }]);
+    for (const id of ['T0100005', 'T0100007']) {
+      assert.equal((await read(cookie, id)).status, 404);
+    }
 
     // But a subject already filed under it is still editable, or retiring a
     // department would freeze the catalogue underneath it.
@@ -709,7 +706,6 @@ test('adding, editing and removing a subject each write one line — #58', async
         subject_name_th: 'รายวิชาบันทึก',
         subject_name_en: 'Logged Subject',
         credits: 3,
-        department_id: DEPT_COMPUTER,
       })
     ).status,
     201,
@@ -756,7 +752,6 @@ test('a removal the database turns into a deactivation says so — #58', async (
         subject_name_th: SUBJECT.th,
         subject_name_en: SUBJECT.en,
         credits: SUBJECT.credits,
-        department_id: SUBJECT.department,
         is_active: true,
       })
     ).status,
@@ -777,14 +772,12 @@ test('an import writes a line per row, sharing one timestamp — #58', async () 
           subject_name_th: 'รายวิชานำเข้าหนึ่ง',
           subject_name_en: 'Imported One',
           credits: 3,
-          department_id: DEPT_COMPUTER,
         },
         {
           subject_id: 'T5800003',
           subject_name_th: 'รายวิชานำเข้าสอง',
           subject_name_en: 'Imported Two',
           credits: 3,
-          department_id: DEPT_COMPUTER,
         },
       ]),
     );
@@ -804,7 +797,7 @@ test('an import writes a line per row, sharing one timestamp — #58', async () 
 
 test('a search narrows the list to the subjects whose code, name or credits hold it - #272', async () => {
   // The owner's answer of 12 November 2569: code and both names, any case, the
-  // count following, and the department filter still applying beside it.
+  // count following. (The department filter applied beside it until #284.)
   const cookie = await signInAs('U_DEPT');
   const made = [
     draftOf('K0000001', { subject_name_th: 'วิชาค้นเจอ', subject_name_en: 'Findable Topics' }),
@@ -825,15 +818,15 @@ test('a search narrows the list to the subjects whose code, name or credits hold
     assert.deepEqual(ids(await list(cookie, '?q=ค้นเจอ')), ['K0000001'], 'the Thai name');
     assert.deepEqual(ids(await list(cookie, '?q=k0000002')), ['K0000002'], 'the code');
     assert.deepEqual(
-      ids(await list(cookie, `?q=K000000&department_id=${DEPT_COMPUTER}`)).sort(),
+      ids(await list(cookie, '?q=K000000')).sort(),
       ['K0000001', 'K0000002'],
-      'the department filter still applies beside the search',
+      'a prefix of the code',
     );
     assert.equal((await list(cookie, '?q=K000000_')).body.total, 0, 'an underscore matches itself');
     // The table draws the credits, and the delivered table searched them with
     // the rest of the record (`SubjectTable.js`, `Object.values`).
     assert.deepEqual(
-      ids(await list(cookie, `?q=9&department_id=${DEPT_COMPUTER}`)),
+      ids(await list(cookie, '?q=9')),
       ['K0000002'],
       'the credits',
     );

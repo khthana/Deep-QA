@@ -67,6 +67,13 @@
   out of their reach* และมัตแตนต์ของมันคือ `282:s282putmoves`
 - `keepsthedepartment` เป็นตัวควบคุมของแถว 1 จึงไปพร้อมแถวนั้น
 
+## ถอนเป็นบันทึก 19 พ.ย. 2569 (#284)
+
+แบบเดียวกันกับ `SubjectForm`: เจ้าของงานเอาช่องภาควิชาออกจากฟอร์มรายวิชา pool, `starting`, `onlyOne` และ effect ที่
+`subjectarrayidentity` แก้จึงไม่มีอยู่แล้ว มันจึงอยู่ใน `SUPERSEDED` เป็นบันทึก (#54) ข้ออ้างของมัน (สิ่งที่พิมพ์รอดการอ่าน
+pool รอบสอง) **ไปถึงไม่ได้เชิงโครงสร้าง** เพราะ `Subjects.js` ไม่อ่าน pool อีกเลย (#102) และ `233a` แถวของรายวิชา
+(แถว 1 ตั้งแต่ #282) ถูกเอาออกพร้อมกัน — `docs/acceptance/16-subjects.md` §#284 บอกว่าแถวไหนไปบ้าง
+
 ## วิธีรัน
 
     python mutation/233-the-forms-their-own-effects-threw-away.py save
@@ -145,7 +152,14 @@ ON_VALUE = "  }, [value])\n"
 # field off `ProgramForm`, and with it the pool, `starting` and the effect these
 # three edit, so none of them has an anchor left. The rows they killed went too
 # (`233a`'s old rows 1 and 2); where the claim went is in the docstring.
-SUPERSEDED = {'programmearrayidentity', 'movesanexistingprogramme', 'keepsthedepartment'}
+# `subjectarrayidentity` joined them on 19 พ.ย. 2569 (#284), for the same
+# reason on `SubjectForm`.
+SUPERSEDED = {
+    'programmearrayidentity',
+    'movesanexistingprogramme',
+    'keepsthedepartment',
+    'subjectarrayidentity',
+}
 
 MUTANTS = {
     'programmearrayidentity': [
@@ -175,7 +189,10 @@ MUTANTS = {
         ('subject', DEPARTMENT_POOL, ''),
         ('subject', DEPARTMENT_GUARD, ''),
         ('subject', KEPT_DEPARTMENT, DIAGNOSED_DEPARTMENT),
-        ('subject', ON_VALUE, '  }, [value, onlyOne])\n'),
+        # Quoted with the line above it since 19 พ.ย. 2569 (#284), as
+        # `movesanexistingprogramme` was by #282: `}, [value])` alone is still in
+        # the form #284 left, so the record read as applicable.
+        ('subject', '    }))\n' + ON_VALUE, '    }))\n  }, [value, onlyOne])\n'),
     ],
     'outcomearrayidentity': [
         ('outcome', PROGRAM_STARTING, ''),

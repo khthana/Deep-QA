@@ -276,7 +276,7 @@ MUTANTS = {
         '      if (showing.current === sent) setNotice(said)\n'),
     'subjectssaveanyway': ('subjects',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const drawing = onScreen.current\n'
         '      await drawing(() => onScreen.current === drawing)\n',
@@ -285,7 +285,7 @@ MUTANTS = {
         '      if (showing.current === sent) setNotice(said)\n'),
     'subjectsremovalanyway': ('subjects',
         '      if (showing.current === sent) {\n'
-        '        waiting.current = { of: readOf(onPage.current, department, q), said }\n'
+        '        waiting.current = { of: readOf(onPage.current, q), said }\n'
         '      }\n'
         '      const reader = onScreen.current\n'
         '      await reader(() => onScreen.current === reader)\n',
