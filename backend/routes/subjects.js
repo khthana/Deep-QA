@@ -186,8 +186,9 @@ function subjectRoutes(pool) {
    * `subjectDepartmentNotYours`, which is untrue once nobody names one. The
    * sentence is the owner's of 19 พ.ย. 2569, #282's with รายวิชา for หลักสูตร.
    *
-   * Returns a REFUSALS key or null, which is also `importRows`'s `verify`
-   * contract - so the same check covers the typed row and the imported one.
+   * Returns a REFUSALS key or null, which is also `importRows`'s `refuseFile`
+   * contract - so the same check covers the typed row and the imported file,
+   * asked once for the file since #285 rather than once per row.
    *
    * A copy of `programs.js`'s, not a shared helper, for #83's reason: the two
    * routes answer with different keys, and a mutant of one should leave the
@@ -306,7 +307,7 @@ function subjectRoutes(pool) {
           return draft.ok ? { ok: true, draft: draft.values } : draft;
         },
         keys: [{ of: (v) => v.subject_id, message: REFUSALS.duplicateSubjectId }],
-        verify: () => retiredRefusal(req),
+        refuseFile: () => retiredRefusal(req),
         insert: async (client, values) => {
           try {
             const row = await insertSubject(client, values, department);

@@ -8,6 +8,7 @@ const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
 const { menuLink } = require('../support/shell');
 const { facultyContext, switchOff } = require('../support/retiring');
+const { csv, importCsv, reportTable, total } = require('../support/import-panel');
 const { PROGRAMS, API, waitForList, openPrograms, listTable } = require('../support/programs-screen');
 
 /**
@@ -35,6 +36,8 @@ const DEPT_05 = '05';
 /** A code nothing in the seed carries, so finding it is finding this row's own. */
 const CREATED = 'T2821';
 const REFUSED = 'T2822';
+/** The two rows of #285's file, which a mutant could let through. */
+const FILED = ['T2851', 'T2852'];
 
 /** The owner's wording of 18 พ.ย. 2569, word for word. */
 const RETIRED_SENTENCE = 'ภาควิชาของคุณถูกปิดใช้งาน จึงเพิ่มหลักสูตรใหม่ไม่ได้';
@@ -184,5 +187,48 @@ test('row 3: a retired own department refuses a new programme with the owner’s
     // Not created, but taken out if a mutant let it through, so the next file
     // is not handed it (#132).
     await removeOverHttp(playwright, REFUSED);
+  }
+});
+
+/**
+ * #285 — the owner's answer of 19 พ.ย. 2569: a file sent under a retired own
+ * department hears the sentence once, not once per line. Appended rather than
+ * inserted, so no row number above moves (#97, #173).
+ */
+test('row 4: a file under a retired own department hears the owner’s sentence once, and writes nothing — #285', async ({
+  page,
+  playwright,
+}) => {
+  const faculty = await facultyContext(playwright);
+  const switchBackOn = await switchOff(faculty, `/api/departments/${DEPT_05}`, 'department', {
+    onFailure: sentence => {
+      cleanupFailure = cleanupFailure ?? sentence;
+    },
+  });
+
+  try {
+    await signIn(page, ACCOUNTS.departmentAdmin05);
+    await openPrograms(page);
+    const before = await total(page);
+
+    // Two good rows: under the per-row report each would carry the sentence,
+    // which is what the count below is for.
+    const answer = await importCsv(page, {
+      path: `${API}/import`,
+      text: csv('program_id,program_name_th', `${FILED[0]},หลักสูตรนำเข้าแรก`, `${FILED[1]},หลักสูตรนำเข้าที่สอง`),
+      name: 'programmes-under-a-retired-department.csv',
+    });
+    expect(answer.status(), 'the server refuses the file').toBe(400);
+
+    // Visible first, as the settle point the count is read at (#50) - then the
+    // claim, which a retrying read would also pass at one of two.
+    const sentence = page.getByText(RETIRED_SENTENCE, { exact: true });
+    await expect(sentence.first(), 'the screen says why, in the owner’s words').toBeVisible();
+    expect(await sentence.count(), 'once, and not once per line').toBe(1);
+    expect(await reportTable(page).count(), 'with no line named').toBe(0);
+    await expect.poll(() => total(page), { message: 'and nothing was written' }).toBe(before);
+  } finally {
+    await switchBackOn();
+    for (const id of FILED) await removeOverHttp(playwright, id);
   }
 });

@@ -55,6 +55,13 @@ const { REFUSALS, sentenceOf } = require('../auth/refusals');
  * to know which kind it is handing back; it sits in `auth/refusals` since #125,
  * which gave the routes a refusal of the second kind as well.
  *
+ * - `refuseFile()` is the check that is about the person sending the file
+ *   rather than about anything in it - #285's, a department retired under the
+ *   grant, whose answer is the same for every line. Asked **first**, before
+ *   the file is even parsed, so the sentence is said once rather than once per
+ *   row, and an empty file or another screen's hears it too: no fix to the
+ *   file would let it in (the owner's answer of 19 พ.ย. 2569). Returns a
+ *   REFUSALS key or `{ message }` to refuse the file, or null. Optional.
  * - `readRow(record)` judges one row on its own. Returns `{ ok: true, draft }`
  *   or `{ ok: false, reason }`, where `reason` is a key of REFUSALS. `draft` is
  *   opaque - whatever the caller wants to hand its own `insert` - because an
@@ -102,8 +109,11 @@ const { REFUSALS, sentenceOf } = require('../auth/refusals');
 async function importRows(
   pool,
   text,
-  { readRow, required = [], keys = [], verify, whole, insert, onCommit },
+  { refuseFile, readRow, required = [], keys = [], verify, whole, insert, onCommit },
 ) {
+  const refusedFile = refuseFile ? await refuseFile() : null;
+  if (refusedFile) return { ok: false, message: sentenceOf(refusedFile) };
+
   const { headers, records } = parseTable(typeof text === 'string' ? text : '');
   if (records.length === 0) return { ok: false, empty: true };
 
@@ -225,7 +235,7 @@ function sendImport(res, result, key) {
       .status(400)
       .json({ message: REFUSALS.importWrongTemplate, errors: [], created: 0 });
   }
-  // A whole-file refusal - `whole`, or a refusing `onCommit` - carries its own
+  // A whole-file refusal - `refuseFile`, `whole`, or a refusing `onCommit` - carries its own
   // sentence and no rows, and it is asked before the per-row branch for the
   // reason `empty` is: `errors` is undefined on it, not a report.
   if (!result.ok && result.message) {

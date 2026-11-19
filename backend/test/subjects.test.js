@@ -642,10 +642,12 @@ test('a retired department keeps its subjects, and the sentence says nothing new
     assert.equal(refused.status, 403);
     assert.equal(refused.body.message, RETIRED);
 
-    // The same refusal reaches a spreadsheet row, through `verify`.
+    // The same refusal reaches a spreadsheet, once for the file and not once
+    // per row (#285) - the row at the end of this file reads one with more in it.
     const imported = await importCsv(cookie, csvOf([draftOf('T0100007')]));
     assert.equal(imported.status, 400);
-    assert.deepEqual(imported.body.errors, [{ line: 2, message: RETIRED }]);
+    assert.equal(imported.body.message, RETIRED);
+    assert.deepEqual(imported.body.errors, []);
     for (const id of ['T0100005', 'T0100007']) {
       assert.equal((await read(cookie, id)).status, 404);
     }
@@ -838,5 +840,47 @@ test('a search narrows the list to the subjects whose code, name or credits hold
     );
   } finally {
     for (const row of made) await remove(cookie, row.subject_id);
+  }
+});
+
+test('a file under a retired department is refused once, before anything in it is read — #285', async () => {
+  // #285's answer read for subjects, which #284 had copied the per-row shape
+  // to: the owner chose both screens on 19 พ.ย. 2569. Three files, one claim
+  // each - a file with a bad row in it, an empty one, and another screen's.
+  const RETIRED = 'ภาควิชาของคุณถูกปิดใช้งาน จึงเพิ่มรายวิชาใหม่ไม่ได้';
+  const cookie = await signInAs('U_DEPT2');
+  const ids = ['T0100008', 'T0100009', 'T0100010'];
+  await api.pool.query('UPDATE departments SET is_active = false WHERE department_id = $1', [
+    DEPT_CIVIL,
+  ]);
+
+  try {
+    // The third row has no credits - a row the per-row report would have
+    // named for a reason of its own.
+    const many = await importCsv(
+      cookie,
+      csvOf([draftOf(ids[0]), draftOf(ids[1]), draftOf(ids[2], { credits: '' })]),
+    );
+    assert.equal(many.status, 400, 'the file is refused');
+    assert.equal(many.body.message, RETIRED, 'with the owner’s sentence');
+    assert.deepEqual(many.body.errors, [], 'once, and no line is named');
+    assert.equal(many.body.created, 0);
+
+    const empty = await importCsv(cookie, '');
+    assert.equal(empty.status, 400);
+    assert.equal(empty.body.message, RETIRED, 'an empty file hears it before it hears it is empty');
+
+    const other = await importCsv(cookie, 'department_id,department_name_th\r\n05,วิศวกรรม\r\n');
+    assert.equal(other.status, 400);
+    assert.equal(other.body.message, RETIRED, 'another screen’s file hears it before the template');
+    // Read before the cleanup below, which would make it true either way.
+    for (const id of ids) assert.equal((await read(cookie, id)).status, 404, `${id} was not written`);
+  } finally {
+    await api.pool.query('UPDATE departments SET is_active = true WHERE department_id = $1', [
+      DEPT_CIVIL,
+    ]);
+    // Below the seam (#181): under a mutant that lets the file through, the
+    // two good rows are written and the rows after this one would count them.
+    await api.pool.query('DELETE FROM subjects WHERE subject_id = ANY($1)', [ids]);
   }
 });

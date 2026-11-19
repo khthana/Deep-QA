@@ -688,13 +688,15 @@ test('nothing new may be filed under a retired department, and the sentence says
     assert.equal(refused.status, 403);
     assert.equal(refused.body.message, RETIRED);
 
-    // The same refusal reaches a spreadsheet row, through `verify`.
+    // The same refusal reaches a spreadsheet, once for the file and not once
+    // per row (#285) - the row at the end of this file reads one with more in it.
     const imported = await importCsv(
       cookie,
       csvOf([{ program_id: 'T5013', program_name_th: 'นำเข้าในภาควิชาที่ปิดแล้ว' }]),
     );
     assert.equal(imported.status, 400);
-    assert.deepEqual(imported.body.errors, [{ line: 2, message: RETIRED }]);
+    assert.equal(imported.body.message, RETIRED);
+    assert.deepEqual(imported.body.errors, []);
     for (const id of ['T5011', 'T5013']) assert.equal((await read(cookie, id)).status, 404);
 
     // But a programme already filed under it is still editable, or retiring a
@@ -1056,5 +1058,52 @@ test('a search narrows the list to the programmes whose code, name or year holds
     assert.equal((await list(cookie, '?q=K00_')).body.total, 0, 'an underscore matches itself');
   } finally {
     for (const row of made) await remove(cookie, row.program_id);
+  }
+});
+
+test('a file under a retired department is refused once, before anything in it is read — #285', async () => {
+  // The owner's answer of 19 พ.ย. 2569: the sentence once, not once per line,
+  // and asked before the file is read - so a file that is also empty, or is
+  // some other screen's, still hears that the department is retired, and a bad
+  // row is not reported beside it. Three files, one claim each.
+  const RETIRED = 'ภาควิชาของคุณถูกปิดใช้งาน จึงเพิ่มหลักสูตรใหม่ไม่ได้';
+  const cookie = await signInAs('U_DEPT2');
+  const ids = ['T5014', 'T5015', 'T5016'];
+  await api.pool.query('UPDATE departments SET is_active = false WHERE department_id = $1', [
+    DEPT_CIVIL,
+  ]);
+
+  try {
+    // Three rows, one of them with no Thai name - a row the per-row report
+    // would have named for a reason of its own.
+    const many = await importCsv(
+      cookie,
+      csvOf([
+        { program_id: ids[0], program_name_th: 'หลักสูตรแรก' },
+        { program_id: ids[1], program_name_th: 'หลักสูตรที่สอง' },
+        { program_id: ids[2] },
+      ]),
+    );
+    assert.equal(many.status, 400, 'the file is refused');
+    assert.equal(many.body.message, RETIRED, 'with the owner’s sentence');
+    assert.deepEqual(many.body.errors, [], 'once, and no line is named');
+    assert.equal(many.body.created, 0);
+
+    const empty = await importCsv(cookie, '');
+    assert.equal(empty.status, 400);
+    assert.equal(empty.body.message, RETIRED, 'an empty file hears it before it hears it is empty');
+
+    const other = await importCsv(cookie, 'department_id,department_name_th\r\n05,วิศวกรรม\r\n');
+    assert.equal(other.status, 400);
+    assert.equal(other.body.message, RETIRED, 'another screen’s file hears it before the template');
+    // Read before the cleanup below, which would make it true either way.
+    for (const id of ids) assert.equal((await read(cookie, id)).status, 404, `${id} was not written`);
+  } finally {
+    await api.pool.query('UPDATE departments SET is_active = true WHERE department_id = $1', [
+      DEPT_CIVIL,
+    ]);
+    // Below the seam (#181): under a mutant that lets the file through, the
+    // two good rows are written and the rows after this one would count them.
+    await api.pool.query('DELETE FROM programs WHERE program_id = ANY($1)', [ids]);
   }
 });

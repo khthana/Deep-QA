@@ -177,9 +177,12 @@ MUTANTS = {
         "    return open ? null : 'subjectDepartmentRetired';\n",
         '    return open ? null : null;\n'),
     # `retiredRefusal` stays referenced by the create, so nothing is unread (#101).
+    # Re-aimed by #285 (19 พ.ย. 2569): the hook is `refuseFile` now, asked once
+    # for the file - the same mistake, on the line that moved. Its new kills are
+    # predicted in `285-a-retired-department-refuses-the-file-once.py`.
     's284importnotverified': ('route',
-        '        verify: () => retiredRefusal(req),\n',
-        '        verify: () => null,\n'),
+        '        refuseFile: () => retiredRefusal(req),\n',
+        '        refuseFile: () => null,\n'),
     's284retirededitrefused': ('route',
         '      const draft = readSubject(req.body ?? {}, { editing: true });\n',
         '      const draft = readSubject(req.body ?? {}, { editing: true });\n'

@@ -143,8 +143,9 @@ function programRoutes(pool) {
    * is not yours*, which is untrue once nobody names one, so the sentence is the
    * owner's of 18 พ.ย. 2569 and says the department is retired.
    *
-   * Returns a REFUSALS key or null, which is also `importRows`'s `verify`
-   * contract - so the same check covers the typed row and the imported one.
+   * Returns a REFUSALS key or null, which is also `importRows`'s `refuseFile`
+   * contract - so the same check covers the typed row and the imported file,
+   * asked once for the file since #285 rather than once per row.
    */
   async function retiredRefusal(req) {
     const own = req.auth.acting.scope_id;
@@ -257,7 +258,7 @@ function programRoutes(pool) {
           return draft.ok ? { ok: true, draft: draft.values } : draft;
         },
         keys: [{ of: (v) => v.program_id, message: REFUSALS.duplicateProgramId }],
-        verify: () => retiredRefusal(req),
+        refuseFile: () => retiredRefusal(req),
         insert: async (client, values) => {
           try {
             const { rows } = await client.query(
