@@ -671,6 +671,12 @@ test('a retired department keeps its subjects, and the sentence says nothing new
     await api.pool.query('UPDATE departments SET is_active = true WHERE department_id = $1', [
       DEPT_CIVIL,
     ]);
+    // Below the seam: under a mutant that lets the create, the import or the
+    // edit through, these are left behind for the rows after this one to
+    // count (#89, #181). Nothing to delete when the row passes.
+    await api.pool.query(
+      `DELETE FROM subjects WHERE subject_id IN ('T0100005', 'T0100006', 'T0100007')`,
+    );
   }
 });
 

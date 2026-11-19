@@ -3,14 +3,13 @@
 const { test, expect } = require('@playwright/test');
 
 const { ACCOUNTS, IDS } = require('../support/accounts');
-const { byAlias, CURRENT_YEAR, SEMESTER, FACULTY, PROGRAM, PROGRAM_INTL, SUBJECT } = require('../../db/seed');
+const { byAlias, CURRENT_YEAR, SEMESTER, PROGRAM, PROGRAM_INTL, SUBJECT } = require('../../db/seed');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { reading, keysOn } = require('../support/pager');
 const users = require('../support/users-screen');
-const subjects = require('../support/subjects-screen');
 const pairs = require('../support/program-subjects-screen');
 const rubrics = require('../support/rubrics-screen');
 const {
@@ -52,12 +51,13 @@ const students = require('../support/students-screen');
  * ## What this file writes
  *
  * Whatever a filtered answer needs to differ from the unfiltered one and still
- * have rows, straight into the schema: a suspended account, a subject of
- * department 01, two students and a placement of 0503, and an Offering of that
- * placement in a term nobody else opens. The handlers write too — an edit saved
- * unchanged, a student added — and `hold()` puts all of it back. The ภาควิชา
- * row and the three ข้อมูลการเปิดรายวิชา rows also widen one grant for their own
- * length, and `widened` moves it back in its `finally`.
+ * have rows, straight into the schema: a suspended account, two students and a
+ * placement of 0503, and an Offering of that placement in a term nobody else
+ * opens. The handlers write too — an edit saved unchanged, a student added —
+ * and `hold()` puts all of it back. The three ข้อมูลการเปิดรายวิชา rows also
+ * widen one grant for their own length, and `widened` moves it back in its
+ * `finally`. Until #284 (19 พ.ย. 2569) a subject of department 01 was written
+ * too, for the ภาควิชา row that left with the screen's department filter.
  */
 
 const db = createPool({ schema: E2E_SCHEMA });
@@ -88,8 +88,6 @@ const OTHER_SEMESTER = 3 - Number(SEMESTER);
 
 /** Suspended, so the สถานะ filter has somebody to find. */
 const SUSPENDED = { id: 'e2e144', email: 'e2e.suspended.144@kmitl.ac.th' };
-/** Department 01's, so the unfiltered catalogue is not department 05's. */
-const CIVIL_SUBJECT = '00144001';
 /** 0503's placement, and its Offering in ภาคฤดูร้อน of `FUTURE`. */
 const INTL_SUBJECT = '00144002';
 /** Filed under the other หลักสูตร, so filtering to it leaves only these. */
@@ -105,7 +103,6 @@ test.beforeAll(async () => {
     [SUSPENDED.id, SUSPENDED.email],
   );
   for (const [id, department] of [
-    [CIVIL_SUBJECT, '01'],
     [INTL_SUBJECT, '05'],
     [MOVED_SUBJECT, '05'],
   ]) {

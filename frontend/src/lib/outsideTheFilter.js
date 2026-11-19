@@ -29,6 +29,11 @@
  * (#128): an option whose value a screen's own mechanism cannot carry is not
  * an option for every screen.
  *
+ * The census above is of 29 ตุลาคม 2569. Since #284 (19 พ.ย. 2569) `Subjects`
+ * has no ภาควิชา filter, and what a saved row can fall outside of there is the
+ * search string alone (#272) - `Users`'s shape, asked with `outsideSearch`
+ * rather than with `outsideFilter`. It still says the sentence.
+ *
  * ## What is here and what is at the call sites
  *
  * The sentence is one constant because the same words on seven screens typed
@@ -71,6 +76,10 @@ export const alsoOutside = (message, outside) =>
  *
  * `components/ImportPanel.js` is mounted on ten screens and four of them are in
  * the population above — `ProgramSubjects`, `Students`, `Subjects`, `Users`.
+ * (Since #284, 19 พ.ย. 2569, `Subjects` asks its file with `outsideSearch`
+ * as `Users` asks with a predicate of its own, and not with
+ * `someImportedOutside`: the department it used to key on is no longer a
+ * filter.)
  * The rows a CSV makes take their keys from the file, so they fall outside the
  * list the person is looking at exactly as an *add* does, and the panel's own
  * green line — *นำเข้าสำเร็จ N รายการ* — is in another module and says nothing

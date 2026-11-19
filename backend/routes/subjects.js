@@ -11,10 +11,10 @@
  * and belongs to #23. This file is the catalogue alone.
  *
  * It is #15 read again for a different table, and the three things that run
- * through that file run through this one - two roles sharing one reach, a
- * department checked against the database (named by the body until #284, the
- * grant's own since), and a removal
- * that deactivates when something depends on the record. What is genuinely
+ * through that file run through this one - one reach for the roles that
+ * maintain it (two until #61 took the Faculty Admin off), a department checked
+ * against the database (named by the body until #284, the grant's own since),
+ * and a removal that deactivates when something depends on the record. What is genuinely
  * different is worth naming, because each of the four is a place copying #15
  * would have been wrong.
  *
@@ -188,6 +188,10 @@ function subjectRoutes(pool) {
    *
    * Returns a REFUSALS key or null, which is also `importRows`'s `verify`
    * contract - so the same check covers the typed row and the imported one.
+   *
+   * A copy of `programs.js`'s, not a shared helper, for #83's reason: the two
+   * routes answer with different keys, and a mutant of one should leave the
+   * other's rows standing.
    */
   async function retiredRefusal(req) {
     const own = req.auth.acting.scope_id;

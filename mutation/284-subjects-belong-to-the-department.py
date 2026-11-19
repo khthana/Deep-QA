@@ -40,6 +40,13 @@
 
 สองตัวของแถบกรองแยกกันเพราะแถว 1 อ่านสองข้ออ้าง คือไม่มีตัวเลือกและไม่มีคำบอก (#66) ตัวละครึ่ง
 
+สองตัวที่รีวิวของวันเดียวกันเพิ่ม หลังการกวาดสิบเอ็ดตัวแรก (ตารางของสองตัวนี้ลงคอมมิตก่อนกวาดของมันเอง #255):
+
+- `s284importnotverified` — การนำเข้าไม่ถามว่าภาควิชาของสิทธิ์ปิดอยู่หรือไม่ (`verify` ตอบ `null`) · ครึ่งนำเข้าของ
+  backend *a retired department keeps its subjects* ซึ่ง `s284retiredaccepted` ตายก่อนถึง เพราะการสร้างถูกอ่านก่อน (#88)
+- `s284retirededitrefused` — การแก้ไขถามข้อเดียวกับการสร้าง คือทางที่ไม่ได้เลือกของ *ภาควิชาที่ปิดแล้วยังแก้รายวิชาเดิมได้*
+  (#48) · backend แถวเดียวกัน ครึ่งการแก้ไข · `16a` แถว 97 ซึ่ง `M7` กับ `M13` ของ `16` เคยค้ำผ่าน picker
+
 ## ตารางคำทำนาย (เขียนก่อนกวาด 19 พ.ย. 2569)
 
 แถวของ `284a` อ่านตามลำดับ: หัวตาราง · แถบกรอง (ตัวเลือก แล้วคำบอก) · แบบฟอร์มนำเข้า · ฟอร์ม · การสร้าง
@@ -58,6 +65,13 @@
 | `s284filterbox` | `284a` 1 | *with no department filter* | `284a` 2 · `16a` ทุกแถว · backend ทั้งหมด |
 | `s284filterstated` | `284a` 1 | *and no statement of the one department* | `284a` 2 · `16a` ทุกแถว · backend ทั้งหมด |
 | `s284departmentfield` | `284a` 1 | *and has no department field* (สามข้อแรกของแถวผ่าน เพราะฟอร์มยังไม่เปิด) | `284a` 2: กรอกด้วย label ซึ่งไม่ชนกับช่องใหม่ · `16a` ทุกแถว ด้วยเหตุเดียวกัน · backend ทั้งหมด |
+
+### สองตัวที่รีวิวเพิ่ม (เขียนก่อนกวาดของมัน 19 พ.ย. 2569)
+
+| มัตแตนต์ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
+|---|---|---|---|
+| `s284importnotverified` | backend *a retired department keeps its subjects* | `imported.status` 400 (ได้ 201) — การสร้างข้างบนยังถูกปฏิเสธ จึงผ่านสองข้อแรก | `284a` ทุกแถว: ไม่มีการนำเข้าใต้ภาควิชาที่ปิด · `16a` แถว 89: ภาควิชา `05` เปิดอยู่ · backend ที่เหลือ |
+| `s284retirededitrefused` | backend แถวเดียวกัน · `16a` แถว 97 | backend `edited.status` 200 (ได้ 403) · `16a` 97 *บันทึกข้อมูลเรียบร้อยแล้ว* ที่ไม่ขึ้น (ข้อแรกของแถวหลังเปิดฟอร์ม) | `284a` ทุกแถว: ไม่มีการแก้ไข · `16a` แถวอื่น: ภาควิชาเปิดอยู่ตอนแก้ · backend ที่เหลือ: แก้ในภาควิชาที่เปิด |
 """
 from harness import main
 
@@ -114,6 +128,15 @@ MUTANTS = {
     's284retiredaccepted': ('route',
         "    return open ? null : 'subjectDepartmentRetired';\n",
         '    return open ? null : null;\n'),
+    # `retiredRefusal` stays referenced by the create, so nothing is unread (#101).
+    's284importnotverified': ('route',
+        '        verify: () => retiredRefusal(req),\n',
+        '        verify: () => null,\n'),
+    's284retirededitrefused': ('route',
+        '      const draft = readSubject(req.body ?? {}, { editing: true });\n',
+        '      const draft = readSubject(req.body ?? {}, { editing: true });\n'
+        '      const retired = await retiredRefusal(req);\n'
+        '      if (retired) return res.status(403).json({ message: REFUSALS[retired] });\n'),
     's284templatecolumn': ('route',
         "  'credits',\n"
         "  'description_th',\n",

@@ -44,6 +44,9 @@
  *    `someImportedOutside` and `Users` with a predicate of its own, its filter
  *    being three questions of which one cannot be asked of an import's answer
  *    at all (#256). The sentence is the one thing all four have in common.
+ *    (Two of the four since #284, 19 พ.ย. 2569: `Subjects` lost its ภาควิชา
+ *    filter and asks of its search string with `outsideSearch` - which is
+ *    why the question is of the sentence.)
  *
  * A file in the population that calls `alsoOutside` nowhere is green only behind
  * a **marker**, in a comment anywhere in the same file:

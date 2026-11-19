@@ -635,7 +635,7 @@ assertion ของแถวนั้นเอง (`the form opened again` ค�
 
 | กลไก | จอ | คำถาม | แถว |
 |---|---|---|---|
-| คีย์เดียว | `ProgramSubjects`, `Students`, `Subjects` | `someImportedOutside(filter, values)` ซึ่งคือ `outsideFilter` ของ #247 ถามทีละแถว | `252a` แถว 1 และ 2 (ที่ `Students`) |
+| คีย์เดียว | `ProgramSubjects`, `Students`, `Subjects` | `someImportedOutside(filter, values)` ซึ่งคือ `outsideFilter` ของ #247 ถามทีละแถว · **`Subjects` ออกจากแถวนี้ 19 พ.ย. 2569** เมื่อ #284 เอาตัวกรองภาควิชาออก ตั้งแต่นั้นจอนั้นถามคำค้นด้วย `outsideSearch` (#272) | `252a` แถว 1 และ 2 (ที่ `Students`) |
 | สามคำถาม | `Users` | `importedOutsideTheFilters` ของแฟ้มจอเอง — คำค้นและสถานะ · **บทบาทถามไม่ได้ ถึง 31 ต.ค. 2569** แล้ว #256 ปิดครึ่งนั้นเมื่อ 1 พ.ย. 2569 คำถามที่สามจึงถามได้ | `252a` แถว 3, 4 และ 5 · แถว 6 และ 7 ของ #256 (บันทึกที่ `docs/acceptance/11-user-accounts.md` §#252 และ §#256) |
 
 **ไม่มีแถวของเกณฑ์ใดขยับ** กฎนี้ไม่ใช่เกณฑ์ของใบไหน มันเป็นกฎของเจ้าของงานที่ลงทับทั้งสี่จอ
