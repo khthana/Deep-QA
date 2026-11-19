@@ -181,10 +181,12 @@ test('an edit is saved, and the row afterwards is the row that was edited', asyn
   // list to be drawn first (#132, #286). Armed before the press, because the
   // reload can leave before `save` returns. Measured on 19 พ.ย. 2569 with
   // the list's answer held 1.5 s: without this the read was `["กำลังโหลด…"]`.
-  const reloaded = waitForList(page);
+  // The count sentence reads *4 ข้อ* before the edit and after it, so here it
+  // is the row count against the single loading row that holds the wait.
+  const listAfterSave = waitForList(page);
   const answer = await save(page);
   expect(answer.status()).toBe(200);
-  await untilListDrawn(page, await reloaded);
+  await untilListDrawn(page, await listAfterSave);
 
   // Read as the first line of the first cell rather than as a row containing
   // the text: that cell holds the Thai name *and* the English one, so a filter
