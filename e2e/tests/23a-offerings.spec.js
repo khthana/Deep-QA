@@ -247,18 +247,18 @@ test('row 8: an Offering with enrolled students is refused and stays on the scre
   await expect(confirmDialog(page)).toBeVisible();
   await page.getByRole('button', { name: 'ยกเลิกการเปิดรายวิชา' }).click();
 
-  await expect(page.getByText(REFUSALS.offeringInUse)).toBeVisible();
+  await expect(page.getByText(REFUSALS.offeringInUse), 'the refused Offering says the server’s reason').toBeVisible();
   // Refused rather than switched off: there is no such state here, so the row
   // has to come back exactly as it was. A screen that removed it optimistically
   // and left the banner underneath would be telling the person two things.
-  await expect(offeringRow(page, SEEDED)).toHaveCount(1);
+  await expect(offeringRow(page, SEEDED), 'the refused Offering is still in the list').toHaveCount(1);
 
   // And the section beneath it is protected for the same reason.
   await openSections(page, SEEDED);
   await sectionCard(page, '1').getByRole('button', { name: 'ลบกลุ่มเรียน' }).click();
   await page.getByRole('button', { name: 'ลบกลุ่มเรียน', exact: true }).last().click();
-  await expect(page.getByText(REFUSALS.sectionInUse)).toBeVisible();
-  await expect(sectionCard(page, '1')).toHaveCount(1);
+  await expect(page.getByText(REFUSALS.sectionInUse), 'the refused section says the server’s reason').toBeVisible();
+  await expect(sectionCard(page, '1'), 'the refused section is still on the panel').toHaveCount(1);
 });
 
 test('row 7: a whole term is copied, and the screen says what it did', async ({ page }) => {

@@ -10,7 +10,11 @@
 
     cd e2e && npx playwright test tests/23a-offerings.spec.js tests/118a-thai-line-breaks.spec.js tests/139a-superseded-row-detail.spec.js tests/140a-superseded-handler-reload.spec.js tests/142a-busy-outlives-a-superseded-read.spec.js tests/203a-the-refusal-wins-on-the-admin-screens.spec.js tests/210a-the-pager-while-a-write-is-out-on-the-administration-screens.spec.js tests/250a-the-window-that-draws-no-rows.spec.js tests/271a-action-icons.spec.js --reporter=line
 
-พอร์ตอ่านจากย่อหน้า **Ports** ของ `e2e/README.md` (#237) · ทั้งสองตัวแก้ซอร์สของ CRA อย่าใส่ขณะที่ e2e กำลังรัน
+สองตัวของครึ่งกลุ่มเรียน (ข้างล่าง) กวาดกับ spec ที่กด *ลบกลุ่มเรียน*:
+
+    cd e2e && npx playwright test tests/23a-offerings.spec.js tests/139a-superseded-row-detail.spec.js tests/143a-a-sentence-that-names-its-offering.spec.js --reporter=line
+
+พอร์ตอ่านจากย่อหน้า **Ports** ของ `e2e/README.md` (#237) · ทุกตัวแก้ซอร์สของ CRA อย่าใส่ขณะที่ e2e กำลังรัน
 
 ## มัตแตนต์
 
