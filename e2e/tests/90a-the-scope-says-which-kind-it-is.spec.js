@@ -87,6 +87,40 @@ const scopePicker = page => page.getByRole('combobox', { name: 'ขอบเข�
 const offered = page => scopePicker(page).locator('option').allTextContents();
 
 /**
+ * The picker's own read. `useGrantable` asks when the form or the panel
+ * mounts, so the picker is visible - holding only its placeholder - until the
+ * answer lands. Matched by the request and not by its status (#116); armed
+ * before the press that mounts it.
+ */
+const waitForGrantable = page =>
+  page.waitForResponse(
+    answer =>
+      new URL(answer.url()).pathname === '/api/users/grantable' &&
+      answer.request().method() === 'GET',
+  );
+
+/**
+ * What the picker offers, read once it has drawn the answer it was waiting
+ * for - #289, which is #132 again: `offered` reads once and does not retry, and
+ * on 19 พ.ย. 2569 the answer held 1.5 s turned all five rows red with only
+ * `— เลือกขอบเขต —` read. The settle point is the answer's own count plus the
+ * placeholder, which no wording mutant changes, so the rows still die at their
+ * own claims (#139). The Users screen asks the same question when it mounts,
+ * so the waiter may catch that answer instead; it is the same list, and the
+ * count is what holds the wait.
+ */
+async function offeredOnceDrawn(page, answering) {
+  const answer = await answering;
+  expect(answer.status()).toBe(200);
+  const { scopes } = await answer.json();
+  await expect(
+    scopePicker(page).locator('option'),
+    'the picker has drawn every scope it was answered',
+  ).toHaveCount(scopes.length + 1);
+  return offered(page);
+}
+
+/**
  * The unconfined entry's label, which `backend/routes/grants.js` decides and
  * only that file holds - `{ scope_id: GLOBAL_SCOPE, label: 'ทั้งมหาวิทยาลัย',
  * kind: 'global' }`. Written out here rather than imported from the server,
@@ -107,10 +141,11 @@ test('row 1: the add-account form tells the department from the programme in wor
 
   await signIn(page, ACCOUNTS.departmentAdmin05);
   await openUsers(page);
+  const answering = waitForGrantable(page);
   await page.getByRole('button', { name: ADD }).click();
   await expect(scopePicker(page)).toBeVisible();
 
-  const options = await offered(page);
+  const options = await offeredOnceDrawn(page, answering);
   expect(options).toContain(entry(KIND.department, department));
   expect(options).toContain(entry(KIND.program, program));
 
@@ -131,10 +166,11 @@ test('row 2: the grants panel says it the same way', async ({ page }) => {
 
   await signIn(page, ACCOUNTS.departmentAdmin05);
   await openUsers(page);
+  const answering = waitForGrantable(page);
   await openEditor(page, ACCOUNTS.teacherOne);
   await expect(scopePicker(page)).toBeVisible();
 
-  const options = await offered(page);
+  const options = await offeredOnceDrawn(page, answering);
   expect(options).toContain(entry(KIND.department, department));
   expect(options).toContain(entry(KIND.program, program));
 });
@@ -147,9 +183,10 @@ test('row 2: the grants panel says it the same way', async ({ page }) => {
 async function offeredToTheCentralAdmin(page) {
   await signIn(page, ACCOUNTS.systemAdmin);
   await openUsers(page);
+  const answering = waitForGrantable(page);
   await page.getByRole('button', { name: ADD }).click();
   await expect(scopePicker(page)).toBeVisible();
-  return offered(page);
+  return offeredOnceDrawn(page, answering);
 }
 
 test('row 3: the faculty says its kind once, because its name already says it', async ({

@@ -77,6 +77,19 @@
 | `saysthekindtwice` | `90a` แถว 3 | ข้ออ้างของแถว 3 ว่าคำของคณะไม่ซ้ำ |
 | `namestheunconfined` | `90a` แถว 4 | บรรทัดของข้ออ้างที่สอง (ห้ามคำนำหน้า) |
 | `216:bracketsthesentinel` (กวาดจากแฟ้ม `216`) | `90a` แถว 4 | บรรทัดของข้ออ้างที่สาม (`toBe`) |
+
+### ผลกวาดของ #289 (19 พ.ย. 2569) — ตรงคำทำนายทั้งหก
+
+กวาดทีละตัวกับ `tests/90a` ทั้งไฟล์ หลังสเปกรอให้ picker วาดครบ ด่านตรวจ md5 ของ `git diff -- frontend backend`
+ก่อนและหลังทุกตัว (ต้นไม้สะอาดเมื่อจบ) · **ไม่มีตัวไหนตายที่การรอ** (*the picker has drawn every scope it was answered*)
+ทุกตัวตายที่ข้อยืนยันของแถวเอง (#139, #266) · เลขบรรทัดในวงเล็บเป็นของวันที่กวาด
+
+- `nokind` ล้ม 4 ผ่าน 1 — แถว 1 และ 2 ที่ `toContain(entry(KIND.department, department))` (149, 174) · แถว 4 ที่ `toBe(UNCONFINED)` (238) · แถว 5 ที่ `toContain` ของคณะที่ถูกเปลี่ยนชื่อ (266) · แถว 3 ผ่าน
+- `swapsthewords` ล้ม 2 ผ่าน 3 — แถว 1 และ 2 ที่ `toContain(entry(KIND.department, department))`
+- `nofaculty` ล้ม 1 ผ่าน 4 — แถว 5 ที่ `toContain` ของคณะที่ถูกเปลี่ยนชื่อ
+- `saysthekindtwice` ล้ม 1 ผ่าน 4 — แถว 3 ที่ `toContain(`${FACULTY.th} (${FACULTY.id})`)` (205)
+- `namestheunconfined` ล้ม 1 ผ่าน 4 — แถว 4 ที่ `not.toContain(' · ')` (226) ข้ออ้างที่สอง
+- `216:bracketsthesentinel` (จากแฟ้ม `216`) ล้ม 1 ผ่าน 4 — แถว 4 ที่ `toBe(UNCONFINED)` (238) ข้ออ้างที่สาม
 """
 from harness import main
 
