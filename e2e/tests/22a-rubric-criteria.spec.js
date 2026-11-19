@@ -26,6 +26,8 @@ const {
   startRemoval,
   confirmRemoval,
   listedNames,
+  waitForList,
+  untilListDrawn,
 } = require('../support/rubric-criteria-screen');
 
 /**
@@ -174,8 +176,15 @@ test('an edit is saved, and the row afterwards is the row that was edited', asyn
 
   await openEditor(page, 'ZQ2 การอ้างอิง');
   await fillCriterion(page, criterion('ZQ2 การอ้างอิงและบรรณานุกรม', { weight: 15.5, order: 20 }));
+  // `save` returns on the PUT's answer, and the screen then reads the list
+  // again with only the loading row drawn, so the read below waits for that
+  // list to be drawn first (#132, #286). Armed before the press, because the
+  // reload can leave before `save` returns. Measured on 19 พ.ย. 2569 with
+  // the list's answer held 1.5 s: without this the read was `["กำลังโหลด…"]`.
+  const reloaded = waitForList(page);
   const answer = await save(page);
   expect(answer.status()).toBe(200);
+  await untilListDrawn(page, await reloaded);
 
   // Read as the first line of the first cell rather than as a row containing
   // the text: that cell holds the Thai name *and* the English one, so a filter
