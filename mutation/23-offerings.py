@@ -83,6 +83,12 @@ three that everybody forgets to write.
 | `nosectioncatch` | 1 | `23a` | **รอดทั้งแฟ้ม** — แถว 8 ครึ่งหลังถึงคำปฏิเสธผ่าน `hasSyllabus` ด้วยเหตุผลเดียวกัน |
 | `nosectioncatch` | 2 (หลังแถวใหม่) | `backend/test/offerings.test.js` | **ล้ม 1** ที่แถวใหม่ *a section with an enrolment and no weekly plan is refused with the reason, not a 500* ที่ *the enrolment protects the section* (ได้ 500) — ข้อตั้งต้นที่นับแผนการสอนเป็น 0 อยู่เหนือมันและมัตแตนต์ไม่แตะ |
 | `nosyllabus` | 2 | `backend/test/offerings.test.js` | แถวใหม่**ผ่าน** — กลุ่มเรียนนั้นไม่มีแผนการสอน `hasSyllabus` ตอบไม่ใช่อยู่แล้ว การฆ่าของมันอยู่ที่เดิม |
+
+ผลการกวาด (19 พ.ย. 2569) — ทั้งสี่คำทำนายตรง:
+
+- รอบ 1 `nosectioncatch`: `backend/test/offerings.test.js` ผ่าน 26 ล้ม 0 · `23a` ผ่าน 6 — รอดทั้งสองแฟ้ม ข้ออ้างของตั๋วจริง
+- รอบ 2 `nosectioncatch`: ล้ม 1 ผ่าน 26 ที่แถวใหม่ *the enrolment protects the section* `500 !== 409` ซึ่งเป็นข้อยืนยันของแถวเอง (#266)
+- รอบ 2 `nosyllabus`: แถวใหม่ผ่าน ล้ม 1 ผ่าน 26 ที่ *a weekly plan protects the section it belongs to, and the Offering above it* `204 !== 409` ที่เดิม
 """
 
 from harness import main

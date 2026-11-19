@@ -1060,3 +1060,43 @@ test('an Offering whose section has an enrolment and no weekly plan is refused w
   assert.equal(refused.body.message, REFUSALS.offeringInUse);
   assert.equal((await read(cookie, fresh.id)).status, 200);
 });
+
+test('a section with an enrolment and no weekly plan is refused with the reason, not a 500', async () => {
+  // #288 - the section removal's 23503 branch, the twin of #281's row above.
+  // Every row that removed a referenced section removed one with a weekly
+  // plan, so `hasSyllabus` refused it first with the same sentence and
+  // nothing reached the catch that turns the database's RESTRICT into
+  // `sectionInUse`; `23:nosectioncatch` survived this file and `23a` on
+  // 19 November 2569. This row reaches it: a section with one enrolment and
+  // no plan, the enrolment written below the seam for #281's reason.
+  const cookie = await signInAs('U_COM');
+  const fresh = await freshOffering(cookie);
+  const section = (await addSection(cookie, fresh.id, { section_number: '1' })).body.section;
+  const {
+    rows: [student],
+  } = await api.pool.query(`SELECT student_id FROM student ORDER BY student_id LIMIT 1`);
+  assert.ok(student, 'the seed should hold a student to enrol');
+  await api.pool.query(`INSERT INTO student_course (student_id, section_id) VALUES ($1, $2)`, [
+    student.student_id,
+    section.section_id,
+  ]);
+  // The precondition the row exists for: nothing here is a weekly plan, so the
+  // refusal below cannot be `hasSyllabus`'s.
+  const {
+    rows: [{ plans }],
+  } = await api.pool.query(
+    `SELECT count(*)::int AS plans FROM course_syllabus WHERE section_id = $1`,
+    [section.section_id],
+  );
+  assert.equal(plans, 0, 'no weekly plan, so the refusal cannot be hasSyllabus');
+
+  const refused = await dropSection(cookie, fresh.id, section.section_id);
+  assert.equal(refused.status, 409, 'the enrolment protects the section');
+  assert.equal(refused.body.message, REFUSALS.sectionInUse);
+  const after = await read(cookie, fresh.id);
+  assert.deepEqual(
+    after.body.offering.sections.map((kept) => kept.section_id),
+    [section.section_id],
+    'and the section is still there',
+  );
+});
