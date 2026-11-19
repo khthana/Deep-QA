@@ -253,8 +253,11 @@ MUTANTS = {
     # #288: the 23503 catch on the *section* removal dropped - the twin of
     # `norestrictcatch`. The database still refuses and the section stays;
     # what goes is the reason, and the person is told the generic failure.
-    # Every row that removes a referenced section removes one with a weekly
-    # plan, which `hasSyllabus` refuses first with the same sentence.
+    # Every row that removed a referenced section removed one with a weekly
+    # plan, which `hasSyllabus` refused first with the same sentence, so this
+    # survived this file and `23a` on 19 พ.ย. 2569. It dies now at
+    # `backend/test/offerings.test.js` - the section with an enrolment and no
+    # plan - and nowhere in `23a`.
     "nosectioncatch": ("routes",
                        """          if (isReferenced(error)) {
             return res.status(409).json({ message: REFUSALS.sectionInUse });""",
