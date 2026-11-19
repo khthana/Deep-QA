@@ -50,6 +50,11 @@
 |---|---|---|---|
 | `s287sectiongeneric` | `23a` *row 8: an Offering with enrolled students is refused and stays on the screen* | `expect(page.getByText(REFUSALS.sectionInUse)).toBeVisible()` — สองข้อของการเปิดสอนเหนือมันผ่าน | `23a` แถวอื่น · `139a` `143a` ทั้งไฟล์ |
 | `s287cardtakenaway` | `23a` *row 8: an Offering with enrolled students is refused and stays on the screen* | `expect(sectionCard(page, '1')).toHaveCount(1)` — แถบแดงของกลุ่มเรียนเหนือมันผ่าน | เหมือนข้างบน |
+
+ผลการกวาด (19 พ.ย. 2569, `23a` `139a` `143a`) — ทั้งสองคำทำนายตรง:
+
+- `s287sectiongeneric` ล้ม 1 ไม่ได้รัน 1 ผ่าน 53 ที่ `23a-offerings.spec.js:260` `toBeVisible()` ของ `REFUSALS.sectionInUse` (element(s) not found)
+- `s287cardtakenaway` ล้ม 1 ไม่ได้รัน 1 ผ่าน 53 ที่ `23a-offerings.spec.js:261` `toHaveCount(1)` (Received: 0) — แถบแดงที่ :260 ผ่าน
 """
 from harness import main
 
