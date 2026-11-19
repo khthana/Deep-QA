@@ -62,6 +62,21 @@
     python mutation/90-the-scope-says-which-kind-it-is.py restore
     cd e2e && npx playwright test tests/90a tests/215a
     # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
+
+## คำทำนายของ #289 (19 พ.ย. 2569) — เขียนก่อนรัน (#255)
+
+#289 ให้ทั้งสามที่ที่ `90a` อ่าน `offered` (แถว 1, แถว 2 และ `offeredToTheCentralAdmin` ของแถว 3–5) ตั้ง waiter ของ
+`GET /api/users/grantable` ก่อนกด แล้วรอให้ picker วาดตัวเลือกเท่ากับ `scopes.length + 1` ของคำตอบนั้นก่อนอ่าน (#132)
+มัตแตนต์ทุกตัวที่ไปถึง `90a` เปลี่ยนแค่ถ้อยคำของป้าย ไม่เปลี่ยนจำนวนตัวเลือก การรอใหม่จึงผ่านใต้มัน และไม่ควรมีตัวไหนย้ายไปตายที่การรอ (#139)
+
+| มัตแตนต์ | แถวที่ตาย | ตายที่ (คำทำนาย) |
+|---|---|---|
+| `nokind` | `90a` แถว 1 2 4 5 | ที่เดิมตามตารางข้างบน — แถว 1 และ 2 ที่ `toContain(entry(KIND.department, department))` · แถว 4 ที่ข้ออ้างเรื่องรหัสในวงเล็บ · แถว 5 ที่ `toContain` ของคณะ · แถว 3 ผ่าน |
+| `swapsthewords` | `90a` แถว 1 กับ 2 | `toContain(entry(KIND.department, department))` |
+| `nofaculty` | `90a` แถว 5 | `toContain` ของคณะที่ถูกเปลี่ยนชื่อ |
+| `saysthekindtwice` | `90a` แถว 3 | ข้ออ้างของแถว 3 ว่าคำของคณะไม่ซ้ำ |
+| `namestheunconfined` | `90a` แถว 4 | บรรทัดของข้ออ้างที่สอง (ห้ามคำนำหน้า) |
+| `216:bracketsthesentinel` (กวาดจากแฟ้ม `216`) | `90a` แถว 4 | บรรทัดของข้ออ้างที่สาม (`toBe`) |
 """
 from harness import main
 
