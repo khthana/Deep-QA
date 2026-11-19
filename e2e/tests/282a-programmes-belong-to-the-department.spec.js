@@ -8,7 +8,7 @@ const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
 const { menuLink } = require('../support/shell');
 const { facultyContext, switchOff } = require('../support/retiring');
-const { csv, importCsv, reportTable, total } = require('../support/import-panel');
+const { csv, importCsv, reportTable } = require('../support/import-panel');
 const { PROGRAMS, API, waitForList, openPrograms, listTable } = require('../support/programs-screen');
 
 /**
@@ -195,7 +195,7 @@ test('row 3: a retired own department refuses a new programme with the owner’s
  * department hears the sentence once, not once per line. Appended rather than
  * inserted, so no row number above moves (#97, #173).
  */
-test('row 4: a file under a retired own department hears the owner’s sentence once, and writes nothing — #285', async ({
+test('row 4: a file under a retired own department hears the owner’s sentence once, with no line named — #285', async ({
   page,
   playwright,
 }) => {
@@ -209,7 +209,6 @@ test('row 4: a file under a retired own department hears the owner’s sentence 
   try {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openPrograms(page);
-    const before = await total(page);
 
     // Two good rows: under the per-row report each would carry the sentence,
     // which is what the count below is for.
@@ -226,7 +225,8 @@ test('row 4: a file under a retired own department hears the owner’s sentence 
     await expect(sentence.first(), 'the screen says why, in the owner’s words').toBeVisible();
     expect(await sentence.count(), 'once, and not once per line').toBe(1);
     expect(await reportTable(page).count(), 'with no line named').toBe(0);
-    await expect.poll(() => total(page), { message: 'and nothing was written' }).toBe(before);
+    // Nothing written is the backend row's claim, read there by id: a count
+    // polled here matches on its first sample, before any reload (#50).
   } finally {
     await switchBackOn();
     for (const id of FILED) await removeOverHttp(playwright, id);

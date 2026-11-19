@@ -235,9 +235,9 @@ function sendImport(res, result, key) {
       .status(400)
       .json({ message: REFUSALS.importWrongTemplate, errors: [], created: 0 });
   }
-  // A whole-file refusal - `refuseFile`, `whole`, or a refusing `onCommit` - carries its own
-  // sentence and no rows, and it is asked before the per-row branch for the
-  // reason `empty` is: `errors` is undefined on it, not a report.
+  // A whole-file refusal - `refuseFile`, `whole`, or a refusing `onCommit` -
+  // carries its own sentence and no rows, and it is asked before the per-row
+  // branch for the reason `empty` is: `errors` is undefined on it, not a report.
   if (!result.ok && result.message) {
     return res.status(400).json({ message: result.message, errors: [], created: 0 });
   }

@@ -866,13 +866,18 @@ test('a file under a retired department is refused once, before anything in it i
     assert.deepEqual(many.body.errors, [], 'once, and no line is named');
     assert.equal(many.body.created, 0);
 
-    const empty = await importCsv(cookie, '');
-    assert.equal(empty.status, 400);
-    assert.equal(empty.body.message, RETIRED, 'an empty file hears it before it hears it is empty');
-
+    // Another screen's file before the empty one, and not the other way round:
+    // `importRows` judges an empty file before a wrong header, so a refusal
+    // asked after both dies at whichever is read first and leaves the second
+    // proved by nothing (#88). In this order a refusal asked after both dies
+    // at the template, and one asked between the two at the empty file.
     const other = await importCsv(cookie, 'department_id,department_name_th\r\n05,วิศวกรรม\r\n');
     assert.equal(other.status, 400);
     assert.equal(other.body.message, RETIRED, 'another screen’s file hears it before the template');
+
+    const empty = await importCsv(cookie, '');
+    assert.equal(empty.status, 400);
+    assert.equal(empty.body.message, RETIRED, 'an empty file hears it before it hears it is empty');
     // Read before the cleanup below, which would make it true either way.
     for (const id of ids) assert.equal((await read(cookie, id)).status, 404, `${id} was not written`);
   } finally {
