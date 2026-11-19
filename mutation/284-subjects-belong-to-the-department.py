@@ -222,14 +222,19 @@ MUTANTS = {
         '              </span>\n'
         '            </span>\n'
         '          </PageHeader>\n'),
+    # Re-aimed 19 พ.ย. 2569 by #290, whose `width` prop went onto this line;
+    # the field it puts back is the same (#203 - keep the claim, not the line).
+    # Re-swept the same day against `284a` and `16a`: it dies at `284a` row 1's
+    # *and has no department field* (expected 0, received 1) and nowhere else,
+    # 8 passed - the table's prediction above, unchanged.
     's284departmentfield': ('form',
-        '          <Field label="รหัสวิชา">\n',
+        '          <Field label="รหัสวิชา" width={SHORT}>\n',
         '          <Field label="ภาควิชา">\n'
         '            <select className={field} disabled={sending}>\n'
         '              <option value="">—</option>\n'
         '            </select>\n'
         '          </Field>\n'
-        '          <Field label="รหัสวิชา">\n'),
+        '          <Field label="รหัสวิชา" width={SHORT}>\n'),
 }
 
 main(FILES, MUTANTS)

@@ -87,11 +87,22 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-function Field({ label, children, hint }) {
+// #290, the owner's form-layout rules of 19 November 2569
+// (`docs/ui-form-layout.md`): a field is as wide as what a person types into
+// it, not as wide as the card or as the column's ceiling. Below `md` every
+// control still fills the screen.
+const SHORT = 'md:w-32'
+const CHOICE = 'md:w-40'
+
+// `width` narrows the control alone. The hint stays inside the `<label>` -
+// so the accessible name is what #180's `{ name: 'สถานะ' }` reads - and stays
+// as wide as the label, which is the card's width wherever the field has a row
+// of its own.
+function Field({ label, children, hint, width }) {
   return (
     <label className="block">
       <span className={labelling}>{label}</span>
-      {children}
+      {width ? <span className={`block ${width}`}>{children}</span> : children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
   )
@@ -147,8 +158,10 @@ export default function DepartmentForm({ value, busy, onSave, onCancel }) {
       </h2>
 
       <form onSubmit={submit} className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-3">
-          <Field label="รหัสภาควิชา">
+        {/* One name to a line (#290): a name is up to 200 characters, and a
+            third of the card cut it off while it was being edited. */}
+        <div className="space-y-4">
+          <Field label="รหัสภาควิชา" width={SHORT}>
             <input
               className={field}
               value={draft.department_id}
@@ -187,6 +200,7 @@ export default function DepartmentForm({ value, busy, onSave, onCancel }) {
           <Field
             label="สถานะ"
             hint="ภาควิชาที่มีข้อมูลอื่นอ้างอิงอยู่จะลบไม่ได้ ให้ปิดการใช้งานแทน และเปิดกลับได้จากที่นี่"
+            width={CHOICE}
           >
             <select
               className={field}

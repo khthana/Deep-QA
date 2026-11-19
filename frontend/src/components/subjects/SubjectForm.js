@@ -61,11 +61,17 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-function Field({ label, children, hint }) {
+// #290's widths and `width` prop - `DepartmentForm.js` has the reason. Copied
+// rather than shared, as `Field` itself is: one change of layout is not also a
+// merge (#68).
+const SHORT = 'md:w-32'
+const CHOICE = 'md:w-40'
+
+function Field({ label, children, hint, width }) {
   return (
     <label className="block">
       <span className={labelling}>{label}</span>
-      {children}
+      {width ? <span className={`block ${width}`}>{children}</span> : children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
   )
@@ -125,8 +131,10 @@ export default function SubjectForm({ value, busy, onSave, onCancel }) {
       </h2>
 
       <form onSubmit={submit} className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="รหัสวิชา">
+        {/* The code and the credits share the top row, and each name has a
+            line of its own (#290). */}
+        <div className="flex flex-col gap-4 md:flex-row">
+          <Field label="รหัสวิชา" width={SHORT}>
             <input
               className={field}
               value={draft.subject_id}
@@ -137,6 +145,22 @@ export default function SubjectForm({ value, busy, onSave, onCancel }) {
               required
             />
           </Field>
+          <Field label="หน่วยกิต" width={SHORT}>
+            <input
+              className={field}
+              value={draft.credits}
+              onChange={set('credits')}
+              disabled={sending}
+              inputMode="numeric"
+              pattern="\d{1,2}"
+              maxLength={2}
+              placeholder="3"
+              required
+            />
+          </Field>
+        </div>
+
+        <div className="space-y-4">
           <Field label="ชื่อวิชา (ไทย)">
             <input
               className={field}
@@ -154,19 +178,6 @@ export default function SubjectForm({ value, busy, onSave, onCancel }) {
               onChange={set('subject_name_en')}
               disabled={sending}
               maxLength={200}
-              required
-            />
-          </Field>
-          <Field label="หน่วยกิต">
-            <input
-              className={field}
-              value={draft.credits}
-              onChange={set('credits')}
-              disabled={sending}
-              inputMode="numeric"
-              pattern="\d{1,2}"
-              maxLength={2}
-              placeholder="3"
               required
             />
           </Field>
@@ -200,6 +211,7 @@ export default function SubjectForm({ value, busy, onSave, onCancel }) {
           <Field
             label="สถานะ"
             hint="รายวิชาที่มีข้อมูลอื่นอ้างอิงอยู่จะถูกปิดการใช้งานแทนการลบ และเปิดกลับได้จากที่นี่"
+            width={CHOICE}
           >
             <select
               className={field}

@@ -56,11 +56,20 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-function Field({ label, children, hint }) {
+// #290's widths and `width` prop - `DepartmentForm.js` has the reason. Copied
+// rather than shared, as `Field` itself is: one change of layout is not also a
+// merge (#68). The code's box is wider than the others' because its
+// placeholder, *เช่น PLO-1 หรือ PLO-1-2*, is what tells a person the shape -
+// sized by what is typed, not by the column's ceiling of 50.
+const SHORT = 'md:w-32'
+const CHOICE = 'md:w-40'
+const CODE = 'md:w-48'
+
+function Field({ label, children, hint, width }) {
   return (
     <label className="block">
       <span className={labelling}>{label}</span>
-      {children}
+      {width ? <span className={`block ${width}`}>{children}</span> : children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
   )
@@ -198,7 +207,7 @@ export default function PloForm({
       </h2>
 
       <form onSubmit={submit} className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-4">
           <Field
             label="หลักสูตร"
             hint={editing ? 'ย้ายผลการเรียนรู้ข้ามหลักสูตรไม่ได้ ให้ลบแล้วเพิ่มในหลักสูตรใหม่' : null}
@@ -226,6 +235,7 @@ export default function PloForm({
           <Field
             label="รหัสผลการเรียนรู้"
             hint="รหัสนี้ใช้ซ้ำได้ในหลักสูตรอื่น แต่ห้ามซ้ำกันภายในหลักสูตรเดียวกัน"
+            width={CODE}
           >
             <input
               className={field}
@@ -261,8 +271,28 @@ export default function PloForm({
           />
         </Field>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Field label="ประเภท">
+        {/* #290: *อยู่ใต้ข้อ* shows an outcome's title, which is up to 500
+            characters, so it has a line of its own; *ประเภท* is a fixed set and
+            *ลำดับการแสดงผล* a number, so the two share a row. */}
+        <Field label="อยู่ใต้ข้อ" hint="เลือกข้อหลักเพื่อทำให้ข้อนี้เป็นข้อย่อย">
+          <select
+            className={field}
+            value={draft.parent_outcome_id}
+            onChange={set('parent_outcome_id')}
+            disabled={sending}
+          >
+            <option value="">ไม่มี — เป็นข้อหลัก</option>
+            {candidates.map(plo => (
+              <option key={plo.outcome_id} value={plo.outcome_id}>
+                {'— '.repeat(Math.max(0, plo.level_depth - 1))}
+                {plo.outcome_code} {plo.outcome_title}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <div className="flex flex-col gap-4 md:flex-row">
+          <Field label="ประเภท" width={CHOICE}>
             <select
               className={field}
               value={draft.outcome_type}
@@ -278,24 +308,11 @@ export default function PloForm({
             </select>
           </Field>
 
-          <Field label="อยู่ใต้ข้อ" hint="เลือกข้อหลักเพื่อทำให้ข้อนี้เป็นข้อย่อย">
-            <select
-              className={field}
-              value={draft.parent_outcome_id}
-              onChange={set('parent_outcome_id')}
-              disabled={sending}
-            >
-              <option value="">ไม่มี — เป็นข้อหลัก</option>
-              {candidates.map(plo => (
-                <option key={plo.outcome_id} value={plo.outcome_id}>
-                  {'— '.repeat(Math.max(0, plo.level_depth - 1))}
-                  {plo.outcome_code} {plo.outcome_title}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="ลำดับการแสดงผล" hint="เรียงจากน้อยไปมากภายในข้อหลักเดียวกัน">
+          <Field
+            label="ลำดับการแสดงผล"
+            hint="เรียงจากน้อยไปมากภายในข้อหลักเดียวกัน"
+            width={SHORT}
+          >
             <input
               className={field}
               type="number"
@@ -312,6 +329,7 @@ export default function PloForm({
           <Field
             label="สถานะ"
             hint="ผลการเรียนรู้ที่มีรายวิชาหรือ CLO อ้างอิงอยู่จะถูกปิดการใช้งานแทนการลบ และเปิดกลับได้จากที่นี่"
+            width={CHOICE}
           >
             <select
               className={field}

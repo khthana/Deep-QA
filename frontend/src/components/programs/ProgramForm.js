@@ -57,11 +57,17 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-function Field({ label, children, hint }) {
+// #290's widths and `width` prop - `DepartmentForm.js` has the reason. Copied
+// rather than shared, as `Field` itself is: one change of layout is not also a
+// merge (#68).
+const SHORT = 'md:w-32'
+const CHOICE = 'md:w-40'
+
+function Field({ label, children, hint, width }) {
   return (
     <label className="block">
       <span className={labelling}>{label}</span>
-      {children}
+      {width ? <span className={`block ${width}`}>{children}</span> : children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
   )
@@ -116,8 +122,10 @@ export default function ProgramForm({ value, busy, onSave, onCancel }) {
       </h2>
 
       <form onSubmit={submit} className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="รหัสหลักสูตร">
+        {/* The two short fields that say which programme this is share the top
+            row, and each name has a line of its own (#290). */}
+        <div className="flex flex-col gap-4 md:flex-row">
+          <Field label="รหัสหลักสูตร" width={SHORT}>
             <input
               className={field}
               value={draft.program_id}
@@ -127,6 +135,21 @@ export default function ProgramForm({ value, busy, onSave, onCancel }) {
               required
             />
           </Field>
+          <Field label="ปีหลักสูตร (พ.ศ.)" width={SHORT}>
+            <input
+              className={field}
+              value={draft.revision_year ?? ''}
+              onChange={set('revision_year')}
+              disabled={sending}
+              inputMode="numeric"
+              pattern="\d{4}"
+              maxLength={4}
+              placeholder="2564"
+            />
+          </Field>
+        </div>
+
+        <div className="space-y-4">
           <Field label="ชื่อหลักสูตร (ไทย)">
             <input
               className={field}
@@ -146,18 +169,6 @@ export default function ProgramForm({ value, busy, onSave, onCancel }) {
               maxLength={200}
             />
           </Field>
-          <Field label="ปีหลักสูตร (พ.ศ.)">
-            <input
-              className={field}
-              value={draft.revision_year ?? ''}
-              onChange={set('revision_year')}
-              disabled={sending}
-              inputMode="numeric"
-              pattern="\d{4}"
-              maxLength={4}
-              placeholder="2564"
-            />
-          </Field>
         </div>
 
         {/* Only on an edit: a programme is created because it is being offered,
@@ -169,6 +180,7 @@ export default function ProgramForm({ value, busy, onSave, onCancel }) {
           <Field
             label="สถานะ"
             hint="หลักสูตรที่มีข้อมูลอื่นอ้างอิงอยู่จะถูกปิดการใช้งานแทนการลบ และเปิดกลับได้จากที่นี่"
+            width={CHOICE}
           >
             <select
               className={field}

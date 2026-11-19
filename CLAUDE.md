@@ -1386,6 +1386,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/thesis/` | The thesis `docs/01`–`04` were extracted from. Only for checking an extraction against the original. |
 | `docs/06-implementation-plan.md` | The spec the rebuild implements. |
 | `docs/acceptance/` | One checklist per screen ticket, and the record of how each row was proved. A ticket closes on it. |
+| `docs/ui-form-layout.md` | The owner's rules for how wide a form field is and where it sits (#290, 19 November 2569). Read before laying out a form. |
 | `docs/lessons.md` | What the rebuild has learned, ticket by ticket. `CLAUDE.md`'s lessons section is its index. |
 | `docs/handoff/` | Session handoffs, newest last. The most recent one is the current state of the rebuild. |
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |

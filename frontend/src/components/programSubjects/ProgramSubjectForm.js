@@ -37,11 +37,16 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-function Field({ label, children, hint }) {
+// #290's width and `width` prop - `DepartmentForm.js` has the reason. Copied
+// rather than shared, as `Field` itself is: one change of layout is not also a
+// merge (#68).
+const CHOICE = 'md:w-40'
+
+function Field({ label, children, hint, width }) {
   return (
     <label className="block">
       <span className={labelling}>{label}</span>
-      {children}
+      {width ? <span className={`block ${width}`}>{children}</span> : children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
   )
@@ -150,7 +155,9 @@ export default function ProgramSubjectForm({
       </h2>
 
       <form onSubmit={submit} className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
+        {/* #290: a dropdown that shows a name is as wide as a name, and one
+            whose choices are a fixed set is as wide as its longest choice. */}
+        <div className="space-y-4">
           <Field
             label="หลักสูตร"
             hint={editing ? 'ย้ายรายวิชาข้ามหลักสูตรไม่ได้ ให้ลบออกแล้วเพิ่มในหลักสูตรใหม่' : null}
@@ -175,7 +182,7 @@ export default function ProgramSubjectForm({
             </select>
           </Field>
 
-          <Field label="ประเภทรายวิชา">
+          <Field label="ประเภทรายวิชา" width={CHOICE}>
             <select
               className={field}
               value={draft.subject_type}
@@ -190,7 +197,7 @@ export default function ProgramSubjectForm({
         </div>
 
         {editing ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-4">
             <Field label="รายวิชา">
               <input
                 className={field}
@@ -202,6 +209,7 @@ export default function ProgramSubjectForm({
             <Field
               label="สถานะ"
               hint="รายวิชาที่มีการเปิดสอนอ้างอิงอยู่จะถูกปิดการใช้งานแทนการลบ และเปิดกลับได้จากที่นี่"
+              width={CHOICE}
             >
               <select
                 className={field}
