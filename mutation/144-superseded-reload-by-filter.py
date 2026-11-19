@@ -94,7 +94,7 @@ baseline สะอาดผ่านก่อนกวาด และ `git diff
 | `usersstatusnotfollowed` | ข้อมูลผู้ใช้งาน: ตัวกรองสถานะ — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, filters.q, filters.role])` | **ล้ม** 1 — แถวตัวกรองสถานะ · **ผ่าน** 20 · แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list บันทึก reloads does not land on the สถานะ filter that has moved* · ที่มา `docs/acceptance/11-user-accounts.md:1174` `docs/acceptance/11-user-accounts.md:1156` |
 | `subjectsdepartmentnotfollowed` | ข้อมูลรายวิชา: ตัวกรองภาควิชา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the ภาควิชา filter that has moved* · ที่มา `docs/acceptance/16-subjects.md:316` |
 | `pairsprogramnotfollowed` | รายวิชาในหลักสูตร: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/18-program-subjects.md:289` |
-| `rubricsprogramnotfollowed` | Rubric: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report])` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/21-rubrics.md:270` |
+| `rubricsprogramnotfollowed` | Rubric: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, report, generation, poolRead])` (เล็งใหม่ 19 พ.ย. 2569 #278 — **ล้ม** 3 ที่ข้ออ้าง: แถวของตัวเองใน `144a` · `140a` Rubric บันทึก และ ลบ — กับ 18 spec ที่เปิดจอ) | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused แก้ไข reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/21-rubrics.md:280` (เดิมเขียน `:270` ซึ่งเลื่อนก่อน 19 พ.ย. 2569) |
 | `offeringsprogramnotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองหลักสูตร — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, year, semester, report, poolRead, termsRead])` (เล็งใหม่ 17 พ.ย. 2569) | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the หลักสูตร filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:490` |
 | `offeringsyearnotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองปีการศึกษา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, program, semester, report, poolRead, termsRead])` (เล็งใหม่ 17 พ.ย. 2569) | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the ปีการศึกษา filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:491` |
 | `offeringssemesternotfollowed` | ข้อมูลการเปิดรายวิชา: ตัวกรองภาคการศึกษา — บล็อกที่ถูกแทน ท้ายของมัน `REF` → `}, [page, program, year, report, poolRead, termsRead])` (เล็งใหม่ 17 พ.ย. 2569) | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *the list a refused ตอนเรียนและผู้สอน reloads does not land on the ภาคการศึกษา filter that has moved* · ที่มา `docs/acceptance/23-offerings.md:492` |
@@ -138,8 +138,20 @@ MUTANTS = {
     'pairsprogramnotfollowed': ('pairs', REF,
         '    onScreen.current = load\n  }, [page, report, poolRead])\n'),
     # Rubric: ตัวกรองหลักสูตร
+    # Re-aimed 19 พ.ย. 2569 (#278), for the reason `pairs` was above: `load`
+    # in `Rubrics.js` depends on `generation` (#198) and on `poolRead` (#276),
+    # and left out of these dependencies the ref stayed on the first `load`,
+    # which returns before the curricula land. Run as it stood, it killed four
+    # rows at the arrangement (`144a` and the three Rubric rows of `140a` at the
+    # wait for the held request) and `21a`'s add-then-edit row at a list that never reloaded
+    # after its save - a mutant that stops the reload, not one that misses the
+    # filter (#203). Both stay, in the form `load` reads them; only `program`
+    # is left out, as the name says. Re-swept against the 18 specs that open
+    # the screen: `144a`'s row dies at its own `toEqual`, and the บันทึก and
+    # ลบ rows of `140a` at theirs, the filter they move being หลักสูตร.
+    # Sheet 21 §#278 is the record.
     'rubricsprogramnotfollowed': ('rubrics', REF,
-        '    onScreen.current = load\n  }, [page, report])\n'),
+        '    onScreen.current = load\n  }, [page, report, generation, poolRead])\n'),
     # ข้อมูลการเปิดรายวิชา: ตัวกรองหลักสูตร
     #
     # `offeringsprogramnotfollowed` stood here until 17 พ.ย. 2569 (#279), and
