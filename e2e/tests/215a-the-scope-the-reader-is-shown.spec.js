@@ -46,6 +46,17 @@ const { ROLE_NAMES, openEditor, grantsTable } = require('../support/grants-panel
  * what each adds is its own way in arriving (#191). Both are signed in as the
  * Central Admin, who is the only reader either way - see row 5.
  *
+ * **Rows 1 to 4 were rewritten on 20 November 2569 for #294**, whose owner
+ * reversed two answers this file was written on. The code in brackets went -
+ * the cell reads `ชนิด · ชื่อ` - and a grant outside the reader's reach is no
+ * longer drawn as a bare code: the server sends its name with the grant
+ * (`backend/auth/scopeNames.js`). So rows 3 and 4 now hold the opposite of what
+ * they were written for, and their mechanism half reads the other way round:
+ * the scope is still not on offer in the picker, and the cell names it anyway,
+ * which is what says the name came from the grant and not from the list. The
+ * paragraphs above are the reasoning of 23 October and stand as its record
+ * (#54).
+ *
  * No row here writes anything. `multi01` holds the colliding pair by seed and
  * `cross01` is the account #130 added for exactly this asymmetry: the person is
  * inside department 05 and the grant is over 01, so a 05 administrator reaches
@@ -74,8 +85,11 @@ const scopeOf = (list, id) => list.find(entry => entry.id === id);
 const DEPARTMENT = scopeOf(DEPARTMENTS, '05');
 const PROGRAM = scopeOf(PROGRAMS, '0501');
 
-/** The scope as the screens are to write it, which is `GrantPicker`'s wording. */
-const asDrawn = (kind, scope) => `${kind} · ${scope.th} (${scope.id})`;
+/**
+ * The scope as the screens are to write it, which is `GrantPicker`'s wording -
+ * without the code in brackets since #294.
+ */
+const asDrawn = (kind, scope) => `${kind} · ${scope.th}`;
 
 /**
  * The precondition both of the first two rows press on, asserted where it is
@@ -170,34 +184,26 @@ function theScopeOutOfReach() {
   return outOfReach;
 }
 
-test('row 3: the accounts list keeps the bare code for a scope out of reach', async ({ page }) => {
+test('row 3 (#294): the accounts list names a scope out of reach as well', async ({ page }) => {
   const outOfReach = theScopeOutOfReach();
 
   await signIn(page, ACCOUNTS.departmentAdmin05);
   await openUsers(page);
 
   // The list is what is on screen before anything is opened: one grant, over a
-  // department this administrator cannot hand out. The mechanism behind the
-  // bare code is read by row 4, which has the picker to ask.
-  //
-  // `grantable` draws nothing of its own on this screen, so until it lands every
-  // scope reads as a bare code and this row would pass on a screen that had
-  // simply never asked (#132). The settle point is another account's row:
-  // `multi01`'s scopes are both in reach, so the words appearing there say the
-  // answer has arrived - and the code below is then the fallback and not the
-  // empty list. Row 4 fences the same thing with the picker's own options.
-  await search(page, ACCOUNTS.multiRole);
-  await expect(await roleCell(page, ACCOUNTS.multiRole)).toContainText(
-    `(${asDrawn(KIND.department, DEPARTMENT)})`,
-  );
-
+  // department this administrator cannot hand out. Until #294 it read as the
+  // bare code; the name now arrives on the grant itself, so no settle point on
+  // `grantable` is owed - a read of the whole cell fails with the code in it.
+  // The mechanism is row 4's, which has the picker to ask.
   await search(page, ACCOUNTS.crossScope);
   await expect(await roleCell(page, ACCOUNTS.crossScope)).toHaveText(
-    `${ROLE_NAMES.TEACHER} (${outOfReach.id})`,
+    `${ROLE_NAMES.TEACHER} (${asDrawn(KIND.department, outOfReach)})`,
   );
 });
 
-test('row 4: the held-roles table keeps it, and the picker says why', async ({ page }) => {
+test('row 4 (#294): the held-roles table names it, and the picker says from where', async ({
+  page,
+}) => {
   const outOfReach = theScopeOutOfReach();
 
   await signIn(page, ACCOUNTS.departmentAdmin05);
@@ -205,21 +211,25 @@ test('row 4: the held-roles table keeps it, and the picker says why', async ({ p
   await search(page, ACCOUNTS.crossScope);
   await openEditor(page, ACCOUNTS.crossScope);
 
-  // The mechanism rather than the symptom: the name comes from what the server
-  // said this administrator may offer, and this scope is not in that list. A
-  // row that only read the cell would pass on a screen that had simply lost the
-  // words (#145).
-  // Waited for by what the answer carries rather than by the answer itself:
-  // `openEditor` waits for the panel's read, and `grantable` is a second call
-  // whose options are not on the screen yet when it returns (#132). The
-  // administrator's own department is what that list must hold.
+  // The mechanism rather than the symptom (#145): this scope is not in what the
+  // server said this administrator may offer, so a name in the cell below did
+  // not come from that list - since #294 it comes with the grant. Waited for by
+  // what the answer carries rather than by the answer itself: `openEditor`
+  // waits for the panel's read, and `grantable` is a second call whose options
+  // are not on the screen yet when it returns (#132). The administrator's own
+  // department is what that list must hold, and it is read whole, `0501`'s
+  // name being a substring of `0503`'s (#116).
   const options = page.getByRole('combobox', { name: 'ขอบเขตของบทบาท' }).locator('option');
-  await expect(options.filter({ hasText: `(${DEPARTMENT.id})` })).toHaveCount(1);
+  await expect
+    .poll(() => options.allTextContents())
+    .toContain(asDrawn(KIND.department, DEPARTMENT));
 
   const offered = await options.allTextContents();
-  expect(offered.filter(text => text.endsWith(`(${outOfReach.id})`))).toHaveLength(0);
+  expect(offered).not.toContain(asDrawn(KIND.department, outOfReach));
 
-  await expect(await panelScopeCell(page, ROLE_NAMES.TEACHER)).toHaveText(outOfReach.id);
+  await expect(await panelScopeCell(page, ROLE_NAMES.TEACHER)).toHaveText(
+    asDrawn(KIND.department, outOfReach),
+  );
 });
 
 /**

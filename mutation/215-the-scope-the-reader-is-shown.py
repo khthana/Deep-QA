@@ -49,6 +49,18 @@ assertion ของมันเลย (#139, #213) สองแถวนั้�
 กับ 3 · ไม่มีตัวไหนรอด และทุกการล้มที่เป็นข้ออ้างของแถวนั้นเองตายที่บรรทัดของข้ออ้าง
 ส่วนที่ตายที่จุดหยุดรอเขียนไว้ในตารางข้างบนแล้ว
 
+**คำทำนายก่อนกวาดรอบที่สี่ (#294, 20 พ.ย. 2569)** ถ้อยคำเสียวงเล็บรหัส และชื่อของขอบเขตมาจาก server
+กับบทบาทแต่ละรายการ (`grantScope`) ฉะนั้น `scopeNamed` ถูกถามเฉพาะบทบาทที่ไม่มีชื่อมา คือขอบเขตที่ไม่ถูกจำกัด
+ซึ่งอยู่ในรายการที่เสนอได้ของ `admin@` · แถว 3 กับ 4 เปลี่ยนข้ออ้าง จาก *รหัสเปล่า* เป็น *ชื่อของภาควิชา `01`*
+— สองตัวแรกถูกเล็งใหม่ไปที่ `grantScope` และอีกสองตัวไม่ได้แก้แต่ความหมายเปลี่ยน (#202, #248):
+
+| ชื่อ | แถวที่ควรตาย | ตายที่ |
+|---|---|---|
+| `panelcode` | `215a` แถว 1, 4 และ 6 | `panelScopeCell` toHaveText ทั้งสามแถว (`05`, `01`, `FULL_ADMIN`) |
+| `userscode` | `215a` แถว 2, 3 และ 5 | แถว 2 ที่ `toContainText` ตัวแรก · แถว 3 กับ 5 ที่ `roleCell` toHaveText |
+| `dashwhenunknown` | **ไม่มี — ทำนายว่ารอด** | ทุกบทบาทที่ไปถึง `scopeNamed` ในแฟ้มนี้มีขอบเขตอยู่ในรายการ กิ่งที่ตกเป็นรหัสจึงไม่มีแถวไหนเดินผ่าน (#117) |
+| `anyscopewilldo` | `215a` แถว 5 กับ 6 **ถ้า** `scopes[0]` ของ `admin@` ไม่ใช่ขอบเขตที่ไม่ถูกจำกัด · ถ้าใช่ ทำนายว่ารอด (#206) | `roleCell` / `panelScopeCell` toHaveText |
+
 ## วิธีรัน
 
     python mutation/215-the-scope-the-reader-is-shown.py save
@@ -68,30 +80,34 @@ FILES = {
 MUTANTS = {
     'panelcode': [
         ('panel',
+        # Re-aimed at #294, which named the grant from the server's answer
+        # rather than from the picker's list: the code before #215 made to
+        # run, unchanged (#115, #203).
         '                <td className="px-4 py-2">\n'
-        '                  {scopeNamed(grantable.scopes, grant.scope_id)}\n'
+        '                  {grantScope(grantable.scopes, grant)}\n'
         '                </td>\n',
         '                <td className="px-4 py-2">{grant.scope_id}</td>\n'),
-        ('panel', "import { scopeNamed } from './scopeLabel'\n", ''),
+        ('panel', "import { grantScope } from './scopeLabel'\n", ''),
     ],
     'userscode': [
         ('list',
         '                          .map(\n'
         '                            grant =>\n'
-        '                              `${roleName(grant.role_id)} (${scopeNamed(\n'
+        '                              `${roleName(grant.role_id)} (${grantScope(\n'
         '                                grantable.scopes,\n'
-        '                                grant.scope_id,\n'
+        '                                grant,\n'
         '                              )})`,\n'
         '                          )\n',
         '                          .map(grant => `${roleName(grant.role_id)} (${grant.scope_id})`)\n'),
-        ('list', "import { scopeNamed } from '../components/users/scopeLabel'\n", ''),
+        ('list', "import { grantScope } from '../components/users/scopeLabel'\n", ''),
         ('list', "import useGrantable from '../components/users/useGrantable'\n", ''),
         ('list',
         "  // #215 - the role column names each grant's scope by kind and name and not\n"
         '  // by its code alone, in `GrantPicker`\'s wording. The names come from the same\n'
         '  // answer the form\'s pickers are drawn from, which this screen was not asking\n'
-        '  // for until now; `scopeNamed` says what a code outside that answer reads as,\n'
-        '  // and the hook reads the generation above for the same reason `load` does.\n'
+        '  // for until now, and since #294 from the name each grant arrives with;\n'
+        '  // `grantScope` says what a grant with no name reads as, and the hook reads\n'
+        '  // the generation above for the same reason `load` does.\n'
         '  const grantable = useGrantable()\n',
         ''),
     ],

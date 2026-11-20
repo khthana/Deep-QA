@@ -19,6 +19,7 @@
  */
 
 const { GLOBAL_SCOPE, coveredScopes } = require('./authorise');
+const { SCOPE_JOINS, SCOPE_KIND, SCOPE_NAME } = require('./scopeNames');
 
 /**
  * Who may manage accounts at all - #11's eighth criterion reads "an
@@ -73,11 +74,18 @@ const SENIORITY = `(SELECT min(r.priority)
                       FROM user_roles ur JOIN roles r ON r.role_id = ur.role_id
                      WHERE ur.user_id = u.user_id AND ur.is_active AND r.is_active)`;
 
-/** The grants themselves, so the list can show what each account is. */
+/**
+ * The grants themselves, so the list can show what each account is - each with
+ * its scope's name and tier since #294, whose owner answered on 20 November
+ * 2569 that the list names a scope rather than drawing its code, a scope
+ * outside the reader's reach included (`scopeNames.js`).
+ */
 const GRANTS = `(SELECT COALESCE(json_agg(json_build_object(
-                          'role_id', ur.role_id, 'scope_id', ur.scope_id)
+                          'role_id', ur.role_id, 'scope_id', ur.scope_id,
+                          'scope_name', ${SCOPE_NAME}, 'scope_kind', ${SCOPE_KIND})
                           ORDER BY r.priority, ur.scope_id), '[]'::json)
                    FROM user_roles ur JOIN roles r ON r.role_id = ur.role_id
+                   ${SCOPE_JOINS('ur.scope_id')}
                   WHERE ur.user_id = u.user_id AND ur.is_active AND r.is_active)`;
 
 /**

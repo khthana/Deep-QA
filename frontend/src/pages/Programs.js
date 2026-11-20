@@ -512,7 +512,11 @@ export default function Programs() {
                 {!loading &&
                   data.programs.map(program => (
                     <tr key={program.program_id}>
-                      <td className="px-4 py-2 font-medium text-gray-900">{program.program_id}</td>
+                      <td className="px-4 py-2 font-medium text-gray-900">
+                        {/* org-code: the record's own key, on the one screen that manages
+                            programmes - the column an administrator typed it into (#294 rule 2) */}
+                        {program.program_id}
+                      </td>
                       <td className="px-4 py-2">
                         {program.program_name_th}
                         {program.program_name_en && (
@@ -575,6 +579,8 @@ export default function Programs() {
           removing
             // label-code: the question names the record about to be destroyed, where two of them
             // sharing a name is the whole reason the code is in the sentence (#93)
+            // org-code: and this is the screen that manages programmes, which keeps its codes
+            // in the table, the form and this question (#294 rule 2)
             ? `ต้องการลบหลักสูตร ${removing.program_id} ${removing.program_name_th} ใช่หรือไม่ หากมี PLO รายวิชาในหลักสูตร นักศึกษา หรือผลการเรียนอ้างอิงอยู่ ระบบจะปิดการใช้งานให้แทนการลบ`
             : ''
         }

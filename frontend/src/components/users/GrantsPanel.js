@@ -5,7 +5,7 @@ import GrantPicker from './GrantPicker'
 import Notice from '../Notice'
 import RowAction, { RowActions } from '../RowAction'
 import useGrantable from './useGrantable'
-import { scopeNamed } from './scopeLabel'
+import { grantScope } from './scopeLabel'
 import { roleName } from '../MapRole'
 import { useAuth } from '../../context/AuthContext'
 import { grantRole, listGrants, revokeGrant } from '../../api/users'
@@ -258,11 +258,13 @@ export default function GrantsPanel({ user, onError }) {
                   column is where an administrator checks that a grant went
                   where it was meant to, and `05` and `0501` are one digit
                   apart here and one level of authority apart in the guard.
-                  The name is looked up in the list the picker is already
-                  holding; `scopeNamed` says what a code outside it reads as.
+                  Since #294 the name and kind arrive on the grant itself, a
+                  grant outside the picker's list included, and the code is
+                  not drawn; `grantScope` says what a grant with no name
+                  reads as.
                 */}
                 <td className="px-4 py-2">
-                  {scopeNamed(grantable.scopes, grant.scope_id)}
+                  {grantScope(grantable.scopes, grant)}
                 </td>
                 <td className="px-4 py-2">{grant.assigned_by ?? '—'}</td>
                 <td className="px-4 py-2">{madeOn(grant.assigned_at)}</td>

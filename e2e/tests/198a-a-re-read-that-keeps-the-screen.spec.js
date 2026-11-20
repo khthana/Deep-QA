@@ -217,7 +217,7 @@ test('a switch that leaves the address where it is re-reads the list without tak
   await switchTo(page, committeeLabel(SECOND_SCOPE));
 
   // The situation, said out loud: the hat changed and the address did not.
-  await expect(actingButton(page)).toContainText(committeeLabel(SECOND_SCOPE));
+  await expect(actingButton(page)).toHaveText(committeeLabel(SECOND_SCOPE));
   expect(new URL(page.url()).pathname, 'the switch moved nobody').toBe(RUBRICS);
 
   // The settle point is what the answer carries rather than the answer itself
@@ -304,7 +304,7 @@ test('and the curricula the screen may place a rubric in are read again too', as
 
   await switchTo(page, committeeLabel(SECOND_SCOPE));
 
-  await expect(actingButton(page)).toContainText(committeeLabel(SECOND_SCOPE));
+  await expect(actingButton(page)).toHaveText(committeeLabel(SECOND_SCOPE));
   expect(new URL(page.url()).pathname, 'the switch moved nobody').toBe(RUBRICS);
 
   // The claim: the pool is the new grant's. Both halves are read, because a
@@ -346,7 +346,7 @@ test('and the curriculum a rubric typed across the switch is written into is the
   );
 
   await switchTo(page, committeeLabel(SECOND_SCOPE));
-  await expect(actingButton(page)).toContainText(committeeLabel(SECOND_SCOPE));
+  await expect(actingButton(page)).toHaveText(committeeLabel(SECOND_SCOPE));
   await pool;
   await expect(inSecond(page)).toBeVisible({ timeout: 15_000 });
   await expect(code, 'what was typed is still there').toHaveValue(TYPED);

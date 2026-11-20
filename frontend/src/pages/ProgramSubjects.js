@@ -663,9 +663,13 @@ export default function ProgramSubjects() {
         title="ยืนยันการนำรายวิชาออกจากหลักสูตร"
         message={
           removing
-            // label-code: the question names the record about to be destroyed, where two of them
-            // sharing a name is the whole reason the code is in the sentence (#93)
-            ? `ต้องการนำรายวิชา ${removing.subject_id} ${removing.subject_name_th} ออกจากหลักสูตร ${removing.program_id} ใช่หรือไม่ หากมีการเปิดสอนหรือข้อมูลอื่นอ้างอิงอยู่ ระบบจะปิดการใช้งานให้แทนการลบ`
+            // label-code: the question names the subject about to be removed, where two of them
+            // sharing a name is the whole reason its code is in the sentence (#93). The programme
+            // is named and not coded since #294 - a subject code stays, an organisation unit's goes
+            ? `ต้องการนำรายวิชา ${removing.subject_id} ${removing.subject_name_th} ออกจากหลักสูตร${
+                programs.find(entry => entry.program_id === removing.program_id)
+                  ?.program_name_th ?? ` ${removing.program_id}`
+              } ใช่หรือไม่ หากมีการเปิดสอนหรือข้อมูลอื่นอ้างอิงอยู่ ระบบจะปิดการใช้งานให้แทนการลบ`
             : ''
         }
         confirmLabel="นำออกจากหลักสูตร"

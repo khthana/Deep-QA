@@ -27,6 +27,7 @@
 const bcrypt = require('bcrypt');
 
 const { REFUSALS } = require('./refusals');
+const { SCOPE_JOINS, SCOPE_KIND, SCOPE_NAME } = require('./scopeNames');
 
 const KMITL_DOMAIN = '@kmitl.ac.th';
 
@@ -123,7 +124,9 @@ async function bumpActingEpoch(db, userId) {
  * screen drew the name, so the words are a divergence the rebuild made rather
  * than something it never had (#86); the owner chose on 27 October 2569 that
  * the picker reads `name (code)`, without the kind word the two
- * administration screens carry.
+ * administration screens carry - and on 20 November 2569 that the code goes
+ * (#294). The resolver moved to `scopeNames.js` the same day, when two more
+ * reads needed it.
  *
  * **In this query and not beside it.** Three LEFT JOINs on a read that already
  * runs add no round trip, and this read runs on every request - `attachRoles`
@@ -163,18 +166,10 @@ async function bumpActingEpoch(db, userId) {
 async function allRoles(pool, userId) {
   const { rows } = await pool.query(
     `SELECT r.role_id, r.role_name, r.priority, ur.scope_id,
-            CASE WHEN p.program_id IS NOT NULL THEN p.program_name_th
-                 WHEN d.department_id IS NOT NULL THEN d.department_name_th
-                 WHEN f.faculty_id IS NOT NULL THEN f.faculty_name_th
-                 END AS scope_name,
-            CASE WHEN p.program_id IS NOT NULL THEN 'program'
-                 WHEN d.department_id IS NOT NULL THEN 'department'
-                 WHEN f.faculty_id IS NOT NULL THEN 'faculty'
-                 END AS scope_kind
+            ${SCOPE_NAME} AS scope_name,
+            ${SCOPE_KIND} AS scope_kind
      FROM user_roles ur JOIN roles r ON r.role_id = ur.role_id
-     LEFT JOIN programs p ON p.program_id = ur.scope_id
-     LEFT JOIN departments d ON d.department_id = ur.scope_id
-     LEFT JOIN faculty f ON f.faculty_id = ur.scope_id
+     ${SCOPE_JOINS('ur.scope_id')}
      WHERE ur.user_id = $1 AND ur.is_active AND r.is_active
      ORDER BY r.priority ASC, ur.scope_id ASC`,
     [userId],

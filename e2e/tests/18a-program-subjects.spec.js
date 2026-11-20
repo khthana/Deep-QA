@@ -2,6 +2,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
+const { PROGRAMS } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
@@ -264,7 +265,14 @@ test('row 6: a removal asks first, and says what it is about to remove', async (
   expect(said).toContain('ต้องการนำรายวิชา');
   expect(said).toContain(PLACED);
   expect(said).toContain('วิศวกรรมหลักสูตรหนึ่ง');
-  expect(said).toContain('0501');
+  // The curriculum by its name since #294, whose owner answered on 20 November
+  // 2569 that an organisation unit is named outside the two screens that manage
+  // those records. Until then this read `toContain('0501')`. The whole phrase,
+  // because `0501`'s name is a substring of `0503`'s (#116); the subject's own
+  // code stays, which `PLACED` above reads (#294 rule 1).
+  const curriculum = PROGRAMS.find(entry => entry.id === '0501').th;
+  expect(said).toContain(`ออกจากหลักสูตร${curriculum} ใช่หรือไม่`);
+  expect(said).not.toContain('0501');
   expect(said).toContain('ปิดการใช้งานให้แทนการลบ');
 
   await page.getByRole('button', { name: 'ยกเลิก' }).click();

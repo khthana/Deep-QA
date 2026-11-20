@@ -37,6 +37,10 @@ const CENSUSES = [
   // reason for landing an instrument unwired is a red gate nobody has fixed,
   // and there was none - which is itself #269's finding (#141).
   'guards-with-no-mutant.js',
+  // Wired in on the day it landed, 20 พฤศจิกายน 2569, for the same reason: the
+  // ticket that wrote it (#294) took every unmarked site out of the population
+  // in the same change, and its first run over the tree was `problems 0`.
+  'org-codes.js',
 ]
 
 let worst = 0

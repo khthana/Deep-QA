@@ -57,24 +57,31 @@ SUPERSEDED = {'N6'}
 MUTANTS = {
  # newest-last: the top line is no longer what just happened
  'N1': [('history',
-   "ORDER BY time_stamp DESC, id DESC",
-   "ORDER BY time_stamp ASC, id ASC")],
+   # Re-aimed at #294, which aliased the table `l` to join the record's name:
+   # the same order reversed on the same columns (#203).
+   "ORDER BY l.time_stamp DESC, l.id DESC",
+   "ORDER BY l.time_stamp ASC, l.id ASC")],
  # the line filed under the subject instead of the actor
  'N2': [('users',
    "await recordActivity(pool, req.auth.userId, 'SET_USER_STATUS', onUser(existing.user_id));",
    "await recordActivity(pool, existing.user_id, 'SET_USER_STATUS', onUser(existing.user_id));")],
  # the record named by its id alone, without saying what kind of record it is
+ # Re-aimed at #294, which split `actedOn` into a body to draw a name where
+ # the server sends one: the kind word emptied, which is the same mistake on
+ # every entry, named or coded (#203).
  'N3': [('panel',
-   "entry.target_id ? `${TARGETS[entry.target_kind] ?? entry.target_kind} ${entry.target_id}` : '—'",
-   "entry.target_id ? `${entry.target_id}` : '—'")],
+   "  const kind = TARGETS[entry.target_kind] ?? entry.target_kind\n",
+   "  const kind = ''\n")],
  # an activity with no target filled in with something rather than left blank
  # the em-dash placeholder replaced by something always truthy, so a row with
  # no target reads as though it had one. Anchored on the whole expression as
  # of 2026-08-20: the two-space form it was recorded against matches the time
  # column as well, and the harness refuses an ambiguous mutant.
+ # Re-aimed at #294's body for `actedOn`: the same placeholder replaced by the
+ # same always-truthy value (#203).
  'N4': [('panel',
-   "entry.target_id ? `${TARGETS[entry.target_kind] ?? entry.target_kind} ${entry.target_id}` : '—'",
-   "entry.target_id ? `${TARGETS[entry.target_kind] ?? entry.target_kind} ${entry.target_id}` : entry.user_id")],
+   "  if (!entry.target_id) return '—'\n",
+   "  if (!entry.target_id) return entry.user_id\n")],
  # the browser's own clock left to decide the hour
  'N5': [('panel',
    "        timeZone: 'Asia/Bangkok',\n",

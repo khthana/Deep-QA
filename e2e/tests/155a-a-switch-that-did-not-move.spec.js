@@ -148,7 +148,7 @@ test('a switch that leaves the address where it is re-reads the screen under the
 
   // The situation, said out loud: the hat changed and the address did not, so
   // nothing but the fix this row is about can have re-read anything.
-  await expect(actingButton(page)).toContainText(committeeLabel(SECOND_SCOPE));
+  await expect(actingButton(page)).toHaveText(committeeLabel(SECOND_SCOPE));
   expect(new URL(page.url()).pathname, 'the switch moved nobody').toBe(RUBRICS);
 
   // What this grant is owed, asked of the server through the page's own cookie

@@ -29,7 +29,7 @@ const assert = require('node:assert/strict');
 
 const request = require('supertest');
 
-const { PASSWORD, ACCOUNTS, DEPARTMENTS } = require('../../db/seed');
+const { PASSWORD, ACCOUNTS, DEPARTMENTS, FACULTY, PROGRAMS } = require('../../db/seed');
 const { REFUSALS } = require('../auth/refusals');
 const { startApi } = require('./helpers');
 
@@ -264,4 +264,70 @@ test('an entry names the record it was written about', async (t) => {
     for (const entry of response.body.entries) assert.equal(entry.user_id, teacher);
     assert.ok(!response.body.entries.some((entry) => entry.activity === 'SET_USER_STATUS'));
   });
+});
+
+// --- #294: the record named, not coded ---------------------------------------
+
+test('an entry about an organisation unit carries its name', async (t) => {
+  // #294: the owner answered on 20 November 2569 that the history names a
+  // department or a programme rather than drawing its code, and that one
+  // deleted since keeps the code. The entries are written straight through the
+  // pool, for the pagination block's reason - what is asked is the read, not
+  // how the rows got there - and on an account no other row in this file reads.
+  const admin = await signInAs('U_ADMIN');
+  const subject = account('U_COM2').id;
+  const [program] = PROGRAMS;
+  const [department] = DEPARTMENTS;
+
+  // A department sharing the programme's id, so an entry about one cannot be
+  // named after the other without a row going red (#60, #231). `target_id` is
+  // no foreign key, and a name read off whichever table matched would be wrong
+  // here.
+  const twin = { id: program.id, th: 'ภาควิชาที่รหัสซ้ำหลักสูตร' };
+  await api.pool.query(
+    `INSERT INTO departments (department_id, department_name_th, department_name_en, faculty_id)
+     VALUES ($1, $2, 'Twin', $3)`,
+    [twin.id, twin.th, FACULTY.id],
+  );
+  t.after(() => api.pool.query('DELETE FROM departments WHERE department_id = $1', [twin.id]));
+
+  await api.pool.query(
+    `INSERT INTO user_log (user_id, activity, target_kind, target_id) VALUES
+       ($1, 'T294_PROGRAM', 'PROGRAM', $2),
+       ($1, 'T294_DEPT', 'DEPARTMENT', $3),
+       ($1, 'T294_TWIN', 'DEPARTMENT', $2),
+       ($1, 'T294_GONE', 'PROGRAM', 'GONE294'),
+       ($1, 'T294_USER', 'USER', $4)`,
+    [subject, program.id, department.id, account('U_TEACH').id],
+  );
+  t.after(() => api.pool.query("DELETE FROM user_log WHERE activity LIKE 'T294_%'"));
+
+  const response = await historyOf(admin, 'U_COM2', '?per_page=100');
+  assert.equal(response.status, 200, response.body.message);
+  const of = (activity) => response.body.entries.find((entry) => entry.activity === activity);
+
+  await t.test('a programme by its own name', () => {
+    assert.equal(of('T294_PROGRAM').target_name, program.th);
+    assert.equal(of('T294_PROGRAM').target_id, program.id);
+  });
+
+  await t.test('a department by its own name', () => {
+    assert.equal(of('T294_DEPT').target_name, department.th);
+  });
+
+  await t.test('and a department sharing a programme\'s id by the department\'s', () => {
+    assert.equal(of('T294_TWIN').target_name, twin.th);
+    // The programme entry still reads the programme, not the twin.
+    assert.equal(of('T294_PROGRAM').target_name, program.th);
+  });
+
+  await t.test('a unit deleted since has no name, and keeps its code', () => {
+    assert.equal(of('T294_GONE').target_name, null);
+    assert.equal(of('T294_GONE').target_id, 'GONE294');
+  });
+
+  await t.test('and an account is not looked up at all - its id stays (#294 rule 1)', () => {
+    assert.equal(of('T294_USER').target_name, null);
+  });
+
 });

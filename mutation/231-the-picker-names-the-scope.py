@@ -43,20 +43,34 @@ from harness import main
 
 FILES = {
     'accounts': 'backend/auth/accounts.js',
+    'names': 'backend/auth/scopeNames.js',
     'picker': 'frontend/src/components/RoleDropdown.js',
 }
+
+# `kindwordinfront` was the wording the owner declined on 27 October 2569 made
+# to run (#48). #294 reversed that answer on 20 November 2569 - the kind word
+# now goes in front where the role's name does not already say it - so the
+# option it ran is no longer a declined one, and the code it quoted is gone.
+# The wording's mutants are `294-org-units-by-name.py`'s now.
+SUPERSEDED = {'kindwordinfront'}
 
 # The anchor is the code the mutant breaks and never the comment beside it
 # (#121, #123).
 
-RESOLVED_NAME = """            CASE WHEN p.program_id IS NOT NULL THEN p.program_name_th
-                 WHEN d.department_id IS NOT NULL THEN d.department_name_th
-                 WHEN f.faculty_id IS NOT NULL THEN f.faculty_name_th
-                 END AS scope_name,
+# Re-aimed at #294, which moved the resolver to `scopeNames.js` when two more
+# reads needed it. The server half's mutant stays at `allRoles`' own call site,
+# so it still asks only about the picker (#104); the wrong-tier mutant moves to
+# the shared resolver, because what it is wrong about is the resolver's walk.
+CALLS_THE_RESOLVER = """            ${SCOPE_NAME} AS scope_name,
 """
 NO_NAME = """            NULL AS scope_name,
 """
-FIRST_NAMED_TIER = """            COALESCE(p.program_name_th, d.department_name_th, f.faculty_name_th) AS scope_name,
+RESOLVED_NAME = """const SCOPE_NAME = `CASE WHEN p.program_id IS NOT NULL THEN p.program_name_th
+                 WHEN d.department_id IS NOT NULL THEN d.department_name_th
+                 WHEN f.faculty_id IS NOT NULL THEN f.faculty_name_th
+                 END`;
+"""
+FIRST_NAMED_TIER = """const SCOPE_NAME = `COALESCE(p.program_name_th, d.department_name_th, f.faculty_name_th)`;
 """
 
 WORN = """        {label(worn)}
@@ -76,7 +90,7 @@ LABELLED_CALL = """      ? scopeLabel({
 MUTANTS = {
     # The server half as it stood before the fix, made to run (#115).
     'namelessresolver': [
-        ('accounts', RESOLVED_NAME, NO_NAME),
+        ('accounts', CALLS_THE_RESOLVER, NO_NAME),
     ],
     # The half the ticket did not report: the trigger drew the pointer, which
     # carries no name on either side of the wire.
@@ -95,7 +109,7 @@ MUTANTS = {
     # tier that has one while the kind is resolved by the walk. The diagnosed
     # code made to run (#115), and the only mutant here proved at the HTTP seam.
     'nameofanothertier': [
-        ('accounts', RESOLVED_NAME, FIRST_NAMED_TIER),
+        ('names', RESOLVED_NAME, FIRST_NAMED_TIER),
     ],
 }
 

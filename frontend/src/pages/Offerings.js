@@ -849,6 +849,9 @@ export default function Offerings() {
         <Notice notice={notice} />
         <SectionsPanel
           offering={viewing}
+          programName={
+            programs.find(entry => entry.program_id === viewing.program_id)?.program_name_th
+          }
           busy={busy}
           onBack={() => {
             asked.current = null

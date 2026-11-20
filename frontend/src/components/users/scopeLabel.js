@@ -1,5 +1,5 @@
 /**
- * A scope as a person reads it, in one place — #90, #215.
+ * A scope as a person reads it, in one place — #90, #215, #294.
  *
  * #90 gave these words to `GrantPicker`, the field where an administrator
  * *chooses* a scope. #215 asked whether the three screens that draw one for
@@ -7,6 +7,17 @@
  * 2569 that the two administration screens do - the held-roles table of
  * `GrantsPanel` and the role column of the accounts list - in the picker's
  * wording, letter for letter.
+ *
+ * **The code went on 20 November 2569 (#294).** Until then every label here
+ * carried the stored code in brackets after the name - `0501`, `05`, `ENG` -
+ * which the owner had chosen on 23 October (#215) and again for the role
+ * picker on 27 October (#231). #294 reversed both: a faculty, department or
+ * programme is read by its name everywhere except the two screens that manage
+ * those records (`main/programs`, `main/departments`), with the kind word in
+ * front wherever the line does not already say it. The kind word is what keeps
+ * department `05` and programme `0501` apart now that both read
+ * `วิศวกรรมคอมพิวเตอร์`; two programmes whose names match letter for letter
+ * cannot be told apart, and the owner accepted that price (#294 rule 3).
  *
  * Extracted to a module of its own rather than imported from the picker, the
  * way `personName` was when the history screen needed the users table's rule.
@@ -19,40 +30,26 @@
 const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }
 
 /**
- * The name with the stored code after it, except where the code is not a code.
+ * The word for a kind of scope, or `undefined` for a kind that has none - the
+ * grant confined to nothing, and any kind this map has never heard of.
  *
- * Every scope's brackets hold an identifier the organisation uses - `05`,
- * `0501`, `ENG` - and the grant confined to nothing holds `FULL_ADMIN`, which
- * `CONTEXT.md` §Scope chose in place of a null so that the column could stay
- * `NOT NULL`. The field teaches *brackets hold this thing's code*, so that one
- * entry was teaching a code nobody in the organisation says; #216 asked, and
- * the owner answered on 24 October 2569 that the brackets go with it.
- *
- * Asked of the kind the server sends rather than of the code's own spelling,
- * because what the rule is about is the one scope that is not a record. There
- * is one such kind today: a second sentinel would be owed this clause too, and
- * `KINDS` above has no `global` entry for the same reason the label needs no
- * word in front of it.
- *
- * Exported since #231, which is the one place that wants this half without the
- * kind word in front: the role picker, whose own label already says which kind
- * of thing the grant is over - `กรรมการหลักสูตร` of a `หลักสูตร` - and where
- * the owner chose `name (code)` on 27 October 2569. The text being shared costs
- * the proof nothing while the mutants stay at the call sites (#104).
+ * Exported for the role picker (#294), which puts the word in front of the
+ * name itself because its line already holds the role's name, and a role
+ * name can say the kind already - `กรรมการหลักสูตร` - or not -
+ * `ผู้ประเมินภายนอก`.
  */
-export const scopeCoded = scope =>
-  scope.kind === 'global' ? scope.label : `${scope.label} (${scope.scope_id})`
+export const kindWord = kind => KINDS[kind]
 
 /**
- * The scope as a person reads it: which kind of thing it is, its name, and -
- * where the stored value is a code at all - that code.
+ * The scope as a person reads it: which kind of thing it is, and its name.
  *
  * The kind comes from the server - `GET /api/users/grantable` has answered it
- * all along - because the alternative is the screen inferring it from the
- * length of the code, which is #90: a department and a programme can carry the
- * same name, and in this organisation two of them do. That is not a cosmetic
- * difference. This field decides how wide the grant's authority is, both
- * values are legal, and nothing refuses the wrong one.
+ * all along, and since #294 so does every read of a held grant - because the
+ * alternative is the screen inferring it from the length of the code, which is
+ * #90: a department and a programme can carry the same name, and in this
+ * organisation two of them do. That is not a cosmetic difference. This field
+ * decides how wide the grant's authority is, both values are legal, and
+ * nothing refuses the wrong one.
  *
  * No word goes in front of a label that already says it. The grant confined to
  * nothing is one such label - its own name holds the whole of the organisation
@@ -65,45 +62,50 @@ export const scopeCoded = scope =>
  * The map keeps its `faculty` entry even so, because the entry is the rule and
  * the seed is one instance of it: a faculty named without the word is owed one,
  * and `90a` row 5 renames the seeded faculty to measure exactly that. Any kind
- * this map has never heard of reads the way every entry did before #90 rather
- * than reading `undefined`.
+ * this map has never heard of reads its name alone rather than `undefined`.
  */
 export const scopeLabel = scope => {
   const kind = KINDS[scope.kind]
   return kind && !scope.label.startsWith(kind)
-    ? `${kind} · ${scopeCoded(scope)}`
-    : scopeCoded(scope)
+    ? `${kind} · ${scope.label}`
+    : scope.label
 }
 
 /**
- * The same sentence for the screens that are handed a code and nothing else.
+ * The same sentence for a code and nothing else, looked up in a list.
  *
- * `GET /api/users/grantable` is the only answer in the system that carries a
- * name and a kind, and what it answers is *what this administrator may offer* -
- * not *what this code is*. The grants a person already holds arrive as bare
- * codes, from `/users/:userId/roles` and from the accounts list, so the name is
- * looked up in the list the screen is already holding for its pickers.
+ * `GET /api/users/grantable` answers *what this administrator may offer*, not
+ * *what this code is*, so a code outside that list keeps the bare code. Since
+ * #294 a held grant arrives with its own name (`grantScope` below), and this is
+ * reached for the two scopes that have none: the grant confined to nothing,
+ * whose name lives only in that list (`ทั้งมหาวิทยาลัย`), and a `scope_id`
+ * naming nothing in the three tables, where the code is the only true thing
+ * left to say.
  *
- * A code that is not in that list keeps the bare code. That is what a reader
- * sees for a grant outside their own reach - the asymmetry `cross01` exists for,
- * a person inside department 05 whose grant is over 01 - and for every grant at
- * all while the fetch is in flight or has been refused, since `useGrantable`
- * answers an empty list on a 401 or a 403. The alternative, naming the kind from
- * the length of the code, is #90 itself; a dash would be worse again, because
- * the code is the one thing the screen does know.
- *
- * `215a` row 3 is that reading, and asserts the mechanism beside it: the scope
- * it reads a bare code for is one the picker on the same screen does not offer.
- *
- * The sentinel is the one scope this fallback cannot be reached for, measured
- * on 24 October 2569 for #216: a faculty and a department administrator
- * searching for the account that holds a grant confined to nothing were each
- * shown no rows at all. `backend/routes/users.js` filters the accounts list by
- * seniority as well as by scope, and the seniority half excludes every holder
- * of that grant wherever they sit. Whoever may read it is offered it, and so
- * has its name.
+ * The sentinel's own reach was measured on 24 October 2569 for #216: a faculty
+ * and a department administrator searching for the account that holds a grant
+ * confined to nothing were each shown no rows at all, because
+ * `backend/routes/users.js` filters the accounts list by seniority as well as
+ * by scope. Whoever may read it is offered it, and so has its name.
  */
 export const scopeNamed = (scopes, scopeId) => {
   const scope = scopes.find(entry => entry.scope_id === scopeId)
   return scope ? scopeLabel(scope) : scopeId
 }
+
+/**
+ * A held grant's scope, read off the grant - #294.
+ *
+ * Until #294 a held grant arrived as a bare code and was named out of the
+ * picker's own list (`scopeNamed`), which left a grant outside the reader's
+ * reach - the asymmetry `cross01` exists for, a person inside department 05
+ * whose grant is over 01 - drawn as `01` (#215's row 3). The owner answered on
+ * 20 November 2569 that the server sends the name instead, so
+ * `/users/:userId/roles` and the accounts list now carry `scope_name` and
+ * `scope_kind` from `backend/auth/scopeNames.js`, the same resolver as the role
+ * picker's (#231). A grant the server cannot name falls back to the list.
+ */
+export const grantScope = (scopes, grant) =>
+  grant.scope_name
+    ? scopeLabel({ kind: grant.scope_kind, label: grant.scope_name })
+    : scopeNamed(scopes, grant.scope_id)

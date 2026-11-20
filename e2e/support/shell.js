@@ -42,7 +42,9 @@ const ROLE_NAMES = [
 
 /**
  * The picker's label for a grant over a curriculum, as #231 made the shell
- * draw it: the role's name, then the curriculum's name with its code after it.
+ * draw it and #294 took the code out of it: the role's name, then the
+ * curriculum's name. Until 20 November 2569 the code followed in brackets; the
+ * owner reversed that answer of 27 October (#294 rule 4).
  *
  * The name is read out of `db/seed.js` rather than retyped, the way the
  * password and the seeded accounts are. A locator built out of a source string
@@ -55,6 +57,13 @@ const ROLE_NAMES = [
  * group rather than as two characters on the screen, so the rows below compare
  * text with text.
  *
+ * **And since #294 it is why every read of this label is exact.** With the
+ * code gone, `0501`'s label is a substring of `0503`'s, so a `toContainText`
+ * of the first passes while the second is worn and a role option located by a
+ * substring of its name finds two - the first a green that says nothing, the
+ * second a strict-mode red. `roleOption` below asks for the exact name, and the
+ * rows that read the trigger read it with `toHaveText` (#93, #116).
+ *
  * This is an instrument and not a claim. The rows that are *about* the wording
  * are `231a`'s, which read the sentence off the trigger and off the open
  * option; the four files that call this one use the picker to arrange a
@@ -65,16 +74,19 @@ const committeeLabel = scopeId => {
   if (!program) {
     throw new Error(`no seeded curriculum ${scopeId}`);
   }
-  return `กรรมการหลักสูตร ${program.th} (${scopeId})`;
+  return `กรรมการหลักสูตร ${program.th}`;
 };
 
 /** The picker's trigger, which shows the grant the server says is being worn. */
 const actingButton = page =>
   page.getByRole('button', { name: new RegExp(`^(${ROLE_NAMES.join('|')})`) });
 
-/** One of the grants offered in the open picker. */
+/**
+ * One of the grants offered in the open picker - by its exact name since #294,
+ * the label of one curriculum being a substring of the other's.
+ */
 const roleOption = (page, label) =>
-  page.getByRole('button', { name: `• ${label}` });
+  page.getByRole('button', { name: `• ${label}`, exact: true });
 
 /**
  * Puts on another grant and hands back the server's own answer.

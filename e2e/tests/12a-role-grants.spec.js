@@ -188,7 +188,7 @@ test('rows 2 and 3: the grantee gains and loses the access on their next request
   // because the session never recorded a choice - `actingFrom` falls back to
   // the most senior grant held, and the new one outranks the old.
   await grantee.reload();
-  await expect(actingButton(grantee)).toContainText(committeeLabel(PROGRAM));
+  await expect(actingButton(grantee)).toHaveText(committeeLabel(PROGRAM));
   expect(await reachProgramSubjects(grantee)).toBe(200);
 
   // Criterion 3, revoked in the other browser while the grantee's session is

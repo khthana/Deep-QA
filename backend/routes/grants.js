@@ -33,11 +33,18 @@ const { onUser, recordActivity } = require('../auth/accounts');
 const { ADMIN_ROLES, administration } = require('../auth/administration');
 const { GLOBAL_SCOPE, requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
+const { SCOPE_JOINS, SCOPE_KIND, SCOPE_NAME } = require('../auth/scopeNames');
 
-/** What a grant is, as this file reads it out. */
+/**
+ * What a grant is, as this file reads it out - with its scope's name and tier
+ * since #294 (`scopeNames.js`), so a grant outside the reader's own reach is
+ * named rather than drawn as a bare code.
+ */
 const HELD = `SELECT ur.role_id, r.role_name, ur.scope_id,
+                     ${SCOPE_NAME} AS scope_name, ${SCOPE_KIND} AS scope_kind,
                      ur.assigned_by, ur.assigned_at
                 FROM user_roles ur JOIN roles r ON r.role_id = ur.role_id
+                ${SCOPE_JOINS('ur.scope_id')}
                WHERE ur.user_id = $1 AND ur.is_active AND r.is_active
                ORDER BY r.priority, ur.scope_id`;
 

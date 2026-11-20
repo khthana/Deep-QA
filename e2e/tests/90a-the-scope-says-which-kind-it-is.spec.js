@@ -130,8 +130,14 @@ async function offeredOnceDrawn(page, answering) {
  */
 const UNCONFINED = 'ทั้งมหาวิทยาลัย';
 
-/** The entry for one scope, as the screen writes it. */
-const entry = (kind, scope) => `${kind} · ${scope.th} (${scope.id})`;
+/**
+ * The entry for one scope, as the screen writes it - without the code in
+ * brackets since #294, whose owner answered on 20 November 2569 that an
+ * organisation unit is read by its name outside the two screens that manage
+ * those records. The kind word is now the *only* thing telling department 05
+ * from programme 0501 in this picker, which is row 1's claim at full strength.
+ */
+const entry = (kind, scope) => `${kind} · ${scope.th}`;
 
 const ADD = 'เพิ่มผู้ใช้งาน';
 
@@ -151,9 +157,9 @@ test('row 1: the add-account form tells the department from the programme in wor
   expect(options).toContain(entry(KIND.program, program));
 
   // The claim is not only that the words are there: it is that they are what
-  // tells the two apart. With the kind word removed, the two entries differ
-  // by their code alone - which is the state #90 was opened about, and is
-  // what this row fails on if the words go away.
+  // tells the two apart. With the kind word removed, the two entries differed
+  // by their code alone - the state #90 was opened about - and since #294 they
+  // would not differ at all. This row fails on either if the words go away.
   const sharing = options.filter(text => text.includes(department.th));
   expect(sharing.length).toBeGreaterThan(1);
   for (const text of sharing) {
@@ -203,7 +209,7 @@ test('row 3: the faculty says its kind once, because its name already says it', 
   // code is `ENG` and not a number - on purpose, so that it cannot collide
   // with a department (`CONTEXT.md` §Scope) - so the digit count could never
   // have named this kind either way.
-  expect(options).toContain(`${FACULTY.th} (${FACULTY.id})`);
+  expect(options).toContain(FACULTY.th);
 
   // And the wording that was declined is nowhere on the list, which is the
   // claim `90:saysthekindtwice` is aimed at.

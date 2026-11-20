@@ -173,9 +173,13 @@ export function exportGridToPdf({ program, subjects, outcomes, mappings }) {
   })
   doc.setFontSize(HEADING)
   doc.text(
-    // label-code: the identity of the exported document, which has to say which curriculum
-    // it is of to a reader who does not have the screen in front of them (#93)
-    `หลักสูตร ${program.program_id} ${program.program_name_th}` +
+    // The identity of the exported document, which has to say which curriculum it is of to a
+    // reader who does not have the screen in front of them (#93) - by its name since #294,
+    // whose owner answered on 20 November 2569 that the heading drops the code and the file
+    // name below keeps it, a file name having to be safe characters and unique. A programme
+    // with no Thai name (the column is nullable) keeps its code, rule 6 of
+    // `docs/org-unit-names.md`, which the review of 20 November 2569 found missing here
+    `หลักสูตร${program.program_name_th ?? ` ${program.program_id}`}` +
       (program.revision_year ? ` (หลักสูตรปี ${program.revision_year})` : ''),
     width / 2,
     22,

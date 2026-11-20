@@ -2,6 +2,7 @@
 
 const { expect } = require('@playwright/test');
 const { search, userRow } = require('./users-screen');
+const { DEPARTMENTS, FACULTY, PROGRAMS } = require('../../db/seed');
 
 /**
  * The grants panel - #12.
@@ -58,18 +59,28 @@ const grantsTable = page =>
     .filter({ has: page.getByRole('columnheader', { name: 'ผู้กำหนด' }) });
 
 /**
- * The scope cell that belongs to one code, in both shapes it can take.
+ * The scope cell that belongs to one code, as the cell draws it.
  *
- * Since #215 the cell reads `ชนิด · ชื่อ (รหัส)`, and the bare code where the
- * reader does not reach the scope and so has no name for it. The code is
- * therefore matched where the cell can hold it - as the whole cell, or as the
- * bracketed code that ends it - and never as a substring of either: `05` sits
- * inside `(0501)`, and a row found that loosely would answer about the
- * department when it was asked about the programme (#118, #116).
+ * Until #294 the cell read `ชนิด · ชื่อ (รหัส)`, and this matched the bracketed
+ * code that ended it. On 20 November 2569 the owner answered that the code goes
+ * (#294 rule 4) and the server sends the name of a scope the reader does not
+ * reach, so the cell is `ชนิด · ชื่อ` for every seeded scope and the code is
+ * what is left only for one that names nothing. The words are built out of
+ * `db/seed.js` rather than retyped (#118), and matched whole: department `05`
+ * and programme `0501` are both named for computer engineering, the kind word
+ * is the only thing telling the two cells apart, and `0501`'s name is a
+ * substring of `0503`'s (#116).
+ *
+ * This is an instrument and not a claim. The rows about the wording are
+ * `215a`'s and `90a`'s; the callers here use the cell to find a grant.
  */
 const scopeCell = scopeId => {
-  const code = scopeId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`(^${code}|\\(${code}\\))$`);
+  const department = DEPARTMENTS.find(entry => entry.id === scopeId);
+  if (department) return `ภาควิชา · ${department.th}`;
+  const program = PROGRAMS.find(entry => entry.id === scopeId);
+  if (program) return `หลักสูตร · ${program.th}`;
+  if (scopeId === FACULTY.id) return FACULTY.th;
+  return scopeId;
 };
 
 /**
@@ -82,7 +93,7 @@ const grantRow = (page, roleLabel, scopeId) =>
   grantsTable(page)
     .getByRole('row')
     .filter({ has: page.getByRole('cell', { name: roleLabel, exact: true }) })
-    .filter({ has: page.getByRole('cell', { name: scopeCell(scopeId) }) });
+    .filter({ has: page.getByRole('cell', { name: scopeCell(scopeId), exact: true }) });
 
 /** One cell of a grant's row, by the column header above it. */
 const COLUMNS = { บทบาท: 0, ขอบเขต: 1, ผู้กำหนด: 2, เมื่อ: 3 };

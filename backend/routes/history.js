@@ -48,7 +48,33 @@ const { REFUSALS } = require('../auth/refusals');
 const { pageOf } = require('../lib/paging');
 
 /** What an entry is, as this file reads it out - actor, action, object, when. */
-const ENTRY = 'id, user_id, activity, target_kind, target_id, time_stamp';
+const ENTRY = 'l.id, l.user_id, l.activity, l.target_kind, l.target_id, l.time_stamp';
+
+/**
+ * The name of the record an entry is about, where that record is a department
+ * or a programme and still exists - #294.
+ *
+ * The owner answered on 20 November 2569 that the history names an
+ * organisation unit rather than drawing its code, and that a unit deleted since
+ * keeps the code, which is then the only thing left that says what it was.
+ * Only those two kinds: a subject, a student and an account keep their codes
+ * everywhere (rule 1 of #294), so they are not looked up at all.
+ *
+ * `target_id` is no foreign key (migration 0006), and a department and a
+ * programme can share an id, so **the `CASE` on the entry's own kind is what
+ * names it** - an entry about one must not be named after the other (#60,
+ * #231). The joins are on each table's primary key and so add no rows; they
+ * carry no kind of their own, because a guard there would be a second copy of
+ * the `CASE`'s opinion that no mutant could tell apart from it (#97). A
+ * `COALESCE` over the two names would be the kind-blind reading, and
+ * `history.test.js`'s twin department is what it fails.
+ */
+const TARGET_NAME = `CASE l.target_kind
+                       WHEN 'DEPARTMENT' THEN td.department_name_th
+                       WHEN 'PROGRAM' THEN tp.program_name_th
+                     END AS target_name`;
+const TARGET_JOINS = `LEFT JOIN departments td ON td.department_id = l.target_id
+                      LEFT JOIN programs tp ON tp.program_id = l.target_id`;
 
 function historyRoutes(pool) {
   const router = express.Router();
@@ -82,8 +108,10 @@ function historyRoutes(pool) {
       // the identity column, so newest-first by it agrees with the timestamp
       // wherever the timestamps differ at all.
       const { rows } = await pool.query(
-        `SELECT ${ENTRY} FROM user_log WHERE user_id = $1
-          ORDER BY time_stamp DESC, id DESC LIMIT $2 OFFSET $3`,
+        `SELECT ${ENTRY}, ${TARGET_NAME} FROM user_log l
+          ${TARGET_JOINS}
+          WHERE l.user_id = $1
+          ORDER BY l.time_stamp DESC, l.id DESC LIMIT $2 OFFSET $3`,
         [target.user_id, perPage, offset],
       );
 

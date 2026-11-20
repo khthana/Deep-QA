@@ -46,6 +46,11 @@ import { termLabel } from './terms'
 
 export default function SectionsPanel({
   offering,
+  // The programme's name, which the offering does not carry: the page holds the
+  // programme list its picker is drawn from and resolves it there (#294).
+  // `undefined` where that list does not hold the programme, and the line then
+  // keeps the code, which is the only thing left to say (#294 rule 6).
+  programName,
   busy,
   onBack,
   // Answers `false` where the save was refused, and anything else - including
@@ -79,7 +84,11 @@ export default function SectionsPanel({
             {offering.subject_id} {offering.subject_name_th}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            ภาคการศึกษา {termLabel(offering)} · หลักสูตร {offering.program_id}
+            {/* #294 - the programme by its name and not its code, the owner's
+                answer of 20 November 2569 for every screen but the two that
+                manage organisation units */}
+            ภาคการศึกษา {termLabel(offering)} · หลักสูตร
+            {programName ?? ` ${offering.program_id}`}
           </p>
         </div>
         <button

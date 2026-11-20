@@ -155,7 +155,7 @@ test.describe('the shell, in a browser', () => {
 
     // Priority 4 beats priority 5. The account holds both; nothing in the
     // sign-in asked which, so the server chose - and it chose the senior.
-    await expect(actingButton(page)).toContainText(PROGRAM_MANAGER_0501);
+    await expect(actingButton(page)).toHaveText(PROGRAM_MANAGER_0501);
 
     // And the switch is a request rather than a redraw: the inherited picker
     // wrote the choice into localStorage and reloaded, which is a menu change

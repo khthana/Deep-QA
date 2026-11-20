@@ -111,20 +111,19 @@ MUTANTS = {
     # included, so this mutant now reaches `90a` row 4's third assertion and
     # `215a` row 5 as well - faithfully, and read against the rows it is for
     # rather than against the total (#203).
+    # Re-aimed at #294, which took the code off every label and gave the map a
+    # second reader (`kindWord`, the role picker's). One edit now: the label is
+    # the name alone, which is the code before #90 less the brackets #294 took
+    # away, and the map stays because the picker still reads it (#203, #101).
     'nokind': [
-        ('wording', "const KINDS = { faculty: 'คณะ', department: 'ภาควิชา', program: 'หลักสูตร' }\n", ''),
-        ('wording',
-        'export const scopeCoded = scope =>\n'
-        "  scope.kind === 'global' ? scope.label : `${scope.label} (${scope.scope_id})`\n",
-        'export const scopeCoded = scope => `${scope.label} (${scope.scope_id})`\n'),
         ('wording',
         'export const scopeLabel = scope => {\n'
         '  const kind = KINDS[scope.kind]\n'
         '  return kind && !scope.label.startsWith(kind)\n'
-        '    ? `${kind} \u00b7 ${scopeCoded(scope)}`\n'
-        '    : scopeCoded(scope)\n'
+        '    ? `${kind} \u00b7 ${scope.label}`\n'
+        '    : scope.label\n'
         '}\n',
-        'export const scopeLabel = scopeCoded\n'),
+        'export const scopeLabel = scope => scope.label\n'),
     ],
     # The words are all there and still two different words; they point at the
     # wrong kinds, which no digit count and no drawing could catch (#145).

@@ -59,10 +59,15 @@ MUTANTS = {
     # Re-aimed at #231, which exported this helper under the name the picker
     # asks for it by. The mutant is the same mistake on the same expression
     # (#203); only the name it quotes has moved.
+    # Re-aimed again at #294, which took the brackets off every scope and with
+    # them the helper this quoted. What is left of the claim is the sentinel's
+    # own: the one scope whose code is no code still reads without one, so the
+    # mutant puts brackets back on that scope alone (#203).
     'bracketsthesentinel': ('wording',
-        'export const scopeCoded = scope =>\n'
-        "  scope.kind === 'global' ? scope.label : `${scope.label} (${scope.scope_id})`\n",
-        'export const scopeCoded = scope => `${scope.label} (${scope.scope_id})`\n'),
+        '    : scope.label\n'
+        '}\n',
+        "    : scope.kind === 'global' ? `${scope.label} (${scope.scope_id})` : scope.label\n"
+        '}\n'),
 }
 
 main(FILES, MUTANTS)

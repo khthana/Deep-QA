@@ -424,3 +424,52 @@ test('a person inside the department can hold a grant outside it', async (t) => 
     assert.equal(response.body.message, REFUSALS.userNotFound);
   });
 });
+
+// --- #294: a held grant names its scope --------------------------------------
+
+test('a held grant arrives with its scope named, a scope out of reach included', async (t) => {
+  // #294: the owner answered on 20 November 2569 that the administration
+  // screens name a grant's scope rather than draw its code, and that for a
+  // grant outside the reader's own reach the server sends the name. `cross01`
+  // is that asymmetry: a person inside 05, whose grant is over 01, read by
+  // the 05 administrator (`db/seed.js` §U_CROSS).
+  const admin = await signInAs('U_DEPT');
+  const civil = DEPARTMENTS.find((one) => one.id === DEPT_CIVIL);
+
+  await t.test('on the grants an administrator opens', async () => {
+    const response = await grantsOf(admin, 'U_CROSS');
+    assert.equal(response.status, 200, response.body.message);
+    assert.deepEqual(
+      response.body.roles.map(({ role_id, scope_id, scope_name, scope_kind }) => ({
+        role_id,
+        scope_id,
+        scope_name,
+        scope_kind,
+      })),
+      [{ role_id: 'TEACHER', scope_id: DEPT_CIVIL, scope_name: civil.th, scope_kind: 'department' }],
+    );
+  });
+
+  await t.test('and on the accounts list', async () => {
+    const response = await request(api.app)
+      .get(`/api/users?q=${account('U_CROSS').id}`)
+      .set('Cookie', admin);
+    assert.equal(response.status, 200, response.body.message);
+    const row = response.body.users.find((one) => one.user_id === account('U_CROSS').id);
+    assert.ok(row, 'cross01 is not on the 05 administrator\'s list');
+    assert.deepEqual(row.roles, [
+      { role_id: 'TEACHER', scope_id: DEPT_CIVIL, scope_name: civil.th, scope_kind: 'department' },
+    ]);
+  });
+
+  await t.test('a programme is a programme, though a department shares its name', async () => {
+    // 05 and 0501 are both named for computer engineering; the kind is what
+    // the screen tells them apart by once the code is gone (#90, #294 rule 3).
+    const thai = PROGRAMS.find((one) => one.id === PROGRAM_THAI);
+    const response = await grantsOf(admin, 'U_COM');
+    const grant = response.body.roles.find((one) => one.scope_id === PROGRAM_THAI);
+    assert.ok(grant, 'U_COM holds no grant over the Thai programme');
+    assert.equal(grant.scope_name, thai.th);
+    assert.equal(grant.scope_kind, 'program');
+  });
+});

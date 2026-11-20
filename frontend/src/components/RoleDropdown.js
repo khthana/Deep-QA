@@ -4,7 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 
 import { useAuth } from '../context/AuthContext'
 import { roleName } from './MapRole'
-import { scopeCoded } from './users/scopeLabel'
+import { kindWord } from './users/scopeLabel'
 import { landingPath } from './SidebarItem/menus'
 import ContentMotionDIV from './ContentMotionDIV'
 
@@ -63,7 +63,7 @@ function RoleDropdown({ setAlert, onStayedPut }) {
   if (!acting) return null
 
   /**
-   * The scope this grant is over, as the person reads it — #215, #231.
+   * The scope this grant is over, as the person reads it — #215, #231, #294.
    *
    * #90 gave the two administration screens the words `ชนิด · ชื่อ (รหัส)`,
    * and #215 asked whether the three places that draw a scope for reading get
@@ -77,9 +77,15 @@ function RoleDropdown({ setAlert, onStayedPut }) {
    * resolved by `scopeChain`'s own precedence so the word cannot disagree with
    * the guard.
    *
-   * The wording is the owner's, answered 27 October 2569: the name with the
+   * The wording is the owner's. On 27 October 2569 it was the name with the
    * code after it, and **not** the kind word the administration screens carry,
-   * this label's own role name already saying which tier it is over. The
+   * this label's own role name already saying which tier it is over. **On 20
+   * November 2569 the owner reversed the code (#294)**: the name alone, with
+   * the kind word in front where the role's name does not already say it -
+   * `กรรมการหลักสูตร วิศวกรรมคอมพิวเตอร์`, and
+   * `ผู้ประเมินภายนอก หลักสูตรวิศวกรรมคอมพิวเตอร์`, whose role name names no
+   * tier at all. The word is asked of the tier the server sends rather than
+   * written per role, so a grant over a department reads `ภาควิชา`. The
    * delivered screen drew `ชื่อ - ปี` and no code at all, so dropping the name
    * was a divergence of the rebuild's rather than something the screen never
    * had (#86) - and its year half is unreachable whatever anyone chooses, a
@@ -93,23 +99,16 @@ function RoleDropdown({ setAlert, onStayedPut }) {
    * before that guard or around it, and the code is then the only true thing
    * there is to say.
    *
-   * `kind` is handed on although nothing it can hold today changes what is
-   * drawn: `scopeCoded` reads it only to spare the sentinel its brackets, and
-   * the sentinel never reaches that call, having no name to arrive with. It is
-   * passed because it is the server's answer to *which tier is this*, and the
-   * alternative is a call that says the tier is unknown - which would be a
-   * wrong answer the day a scope outside the three tables gains a name. The
-   * three rows in `shell.test.js` hold that the server sends it; no row here
-   * can, there being nothing for it to change (review, 27 October 2569).
+   * Until #294 `kind` changed nothing that was drawn here, which the review of
+   * 27 October 2569 wrote down; since #294 it chooses the word in front.
    */
-  const scopeOf = grant =>
-    grant.scope_name
-      ? scopeCoded({
-          kind: grant.scope_kind,
-          label: grant.scope_name,
-          scope_id: grant.scope_id,
-        })
-      : grant.scope_id
+  const scopeOf = grant => {
+    if (!grant.scope_name) return grant.scope_id
+    const word = kindWord(grant.scope_kind)
+    return word && !roleName(grant.role_id).endsWith(word)
+      ? `${word}${grant.scope_name}`
+      : grant.scope_name
+  }
 
   const label = grant =>
     grant.role_id === 'PROG_MANAGER' || grant.role_id === 'EXT_ASSESSOR'

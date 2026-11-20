@@ -211,7 +211,7 @@ const barAt = async (page, widths) => {
     await page.reload();
     const button = actingButton(page);
     await expect(button).toBeVisible();
-    await expect(button).toContainText(committeeLabel('0503'));
+    await expect(button).toHaveText(committeeLabel('0503'));
     await expect(navbar(page).locator('img[alt="Logo"]')).toBeVisible();
     await expect(navbar(page).getByText(NAME)).toBeVisible();
     readings.push(await readBar(page));

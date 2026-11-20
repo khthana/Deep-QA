@@ -33,6 +33,16 @@ const {
  * this one does not. `กรรมการหลักสูตร` already says what kind of thing the
  * grant is over.
  *
+ * **The owner reversed the code on 20 November 2569 (#294).** The label is the
+ * role's name and the scope's name, and the kind word goes in front of the
+ * scope's name only where the role's name does not already say it - so the
+ * committee reads `กรรมการหลักสูตร วิศวกรรมคอมพิวเตอร์` and the assessor, whose
+ * role names no tier, `ผู้ประเมินภายนอก หลักสูตรวิศวกรรมคอมพิวเตอร์`. Row 1 now
+ * holds the half where the word is *not* added and row 2 the half where it is;
+ * `294-org-units-by-name.py` has a mutant for each, and the code put back.
+ * The paragraphs below are the reasoning of 27 October and stand as its record
+ * (#54).
+ *
  * ## What each row is for
  *
  * Row 1 is the wording itself, read off the trigger and off the open option,
@@ -68,8 +78,12 @@ const nameOf = (list, id) => list.find(entry => entry.id === id).th;
 const SECOND_PROGRAM_NAME = nameOf(PROGRAMS, SECOND_SCOPE);
 const TEACHER_SCOPE_NAME = nameOf(DEPARTMENTS, '05');
 
-/** The assessor's label, which no helper builds: the picker's other scoped role. */
-const assessorLabel = `${ASSESSOR} ${nameOf(PROGRAMS, FIRST_SCOPE)} (${FIRST_SCOPE})`;
+/**
+ * The assessor's label, which no helper builds: the picker's other scoped role,
+ * and since #294 the one whose role name does not say the tier, so the kind
+ * word goes in front of the curriculum's name - glued, the way Thai writes it.
+ */
+const assessorLabel = `${ASSESSOR} หลักสูตร${nameOf(PROGRAMS, FIRST_SCOPE)}`;
 
 let release;
 let admin;

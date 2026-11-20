@@ -815,6 +815,8 @@ export default function Departments() {
                   data.departments.map(department => (
                     <tr key={department.department_id}>
                       <td className="px-4 py-2 font-medium text-gray-900">
+                        {/* org-code: the record's own key, on the one screen that manages
+                            departments - the column an administrator typed it into (#294 rule 2) */}
                         {department.department_id}
                       </td>
                       <td className="px-4 py-2">{department.department_name_th}</td>
@@ -874,6 +876,8 @@ export default function Departments() {
           removing
             // label-code: the question names the record about to be destroyed, where two of them
             // sharing a name is the whole reason the code is in the sentence (#93)
+            // org-code: and this is the screen that manages departments, which keeps its codes
+            // in the table, the form and this question (#294 rule 2)
             ? `ต้องการลบภาควิชา ${removing.department_id} ${removing.department_name_th} ใช่หรือไม่ หากมีหลักสูตร รายวิชา หรือผู้ใช้งานอ้างอิงอยู่ ระบบจะไม่ลบให้`
             : ''
         }

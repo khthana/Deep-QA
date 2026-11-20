@@ -224,7 +224,7 @@ spec ซึ่งส่วนใหญ่คือทะเบียนจุด
 
 | กลายพันธุ์ | แก้อะไร | assertion ที่ล้ม |
 |---|---|---|
-| `senior` | `actingFrom` ตกกลับไปที่ `roles[roles.length - 1]` แทน `roles[0]` | row 3 ที่ `10a-shell.spec.js:toContainText(PROGRAM_MANAGER_0501)` — ปุ่มอ่านว่า *อาจารย์ผู้สอน* |
+| `senior` | `actingFrom` ตกกลับไปที่ `roles[roles.length - 1]` แทน `roles[0]` | row 3 ที่ `10a-shell.spec.js:toHaveText(PROGRAM_MANAGER_0501)` (เดิม `toContainText` จนถึง #294, 20 พ.ย. 2569) — ปุ่มอ่านว่า *อาจารย์ผู้สอน* |
 | `echoacting` | `PUT /me/acting-role` ตอบ `req.auth` เดิมแทน `acting: held` | row 3 ที่ `10a-shell.spec.js:(await answer.json()).acting` — `acting` ที่ตอบกลับไม่ใช่ TEACHER |
 | `stalelabel` | `RoleDropdown` วาดป้ายจาก `roles[0]` แทน `worn` (เล็งใหม่ที่ #231 ซึ่งทำให้ตัวกระตุ้นอ่านสิทธิ์ที่ตัวชี้ชี้อยู่ออกมาจากรายการ) | row 3 ที่ `10a-shell.spec.js:toHaveText(new RegExp(TEACHER))` — ปุ่มยังอ่านว่าสิทธิ์กรรมการหลังสลับแล้ว (ตั้งแต่ #231 ป้ายนั้นคือ *กรรมการหลักสูตร วิศวกรรมคอมพิวเตอร์ (0501)*) |
 | `maintainer` | เติม `'TEACHER'` ลงใน `MAINTAINERS` ของ `programSubjects.js` | row 4 ที่ `10a-shell.spec.js:expect(asTeacher.status()).toBe(403)` — ได้ 200 ที่ควรได้ 403 (เขียนใหม่ที่ #79 รันซ้ำแล้ว) |
@@ -1299,6 +1299,14 @@ baseline **57 ผ่าน 0 ตก** (ก่อนเจ็ดแถวนี�
 ([#137](https://github.com/khthana/Deep-QA/issues/137))
 
 ## เมนูสลับบทบาทบอกขอบเขตด้วยชื่อ — #231 (27 ตุลาคม 2569)
+
+> **คำตอบเรื่องถ้อยคำในส่วนนี้ถูกกลับเมื่อ 20 พ.ย. 2569** ([#294](https://github.com/khthana/Deep-QA/issues/294)) — เจ้าของงานตอบว่ารหัสในวงเล็บไป
+> และคำบอกชนิดไปอยู่ข้างหน้าชื่อเมื่อชื่อบทบาทยังไม่บอกชนิด: `กรรมการหลักสูตร วิศวกรรมคอมพิวเตอร์` และ
+> `ผู้ประเมินภายนอก หลักสูตรวิศวกรรมคอมพิวเตอร์` · กลไกฝั่ง server ของส่วนนี้ยังยืน แต่ตัวแปลงชื่อย้ายไป
+> `backend/auth/scopeNames.js` เพราะอีกสองการอ่านต้องการมัน · `231:kindwordinfront` ถูกถอนเป็นบันทึก
+> (`SUPERSEDED`) เพราะทางที่มันเขียนให้รันได้ไม่ใช่ทางที่ถูกปฏิเสธแล้ว และมัตแตนต์ของถ้อยคำย้ายไป
+> `mutation/294-org-units-by-name.py` · แถวของ `231a` ข้างล่างอ่านถ้อยคำใหม่ ส่วนเหตุผลของ 27 ต.ค. ยืนอยู่เป็นบันทึก (#54)
+> · กฎทั้งชุดอยู่ที่ `docs/org-unit-names.md`
 
 [#231](https://github.com/khthana/Deep-QA/issues/231) เป็นหนี้ที่ [#215](https://github.com/khthana/Deep-QA/issues/215) เขียนไว้เองตอนปิด: ป้ายของตัวเลือกบทบาทอ่านว่า
 `กรรมการหลักสูตร 0501` คือชื่อบทบาทกับ**รหัสเปล่า** เพราะ `/api/me` พา `allRoles` มาเป็นรหัส

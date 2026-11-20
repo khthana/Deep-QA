@@ -103,8 +103,22 @@ const TARGETS = {
   STUDENT: 'นักศึกษา',
 }
 
-const actedOn = entry =>
-  entry.target_id ? `${TARGETS[entry.target_kind] ?? entry.target_kind} ${entry.target_id}` : '—'
+/**
+ * The record an entry is about - #294.
+ *
+ * A department or a programme is read by its name, which the server resolves
+ * (`backend/routes/history.js` §`TARGET_NAME`), written straight after its
+ * kind word the way Thai writes `หลักสูตรวิศวกรรมคอมพิวเตอร์`. The owner
+ * answered on 20 November 2569 that a unit deleted since keeps its code, which
+ * is then the only thing left that says what it was; an account, a subject and
+ * a student keep their codes everywhere (#294 rule 1), and the server sends no
+ * name for them.
+ */
+const actedOn = entry => {
+  if (!entry.target_id) return '—'
+  const kind = TARGETS[entry.target_kind] ?? entry.target_kind
+  return entry.target_name ? `${kind}${entry.target_name}` : `${kind} ${entry.target_id}`
+}
 
 /**
  * When it happened, in Bangkok time.

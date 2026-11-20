@@ -12,7 +12,7 @@ import RowAction, { RowActions } from '../components/RowAction'
 import SearchBox from '../components/SearchBox'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
-import { scopeNamed } from '../components/users/scopeLabel'
+import { grantScope } from '../components/users/scopeLabel'
 import useGrantable from '../components/users/useGrantable'
 import { roleName } from '../components/MapRole'
 import { useAuth } from '../context/AuthContext'
@@ -432,8 +432,9 @@ export default function Users() {
   // #215 - the role column names each grant's scope by kind and name and not
   // by its code alone, in `GrantPicker`'s wording. The names come from the same
   // answer the form's pickers are drawn from, which this screen was not asking
-  // for until now; `scopeNamed` says what a code outside that answer reads as,
-  // and the hook reads the generation above for the same reason `load` does.
+  // for until now, and since #294 from the name each grant arrives with;
+  // `grantScope` says what a grant with no name reads as, and the hook reads
+  // the generation above for the same reason `load` does.
   const grantable = useGrantable()
 
   /**
@@ -956,9 +957,9 @@ export default function Users() {
                         {(user.roles ?? [])
                           .map(
                             grant =>
-                              `${roleName(grant.role_id)} (${scopeNamed(
+                              `${roleName(grant.role_id)} (${grantScope(
                                 grantable.scopes,
-                                grant.scope_id,
+                                grant,
                               )})`,
                           )
                           .join(', ') || '—'}

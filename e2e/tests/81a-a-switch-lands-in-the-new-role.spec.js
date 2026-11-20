@@ -140,10 +140,12 @@ async function firstMenuHref(page) {
  * sets — so reading the menu straight after the response can read the menu of
  * the hat being taken off (#170, one seam over).
  *
- * `label` is read as text and never as a pattern: since #231 a committee label
- * carries the curriculum's name and its code in brackets, and interpolating
- * that into a `RegExp` makes `(0501)` a capture group, so the assertion fails
- * against a string that reads identical to the one it was given.
+ * `label` is read as text and never as a pattern: from #231 until #294 a
+ * committee label carried the curriculum's name and its code in brackets, and
+ * interpolating that into a `RegExp` made `(0501)` a capture group, so the
+ * assertion failed against a string that read identical to the one it was
+ * given. The code is gone since 20 November 2569, and `0503`'s name still holds
+ * brackets of its own.
  */
 async function wearing(page, label) {
   const answer = await switchTo(page, label);
