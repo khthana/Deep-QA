@@ -109,22 +109,29 @@ Deep-QA/
 |---|---|---|---|---|
 | A01 | `/main/departments` | ข้อมูลภาควิชา | `AdminContent/Department/DepartmentTable.js` | FACULTY_ADMIN |
 | A02 | `/main/programs` | ข้อมูลหลักสูตร | `AdminContent/Programs/ProgramsTable.js` | FACULTY_ADMIN, DEPT_ADMIN |
-| A03 | `/main/subjects` | ข้อมูลรายวิชา | `AdminContent/Subject/SubjectTable.js` | DEPT_ADMIN |
-| A04 | `/main/rubrics` | ข้อมูล Rubric กลาง | `AdminContent/Rubric/RubricTable.js` (ใน `RubricManage`) | DEPT_ADMIN, PROG_MANAGER |
+| A03 | `/main/subjects` | ข้อมูลรายวิชา | `AdminContent/Subject/SubjectTable.js` | FACULTY_ADMIN, DEPT_ADMIN |
+| A04 | `/main/rubrics` | ข้อมูล Rubric กลาง | `AdminContent/Rubric/RubricTable.js` (ใน `RubricManage`) | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
 | A05 | `/main/rubrics/edit-Rubric` | แก้ไขรายละเอียด Rubric | `AdminContent/Rubric/EditRubricDetail.js` | เท่ากับ A04 |
-| A06 | `/main/course-in-program` | รายวิชาในหลักสูตร | `AdminContent/Subject/CourseInProg.js` | DEPT_ADMIN, PROG_MANAGER |
-| A07 | `/main/student-data` | ข้อมูลนักศึกษากลาง | `AdminContent/Student/MainStudentData.js` | DEPT_ADMIN |
+| A06 | `/main/course-in-program` | รายวิชาในหลักสูตร | `AdminContent/Subject/CourseInProg.js` | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
+| A07 | `/main/student-data` | ข้อมูลนักศึกษากลาง | `AdminContent/Student/MainStudentData.js` | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
 | A08 | `/main/course-in-term` | การเปิดรายวิชาในภาคการศึกษา | `AdminContent/Subject/CourseInTerm.js` | PROG_MANAGER |
-| A09 | `/main/plos` | ผลลัพธ์การเรียนรู้ระดับหลักสูตร (PLO) | `AdminContent/PLO/PLOtable.js` (ใน `PLOManage`) | DEPT_ADMIN, PROG_MANAGER |
-| A10 | `/main/mapping-plo` | เชื่อมโยงผลการเรียนรู้กับรายวิชา | `AdminContent/PLOMapping/MappingPLO.js` | DEPT_ADMIN, PROG_MANAGER |
+| A09 | `/main/plos` | ผลลัพธ์การเรียนรู้ระดับหลักสูตร (PLO) | `AdminContent/PLO/PLOtable.js` (ใน `PLOManage`) | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
+| A10 | `/main/mapping-plo` | เชื่อมโยงผลการเรียนรู้กับรายวิชา | `AdminContent/PLOMapping/MappingPLO.js` | FACULTY_ADMIN, DEPT_ADMIN, PROG_MANAGER |
 | A11 | `/main/users` | ผู้ใช้งานระบบ | `AdminContent/UserMangement/UserTable.js` (ใน `UserManage`) | FULL_ADMIN, FACULTY_ADMIN, DEPT_ADMIN |
-| A12 | `/main/users/edit-user` | แก้ไขผู้ใช้ / จัดการสิทธิ์ | `AdminContent/UserMangement/EditUser.js` | FULL_ADMIN, FACULTY_ADMIN, DEPT_ADMIN |
-| A13 | `/main/users/user-history` | ประวัติการใช้งานผู้ใช้ | `AdminContent/UserMangement/userLogs.js` | FULL_ADMIN, FACULTY_ADMIN, DEPT_ADMIN |
+| A12 | `/main/users/edit-user` | แก้ไขผู้ใช้ / จัดการสิทธิ์ | `AdminContent/UserMangement/EditUser.js` | เท่ากับ A11 (เข้าจากปุ่มใน A11 ไม่มีในเมนู) |
+| A13 | `/main/users/user-history` | ประวัติการใช้งานผู้ใช้ | `AdminContent/UserMangement/userLogs.js` | เท่ากับ A11 (เข้าจากปุ่มใน A11 ไม่มีในเมนู) |
 | A14 | `/main/course-list` | รายการรายวิชา (placeholder) | `AdminContent/CourseList.js` | ไม่มีในเมนู |
 | A15 | `/main/courseLevelByIntake` | ประเมินระดับหลักสูตรตามรุ่นปีรับเข้า | `AdminContent/courseLevelByIntake/courseLevelByIntake.js` | PROG_MANAGER |
 | A16 | `/main/courseLevelAllStudents` | ระดับหลักสูตรของนักศึกษาทุกคน | `AdminContent/courseLevelAllStudents.js` | PROG_MANAGER |
 | A17 | `/main/courseLevelCompare` | เปรียบเทียบระดับหลักสูตร | `AdminContent/courseLevelCompare.js` | PROG_MANAGER |
 | A18 | `/main/courseLevelIndividual` | ระดับหลักสูตรรายบุคคล | `AdminContent/courseLevelIndividual.js` | PROG_MANAGER |
+
+> **แก้คอลัมน์ *Role ที่เห็นเมนู* เมื่อ 20 พ.ย. 2569** — ค่าเดิมของคอลัมน์ไม่ตรงกับเมนูที่ระบบส่งมอบวาดจริง ซึ่งเลือกตามบทบาทใน
+> `DEEP-QA-FRONTEND/src/components/SidebarItem.js` จาก `SidebarItem/*.js` · ค่าเดิม (#54 — ลงวันที่ ไม่ลบ): A03 `DEPT_ADMIN` ·
+> A04, A06, A09, A10 `DEPT_ADMIN, PROG_MANAGER` · A07 `DEPT_ADMIN` · A12, A13 `FULL_ADMIN, FACULTY_ADMIN, DEPT_ADMIN` ·
+> ที่ต่างคือ `FACULTY_ADMIN` เห็นเก้าเมนูรวมทุกเมนูของภาควิชา, `PROG_MANAGER` เห็น A07 ด้วย, และ A12/A13 ไม่มีในเมนูของใคร
+> (เข้าจากปุ่มใน `UserTable.js`) · ระบบเดิมไม่มีการตรวจสิทธิ์ที่ server (`ProtectedRoute` ตรวจแค่การล็อกอิน) เมนูจึงเป็นการควบคุมเพียงอย่างเดียว ·
+> ตารางนี้บรรยายระบบที่ส่งมอบ ไม่ใช่การสร้างใหม่ — สิทธิ์ของการสร้างใหม่อยู่ที่ `requireRole` ของแต่ละ route และหมายเหตุท้ายเอกสาร
 
 ### 2.3 Teacher (`/teacher/teacherDashboard`)
 
