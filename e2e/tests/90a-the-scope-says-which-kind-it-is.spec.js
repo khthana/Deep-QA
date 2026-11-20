@@ -283,6 +283,14 @@ test('row 4: the grant confined to nothing says itself and nothing else', async 
  * The name is derived from the seed rather than typed (#118), and it is put
  * back in `finally` - below the seam, saying nothing about the screen, so a
  * failure there cannot speak over the row's own (#181).
+ *
+ * Until #295 the name was the seeded one less its kind word, and the entry the
+ * row expected - `คณะ · วิศวกรรมศาสตร์` - was one the seeded faculty could
+ * never draw. With the word written straight onto the name the same rename
+ * gives back `คณะวิศวกรรมศาสตร์`, the seeded name letter for letter, so the row
+ * would pass over a rename that never reached the screen (the review of #295,
+ * 20 November 2569). The rename now also changes the rest of the name, and the
+ * row asserts that the entry it expects is not the seeded one (#51).
  */
 const db = createPool({ schema: E2E_SCHEMA });
 test.afterAll(() => db.end());
@@ -290,9 +298,12 @@ test.afterAll(() => db.end());
 test('row 5: a faculty whose name does not say its kind is given the word', async ({
   page,
 }) => {
-  const renamed = FACULTY.th.slice(KIND.faculty.length);
+  const renamed = `${FACULTY.th.slice(KIND.faculty.length)}และเทคโนโลยี`;
   expect(renamed.startsWith(KIND.faculty)).toBe(false);
-  expect(renamed.length).toBeGreaterThan(0);
+  const expected = entry(KIND.faculty, { th: renamed, id: FACULTY.id });
+  expect(expected, 'the entry the row expects is one the seeded faculty cannot draw').not.toBe(
+    FACULTY.th,
+  );
 
   await db.query(
     'UPDATE faculty SET faculty_name_th = $1 WHERE faculty_id = $2',
@@ -300,7 +311,7 @@ test('row 5: a faculty whose name does not say its kind is given the word', asyn
   );
   try {
     const options = await offeredToTheCentralAdmin(page);
-    expect(options).toContain(entry(KIND.faculty, { th: renamed, id: FACULTY.id }));
+    expect(options).toContain(expected);
   } finally {
     await db.query(
       'UPDATE faculty SET faculty_name_th = $1 WHERE faculty_id = $2',
