@@ -139,6 +139,20 @@ const UNCONFINED = 'ทั้งมหาวิทยาลัย';
  */
 const entry = (kind, scope) => `${kind} · ${scope.th}`;
 
+/**
+ * The entry the picker draws for one scope, found by the value it submits.
+ *
+ * Since #294 the set of entries cannot carry rows 1 and 2's claim on its own.
+ * Department 05 and programme 0501 share a name, so with the code gone a picker
+ * that swapped the two kind words draws the very same two strings - only
+ * attached to the other scope each - and a `toContain` of each is green over
+ * it: `90:swapsthewords` survived both rows on 20 November 2569, having killed
+ * them while the code told the entries apart. What says which entry *is* the
+ * department is the value it would grant, so the pairing is read here. The
+ * value is the locator's premise, never the claim (#85, #111); the text is.
+ */
+const entryFor = (page, scope) => scopePicker(page).locator(`option[value="${scope.id}"]`);
+
 const ADD = 'เพิ่มผู้ใช้งาน';
 
 test('row 1: the add-account form tells the department from the programme in words', async ({
@@ -155,6 +169,8 @@ test('row 1: the add-account form tells the department from the programme in wor
   const options = await offeredOnceDrawn(page, answering);
   expect(options).toContain(entry(KIND.department, department));
   expect(options).toContain(entry(KIND.program, program));
+  await expect(entryFor(page, department)).toHaveText(entry(KIND.department, department));
+  await expect(entryFor(page, program)).toHaveText(entry(KIND.program, program));
 
   // The claim is not only that the words are there: it is that they are what
   // tells the two apart. With the kind word removed, the two entries differed
@@ -180,6 +196,8 @@ test('row 2: the grants panel says it the same way', async ({ page }) => {
   const options = await offeredOnceDrawn(page, answering);
   expect(options).toContain(entry(KIND.department, department));
   expect(options).toContain(entry(KIND.program, program));
+  await expect(entryFor(page, department)).toHaveText(entry(KIND.department, department));
+  await expect(entryFor(page, program)).toHaveText(entry(KIND.program, program));
 });
 
 /**

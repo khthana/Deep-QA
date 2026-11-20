@@ -942,6 +942,11 @@ citation.
   newline before an adjacent `<span>`, so the text has no space in it. **A fix that puts words on a
   screen is a change to every locator that matched any of them loosely** — census one query per
   word it adds, not one for the word the first red named. (#93, #116)
+- **And a fix that takes a disambiguator *off* a label changes every read of it the other way** — #116
+  from the removing side, and the price is a green rather than a red: the label becomes a substring of
+  its sibling's, and two units sharing a name become a set a swap cannot change, so a `toContainText` or
+  a membership `toContain` passes over the defect. Read each label by the value it carries, and find
+  the reads that went blind by re-sweeping the mutants nobody re-aimed. (#294)
 - **A fix that disables a control is a change to every row that presses it, including the rows
   that press it as an instrument** — a hand estimate counts the rows that are *about* the control
   and misses the rows that use it to arrange something. Census the press, not the claim. (#199,
