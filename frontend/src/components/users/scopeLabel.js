@@ -119,8 +119,14 @@ export const scopeNamed = (scopes, scopeId) => {
  * `/users/:userId/roles` and the accounts list now carry `scope_name` and
  * `scope_kind` from `backend/auth/scopeNames.js`, the same resolver as the role
  * picker's (#231). A grant the server cannot name falls back to the list.
+ *
+ * A grant whose tier the server found but whose name is null - a unit with no
+ * Thai name (#297) - is read off the grant too, as its kind and its code. The
+ * list would name it only inside the reader's reach and leave `cross01`'s
+ * nameless `01` a bare code, which is the asymmetry #294 closed, reopened for
+ * the one case the server could not name.
  */
 export const grantScope = (scopes, grant) =>
-  grant.scope_name
-    ? scopeLabel({ kind: grant.scope_kind, label: grant.scope_name })
+  grant.scope_name || grant.scope_kind
+    ? scopeLabel({ kind: grant.scope_kind, label: grant.scope_name, scope_id: grant.scope_id })
     : scopeNamed(scopes, grant.scope_id)

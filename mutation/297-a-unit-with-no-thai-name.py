@@ -30,12 +30,43 @@ seed ไม่มีหน่วยแบบนี้ `297a` จึงทำใ�
 | มัตแตนต์ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
 |---|---|---|---|
 | `90:nokind` | `90a` 1, 2, 5 · `215a` 1, 2, 3, 4 — ตรงกับผลของ #295 | `90a:175` `90a:206` `90a:314` · `215a:150` `215a:168` `215a:200` `215a:226` | `90a` 3, 4 · `215a` 5, 6 · **`297a` ทั้งสามแถว** — หน่วยที่ไม่มีชื่อยังเดินผ่านทางตกกลับ ซึ่งอยู่เหนือบรรทัดที่มันแก้ |
+
+## สองทางเข้าที่การทบทวนพบ — คำทำนายก่อนกวาด (20 พ.ย. 2569, #255)
+
+การทบทวนแกน spec ของ `ef1c5fa` พบสองที่ที่ยังวาดรหัสเปล่า: **หน่วยไม่มีชื่อที่อยู่นอกเอื้อมของผู้อ่าน** —
+`grantScope` ส่งบทบาทที่ไม่มีชื่อไปหารายการที่เสนอได้ ซึ่งไม่มี `01` ของ `cross01` จึงได้ `01` เปล่า
+(ความไม่สมมาตรที่ #294 ปิด เปิดอีกครั้งเฉพาะกรณีนี้) · และ**ช่องเลือกบทบาท** — `scopeOf` ของ `RoleDropdown`
+คืนรหัสก่อนจะดูคำบอกชนิด ผู้ประเมินจึงอ่าน `ผู้ประเมินภายนอก 0501` · `297a` แถว 4, 5, 6 เป็นของสองที่นี้
+และแดงกับโค้ด `ef1c5fa` ที่ข้ออ้างของแถวเอง (`อาจารย์ผู้สอน (01)` · `01` · `ผู้ประเมินภายนอก 0501`) ก่อนเขียนมัตแตนต์ (#203)
+
+การแก้เปลี่ยนสิ่งที่มัตแตนต์สามตัวที่ไม่มีใครเล็งใหม่ทำ เพราะทั้งสามตัดชื่อแต่ยังส่งชนิดมา ซึ่งตอนนี้เป็นทางเข้า
+ของทางตกกลับ (#248) · และ `294:o294kindwordalways` ถูกเล็งใหม่ เพราะเงื่อนไขย้ายไปอยู่ใน `says`
+ให้กิ่งที่ไม่มีชื่ออ่านด้วย — ความผิดเดิม ตอนนี้บนทั้งสองกิ่ง (#203) · ข้ออ้างด้านล่างอ้างแถวด้วยชื่อแถว
+ไม่ใช่เลขบรรทัด (#173)
+
+| มัตแตนต์ | สิ่งที่มันทำ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
+|---|---|---|---|---|
+| `heldfromlist` | `grantScope` ถามชื่ออย่างเดียว คือโค้ด `ef1c5fa` (#115) | `297a` 4, 5 | `toHaveText` ของแต่ละแถว (`อาจารย์ผู้สอน (01)` · `01`) | `297a` 1, 2, 3 (05 อยู่ในรายการ ได้ `ภาควิชา 05` ทางเดียวกัน), 6 · `90a` `215a` ทุกแถว (มีชื่อ) |
+| `pickercode` | `scopeOf` คืนรหัสเปล่าเมื่อไม่มีชื่อ คือโค้ด `ef1c5fa` (#115) | `297a` 6 | `actingButton` toHaveText (`ผู้ประเมินภายนอก 0501`) | `297a` 1–5 · `231a` ทุกแถว (มีชื่อ) |
+| `pickernospace` | คำบอกชนิดติดกับรหัสในช่องเลือกบทบาท | `297a` 6 | `actingButton` toHaveText (`ผู้ประเมินภายนอก หลักสูตร0501`) | `297a` 1–5 · `231a` ทุกแถว |
+| `codealone` (เดิม) | ทางตกกลับของ `scopeLabel` เป็นรหัสเปล่า | `297a` 1–5 — 4, 5 เพิ่มมา เพราะ `grantScope` ส่งเข้า `scopeLabel` แล้ว | `toHaveText` ของแต่ละแถว | `297a` 6 (ไม่ใช่ `scopeLabel`) |
+| `nospace` (เดิม) | คำบอกชนิดติดกับรหัส | `297a` 1–5 | `toHaveText` ของแต่ละแถว | `297a` 6 |
+| `nofallback` (เดิม) | โค้ดก่อน #297 | `297a` 1–5 | **การจัดฉาก** — จอพังก่อนรายการขึ้น (#266) | `297a` 6 (ช่องเลือกบทบาทไม่เรียก `scopeLabel`) |
+| `90:nokind` | (ตารางข้างบน) | ตามตารางข้างบน | ตามตารางข้างบน | ตามตารางข้างบน และ `297a` 4, 5, 6 ด้วย |
+| `294:o294heldnameless` | `HELD` ไม่ส่งชื่อ ส่งชนิด | `215a` 4 (ตามเดิม แต่อ่าน `ภาควิชา 01` แทน `01`) · **`215a` 1 เพิ่ม** — แถวในเอื้อมไม่ไปหารายการแล้ว อ่าน `ภาควิชา 05` | `panelScopeCell` toHaveText ของทั้งสองแถว | `215a` 2, 3, 5, 6 · `297a` 2, 5 (ไม่มีชื่ออยู่แล้ว ค่าเดียวกัน) · `90a` ทุกแถว (อ่านแต่ช่องเลือก) |
+| `294:o294listnameless` | รายการบัญชีไม่ส่งชื่อ ส่งชนิด | `215a` 3 (ตามเดิม) · **`215a` 2 เพิ่ม** — อ่าน `ภาควิชา 05` | `roleCell` toContainText / toHaveText | `215a` 1, 4, 5, 6 · `297a` 3, 4 · `90a` ทุกแถว |
+| `231:namelessresolver` | `allRoles` ไม่ส่งชื่อ ส่งชนิด | `231a` ทั้งสามแถว (ตามเดิม — ผู้ประเมินอ่าน `ผู้ประเมินภายนอก หลักสูตร 0501` แทน `ผู้ประเมินภายนอก 0501` แต่ยังผิด) | `actingButton` / `roleOption` toHaveText | `297a` 6 (ค่าเดียวกัน) |
+| `294:o294kindwordalways` (เล็งใหม่) | เติมคำบอกชนิดทุกบทบาท | `231a` 1, 3 | `actingButton` toHaveText · `roleOption` ของ 0503 | `231a` 2 · `297a` 6 (ผู้ประเมินได้คำนั้นอยู่แล้ว) |
+| `294:o294kindwordnever` | ไม่เติมคำบอกชนิด (กิ่งที่มีชื่อ) | `231a` 2 | `actingButton` toHaveText | `231a` 1, 3 · `297a` 6 (กิ่งที่ไม่มีชื่อไม่ถูกแตะ) |
 """
 from harness import main
 
 FILES = {
     'wording': 'frontend/src/components/users/scopeLabel.js',
+    'picker': 'frontend/src/components/RoleDropdown.js',
 }
+
+PICKER_FALLBACK = "    if (!grant.scope_name) return says ? `${word} ${grant.scope_id}` : grant.scope_id\n"
 
 FALLBACK = "  if (!scope.label) return kind ? `${kind} ${scope.scope_id}` : scope.scope_id\n"
 
@@ -47,6 +78,17 @@ MUTANTS = {
     # The kind word run into the code, which since #295 is how a name is joined.
     'nospace': ('wording', FALLBACK,
         "  if (!scope.label) return kind ? `${kind}${scope.scope_id}` : scope.scope_id\n"),
+    # The code the review found (#115): a nameless grant goes to the list, which
+    # holds nothing outside the reader's reach.
+    'heldfromlist': ('wording',
+        '  grant.scope_name || grant.scope_kind\n',
+        '  grant.scope_name\n'),
+    # The role picker as the review found it (#115): the code before the word.
+    'pickercode': ('picker', PICKER_FALLBACK,
+        '    if (!grant.scope_name) return grant.scope_id\n'),
+    # The picker's word run into the code.
+    'pickernospace': ('picker', PICKER_FALLBACK,
+        "    if (!grant.scope_name) return says ? `${word}${grant.scope_id}` : grant.scope_id\n"),
 }
 
 main(FILES, MUTANTS)

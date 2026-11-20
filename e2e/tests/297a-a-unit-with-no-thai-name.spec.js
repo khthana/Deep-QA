@@ -6,6 +6,7 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { openUsers, search, listTable, userRow } = require('../support/users-screen');
 const { ROLE_NAMES, openEditor, grantsTable } = require('../support/grants-panel');
+const { actingButton } = require('../support/shell');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 
@@ -26,39 +27,58 @@ const { E2E_SCHEMA } = require('../support/env');
  * the name back in `finally` - saying nothing about the screen, so a failure
  * there cannot speak over the row's own (#181). Department `05` because it is
  * the one the two accounts below sit in: its administrator offers it, and
- * `teacher.one@` holds a grant over it. Three rows for the three places
+ * `teacher.one@` holds a grant over it. Rows 1-3 are the three places
  * `scopeLabel` draws a scope for an administrator - the picker, the held-roles
  * table and the accounts list's role column. The fix is one line they share,
  * so no mutant can tell them apart; what each row adds is that its own way in
  * reaches it (#191).
+ *
+ * Rows 4-6 came from the review of the first commit, which found two more ways
+ * in that drew a bare code: a nameless unit outside the reader's reach, which
+ * `grantScope` sent to a list that has no entry for it, and the role picker,
+ * which puts the kind word in front itself and returned the code before it
+ * looked for one.
  */
 
 const KIND_DEPARTMENT = 'ภาควิชา';
+const KIND_PROGRAM = 'หลักสูตร';
 const DEPARTMENT = DEPARTMENTS.find(entry => entry.id === '05');
 
 /** The fallback the owner chose: the kind word, a space, the code. */
 const NAMELESS = `${KIND_DEPARTMENT} ${DEPARTMENT.id}`;
 
+/** The units these rows take the name from, by table and key. */
+const DEPARTMENT_05 = { table: 'departments', key: 'department_id', column: 'department_name_th', id: '05' };
+const DEPARTMENT_01 = { table: 'departments', key: 'department_id', column: 'department_name_th', id: '01' };
+const PROGRAM_0501 = { table: 'programs', key: 'program_id', column: 'program_name_th', id: '0501' };
+
 const db = createPool({ schema: E2E_SCHEMA });
 test.afterAll(() => db.end());
 
-/** Runs `body` with department 05 nameless, and puts its name back whatever happens. */
-async function withoutItsName(body) {
-  expect(DEPARTMENT, 'the seed holds no department 05').toBeDefined();
-  const { rowCount } = await db.query(
-    'UPDATE departments SET department_name_th = NULL WHERE department_id = $1',
-    [DEPARTMENT.id],
+/**
+ * Runs `body` with one unit nameless, and puts back whatever name it had
+ * whatever happens - the name read in the same statement that takes it away,
+ * not the seed's, so a rename an earlier file left is not overwritten (#137).
+ */
+async function withoutItsName(unit, body) {
+  const { rows } = await db.query(
+    `UPDATE ${unit.table} t SET ${unit.column} = NULL
+       FROM (SELECT ${unit.key}, ${unit.column} FROM ${unit.table} WHERE ${unit.key} = $1 FOR UPDATE) old
+      WHERE t.${unit.key} = old.${unit.key}
+      RETURNING old.${unit.column} AS was`,
+    [unit.id],
   );
   // The arrangement is asserted where it is used (#51): an update that touched
-  // nothing would leave the seeded name on the screen and every row below red
-  // for a reason that is not theirs.
-  expect(rowCount, 'department 05 was made nameless').toBe(1);
+  // nothing, or a unit already nameless, would leave every row below red or
+  // green for a reason that is not theirs.
+  expect(rows, `${unit.table} ${unit.id} was made nameless`).toHaveLength(1);
+  expect(rows[0].was, `${unit.table} ${unit.id} had a name to take away`).toBeTruthy();
   try {
     await body();
   } finally {
-    await db.query('UPDATE departments SET department_name_th = $1 WHERE department_id = $2', [
-      DEPARTMENT.th,
-      DEPARTMENT.id,
+    await db.query(`UPDATE ${unit.table} SET ${unit.column} = $1 WHERE ${unit.key} = $2`, [
+      rows[0].was,
+      unit.id,
     ]);
   }
 }
@@ -68,7 +88,7 @@ const scopePicker = page => page.getByRole('combobox', { name: 'ขอบเข�
 test('row 1: the scope picker names a nameless department by its kind and code', async ({
   page,
 }) => {
-  await withoutItsName(async () => {
+  await withoutItsName(DEPARTMENT_05, async () => {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openUsers(page);
     await page.getByRole('button', { name: 'เพิ่มผู้ใช้งาน' }).click();
@@ -82,7 +102,7 @@ test('row 1: the scope picker names a nameless department by its kind and code',
 });
 
 test('row 2: the held-roles table says the same', async ({ page }) => {
-  await withoutItsName(async () => {
+  await withoutItsName(DEPARTMENT_05, async () => {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openUsers(page);
     await openEditor(page, ACCOUNTS.teacherOne);
@@ -103,7 +123,7 @@ test('row 2: the held-roles table says the same', async ({ page }) => {
 });
 
 test('row 3: the accounts list says the same in its role column', async ({ page }) => {
-  await withoutItsName(async () => {
+  await withoutItsName(DEPARTMENT_05, async () => {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openUsers(page);
     await search(page, ACCOUNTS.teacherOne);
@@ -116,5 +136,78 @@ test('row 3: the accounts list says the same in its role column', async ({ page 
     await expect(userRow(page, ACCOUNTS.teacherOne).getByRole('cell').nth(column)).toHaveText(
       `${ROLE_NAMES.TEACHER} (${NAMELESS})`,
     );
+  });
+});
+
+/**
+ * Rows 4 and 5 - a nameless unit outside the reader's reach.
+ *
+ * `cross01`'s one grant is over department 01, which a 05 administrator cannot
+ * offer, so the picker's list has no entry for it. The server still finds the
+ * tier and sends `scope_kind`; with `scope_name` null, the review of ef1c5fa
+ * found that `grantScope` went to the list and drew a bare `01` - the asymmetry
+ * #294 closed, reopened for this one case.
+ */
+const OUT_OF_REACH = `${KIND_DEPARTMENT} ${DEPARTMENT_01.id}`;
+
+test('row 4: the accounts list names a nameless unit out of reach by its kind and code', async ({
+  page,
+}) => {
+  await withoutItsName(DEPARTMENT_01, async () => {
+    await signIn(page, ACCOUNTS.departmentAdmin05);
+    await openUsers(page);
+    await search(page, ACCOUNTS.crossScope);
+
+    const headers = await listTable(page).getByRole('columnheader').allTextContents();
+    const column = headers.indexOf('บทบาท');
+    expect(column, 'the accounts table has no บทบาท column').toBeGreaterThanOrEqual(0);
+    await expect(userRow(page, ACCOUNTS.crossScope).getByRole('cell').nth(column)).toHaveText(
+      `${ROLE_NAMES.TEACHER} (${OUT_OF_REACH})`,
+    );
+  });
+});
+
+test('row 5: the held-roles table says the same, from the grant and not the list', async ({
+  page,
+}) => {
+  await withoutItsName(DEPARTMENT_01, async () => {
+    await signIn(page, ACCOUNTS.departmentAdmin05);
+    await openUsers(page);
+    await search(page, ACCOUNTS.crossScope);
+    await openEditor(page, ACCOUNTS.crossScope);
+
+    // The mechanism (#226): the list has landed and holds the administrator's
+    // own department, and holds nothing for 01 - so what the cell says below
+    // did not come from it.
+    await expect(scopePicker(page).locator(`option[value="${DEPARTMENT.id}"]`)).toHaveCount(1);
+    await expect(scopePicker(page).locator(`option[value="${DEPARTMENT_01.id}"]`)).toHaveCount(0);
+
+    const rows = grantsTable(page)
+      .getByRole('row')
+      .filter({ has: page.getByRole('cell', { name: ROLE_NAMES.TEACHER, exact: true }) });
+    await expect(rows, 'cross.scope holds one teacher grant').toHaveCount(1);
+    const headers = await grantsTable(page).getByRole('columnheader').allTextContents();
+    const column = headers.indexOf('ขอบเขต');
+    expect(column, 'the held-roles table has no ขอบเขต column').toBeGreaterThanOrEqual(0);
+    await expect(rows.getByRole('cell').nth(column)).toHaveText(OUT_OF_REACH);
+  });
+});
+
+/**
+ * Row 6 - the role picker, which is not `scopeLabel`'s: `RoleDropdown` puts
+ * the kind word in front itself, and only where the role's name does not say
+ * it. The assessor's does not, so a nameless curriculum reads
+ * `ผู้ประเมินภายนอก หลักสูตร 0501`. (The committee's does, so its nameless
+ * label is the role's name and the code, which the code before #297 already
+ * drew and which no row here needs.)
+ */
+test('row 6: the role picker names a nameless curriculum by its kind and code', async ({
+  page,
+}) => {
+  await withoutItsName(PROGRAM_0501, async () => {
+    await signIn(page, ACCOUNTS.externalAssessor);
+
+    const label = `${ROLE_NAMES.EXT_ASSESSOR} ${KIND_PROGRAM} ${PROGRAM_0501.id}`;
+    await expect(actingButton(page)).toHaveText(label);
   });
 });

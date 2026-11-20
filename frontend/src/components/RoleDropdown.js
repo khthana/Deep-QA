@@ -99,13 +99,20 @@ function RoleDropdown({ setAlert, onStayedPut }) {
    * before that guard or around it, and the code is then the only true thing
    * there is to say.
    *
+   * A scope whose tier the server found and whose name is null - a unit with
+   * no Thai name, which only data the application did not write leaves so -
+   * reads as its kind and its code, `ผู้ประเมินภายนอก หลักสูตร 0501`, with the
+   * space the history keeps between a word and a code (#294 rule 6). The owner
+   * answered on 20 November 2569 that the screens fall back that way (#297).
+   *
    * Until #294 `kind` changed nothing that was drawn here, which the review of
    * 27 October 2569 wrote down; since #294 it chooses the word in front.
    */
   const scopeOf = grant => {
-    if (!grant.scope_name) return grant.scope_id
     const word = kindWord(grant.scope_kind)
-    return word && !roleName(grant.role_id).endsWith(word)
+    const says = word && !roleName(grant.role_id).endsWith(word)
+    if (!grant.scope_name) return says ? `${word} ${grant.scope_id}` : grant.scope_id
+    return says
       ? `${word}${grant.scope_name}`
       : grant.scope_name
   }

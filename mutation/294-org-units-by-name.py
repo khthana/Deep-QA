@@ -208,9 +208,11 @@ MUTANTS = {
         '      ? `${roleName(grant.role_id)} ${scopeOf(grant)}`\n',
         '      ? `${roleName(grant.role_id)} ${scopeOf(grant)} (${grant.scope_id})`\n'),
     # The two branches of the rule "unless the role's name already says it".
+    # Re-aimed at #297, which moved the condition into `says` so the nameless
+    # branch could read it too: the same mistake, now on both branches (#203).
     'o294kindwordalways': ('picker',
-        '    return word && !roleName(grant.role_id).endsWith(word)\n',
-        '    return word\n'),
+        '    const says = word && !roleName(grant.role_id).endsWith(word)\n',
+        '    const says = word\n'),
     'o294kindwordnever': ('picker',
         '      ? `${word}${grant.scope_name}`\n',
         '      ? grant.scope_name\n'),
