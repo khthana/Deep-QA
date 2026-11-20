@@ -165,15 +165,16 @@ MUTANTS = {
     # away, and the map stays because the picker still reads it (#203, #101).
     # Re-aimed again at #295, which joined the word straight onto the name: the
     # anchor quotes the line it replaces, and the mutant is unchanged.
+    # And at #297, which put a fallback for a nameless unit between the map and
+    # the return. The mutant is now the return alone - a named scope reads its
+    # name and nothing else, the same mistake on every scope with a name - and
+    # `kind` stays declared because the fallback still reads it (#203, #101).
     'nokind': [
         ('wording',
-        'export const scopeLabel = scope => {\n'
-        '  const kind = KINDS[scope.kind]\n'
         '  return kind && !scope.label.startsWith(kind)\n'
         '    ? `${kind}${scope.label}`\n'
-        '    : scope.label\n'
-        '}\n',
-        'export const scopeLabel = scope => scope.label\n'),
+        '    : scope.label\n',
+        '  return scope.label\n'),
     ],
     # The words are all there and still two different words; they point at the
     # wrong kinds, which no digit count and no drawing could catch (#145).

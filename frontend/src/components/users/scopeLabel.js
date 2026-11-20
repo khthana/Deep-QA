@@ -74,6 +74,13 @@ export const kindWord = kind => KINDS[kind]
  */
 export const scopeLabel = scope => {
   const kind = KINDS[scope.kind]
+  // A department or programme with no Thai name - the column may be null, and
+  // only data the application did not write leaves it so. It reads as its kind
+  // and its code, the way the history reads a unit that is gone (#294 rule 6);
+  // the owner answered on 20 November 2569 that the screen falls back and the
+  // column stays nullable (#297). Until then `startsWith` threw here and took
+  // the accounts screen down with it.
+  if (!scope.label) return kind ? `${kind} ${scope.scope_id}` : scope.scope_id
   return kind && !scope.label.startsWith(kind)
     ? `${kind}${scope.label}`
     : scope.label
