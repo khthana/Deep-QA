@@ -2,6 +2,8 @@
 
 const { test, expect } = require('@playwright/test');
 const { REFUSALS } = require('../../backend/auth/refusals');
+const { PROGRAMS } = require('../../db/seed');
+const { saidBy } = require('../support/confirm-dialog');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
@@ -20,6 +22,7 @@ const {
   offered,
   openEditor,
   save,
+  startRemoval,
 } = require('../support/program-subjects-screen');
 
 /**
@@ -179,4 +182,30 @@ test('row 8: a curriculum is not the central administrator\'s, the faculty\'s or
     await expect(page.getByRole('heading', { name: 'รายวิชาในหลักสูตร', exact: true })).toBeVisible();
     await expect(pairRow(page, SEEDED)).toHaveCount(0);
   }
+});
+
+test('#294: the removal question names the curriculum the row is in, not the first one in reach', async ({
+  page,
+}) => {
+  // 18a row 6 reads the curriculum's name in this question, as the committee of
+  // 0501 - who holds one curriculum, so the screen's list of curricula has one
+  // entry and *the entry the row is in* and *the first entry* are the same one.
+  // The lookup's binding is unreachable there. Here the account reaches two, the
+  // list opens on 0501, and the row being removed is in 0503: the one situation
+  // where a lookup that took the first entry would name the wrong curriculum.
+  await signIn(page, ACCOUNTS.departmentAdmin05);
+  await openProgramSubjects(page);
+  await filterTo(page, '0503');
+
+  await startRemoval(page, OTHERS);
+  const said = await saidBy(page);
+
+  // The whole phrase up to ใช่หรือไม่: 0501's name is a substring of 0503's, so a
+  // read of the name alone would pass on the wrong curriculum (#116, #294).
+  const curriculum = PROGRAMS.find(entry => entry.id === '0503').th;
+  expect(said).toContain(`ออกจากหลักสูตร${curriculum} ใช่หรือไม่`);
+
+  // Answered no: the row above counts the pairings in 0503, and this one stays.
+  await page.getByRole('button', { name: 'ยกเลิก' }).click();
+  await expect(pairRow(page, OTHERS)).toHaveCount(1);
 });
