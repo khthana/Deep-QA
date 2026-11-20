@@ -64,7 +64,8 @@ const grantsTable = page =>
  * Until #294 the cell read `ชนิด · ชื่อ (รหัส)`, and this matched the bracketed
  * code that ended it. On 20 November 2569 the owner answered that the code goes
  * (#294 rule 4) and the server sends the name of a scope the reader does not
- * reach, so the cell is `ชนิด · ชื่อ` for every seeded scope and the code is
+ * reach, so the cell is `ชนิดชื่อ` for every seeded scope - the kind word
+ * written straight onto the name since #295, ` · ` between them until then - and the code is
  * what is left only for one that names nothing. The words are built out of
  * `db/seed.js` rather than retyped (#118), and matched whole: department `05`
  * and programme `0501` are both named for computer engineering, the kind word
@@ -76,9 +77,9 @@ const grantsTable = page =>
  */
 const scopeCell = scopeId => {
   const department = DEPARTMENTS.find(entry => entry.id === scopeId);
-  if (department) return `ภาควิชา · ${department.th}`;
+  if (department) return `ภาควิชา${department.th}`;
   const program = PROGRAMS.find(entry => entry.id === scopeId);
-  if (program) return `หลักสูตร · ${program.th}`;
+  if (program) return `หลักสูตร${program.th}`;
   if (scopeId === FACULTY.id) return FACULTY.th;
   return scopeId;
 };

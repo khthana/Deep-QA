@@ -19,6 +19,14 @@
  * `วิศวกรรมคอมพิวเตอร์`; two programmes whose names match letter for letter
  * cannot be told apart, and the owner accepted that price (#294 rule 3).
  *
+ * **The separator went the same day (#295).** #294 left the kind word joined
+ * three ways - ` · ` here, straight onto the name on the panel line, the
+ * removal question, the PDF heading and the history, and after a role's name
+ * in the role picker - and the owner answered on 20 November 2569 that every
+ * screen joins it the way the PDF heading they wrote does:
+ * `หลักสูตรวิศวกรรมคอมพิวเตอร์`. A code standing in for a name that cannot be
+ * found keeps its space (`หลักสูตร Z294GONE`), which is not this file's.
+ *
  * Extracted to a module of its own rather than imported from the picker, the
  * way `personName` was when the history screen needed the users table's rule.
  * The text being shared costs the proof nothing as long as the mutants stay at
@@ -67,7 +75,7 @@ export const kindWord = kind => KINDS[kind]
 export const scopeLabel = scope => {
   const kind = KINDS[scope.kind]
   return kind && !scope.label.startsWith(kind)
-    ? `${kind} · ${scope.label}`
+    ? `${kind}${scope.label}`
     : scope.label
 }
 

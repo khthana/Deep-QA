@@ -87,9 +87,10 @@ const PROGRAM = scopeOf(PROGRAMS, '0501');
 
 /**
  * The scope as the screens are to write it, which is `GrantPicker`'s wording -
- * without the code in brackets since #294.
+ * without the code in brackets since #294, and with the kind word written
+ * straight onto the name since #295 (20 November 2569).
  */
-const asDrawn = (kind, scope) => `${kind} · ${scope.th}`;
+const asDrawn = (kind, scope) => `${kind}${scope.th}`;
 
 /**
  * The precondition both of the first two rows press on, asserted where it is

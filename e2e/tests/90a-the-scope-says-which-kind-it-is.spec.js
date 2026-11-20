@@ -136,8 +136,13 @@ const UNCONFINED = 'ทั้งมหาวิทยาลัย';
  * organisation unit is read by its name outside the two screens that manage
  * those records. The kind word is now the *only* thing telling department 05
  * from programme 0501 in this picker, which is row 1's claim at full strength.
+ *
+ * Written straight onto the name since #295, whose owner answered on
+ * 20 November 2569 that the kind word is joined the way the PDF heading joins
+ * it (`หลักสูตรวิศวกรรมคอมพิวเตอร์`) on every screen. Until then the picker put
+ * ` · ` between the two.
  */
-const entry = (kind, scope) => `${kind} · ${scope.th}`;
+const entry = (kind, scope) => `${kind}${scope.th}`;
 
 /**
  * The entry the picker draws for one scope, found by the value it submits.
@@ -176,12 +181,16 @@ test('row 1: the add-account form tells the department from the programme in wor
   // tells the two apart. With the kind word removed, the two entries differed
   // by their code alone - the state #90 was opened about - and since #294 they
   // would not differ at all. This row fails on either if the words go away.
-  const sharing = options.filter(text => text.includes(department.th));
+  //
+  // Until #295 the word was found by splitting on ` · `. With the word written
+  // straight onto the name there is no separator to split on, so an entry is
+  // read as *a kind word, then exactly the shared name* - which `0503`, whose
+  // name only begins with the shared one, is not (#116).
+  const kindOf = text =>
+    Object.values(KIND).find(word => text === `${word}${department.th}`);
+  const sharing = options.filter(kindOf);
   expect(sharing.length).toBeGreaterThan(1);
-  for (const text of sharing) {
-    expect(text.split(' · ')).toHaveLength(2);
-  }
-  expect(new Set(sharing.map(text => text.split(' · ')[0])).size).toBeGreaterThan(1);
+  expect(new Set(sharing.map(kindOf)).size).toBeGreaterThan(1);
 });
 
 test('row 2: the grants panel says it the same way', async ({ page }) => {
@@ -248,7 +257,10 @@ test('row 4: the grant confined to nothing says itself and nothing else', async 
   // entry, which one `GLOBAL_SCOPE` sentinel makes impossible today.
   const unconfined = options.filter(text => text.includes(UNCONFINED));
   expect(unconfined).toHaveLength(1);
-  expect(unconfined[0]).not.toContain(' · ');
+  // Nothing in front of the label. Until #295 this read `not.toContain(' · ')`,
+  // the separator a word in front always brought with it; a word is now written
+  // straight onto the name, so what is asked is where the label starts.
+  expect(unconfined[0].startsWith(UNCONFINED)).toBe(true);
 
   // And the owner's answer to #216 on 24 October 2569: the brackets go with
   // the word. Every other entry's brackets hold a code the organisation uses

@@ -96,6 +96,30 @@
 วันที่ #294 เอารหัสออกจากป้าย ตัวนี้รอดแถว 1 กับ 2 ของ `90a` ที่มันเคยฆ่า: ภาควิชา `05` กับหลักสูตร `0501` ชื่อเดียวกัน
 การสลับคำจึงได้ชุดสตริงเดิม แค่ผูกกับขอบเขตคนละตัว และ `toContain` มองไม่เห็นการผูก · สองแถวได้ `entryFor` ที่อ่านข้อความของ
 option จากค่าที่มันส่ง แล้วตัวนี้ตายที่ `90a:172` กับ `90a:199` · บันทึกเต็มอยู่ใน `294-org-units-by-name.py` §บันทึกผลกวาด
+
+## §#295 — คำบอกชนิดเขียนติดกับชื่อ (20 พ.ย. 2569) · คำทำนายก่อนกวาด (#255)
+
+`scopeLabel` เขียน `${kind}${scope.label}` แทน `${kind} · ${scope.label}` · `nokind` ถูกเล็งใหม่ที่บรรทัดนั้น
+(มัตแตนต์เหมือนเดิม) · สามบรรทัดของ `90a` ที่ใช้ ` · ` เป็นตัวแยกถูกเขียนใหม่: แถว 1 อ่านว่ารายการคือ *คำบอกชนิด แล้วชื่อ
+ที่ซ้ำพอดี* (`kindOf`) และแถว 4 อ่านว่าป้ายขึ้นต้นด้วย `ทั้งมหาวิทยาลัย` · `215a` (`asDrawn`) และ `grants-panel.js`
+(`scopeCell`) อ่านรูปใหม่ · กวาดซ้ำทุกตัวที่ฆ่า `90a` หรือ `215a` ไม่ว่าจะถูกเล็งใหม่หรือไม่ (#248) — ของแฟ้มนี้ห้าตัว
+`215:panelcode` `215:userscode` `216:bracketsthesentinel` และสี่ตัวของ `294` ที่ฆ่า `215a` · ส่วน `215:dashwhenunknown`
+กับ `215:anyscopewilldo` รอดตั้งแต่ #294 ด้วยเหตุที่ #295 ไม่ได้แตะ จึงไม่กวาด
+
+| มัตแตนต์ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
+|---|---|---|---|
+| `90:nokind` | `90a` 1, 2, 5 · `215a` 1, 2, 3, 4 | `90a` 1 กับ 2 ที่ `toContain(entry(KIND.department…))` ตัวแรก · 5 ที่ `toContain` ของคณะที่ถูกเปลี่ยนชื่อ · `215a` ที่ `toHaveText` / `toContainText` ตัวแรกของแต่ละแถว | `90a` 3 (ชื่อคณะบอกชนิดเอง) · 4 · `215a` 5, 6 |
+| `90:swapsthewords` | `90a` 1, 2 · `215a` 1, 2, 3, 4 | `90a` 1 กับ 2 ที่ `entryFor(page, department)` toHaveText — `toContain` สองตัวข้างบนผ่าน เพราะชุดของสตริงเหมือนเดิม | `90a` 3, 4, 5 · `215a` 5, 6 |
+| `90:nofaculty` | `90a` 5 | `toContain` ของคณะที่ถูกเปลี่ยนชื่อ | แถวอื่นทั้งหมด |
+| `90:saysthekindtwice` | `90a` 3 | `toContain(FACULTY.th)` — รายการอ่าน `คณะคณะวิศวกรรมศาสตร์` แทน | แถวอื่นทั้งหมด |
+| `90:namestheunconfined` | `90a` 4 · `215a` 5, 6 | `90a` 4 ที่ `startsWith(UNCONFINED)` (บรรทัดใหม่ของ #295) · `215a` ที่ `toHaveText` | แถวอื่นทั้งหมด |
+| `216:bracketsthesentinel` | `90a` 4 · `215a` 5, 6 | `90a` 4 ที่ `toBe(UNCONFINED)` — `startsWith` ข้างบนผ่าน เพราะวงเล็บอยู่ท้าย · `215a` ที่ `toHaveText` | แถวอื่นทั้งหมด |
+| `215:panelcode` | `215a` 1, 4, 6 | `panelScopeCell` toHaveText | `215a` 2, 3, 5 · `90a` ทั้งหมด |
+| `215:userscode` | `215a` 2, 3, 5 | แถว 2 ที่ `toContainText` ตัวแรก · 3 กับ 5 ที่ `roleCell` toHaveText | `215a` 1, 4, 6 · `90a` ทั้งหมด |
+| `294:o294heldnameless` | `215a` 4 | `panelScopeCell` toHaveText (`01`) | `215a` แถวอื่น |
+| `294:o294listnameless` | `215a` 3 | `roleCell` toHaveText (`อาจารย์ผู้สอน (01)`) | `215a` แถวอื่น |
+| `294:o294panelfromlist` | `215a` 4 | `panelScopeCell` toHaveText (`01`) | `215a` แถวอื่น |
+| `294:o294listfromlist` | `215a` 3 | `roleCell` toHaveText | `215a` แถวอื่น |
 """
 from harness import main
 
@@ -121,12 +145,14 @@ MUTANTS = {
     # second reader (`kindWord`, the role picker's). One edit now: the label is
     # the name alone, which is the code before #90 less the brackets #294 took
     # away, and the map stays because the picker still reads it (#203, #101).
+    # Re-aimed again at #295, which joined the word straight onto the name: the
+    # anchor quotes the line it replaces, and the mutant is unchanged.
     'nokind': [
         ('wording',
         'export const scopeLabel = scope => {\n'
         '  const kind = KINDS[scope.kind]\n'
         '  return kind && !scope.label.startsWith(kind)\n'
-        '    ? `${kind} \u00b7 ${scope.label}`\n'
+        '    ? `${kind}${scope.label}`\n'
         '    : scope.label\n'
         '}\n',
         'export const scopeLabel = scope => scope.label\n'),
