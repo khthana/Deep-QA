@@ -86,13 +86,60 @@ const TEACHER = 'อาจารย์ผู้สอน';
  * after `expireSession` spends the expiry on a document the test is about to
  * throw away, and the reload it cares about finds nothing left to have ended.
  *
- * `networkidle` rather than a particular response because the point is the
- * absence of requests, not the presence of one, and StrictMode issues the
- * bootstrap read twice.
+ * This helper used to wait for `networkidle`, on the reasoning that the point
+ * is the absence of requests and StrictMode asks twice. #293 measured that
+ * premise on 20 November 2569 at CPU rates 1, 4 and 8 and it was false in
+ * 22 runs of 27 over three rounds (9, 7 and 6 of 9): `networkidle` resolved
+ * with **no** `GET /api/me` sent yet, both of them left after
+ * `expireSession`, and in every such run the cookie was gone before the
+ * reload. Whether a row then failed was decided by whether the reload or
+ * the click tore the document down before those reads reached the server -
+ * which is why three of the rows below failed some of the time, on `HEAD` as
+ * well as on #292's tree. The defect was the arrangement, not the system: in
+ * use, the document whose bootstrap read meets the dead token is the one the
+ * person is looking at, and that read's own 401 draws the box on it - the
+ * read is only wasted here because the row throws that document away.
+ *
+ * So the settle point is the shell drawn - the acting button is only there
+ * once a bootstrap read has answered, and by then StrictMode's second one has
+ * been sent - and then every `/api/` request this document had started by
+ * then having finished, counted from the page's own request events rather
+ * than inferred from a quiet half second. Every one and not only `/api/me`,
+ * because a screen read answered 401 after the forgery raises the same box
+ * over the menu the button row has to click. What it cannot see is a screen
+ * read that has not been *sent* when the count is read: the bootstrap reads
+ * are fenced by the button, a screen's own are not. The 70 runs of 70 in
+ * `docs/acceptance/10-application-shell.md` §#293 are the evidence that this
+ * is enough for these rows, not a proof that it is closed. The probe that
+ * measured it is `e2e/probes/293-stray-bootstrap-read.spec.js`.
  */
 const openAndSettle = async (page, path) => {
-  await page.goto(path);
-  await page.waitForLoadState('networkidle');
+  // Counting starts at the new document's commit and not before `goto`: once
+  // in 26 probe runs a count started before it stuck at 2 and never came
+  // down. The two were not named - the run that would have named them did not
+  // reproduce it - so the cause is an inference: reads of the document `goto`
+  // replaces, aborted by the navigation without either event. Nothing this
+  // document asks for can be sent before it commits, and nothing the old one
+  // asked for can touch its state.
+  await page.goto(path, { waitUntil: 'commit' });
+  const stillOut = new Set();
+  const onSent = request => {
+    if (new URL(request.url()).pathname.startsWith('/api/')) stillOut.add(request);
+  };
+  const onEnded = request => stillOut.delete(request);
+  page.on('request', onSent);
+  page.on('requestfinished', onEnded);
+  page.on('requestfailed', onEnded);
+  try {
+    await expect(actingButton(page)).toBeVisible();
+    await expect
+      .poll(() => stillOut.size, { message: `requests still out after opening ${path}` })
+      .toBe(0);
+  } finally {
+    page.off('request', onSent);
+    page.off('requestfinished', onEnded);
+    page.off('requestfailed', onEnded);
+  }
 };
 
 const waitForProgramSubjects = page =>

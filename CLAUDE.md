@@ -753,6 +753,8 @@ citation.
   so a row built on a race keeps passing with the race gone, its mutants survive, and nothing is red
   to say so. The census that decides is *which rows wait for that control*, not which rows have it
   disabled at the moment they press it. (#209, found in #210's `busy`)
+- **A wait for quiet is satisfied before the first sound** — and a docblock describing the right
+  mechanism is not evidence that the wait it chose holds it. (#293, #132, #241)
 - **A settle point is chosen by how the row will fail** — waiting for the drawing the defect takes
   away is right on the screen that behaves and a timeout on every screen that does not. #139 asked
   one step later; read the screen's own line instead, which fails with the numbers it is showing.
@@ -1395,7 +1397,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/07-ticket-breakdown.md` | The original 44 tickets, their dependency graph and the critical path. Tickets opened after it was published are on GitHub only. |
 | `mutation/` | The mutations that proved each ⚙ row's assertions. Read its README before trusting or rewriting one. |
 | `frontend/scripts/` | Thirteen censuses, as instruments. `npm run census` runs all thirteen: twelve since 30 October 2569, when #249 closed the population `save-window-fields.js` was a red gate over and it went in with nothing changed in the script (#200), and `guards-with-no-mutant.js` since 6 November 2569, which went in **wired** on the day it landed because its population was already closed - #200's reason is a red gate nobody has fixed, and #269 found there was none. Their own fixtures are `npm run census:test`. They are listed below the table. |
-| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257, #258, #261, #264). Not rows and not gates — nothing in the repository runs them, and **nine** of them are specs the runner only sees when they are copied into `tests/` by hand — counted on 3 November 2569, where this line read *seven* in the morning and *eight* for the hours between #261's probe and #264's, both of which landed the same day. Each says in its own docblock how to run it and what it cannot say. |
+| `e2e/probes/` | Instruments kept because nothing else can read their answer again (#169, #219, #221, #222, #238, #241, #257, #258, #261, #264, #293). Not rows and not gates — nothing in the repository runs them, and **ten** of them are specs the runner only sees when they are copied into `tests/` by hand — counted on 20 November 2569, when #293's probe made the tenth; on 3 November it read *nine*, after *seven* in the morning and *eight* for the hours between #261's probe and #264's. Each says in its own docblock how to run it and what it cannot say. |
 
 | Census | goes red when a screen |
 |---|---|
