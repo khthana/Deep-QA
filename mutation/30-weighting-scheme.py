@@ -97,6 +97,26 @@ than a mutant that kills too much - but a per-ticket sweep cannot see any of it.
 `swallowrefusal` อยู่ในทางที่คำตอบไม่ ok ซึ่ง `openWeights` ไม่รอ · `anysection` ทำให้ 404 เป็น 200
 แล้วจุดรอผ่านเพราะจอวาดคำตอบนั้นจริง ตายที่ `status` ตามเดิม
 
+**ผลการกวาดซ้ำ 22 พ.ย. 2569 — คำทำนายถูก ยี่สิบสองตายยี่สิบสอง ไม่มีตัวไหนตายที่ `untilWeightsDrawn`**
+ทุกตัวผ่านประตู *มัตแตนต์อยู่ในต้นไม้จริง* ก่อนรัน และต้นไม้คืนครบหลังรัน (#268) · เลขบรรทัดของ `30a`
+เลื่อนสองบรรทัดจากตารางข้างบนเพราะ `3f63868` เพิ่มสองบรรทัดในแถว 1 (#173 — อ้างด้วยข้อความ ไม่ใช่เลข)
+
+- **`30a`:** `anysection` แถว 10 `status()).toBe(404)` · `cancelremoves` แถว 6 · `importlineoff` แถว 9
+  `reportedLines` · `importneverdeletes` แถว 8 เท่านั้น (ตารางจดแถว 9 ตายด้วยจากการปนเปื้อน วันนี้ไม่) ·
+  `importwholeskipped` แถว 9 `status()).toBe(400)` · `menudropssection` แถว 1 ที่ `waitForWeights`
+  **ก่อน**ถึงจุดรอ · `noupdate` แถว 3 และ 5 (ตารางจด 3 5 6 7) · `orderbyid` แปดแถว — แถว 1 **ผ่าน**
+  `untilWeightsDrawn` แล้วตายที่ `schemeOnScreen(page)).toEqual(SEEDED)` ซึ่งคือจุดที่คำทำนายชี้ ·
+  `savenoreload` แถว 3 และ 5 ที่ `waitForWeights` ใน `saveScheme` (ตรงกับการกวาดซ้ำของ #140) ·
+  `saveswallows` แถว 4 และ 7 · `sumunchecked` แถว 4 `status()).toBe(400)` · `swallowrefusal` แถว 10
+  `sectionNotFound` · `totalfrozen` แถว 4 `รวม 90 / 100` · `wrongname` แถว 7 · `zerototal` แถว 4
+- **`122a`:** สามตัวตายที่แถว 1 ใน `sentence` (`toBeVisible` สองตัว `aria-live` หนึ่งตัว)
+- **`152a`:** `weightssaveanyway` ที่ `"the failed reload's refusal"`
+- **`201a`:** `weightsblanks` ที่ `'the scheme the screen last drew'` · `weightsforgetsthenumbers` ที่ `'what was typed'`
+- **`273a`:** `t273weight_remove` แถว 6 ที่ `'its tooltip is its whole name'`
+
+บันทึกนี้ตอบเฉพาะคำถามว่าตัวไหนย้ายไปตายที่จุดรอ — ไม่ได้เทียบบรรทัดตายของแฟ้ม 122 152 201 273
+กับตารางของแฟ้มเหล่านั้นทีละแถว ซึ่งยังไม่มีใครถาม
+
 """
 
 from harness import main
