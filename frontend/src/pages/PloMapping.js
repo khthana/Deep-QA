@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Notice from '../components/Notice'
 import { listReachablePrograms, readGrid, saveCell } from '../api/ploMapping'
 import { LEVELS, keyOf, mark } from '../components/ploMapping/levels'
+import { programNamed } from '../lib/unitNamed'
 
 /**
  * การเชื่อมโยงผลการเรียนรู้กับรายวิชา — ticket #20.
@@ -252,7 +253,7 @@ export default function PloMapping() {
               >
                 {programs.map(entry => (
                   <option key={entry.program_id} value={entry.program_id}>
-                    {entry.program_name_th}
+                    {programNamed(entry)}
                   </option>
                 ))}
               </select>

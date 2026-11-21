@@ -23,6 +23,7 @@ import {
   listReachablePrograms,
   updateProgramSubject,
 } from '../api/programSubjects'
+import { programNamed } from '../lib/unitNamed'
 
 /**
  * รายวิชาในหลักสูตร — ticket #18.
@@ -510,7 +511,7 @@ export default function ProgramSubjects() {
                 >
                   {programs.map(entry => (
                     <option key={entry.program_id} value={entry.program_id}>
-                      {entry.program_name_th}
+                      {programNamed(entry)}
                     </option>
                   ))}
                 </select>

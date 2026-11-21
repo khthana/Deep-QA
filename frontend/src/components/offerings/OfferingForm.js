@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import ContentMotionDIV from '../ContentMotionDIV'
 import { termLabel } from './terms'
 import { listOfferableSubjects } from '../../api/offerings'
+import { programNamed } from '../../lib/unitNamed'
 
 /**
  * The form that opens a รายวิชา for a term — #23's first criterion.
@@ -184,13 +185,15 @@ export default function OfferingForm({
                 <option value="">เลือกหลักสูตร</option>
                 {usable.map(program => (
                   <option key={program.program_id} value={program.program_id}>
-                    {program.program_name_th}
+                    {programNamed(program)}
                   </option>
                 ))}
               </select>
             ) : (
               <span className="block rounded-lg bg-gray-100 p-2.5 text-sm text-gray-900">
-                {onlyOne ? onlyOne.program_name_th : '—'}
+                {/* #298: beside the label หลักสูตร, so a nameless one is its code
+                    alone rather than the kind word twice (#295). */}
+                {onlyOne ? onlyOne.program_name_th || onlyOne.program_id : '—'}
               </span>
             )}
           </Field>

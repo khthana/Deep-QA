@@ -82,7 +82,13 @@ export default function ProgramForm({ value, busy, onSave, onCancel }) {
   // edited, or the form was opened to add one. `value` is state in the screen
   // above and is not derived from any answer here, so a re-read cannot move it.
   useEffect(() => {
-    setDraft({ ...EMPTY, ...value })
+    // #298: a column the route wrote as null (`blankToNull`) is an empty box
+    // here, or `submit`'s `.trim()` throws after `sending` went up and the
+    // form is frozen with nothing sent.
+    setDraft({
+      ...EMPTY,
+      ...Object.fromEntries(Object.entries(value ?? {}).map(([key, held]) => [key, held ?? ''])),
+    })
   }, [value])
 
   const set = key => event => setDraft(current => ({ ...current, [key]: event.target.value }))

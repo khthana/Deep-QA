@@ -14,6 +14,7 @@ import {
   listReachablePrograms,
   updateRubric,
 } from '../api/rubrics'
+import { programNamed } from '../lib/unitNamed'
 
 /**
  * ข้อมูล Rubric กลาง — ticket #21.
@@ -544,7 +545,7 @@ export default function Rubrics() {
               >
                 {programs.map(entry => (
                   <option key={entry.program_id} value={entry.program_id}>
-                    {entry.program_name_th}
+                    {programNamed(entry)}
                   </option>
                 ))}
               </select>

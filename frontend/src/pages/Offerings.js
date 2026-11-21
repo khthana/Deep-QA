@@ -22,6 +22,7 @@ import {
   listTerms,
   updateSection,
 } from '../api/offerings'
+import { programNamed } from '../lib/unitNamed'
 
 /**
  * การเปิดรายวิชาในภาคการศึกษา — ticket #23.
@@ -954,7 +955,7 @@ export default function Offerings() {
                   >
                     {programs.map(entry => (
                       <option key={entry.program_id} value={entry.program_id}>
-                        {entry.program_name_th}
+                        {programNamed(entry)}
                       </option>
                     ))}
                   </select>

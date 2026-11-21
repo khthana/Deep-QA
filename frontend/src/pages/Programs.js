@@ -518,6 +518,9 @@ export default function Programs() {
                         {program.program_id}
                       </td>
                       <td className="px-4 py-2">
+                        {/* unit-name: a cell in the table that manages the record, with its
+                            code in the column beside it - an empty cell is what the record
+                            holds, and the code says which one it is (#294 rule 2, #298) */}
                         {program.program_name_th}
                         {program.program_name_en && (
                           <span className="block text-xs text-slate-500">
@@ -581,7 +584,7 @@ export default function Programs() {
             // sharing a name is the whole reason the code is in the sentence (#93)
             // org-code: and this is the screen that manages programmes, which keeps its codes
             // in the table, the form and this question (#294 rule 2)
-            ? `ต้องการลบหลักสูตร ${removing.program_id} ${removing.program_name_th} ใช่หรือไม่ หากมี PLO รายวิชาในหลักสูตร นักศึกษา หรือผลการเรียนอ้างอิงอยู่ ระบบจะปิดการใช้งานให้แทนการลบ`
+            ? `ต้องการลบหลักสูตร ${removing.program_id}${removing.program_name_th ? ` ${removing.program_name_th}` : ''} ใช่หรือไม่ หากมี PLO รายวิชาในหลักสูตร นักศึกษา หรือผลการเรียนอ้างอิงอยู่ ระบบจะปิดการใช้งานให้แทนการลบ`
             : ''
         }
         confirmLabel="ลบหลักสูตร"

@@ -14,6 +14,7 @@ import {
   listReachablePrograms,
   updatePlo,
 } from '../api/plos'
+import { programNamed } from '../lib/unitNamed'
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตร (PLO) — ticket #19.
@@ -591,7 +592,7 @@ export default function Plos() {
                         settled the same question for the same reason. */}
                     {programs.map(entry => (
                       <option key={entry.program_id} value={entry.program_id}>
-                        {entry.program_name_th}
+                        {programNamed(entry)}
                       </option>
                     ))}
                   </select>

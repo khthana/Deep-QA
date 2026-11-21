@@ -41,6 +41,10 @@ const CENSUSES = [
   // ticket that wrote it (#294) took every unmarked site out of the population
   // in the same change, and its first run over the tree was `problems 0`.
   'org-codes.js',
+  // Wired in on the day it landed, 21 พฤศจิกายน 2569, for org-codes.js's
+  // reason: #298 fixed the sixteen bare sites and marked the two that stay in
+  // the same change, and its first run over the tree was `problems 0`.
+  'nameless-units.js',
 ]
 
 let worst = 0

@@ -819,7 +819,12 @@ export default function Departments() {
                             departments - the column an administrator typed it into (#294 rule 2) */}
                         {department.department_id}
                       </td>
-                      <td className="px-4 py-2">{department.department_name_th}</td>
+                      <td className="px-4 py-2">
+                        {/* unit-name: a cell in the table that manages the record, with its
+                            code in the column beside it - an empty cell is what the record
+                            holds, and the code says which one it is (#294 rule 2, #298) */}
+                        {department.department_name_th}
+                      </td>
                       <td className="px-4 py-2 text-slate-500">
                         {department.department_name_en ?? '—'}
                       </td>
@@ -878,7 +883,7 @@ export default function Departments() {
             // sharing a name is the whole reason the code is in the sentence (#93)
             // org-code: and this is the screen that manages departments, which keeps its codes
             // in the table, the form and this question (#294 rule 2)
-            ? `ต้องการลบภาควิชา ${removing.department_id} ${removing.department_name_th} ใช่หรือไม่ หากมีหลักสูตร รายวิชา หรือผู้ใช้งานอ้างอิงอยู่ ระบบจะไม่ลบให้`
+            ? `ต้องการลบภาควิชา ${removing.department_id}${removing.department_name_th ? ` ${removing.department_name_th}` : ''} ใช่หรือไม่ หากมีหลักสูตร รายวิชา หรือผู้ใช้งานอ้างอิงอยู่ ระบบจะไม่ลบให้`
             : ''
         }
         confirmLabel="ลบภาควิชา"

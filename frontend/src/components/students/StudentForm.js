@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
+import { programNamed } from '../../lib/unitNamed'
 
 /**
  * The form for adding one student to the central register — #17.
@@ -171,7 +172,7 @@ export default function StudentForm({ programs, departments, busy, onSave, onCan
               <option value="">เลือกหลักสูตร</option>
               {offered.map(program => (
                 <option key={program.program_id} value={program.program_id}>
-                  {program.program_name_th}
+                  {programNamed(program)}
                 </option>
               ))}
             </select>

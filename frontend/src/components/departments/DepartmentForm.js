@@ -114,7 +114,13 @@ export default function DepartmentForm({ value, busy, onSave, onCancel }) {
   const editing = Boolean(value?.department_id)
 
   useEffect(() => {
-    setDraft({ ...EMPTY, ...value })
+    // #298: a column the route wrote as null (`blankToNull`) is an empty box
+    // here, or `submit`'s `.trim()` throws after `sending` went up and the
+    // form is frozen with nothing sent.
+    setDraft({
+      ...EMPTY,
+      ...Object.fromEntries(Object.entries(value ?? {}).map(([key, held]) => [key, held ?? ''])),
+    })
   }, [value])
 
   const set = key => event =>

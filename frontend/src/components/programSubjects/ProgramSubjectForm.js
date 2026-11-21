@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
 import { searchCatalogue } from '../../api/programSubjects'
+import { programNamed } from '../../lib/unitNamed'
 
 /**
  * The form for placing a subject into a หลักสูตร and for changing one — #18.
@@ -176,7 +177,7 @@ export default function ProgramSubjectForm({
                   value={program.program_id}
                   disabled={program.is_active === false && program.program_id !== draft.program_id}
                 >
-                  {program.program_name_th}
+                  {programNamed(program)}
                 </option>
               ))}
             </select>

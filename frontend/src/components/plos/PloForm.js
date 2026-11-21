@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
 import { OUTCOME_TYPES } from '../../lib/outcomes'
+import { programNamed } from '../../lib/unitNamed'
 
 /**
  * The form for writing a ผลการเรียนรู้ระดับหลักสูตร down and for changing one — #19.
@@ -226,7 +227,7 @@ export default function PloForm({
                   value={program.program_id}
                   disabled={program.is_active === false && program.program_id !== draft.program_id}
                 >
-                  {program.program_name_th}
+                  {programNamed(program)}
                 </option>
               ))}
             </select>
