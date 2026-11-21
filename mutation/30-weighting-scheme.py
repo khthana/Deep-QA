@@ -78,6 +78,25 @@ than a mutant that kills too much - but a per-ticket sweep cannot see any of it.
 บันทึกเต็ม: `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`
 § *ผลการกวาดซ้ำเก้าสิบเก้าตัว 4 พ.ย. 2569*
 
+**คำทำนายการกวาดซ้ำของ #300 (22 พ.ย. 2569) — เขียนและลงคอมมิตก่อนรัน (#255)** `3f63868` ใส่จุดรอ
+`untilWeightsDrawn` ใน `openWeights` (`e2e/support/weights-screen.js`) — รอให้ช่องชื่อหมวดมีจำนวนเท่า
+`weights` ของคำตอบ และรหัสวิชาของคำตอบถูกวาด · จุดรอที่เพิ่มใน helper ร่วมเป็นเงื่อนไขนำของทุกผู้เรียก (#81)
+มัตแตนต์ที่ทำให้สองอย่างนั้นไม่จริงจะตายที่การรอนี้แทนที่ข้ออ้างของแถว (#139, #266)
+
+ประชากร: มัตแตนต์ที่แก้ `GradingWeights.js` หรือ route ของมัน และถูกฆ่าด้วยแถวใน spec ที่ import
+`weights-screen.js` — ทั้งสิบห้าตัวของแฟ้มนี้ (`30a`), `schemeinterrupts` `schemeonlycomplains`
+`schemesaysnothing` ของ `122-weight-total-in-words.py` (`122a`), `weightssaveanyway` ของ
+`152-the-refusal-wins.py` (`152a`), `weightsblanks` `weightsforgetsthenumbers` ของ
+`201-the-refusal-keeps-what-was-typed.py` (`201a`) และ `t273weight_remove` ของ
+`273-teacher-row-actions.py` (`273a`) — ยี่สิบสองตัว · มัตแตนต์ของแฟ้มอื่นที่แก้ `GradingWeights.js`
+(111 133 140 141 202 266 268) ถูกฆ่าด้วย spec ที่ไม่ import `weights-screen.js` จึงไม่อยู่ในคำถามนี้
+
+**คำทำนาย: ทั้งยี่สิบสองตัวยังตายที่ข้อยืนยันเดิมตามตารางของแฟ้มตัวเอง ไม่มีตัวไหนย้ายไปตายที่
+`untilWeightsDrawn`** เพราะไม่มีตัวไหนเปลี่ยนจำนวนช่องที่วาดจากคำตอบ หรือการวาดรหัสวิชา ·
+`orderbyid` สลับลำดับแต่จำนวนเท่าเดิม · `menudropssection` ตายที่ GET ที่ไม่มาก่อนถึงจุดรอ ·
+`swallowrefusal` อยู่ในทางที่คำตอบไม่ ok ซึ่ง `openWeights` ไม่รอ · `anysection` ทำให้ 404 เป็น 200
+แล้วจุดรอผ่านเพราะจอวาดคำตอบนั้นจริง ตายที่ `status` ตามเดิม
+
 """
 
 from harness import main
