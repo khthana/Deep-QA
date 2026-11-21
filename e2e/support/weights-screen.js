@@ -2,6 +2,7 @@
 
 const { DASHBOARD } = require('./teaching-screen');
 const { mySectionIds } = require('./enrolment-screen');
+const { expect } = require('@playwright/test');
 const { openAt } = require('./navigation');
 
 /**
@@ -40,9 +41,42 @@ const waitForWeights = page =>
     answer => isWeightsList(answer.url()) && answer.request().method() === 'GET',
   );
 
-/** Goes to the scheme and hands back the read a row asserts on. */
+/**
+ * Waits until what the answer carried is what the screen is showing - #300.
+ *
+ * #171's settle point, for the screen #171's census did not hold: its seven were
+ * the helpers that already read a list, and this one's read is `schemeOnScreen`,
+ * a walk over inputs rather than headings. Measured on 21 November 2569 with
+ * `support/late-answer.js` at 400ms: `schemeOnScreen` read `[]` on every open,
+ * three by the menu and three through `openWeights`, and the same read behind
+ * this wait read the seeded three on twelve opens of twelve, late and not.
+ *
+ * The count is the rows the answer carried, which are what `draft` is built
+ * from; the clause drawn from `data` is the Offering's รหัสวิชา. An answer with
+ * no rows draws no inputs, so the count waits for nothing there and the clause
+ * is what holds.
+ */
+async function untilWeightsDrawn(page, response) {
+  const answered = await response.json();
+  await expect(page.getByLabel(/^ชื่อหมวดคะแนนที่ /)).toHaveCount(answered.weights.length);
+  await expect(
+    page.getByText(answered.offering.subject_id, { exact: true }).first(),
+  ).toBeVisible();
+  return response;
+}
+
+/**
+ * Goes to the scheme and hands back the read a row asserts on.
+ *
+ * The drawing is waited for only on an answer that succeeded, for `openPlan`'s
+ * reason: a refused read draws no scheme to wait for.
+ */
 async function openWeights(page, sectionId) {
-  return openAt(page, path(sectionId), waitForWeights);
+  return openAt(page, path(sectionId), async fresh => {
+    const response = await waitForWeights(fresh);
+    if (response.ok()) await untilWeightsDrawn(fresh, response);
+    return response;
+  });
 }
 
 const categoryInput = (page, no) =>
@@ -105,6 +139,7 @@ module.exports = {
   mySectionIds,
   categoryInput,
   weightInput,
+  untilWeightsDrawn,
   schemeOnScreen,
   totalLine,
   saveScheme,

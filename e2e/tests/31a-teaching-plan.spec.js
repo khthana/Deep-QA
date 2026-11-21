@@ -11,6 +11,7 @@ const { menuLink, switchTo } = require('../support/shell');
 const { DASHBOARD } = require('../support/teaching-screen');
 const {
   openPlan,
+  untilPlanDrawn,
   waitForPlan,
   mySectionIds,
   cardLabel,
@@ -94,6 +95,10 @@ test('row 1: the menu entry lands on this section\'s plan, drawn in calendar ord
 
   expect(answer.status()).toBe(200);
   expect(new URL(page.url()).pathname).toBe(`${DASHBOARD}/${section}/teachingPlan`);
+  // The menu is this row's way in, so it cannot open through `openPlan` and was
+  // the one row #171's settle point did not reach: it read `[]` once in the full
+  // suite, and five opens of five through #170's window (#300).
+  await untilPlanDrawn(page, answer);
 
   const mine = await answer.json();
   const weeks = planWeeksFor(mine.section.section_number, mine.section.academic_year);

@@ -12,6 +12,7 @@ const { importCsv, reportedLines, reportedReason } = require('../support/import-
 const {
   openWeights,
   waitForWeights,
+  untilWeightsDrawn,
   mySectionIds,
   categoryInput,
   weightInput,
@@ -87,6 +88,8 @@ test('row 1: the menu entry lands on the scheme, and it reads one hundred', asyn
   ]);
   expect(answer.status()).toBe(200);
   expect(new URL(page.url()).pathname).toBe(`${DASHBOARD}/${section}/gradingWeights`);
+  // By the menu, so not through `openWeights`'s settle point (#300, 31a row 1's twin).
+  await untilWeightsDrawn(page, answer);
 
   expect(await schemeOnScreen(page)).toEqual(SEEDED);
   await expect(totalLine(page)).toHaveText('รวม 100 / 100');

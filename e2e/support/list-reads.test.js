@@ -135,9 +135,14 @@ const ROUTES = path.join(__dirname, '..', '..', 'backend', 'routes');
  * stopped being resolvable — each of which is a decision for whoever moved it,
  * and the printed groups beside the failure say which of the three happened.
  */
+// `exact` read 15 on 19 Oct 2569 and has been 16 since 9566591 (#245, 28 Oct 2569),
+// whose `waitForOfferable` in `offerings-screen.js` matches `${API}/subjects` by
+// `===` and by method - exact by construction. Nobody moved this figure with it,
+// so the file was red from that commit until #300 ran it on 21 Nov 2569 (#141:
+// bisected by running the test at each commit).
 const MEASURED = {
   counted: 13,
-  exact: 15,
+  exact: 16,
   unreadable: { 'plos-screen.js': 1, 'rubrics-screen.js': 1, 'scores-screen.js': 1 },
 };
 
