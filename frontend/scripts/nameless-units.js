@@ -258,7 +258,7 @@ function main() {
           why:
             'draws ' +
             hit.column +
-            ' as if it could not be empty. Give it a fallback - `programNamed`, or the code beside a label that says the kind (#298); if an empty one is right here, write `// unit-name: <why> (#NNN)` above it',
+            ' as if it could not be empty. Give it a fallback - `programNamed` or `departmentNamed` (#298); if an empty one is right here, write `// unit-name: <why> (#NNN)` above it',
         })
       else if (!hit.marker.ok)
         problems.push({

@@ -147,8 +147,8 @@ export function ProgramPicker({ programs, program, setProgram }) {
       <span className="flex items-center gap-2 text-sm text-slate-600">
         หลักสูตร
         <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">
-          {/* #298: the label หลักสูตร is beside it, so the code alone (#295). */}
-          {chosen.program_name_th || chosen.program_id}
+          {/* #298: a nameless one reads like the picker (lib/unitNamed). */}
+          {programNamed(chosen)}
         </span>
       </span>
     )

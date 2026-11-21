@@ -191,9 +191,9 @@ export default function OfferingForm({
               </select>
             ) : (
               <span className="block rounded-lg bg-gray-100 p-2.5 text-sm text-gray-900">
-                {/* #298: beside the label หลักสูตร, so a nameless one is its code
-                    alone rather than the kind word twice (#295). */}
-                {onlyOne ? onlyOne.program_name_th || onlyOne.program_id : '—'}
+                {/* #298: a nameless one reads like the picker, the kind word
+                    beside the label's by the owner's answer (lib/unitNamed). */}
+                {onlyOne ? programNamed(onlyOne) : '—'}
               </span>
             )}
           </Field>

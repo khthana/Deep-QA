@@ -13,8 +13,16 @@ import { kindWord } from '../components/users/scopeLabel'
  * own, and the mutants that prove it are at the call sites. The kind word is
  * `scopeLabel`'s, so the two cannot drift apart on the word; the shape around
  * it - word, space, code - is written here and in `scopeLabel` separately.
- * Programmes only: the one department picker (`UserForm`, #296) has its own,
- * and the spans beside a label fall back to the code alone (#295).
+ * The one department picker (`UserForm`, #296) has its own.
+ *
+ * The three spans that draw a unit beside a label already saying its kind
+ * (`OfferingForm`, `CohortPickers`, `Students`) read the same way: the owner
+ * answered on 21 November 2569 that they say `หลักสูตร 0501` like the pickers,
+ * the kind word twice, rather than the code alone that #298 first wrote there
+ * from #295's rule. Hence `departmentNamed`, whose one caller is `Students`.
  */
 export const programNamed = entry =>
   entry.program_name_th || `${kindWord('program')} ${entry.program_id}`
+
+export const departmentNamed = entry =>
+  entry.department_name_th || `${kindWord('department')} ${entry.department_id}`
