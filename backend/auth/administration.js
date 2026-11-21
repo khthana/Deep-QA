@@ -204,7 +204,12 @@ function administration(pool) {
 
   /**
    * Whether the account's place is a place at all - #296, the owner's answers
-   * of 20 and 21 November 2569. Two rules, each `null` when it holds:
+   * of 20 and 21 November 2569. Two rules, and `null` when both hold. A broken
+   * rule answers in the shape `sentenceOf` reads (`auth/refusals.js`): the
+   * first a bare reason, the second `{ reason, message }`, because its sentence
+   * names the department the programme is in (the owner, 21 November 2569) and
+   * so cannot be a constant. A caller reads either through `sentenceOf`;
+   * `REFUSALS[answer]` reports the second with no sentence at all.
    *
    * - **Every account has a department, except where the Central Admin leaves
    *   it blank.** `placeAllowed` reads `program_id ?? department_id`, so until
@@ -215,7 +220,8 @@ function administration(pool) {
    * - **A programme sits under the department it is saved with.** Only when
    *   both are given, so the Central Admin's department-less assessor stays
    *   legal. A programme that names nothing is left to the foreign key, whose
-   *   sentence is already the right one.
+   *   sentence is already the right one. The department is named whether or
+   *   not it is switched off, because that is still where the programme is.
    *
    * Asked last on every path (add, edit, import), so a body a closed ticket
    * refuses for another reason keeps that reason's sentence (#60). Not a
@@ -244,10 +250,11 @@ function administration(pool) {
         // The sentence names where the programme is (the owner, 21 November
         // 2569): by name with the kind word in front (docs/org-unit-names.md
         // rule 3, #295), by kind word and code where the name is empty (#297).
-        const where = `ภาควิชา${rows[0].department_name_th ?? ` ${rows[0].department_id}`}`;
+        // `||` and not `??`, as `departmentNamed` on the screen reads it.
+        const department = `ภาควิชา${rows[0].department_name_th || ` ${rows[0].department_id}`}`;
         return {
           reason: 'programNotInDepartment',
-          message: REFUSALS.programNotInDepartment(where),
+          message: REFUSALS.programNotInDepartment(department),
         };
       }
     }

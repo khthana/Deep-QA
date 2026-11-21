@@ -149,7 +149,7 @@ LOOKUP = (
     "          WHERE p.program_id = $1`,\n"
     '        [programId],\n'
 )
-WHERE = '        const where = `ภาควิชา${rows[0].department_name_th ?? ` ${rows[0].department_id}`}`;\n'
+WHERE = '        const department = `ภาควิชา${rows[0].department_name_th || ` ${rows[0].department_id}`}`;\n'
 
 MUTANTS = {
     # The server before #296, in each rule's half (#115).
@@ -222,7 +222,7 @@ MUTANTS = {
         "          WHERE p.program_id = $1`,\n"
         '        [programId, departmentId],\n'),
     'namelessnull': ('rules', WHERE,
-        '        const where = `ภาควิชา${rows[0].department_name_th}`;\n'),
+        '        const department = `ภาควิชา${rows[0].department_name_th}`;\n'),
     # One per site (#125): the code before this change at each route.
     'createbaresentence': ('users',
         '      if (misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });\n'
