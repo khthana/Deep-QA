@@ -120,6 +120,13 @@ and code* ต่อท้าย · ประโยคนี้ไปไม่ถ
 `grants.test.js` §#296 ไม่ถูกแตะโดยตัวไหน · มัตแตนต์ฝั่ง server ทั้งหกของตารางแรกกวาดซ้ำด้วย เพราะ `createunplaced` และ
 `editunplaced` ถูกเล็งใหม่ (`REFUSALS[misplaced]` → `sentenceOf(misplaced)` ทั้งสองครึ่ง, #203) และบล็อกที่ `programanywhere`
 แก้โตขึ้น (#107) · ทำนายว่าตายที่แถวและบรรทัดเดิมของตารางแรกทุกตัว
+
+**บันทึกผลกวาด (21 พ.ย. 2569, คอมมิต `7c43f48`, `users.test.js` และ `grants.test.js` ทีละตัว):** หกตัวใหม่ตายที่แถวและบรรทัดที่ทำนาย
+ทุกตัว ที่บรรทัดของ**ข้อความ** ไม่ใช่ของสถานะ · `draftwording` และ `nameschosen` แถว 4, 5, 8, 9, 10 · `namelessnull` แถว 10 ·
+`createbaresentence` แถว 4, 5, 10 · `editbaresentence` แถว 8 · `importbaresentence` แถว 9 ที่ `across.body.errors.map` ·
+หกตัวเดิมตายที่แถวและบรรทัดเดิมของตารางแรก แต่**คำทำนายผิดสองตัว**: `programanywhere` และ `createunplaced` ฆ่าแถว 10 ด้วย
+ที่ `assert.equal(response.status, 400, response.body.message)` ของแถวนั้น — แถวใหม่ที่มัตแตนต์ไปถึงได้ทำให้จำนวนที่ฆ่าของมัตแตนต์ที่ไม่มีใครแก้
+หมดอายุ (#257) ซึ่งคำทำนายเขียนว่า *ตายที่แถวเดิม* โดยไม่ได้ถามแถว 10 · `nobodymayleaveblank` ฆ่าผู้อยู่ข้างทางที่การจัดฉากเหมือนครั้งแรก (#266)
 """
 from harness import main
 
