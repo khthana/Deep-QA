@@ -194,6 +194,30 @@ test('the scopes offered are limited to what the granter reaches', async (t) => 
     assert.ok(response.body.scopes.every((scope) => scope.label));
   });
 
+  await t.test('#296: each programme says which department it sits under', async () => {
+    // The accounts form filters its programmes by the department chosen, and
+    // this list is all it has (#296). The department is the programme's own
+    // row's, so a programme moved between departments (#282) is offered under
+    // where it is now.
+    const cookie = await signInAs('U_DEPT');
+    const response = await grantable(cookie);
+    assert.equal(response.status, 200);
+
+    const parents = Object.fromEntries(
+      response.body.scopes
+        .filter((scope) => scope.kind === 'program')
+        .map((scope) => [scope.scope_id, scope.department_id]),
+    );
+    assert.deepEqual(parents, { [PROGRAM_THAI]: DEPT_COMPUTER, [PROGRAM_INTER]: DEPT_COMPUTER });
+    // Only a programme carries one: a department's parent is a faculty, which
+    // nothing on the form asks for.
+    assert.ok(
+      response.body.scopes
+        .filter((scope) => scope.kind !== 'program')
+        .every((scope) => scope.department_id === undefined),
+    );
+  });
+
   await t.test('the Central Admin is offered the whole university and the global grant', async () => {
     const cookie = await signInAs('U_ADMIN');
     const response = await grantable(cookie);

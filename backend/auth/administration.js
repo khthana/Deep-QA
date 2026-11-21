@@ -201,7 +201,42 @@ function administration(pool) {
     return Boolean(own) && scopes.includes(own);
   };
 
-  return { reachOf, reachable, assignable, placeAllowed };
+  /**
+   * Whether the account's place is a place at all - #296, the owner's answers
+   * of 20 and 21 November 2569. Two rules, each `null` when it holds:
+   *
+   * - **Every account has a department, except where the Central Admin leaves
+   *   it blank.** `placeAllowed` reads `program_id ?? department_id`, so until
+   *   #296 a department or faculty administrator could file an account under a
+   *   programme alone - the shape of all three seeded external assessors. The
+   *   Central Admin keeps that freedom: the owner was shown that price, and the
+   *   one account no department holds is theirs.
+   * - **A programme sits under the department it is saved with.** Only when
+   *   both are given, so the Central Admin's department-less assessor stays
+   *   legal. A programme that names nothing is left to the foreign key, whose
+   *   sentence is already the right one.
+   *
+   * Asked last on every path (add, edit, import), so a body a closed ticket
+   * refuses for another reason keeps that reason's sentence (#60). Not a
+   * composite foreign key: `programs.department_id` is editable (#282), and a
+   * key would refuse moving a programme that any account names - a decision
+   * this ticket was not asked about. That move can therefore still leave an
+   * account's pair apart, which no path here can see.
+   */
+  const placeRefusal = async (req, departmentId, programId) => {
+    const { scopes } = await reachOf(req);
+    if (scopes !== null && !departmentId) return 'departmentRequired';
+    if (departmentId && programId) {
+      const { rows } = await pool.query(
+        'SELECT department_id FROM programs WHERE program_id = $1',
+        [programId],
+      );
+      if (rows.length && rows[0].department_id !== departmentId) return 'programNotInDepartment';
+    }
+    return null;
+  };
+
+  return { reachOf, reachable, assignable, placeAllowed, placeRefusal };
 }
 
 module.exports = {

@@ -51,7 +51,7 @@ const { API, openUsers, search, userRow } = require('../support/users-screen');
  *   ซึ่งเขียนไว้ที่ `outsideTheFilters` พร้อมเหตุผล · หมดอายุ 13 พ.ย. 2569 (#272): ทั้งสองฝั่งอ่าน
  *   เป็นอักษรแล้ว และแถวของมันอยู่ที่ `272b-the-search-box-on-three-more-screens.spec.js`
  * - **ไม่ได้พูดเรื่องขอบเขตสิทธิ์** บัญชีที่สร้างนอกขอบเขตของคนที่สร้างหายจากรายการ
- *   ด้วยกลไกอื่นและด้วยประโยคอื่น ซึ่งเป็น #251 ทุกแถวที่นี่จึงกรอก **รหัสภาควิชา**
+ *   ด้วยกลไกอื่นและด้วยประโยคอื่น ซึ่งเป็น #251 ทุกแถวที่นี่จึงกรอก **รหัสภาควิชา** (ช่องเลือก *ภาควิชา* ตั้งแต่ #296)
  *   เป็นภาควิชาของผู้ดูแลที่ลงชื่อเข้าใช้ เพื่อให้กลไกนั้นไม่มาปนกับสิ่งที่วัด
  * - **ไม่ได้พูดว่าถ้อยคำถูกต้องไหม** ถ้อยคำเป็นของเจ้าของงาน (`docs/06` §Out of Scope)
  *
@@ -128,7 +128,9 @@ async function createAccount(page, { id, email, first }) {
   await page.getByLabel('อีเมล', { exact: true }).fill(email);
   await page.getByLabel('ชื่อ (ไทย)', { exact: true }).fill(first);
   await page.getByLabel('นามสกุล (ไทย)', { exact: true }).fill('ผู้ทดสอบ');
-  await page.getByLabel('รหัสภาควิชา', { exact: true }).fill(DEPARTMENT);
+  // A dropdown since #296, found by role: a label wrapping a `<select>` reads
+  // as its own words plus every option (#180).
+  await page.getByRole('combobox', { name: 'ภาควิชา', exact: true }).selectOption(DEPARTMENT);
 
   // The grant the account is created with. Not optional: the route refuses a
   // create that carries none, and `placeAllowed` refuses one placed outside the

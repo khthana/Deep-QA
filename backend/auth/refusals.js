@@ -153,6 +153,10 @@ const REFUSALS = {
   scopeUnknown: 'ขอบเขตที่เลือกไม่มีอยู่ในระบบ',
 
   scopeNotYours: 'ไม่สามารถจัดการบัญชีนอกขอบเขตที่รับผิดชอบได้',
+  // #296, the owner's two rules for an account's place. The wording is the
+  // rebuild's first draft and is the owner's to change (`docs/06` §Out of Scope).
+  departmentRequired: 'กรุณาเลือกภาควิชาของบัญชีนี้',
+  programNotInDepartment: 'หลักสูตรที่เลือกไม่ได้อยู่ในภาควิชานี้',
   roleNotAssignable: 'ไม่สามารถกำหนดบทบาทนี้ได้',
   importEmpty: 'ไม่พบข้อมูลในไฟล์ที่นำเข้า',
   importRejected: 'ไฟล์นำเข้ามีข้อผิดพลาด ระบบไม่ได้บันทึกรายการใด',

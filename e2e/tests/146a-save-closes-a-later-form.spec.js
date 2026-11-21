@@ -12,7 +12,7 @@ const { gate, isGet, isWrite } = require('../support/gate');
 const { openDepartments } = require('../support/departments-screen');
 const { openPrograms } = require('../support/programs-screen');
 const { openSubjects } = require('../support/subjects-screen');
-const { openUsers } = require('../support/users-screen');
+const { openUsers, search } = require('../support/users-screen');
 const { openRegister, answerOfAnAddition } = require('../support/students-screen');
 const { openOfferings, openForm, subjectPicker } = require('../support/offerings-screen');
 const { PDF_BYTES, attach, evidencePath } = require('../support/evidence-screen');
@@ -216,7 +216,17 @@ const SCREENS = [
     name: 'ข้อมูลผู้ใช้งาน',
     file: 'Users.js',
     account: ACCOUNTS.facultyAdmin,
-    open: (page) => openUsers(page),
+    // #296 (21 พ.ย. 2569): the faculty administrator's first rows were the three
+    // external assessors, who hold no department, and the owner's rule now has the
+    // form refuse to send their save until one is chosen - so a row using the
+    // form as an instrument would wait for a request the browser never makes.
+    // The other way a person has to the same situation (#217) is an account that
+    // already has its place, and the search box is how this screen narrows to
+    // them: every seeded account at the institution's own domain holds one.
+    open: async (page) => {
+      await openUsers(page);
+      await search(page, 'kmitl.ac.th');
+    },
     // A user id is not digits on every account, so the shape is *one segment*.
     detail: /^\/api\/users\/[^/]+$/,
     list: '/api/users',

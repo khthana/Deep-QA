@@ -128,7 +128,9 @@ async function createAccount(page, { id, email }) {
   await page.getByLabel('อีเมล', { exact: true }).fill(email);
   await page.getByLabel('ชื่อ (ไทย)', { exact: true }).fill('ค้นหา');
   await page.getByLabel('นามสกุล (ไทย)', { exact: true }).fill('ผู้ทดสอบ');
-  await page.getByLabel('รหัสภาควิชา', { exact: true }).fill(department);
+  // A dropdown since #296, found by role: a label wrapping a `<select>` reads
+  // as its own words plus every option (#180).
+  await page.getByRole('combobox', { name: 'ภาควิชา', exact: true }).selectOption(department);
   await page.locator('select:has(option:text-is("— เลือกบทบาท —"))').selectOption('TEACHER');
   await page.locator('select:has(option:text-is("— เลือกขอบเขต —"))').selectOption(department);
   const [written] = await Promise.all([

@@ -260,7 +260,7 @@ async function insertAccount(client, values, role, actorId) {
 
 function userRoutes(pool) {
   const router = express.Router();
-  const { reachOf, reachable, assignable, placeAllowed } = administration(pool);
+  const { reachOf, reachable, assignable, placeAllowed, placeRefusal } = administration(pool);
 
   // --- the list ------------------------------------------------------------
 
@@ -393,6 +393,9 @@ function userRoutes(pool) {
       }
       const refusal = await assignable(req, role.role_id, role.scope_id);
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
+      // Last, so every refusal above keeps its sentence (#60) - #296.
+      const misplaced = await placeRefusal(req, values.department_id, values.program_id);
+      if (misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });
 
       await client.query('BEGIN');
       const created = await insertAccount(client, values, role, req.auth.userId);
@@ -425,6 +428,9 @@ function userRoutes(pool) {
       if (!(await placeAllowed(req, values.department_id, values.program_id))) {
         return res.status(403).json({ message: REFUSALS.scopeNotYours });
       }
+      // #296, last (#60).
+      const misplaced = await placeRefusal(req, values.department_id, values.program_id);
+      if (misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });
 
       const { rows } = await pool.query(
         `UPDATE users SET email = $2,
@@ -541,7 +547,11 @@ function userRoutes(pool) {
           if (!(await placeAllowed(req, values.department_id, values.program_id))) {
             return 'scopeNotYours';
           }
-          return assignable(req, role.role_id, role.scope_id);
+          // #296, last (#60): the import holds the form's two rules.
+          return (
+            (await assignable(req, role.role_id, role.scope_id)) ??
+            placeRefusal(req, values.department_id, values.program_id)
+          );
         },
         insert: async (client, { values, role }) => {
           const written = await insertAccount(client, values, role, req.auth.userId);

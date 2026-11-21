@@ -6,7 +6,7 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { gate, isGet, isWrite } = require('../support/gate');
-const { openUsers } = require('../support/users-screen');
+const { openUsers, search } = require('../support/users-screen');
 const { openOfferings } = require('../support/offerings-screen');
 const { openGroups, card, groupNames } = require('../support/groups-screen');
 const improvement = require('../support/improvement-screen');
@@ -117,6 +117,14 @@ test.describe('ข้อมูลผู้ใช้งาน (UserForm.js)', () 
   }) => {
     await signIn(page, ACCOUNTS.facultyAdmin);
     await openUsers(page);
+    // #296 (21 พ.ย. 2569): the faculty administrator's first rows were the three
+    // external assessors, who hold no department, and the owner's rule now has the
+    // form refuse to send their save until one is chosen - so a row using the
+    // form as an instrument would wait for a request the browser never makes.
+    // The other way a person has to the same situation (#217) is an account that
+    // already has its place, and the search box is how this screen narrows to
+    // them: every seeded account at the institution's own domain holds one.
+    await search(page, 'kmitl.ac.th');
 
     const row = firstRow(page, 'แก้ไข');
     await expect(row).toBeVisible();

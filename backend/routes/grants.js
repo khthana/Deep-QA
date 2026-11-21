@@ -74,20 +74,27 @@ function grantRoutes(pool) {
       );
 
       const { rows: offered } = await pool.query(
-        `SELECT faculty_id AS scope_id, faculty_name_th AS label, 'faculty' AS kind, 1 AS rank
+        `SELECT faculty_id AS scope_id, faculty_name_th AS label, 'faculty' AS kind, 1 AS rank,
+                NULL AS parent
            FROM faculty WHERE is_active AND ($1::text[] IS NULL OR faculty_id = ANY($1))
           UNION ALL
-         SELECT department_id, department_name_th, 'department', 2
+         SELECT department_id, department_name_th, 'department', 2, NULL
            FROM departments WHERE is_active AND ($1::text[] IS NULL OR department_id = ANY($1))
           UNION ALL
-         SELECT program_id, program_name_th, 'program', 3
+         SELECT program_id, program_name_th, 'program', 3, department_id
            FROM programs WHERE is_active AND ($1::text[] IS NULL OR program_id = ANY($1))
           ORDER BY rank, scope_id`,
         [scopes],
       );
 
       const global = { scope_id: GLOBAL_SCOPE, label: 'ทั้งมหาวิทยาลัย', kind: 'global' };
-      const scopeList = offered.map(({ scope_id, label, kind }) => ({ scope_id, label, kind }));
+      // A programme carries the department it sits under, which the accounts
+      // form filters its programmes by (#296). Nothing else carries a parent.
+      const scopeList = offered.map(({ scope_id, label, kind, parent }) =>
+        kind === 'program'
+          ? { scope_id, label, kind, department_id: parent }
+          : { scope_id, label, kind },
+      );
 
       return res.status(200).json({
         roles: roles.rows,

@@ -1461,3 +1461,211 @@ test('an import writes a line per account, each naming it — #58', async () => 
     await api.pool.query(`DELETE FROM users WHERE user_id = ANY($1)`, [['LOG_ONE', 'LOG_TWO']]);
   }
 });
+
+// --- #296: a department for every account, and a programme under it ----------
+
+/**
+ * The owner answered on 20 and 21 November 2569 (#296): every account has a
+ * department except where the Central Admin leaves it blank, and a programme
+ * must sit under the department it is saved with. Both are new rules of the
+ * server's, written into all three ways an account is written - add, edit and
+ * import - because a constraint binds every path (#166). Each is the last gate
+ * it reaches, so a body a closed ticket's row refuses for another reason keeps
+ * that reason's sentence (#60).
+ *
+ * Measured before the rule landed (21 November 2569, seed and dev database
+ * alike): four accounts had no department - the Central Admin and the three
+ * external assessors, each `null` / `0501` - and none held a programme outside
+ * its department. The assessors' shape is what the first rule now refuses a
+ * department or faculty administrator, and what it still lets the Central
+ * Admin keep.
+ */
+test('#296: a department for every account, and a programme under it', async (t) => {
+  const PROGRAM_CIVIL = PROGRAMS.find((program) => program.department === DEPT_CIVIL).id;
+  const written = [];
+
+  t.after(async () => {
+    // Below the seam, by the identifiers this test wrote (#134), and the one
+    // account it edits put back to what the seed holds (#137).
+    await api.pool.query(`DELETE FROM users WHERE user_id = ANY($1)`, [written]);
+    await api.pool.query(
+      `UPDATE users SET department_id = NULL, program_id = $2 WHERE user_id = $1`,
+      [byAlias('U_EXT'), PROGRAM_THAI],
+    );
+  });
+
+  const assessor = (userId) => ({
+    user_id: userId,
+    email: `${userId.toLowerCase()}@tabee-review.org`,
+    first_name_en: 'Assessor',
+    program_id: PROGRAM_THAI,
+    password: 'deep-core-296',
+    role: { role_id: 'EXT_ASSESSOR', scope_id: PROGRAM_THAI },
+  });
+
+  await t.test('a department administrator is refused an account with no department', async () => {
+    const dept = await signInAs('U_DEPT');
+    const response = await create(dept, assessor('NODEPT_296'));
+    if (response.status === 201) written.push('NODEPT_296');
+
+    assert.equal(response.status, 400, response.body.message);
+    assert.equal(response.body.message, REFUSALS.departmentRequired);
+  });
+
+  await t.test('and is not refused once the department is given', async () => {
+    const dept = await signInAs('U_DEPT');
+    const response = await create(dept, { ...assessor('WITHDEPT_296'), department_id: DEPT_COMPUTER });
+    if (response.status === 201) written.push('WITHDEPT_296');
+
+    assert.equal(response.status, 201, response.body.message);
+  });
+
+  await t.test('the Central Admin may still leave it blank', async () => {
+    const admin = await signInAs('U_ADMIN');
+    const response = await create(admin, assessor('CENTRAL_296'));
+    if (response.status === 201) written.push('CENTRAL_296');
+
+    assert.equal(response.status, 201, response.body.message);
+    assert.equal(response.body.user.department_id, null);
+  });
+
+  await t.test('a programme outside the department is refused, the Central Admin too', async () => {
+    const admin = await signInAs('U_ADMIN');
+    const response = await create(admin, {
+      ...assessor('ACROSS_296'),
+      department_id: DEPT_CIVIL,
+    });
+    if (response.status === 201) written.push('ACROSS_296');
+
+    assert.equal(response.status, 400, response.body.message);
+    assert.equal(response.body.message, REFUSALS.programNotInDepartment);
+  });
+
+  await t.test('and so is it for a faculty administrator who reaches both', async () => {
+    const faculty = await signInAs('U_FAC');
+    const response = await create(faculty, {
+      ...assessor('FACULTY_296'),
+      department_id: DEPT_CIVIL,
+    });
+    if (response.status === 201) written.push('FACULTY_296');
+
+    assert.equal(response.status, 400, response.body.message);
+    assert.equal(response.body.message, REFUSALS.programNotInDepartment);
+  });
+
+  await t.test('an existing assessor edited by their department administrator', async () => {
+    const dept = await signInAs('U_DEPT');
+    const extId = byAlias('U_EXT');
+    const { rows: before } = await api.pool.query(
+      `SELECT department_id, program_id FROM users WHERE user_id = $1`,
+      [extId],
+    );
+    // The shape the rule is about, asserted where it is used (#51).
+    assert.deepEqual(before[0], { department_id: null, program_id: PROGRAM_THAI });
+
+    const shown = await request(api.app).get(`/api/users/${extId}`).set('Cookie', dept);
+    assert.equal(shown.status, 200, shown.body.message);
+    const untouched = await request(api.app)
+      .put(`/api/users/${extId}`)
+      .set('Cookie', dept)
+      .send(shown.body.user);
+    assert.equal(untouched.status, 400, untouched.body.message);
+    assert.equal(untouched.body.message, REFUSALS.departmentRequired);
+
+    const placed = await request(api.app)
+      .put(`/api/users/${extId}`)
+      .set('Cookie', dept)
+      .send({ ...shown.body.user, department_id: DEPT_COMPUTER });
+    assert.equal(placed.status, 200, placed.body.message);
+    assert.equal(placed.body.user.department_id, DEPT_COMPUTER);
+  });
+
+  await t.test('the same assessor saved untouched by the Central Admin stays as it was', async () => {
+    const extId = byAlias('U_EXT');
+    await api.pool.query(`UPDATE users SET department_id = NULL WHERE user_id = $1`, [extId]);
+    const admin = await signInAs('U_ADMIN');
+
+    const shown = await request(api.app).get(`/api/users/${extId}`).set('Cookie', admin);
+    const saved = await request(api.app)
+      .put(`/api/users/${extId}`)
+      .set('Cookie', admin)
+      .send(shown.body.user);
+
+    assert.equal(saved.status, 200, saved.body.message);
+    assert.equal(saved.body.user.department_id, null);
+    assert.equal(saved.body.user.program_id, PROGRAM_THAI);
+  });
+
+  await t.test('an edit that moves the programme out of the department is refused', async () => {
+    const admin = await signInAs('U_ADMIN');
+    const teacher = byAlias('U_TEACH');
+    const shown = await request(api.app).get(`/api/users/${teacher}`).set('Cookie', admin);
+    assert.equal(shown.body.user.department_id, DEPT_COMPUTER);
+
+    const response = await request(api.app)
+      .put(`/api/users/${teacher}`)
+      .set('Cookie', admin)
+      .send({ ...shown.body.user, program_id: PROGRAM_CIVIL });
+
+    assert.equal(response.status, 400, response.body.message);
+    assert.equal(response.body.message, REFUSALS.programNotInDepartment);
+  });
+
+  await t.test('the import holds both rules', async () => {
+    const dept = await signInAs('U_DEPT');
+    const response = await importCsv(
+      dept,
+      csvOf([
+        {
+          user_id: 'IMP_NODEPT',
+          email: 'impnodept@kmitl.ac.th',
+          first_name_th: 'ไม่มีภาค',
+          program_id: PROGRAM_THAI,
+          role_id: 'TEACHER',
+          scope_id: DEPT_COMPUTER,
+        },
+        {
+          user_id: 'IMP_FINE296',
+          email: 'impfine296@kmitl.ac.th',
+          first_name_th: 'คนละภาค',
+          department_id: DEPT_COMPUTER,
+          program_id: PROGRAM_INTER,
+          role_id: 'TEACHER',
+          scope_id: DEPT_COMPUTER,
+        },
+      ]),
+    );
+    if (response.status === 201) written.push('IMP_NODEPT', 'IMP_FINE296');
+
+    // Row 3 is the control: a department and a programme under it, which
+    // neither rule refuses. A mismatch needs a reach wider than one department,
+    // so it is the Central Admin's below.
+    assert.equal(response.status, 400, response.text);
+    assert.deepEqual(
+      response.body.errors.map((error) => [error.line, error.message]),
+      [[2, REFUSALS.departmentRequired]],
+    );
+
+    const admin = await signInAs('U_ADMIN');
+    const across = await importCsv(
+      admin,
+      csvOf([
+        {
+          user_id: 'IMP_CIVIL296',
+          email: 'impcivil296@kmitl.ac.th',
+          first_name_th: 'คนละภาค',
+          department_id: DEPT_CIVIL,
+          program_id: PROGRAM_THAI,
+          role_id: 'TEACHER',
+          scope_id: DEPT_CIVIL,
+        },
+      ]),
+    );
+    if (across.status === 201) written.push('IMP_CIVIL296');
+    assert.equal(across.status, 400, across.text);
+    assert.deepEqual(
+      across.body.errors.map((error) => [error.line, error.message]),
+      [[2, REFUSALS.programNotInDepartment]],
+    );
+  });
+});

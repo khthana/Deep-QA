@@ -186,6 +186,37 @@ const EMPTY = {
   scope_id: '',
 }
 
+const UNSPECIFIED = 'ไม่ระบุ'
+
+/**
+ * The units a department or programme field offers, by name - #296.
+ *
+ * Until #296 the two fields were text boxes for a code. The owner answered on
+ * 20 November 2569 that both are chosen from a list, which is `grantable`'s:
+ * the units this administrator reaches, the same set the server checks the
+ * answer against. A unit with no Thai name reads as its kind and its code
+ * (#294 rule 6, #297), and so does the one the account **holds** when the list
+ * does not carry it - a department switched off, which `grantable` leaves out
+ * - because the account carries no name for its own units, and a `<select>`
+ * with no option for its value would show the first option instead and save
+ * that on a press of บันทึก. The owner's third answer is that a held value is
+ * shown as it is and changed by nobody's choice but the person's (#128).
+ * `all` is where a held unit's name is looked for first, so a programme the
+ * department filter has left out is still named.
+ */
+const withHeld = (units, held, kind, all = units) => {
+  const named = unit => ({
+    scope_id: unit.scope_id,
+    label: unit.label || `${kind} ${unit.scope_id}`,
+  })
+  if (!held || units.some(unit => unit.scope_id === held)) return units.map(named)
+  const known = all.find(unit => unit.scope_id === held)
+  return [
+    ...units.map(named),
+    known ? named(known) : { scope_id: held, label: `${kind} ${held}` },
+  ]
+}
+
 const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
@@ -217,6 +248,37 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
 
   const set = key => event =>
     setDraft(current => ({ ...current, [key]: event.target.value }))
+
+  // #296. The department may be left blank only where the list offers the
+  // whole university - the Central Admin's, which is the server's own
+  // condition (`placeRefusal`, `scopes === null`). Everybody else is required
+  // to choose one, the owner's answer of 21 November 2569.
+  const mayLeaveBlank = grantable.scopes.some(scope => scope.kind === 'global')
+  const departments = grantable.scopes.filter(scope => scope.kind === 'department')
+  const programs = grantable.scopes.filter(scope => scope.kind === 'program')
+  // The programmes under the department chosen. With none chosen - the Central
+  // Admin's blank - every programme in reach, because filtering to nothing
+  // would make the three seeded assessors' shape, which the server still
+  // accepts from that reader, impossible to make here.
+  const programsUnder = draft.department_id
+    ? programs.filter(program => program.department_id === draft.department_id)
+    : programs
+
+  // A programme not under the department just chosen is cleared here, at the
+  // choice, rather than in an effect keyed on the list - an effect would clear
+  // it again whenever the list's identity changed (#232).
+  const chooseDepartment = event => {
+    const department = event.target.value
+    setDraft(current => {
+      const program = programs.find(entry => entry.scope_id === current.program_id)
+      const keeps = !department || program?.department_id === department
+      return {
+        ...current,
+        department_id: department,
+        program_id: keeps ? current.program_id : '',
+      }
+    })
+  }
 
   // The two roles the sign-in rule sends to the password form; everybody else
   // goes to Google. Marked here as well as refused server-side so the person
@@ -318,23 +380,42 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
             />
           </Field>
 
-          <Field label="รหัสภาควิชา">
-            <input
+          <Field label="ภาควิชา">
+            <select
               className={field}
               value={draft.department_id}
-              onChange={set('department_id')}
+              onChange={chooseDepartment}
               disabled={sending}
-              placeholder="05"
-            />
+              required={!mayLeaveBlank}
+            >
+              <option value="">
+                {mayLeaveBlank ? UNSPECIFIED : '-- เลือกภาควิชา --'}
+              </option>
+              {withHeld(departments, draft.department_id, 'ภาควิชา').map(
+                unit => (
+                  <option key={unit.scope_id} value={unit.scope_id}>
+                    {unit.label}
+                  </option>
+                )
+              )}
+            </select>
           </Field>
-          <Field label="รหัสหลักสูตร">
-            <input
+          <Field label="หลักสูตร">
+            <select
               className={field}
               value={draft.program_id}
               onChange={set('program_id')}
               disabled={sending}
-              placeholder="0501"
-            />
+            >
+              <option value="">{UNSPECIFIED}</option>
+              {withHeld(programsUnder, draft.program_id, 'หลักสูตร', programs).map(
+                unit => (
+                  <option key={unit.scope_id} value={unit.scope_id}>
+                    {unit.label}
+                  </option>
+                )
+              )}
+            </select>
           </Field>
         </div>
 
