@@ -218,10 +218,16 @@ function administration(pool) {
    *
    * Asked last on every path (add, edit, import), so a body a closed ticket
    * refuses for another reason keeps that reason's sentence (#60). Not a
-   * composite foreign key: `programs.department_id` is editable (#282), and a
-   * key would refuse moving a programme that any account names - a decision
-   * this ticket was not asked about. That move can therefore still leave an
-   * account's pair apart, which no path here can see.
+   * composite foreign key, which would have needed a migration over data no one
+   * has counted. No path moves a programme: since #282 the edit writes no
+   * department (`routes/programs.js`, held by `282:s282putmoves`), so the pair
+   * this checks cannot come apart after it is saved. #299 was opened on this
+   * comment's earlier sentence, which said the column was editable, and was
+   * measured on 21 November 2569 to have nothing to answer: no route moves a
+   * programme, and no account's pair is apart in `deep_core` or
+   * `deep_core_e2e`. Two things could still make a pair apart - an account
+   * saved before #296, in a database nobody has counted, and a future ticket
+   * that lets a programme change department, which reopens #299's question.
    */
   const placeRefusal = async (req, departmentId, programId) => {
     const { scopes } = await reachOf(req);

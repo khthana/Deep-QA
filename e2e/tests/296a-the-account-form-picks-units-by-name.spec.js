@@ -211,8 +211,10 @@ test('row 5: a held department the list no longer offers is shown, and kept', as
 test('row 6: a held programme the department filter leaves out is still named', async ({
   page,
 }) => {
-  // A pair that does not match - which #299 says a programme moved to another
-  // department leaves behind - filed below the seam. The filter offers only
+  // A pair that does not match - which an account saved before #296 can hold,
+  // since no route moves a programme (#282, measured for #299 on 21 November
+  // 2569, where this comment had said a move left one behind) - filed below
+  // the seam. The filter offers only
   // civil's programmes, so 0501 is held but not offered, and its name has to
   // come from the whole list rather than from the filtered one (#296's third
   // answer). Saving it is refused, which `users.test.js` holds.
