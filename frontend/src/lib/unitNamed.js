@@ -11,7 +11,10 @@ import { kindWord } from '../components/users/scopeLabel'
  *
  * Shared text and not a shared claim (#104): each picker's *use* of it is its
  * own, and the mutants that prove it are at the call sites. The kind word is
- * `scopeLabel`'s, so the two cannot drift apart.
+ * `scopeLabel`'s, so the two cannot drift apart on the word; the shape around
+ * it - word, space, code - is written here and in `scopeLabel` separately.
+ * Programmes only: the one department picker (`UserForm`, #296) has its own,
+ * and the spans beside a label fall back to the code alone (#295).
  */
 export const programNamed = entry =>
   entry.program_name_th || `${kindWord('program')} ${entry.program_id}`

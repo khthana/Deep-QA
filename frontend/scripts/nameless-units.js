@@ -7,9 +7,10 @@
  * that way: on 20 November 2569 (#297) that a unit with no Thai name reads by
  * its kind word and its code, and on 21 November 2569 (#298) that the same
  * holds for the eleven programme pickers, with the removal question leaving the
- * missing name out. #298 found sixteen sites that drew the name bare - an
- * option with no words on it, a question reading `05 null` - where its ticket
- * had found nine by a grep for `<option` (#111, #223). This file is why the
+ * missing name out. At the commit before #298 this census reads eighteen bare
+ * reads: sixteen that #298 fixed - an option with no words on it, a question
+ * reading `05 null` - and the two administration tables' name columns, which it
+ * marked; its ticket had found nine by a grep for `<option` (#111, #223). This file is why the
  * seventeenth is found the day it is written rather than by somebody's data.
  *
  * **The population is a name column read where it is drawn** - a JSX child or a
@@ -42,9 +43,17 @@
  *   `SectionsPanel`'s `programName` - which is drawn somewhere this file does
  *   not look;
  * - a test that reads the column through another name, or a `&&` - the guard is
- *   recognised only as a read of the same property in the `?:`'s test;
- * - `faculty_name_th`, which is `NOT NULL`, the `_en` columns, which no screen
- *   draws, and anything the server writes into a sentence of its own.
+ *   recognised only as a read of the same property in the `?:`'s test, and
+ *   only by the property's name: `a.program_name_th ? b.program_name_th : ''`
+ *   counts as tested although it tests another record;
+ * - what a fallback falls back to - `x.program_name_th || ''` counts as a
+ *   fallback and draws nothing, the shape a review of #298 named;
+ * - a bare read inside a `&&` - `{shown && x.program_name_th}` is not followed,
+ *   so it reads green;
+ * - `faculty_name_th`, which is `NOT NULL`, and the `_en` columns - the two
+ *   administration tables draw them, behind a `??` or a test, on 21 November
+ *   2569, and a bare one would not be seen; and anything the server writes into
+ *   a sentence of its own.
  *
  * Run: `npm run census` in `frontend/` runs this beside the others. Its own
  * fixtures: `npm run census:test`.
