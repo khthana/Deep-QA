@@ -1538,7 +1538,7 @@ test('#296: a department for every account, and a programme under it', async (t)
     if (response.status === 201) written.push('ACROSS_296');
 
     assert.equal(response.status, 400, response.body.message);
-    assert.equal(response.body.message, REFUSALS.programNotInDepartment);
+    assert.equal(response.body.message, 'หลักสูตรที่เลือกอยู่ในภาควิชาวิศวกรรมคอมพิวเตอร์ ไม่ใช่ภาควิชาที่เลือก');
   });
 
   await t.test('and so is it for a faculty administrator who reaches both', async () => {
@@ -1550,7 +1550,7 @@ test('#296: a department for every account, and a programme under it', async (t)
     if (response.status === 201) written.push('FACULTY_296');
 
     assert.equal(response.status, 400, response.body.message);
-    assert.equal(response.body.message, REFUSALS.programNotInDepartment);
+    assert.equal(response.body.message, 'หลักสูตรที่เลือกอยู่ในภาควิชาวิศวกรรมคอมพิวเตอร์ ไม่ใช่ภาควิชาที่เลือก');
   });
 
   await t.test('an existing assessor edited by their department administrator', async () => {
@@ -1608,7 +1608,7 @@ test('#296: a department for every account, and a programme under it', async (t)
       .send({ ...shown.body.user, program_id: PROGRAM_CIVIL });
 
     assert.equal(response.status, 400, response.body.message);
-    assert.equal(response.body.message, REFUSALS.programNotInDepartment);
+    assert.equal(response.body.message, 'หลักสูตรที่เลือกอยู่ในภาควิชาวิศวกรรมโยธา ไม่ใช่ภาควิชาที่เลือก');
   });
 
   await t.test('the import holds both rules', async () => {
@@ -1665,7 +1665,36 @@ test('#296: a department for every account, and a programme under it', async (t)
     assert.equal(across.status, 400, across.text);
     assert.deepEqual(
       across.body.errors.map((error) => [error.line, error.message]),
-      [[2, REFUSALS.programNotInDepartment]],
+      [[2, 'หลักสูตรที่เลือกอยู่ในภาควิชาวิศวกรรมคอมพิวเตอร์ ไม่ใช่ภาควิชาที่เลือก']],
     );
+  });
+
+  await t.test('a department with no Thai name is named by its kind and code', async () => {
+    // #296's second sentence names where the programme is, and a department
+    // whose name is empty reads `ภาควิชา 05` (#297, docs/org-unit-names.md rule 6).
+    const { rows } = await api.pool.query(
+      'SELECT department_name_th FROM departments WHERE department_id = $1',
+      [DEPT_COMPUTER],
+    );
+    await api.pool.query(
+      'UPDATE departments SET department_name_th = NULL WHERE department_id = $1',
+      [DEPT_COMPUTER],
+    );
+    try {
+      const admin = await signInAs('U_ADMIN');
+      const response = await create(admin, {
+        ...assessor('NAMELESS_296'),
+        department_id: DEPT_CIVIL,
+      });
+      if (response.status === 201) written.push('NAMELESS_296');
+
+      assert.equal(response.status, 400, response.body.message);
+      assert.equal(response.body.message, 'หลักสูตรที่เลือกอยู่ในภาควิชา 05 ไม่ใช่ภาควิชาที่เลือก');
+    } finally {
+      await api.pool.query(
+        'UPDATE departments SET department_name_th = $2 WHERE department_id = $1',
+        [DEPT_COMPUTER, rows[0].department_name_th],
+      );
+    }
   });
 });

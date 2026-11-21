@@ -395,7 +395,7 @@ function userRoutes(pool) {
       if (refusal) return res.status(403).json({ message: REFUSALS[refusal] });
       // Last, so every refusal above keeps its sentence (#60) - #296.
       const misplaced = await placeRefusal(req, values.department_id, values.program_id);
-      if (misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });
+      if (misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });
 
       await client.query('BEGIN');
       const created = await insertAccount(client, values, role, req.auth.userId);
@@ -430,7 +430,7 @@ function userRoutes(pool) {
       }
       // #296, last (#60).
       const misplaced = await placeRefusal(req, values.department_id, values.program_id);
-      if (misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });
+      if (misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });
 
       const { rows } = await pool.query(
         `UPDATE users SET email = $2,

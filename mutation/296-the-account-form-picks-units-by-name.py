@@ -89,10 +89,42 @@
 `heldbarecode` ไม่ถึงแถว 6 หรือ 7 · ส่วนมัตแตนต์ฝั่ง server ไม่กวาดซ้ำ เพราะแถว 6 และ 7 ไม่ได้บันทึกอะไร
 
 **บันทึกผลกวาดซ้ำ (21 พ.ย. 2569, คอมมิต `9e06f44`, `296a` เจ็ดแถว ทีละตัว):** มัตแตนต์ฟอร์มทั้งสิบสองตัวตายที่แถวและบรรทัดที่ทำนาย ไม่มีแถวที่ทำนายว่าจะรอดแต่กลับตาย · `heldprogramcode` ตายที่แถว 6 `toHaveText(PROGRAM.th)` · `nolabelfallback` ตายที่แถว 7 · `notrequired` ตายที่แถว 1 `toHaveJSProperty('required', true)` และแถว 4 `valueMissing` · `noparent` ตายที่แถว 2, 4, 6 · `nofilter` ตายที่แถว 2, 6 · `heldgone` ตายที่แถว 5 และแถว 6 `programField(page)).toHaveValue(PROGRAM.id)` · `codesnotnames` ตายที่แถว 1, 3, 6, 7 · มัตแตนต์ที่เหลือห้าตัวตายที่แถวเดิมของการกวาดครั้งแรก
+
+## ถ้อยคำของคำปฏิเสธข้อ 2: บอกว่าหลักสูตรอยู่ภาควิชาไหน (21 พ.ย. 2569)
+
+คำตอบของเจ้าของงาน (21 พ.ย. 2569) ต่อถ้อยคำสองประโยคที่ #296 ร่างไว้: `departmentRequired` คงเดิม ·
+`programNotInDepartment` บอกว่าหลักสูตรอยู่ภาควิชาไหน — `หลักสูตรที่เลือกอยู่ในภาควิชาวิศวกรรมคอมพิวเตอร์ ไม่ใช่ภาควิชาที่เลือก`
+· ภาควิชาที่ไม่มีชื่อไทยอ่านด้วยคำบอกชนิดกับรหัส `ภาควิชา 05` (#297, `docs/org-unit-names.md` กฎข้อ 6)
+
+ประโยคจึงเป็นฟังก์ชัน และ `placeRefusal` (`backend/auth/administration.js`) ส่ง `{ reason, message }` แทนชื่อเหตุผล ·
+จุดที่แปลงเหตุผลเป็นประโยคมีสาม (#125): การเพิ่มและการแก้ใน `routes/users.js` เปลี่ยนจาก `REFUSALS[misplaced]`
+เป็น `sentenceOf(misplaced)` และการนำเข้าผ่าน `sentenceOf` ของ `lib/importer.js` อยู่แล้ว · `REFUSALS[...]` บนเหตุผล
+ที่มีพารามิเตอร์คือฟังก์ชัน ซึ่ง `JSON.stringify` ทิ้ง และคำปฏิเสธไปถึงโดยไม่มีประโยค (docblock ของ `sentenceOf`)
+
+แถวอยู่ที่ seam HTTP — `backend/test/users.test.js` §#296 สิบแถวย่อย เลข 1–9 ตามข้างบน และแถว 10 *a department with no Thai name is named by its kind
+and code* ต่อท้าย · ประโยคนี้ไปไม่ถึงจากจอ (ตัวกรองไม่เสนอหลักสูตรนอกภาควิชา) ชีตจึงเป็น ☑ ไม่ใช่ ⚙
+
+ตารางคำทำนาย (เขียนก่อนกวาด 21 พ.ย. 2569, #255):
+
+ข้ออ้างอ้างด้วยข้อความของ assertion (#173) · "ข้อความ" คือ `assert.equal(response.body.message, '…')` ของแถวนั้น
+
+| มัตแตนต์ | สิ่งที่มันทำ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
+|---|---|---|---|---|
+| `draftwording` | ประโยคร่างเดิม คือทางเลือกที่เจ้าของงานไม่เลือก (#48) | users 4, 5, 8, 9, 10 | ข้อความ (4, 5, 8, 10) · `across.body.errors.map` ของครึ่งหลัง (9) | users 1, 2, 3, 6, 7 |
+| `nameschosen` | บอกชื่อภาควิชาที่**เลือก** แทนภาควิชาที่หลักสูตรอยู่ | users 4, 5, 8, 9, 10 | ที่เดียวกับแถวบน | users 1, 2, 3, 6, 7 |
+| `namelessnull` | ภาควิชาที่ไม่มีชื่อไม่ตกกลับเป็นรหัส (`ภาควิชาnull`) | users 10 | ข้อความ | users 1–9 |
+| `createbaresentence` | ด่านของการเพิ่มอ่าน `REFUSALS[misplaced]` อีกครั้ง คือโค้ดก่อนใบนี้ที่จุดนั้น (#115, #125) | users 4, 5, 10 | ข้อความ (คำตอบไม่มี `message`) | users 1 (เหตุผลเป็นสตริง `departmentRequired` ยังได้ประโยค), 2, 3, 6–9 |
+| `editbaresentence` | ด่านของการแก้แบบเดียวกัน | users 8 | ข้อความ | users 1–7 (6 เป็น `departmentRequired`), 9, 10 |
+| `importbaresentence` | การนำเข้าส่งชื่อเหตุผลแทนคำปฏิเสธที่สร้างแล้ว | users 9 | `across.body.errors.map` ของครึ่งหลัง | users 1–8, 10 · ครึ่งแรกของแถว 9 (`departmentRequired`) ผ่าน |
+
+`grants.test.js` §#296 ไม่ถูกแตะโดยตัวไหน · มัตแตนต์ฝั่ง server ทั้งหกของตารางแรกกวาดซ้ำด้วย เพราะ `createunplaced` และ
+`editunplaced` ถูกเล็งใหม่ (`REFUSALS[misplaced]` → `sentenceOf(misplaced)` ทั้งสองครึ่ง, #203) และบล็อกที่ `programanywhere`
+แก้โตขึ้น (#107) · ทำนายว่าตายที่แถวและบรรทัดเดิมของตารางแรกทุกตัว
 """
 from harness import main
 
 FILES = {
+    'refusals': 'backend/auth/refusals.js',
     'rules': 'backend/auth/administration.js',
     'users': 'backend/routes/users.js',
     'grantable': 'backend/routes/grants.js',
@@ -103,6 +135,14 @@ BLANK = "    if (scopes !== null && !departmentId) return 'departmentRequired';\
 PAIR = '    if (departmentId && programId) {\n'
 MAY = "  const mayLeaveBlank = grantable.scopes.some(scope => scope.kind === 'global')\n"
 KEEPS = '      const keeps = !department || program?.department_id === department\n'
+
+SENTENCE = '    `หลักสูตรที่เลือกอยู่ใน${department} ไม่ใช่ภาควิชาที่เลือก`,\n'
+LOOKUP = (
+    '           FROM programs p JOIN departments d ON d.department_id = p.department_id\n'
+    "          WHERE p.program_id = $1`,\n"
+    '        [programId],\n'
+)
+WHERE = '        const where = `ภาควิชา${rows[0].department_name_th ?? ` ${rows[0].department_id}`}`;\n'
 
 MUTANTS = {
     # The server before #296, in each rule's half (#115).
@@ -115,17 +155,17 @@ MUTANTS = {
     # One per site (#125). The refusal is still computed, so nothing is left
     # unreferenced; it is only not acted on.
     'createunplaced': ('users',
-        '      if (misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });\n'
+        '      if (misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });\n'
         '\n'
         "      await client.query('BEGIN');\n",
-        '      if (false && misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });\n'
+        '      if (false && misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });\n'
         '\n'
         "      await client.query('BEGIN');\n"),
     'editunplaced': ('users',
-        '      if (misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });\n'
+        '      if (misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });\n'
         '\n'
         '      const { rows } = await pool.query(\n',
-        '      if (false && misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });\n'
+        '      if (false && misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });\n'
         '\n'
         '      const { rows } = await pool.query(\n'),
     'importunplaced': ('users',
@@ -165,6 +205,35 @@ MUTANTS = {
     'notrequired': ('form',
         '              required={!mayLeaveBlank}\n',
         '              required={false && !mayLeaveBlank}\n'),
+    # The second sentence names the department (the owner, 21 November 2569).
+    # The option the owner did not take, made to run (#48). `department` stays
+    # referenced so nothing else changes.
+    'draftwording': ('refusals', SENTENCE,
+        "    department && 'หลักสูตรที่เลือกไม่ได้อยู่ในภาควิชานี้',\n"),
+    'nameschosen': ('rules', LOOKUP,
+        '           FROM programs p JOIN departments d ON d.department_id = $2\n'
+        "          WHERE p.program_id = $1`,\n"
+        '        [programId, departmentId],\n'),
+    'namelessnull': ('rules', WHERE,
+        '        const where = `ภาควิชา${rows[0].department_name_th}`;\n'),
+    # One per site (#125): the code before this change at each route.
+    'createbaresentence': ('users',
+        '      if (misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });\n'
+        '\n'
+        "      await client.query('BEGIN');\n",
+        '      if (misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });\n'
+        '\n'
+        "      await client.query('BEGIN');\n"),
+    'editbaresentence': ('users',
+        '      if (misplaced) return res.status(400).json({ message: sentenceOf(misplaced) });\n'
+        '\n'
+        '      const { rows } = await pool.query(\n',
+        '      if (misplaced) return res.status(400).json({ message: REFUSALS[misplaced] });\n'
+        '\n'
+        '      const { rows } = await pool.query(\n'),
+    'importbaresentence': ('users',
+        '            placeRefusal(req, values.department_id, values.program_id)\n',
+        '            placeRefusal(req, values.department_id, values.program_id).then((r) => r?.reason ?? r)\n'),
 }
 
 main(FILES, MUTANTS)

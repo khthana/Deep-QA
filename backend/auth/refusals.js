@@ -153,10 +153,14 @@ const REFUSALS = {
   scopeUnknown: 'ขอบเขตที่เลือกไม่มีอยู่ในระบบ',
 
   scopeNotYours: 'ไม่สามารถจัดการบัญชีนอกขอบเขตที่รับผิดชอบได้',
-  // #296, the owner's two rules for an account's place. The wording is the
-  // rebuild's first draft and is the owner's to change (`docs/06` §Out of Scope).
+  // #296, the owner's two rules for an account's place. The rebuild drafted
+  // both sentences; on 21 November 2569 the owner kept the first and had the
+  // second say which department the programme is in (`docs/06` §Out of Scope).
+  // `department` is the words already built - the kind word and the name, or
+  // the kind word and the code for a department with no Thai name (#297).
   departmentRequired: 'กรุณาเลือกภาควิชาของบัญชีนี้',
-  programNotInDepartment: 'หลักสูตรที่เลือกไม่ได้อยู่ในภาควิชานี้',
+  programNotInDepartment: (department) =>
+    `หลักสูตรที่เลือกอยู่ใน${department} ไม่ใช่ภาควิชาที่เลือก`,
   roleNotAssignable: 'ไม่สามารถกำหนดบทบาทนี้ได้',
   importEmpty: 'ไม่พบข้อมูลในไฟล์ที่นำเข้า',
   importRejected: 'ไฟล์นำเข้ามีข้อผิดพลาด ระบบไม่ได้บันทึกรายการใด',

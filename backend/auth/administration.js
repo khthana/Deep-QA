@@ -20,6 +20,7 @@
 
 const { GLOBAL_SCOPE, coveredScopes } = require('./authorise');
 const { SCOPE_JOINS, SCOPE_KIND, SCOPE_NAME } = require('./scopeNames');
+const { REFUSALS } = require('./refusals');
 
 /**
  * Who may manage accounts at all - #11's eighth criterion reads "an
@@ -234,10 +235,21 @@ function administration(pool) {
     if (scopes !== null && !departmentId) return 'departmentRequired';
     if (departmentId && programId) {
       const { rows } = await pool.query(
-        'SELECT department_id FROM programs WHERE program_id = $1',
+        `SELECT p.department_id, d.department_name_th
+           FROM programs p JOIN departments d ON d.department_id = p.department_id
+          WHERE p.program_id = $1`,
         [programId],
       );
-      if (rows.length && rows[0].department_id !== departmentId) return 'programNotInDepartment';
+      if (rows.length && rows[0].department_id !== departmentId) {
+        // The sentence names where the programme is (the owner, 21 November
+        // 2569): by name with the kind word in front (docs/org-unit-names.md
+        // rule 3, #295), by kind word and code where the name is empty (#297).
+        const where = `ภาควิชา${rows[0].department_name_th ?? ` ${rows[0].department_id}`}`;
+        return {
+          reason: 'programNotInDepartment',
+          message: REFUSALS.programNotInDepartment(where),
+        };
+      }
     }
     return null;
   };
