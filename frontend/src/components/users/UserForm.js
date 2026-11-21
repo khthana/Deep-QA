@@ -389,7 +389,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               required={!mayLeaveBlank}
             >
               <option value="">
-                {mayLeaveBlank ? UNSPECIFIED : '-- เลือกภาควิชา --'}
+                {mayLeaveBlank ? UNSPECIFIED : '— เลือกภาควิชา —'}
               </option>
               {withHeld(departments, draft.department_id, 'ภาควิชา').map(
                 unit => (

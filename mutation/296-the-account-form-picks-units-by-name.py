@@ -67,6 +67,26 @@
 | `codesnotnames` | `296a` 1, 3 | `toHaveText(DEPARTMENT.th)` · `toHaveText(PROGRAM.th)` |
 
 `247b` และ `272b` ผ่านภายใต้มัตแตนต์ฟอร์มทั้งแปด — การเล็งใหม่ของมันไม่พึ่งสิ่งที่มัตแตนต์เหล่านี้หักใด
+
+## จากการทบทวน: แถว 6 และ 7 กับมัตแตนต์สามตัว (คำทำนายเขียนก่อนกวาดซ้ำ 21 พ.ย. 2569, #255)
+
+การทบทวนหลังกวาดพบว่ามีสองทางของ `withHeld` ที่ไม่มีมัตแตนต์ใดหัก (#111) ทางแรกคือการหาชื่อจาก `all` ให้หลักสูตรที่บัญชีถืออยู่แต่ตัวกรองตัดออก
+ทางที่สองคือทางตกกลับของหน่วยที่ไม่มีชื่อ และพบว่า `toHaveJSProperty('required', true)` ของแถว 1 อยู่ใต้ `not.toHaveText(UNSPECIFIED)`
+ซึ่ง `blankforall` ฆ่าก่อน จึงไม่มีอะไรอ่านมัน (#88) · ข้ออ้างของแถว 1 ว่า*ไม่มีช่องข้อความชื่อรหัสภาควิชา*ไม่มีมัตแตนต์ที่หักมันได้
+เพราะโค้ดก่อนใบนี้ (#115) จะลบช่องเลือกทั้งสองช่องและทำให้ทุกแถวตายที่ข้อตั้ง ข้ออ้างนี้จึงเป็น net ไม่ใช่ข้ออ้างที่พิสูจน์แล้ว
+
+แถว 6 สร้างคู่ที่ไม่เข้ากันใต้ seam (`ext01` ภาควิชา `01` ถือหลักสูตร `0501`) · แถว 7 ลบชื่อของภาควิชา `05` ใต้ seam
+
+| มัตแตนต์ | สิ่งที่มันทำ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
+|---|---|---|---|---|
+| `heldprogramcode` | หลักสูตรที่บัญชีถืออยู่และตัวกรองตัดออก อ่านเป็นคำบอกชนิดกับรหัส ทั้งที่มันมีชื่อ | `296a` 6 | `toHaveText(PROGRAM.th)` | `296a` 1–5, 7 |
+| `nolabelfallback` | หน่วยที่ไม่มีชื่อได้ตัวเลือกที่ว่าง | `296a` 7 | `` toHaveText(`ภาควิชา ${DEPARTMENT.id}`) `` | `296a` 1–6 (แถว 5 ใช้ทางตกกลับอีกทาง) |
+| `notrequired` | ช่องภาควิชาไม่ `required` สำหรับทุกคน | `296a` 1, 4 | `toHaveJSProperty('required', true)` · `validity.valueMissing)).toBe(true)` | `296a` 2, 3, 5–7 |
+
+มัตแตนต์ฟอร์มเดิมกับสองแถวใหม่ (#248): `noparent` และ `nofilter` ฆ่าแถว 6 ที่ `toEqual(['', ...UNDER_01, PROGRAM.id])`
+· `heldgone` ฆ่าแถว 6 ที่ `programField(page)).toHaveValue(PROGRAM.id)` · `codesnotnames` ฆ่าแถว 6 ที่ `toHaveText(PROGRAM.th)`
+และฆ่าแถว 7 ที่ `` toHaveText(`ภาควิชา ${DEPARTMENT.id}`) `` · `blankforall` `blankfornone` `keepsprogram` `clearsalways`
+`heldbarecode` ไม่ถึงแถว 6 หรือ 7 · ส่วนมัตแตนต์ฝั่ง server ไม่กวาดซ้ำ เพราะแถว 6 และ 7 ไม่ได้บันทึกอะไร
 """
 from harness import main
 
@@ -132,6 +152,17 @@ MUTANTS = {
     'codesnotnames': ('form',
         '    label: unit.label || `${kind} ${unit.scope_id}`,\n',
         '    label: unit.scope_id,\n'),
+    # From the review (#111): the two branches of withHeld nothing broke, and
+    # the `required` row 1 never reached (#88).
+    'heldprogramcode': ('form',
+        '    known ? named(known) : { scope_id: held, label: `${kind} ${held}` },\n',
+        '    false && known ? named(known) : { scope_id: held, label: `${kind} ${held}` },\n'),
+    'nolabelfallback': ('form',
+        '    label: unit.label || `${kind} ${unit.scope_id}`,\n',
+        '    label: unit.label,\n'),
+    'notrequired': ('form',
+        '              required={!mayLeaveBlank}\n',
+        '              required={false && !mayLeaveBlank}\n'),
 }
 
 main(FILES, MUTANTS)

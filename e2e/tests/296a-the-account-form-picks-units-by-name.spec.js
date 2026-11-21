@@ -207,3 +207,63 @@ test('row 5: a held department the list no longer offers is shown, and kept', as
     ]);
   }
 });
+
+test('row 6: a held programme the department filter leaves out is still named', async ({
+  page,
+}) => {
+  // A pair that does not match - which #299 says a programme moved to another
+  // department leaves behind - filed below the seam. The filter offers only
+  // civil's programmes, so 0501 is held but not offered, and its name has to
+  // come from the whole list rather than from the filtered one (#296's third
+  // answer). Saving it is refused, which `users.test.js` holds.
+  const { rowCount } = await db.query(
+    'UPDATE users SET department_id = $1 WHERE user_id = $2 AND department_id IS NULL',
+    [CIVIL.id, IDS.externalAssessor],
+  );
+  expect(rowCount, 'ext01 had no department to replace').toBe(1);
+  try {
+    await signIn(page, ACCOUNTS.systemAdmin);
+    await openUsers(page);
+    await openEditor(page, ACCOUNTS.externalAssessor);
+
+    await expect(departmentField(page)).toHaveValue(CIVIL.id);
+    await expect(programField(page)).toHaveValue(PROGRAM.id);
+    await expect(programField(page).locator(`option[value="${PROGRAM.id}"]`)).toHaveText(PROGRAM.th);
+    expect(await values(programField(page))).toEqual(['', ...UNDER_01, PROGRAM.id]);
+  } finally {
+    await db.query('UPDATE users SET department_id = NULL WHERE user_id = $1', [
+      IDS.externalAssessor,
+    ]);
+  }
+});
+
+test('row 7: a department with no Thai name is offered by its kind and code', async ({
+  page,
+}) => {
+  // #294 rule 6 and #297's fallback, on this form's own options rather than on
+  // the scope picker 297a reads. The name is taken away below the seam and put
+  // back in `finally`.
+  const { rows } = await db.query(
+    `UPDATE departments d SET department_name_th = NULL
+       FROM (SELECT department_id, department_name_th FROM departments
+              WHERE department_id = $1 FOR UPDATE) old
+      WHERE d.department_id = old.department_id
+      RETURNING old.department_name_th AS was`,
+    [DEPARTMENT.id],
+  );
+  expect(rows, 'department 05 exists to take the name from').toHaveLength(1);
+  try {
+    await signIn(page, ACCOUNTS.departmentAdmin05);
+    await openUsers(page);
+    await page.getByRole('button', { name: ADD }).click();
+
+    await expect(departmentField(page).locator(`option[value="${DEPARTMENT.id}"]`)).toHaveText(
+      `ภาควิชา ${DEPARTMENT.id}`,
+    );
+  } finally {
+    await db.query('UPDATE departments SET department_name_th = $1 WHERE department_id = $2', [
+      rows[0].was,
+      DEPARTMENT.id,
+    ]);
+  }
+});
