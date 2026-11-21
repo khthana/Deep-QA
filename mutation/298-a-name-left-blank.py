@@ -23,6 +23,8 @@
 | `programquestionnull` | คำถามลบหลักสูตรแบบเดียวกัน | `298a` 4 | `toContain('ต้องการลบหลักสูตร 0501 ใช่หรือไม่')` | `298a` 1–3, 5 |
 | `plosbarename` | ตัวเลือกหลักสูตรของจอ PLO วาดชื่อเปล่า | `298a` 5 | `toHaveText('หลักสูตร 0501')` | `298a` 1–4 |
 | `plosprogramcodealone` | ตัวเลือกนั้นตกกลับเป็นรหัสเปล่า คือทางเลือกที่เจ้าของงานไม่เลือก (#48) | `298a` 5 | `toHaveText('หลักสูตร 0501')` | `298a` 1–4 |
+
+**บันทึกผลกวาด (21 พ.ย. 2569, คอมมิต `08ca6aa`, `298a` ทีละตัว):** ทั้งหกตัวตายที่แถวและบรรทัดที่ทำนาย และแถวอื่นทั้งสี่ผ่านทุกครั้ง · `programseedednull` `departmentseedednull` ที่ `toBeHidden()` ของแถว 1 และ 2 · `departmentquestionnull` `programquestionnull` ที่ `toContain('ต้องการลบ…')` ของแถว 3 และ 4 · `plosbarename` และ `plosprogramcodealone` ที่ `toHaveText('หลักสูตร 0501')` ของแถว 5
 """
 from harness import main
 

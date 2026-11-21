@@ -2745,5 +2745,5 @@ substring — ได้ 1 `getByRole('combobox', { name: 'สถานะ' })` �
 
 | # | เกณฑ์ | ทำอะไร | ต้องเห็นอะไร | ✓ |
 |---|---|---|---|---|
-| 298 | ภาควิชาที่เพิ่มโดยเว้นชื่ออังกฤษ บันทึกการแก้ไขโดยไม่แตะได้ | `faculty.admin@` → *เพิ่มภาควิชา* `T2982` ชื่อไทยอย่างเดียว → *แก้ไข* → *บันทึก* | ฐานข้อมูลถือชื่ออังกฤษเป็น `null` · ฟอร์มปิด และ `PUT` ออกไปหนึ่งครั้ง · แถว *row 2: a department added with no English name saves untouched* · ☐ รอกวาด | ☐ `298a` |
-| 298 | คำถามลบภาควิชาที่ไม่มีชื่อไทยไม่พิมพ์ `null` | ภาควิชา `05` ไม่มีชื่อไทยใต้ seam → `faculty.admin@` → *ลบ* ที่ `05` | *ต้องการลบภาควิชา 05 ใช่หรือไม่ …* ไม่มี `null` · แถว *row 3: the removal question for a department with no Thai name leaves the name out* · ☐ รอกวาด | ☐ `298a` |
+| 298 | ภาควิชาที่เพิ่มโดยเว้นชื่ออังกฤษ บันทึกการแก้ไขโดยไม่แตะได้ | `faculty.admin@` → *เพิ่มภาควิชา* `T2982` ชื่อไทยอย่างเดียว → *แก้ไข* → *บันทึก* | ฐานข้อมูลถือชื่ออังกฤษเป็น `null` · ฟอร์มปิด และ `PUT` ออกไปหนึ่งครั้ง · แถว *row 2: a department added with no English name saves untouched* · `298:departmentseedednull` ค้ำไว้ | ⚙ `298a` |
+| 298 | คำถามลบภาควิชาที่ไม่มีชื่อไทยไม่พิมพ์ `null` | ภาควิชา `05` ไม่มีชื่อไทยใต้ seam → `faculty.admin@` → *ลบ* ที่ `05` | *ต้องการลบภาควิชา 05 ใช่หรือไม่ …* ไม่มี `null` · แถว *row 3: the removal question for a department with no Thai name leaves the name out* · `298:departmentquestionnull` ค้ำไว้ | ⚙ `298a` |
