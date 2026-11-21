@@ -41,6 +41,32 @@
 | `heldgone` | ค่าที่บัญชีถือแต่ไม่อยู่ในรายการไม่มีตัวเลือก — select แสดงตัวแรกแทน (#128) | `296a` 5 | `departmentField(page)).toHaveValue(DEPARTMENT.id)` | `296a` 1–4 |
 | `heldbarecode` | ตัวเลือกของค่าที่ถือเป็นรหัสเปล่า | `296a` 5 | `` toHaveText(`ภาควิชา ${DEPARTMENT.id}`) `` | `296a` 1–4 |
 | `codesnotnames` | ตัวเลือกวาดด้วยรหัส คือความผิดของ #294 | `296a` 1, 3 | แถว 1 `toHaveText(DEPARTMENT.th)` · แถว 3 `toHaveText(PROGRAM.th)` | `296a` 2, 4, 5 |
+
+## บันทึกผลกวาด (21 พ.ย. 2569, คอมมิต `b412526`)
+
+ทีละตัว save → apply → ตรวจต้นไม้ → รัน → restore → ตรวจต้นไม้ · มัตแตนต์ server รัน `users.test.js grants.test.js` กับ `296a` ·
+มัตแตนต์ฟอร์มรัน `296a` `247b` `272b` (แถวที่ใช้ฟอร์มเป็นเครื่องมือ, #248) · **ทุกตัวตายที่แถวที่ทำนาย และที่บรรทัดที่ทำนาย** ·
+ไม่มีแถวที่ทำนายว่ารอดตาย นอกจากผู้อยู่ข้างทางที่ทำนายไว้
+
+| มัตแตนต์ | ผล | ตายที่ |
+|---|---|---|
+| `anyonemayleaveblank` | users 1, 6, 9 · `296a` 5 ผ่าน | `response.status, 400, response.body.message` (1) · `untouched.status, 400` (6) · `response.status, 400, response.text` (9) |
+| `nobodymayleaveblank` | users 3, 7 · `296a` 3 · ผู้อยู่ข้างทางแปดแถวย่อยของ *an external assessor with a validity period* | `response.status, 201, response.body.message` (3) · `saved.status, 200` (7) · `answer.status()).toBe(200)` ของแถว 3 · ผู้อยู่ข้างทางตายที่ `created.status, 201` หรือที่การเข้าระบบของบัญชีที่ไม่ได้ถูกสร้าง — การจัดฉาก ไม่นับ (#266) |
+| `programanywhere` | users 4, 5, 8, 9 · `296a` 5 ผ่าน | `response.status, 400` (4, 5, 8) · `across.status, 400` (9 — ครึ่งแรกยังผ่าน) |
+| `createunplaced` | users 1, 4, 5 | `response.status, 400` |
+| `editunplaced` | users 6, 8 | `untouched.status, 400` · `response.status, 400` |
+| `importunplaced` | users 9 | `response.status, 400, response.text` |
+| `noparent` | grants §#296 · `296a` 2, 4 | `assert.deepEqual(parents` · แถว 2 `toEqual(['', ...UNDER_01])` · แถว 4 `toHaveValue(PROGRAM.id)` |
+| `blankforall` | `296a` 1, 4 | `not.toHaveText(UNSPECIFIED)` · `validity.valueMissing)).toBe(true)` |
+| `blankfornone` | `296a` 2 (และ 3 ที่การรอ ไม่นับ #139) | `option[value=""]')).toHaveText(UNSPECIFIED)` · แถว 3 หมดเวลาใน `saveEdit` |
+| `nofilter` | `296a` 2 | `toEqual(['', ...UNDER_01])` |
+| `keepsprogram` | `296a` 2 | `programField(page)).toHaveValue('')` |
+| `clearsalways` | `296a` 4 | `toHaveValue(PROGRAM.id)` |
+| `heldgone` | `296a` 5 | `departmentField(page)).toHaveValue(DEPARTMENT.id)` |
+| `heldbarecode` | `296a` 5 | `` toHaveText(`ภาควิชา ${DEPARTMENT.id}`) `` |
+| `codesnotnames` | `296a` 1, 3 | `toHaveText(DEPARTMENT.th)` · `toHaveText(PROGRAM.th)` |
+
+`247b` และ `272b` ผ่านภายใต้มัตแตนต์ฟอร์มทั้งแปด — การเล็งใหม่ของมันไม่พึ่งสิ่งที่มัตแตนต์เหล่านี้หักใด
 """
 from harness import main
 
