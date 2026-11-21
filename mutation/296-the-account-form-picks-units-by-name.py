@@ -87,6 +87,8 @@
 · `heldgone` ฆ่าแถว 6 ที่ `programField(page)).toHaveValue(PROGRAM.id)` · `codesnotnames` ฆ่าแถว 6 ที่ `toHaveText(PROGRAM.th)`
 และฆ่าแถว 7 ที่ `` toHaveText(`ภาควิชา ${DEPARTMENT.id}`) `` · `blankforall` `blankfornone` `keepsprogram` `clearsalways`
 `heldbarecode` ไม่ถึงแถว 6 หรือ 7 · ส่วนมัตแตนต์ฝั่ง server ไม่กวาดซ้ำ เพราะแถว 6 และ 7 ไม่ได้บันทึกอะไร
+
+**บันทึกผลกวาดซ้ำ (21 พ.ย. 2569, คอมมิต `9e06f44`, `296a` เจ็ดแถว ทีละตัว):** มัตแตนต์ฟอร์มทั้งสิบสองตัวตายที่แถวและบรรทัดที่ทำนาย ไม่มีแถวที่ทำนายว่าจะรอดแต่กลับตาย · `heldprogramcode` ตายที่แถว 6 `toHaveText(PROGRAM.th)` · `nolabelfallback` ตายที่แถว 7 · `notrequired` ตายที่แถว 1 `toHaveJSProperty('required', true)` และแถว 4 `valueMissing` · `noparent` ตายที่แถว 2, 4, 6 · `nofilter` ตายที่แถว 2, 6 · `heldgone` ตายที่แถว 5 และแถว 6 `programField(page)).toHaveValue(PROGRAM.id)` · `codesnotnames` ตายที่แถว 1, 3, 6, 7 · มัตแตนต์ที่เหลือห้าตัวตายที่แถวเดิมของการกวาดครั้งแรก
 """
 from harness import main
 
