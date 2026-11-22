@@ -96,8 +96,10 @@ construction rather than retrofitted.
     not depend on what my browser claims about me.
 18. As any user, I want a role revoked by an administrator to take effect on my next request, so that removal of
     access is immediate.
-19. As a Central Admin, I want to create, edit and deactivate user accounts, so that staff can be admitted to the
-    system.
+19. As a Central Admin, I want to create, edit and deactivate user accounts, and to delete an account that nothing
+    refers to, so that staff can be admitted to the system and an account made by mistake can be taken out again.
+    (Deletion added by the owner on 22 November 2569 — `docs/users-screen.md` §การลบบัญชี says what *nothing refers
+    to* means.)
 20. As a Central Admin, I want to import users from a spreadsheet using a template the system provides, so that I can
     admit a department's staff at once.
 21. As a Central Admin, I want to grant a user several roles, each confined to a scope, so that one person can be both

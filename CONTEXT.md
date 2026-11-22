@@ -196,6 +196,15 @@ and change. Deliberately keyless: a log line has no natural key, so ADR-0001's t
 _Avoid_: activity — an **Activity** is a piece of assessed work within a Section and is a different thing entirely;
 say activity log entry, or history, for this one.
 
+**Account deletion** (การลบบัญชี):
+Taking an account out of the database, as against **deactivating** it, which leaves it in place and refuses its
+sign-in. Allowed only for an account nothing refers to: it teaches no Section, authored or last edited no record,
+assigned no grant, and its own activity log entries are only about itself — signing in and out, switching the acting
+grant, changing its password. Anything else is refused and the account is deactivated instead, because the log lines
+it wrote about other records would be deleted with it. Decided by the owner on 22 November 2569; see
+`docs/users-screen.md`.
+_Avoid_: remove, for a deactivation.
+
 **Scope** (ขอบเขตสิทธิ์):
 The faculty, department or program a role grant is confined to. A grant may never exceed the granter's own scope.
 A grant that is confined to nothing — a full administrator's — carries the literal `FULL_ADMIN` in place of a code,
