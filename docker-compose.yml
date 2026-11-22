@@ -12,9 +12,8 @@
 #
 # This stack is separate from `npm run dev`: its own database container and
 # volume, and the database publishes no port, so it does not collide with
-# deep-core-postgres on 5433. It does collide with the e2e suite, whose
-# backend defaults to 3100 - stop this stack before a Playwright run, or move
-# the suite with E2E_BACKEND_PORT.
+# deep-core-postgres on 5433. Nor with the e2e suite, whose defaults moved
+# from 3100/5100 to 3200/3250 on 22 November 2569 so that both can be up.
 
 name: deep-core
 

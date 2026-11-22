@@ -47,8 +47,8 @@ const E2E_SCHEMA = 'deep_core_e2e';
  * decides that a directory is this one (#138).
  */
 const EVIDENCE_DIR = path.join(os.tmpdir(), 'deep-core-e2e-evidence');
-const BACKEND_PORT = port('E2E_BACKEND_PORT', 3100);
-const FRONTEND_PORT = port('E2E_FRONTEND_PORT', 5100);
+const BACKEND_PORT = port('E2E_BACKEND_PORT', 3200);
+const FRONTEND_PORT = port('E2E_FRONTEND_PORT', 3250);
 
 module.exports = {
   E2E_SCHEMA,

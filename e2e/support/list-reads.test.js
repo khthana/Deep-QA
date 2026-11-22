@@ -35,7 +35,7 @@ const { isOnePair } = require('./program-subjects-screen');
  * seam, where the window has to be opened by hand to be seen at all.
  */
 
-const host = url => `http://localhost:5100${url}`;
+const host = url => `http://localhost:3250${url}`;
 
 test('the Activities waiter identifies the list and nothing under it', () => {
   assert.equal(isActivitiesList(host('/api/teaching/sections/1/activities')), true);

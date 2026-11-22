@@ -355,7 +355,7 @@ npm test                  # from e2e/
 ```
 
 It needs the container running and `frontend/`'s and `backend/`'s dependencies installed, and the first run also needs
-`npx playwright install chromium`. It starts both servers itself, on ports 3100 and 5100 and against the
+`npx playwright install chromium`. It starts both servers itself, on ports 3200 and 3250 and against the
 `deep_core_e2e` schema, which it drops, migrates and seeds at the start of every run — so it never attaches to a
 development server and never writes into development data. Sign-in is the real sign-in screen with the seeded
 accounts; nothing about the session is stubbed. [`e2e/README.md`](./e2e/README.md) has the rest.
