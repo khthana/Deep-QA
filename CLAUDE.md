@@ -1377,7 +1377,7 @@ citation.
 ## Two test seams
 
 Work is tested at the backend HTTP surface (`backend/test/*.test.js`) and, since #65, in the
-browser (`e2e/`, Playwright — its own stack on ports 3200/3250 and schema `deep_core_e2e`,
+browser (`e2e/`, Playwright — its own stack on ports 3100/5100 and schema `deep_core_e2e`,
 reseeded on every run). The browser seam asserts **behaviour**; anything an acceptance row states
 in terms of **appearance** — colours, wording, menu contents, "this is text and not a control" —
 stays a hand-walked row.

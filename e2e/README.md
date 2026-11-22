@@ -43,7 +43,7 @@ It needs the database container running (`npm run db:up` from `db/`), the root `
 
 ## What it runs against
 
-Ports 3200 and 3250, and the `deep_core_e2e` schema — none of which is what a developer runs. That is not tidiness:
+Ports 3100 and 5100, and the `deep_core_e2e` schema — none of which is what a developer runs. That is not tidiness:
 Playwright's `reuseExistingServer` defaults to true off CI, so on the usual ports this suite would silently attach to
 whatever `npm start` is already serving, and the import specs would write students into the database somebody is
 working in. Dedicated ports and an explicit `reuseExistingServer: false` are what close that.
@@ -82,7 +82,7 @@ right now, and it is what to read **before** reading a stack.
 
 It has two symptoms, and they look like different faults:
 
-* **The frontend.** `EACCES` on bind, which CRA reports as *Something is already running on port 3250* — so whoever
+* **The frontend.** `EACCES` on bind, which CRA reports as *Something is already running on port 5100* — so whoever
   reads it hunts for a process that does not exist. Nothing is listening and `netstat` shows nothing.
 * **The backend.** The bind does not raise at all. `server.js` prints `Server running on http://localhost:3400` and
   `Environment: test`, and then the process ends on its own with status 0 about 300ms later. Playwright reports that
@@ -95,12 +95,6 @@ outside the ranges: the second stays up.
 The defaults do not move: a suite whose ports drifted per machine would make every *it works here* less informative.
 What the override buys is a run on a machine that has temporarily lost a port, with no config change committed for a
 condition that clears on the next reboot.
-
-**The defaults moved once, by the owner: 3100/5100 to 3200/3250 on 22 November 2569.** 3100 had become the
-docker-compose stack's frontend (`docker-compose.yml`, beside its backend on 3150), so a Playwright run with that
-stack up needed `E2E_BACKEND_PORT` every time; the new pair keeps the same x00/x50 shape one hundred above it. The
-numbers in the dated paragraphs above, in `docs/handoff/` and in `mutation/` sweep records are the defaults of their
-own day and stay as written (#54).
 
 The schema is dropped, migrated and seeded in `support/global-setup.js` at the **start** of a run rather than the end,
 so a failed run leaves its data behind to be looked at.
