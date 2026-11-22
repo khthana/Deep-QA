@@ -266,6 +266,13 @@ for (const screen of SCREENS) {
       await button(second, 'แก้ไข').click();
       const form = heading(page, screen.edit);
       await expect(form).toBeVisible();
+      // The heading is drawn from the record on the form's first frame and the
+      // field is not: these four administration forms fill their draft in an
+      // effect, so that frame's field is blank (#301). Settled on a value before
+      // it is read - on *a* value rather than the record's, because the record is
+      // not in this loop's hands; a programme or department with no Thai name
+      // (#298) would hang here, and the seed holds none on 22 November 2569.
+      await expect(page.getByLabel(screen.named)).not.toHaveValue('');
       const shown = await page.getByLabel(screen.named).inputValue();
 
       const reloaded = waitForReload(page, screen.list);

@@ -142,11 +142,19 @@ test('row 3: an edit made in one section is what the other section reads', async
   // its number and its band: what moves is the substance.
   const mine = await asTeacherOne(page);
   const clo = cloNumbered(await myClos(page, mine), 'CLO-1');
-  await openCriteria(page, mine, clo.clo_id);
+  const { criteria } = await (await openCriteria(page, mine, clo.clo_id)).json();
 
   const detail = 'แก้เกณฑ์จากกลุ่มเรียนที่หนึ่ง เพื่อให้กลุ่มเรียนที่สองอ่านเจอ';
+  // `original` is the record's, from the read the screen drew, and the field is
+  // waited on until it holds it (#301): the form mounts from `EMPTY` and fills its
+  // draft in an effect, so its first painted frame is blank, and a raw read there
+  // hands the restore an empty detail - บันทึก stays off and the press waits out
+  // the test's 60 seconds inside `submitCriterion`.
+  const first = criteria.find(criterion => criterion.criteria_no === 1);
+  expect(first, 'ข้อ 1 in the list the screen drew').toBeDefined();
+  const original = first.criteria_detail;
   await criterionCard(page, 1).getByRole('button', { name: 'แก้ไขข้อ 1' }).click();
-  const original = await page.getByLabel('เกณฑ์การประเมิน', { exact: true }).inputValue();
+  await expect(page.getByLabel('เกณฑ์การประเมิน', { exact: true })).toHaveValue(original);
   expect((await submitCriterion(page, { detail }, 'PUT')).status()).toBe(200);
   await expect(criterionCard(page, 1).getByText(detail)).toBeVisible();
 

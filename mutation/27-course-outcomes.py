@@ -89,6 +89,9 @@ the only thing that ever knew is the row that asserts a 409.
 บันทึกเต็ม: `mutation/266-the-list-a-handler-reloads-across-a-section-jump.py`
 § *ผลการกวาดซ้ำเก้าสิบเก้าตัว 4 พ.ย. 2569*
 
+
+#301 (22 พ.ย. 2569) กวาด `nodetail` และ `noeditor` ของแฟ้มนี้ซ้ำหลังแถวแก้ไขได้จุดรอ — คำทำนายและผล
+อยู่ท้าย docstring ของ `mutation/28-measurable-behaviors.py` ไม่ได้คัดลอกมาไว้ที่นี่ (#97)
 """
 
 from harness import main

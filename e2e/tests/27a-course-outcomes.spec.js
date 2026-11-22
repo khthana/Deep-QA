@@ -132,11 +132,19 @@ test('row 3: an edit made in one section is what the other section reads', async
   // is the only arrangement in which "visible from another Section" means what
   // the ticket means by it.
   const mine = await asTeacherOne(page);
-  await openClos(page, mine);
+  const { clos } = await (await openClos(page, mine)).json();
 
   const detail = 'แก้จากกลุ่มเรียนที่หนึ่ง เพื่อให้กลุ่มเรียนที่สองอ่านเจอ';
+  // `original` is the record's, from the read the screen drew, and the field is
+  // waited on until it holds it (#301): the form mounts from `EMPTY` and fills its
+  // draft in an effect, so its first painted frame is blank, and a raw read there
+  // hands the restore an empty detail - บันทึก stays off and the press waits out
+  // the test's 60 seconds inside `submitClo`.
+  const first = clos.find(clo => clo.clo_number === 'CLO-1');
+  expect(first, 'CLO-1 in the list the screen drew').toBeDefined();
+  const original = first.clo_detail;
   await cloCard(page, 'CLO-1').getByRole('button', { name: 'แก้ไข CLO-1' }).click();
-  const original = await page.getByLabel('รายละเอียดผลการเรียนรู้', { exact: true }).inputValue();
+  await expect(page.getByLabel('รายละเอียดผลการเรียนรู้', { exact: true })).toHaveValue(original);
   expect((await submitClo(page, { รายละเอียดผลการเรียนรู้: detail }, 'PUT')).status()).toBe(200);
 
   const elsewhere = await browser.newContext();
@@ -160,12 +168,16 @@ test('row 4: the row says who last changed it, and an edit moves the name', asyn
   const elsewhere = await browser.newContext();
   const theirs = await elsewhere.newPage();
   const theirSection = await asMultiRole(theirs);
-  await openClos(theirs, theirSection);
+  const { clos } = await (await openClos(theirs, theirSection)).json();
 
   await expect(cloCard(theirs, 'CLO-2').getByText(/แก้ไขล่าสุดโดย.*อนันต์/)).toBeVisible();
 
+  // Row 3's arrangement, for row 3's reason (#301).
+  const second = clos.find(clo => clo.clo_number === 'CLO-2');
+  expect(second, 'CLO-2 in the list the screen drew').toBeDefined();
+  const original = second.clo_detail;
   await cloCard(theirs, 'CLO-2').getByRole('button', { name: 'แก้ไข CLO-2' }).click();
-  const original = await theirs.getByLabel('รายละเอียดผลการเรียนรู้', { exact: true }).inputValue();
+  await expect(theirs.getByLabel('รายละเอียดผลการเรียนรู้', { exact: true })).toHaveValue(original);
   expect(
     (await submitClo(theirs, { รายละเอียดผลการเรียนรู้: original + ' (ปรับถ้อยคำ)' }, 'PUT')).status(),
   ).toBe(200);

@@ -107,11 +107,13 @@ test('row 3: an account that already has a window is bounded before anything is 
 
   // The precondition, asserted where it is used and not where it was arranged
   // (#51): this is the seeded assessor, and the row means nothing unless the
-  // window it is drawn from has both ends.
+  // window it is drawn from has both ends. Asserted as a wait and not as a raw
+  // read: `UserForm` mounts from `EMPTY` and fills its draft in an effect, so the
+  // editor's first painted frame has both fields blank (#301).
+  await expect(startField(page)).not.toHaveValue('');
+  await expect(untilField(page)).not.toHaveValue('');
   const from = await startField(page).inputValue();
   const until = await untilField(page).inputValue();
-  expect(from).not.toBe('');
-  expect(until).not.toBe('');
 
   // Bound from the values the editor was drawn with, so the rule is stated to
   // somebody who opens an existing window and moves one end of it - which is
