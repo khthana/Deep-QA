@@ -34,8 +34,8 @@ settles who answers it — *"The UI is reproduced as-is. Any proposal to change 
 question, not implemented."* Read a defect ticket for a question before reading it for a task.
 
 The newest file in `docs/handoff/` says where the rebuild stands, what is half-done and what
-will cost time — as of 14 November 2569 that is
-`2026-11-14-the-term-read-when-the-answer-lands.md`. Read it before taking work. Each handoff
+will cost time — as of 22 November 2569 that is
+`2026-11-22-the-row-that-came-in-by-the-menu.md`. Read it before taking work. Each handoff
 names the one it supersedes for state, so follow that chain rather than the filenames.
 
 ## Lessons — one line per rule
