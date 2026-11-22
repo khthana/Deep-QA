@@ -117,6 +117,26 @@ than a mutant that kills too much - but a per-ticket sweep cannot see any of it.
 บันทึกนี้ตอบเฉพาะคำถามว่าตัวไหนย้ายไปตายที่จุดรอ — ไม่ได้เทียบบรรทัดตายของแฟ้ม 122 152 201 273
 กับตารางของแฟ้มเหล่านั้นทีละแถว ซึ่งยังไม่มีใครถาม
 
+**ถามแล้ว 22 พ.ย. 2569 — เจ็ดตัวตรงตารางของแฟ้มตัวเองทุกตัว ทั้งบรรทัดตายและแถวที่ต้องรอด**
+ต้องรันใหม่ เพราะบันทึกข้างบนหยาบกว่าตาราง: `122a` ไม่บอกว่าตัวไหนตายที่สถานะไหน และ `152a`
+อ้างข้อความของ helper ที่หลายแถวชื่อเดียวกันใช้ร่วม · ล็อกของการกวาดนั้นไม่เหลือแล้ว · control สะอาด
+`122a` `152a` `201a` `273a` `271a` **47 ผ่านทั้ง 47** (3.1 นาที) · ทุกตัวผ่านประตู *มัตแตนต์อยู่ในต้นไม้จริง*
+และต้นไม้คืนครบ (#268) · พอร์ต 3200/5200 เพราะ container ของ deep-core จับ 3100 อยู่
+
+- **`schemesaysnothing`** ล้ม 1 ผ่าน 1 · `toBeVisible` ของ `said(page, DONE)` คือการยืนยันแรก ตรงตาราง
+- **`schemeonlycomplains`** ล้ม 1 ผ่าน 1 · `toBeVisible` ของ `said(page, SHORT)` คือสถานะ *ยังไม่ถึง 100* ตรงตาราง
+- **`schemeinterrupts`** ล้ม 1 ผ่าน 1 · `toHaveAttribute('aria-live', 'polite')` ได้ `assertive` ที่สถานะแรก ตรงตาราง
+- **`weightssaveanyway`** ล้ม 1 ผ่าน 20 · แถว *a save whose reload is refused says the refusal and not that it
+  saved* ใน describe `GradingWeights.js` ที่ `"the failed reload's refusal"` — ตรงกับ *ล้ม 1 ผ่าน 20* ของ 11 ต.ค. 2569
+- **`weightsblanks`** ล้ม 1 ผ่าน 2 · `'the scheme the screen last drew'` ได้ความยาว 0 แทน 3 ตรงตาราง
+- **`weightsforgetsthenumbers`** ล้ม 1 ผ่าน 2 · `'what was typed'` ได้ `""` แทน `37` ตรงตาราง — ไม่ได้กลายเป็นฝาแฝด
+  ของ `weightsblanks` (#201)
+- **`t273weight_remove`** ล้ม 1 ผ่าน 20 · แถว 6 ที่ `'its tooltip is its whole name'` · อีกเก้าแถวของ `273a` และ
+  `271a` ทั้งสิบเอ็ดผ่าน ตรงช่อง *แถวที่ต้องรอด* ของตาราง
+
+ช่อง *แถวอื่นที่ตายไปด้วย* ของ `122-weight-total-in-words.py` อ้าง `30a` กับ `33a` ด้วย ซึ่งการรันนี้ไม่ได้ถาม —
+คำถามนี้คือบรรทัดตายในแฟ้มของมัน ไม่ใช่ทุกแฟ้มที่มันอาจไปถึง
+
 """
 
 from harness import main
