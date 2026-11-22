@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-ARG REACT_APP_API_URL=http://localhost:3150
+ARG REACT_APP_API_URL=http://localhost:3250
 ENV REACT_APP_API_URL=$REACT_APP_API_URL \
     GENERATE_SOURCEMAP=false
 RUN npm run build

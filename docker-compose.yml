@@ -1,8 +1,8 @@
 # The whole application in containers: frontend and backend as two separate
 # images, plus the database they run on.
 #
-#   docker compose up -d --build              frontend http://localhost:3100
-#                                             backend  http://localhost:3150
+#   docker compose up -d --build              frontend http://localhost:3200
+#                                             backend  http://localhost:3250
 #   docker compose --profile seed run --rm seed   fill it with the dev dataset
 #   docker compose down                       stop (data kept)
 #   docker compose down -v                    stop and throw the data away
@@ -12,9 +12,8 @@
 #
 # This stack is separate from `npm run dev`: its own database container and
 # volume, and the database publishes no port, so it does not collide with
-# deep-core-postgres on 5433. It does collide with the e2e suite, whose
-# backend defaults to 3100 - stop this stack before a Playwright run, or move
-# the suite with E2E_BACKEND_PORT.
+# deep-core-postgres on 5433. Nor with the e2e suite on 3100/5100: this stack
+# was on 3100/3150 until 22 November 2569 and moved so that both can be up.
 
 name: deep-core
 
@@ -73,9 +72,9 @@ services:
     restart: unless-stopped
     environment:
       <<: *backend-env
-      PORT: "3150"
+      PORT: "3250"
       # The one origin CORS admits - the frontend as the browser sees it.
-      FRONTEND_URL: http://localhost:3100
+      FRONTEND_URL: http://localhost:3200
       # development, because this stack is served over plain http: production
       # marks the session cookie `secure`, which a browser will not send back
       # to http://localhost, and also closes password sign-in to most roles.
@@ -90,7 +89,7 @@ services:
     volumes:
       - evidence:/data/evidence
     ports:
-      - "3150:3150"
+      - "3250:3250"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -99,11 +98,11 @@ services:
     build:
       context: frontend
       args:
-        REACT_APP_API_URL: http://localhost:3150
+        REACT_APP_API_URL: http://localhost:3250
     image: deep-core-frontend
     restart: unless-stopped
     ports:
-      - "3100:80"
+      - "3200:80"
     depends_on:
       - backend
 

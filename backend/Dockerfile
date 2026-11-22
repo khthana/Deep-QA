@@ -27,6 +27,6 @@ RUN mkdir -p /data/evidence && chown -R node:node /data
 USER node
 
 WORKDIR /app/backend
-ENV PORT=3150
-EXPOSE 3150
+ENV PORT=3250
+EXPOSE 3250
 CMD ["node", "server.js"]
