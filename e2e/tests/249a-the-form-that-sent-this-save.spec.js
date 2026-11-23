@@ -6,7 +6,7 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { gate, isGet, isWrite } = require('../support/gate');
-const { openUsers, search } = require('../support/users-screen');
+const { openUsers, search, editButton, EDIT_NAME } = require('../support/users-screen');
 const { openOfferings } = require('../support/offerings-screen');
 const { openGroups, card, groupNames } = require('../support/groups-screen');
 const improvement = require('../support/improvement-screen');
@@ -126,9 +126,10 @@ test.describe('ข้อมูลผู้ใช้งาน (UserForm.js)', () 
     // them: every seeded account at the institution's own domain holds one.
     await search(page, 'kmitl.ac.th');
 
-    const row = firstRow(page, 'แก้ไข');
+    // The accounts screen's แก้ไข is named for the account since #302.
+    const row = firstRow(page, EDIT_NAME);
     await expect(row).toBeVisible();
-    await button(row, 'แก้ไข').click();
+    await editButton(row).click();
     await expect(heading(page, 'แก้ไขข้อมูลผู้ใช้งาน')).toBeVisible();
 
     const email = page.getByLabel('อีเมล', { exact: true });

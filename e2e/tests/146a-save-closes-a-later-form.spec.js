@@ -125,13 +125,20 @@ const EVIDENCE_LIST = /\/activities\/\d+\/evidence$/;
 const button = (scope, name) => scope.getByRole('button', { name, exact: true });
 const heading = (page, name) => page.getByRole('heading', { name, exact: true });
 
+/**
+ * A row's แก้ไข: the bare verb on three of these screens, and since #302 the
+ * verb, a space and the account's name on the accounts screen.
+ */
+const EDIT = /^แก้ไข(?: |$)/;
+const pencil = (scope) => scope.getByRole('button', { name: EDIT });
+
 /** The first two rows of the list that carry แก้ไข. */
 async function twoRows(page) {
   const rows = page
     .locator('table')
     .first()
     .locator('tbody tr')
-    .filter({ has: page.getByRole('button', { name: 'แก้ไข', exact: true }) });
+    .filter({ has: pencil(page) });
   await expect(rows.nth(1)).toBeVisible();
   return [rows.nth(0), rows.nth(1)];
 }
@@ -243,7 +250,7 @@ const SCREENS = [
  */
 async function saveAndCancel(page, screen, answer) {
   const [first, second] = await twoRows(page);
-  await button(first, 'แก้ไข').click();
+  await pencil(first).click();
   await expect(heading(page, screen.edit)).toBeVisible();
 
   const write = await gate(page, screen.detail, isWrite, answer);
@@ -263,7 +270,7 @@ for (const screen of SCREENS) {
       await screen.open(page);
       const { write, second } = await saveAndCancel(page, screen, { success: SAVED });
 
-      await button(second, 'แก้ไข').click();
+      await pencil(second).click();
       const form = heading(page, screen.edit);
       await expect(form).toBeVisible();
       // The heading is drawn from the record on the form's first frame and the
@@ -314,7 +321,7 @@ for (const screen of SCREENS) {
       await screen.open(page);
       const { write, second } = await saveAndCancel(page, screen, { refusal: REFUSED });
 
-      await button(second, 'แก้ไข').click();
+      await pencil(second).click();
       const form = heading(page, screen.edit);
       await expect(form).toBeVisible();
 
@@ -372,7 +379,7 @@ for (const screen of SCREENS) {
         // drawn if the ref were written where the read lands (#139's rule:
         // ask by the press, not by the row).
         const read = await gate(page, screen.detail, isGet);
-        await button(second, 'แก้ไข').click();
+        await pencil(second).click();
         await read.sent;
 
         const reloaded = waitForReload(page, screen.list);

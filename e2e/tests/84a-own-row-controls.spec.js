@@ -5,7 +5,7 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS, IDS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
-const { openUsers, search, userRow } = require('../support/users-screen');
+const { openUsers, search, statusSwitch } = require('../support/users-screen');
 
 /**
  * docs/acceptance/11-user-accounts.md, row 3 - the screen half of #84.
@@ -48,9 +48,12 @@ const { openUsers, search, userRow } = require('../support/users-screen');
  * rather than in front of a person.
  */
 
-/** The suspend / reactivate control of one row. */
-const statusButton = (page, email) =>
-  userRow(page, email).getByRole('button', { name: /ระงับ|เปิดใช้งาน/ });
+/**
+ * The suspend / reactivate control of one row - since #302 (23 November 2569)
+ * the delivered switch in the สถานะ column, which carries the same `disabled`
+ * and the same `title` the button did.
+ */
+const statusButton = statusSwitch;
 
 test('row 3: the signed-in administrator cannot press ระงับ on their own row', async ({
   page,
@@ -102,7 +105,6 @@ test('row 3: the server refuses it anyway, which is what makes the button a conv
 
   // And the row is untouched, which is the half a status code cannot say.
   await search(page, ACCOUNTS.systemAdmin);
-  await expect(
-    userRow(page, ACCOUNTS.systemAdmin).getByText('ใช้งานอยู่'),
-  ).toBeVisible();
+  // Read off the switch since #302, whose cell holds no word.
+  await expect(statusButton(page, ACCOUNTS.systemAdmin)).toHaveAttribute('aria-checked', 'true');
 });

@@ -298,13 +298,15 @@ async function openUsersScreen(page) {
   return {
     list: users.API,
     table: users.listTable(page),
+    // The user id, the second cell since #302 put ลำดับ first.
+    cell: users.CODE_CELL,
     filters: USER_FILTERS,
     rows: 'users',
     key: (user) => user.user_id,
     // `Users.save` closes the form before it reloads.
     press: async () => {
       const row = users.userRow(page, 'dept.admin.01@kmitl.ac.th');
-      await row.getByRole('button', { name: 'แก้ไข', exact: true }).click();
+      await users.editButton(row).click();
       await page.getByRole('button', { name: 'บันทึก', exact: true }).click();
     },
   };

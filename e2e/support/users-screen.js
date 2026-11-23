@@ -104,9 +104,54 @@ const statusPath = userId => `${API}/${userId}/status`;
  */
 const CONFIRM_STATUS = 'ยืนยันการเปลี่ยน';
 
-/** One row's suspend / reactivate control, by the verb it is showing. */
-const statusButton = (page, email, label) =>
-  userRow(page, email).getByRole('button', { name: label, exact: true });
+/**
+ * One row's status switch - #302.
+ *
+ * Since #302 (23 November 2569) the control is the delivered screen's switch in
+ * the สถานะ column, a `<button role="switch">` named *สถานะ ‹ชื่อ›*, and which
+ * way it points is `aria-checked` rather than a verb on a button. Found by role
+ * inside the caller's row, so the name is not this helper's premise: `302a`
+ * asserts it as a claim.
+ */
+const statusSwitch = (page, email) => userRow(page, email).getByRole('switch');
+
+/**
+ * One row's switch, found only while it offers the change named - #86's verb,
+ * kept as the argument since #302.
+ *
+ * Until #302 this was a button whose name *was* the verb, so a row showing the
+ * other direction had no such button and every caller's locator came back
+ * empty. The switch keeps that property by being asked for its state:
+ * `'ระงับ'` is a switch that is on (pressing it suspends), `'เปิดใช้งาน'` one
+ * that is off. So a caller that asserts the direction still asserts it - the
+ * row arriving the wrong way round still leaves nothing to find - and the
+ * calls written in verbs - ten spec files on 23 November 2569 - did not have
+ * to be rewritten as states.
+ */
+const statusButton = (page, email, label) => {
+  if (label !== 'ระงับ' && label !== 'เปิดใช้งาน') {
+    throw new Error(`statusButton: no switch state offers ${label}`);
+  }
+  return userRow(page, email).getByRole('switch', { checked: label === 'ระงับ' });
+};
+
+/**
+ * One row's แก้ไข - #302: a grey icon named *แก้ไข ‹ชื่อ›*. The name begins
+ * with the verb and a space, which is what this matches; `exact: true` on the
+ * bare verb found it until that date.
+ */
+const EDIT_NAME = /^แก้ไข /;
+const editButton = row => row.getByRole('button', { name: EDIT_NAME });
+
+/**
+ * Which cell of a row is its user id - #302.
+ *
+ * `support/pager.js`'s `keysOn` reads the first cell as a row's key, and since
+ * #302 the first cell is ลำดับ, which two pages never share either - so a read
+ * left on the first cell would still find page two disjoint from page one and
+ * say nothing about who is on it. Every `keysOn` of this table passes this.
+ */
+const CODE_CELL = 'td:nth-child(2)';
 
 /**
  * Presses it, which since #86 asks rather than writes.
@@ -163,6 +208,10 @@ module.exports = {
   listTable,
   statusPath,
   statusButton,
+  statusSwitch,
+  editButton,
+  EDIT_NAME,
+  CODE_CELL,
   startStatusChange,
   confirmStatusChange,
   setStatusByHand,

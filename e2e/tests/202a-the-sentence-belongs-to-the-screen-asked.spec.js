@@ -26,6 +26,7 @@ const {
   userRow,
   search,
   startStatusChange,
+  editButton,
   confirmStatusChange,
   API: USERS_API,
 } = require('../support/users-screen');
@@ -326,7 +327,7 @@ test.describe('ข้อมูลผู้ใช้งาน — the switch that
     // the announcing half, which left this way in standing). แก้ไข rather than เพิ่มผู้ใช้งาน all the same - on this
     // screen แก้ไข opens its form from the row already in hand, with no read of
     // its own, so the form is on the screen before the answer can land.
-    await moveOnWhileTheWriteIsOut(button(userRow(page, ACCOUNTS.teacherOne), 'แก้ไข'));
+    await moveOnWhileTheWriteIsOut(editButton(userRow(page, ACCOUNTS.teacherOne)));
     await expect(heading(page, 'แก้ไขข้อมูลผู้ใช้งาน')).toBeVisible();
 
     const reloaded = waitForReload(page, USERS_API);

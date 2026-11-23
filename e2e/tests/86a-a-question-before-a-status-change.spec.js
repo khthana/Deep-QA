@@ -14,6 +14,7 @@ const {
   userRow,
   statusPath,
   statusButton,
+  statusSwitch,
   startStatusChange,
   confirmStatusChange,
   setStatusByHand,
@@ -204,10 +205,12 @@ test('row 3: answering it suspends the account and says so', async ({ page }) =>
 
   await expect(page.getByRole('status'), "the switch's sentence").toHaveText(SUSPENDED);
   await expect(heading(page), 'the question, closed by its own answer').toHaveCount(0);
-  await expect(
-    userRow(page, ACCOUNTS.teacherTwo).getByText('ถูกระงับ'),
-    "the row's own status cell",
-  ).toBeVisible();
+  // Since #302 the cell is the switch alone, so this reads the same element
+  // the line below reads - one site, which no mutant can split (#191).
+  await expect(statusSwitch(page, ACCOUNTS.teacherTwo), "the row's own status cell").toHaveAttribute(
+    'aria-checked',
+    'false',
+  );
   await expect(
     statusButton(page, ACCOUNTS.teacherTwo, 'เปิดใช้งาน'),
     'the control, now offering the way back',
@@ -240,10 +243,10 @@ test('row 5: answering it opens the account again and says so', async ({ page })
 
   await expect(page.getByRole('status'), "the switch's sentence").toHaveText(RESTORED);
   await expect(heading(page), 'the question, closed by its own answer').toHaveCount(0);
-  await expect(
-    userRow(page, ACCOUNTS.teacherTwo).getByText('ใช้งานอยู่'),
-    "the row's own status cell",
-  ).toBeVisible();
+  await expect(statusSwitch(page, ACCOUNTS.teacherTwo), "the row's own status cell").toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
   await expect(
     statusButton(page, ACCOUNTS.teacherTwo, 'ระงับ'),
     'the control, back to the change it offered before',

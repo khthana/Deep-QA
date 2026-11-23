@@ -14,6 +14,7 @@ const {
   userRow,
   search,
   startStatusChange,
+  statusButton,
   confirmStatusChange,
   listTable: usersTable,
 } = require('../support/users-screen');
@@ -209,7 +210,7 @@ test.describe('บัญชีผู้ใช้ — the switch, read through it
     const row = userRow(page, ACCOUNTS.teacherTwo);
     await expect(row, 'the row the switch is pressed on').toHaveCount(1);
     await expect(
-      row.getByRole('button', { name: SUSPEND }),
+      statusButton(page, ACCOUNTS.teacherTwo, SUSPEND),
       'the account is live before the press',
     ).toBeVisible();
 
@@ -251,7 +252,7 @@ test.describe('บัญชีผู้ใช้ — the switch, read through it
     // And the second: that answer is drawn. The switch is a real one, so what
     // says so is the row's own control reading the other way round.
     await expect(
-      row.getByRole('button', { name: RESTORE }),
+      statusButton(page, ACCOUNTS.teacherTwo, RESTORE),
       'the row the answer carried, drawn',
     ).toBeVisible();
     expect(

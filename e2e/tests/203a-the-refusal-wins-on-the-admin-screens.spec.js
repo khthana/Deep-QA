@@ -181,7 +181,9 @@ async function theRefusalWins(page, { write, list, success, sentence, what, pres
 
 /** Opens a row's own form through the read the pencil sends, and waits for บันทึก. */
 async function openTheEditor(page, row) {
-  await button(row, 'แก้ไข').click();
+  // `แก้ไข` alone on the six other screens, `แก้ไข ‹ชื่อ›` on the accounts
+  // screen since #302 - the verb and nothing, or the verb and a space.
+  await row.getByRole('button', { name: /^แก้ไข(?: |$)/ }).click();
   await expect(button(page, 'บันทึก'), 'the form the save is pressed on').toBeVisible();
 }
 

@@ -159,7 +159,8 @@ async function elevenActiveAccounts(page, token, code) {
   expect(arrival.pages, 'they fill more than one page').toBeGreaterThan(1);
 
   const pages = await toLastPage(page, table, users.waitForList);
-  const last = await keysOn(table);
+  // The user id, which since #302 is the second cell and not the first.
+  const last = await keysOn(table, users.CODE_CELL);
   expect(last, 'one row on the last page, which is the page the press takes away').toHaveLength(1);
   return { table, pages, last: last[0] };
 }
@@ -211,7 +212,9 @@ test.describe('ข้อมูลผู้ใช้งาน (Users.js)', () => 
         message: 'where the person is left, and what the pager says there',
       })
       .toEqual({ total: COUNT - 1, shown: 1, pages: 1 });
-    expect(await keysOn(table), 'the rows on the page they were handed').toHaveLength(COUNT - 1);
+    expect(await keysOn(table, users.CODE_CELL), 'the rows on the page they were handed').toHaveLength(
+      COUNT - 1,
+    );
     await expect(table.getByText(NOBODY), 'the sentence the ticket is about').toHaveCount(0);
     expect(walk, 'the pages the screen asked for, in order').toEqual([String(pages), '1']);
   });

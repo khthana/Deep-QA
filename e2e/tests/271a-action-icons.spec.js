@@ -85,12 +85,12 @@ test('row 4: รายวิชาในหลักสูตร - แก้ไ�
   await isAnIcon(named(page, 'นำออก'), 'นำออก');
 });
 
-test('row 5: ข้อมูลผู้ใช้งาน - แก้ไข and ระงับ', async ({ page }) => {
-  await signIn(page, ACCOUNTS.systemAdmin);
-  await openUsers(page);
-  await isAnIcon(named(page, 'แก้ไข'), 'แก้ไข');
-  await isAnIcon(named(page, 'ระงับ'), 'ระงับ');
-});
+// Row 5 - ข้อมูลผู้ใช้งาน - was withdrawn on 23 November 2569 by #302, whose
+// owner's answer put that screen's table back in the delivered shape: a switch in
+// its own สถานะ column and a grey แก้ไข icon named for the account, neither of
+// them a `RowAction`, so none of this file's three claims is that screen's any
+// more. Its claims are `302a`'s rows 4 and 6. The number is left unused rather
+// than reused, so the sheet's citations of rows 6-11 still mean what they did.
 
 test('row 6: the grants table - ยกเลิกบทบาท', async ({ page }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);

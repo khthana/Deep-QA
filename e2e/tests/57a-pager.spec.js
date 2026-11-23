@@ -94,7 +94,7 @@ test.describe('ข้อมูลผู้ใช้งาน — the control its
     // Ten, and not "all of them" - the seeded accounts alone are more than a
     // page and the specs before this one added more.
     expect(total).toBeGreaterThan(10);
-    expect(await keysOn(users.listTable(page))).toHaveLength(10);
+    expect(await keysOn(users.listTable(page), users.CODE_CELL)).toHaveLength(10);
 
     // The line reads out where the reader is standing, and how far it goes.
     expect(shown).toBe(1);
@@ -107,10 +107,12 @@ test.describe('ข้อมูลผู้ใช้งาน — the control its
   test('row 1: ถัดไป is a different set of people, and ก่อนหน้า comes back', async ({
     page,
   }) => {
-    const first = await keysOn(users.listTable(page));
+    // By user id: since #302 the first cell is ลำดับ, which page two never
+    // shares with page one whoever is on it.
+    const first = await keysOn(users.listTable(page), users.CODE_CELL);
 
     await step(page, 'forward', users.waitForList);
-    const second = await keysOn(users.listTable(page));
+    const second = await keysOn(users.listTable(page), users.CODE_CELL);
 
     // First, because this is what the row claims. A screen that asked for page
     // one again would be answered, would draw the same ten people, and would
@@ -124,7 +126,7 @@ test.describe('ข้อมูลผู้ใช้งาน — the control its
 
     // And back is back: the same ten, in the same order.
     await step(page, 'back', users.waitForList);
-    expect(await keysOn(users.listTable(page))).toEqual(first);
+    expect(await keysOn(users.listTable(page), users.CODE_CELL)).toEqual(first);
     await expect(pagerLine(page)).toContainText('หน้า 1 จาก');
   });
 
@@ -139,7 +141,7 @@ test.describe('ข้อมูลผู้ใช้งาน — the control its
     // The page number did not run past the end, and the last page holds what
     // is left over rather than nothing.
     const left = total - (pages - 1) * 10;
-    expect(await keysOn(users.listTable(page))).toHaveLength(left);
+    expect(await keysOn(users.listTable(page), users.CODE_CELL)).toHaveLength(left);
 
     await expect(next(page)).toBeDisabled();
   });

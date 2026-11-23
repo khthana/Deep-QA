@@ -8,8 +8,9 @@ import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
-import RowAction, { RowActions } from '../components/RowAction'
+import { FaUserEdit } from 'react-icons/fa'
 import SearchBox from '../components/SearchBox'
+import StatusSwitch from '../components/users/StatusSwitch'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
 import { grantScope } from '../components/users/scopeLabel'
@@ -100,11 +101,6 @@ const IMPORT_NOTES = [
   'สถานะบัญชีตั้งจากไฟล์ไม่ได้ ทุกแถวที่นำเข้าจะเปิดใช้งาน หากต้องการระงับให้ใช้ปุ่มบนรายการ',
 ]
 
-const STATUS = {
-  active: { label: 'ใช้งานอยู่', className: 'bg-green-100 text-green-800' },
-  inactive: { label: 'ถูกระงับ', className: 'bg-gray-200 text-gray-700' },
-}
-
 const control =
   'rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
 
@@ -165,6 +161,43 @@ const asks = user =>
   suspends(user)
     ? `ต้องการระงับการใช้งานบัญชีของ ${user.user_id} ${personName(user)} ใช่หรือไม่ บัญชีที่ถูกระงับจะถูกปฏิเสธทุกคำขอตั้งแต่คำขอถัดไป แม้ผู้ใช้งานจะยังเปิดหน้าจอค้างอยู่`
     : `ต้องการเปิดใช้งานบัญชีของ ${user.user_id} ${personName(user)} ใช่หรือไม่`
+
+/**
+ * One language's name, for the two name columns the delivered table had - #302.
+ *
+ * Each with its own title, as `personName` writes the Thai one, so the two
+ * columns read the same way round. No fallback to the other language: the
+ * other language is the next column, and a Thai column reading the English name
+ * would put it on the row twice. An account with no name in this language
+ * reads `—`, which is what this table draws for every empty cell.
+ */
+const nameIn = (user, lang) =>
+  user[`first_name_${lang}`] || user[`last_name_${lang}`]
+    ? [user[`title_${lang}`], user[`first_name_${lang}`], user[`last_name_${lang}`]]
+        .filter(Boolean)
+        .join(' ')
+    : '—'
+
+/**
+ * The headers, in the order `docs/users-screen.md` rule 1 sets and in the
+ * delivered screen's own words for the five it had - the owner's answers of
+ * 23 November 2569, which also settled ดำเนินการ over the rule's จัดการ: the
+ * delivered table and every other screen since #271 say ดำเนินการ.
+ */
+const HEADERS = [
+  'ลำดับ',
+  'รหัสผู้ใช้งาน',
+  'ชื่อ สกุล (ไทย)',
+  'ชื่อ สกุล (อังกฤษ)',
+  'อีเมล',
+  'บทบาท',
+  'ช่วงเวลาใช้งาน',
+  'สถานะ',
+  'ดำเนินการ',
+]
+
+/** The three narrow columns, centred under their headers as the delivered ones were. */
+const CENTRED = new Set(['ลำดับ', 'สถานะ', 'ดำเนินการ'])
 
 const windowOf = user => {
   if (!user.valid_from && !user.valid_until) return '—'
@@ -679,11 +712,12 @@ export default function Users() {
    * rebuild drew a text button beside แก้ไข and dropped the question, which the
    * walk of 21 สิงหาคม 2569 recorded and #86 asked the specification owner
    * about. The answer was to ask in both directions, from the button where it
-   * now is. So what is restored is the question and not the switch: the button
-   * stays, because that is what every other row of this table's action column
-   * looks like and the walked rows of sheet `11` are written about it. Since
-   * #271 (11 November 2569) it is an icon like the rest of that column, which
-   * now reads ดำเนินการ, and the verb is its name and its tooltip.
+   * now is. So what was restored then was the question and not the switch: the
+   * button stayed, because that was what every other row of this table's action
+   * column looked like. Since #271 (11 November 2569) it was an icon in that
+   * column, and since #302 (23 November 2569) it is the delivered switch again,
+   * in its own สถานะ column - the owner's answer of 22 November 2569
+   * (`docs/users-screen.md` rule 2) - asking the same question.
    *
    * The question is the shared `ConfirmDialog` - #14's, which eighteen other
    * screens ask through - so three things about the delivered box cannot come
@@ -921,37 +955,45 @@ export default function Users() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-2">รหัสผู้ใช้</th>
-                  <th className="px-4 py-2">ชื่อ-นามสกุล</th>
-                  <th className="px-4 py-2">อีเมล</th>
-                  <th className="px-4 py-2">บทบาท</th>
-                  <th className="px-4 py-2">ช่วงเวลาใช้งาน</th>
-                  <th className="px-4 py-2">สถานะ</th>
-                  <th className="px-4 py-2 text-center">ดำเนินการ</th>
+                  {HEADERS.map(header => (
+                    <th
+                      key={header}
+                      className={`px-4 py-2 ${CENTRED.has(header) ? 'text-center' : ''}`}
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {loading && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={HEADERS.length} className="px-4 py-8 text-center text-slate-500">
                       กำลังโหลด…
                     </td>
                   </tr>
                 )}
                 {!loading && data.users.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={HEADERS.length} className="px-4 py-8 text-center text-slate-500">
                       ไม่พบผู้ใช้งานตามเงื่อนไขที่เลือก
                     </td>
                   </tr>
                 )}
                 {!loading &&
-                  data.users.map(user => (
+                  data.users.map((user, index) => (
                     <tr key={user.user_id}>
-                      <td className="px-4 py-2">{user.user_id}</td>
-                      <td className="px-4 py-2">
-                        {personName(user)}
+                      {/* #302 - the position in the whole filtered list, read off
+                          the answer that drew this page rather than off `page`,
+                          which runs ahead of what is drawn while a read is out.
+                          The delivered screen counted from 1 on every page; the
+                          owner's answer of 23 November 2569 was to run on. */}
+                      <td className="px-4 py-2 text-center">
+                        {((data.page || 1) - 1) * (data.per_page || PAGE_SIZE) + index + 1}
                       </td>
+                      <td className="px-4 py-2">{user.user_id}</td>
+                      <td className="px-4 py-2">{nameIn(user, 'th')}</td>
+                      <td className="px-4 py-2">{nameIn(user, 'en')}</td>
                       <td className="px-4 py-2">{user.email}</td>
                       <td className="px-4 py-2">
                         {(user.roles ?? [])
@@ -965,34 +1007,36 @@ export default function Users() {
                           .join(', ') || '—'}
                       </td>
                       <td className="px-4 py-2">{windowOf(user)}</td>
-                      <td className="px-4 py-2">
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-xs ${
-                            STATUS[user.status]?.className ?? ''
-                          }`}
-                        >
-                          {STATUS[user.status]?.label ?? user.status}
-                        </span>
+                      <td className="px-4 py-2 text-center">
+                        <StatusSwitch
+                          checked={suspends(user)}
+                          label={`สถานะ ${personName(user)}`}
+                          onClick={() => startSwitch(user)}
+                          disabled={isSelf(user)}
+                          title={isSelf(user) ? CANNOT_SUSPEND_SELF : undefined}
+                        />
                       </td>
                       <td className="whitespace-nowrap px-4 py-2">
-                        <RowActions>
-                          <RowAction
-                            kind="edit"
-                            label="แก้ไข"
+                        {/* #302 - the delivered grey icon with no word beside it
+                            (`docs/users-screen.md` rule 3). Its name says whose
+                            account it opens, which a column of identical
+                            pencils does not otherwise say; #306's trash can goes
+                            beside it. */}
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            aria-label={`แก้ไข ${personName(user)}`}
+                            title={`แก้ไข ${personName(user)}`}
                             onClick={() => {
                               showing.current = {}
                               setNotice(null)
                               setEditing(user)
                             }}
-                          />
-                          <RowAction
-                            kind={suspends(user) ? 'suspend' : 'restore'}
-                            label={suspends(user) ? 'ระงับ' : 'เปิดใช้งาน'}
-                            onClick={() => startSwitch(user)}
-                            disabled={isSelf(user)}
-                            title={isSelf(user) ? CANNOT_SUSPEND_SELF : undefined}
-                          />
-                        </RowActions>
+                            className="rounded p-1 text-gray-600 transition hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <FaUserEdit aria-hidden="true" className="text-2xl" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

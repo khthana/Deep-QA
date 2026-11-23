@@ -510,7 +510,14 @@ async function pagerIsDeadWhileTheReloadIsOut(page, { list, table, press }) {
 async function openUsersScreen(page) {
   await signIn(page, ACCOUNTS.systemAdmin);
   await users.openUsers(page);
-  return { list: users.API, table: users.listTable(page), rows: 'users', key: (user) => user.user_id };
+  // The key is the user id, the second cell since #302 put ลำดับ first.
+  return {
+    list: users.API,
+    table: users.listTable(page),
+    cell: users.CODE_CELL,
+    rows: 'users',
+    key: (user) => user.user_id,
+  };
 }
 
 test('ข้อมูลผู้ใช้งาน (Users.js): the list บันทึก reloads does not land on the page the pager has left', async ({
@@ -522,7 +529,7 @@ test('ข้อมูลผู้ใช้งาน (Users.js): the list บั�
   await supersede(page, {
     ...screen,
     press: async () => {
-      await row.getByRole('button', { name: 'แก้ไข', exact: true }).click();
+      await users.editButton(row).click();
       await page.getByRole('button', { name: 'บันทึก', exact: true }).click();
     },
   });
@@ -538,13 +545,12 @@ test('ข้อมูลผู้ใช้งาน (Users.js): the list ระ�
   const screen = await openUsersScreen(page);
   await supersede(page, {
     ...screen,
-    press: () =>
-      pressAndConfirm(
-        page,
-        users.userRow(page, 'past.assessor@tabee-review.org'),
-        'ระงับ',
-        'ยืนยันการเปลี่ยน',
-      ),
+    // Since #302 the switch is a `role="switch"` and not a button named ระงับ,
+    // so the press goes through the screen's own helpers.
+    press: async () => {
+      await users.startStatusChange(page, 'past.assessor@tabee-review.org', 'ระงับ');
+      await users.confirmStatusChange(page);
+    },
   });
 });
 
