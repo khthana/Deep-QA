@@ -64,6 +64,11 @@ a row action and prove nothing about this ticket.
 | `130:everyrowisdead` | `271a` | 1 ล้ม 10 ผ่าน | แถว 6 ที่ *a button named ยกเลิกบทบาท* — การจัดฉาก |
 
 บันทึกของมัตแตนต์ที่ re-aim (`86` สองตัว `130` หนึ่งตัว `139` แปดตัว) อยู่ในใบของมันเอง
+## การกวาดของ #302 (23 พ.ย. 2569)
+
+จอผู้ใช้งานไม่ใช้ `RowAction` แล้ว และแถว 5 ของ `271a` ถอนไป · `wordsdrawn` `notitle` `noicon` ฆ่า `271a` 10 ต่อตัว (ไม่ใช่ 11)
+และไม่ฆ่า `302a` · `reasonlost` ฆ่าเพียง `12a` แถว 6 (ไม่ใช่ 2 เพราะ `title` ของสวิตช์ใน `84a` ไม่ได้มาจาก `RowAction`) —
+ตรงคำทำนายใน `mutation/302-the-users-table-as-delivered.py`
 """
 
 from harness import main

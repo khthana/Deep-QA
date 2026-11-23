@@ -84,6 +84,12 @@ offering the way back* / *back to the change it offered before*) พิสูจ
 แยกสองข้อนั้นได้อีก (#191) · `togglenoreload` ยังตายที่ข้อแรกของสองข้อนั้น · ผลกวาดใหม่อยู่ใน
 `mutation/302-the-users-table-as-delivered.py`
 
+## การกวาดของ #302 (23 พ.ย. 2569)
+
+สี่ตัวรันกับ `86a` `302a` `84a` หลังเล็งใหม่ · `alwaysoffersuspend` 4 · `alwaysofferrestore` 7 · `pressflipstherow` 2 ·
+`togglenoreload` 2 — ตรงคำทำนายทุกตัวทั้งจำนวนและบรรทัด · ตารางคำทำนายและบันทึกทีละบรรทัดอยู่ใน
+`mutation/302-the-users-table-as-delivered.py`
+
 ## วิธีรัน
 
     python mutation/86-a-question-before-a-status-change.py save

@@ -43,6 +43,37 @@
 | `271:wordsdrawn` `271:notitle` `271:noicon` | `271a` **10** ต่อตัว — แถว 1–4 และ 6–11 ที่ข้อเดียวกับเมื่อ 11 พ.ย. 2569 · แถว 5 ถอนแล้ว จึงไม่ใช่ 11 อีก · `302a` **0** — ไอคอนแก้ไขของจอนี้ไม่ใช่ `RowAction` แล้ว |
 | `271:reasonlost` | **1** — `12a` แถว 6 ที่ `title` เท่านั้น · `84a` ไม่ตายแล้ว เพราะ `title` ของสวิตช์ไม่ได้มาจาก `RowAction` (เมื่อ 11 พ.ย. 2569 ตาย 2) |
 
+## การกวาด — บันทึกผล (23 พ.ย. 2569)
+
+ทีละตัว `save` → มัตแตนต์ → ถามต้นไม้ว่ามันอยู่ในนั้นจริง (#268) → รัน → `restore` → ถามต้นไม้ว่าตรงกับ `HEAD` ·
+รอบแรกล้มที่ `restore` หลัง `thainametitleless` (`OSError 22` ตอนเขียน `Users.js` ทับ — OneDrive ถือแฟ้มอยู่) ต้นไม้ค้างมัตแตนต์ไว้
+และ `save` ของตัวถัดไปทุกตัวปฏิเสธ (#126) — ผลของสิบสามตัวถัดมา และของ `271` สี่ตัวที่รันทับมัตแตนต์นั้น ถูกทิ้งทั้งหมด (#146) แล้วรันใหม่
+ด้วยการ `restore` ที่ลองซ้ำและหยุดทั้งรอบถ้าต้นไม้ไม่ตรงกับ `HEAD` · สามตัวแรกรันก่อนการล้ม จึงใช้ได้
+
+| ชื่อ | ล้ม | ตายที่ | ตรงคำทำนาย |
+|---|---|---|---|
+| `managecolumn` | 1 | `302a` แถว 1 `toEqual(HEADERS)` | ✓ |
+| `ordinalperpage` | 1 | `302a` แถว 3 ลำดับของหน้า 2 | ✓ |
+| `thainametitleless` | 1 | `302a` แถว 2 ช่องไทย | ✓ |
+| `englishcolumnthai` | 1 | `302a` แถว 2 ช่องอังกฤษ | ✓ |
+| `switchsaysaword` | 1 | `302a` แถว 4 `toHaveText('')` | ✓ |
+| `switchnamedbycode` | 1 | `302a` แถว 4 `toHaveAccessibleName` | ✓ |
+| `editnamedbycode` | 1 | `302a` แถว 6 `toHaveAccessibleName` | ✓ |
+| `edittitleisword` | 1 | `302a` แถว 6 *its tooltip* | ✓ |
+| `editwordsdrawn` | 1 | `302a` แถว 6 *no word drawn beside it* | ✓ |
+| `86:alwaysoffersuspend` | 4 | `86a` แถว 3 *the row's own status cell* · แถว 4 กับ 5 ใน `arrive` · `302a` แถว 4 `aria-checked` | ✓ |
+| `86:alwaysofferrestore` | 7 | `86a` แถว 1 2 3 ใน `arrive` · แถว 5 *the row's own status cell* · `302a` แถว 4 `aria-checked` · แถว 5 *while the question is open* · `84a` แถวที่สาม `aria-checked` | ✓ |
+| `86:pressflipstherow` | 2 | `86a` แถว 1 *still offering the same change* · `302a` แถว 5 *while the question is open* | ✓ |
+| `86:togglenoreload` | 2 | `86a` แถว 3 กับ 5 *the row's own status cell* | ✓ |
+| `84:alwaysenabled` | 1 | `84a` แถวแรก `toBeDisabled` | ✓ |
+| `84:everyrowisdead` | 8 | `84a` แถวที่สอง `toBeEnabled` · `302a` แถว 4 `toBeEnabled` · `302a` แถว 5 และ `86a` ห้าแถวที่การกด (การจัดฉาก #266) | ✓ |
+| `84:titledrifts` | 1 | `84a` แถวแรก `title` | ✓ |
+| `271:wordsdrawn` `notitle` `noicon` | 10 ต่อตัว | `271a` แถว 1–4 และ 6–11 · `302a` ไม่ตาย | ✓ |
+| `271:reasonlost` | 1 | `12a` แถว 6 `title` | ✓ |
+
+ยี่สิบสองตัวตรงทั้งยี่สิบสองตัว ทั้งจำนวนและบรรทัด · **ข้ออ้างหนึ่งข้อที่ไม่มีมัตแตนต์ตัวไหนไปถึง**: *the switch after ยกเลิก*
+ท้ายแถว 5 อยู่ใต้บรรทัดที่ทุกตัวตายก่อน (#88) — ใบรับงานแยกมันเป็นแถว ☑ ของตัวเอง ไม่ให้มันขี่ ⚙ ของบรรทัดข้างบน
+
 ## วิธีรัน
 
     python mutation/302-the-users-table-as-delivered.py save
