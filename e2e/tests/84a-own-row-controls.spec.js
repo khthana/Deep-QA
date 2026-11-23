@@ -51,9 +51,10 @@ const { openUsers, search, statusSwitch } = require('../support/users-screen');
 /**
  * The suspend / reactivate control of one row - since #302 (23 November 2569)
  * the delivered switch in the สถานะ column, which carries the same `disabled`
- * and the same `title` the button did.
+ * and the same `title` the button did. Read with `statusSwitch` and no verb:
+ * the support module's `statusButton` takes one, and this file asks about the
+ * control whichever way it points.
  */
-const statusButton = statusSwitch;
 
 test('row 3: the signed-in administrator cannot press ระงับ on their own row', async ({
   page,
@@ -62,7 +63,7 @@ test('row 3: the signed-in administrator cannot press ระงับ on their o
   await openUsers(page);
   await search(page, ACCOUNTS.systemAdmin);
 
-  const own = statusButton(page, ACCOUNTS.systemAdmin);
+  const own = statusSwitch(page, ACCOUNTS.systemAdmin);
   await expect(own).toBeVisible();
 
   // Drawn, not hidden. The column keeps its shape, so the row still reads the
@@ -78,7 +79,7 @@ test('row 3: every other row keeps the button it always had', async ({ page }) =
 
   // The control against a mutant that disables the column rather than the
   // row: this account is not the caller, so nothing about it changed.
-  const other = statusButton(page, ACCOUNTS.teacherOne);
+  const other = statusSwitch(page, ACCOUNTS.teacherOne);
   await expect(other).toBeEnabled();
   await expect(other).not.toHaveAttribute('title', REFUSALS.selfStatus);
 });
@@ -106,5 +107,5 @@ test('row 3: the server refuses it anyway, which is what makes the button a conv
   // And the row is untouched, which is the half a status code cannot say.
   await search(page, ACCOUNTS.systemAdmin);
   // Read off the switch since #302, whose cell holds no word.
-  await expect(statusButton(page, ACCOUNTS.systemAdmin)).toHaveAttribute('aria-checked', 'true');
+  await expect(statusSwitch(page, ACCOUNTS.systemAdmin)).toHaveAttribute('aria-checked', 'true');
 });

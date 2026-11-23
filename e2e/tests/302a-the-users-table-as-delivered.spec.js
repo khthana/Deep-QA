@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { ACCOUNTS, IDS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
+const { hold } = require('../support/hold');
 const { panel } = require('../support/confirm-dialog');
 const { reading, step } = require('../support/pager');
 const {
@@ -18,7 +19,7 @@ const {
 } = require('../support/users-screen');
 
 /**
- * docs/acceptance/302-the-users-table-as-delivered.md - #302.
+ * docs/acceptance/11-user-accounts.md §#302.
  *
  * The owner's answer of 22 November 2569 (`docs/users-screen.md` rules 1-3) put
  * the accounts table back in the delivered screen's shape
@@ -30,7 +31,17 @@ const {
  * What a browser can hold of that is below. The look of the switch and of the
  * grey icon - their colours, sizes and where they sit in the cell - is the
  * sheet's walked rows.
+ *
+ * `hold()`, because rows 4 and 5 really change an account's status through its
+ * route, and a row that fails between its two arrangements would leave it
+ * suspended for every file after this one (#134).
  */
+
+let release;
+test.beforeAll(async () => {
+  release = await hold();
+});
+test.afterAll(() => release());
 
 /** The nine headers, in the order the owner's rule 1 puts them. */
 const HEADERS = [

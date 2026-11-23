@@ -196,7 +196,9 @@ async function elevenActiveAccounts(page, token, code) {
   expect(arrival.pages, 'they fill more than one page').toBeGreaterThan(1);
 
   const pages = await toLastPage(page, table, users.waitForList);
-  const last = await keysOn(table);
+  // The user-id cell: the first is ลำดับ since #302, and `last.slice(-2)` below
+  // reads the account's number off this key.
+  const last = await keysOn(table, users.CODE_CELL);
   expect(last, 'one row on the last page, which is the page the press takes away').toHaveLength(1);
   return { table, pages, last: last[0] };
 }

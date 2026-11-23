@@ -113,7 +113,7 @@ test('Users.js: one person suspends the last page out from under themselves', as
   expect(first.pages, 'the active list fills more than one page').toBeGreaterThan(1);
 
   const last = await toLastPage(page, table, users.waitForList);
-  const onTheLastPage = await keysOn(table);
+  const onTheLastPage = await keysOn(table, users.CODE_CELL);
   const addresses = await addressesOn(page);
   console.log(
     `#222 · status=active · ทั้งหมด ${first.total} · หน้าสุดท้าย ${last} · ` +
@@ -145,7 +145,7 @@ test('Users.js: one person suspends the last page out from under themselves', as
   // row, so counting them answers 1 on the screen that is drawing nothing
   // (#164's sampler, one species along - and the first run of this probe
   // predicted 0 and was wrong for exactly that reason).
-  const held = await keysOn(table);
+  const held = await keysOn(table, users.CODE_CELL);
   console.log(
     `#222 · หลังระงับครบ: ทั้งหมด ${after.total} · อยู่หน้า ${after.shown} · ` +
       `มีทั้งหมด ${after.pages} หน้า · สิ่งที่ตารางถือ ${JSON.stringify(held)}`,

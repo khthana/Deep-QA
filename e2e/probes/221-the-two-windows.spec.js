@@ -159,7 +159,9 @@ async function record(page, { screen, write, sequence, table, watch, aside, pred
   if (predicted === 'said') expect(seen.saying, 'predicted: the sentence is said').toBeGreaterThan(0);
   if (predicted === 'silent') expect(seen.saying, 'predicted: nothing says it').toBe(0);
   const line = await reading(page, table);
-  const keys = await keysOn(table);
+  // The users table's first cell is ลำดับ since #302, which two pages never
+  // share whoever is on them, so its key is the user-id cell.
+  const keys = await keysOn(table, screen === 'Users.js' ? users.CODE_CELL : undefined);
   found.push({
     screen,
     write,
@@ -345,7 +347,7 @@ test('Users.js สถานะ: the write answers, then ถัดไป while th
 test('Users.js บันทึก: the twin that presses nothing', async ({ page }) => {
   const table = await openUsers(page);
   const watch = await watchForTheSentence(page, SAVED_USER);
-  await users.userRow(page, EDIT_ROW).getByRole('button', { name: 'แก้ไข', exact: true }).click();
+  await users.editButton(users.userRow(page, EDIT_ROW)).click();
   const drawn = await whileTheFormIsOpen(page);
   await page.getByRole('button', { name: 'บันทึก', exact: true }).click();
   await sleep(AFTER_MS);
@@ -364,7 +366,7 @@ test('Users.js บันทึก: ถัดไป pressed while the reload is h
   const table = await openUsers(page);
   const held = heldPageOne(users.API);
   const watch = await watchForTheSentence(page, SAVED_USER);
-  await users.userRow(page, EDIT_ROW).getByRole('button', { name: 'แก้ไข', exact: true }).click();
+  await users.editButton(users.userRow(page, EDIT_ROW)).click();
   await whileTheFormIsOpen(page);
   const written = page.waitForResponse(
     (answer) =>
@@ -394,7 +396,7 @@ test('Users.js บันทึก: the ค้นหา filter typed while the re
   const table = await openUsers(page);
   const held = (url) => heldPageOne(users.API)(url) && !url.searchParams.get('q');
   const watch = await watchForTheSentence(page, SAVED_USER);
-  await users.userRow(page, EDIT_ROW).getByRole('button', { name: 'แก้ไข', exact: true }).click();
+  await users.editButton(users.userRow(page, EDIT_ROW)).click();
   await whileTheFormIsOpen(page);
   const written = page.waitForResponse(
     (answer) =>

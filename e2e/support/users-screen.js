@@ -158,7 +158,8 @@ const CODE_CELL = 'td:nth-child(2)';
  *
  * The row is found by the caller's address and not again here: the screen
  * reloads the list on the same search term after a status change, so the row is
- * still on screen with the other verb on its button - and typing the term a
+ * still on screen with its switch pointing the other way (until #302, the
+ * other verb on its button) - and typing the term a
  * second time would set the box to what it already holds, fire no change event
  * and wait for a request that is never sent.
  */
