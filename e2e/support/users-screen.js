@@ -144,6 +144,76 @@ const EDIT_NAME = /^แก้ไข /;
 const editButton = row => row.getByRole('button', { name: EDIT_NAME });
 
 /**
+ * One account's own page - #303. `GET /api/users/:userId` is what the page
+ * reads, matched by the account's path so the list's read is not it.
+ */
+const EDIT = '/main/users/edit-user/';
+const accountOf = answer =>
+  /^\/api\/users\/[^/]+$/.test(new URL(answer.url()).pathname) &&
+  !['grantable', 'import-template'].some(word => new URL(answer.url()).pathname.endsWith(word)) &&
+  answer.request().method() === 'GET';
+
+/**
+ * Back to the list from an account's page, by its *แสดงรายชื่อผู้ใช้งานทั้งหมด*,
+ * waiting for the list's read - #303. The list comes back at the page and
+ * filter the account was opened from, which is what this returns to.
+ */
+async function backToList(page) {
+  const [response] = await Promise.all([
+    waitForList(page),
+    page.getByRole('button', { name: 'แสดงรายชื่อผู้ใช้งานทั้งหมด' }).click(),
+  ]);
+  expect(response.status()).toBe(200);
+  return untilDrawn(page, response);
+}
+
+/**
+ * Opens one person's page from the list by the row's แก้ไข, and waits for the
+ * page's read of the account and for the details to be drawn - #303.
+ *
+ * Through the screen's own search box, because ten seeded accounts and a page
+ * of ten mean the row being asked for is not necessarily on page one. From an
+ * account's page it goes back to the list first. The box is typed into only
+ * when it is not already showing this person: the filter survives a visit to
+ * an account's page, in the address, so typing the same term a second time
+ * changes nothing and fires no request to wait for.
+ *
+ * `searched` leaves the box as the caller set it, for a row that is about the
+ * filter the account was opened from; the row must then be on screen.
+ *
+ * Lands on *ข้อมูลทั่วไป* in view mode, which is where the page opens.
+ */
+async function openAccount(page, email, { searched = false } = {}) {
+  if (new URL(page.url()).pathname.startsWith(EDIT)) await backToList(page);
+  const box = page.getByPlaceholder('ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้');
+  if (!searched && (await box.inputValue()) !== email) await search(page, email);
+  const [response] = await Promise.all([
+    page.waitForResponse(accountOf),
+    editButton(userRow(page, email)).click(),
+  ]);
+  expect(response.status()).toBe(200);
+  // The form is drawn empty for a frame before the account seeds it (#301):
+  // wait for the e-mail it was opened by.
+  await expect(page.getByLabel('อีเมล', { exact: true })).toHaveValue(email);
+  return response;
+}
+
+/**
+ * Opens one person's details for editing - #303: their page, then
+ * *แก้ไขข้อมูล*, which is what opens the fields and puts *บันทึกข้อมูล* on the
+ * tab bar.
+ */
+async function openDetails(page, email, options) {
+  const response = await openAccount(page, email, options);
+  await page.getByRole('button', { name: 'แก้ไขข้อมูล', exact: true }).click();
+  await expect(page.getByLabel('อีเมล', { exact: true })).toBeEnabled();
+  return response;
+}
+
+/** The edit page's *บันทึกข้อมูล* - #303. The add form's is *บันทึก*. */
+const saveDetails = page => page.getByRole('button', { name: 'บันทึกข้อมูล', exact: true });
+
+/**
  * Which cell of a row is its user id - #302.
  *
  * `support/pager.js`'s `keysOn` reads the first cell as a row's key, and since
@@ -197,8 +267,43 @@ async function setStatusByHand(page, email, userId, label) {
   return answer;
 }
 
+/** The list's one form since #303, and the heading it is drawn under. */
+const ADD = 'เพิ่มผู้ใช้งาน';
+
+/**
+ * Opens เพิ่มผู้ใช้งาน and fills what a create needs, leaving บันทึก unpressed -
+ * #303, for the rows that used the list's edit form as an instrument for *a
+ * save the list reloads after*. Since #303 the add is the only such save the
+ * list has, so those rows press this one; `247b`'s `createAccount` is the
+ * same steps with the waits of its own claim.
+ *
+ * The grant is not optional - the route refuses a create carrying none - and
+ * the department and the scope have to be the signed-in administrator's own,
+ * which is why both are arguments. The pickers are found by the sentinel option
+ * each carries, a label wrapping a `<select>` reading as every option (#180).
+ */
+async function fillNewAccount(
+  page,
+  { id, email, first },
+  { department = '05', role = 'TEACHER', scope = department } = {},
+) {
+  await page.getByRole('button', { name: ADD, exact: true }).click();
+  await expect(page.getByRole('heading', { name: ADD, exact: true })).toBeVisible();
+  await page.getByLabel('รหัสผู้ใช้', { exact: true }).fill(id);
+  await page.getByLabel('อีเมล', { exact: true }).fill(email);
+  await page.getByLabel('ชื่อ (ไทย)', { exact: true }).fill(first);
+  await page.getByLabel('นามสกุล (ไทย)', { exact: true }).fill('ผู้ทดสอบ');
+  await page.getByRole('combobox', { name: 'ภาควิชา', exact: true }).selectOption(department);
+  await page.locator('select:has(option:text-is("— เลือกบทบาท —"))').selectOption(role);
+  const scopes = page.locator('select:has(option:text-is("— เลือกขอบเขต —"))');
+  await expect(scopes.locator(`option[value="${scope}"]`)).toHaveCount(1);
+  await scopes.selectOption(scope);
+}
+
 module.exports = {
   USERS,
+  ADD,
+  fillNewAccount,
   API,
   CONFIRM_STATUS,
   waitForList,
@@ -212,6 +317,11 @@ module.exports = {
   statusSwitch,
   editButton,
   EDIT_NAME,
+  EDIT,
+  backToList,
+  openAccount,
+  openDetails,
+  saveDetails,
   CODE_CELL,
   startStatusChange,
   confirmStatusChange,

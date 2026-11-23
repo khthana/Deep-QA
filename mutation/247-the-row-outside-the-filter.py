@@ -80,7 +80,9 @@ PLOS_SAYS = (
 PLOS_ASKS = '      const outside = outsideFilter(program, draft.program_id)\n'
 
 USERS_ASKS = (
-    '      const outside = outsideTheFilters(filters, draft, !editing?.user_id)\n'
+    # Since #303 the list's save is the add alone; the edit's sentence is said
+    # on `EditUser.js`, whose own mutant is `303-the-account-on-its-own-page.py`.
+    '      const outside = outsideTheFilters(filters, draft, true)\n'
 )
 USERS_ROLE = (
     "  if (creating && filters.role && filters.role !== draft.role?.role_id) return true\n"
@@ -135,7 +137,7 @@ MUTANTS = {
     'plosalwayssays': ('plos', PLOS_ASKS,
         '      const outside = outsideFilter(program, draft.program_id) || true\n'),
     'usersalwayssays': ('users', USERS_ASKS,
-        '      const outside = outsideTheFilters(filters, draft, !editing?.user_id) || true\n'),
+        '      const outside = outsideTheFilters(filters, draft, true) || true\n'),
     # หนึ่งกิ่งต่อหนึ่งแถว: มัตแตนต์ต้องฆ่าแถวเดียวและปล่อยที่เหลือยืน (#97, #102)
     'usersroleblind': ('users', USERS_ROLE, ''),
     'usersstatusblind': ('users', USERS_STATUS, ''),

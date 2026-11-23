@@ -20,7 +20,7 @@ const {
   gridHeading,
 } = require('../support/scores-screen');
 const { openUsers, userRow } = require('../support/users-screen');
-const { openEditor, grantsTable } = require('../support/grants-panel');
+const { openEditor, grantsList } = require('../support/grants-panel');
 
 /**
  * #141 — the premises under the last four *unreachable* sentences.
@@ -372,7 +372,7 @@ test('row 4: one account\'s editor offers no way to open another', async ({ page
   expect(await accountsList(page).count(), 'the accounts list').toBe(1);
 
   await openEditor(page, ACCOUNTS.teacherOne);
-  await expect(grantsTable(page)).toBeVisible();
+  await expect(grantsList(page)).toBeVisible();
 
   expect(
     {

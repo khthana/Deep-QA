@@ -37,6 +37,7 @@ import ContinuousImprovement from '../pages/ContinuousImprovement'
 import SubjectStudents from '../pages/SubjectStudents'
 import StudentGroups from '../pages/StudentGroups'
 import Users from '../pages/Users'
+import EditUser from '../pages/EditUser'
 import UserHistory from '../pages/UserHistory'
 import LoadingScreen from '../components/LoadingScreen'
 import { landingPath } from '../components/SidebarItem/menus'
@@ -186,6 +187,12 @@ export default function AppRoutes() {
             breadcrumb reads it as one - ข้อมูลผู้ใช้งาน / ประวัติการใช้งาน -
             and docs/05 A13 gives the path in that shape. */}
         <Route path="users/user-history" element={<UserHistory />} />
+        {/* #303. The account in the address (ADR-0004's shape), under the
+            delivered path's `edit-user` segment so the breadcrumb reads
+            ข้อมูลผู้ใช้งาน / แก้ไขข้อมูลผู้ใช้งาน. The bare segment names no
+            account, so it goes back to the list rather than drawing nothing. */}
+        <Route path="users/edit-user/:userId" element={<EditUser />} />
+        <Route path="users/edit-user" element={<Navigate to="/main/users" replace />} />
         <Route path="departments" element={<Departments />} />
         <Route path="programs" element={<Programs />} />
         <Route path="subjects" element={<Subjects />} />

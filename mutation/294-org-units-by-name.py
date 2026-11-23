@@ -218,9 +218,12 @@ MUTANTS = {
         '      ? grant.scope_name\n'),
     # The two administration screens as they named a grant before #294: out of
     # the picker's list, which holds no scope outside the reader's reach (#115).
+    # Re-aimed at #303: the card reads the name under the kind word, so the
+    # mistake is the name taken from the list in place of the grant's own
+    # (#203) - a scope the list does not hold then falls to kind and code.
     'o294panelfromlist': ('panel',
-        '                  {grantScope(grantable.scopes, grant)}\n',
-        '                  {grantScope(grantable.scopes, { scope_id: grant.scope_id })}\n'),
+        '  grant.scope_name ||\n',
+        '  scopes.find(entry => entry.scope_id === grant.scope_id)?.label ||\n'),
     'o294listfromlist': ('users',
         '                                grant,\n'
         '                              )})`,\n',

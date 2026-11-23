@@ -12,7 +12,7 @@ const { gate, isGet, isWrite } = require('../support/gate');
 const { openDepartments } = require('../support/departments-screen');
 const { openPrograms } = require('../support/programs-screen');
 const { openSubjects } = require('../support/subjects-screen');
-const { openUsers, search } = require('../support/users-screen');
+const { openUsers, fillNewAccount } = require('../support/users-screen');
 const { openRegister, answerOfAnAddition } = require('../support/students-screen');
 const { openOfferings, openForm, subjectPicker } = require('../support/offerings-screen');
 const { PDF_BYTES, attach, evidencePath } = require('../support/evidence-screen');
@@ -223,21 +223,19 @@ const SCREENS = [
     name: 'ข้อมูลผู้ใช้งาน',
     file: 'Users.js',
     account: ACCOUNTS.facultyAdmin,
-    // #296 (21 พ.ย. 2569): the faculty administrator's first rows were the three
-    // external assessors, who hold no department, and the owner's rule now has the
-    // form refuse to send their save until one is chosen - so a row using the
-    // form as an instrument would wait for a request the browser never makes.
-    // The other way a person has to the same situation (#217) is an account that
-    // already has its place, and the search box is how this screen narrows to
-    // them: every seeded account at the institution's own domain holds one.
-    open: async (page) => {
-      await openUsers(page);
-      await search(page, 'kmitl.ac.th');
-    },
-    // A user id is not digits on every account, so the shape is *one segment*.
-    detail: /^\/api\/users\/[^/]+$/,
+    // **The add since #303 (23 November 2569).** An account is edited on its
+    // own page, so the list holds one form, and the save that leaves this
+    // screen to answer later is the add's. The row below that presses แก้ไข on
+    // a second row is not run here - that press leaves this screen for the
+    // account's page - and the refusal row presses เพิ่ม in its place; the
+    // same rule is held on that page by `303b`, whose `showing` ref is this
+    // screen's copied. Until #303 the entry opened an
+    // account's edit form, searched to `kmitl.ac.th` from 21 November so the
+    // form did not refuse an assessor with no department (#296).
+    open: (page) => openUsers(page),
+    fromAdd: true,
+    detail: /^\/api\/users$/,
     list: '/api/users',
-    edit: 'แก้ไขข้อมูลผู้ใช้งาน',
     add: 'เพิ่มผู้ใช้งาน',
     named: 'ชื่อ (ไทย)',
     saved: 'บันทึกข้อมูลเรียบร้อยแล้ว',
@@ -249,6 +247,7 @@ const SCREENS = [
  * the table back on the screen.
  */
 async function saveAndCancel(page, screen, answer) {
+  if (screen.fromAdd) return saveTheAddAndCancel(page, screen, answer);
   const [first, second] = await twoRows(page);
   await pencil(first).click();
   await expect(heading(page, screen.edit)).toBeVisible();
@@ -263,9 +262,24 @@ async function saveAndCancel(page, screen, answer) {
   return { write, second };
 }
 
+/**
+ * `saveAndCancel` for a screen whose one form is the add (#303): the add is
+ * sent and held, and its ยกเลิก puts the list back. There is no second row to
+ * hand back, the screen having no other form a pencil opens.
+ */
+async function saveTheAddAndCancel(page, screen, answer) {
+  await fillNewAccount(page, { id: 'z146a', email: 'z146a@kmitl.ac.th', first: 'หนึ่งสี่หก' });
+  const write = await gate(page, screen.detail, isWrite, answer);
+  await button(page, 'บันทึก').click();
+  await write.sent;
+  await button(page, 'ยกเลิก').click();
+  await expect(heading(page, screen.add)).toBeHidden();
+  return { write, second: null };
+}
+
 for (const screen of SCREENS) {
   test.describe(`${screen.name} (${screen.file})`, () => {
-    test('a save that lands after แก้ไข leaves the form it found open', async ({ page }) => {
+    if (!screen.fromAdd) test('a save that lands after แก้ไข leaves the form it found open', async ({ page }) => {
       await signIn(page, screen.account);
       await screen.open(page);
       const { write, second } = await saveAndCancel(page, screen, { success: SAVED });
@@ -321,8 +335,11 @@ for (const screen of SCREENS) {
       await screen.open(page);
       const { write, second } = await saveAndCancel(page, screen, { refusal: REFUSED });
 
-      await pencil(second).click();
-      const form = heading(page, screen.edit);
+      // The new form is the add on a screen whose one form is the add (#303):
+      // เพิ่ม writes `showing` exactly as แก้ไข did.
+      if (screen.fromAdd) await button(page, screen.add).click();
+      else await pencil(second).click();
+      const form = heading(page, screen.fromAdd ? screen.add : screen.edit);
       await expect(form).toBeVisible();
 
       write.open();
@@ -348,7 +365,10 @@ for (const screen of SCREENS) {
       await reloaded;
 
       await expect(page.getByText(screen.saved)).toBeVisible();
-      expect(await heading(page, screen.edit).count(), 'a form back on the screen').toBe(0);
+      expect(
+        await heading(page, screen.fromAdd ? screen.add : screen.edit).count(),
+        'a form back on the screen',
+      ).toBe(0);
     });
 
     if (screen.refusalRow) {

@@ -5,7 +5,13 @@ const { DEPARTMENTS, PROGRAMS } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { openUsers, search, listTable, userRow } = require('../support/users-screen');
-const { ROLE_NAMES, openEditor, grantsTable } = require('../support/grants-panel');
+const {
+  ROLE_NAMES,
+  openEditor,
+  openGrantDialog,
+  scopeStatement,
+  saysScope,
+} = require('../support/grants-panel');
 
 /**
  * docs/acceptance/12-role-grants.md and 11-user-accounts.md §#215 and §#216 -
@@ -119,26 +125,13 @@ async function roleCell(page, email) {
 }
 
 /**
- * The scope cell of the one grant a role is held at, by the column header.
- *
- * Not `grantCell`, which finds a grant by its role **and** its scope code: here
- * the code is the thing the claim is about, so a locator built on it is read at
- * the row's arrival and not at the cell. A mutant that rewrites the cell would
- * leave the row unfindable, and the row would die at the timeout with its own
- * assertion never read (#139, #213). The role alone identifies the row on both
- * of the accounts these rows use, and that it does is asserted here rather than
- * assumed (#51).
+ * The scope statement of the one card a role is held on - `grantRow` is not
+ * used, the scope's words being what the claim is about. Since #303 the card
+ * writes the kind as the statement's own word and the name under it, where the
+ * table cell wrote them as one string; `scopeStatement` says why the card is
+ * found by the role alone.
  */
-async function panelScopeCell(page, roleLabel) {
-  const rows = grantsTable(page)
-    .getByRole('row')
-    .filter({ has: page.getByRole('cell', { name: roleLabel, exact: true }) });
-  await expect(rows, `the panel holds one ${roleLabel} grant`).toHaveCount(1);
-  const headers = await grantsTable(page).getByRole('columnheader').allTextContents();
-  const column = headers.indexOf('ขอบเขต');
-  expect(column, 'the held-roles table has no ขอบเขต column').toBeGreaterThanOrEqual(0);
-  return rows.getByRole('cell').nth(column);
-}
+const panelScope = (page, roleLabel) => scopeStatement(page, roleLabel);
 
 test('row 1: the held-roles table names each scope by kind and name', async ({ page }) => {
   theNameIsSharedByTwoKinds();
@@ -147,12 +140,8 @@ test('row 1: the held-roles table names each scope by kind and name', async ({ p
   await openUsers(page);
   await openEditor(page, ACCOUNTS.multiRole);
 
-  await expect(await panelScopeCell(page, ROLE_NAMES.TEACHER)).toHaveText(
-    asDrawn(KIND.department, DEPARTMENT),
-  );
-  await expect(await panelScopeCell(page, ROLE_NAMES.PROG_MANAGER)).toHaveText(
-    asDrawn(KIND.program, PROGRAM),
-  );
+  await saysScope(await panelScope(page, ROLE_NAMES.TEACHER), KIND.department, DEPARTMENT.th);
+  await saysScope(await panelScope(page, ROLE_NAMES.PROG_MANAGER), KIND.program, PROGRAM.th);
 });
 
 test('row 2: the accounts list says it the same way in its role column', async ({ page }) => {
@@ -220,6 +209,8 @@ test('row 4 (#294): the held-roles table names it, and the picker says from wher
   // are not on the screen yet when it returns (#132). The administrator's own
   // department is what that list must hold, and it is read whole, `0501`'s
   // name being a substring of `0503`'s (#116).
+  // The pickers are in the เพิ่มสิทธิ์ dialog since #303.
+  await openGrantDialog(page);
   const options = page.getByRole('combobox', { name: 'ขอบเขตของบทบาท' }).locator('option');
   await expect
     .poll(() => options.allTextContents())
@@ -228,9 +219,7 @@ test('row 4 (#294): the held-roles table names it, and the picker says from wher
   const offered = await options.allTextContents();
   expect(offered).not.toContain(asDrawn(KIND.department, outOfReach));
 
-  await expect(await panelScopeCell(page, ROLE_NAMES.TEACHER)).toHaveText(
-    asDrawn(KIND.department, outOfReach),
-  );
+  await saysScope(await panelScope(page, ROLE_NAMES.TEACHER), KIND.department, outOfReach.th);
 });
 
 /**
@@ -282,5 +271,5 @@ test('row 6: the held-roles table says the unconfined scope the same way', async
   await search(page, ACCOUNTS.systemAdmin);
   await openEditor(page, ACCOUNTS.systemAdmin);
 
-  await expect(await panelScopeCell(page, ROLE_NAMES.FULL_ADMIN)).toHaveText(UNCONFINED);
+  await saysScope(await panelScope(page, ROLE_NAMES.FULL_ADMIN), 'ขอบเขต', UNCONFINED);
 });

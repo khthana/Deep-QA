@@ -523,13 +523,19 @@ async function openUsersScreen(page) {
 test('ข้อมูลผู้ใช้งาน (Users.js): the list บันทึก reloads does not land on the page the pager has left', async ({
   page,
 }) => {
-  // `Users.save` closes the form before it reloads.
+  // `Users.save` closes the form before it reloads. The add since #303 (23
+  // November 2569), which is the one save the list has left: an edit is made on
+  // the account's own page and reads the account back, not the list. `hold()`
+  // takes the account out again.
   const screen = await openUsersScreen(page);
-  const row = users.userRow(page, 'dept.admin.01@kmitl.ac.th');
   await supersede(page, {
     ...screen,
     press: async () => {
-      await users.editButton(row).click();
+      await users.fillNewAccount(page, {
+        id: 'z140a',
+        email: 'z140a@kmitl.ac.th',
+        first: 'หนึ่งสี่ศูนย์',
+      });
       await page.getByRole('button', { name: 'บันทึก', exact: true }).click();
     },
   });

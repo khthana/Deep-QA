@@ -8,11 +8,11 @@ const { openAt } = require('./navigation');
 /**
  * The activity history - #13.
  *
- * One panel drawn in two places: beneath an open account's editor on
- * `/main/users`, and on `/main/users/user-history`, where the reader picks the
- * person first. Everything here is bound to the second, because that is where
- * the picker rows of the checklist live, and the panel itself is the same
- * component either way.
+ * One panel, drawn on `/main/users/user-history`, where the reader picks the
+ * person first. Until #303 (23 November 2569) it was drawn beneath an open
+ * account's editor on `/main/users` as well; the owner's rule 9 of
+ * `docs/users-screen.md` took it off the edit page, so the history screen is
+ * the one place left, and everything here was already bound to it.
  *
  * The picker's search box carries the same placeholder as the accounts
  * screen's and feeds the same `GET /api/users`, so `search` is imported rather

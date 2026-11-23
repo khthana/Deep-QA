@@ -4,8 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { DEPARTMENTS, PROGRAMS } = require('../../db/seed');
 const { ACCOUNTS, IDS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { openUsers } = require('../support/users-screen');
-const { openEditor } = require('../support/grants-panel');
+const { openUsers, openDetails, saveDetails } = require('../support/users-screen');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 
@@ -61,7 +60,7 @@ async function placeOf(userId) {
   return rows[0];
 }
 
-/** Presses บันทึก on an edit and waits for the PUT it sends. */
+/** Presses บันทึกข้อมูล (#303) on an edit and waits for the PUT it sends. */
 async function saveEdit(page, userId) {
   const [answer] = await Promise.all([
     page.waitForResponse(
@@ -69,7 +68,7 @@ async function saveEdit(page, userId) {
         new URL(response.url()).pathname === `/api/users/${userId}` &&
         response.request().method() === 'PUT',
     ),
-    page.getByRole('button', { name: 'บันทึก' }).click(),
+    saveDetails(page).click(),
   ]);
   return answer;
 }
@@ -133,7 +132,7 @@ test('row 3: the Central Admin saves an assessor with no department untouched', 
 
   await signIn(page, ACCOUNTS.systemAdmin);
   await openUsers(page);
-  await openEditor(page, ACCOUNTS.externalAssessor);
+  await openDetails(page, ACCOUNTS.externalAssessor);
 
   await expect(programField(page).locator(`option[value="${PROGRAM.id}"]`)).toHaveText(PROGRAM.th);
   await expect(departmentField(page)).toHaveValue('');
@@ -150,7 +149,7 @@ test('row 4: a department administrator has to place that assessor before saving
   try {
     await signIn(page, ACCOUNTS.departmentAdmin05);
     await openUsers(page);
-    await openEditor(page, ACCOUNTS.externalAssessor);
+    await openDetails(page, ACCOUNTS.externalAssessor);
 
     await expect(programField(page)).toHaveValue(PROGRAM.id);
     await expect(departmentField(page)).toHaveValue('');
@@ -191,7 +190,7 @@ test('row 5: a held department the list no longer offers is shown, and kept', as
 
     await signIn(page, ACCOUNTS.systemAdmin);
     await openUsers(page);
-    await openEditor(page, ACCOUNTS.teacherOne);
+    await openDetails(page, ACCOUNTS.teacherOne);
 
     await expect(departmentField(page)).toHaveValue(DEPARTMENT.id);
     await expect(departmentField(page).locator(`option[value="${DEPARTMENT.id}"]`)).toHaveText(
@@ -226,7 +225,7 @@ test('row 6: a held programme the department filter leaves out is still named', 
   try {
     await signIn(page, ACCOUNTS.systemAdmin);
     await openUsers(page);
-    await openEditor(page, ACCOUNTS.externalAssessor);
+    await openDetails(page, ACCOUNTS.externalAssessor);
 
     await expect(departmentField(page)).toHaveValue(CIVIL.id);
     await expect(programField(page)).toHaveValue(PROGRAM.id);

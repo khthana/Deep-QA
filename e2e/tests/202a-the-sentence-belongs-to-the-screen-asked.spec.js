@@ -26,7 +26,7 @@ const {
   userRow,
   search,
   startStatusChange,
-  editButton,
+  ADD,
   confirmStatusChange,
   API: USERS_API,
 } = require('../support/users-screen');
@@ -327,8 +327,12 @@ test.describe('ข้อมูลผู้ใช้งาน — the switch that
     // the announcing half, which left this way in standing). แก้ไข rather than เพิ่มผู้ใช้งาน all the same - on this
     // screen แก้ไข opens its form from the row already in hand, with no read of
     // its own, so the form is on the screen before the answer can land.
-    await moveOnWhileTheWriteIsOut(editButton(userRow(page, ACCOUNTS.teacherOne)));
-    await expect(heading(page, 'แก้ไขข้อมูลผู้ใช้งาน')).toBeVisible();
+    // เพิ่มผู้ใช้งาน since #303 (23 November 2569): แก้ไข opens the account's
+    // own page now, which unmounts this screen and its sentence with it, so it
+    // is no longer a form that takes this screen's place. The add form is, and
+    // the answer is held at the route, so the form is drawn before it lands.
+    await moveOnWhileTheWriteIsOut(page.getByRole('button', { name: ADD, exact: true }));
+    await expect(heading(page, ADD)).toBeVisible();
 
     const reloaded = waitForReload(page, USERS_API);
     write.open();
@@ -340,9 +344,23 @@ test.describe('ข้อมูลผู้ใช้งาน — the switch that
       await page.getByText('ระงับการใช้งานบัญชีเรียบร้อยแล้ว').count(),
       "the suspension's sentence",
     ).toBe(0);
-    expect(await heading(page, 'แก้ไขข้อมูลผู้ใช้งาน').isVisible(), 'the form that took its place').toBe(
+    expect(await heading(page, ADD).isVisible(), 'the form that took its place').toBe(
       true,
     );
+
+    // And after the form is put away. Since #246 (29 October 2569) a sentence
+    // whose read lands while a form is drawn in place of the list is *held*
+    // and said when the list comes back, so the read above cannot tell a
+    // sentence the guard dropped from one the deferral is keeping: both are
+    // absent while the form is up. Found on 23 November 2569, when #303's
+    // sweep of `202:userssaysanyway` killed only the row below.
+    await button(page, 'ยกเลิก').click();
+    await expect(heading(page, ADD)).toBeHidden();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(
+      await page.getByText('ระงับการใช้งานบัญชีเรียบร้อยแล้ว').count(),
+      "the suspension's sentence once the form is put away",
+    ).toBe(0);
   });
 
   test('says what it did when nothing took the screen', async ({ page }) => {

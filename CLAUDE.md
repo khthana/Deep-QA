@@ -722,6 +722,10 @@ citation.
   code under test is the only thing that removes the element** — so the question is *who else
   removes this*, not *is it retrying*, and the mutant that leaves the element in the document
   for ever is what answers it. (#50, #214)
+- **A *never said* read taken while another mechanism holds the sentence cannot fail** — #50 with
+  a deferral in the remover's place: a sentence the guard dropped and one a deferral is keeping are
+  both absent while it holds, so read again after it lets go. Nothing goes red the day the deferral
+  lands; only re-running the mutant says so. (#303, #246)
 - **A reader built on a mark cannot tell a node that was removed from one that was replaced** —
   a remount makes a new node without the attribute the sampler was pointed at, so it reads as a
   disappearance with every number agreeing: nothing there, no frames, no opacity coming down.

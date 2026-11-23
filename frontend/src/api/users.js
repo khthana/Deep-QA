@@ -13,6 +13,15 @@ import { del, get, post, put, query } from './client'
 /** One page of accounts, with the total so a pager can be drawn. */
 export const listUsers = (params = {}) => get(`/api/users${query(params)}`)
 
+/**
+ * One account, by the id its own page carries in the address - #303.
+ *
+ * The same reach as the list: an account this administrator does not reach
+ * answers 404 exactly as one that does not exist (ADR-0002), so the page has
+ * one refusal to say and nothing to tell the two apart by.
+ */
+export const getUser = userId => get(`/api/users/${encodeURIComponent(userId)}`)
+
 export const createUser = draft => post('/api/users', draft)
 
 export const updateUser = (userId, draft) => put(`/api/users/${userId}`, draft)

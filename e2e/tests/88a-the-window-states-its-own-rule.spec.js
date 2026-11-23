@@ -3,8 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { openUsers } = require('../support/users-screen');
-const { openEditor } = require('../support/grants-panel');
+const { openUsers, openDetails } = require('../support/users-screen');
 
 /**
  * #88 - the two ends of an account's validity window state their own rule.
@@ -103,7 +102,7 @@ test('row 3: an account that already has a window is bounded before anything is 
 }) => {
   await signIn(page, ACCOUNTS.systemAdmin);
   await openUsers(page);
-  await openEditor(page, ACCOUNTS.externalAssessor);
+  await openDetails(page, ACCOUNTS.externalAssessor);
 
   // The precondition, asserted where it is used and not where it was arranged
   // (#51): this is the seeded assessor, and the row means nothing unless the

@@ -6,7 +6,7 @@ const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { hold } = require('../support/hold');
 const { gate, isGet, isWrite } = require('../support/gate');
-const { openUsers, search, editButton, EDIT_NAME } = require('../support/users-screen');
+const { openUsers, ADD, fillNewAccount } = require('../support/users-screen');
 const { openOfferings } = require('../support/offerings-screen');
 const { openGroups, card, groupNames } = require('../support/groups-screen');
 const improvement = require('../support/improvement-screen');
@@ -117,20 +117,15 @@ test.describe('ข้อมูลผู้ใช้งาน (UserForm.js)', () 
   }) => {
     await signIn(page, ACCOUNTS.facultyAdmin);
     await openUsers(page);
-    // #296 (21 พ.ย. 2569): the faculty administrator's first rows were the three
-    // external assessors, who hold no department, and the owner's rule now has the
-    // form refuse to send their save until one is chosen - so a row using the
-    // form as an instrument would wait for a request the browser never makes.
-    // The other way a person has to the same situation (#217) is an account that
-    // already has its place, and the search box is how this screen narrows to
-    // them: every seeded account at the institution's own domain holds one.
-    await search(page, 'kmitl.ac.th');
 
-    // The accounts screen's แก้ไข is named for the account since #302.
-    const row = firstRow(page, EDIT_NAME);
-    await expect(row).toBeVisible();
-    await editButton(row).click();
-    await expect(heading(page, 'แก้ไขข้อมูลผู้ใช้งาน')).toBeVisible();
+    // The add form since #303 (23 November 2569): an account is edited on its
+    // own page, whose save reads the account back and not the list, so the
+    // form this row is about - the one a save leaves while the list is still
+    // being read - is the list's one form left. The answer is faked at the
+    // route, so nothing is created. Until then the row opened the first
+    // account's แก้ไข, and from 21 November searched `kmitl.ac.th` first so the
+    // form did not refuse an assessor with no department (#296).
+    await fillNewAccount(page, { id: 'z249a', email: 'z249a@kmitl.ac.th', first: 'สองสี่เก้า' });
 
     const email = page.getByLabel('อีเมล', { exact: true });
     const firstName = page.getByLabel('ชื่อ (ไทย)', { exact: true });
@@ -140,7 +135,7 @@ test.describe('ข้อมูลผู้ใช้งาน (UserForm.js)', () 
     await expect(email).toBeEnabled();
     await expect(firstName).toBeEnabled();
 
-    const write = await gate(page, USER_DETAIL, isWrite, { success: SAVED });
+    const write = await gate(page, USER_LIST, isWrite, { success: SAVED });
     const reload = await gate(page, USER_LIST, isGet);
     await button(page, 'บันทึก').click();
     await write.sent;
@@ -158,9 +153,9 @@ test.describe('ข้อมูลผู้ใช้งาน (UserForm.js)', () 
     write.open();
     await write.answered;
     await reload.sent;
-    await expect(heading(page, 'แก้ไขข้อมูลผู้ใช้งาน')).toBeHidden();
+    await expect(heading(page, ADD)).toBeHidden();
 
-    await button(page, 'เพิ่มผู้ใช้งาน').click();
+    await button(page, ADD).click();
     const fresh = page.getByLabel('ชื่อ (ไทย)', { exact: true });
     await expect(fresh, 'the field of a form that sent nothing').toBeEnabled();
     await fresh.fill(TYPED);

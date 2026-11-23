@@ -179,6 +179,8 @@ test('row 6: แก้ไข is an icon named for the account, with the name as 
   expect((await pencil.textContent()).trim(), 'no word drawn beside it').toBe('');
   await expect(pencil.locator('svg'), 'it holds one icon').toHaveCount(1);
 
+  // Since #303 the press opens the account's own page rather than a form.
   await pencil.click();
-  await expect(page.getByRole('heading', { name: 'แก้ไขข้อมูลผู้ใช้งาน', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/main/users/edit-user/${IDS.teacherOne}(\\?|$)`));
+  await expect(page.getByRole('heading', { name: 'แก้ไขข้อมูลผู้ใช้งานระบบ', exact: true })).toBeVisible();
 });

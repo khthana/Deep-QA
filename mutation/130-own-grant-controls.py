@@ -69,36 +69,39 @@ FILES = {
 MUTANTS = {
     # ตัวข้อบกพร่องเอง ปุ่มกลับมากดได้ทุกแถวรวมแถวของบัญชีตัวเอง ซึ่งคือสภาพก่อน #130
     # และเป็นสภาพที่ `12a` แถว 6 เคยกดเพื่อเอาคำปฏิเสธมา
+    # เล็งใหม่ #303: ปุ่มถังขยะย้ายจากแถวตารางมาอยู่บนการ์ด ย่อหน้าเปลี่ยน ความผิดเดิม (#203)
     "alwaysenabled": ("grants",
-        "                    disabled={busy || isSelf}\n",
-        "                    disabled={busy}\n"),
+        "                  disabled={busy || isSelf}\n",
+        "                  disabled={busy}\n"),
     # ปิดทั้งคอลัมน์แทนที่จะปิดทั้งแผงเมื่อเป็นบัญชีของตัวเอง - วิธีที่ง่ายกว่าและผิด
     # แถวคุมของ `12a` มีไว้ล้มตัวนี้ ถ้าไม่มีมัน การปิดทุกปุ่มจะผ่านทุกข้ออ้างของตั๋วนี้
     "everyrowisdead": ("grants",
-        "                    disabled={busy || isSelf}\n",
-        "                    disabled={true}\n"),
+        "                  disabled={busy || isSelf}\n",
+        "                  disabled={true}\n"),
     # สำเนาที่เลื่อนออกจากต้นฉบับ ซึ่งเป็นสิ่งเดียวที่สำเนาทำได้และไม่มีใครเห็น
     # รูปเดียวกับ `84:titledrifts` และด้วยเหตุผลเดียวกัน: CRA ไม่ให้จอ import
     # `backend/auth/refusals` แถวจึงเป็นที่เดียวที่สองสำเนาจะแยกทางกันได้
     "titledrifts": ("grants",
-        "const CANNOT_REVOKE_SELF = 'ยกเลิกบทบาทของตัวเองไม่ได้'\n",
-        "const CANNOT_REVOKE_SELF = 'ไม่สามารถยกเลิกบทบาทนี้ได้'\n"),
+        # #303 เปลี่ยนถ้อยคำเป็น *สิทธิ์* ทั้งสองสำเนา สำเนาที่เลื่อนจึงเลื่อนจากถ้อยคำใหม่
+        "const CANNOT_REVOKE_SELF = 'ยกเลิกสิทธิ์ของตัวเองไม่ได้'\n",
+        "const CANNOT_REVOKE_SELF = 'ไม่สามารถยกเลิกสิทธิ์นี้ได้'\n"),
     # ซ่อนปุ่มแทนที่จะปิด ซึ่งทำให้คอลัมน์ของแถวตัวเองว่างเปล่าโดยไม่บอกอะไรเลย
     # *วาดไว้ ไม่ได้ซ่อน* เป็นการตัดสินใจของ #84 ที่ใบนี้รับมา และเหตุผลอยู่ที่ว่า
     # ช่องว่างไม่ได้บอกว่าทำไม ส่วนปุ่มที่ปิดอยู่พร้อม title บอก
     "selfrowhidesthebutton": [
+        # เล็งใหม่ #303: ปุ่มอยู่ในหัวการ์ด ไม่มี `RowActions` ล้อมแล้ว
         ("grants",
-         "                    <RowAction\n"
-         "                      kind=\"remove\"\n"
-         "                      label=\"ยกเลิกบทบาท\"\n",
-         "                    {!isSelf && <RowAction\n"
-         "                      kind=\"remove\"\n"
-         "                      label=\"ยกเลิกบทบาท\"\n"),
+         "                <RowAction\n"
+         "                  kind=\"remove\"\n"
+         "                  label=\"ยกเลิกสิทธิ์\"\n",
+         "                {!isSelf && <RowAction\n"
+         "                  kind=\"remove\"\n"
+         "                  label=\"ยกเลิกสิทธิ์\"\n"),
         ("grants",
-         "                    />\n"
-         "                  </RowActions>\n",
-         "                    />}\n"
-         "                  </RowActions>\n"),
+         "                  title={isSelf ? CANNOT_REVOKE_SELF : undefined}\n"
+         "                />\n",
+         "                  title={isSelf ? CANNOT_REVOKE_SELF : undefined}\n"
+         "                />}\n"),
     ],
 }
 

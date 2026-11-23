@@ -86,17 +86,17 @@ FILES = {
 }
 
 MUTANTS = {
-    'panelcode': [
-        ('panel',
-        # Re-aimed at #294, which named the grant from the server's answer
-        # rather than from the picker's list: the code before #215 made to
-        # run, unchanged (#115, #203).
-        '                <td className="px-4 py-2">\n'
-        '                  {grantScope(grantable.scopes, grant)}\n'
-        '                </td>\n',
-        '                <td className="px-4 py-2">{grant.scope_id}</td>\n'),
-        ('panel', "import { grantScope } from './scopeLabel'\n", ''),
-    ],
+    'panelcode': ('panel',
+        # Re-aimed at #303, where the table cell became the card's statement and
+        # its name the `scopeOf` under the kind word: the code before #215 made
+        # to run, a bare code where the name is (#115, #203). One edit now,
+        # `grantScope` and `kindWord` both still being read elsewhere in the
+        # file, so no import is left unused (#101).
+        '  grant.scope_name ||\n'
+        '  (kindWord(grant.scope_kind)\n'
+        '    ? `${kindWord(grant.scope_kind)} ${grant.scope_id}`\n'
+        '    : grantScope(scopes, grant))\n',
+        '  grant.scope_id\n'),
     'userscode': [
         ('list',
         '                          .map(\n'

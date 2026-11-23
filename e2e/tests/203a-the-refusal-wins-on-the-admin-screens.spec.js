@@ -289,8 +289,13 @@ const SCREENS = [
       await expect(users.userRow(page, ACCOUNTS.teacherTwo)).toHaveCount(1);
     },
     list: /^\/api\/users$/,
-    write: /^\/api\/users\/[^/]+$/,
-    openForm: (page) => openTheEditor(page, users.userRow(page, ACCOUNTS.teacherTwo)),
+    // The add since #303 (23 November 2569), the list's one save left: an
+    // account is edited on its own page, which reads the account back and not
+    // this list. The write is faked at the route, so nothing is created; it is
+    // told from the reload by its method.
+    write: /^\/api\/users$/,
+    openForm: (page) =>
+      users.fillNewAccount(page, { id: 'z203a', email: 'z203a@kmitl.ac.th', first: 'สองศูนย์สาม' }),
     saved: SAVED,
   },
 ];

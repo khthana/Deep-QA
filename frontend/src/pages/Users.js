@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
-import HistoryPanel from '../components/users/HistoryPanel'
-import GrantsPanel from '../components/users/GrantsPanel'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ImportPanel from '../components/ImportPanel'
 import PageHeader from '../components/PageHeader'
@@ -13,6 +12,7 @@ import SearchBox from '../components/SearchBox'
 import StatusSwitch from '../components/users/StatusSwitch'
 import UserForm from '../components/users/UserForm'
 import { personName } from '../components/users/personName'
+import { editAddress, fromQuery, listQuery } from '../components/users/listAddress'
 import { grantScope } from '../components/users/scopeLabel'
 import useGrantable from '../components/users/useGrantable'
 import { roleName } from '../components/MapRole'
@@ -24,7 +24,6 @@ import {
   importUsers,
   listUsers,
   setUserStatus,
-  updateUser,
 } from '../api/users'
 
 /**
@@ -363,7 +362,10 @@ const importedOutsideTheFilters = (filters, row) => {
   return Boolean(term) && !matchesSearch(term.toLowerCase(), row)
 }
 
-const outsideTheFilters = (filters, draft, creating) => {
+// Exported for the edit page - #303, the owner's answer of 23 November 2569:
+// an edit saved on its own page says the same sentence there, asked by this
+// same predicate rather than by a copy of it (#96), with `creating` false.
+export const outsideTheFilters = (filters, draft, creating) => {
   if (creating && filters.role && filters.role !== draft.role?.role_id) return true
   if (creating && filters.status && filters.status !== 'active') return true
   // The term as the route reads it: `blankToNull(req.query.q)` trims before
@@ -404,8 +406,15 @@ const HANDED_ON = 'handed-on'
 
 export default function Users() {
   const { profile } = useAuth()
-  const [page, setPage] = useState(1)
-  const [filters, setFilters] = useState({ q: '', role: '', status: '' })
+  const location = useLocation()
+  const navigate = useNavigate()
+  // #303 - the page and the filters are read from the address the screen was
+  // opened at, so the edit page's way back and the browser's back button land
+  // on the list the person left (`components/users/listAddress.js`). Read once:
+  // from here on the state is the screen's and the address follows it.
+  const [opened] = useState(() => fromQuery(location.search))
+  const [page, setPage] = useState(opened.page)
+  const [filters, setFilters] = useState(opened.filters)
   const [data, setData] = useState({ users: [], total: 0 })
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
@@ -453,6 +462,17 @@ export default function Users() {
    * `finally` leaves a handed-over sentence alone rather than clearing it.
    */
   const waiting = useRef(null)
+
+  // #303 - and the address follows the state, replacing rather than pushing, so
+  // the back button steps over filters to the screen before this one rather
+  // than through every term typed. Asked against the address actually drawn,
+  // so a replace that has landed is not sent again.
+  const wanted = listQuery(page, filters)
+  useEffect(() => {
+    if (location.search !== wanted) {
+      navigate({ pathname: location.pathname, search: wanted }, { replace: true })
+    }
+  }, [wanted, location.search, location.pathname, navigate])
 
   // Which generation of its data this screen is drawn from - #198. A switch of
   // hats that lands where the router already is raises it in `MainPage`, and
@@ -624,9 +644,10 @@ export default function Users() {
     waiting.current = null
   }, [editing, page, filters])
 
-  // Memoised because the grants panel re-reads its list whenever its error
-  // handler changes identity: a fresh closure every render would put that read
-  // in a loop.
+  // Memoised since the grants panel re-read its list whenever its error
+  // handler changed identity; that panel is on the edit page since #303
+  // (`pages/EditUser.js` memoises its own), and the memo is kept because the
+  // handlers below close over it.
   const report = useCallback(error => {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
@@ -644,8 +665,8 @@ export default function Users() {
     const sent = showing.current
     setBusy(true)
     try {
-      if (editing?.user_id) await updateUser(editing.user_id, draft)
-      else await createUser(draft)
+      // Only an add since #303: an existing account is edited on its own page.
+      await createUser(draft)
       // #247, 29 ตุลาคม 2569 - the owner's answer ข้อ จ. The filters here are a
       // search term, a role and a status, so `outsideTheFilters` above asks each
       // one by the mechanism the server filters by; the sentence it adds is the
@@ -654,7 +675,7 @@ export default function Users() {
       // *ใช้งานอยู่* list too, but the person pressed that button on that row and
       // the row leaving is the thing they asked for - what #247 is about is a
       // form writing somewhere the person is not looking.
-      const outside = outsideTheFilters(filters, draft, !editing?.user_id)
+      const outside = outsideTheFilters(filters, draft, true)
       const said = { error: false, message: alsoOutside('บันทึกข้อมูลเรียบร้อยแล้ว', outside) }
       if (showing.current === sent) setEditing(null)
       // #203 - the sentence waits for the reload to draw. `Departments.js`
@@ -816,8 +837,12 @@ export default function Users() {
 
       {editing ? (
         <>
+          {/* Only the add since #303 - an existing account's details, grants
+              and the rest are on its own page (`pages/EditUser.js`), and its
+              history is on the history page alone (`docs/users-screen.md`
+              rule 9). #304 moves this form into a dialog. */}
           <UserForm
-            user={editing.user_id ? editing : null}
+            user={null}
             onSubmit={save}
             onCancel={() => {
               // ยกเลิก does not write this: a form closing is nobody taking the
@@ -827,19 +852,6 @@ export default function Users() {
             }}
             busy={busy}
           />
-          {/*
-            Only for an account that exists. A grant needs somebody to grant it
-            to, and the first one is made with the account by the form above;
-            everything after it is #12 and is managed here, one at a time.
-          */}
-          {editing.user_id && <GrantsPanel user={editing} onError={report} />}
-          {/*
-            #13, and the same condition for the same reason: a history is what
-            an account has done, and an account being added has done nothing.
-          */}
-          {editing.user_id && (
-            <HistoryPanel key={editing.user_id} user={editing} onError={report} />
-          )}
         </>
       ) : (
         <>
@@ -1027,11 +1039,10 @@ export default function Users() {
                             type="button"
                             aria-label={`แก้ไข ${personName(user)}`}
                             title={`แก้ไข ${personName(user)}`}
-                            onClick={() => {
-                              showing.current = {}
-                              setNotice(null)
-                              setEditing(user)
-                            }}
+                            // #303 - the account's own page, carrying the page
+                            // and filter this list is on, which is where its
+                            // way back goes (`docs/users-screen.md` rule 6).
+                            onClick={() => navigate(editAddress(user.user_id, page, filters))}
                             className="rounded p-1 text-gray-600 transition hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <FaUserEdit aria-hidden="true" className="text-2xl" />

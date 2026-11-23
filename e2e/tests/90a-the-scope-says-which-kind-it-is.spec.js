@@ -5,7 +5,7 @@ const { DEPARTMENTS, FACULTY, PROGRAMS } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { openUsers } = require('../support/users-screen');
-const { openEditor } = require('../support/grants-panel');
+const { openEditor, openGrantDialog } = require('../support/grants-panel');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
 
@@ -200,6 +200,8 @@ test('row 2: the grants panel says it the same way', async ({ page }) => {
   await openUsers(page);
   const answering = waitForGrantable(page);
   await openEditor(page, ACCOUNTS.teacherOne);
+  // The pickers are in the เพิ่มสิทธิ์ dialog since #303.
+  await openGrantDialog(page);
   await expect(scopePicker(page)).toBeVisible();
 
   const options = await offeredOnceDrawn(page, answering);

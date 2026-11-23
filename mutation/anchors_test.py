@@ -880,6 +880,16 @@ class Legends(TempStore):
                             + table(HALF, head=THAI_HEAD, first=True))
         self.assertEqual(anchors.legends(files), (0, 1, 1, {WALKED: 1, HALF: 1}))
 
+    def test_a_head_that_is_the_word_beats_a_cell_that_contains_it(self):
+        # #303: *ผลที่ต้องเห็น* contains *ผล* and sits before the column that
+        # is headed by it, so the first containing cell read the marks out of
+        # the expected-result column and the table counted none.
+        files = self.sheets(legend((WALKED, u"walked"), (HALF, u"half way")) + u"\n\n"
+                            + u"| # | เกณฑ์ | %sที่ต้องเห็น | %s |\n"
+                              u"|---|---|---|---|\n"
+                              u"| — | a | b | %s |\n" % (THAI_HEAD, THAI_HEAD, HALF))
+        self.assertEqual(anchors.legends(files), (0, 1, 1, {WALKED: 1, HALF: 1}))
+
     def test_a_table_with_no_mark_column_holds_no_marks(self):
         # A mutation table and a sweep table are tables in an acceptance sheet
         # and are not acceptance tables; counting their cells as marks is
@@ -987,7 +997,16 @@ class Legends(TempStore):
         self.assertGreaterEqual(len(sheets), 39)
         for path in sheets:
             with io.open(path, encoding="utf-8") as handle:
-                block = anchors._legend(handle.read().split("\n"))
+                lines = handle.read().split("\n")
+            # A sheet whose tables carry no mark has no definition to pin,
+            # which is the instrument's own rule (*a sheet with no legend and
+            # no mark is still counted*, above). 23 November 2569: the one such
+            # sheet is `294-org-units-walk.md`, a walk recorded as feelings
+            # (#229's form) since 20 November, and this pin had been red over
+            # it for three days without the instrument reporting a problem.
+            if anchors._used(lines)[1] == 0:
+                continue
+            block = anchors._legend(lines)
             said = anchors._entry(block or [], WALKED)
             self.assertIsNotNone(said, os.path.basename(path))
             self.assertIn("seam HTTP", said, os.path.basename(path))

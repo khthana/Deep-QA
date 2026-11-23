@@ -230,8 +230,20 @@ function Field({ label, children }) {
   )
 }
 
-export default function UserForm({ user, onSubmit, onCancel, busy }) {
+/**
+ * #303 - an existing account is edited on its own page (`pages/EditUser.js`),
+ * whose tab bar holds *แก้ไขข้อมูล*, *บันทึกข้อมูล* and *ยกเลิก* as the delivered
+ * `EditUser.js` did. So in edit mode this form draws no heading and no buttons
+ * of its own: the page's *บันทึกข้อมูล* submits it through `id`, and the page
+ * says whether it is open - `readOnly` is the delivered view mode, every field
+ * closed until *แก้ไขข้อมูล* is pressed (`docs/users-screen.md` rule 7). The add
+ * keeps both until #304 moves it into a dialog.
+ */
+export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly = false }) {
   const editing = Boolean(user)
+  // Closed while this form's own save is out (#249) and, on the edit page,
+  // while it is in view mode (#303).
+  const closed = sending => sending || readOnly
   const grantable = useGrantable()
   const [draft, setDraft] = useState(EMPTY)
   const [sending, setSending] = useState(false)
@@ -302,19 +314,21 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
   }
 
   return (
-    <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-medium text-primary">
-        {editing ? 'แก้ไขข้อมูลผู้ใช้งาน' : 'เพิ่มผู้ใช้งาน'}
-      </h2>
+    <ContentMotionDIV
+      className={editing ? '' : 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm'}
+    >
+      {!editing && (
+        <h2 className="mb-4 text-lg font-medium text-primary">เพิ่มผู้ใช้งาน</h2>
+      )}
 
-      <form onSubmit={submit} className="space-y-4">
+      <form id={id} onSubmit={submit} className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="รหัสผู้ใช้">
             <input
               className={field}
               value={draft.user_id}
               onChange={set('user_id')}
-              disabled={sending || editing}
+              disabled={closed(sending) || editing}
               required
             />
           </Field>
@@ -324,7 +338,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               type="email"
               value={draft.email}
               onChange={set('email')}
-              disabled={sending}
+              disabled={closed(sending)}
               required
             />
           </Field>
@@ -334,7 +348,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               className={field}
               value={draft.title_th}
               onChange={set('title_th')}
-              disabled={sending}
+              disabled={closed(sending)}
             />
           </Field>
           <Field label="คำนำหน้า (อังกฤษ)">
@@ -342,7 +356,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               className={field}
               value={draft.title_en}
               onChange={set('title_en')}
-              disabled={sending}
+              disabled={closed(sending)}
             />
           </Field>
 
@@ -351,7 +365,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               className={field}
               value={draft.first_name_th}
               onChange={set('first_name_th')}
-              disabled={sending}
+              disabled={closed(sending)}
             />
           </Field>
           <Field label="นามสกุล (ไทย)">
@@ -359,7 +373,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               className={field}
               value={draft.last_name_th}
               onChange={set('last_name_th')}
-              disabled={sending}
+              disabled={closed(sending)}
             />
           </Field>
 
@@ -368,7 +382,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               className={field}
               value={draft.first_name_en}
               onChange={set('first_name_en')}
-              disabled={sending}
+              disabled={closed(sending)}
             />
           </Field>
           <Field label="นามสกุล (อังกฤษ)">
@@ -376,7 +390,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               className={field}
               value={draft.last_name_en}
               onChange={set('last_name_en')}
-              disabled={sending}
+              disabled={closed(sending)}
             />
           </Field>
 
@@ -385,7 +399,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               className={field}
               value={draft.department_id}
               onChange={chooseDepartment}
-              disabled={sending}
+              disabled={closed(sending)}
               required={!mayLeaveBlank}
             >
               <option value="">
@@ -405,7 +419,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               className={field}
               value={draft.program_id}
               onChange={set('program_id')}
-              disabled={sending}
+              disabled={closed(sending)}
             >
               <option value="">{UNSPECIFIED}</option>
               {withHeld(programsUnder, draft.program_id, 'หลักสูตร', programs).map(
@@ -447,7 +461,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
                 type="date"
                 value={draft.valid_from}
                 onChange={set('valid_from')}
-                disabled={sending}
+                disabled={closed(sending)}
                 max={draft.valid_until || undefined}
               />
             </Field>
@@ -457,7 +471,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
                 type="date"
                 value={draft.valid_until}
                 onChange={set('valid_until')}
-                disabled={sending}
+                disabled={closed(sending)}
                 min={draft.valid_from || undefined}
               />
             </Field>
@@ -472,7 +486,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
               onChange={grant =>
                 setDraft(current => ({ ...current, ...grant }))
               }
-              disabled={sending}
+              disabled={closed(sending)}
             />
             <Field
               label={
@@ -486,7 +500,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
                 type="password"
                 value={draft.password}
                 onChange={set('password')}
-                disabled={sending}
+                disabled={closed(sending)}
                 autoComplete="new-password"
                 required={needsPassword}
               />
@@ -494,6 +508,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
           </div>
         )}
 
+        {!editing && (
         <div className="flex justify-end gap-3 pt-2">
           <button
             type="button"
@@ -510,6 +525,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy }) {
             บันทึก
           </button>
         </div>
+        )}
       </form>
     </ContentMotionDIV>
   )

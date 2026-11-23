@@ -79,8 +79,11 @@ FILES = {
 
 # Each field is anchored on its own `onChange`, which names the column: the
 # `disabled` line alone is written twelve times in this form (#140).
-USER_FIELD = "              onChange={set('%s')}\n              disabled={sending}\n"
-USER_FIELD_LIVE = "              onChange={set('%s')}\n"
+# Re-aimed at #303, which closed every field in view mode with `readOnly`:
+# dropping the attribute would open the fields in view mode as well, a
+# different mutant. The mistake kept is the save's half alone (#203).
+USER_FIELD = "              onChange={set('%s')}\n              disabled={closed(sending)}\n"
+USER_FIELD_LIVE = "              onChange={set('%s')}\n              disabled={readOnly}\n"
 
 MUTANTS = {
     # 1 — the email field, live while the save it sent is out: the code as it
@@ -98,7 +101,7 @@ MUTANTS = {
     # has landed, while the screen is still reading its list.
     'usernamepage': ('userform', USER_FIELD % 'first_name_th',
                      "              onChange={set('first_name_th')}\n"
-                     '              disabled={busy}\n'),
+                     '              disabled={busy || readOnly}\n'),
 
     # 4 — the card's box, live while its own save is out.
     'entryboxlive': ('entry',

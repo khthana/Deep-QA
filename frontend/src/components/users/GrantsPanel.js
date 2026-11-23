@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import ConfirmDialog from '../ConfirmDialog'
 import ContentMotionDIV from '../ContentMotionDIV'
-import GrantPicker from './GrantPicker'
+import GrantDialog from './GrantDialog'
 import Notice from '../Notice'
-import RowAction, { RowActions } from '../RowAction'
+import RowAction from '../RowAction'
 import useGrantable from './useGrantable'
-import { grantScope } from './scopeLabel'
+import { personName } from './personName'
+import { grantScope, kindWord } from './scopeLabel'
 import { roleName } from '../MapRole'
 import { useAuth } from '../../context/AuthContext'
 import { grantRole, listGrants, revokeGrant } from '../../api/users'
@@ -29,9 +31,25 @@ import { grantRole, listGrants, revokeGrant } from '../../api/users'
  * The list is re-read from the server after every change rather than patched
  * locally, so what is on screen is what the database holds - including the
  * refusals that leave it exactly as it was.
+ *
+ * ## Cards since #303
+ *
+ * The *สิทธิ์ของระบบ* tab of the account's own page, back in the delivered
+ * screen's shape (`EditRoleAssign.js`, `docs/users-screen.md` rule 8): one card
+ * per grant, *สิทธิ์ :* and the scope under the word for its kind, a trash can
+ * that asks before it revokes, and *เพิ่มสิทธิ์* on the tab bar opening a dialog
+ * (`GrantDialog.js`). Two things are this system's and not the delivered one's,
+ * both by the owner's answer of 22 November 2569: the small line naming who
+ * granted it and when, which #12 records and the delivered cards never showed,
+ * and **no rule against revoking the last grant** - that rule was the delivered
+ * client's alone and the server never had it, so the screen does not hold a
+ * rule the server does not (#11).
+ *
+ * The sentences say *สิทธิ์*, the tab's word, where until #303 they said
+ * *บทบาท* - the owner's answer of 23 November 2569, which moved the server's
+ * `selfRevoke` with them. The pickers inside the dialog keep `GrantPicker`'s own
+ * captions, which the add form shares.
  */
-
-const EMPTY = { role_id: '', scope_id: '' }
 
 /**
  * Why every revoke button is dead while your own account is open - #130.
@@ -44,16 +62,10 @@ const EMPTY = { role_id: '', scope_id: '' }
  *
  * Unlike the suspend button, this one is not decided per row. The server
  * refuses on the account in the path and never looks at the grant - so if this
- * panel is about the reader, every row of it is dead, and a per-row condition
+ * panel is about the reader, every card of it is dead, and a per-card condition
  * here would be a rule the route does not have.
- *
- * The dimming is this panel's own idiom (its submit button fades the same way)
- * rather than `Users.js`'s greyed text, but `disabled:hover:bg-transparent` is
- * taken from there and is not decoration: `:hover` matches a disabled button,
- * so without it the dead control still lights up red under the pointer - which
- * is the sentence this ticket is about, said in a colour instead of a cursor.
  */
-const CANNOT_REVOKE_SELF = 'ยกเลิกบทบาทของตัวเองไม่ได้'
+const CANNOT_REVOKE_SELF = 'ยกเลิกสิทธิ์ของตัวเองไม่ได้'
 
 /** When a grant was made, as a person reads it. */
 const madeOn = value =>
@@ -65,29 +77,55 @@ const madeOn = value =>
       })
     : '—'
 
-export default function GrantsPanel({ user, onError }) {
+/**
+ * The word a card writes above a grant's scope - `docs/users-screen.md` rule 8,
+ * *คณะ / ภาควิชา / หลักสูตร :* by the kind of the scope. Every grant arrives with
+ * its scope's kind since #294 (`backend/auth/scopeNames.js`); one whose unit is
+ * gone has none, and reads under *ขอบเขต*.
+ */
+const kindOf = grant => kindWord(grant.scope_kind) ?? 'ขอบเขต'
+
+/**
+ * The scope's name under that word. A unit with no Thai name reads as its kind
+ * and its code - the shape `lib/unitNamed.js` gives a name beside a label that
+ * already says the kind (#298) - and one with no kind as `grantScope` names it.
+ */
+const scopeOf = (scopes, grant) =>
+  grant.scope_name ||
+  (kindWord(grant.scope_kind)
+    ? `${kindWord(grant.scope_kind)} ${grant.scope_id}`
+    : grantScope(scopes, grant))
+
+/**
+ * What the trash can asks - the owner's answer of 23 November 2569, in the
+ * shape of the nine removals' questions: what goes, where, and whose. The scope
+ * in `grantScope`'s words, the kind written onto the name (#215, #295).
+ */
+const asksToRevoke = (scopes, grant, user) =>
+  `ต้องการยกเลิกสิทธิ์${roleName(grant.role_id)} ${grantScope(scopes, grant)} ของ ${personName(user)} ใช่หรือไม่`
+
+export default function GrantsPanel({ user, onError, adding = false, onAddClosed }) {
   const grantable = useGrantable()
   const { profile } = useAuth()
   const [grants, setGrants] = useState([])
-  const [draft, setDraft] = useState(EMPTY)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState(null)
+  // The grant whose trash can was pressed, waiting for its question - #303.
+  const [revoking, setRevoking] = useState(null)
 
   // #133 - the person this panel is about arrives in a prop, and a prop can
-  // change without the component coming down. Today it cannot: the form
-  // replaces the table on #12's screen, so a second account can only be
-  // opened after this one is closed and this panel unmounted. The flag is
-  // here for the rule rather than for a defect anybody has seen - the day
-  // the screen offers a roll beside the form, it is what stops one person's
+  // change without the component coming down. Today it cannot: since #303 the
+  // one mount point is `pages/EditUser.js`, which the route draws with a `key`
+  // per account, so a second account is a second mount. The flag is here for
+  // the rule rather than for a defect anybody has seen - the day the panel is
+  // drawn where a prop can change under it, it is what stops one person's
   // roles being drawn under another's name. `141c` row 4 counts the controls
   // that would make it reachable; the sheet says ยังไม่ได้ทดสอบ, not ไม่ต้องมี.
-  // Re-measured on 25 October 2569 (#220): this panel has a single mount
-  // point - `Users.js` draws it in the branch the form occupies, and
-  // `listGrants`, `grantRole` and `revokeGrant` are imported nowhere else
-  // in `src/` - so the sentence above is about every caller and not only
-  // about this screen (#68). The day anything draws this panel where a
-  // prop can change under it, that sentence expires and these three
-  // claims need rows; until then ยังไม่ได้ทดสอบ, re-measured 8 ม.ค. 2570.
+  // Re-measured on 25 October 2569 (#220), and again on 23 November 2569 for
+  // #303: `listGrants`, `grantRole` and `revokeGrant` are imported nowhere
+  // else in `src/`. The day anything draws this panel where a prop can change
+  // under it, that sentence expires and these three claims need rows; until
+  // then ยังไม่ได้ทดสอบ.
   const load = useCallback(async isCurrent => {
     try {
       const { roles } = await listGrants(user.user_id)
@@ -114,44 +152,36 @@ export default function GrantsPanel({ user, onError }) {
    * `ActivityScores.save`. The flag `load` takes cannot serve here: nothing
    * tears a submit handler down, so what these two ask is *is this still the
    * account I was sent about*, a question about now, which is what a ref is
-   * for and a prop closed over cannot answer.
-   *
-   * #133 flagged `load` on this panel and did not reach these two, because its
-   * census read the signatures of the functions that already carried a flag -
-   * and a census of what carries the flag cannot see the site that carries
-   * none. Found by #141 walking every `await` again. The situation is the one
-   * `load`'s comment describes and is unreachable for the same reason, so
-   * these draw no row either and the sheet says ยังไม่ได้ทดสอบ.
+   * for and a prop closed over cannot answer. The situation is the one `load`'s
+   * comment describes and is unreachable for the same reason, so these draw no
+   * row either and the sheet says ยังไม่ได้ทดสอบ.
    */
   const onScreen = useRef(user.user_id)
   useEffect(() => {
     onScreen.current = user.user_id
   }, [user.user_id])
 
-  const add = async event => {
-    event.preventDefault()
+  // #303 - the dialog's submit. A refusal is thrown back to the dialog, which
+  // draws it beside the pickers that attempted it (until #303 the panel's own
+  // notice did, the pickers being under the table), or hands it back here by
+  // `onLateRefusal` when that opening is gone; a success is said here, over the
+  // cards it added to, and the dialog closes itself - only if it is still the
+  // opening that sent it (`GrantDialog`'s docblock, the review of 23 November
+  // 2569).
+  const add = async draft => {
     setBusy(true)
     setNotice(null)
     try {
       const asked = user.user_id
       const { roles } = await grantRole(asked, draft)
-      // The list, and the pickers that sent this, only if the panel is still
-      // about the same account (#133) - clearing somebody else's form is #146's
-      // rule at the far end of a write. The notice is said either way, because
-      // it is about what the reader did rather than about what is on screen.
+      // The list only if the panel is still about the same account (#133). The
+      // notice is said either way, because it is about what the reader did
+      // rather than about what is on screen.
       // sentence-after-a-move: the notice is about the grant the reader just
       // made and not about the account in front of them, which is the decision
       // the `if` above is documented with. (#133, re-read by #202)
-      if (onScreen.current === asked) {
-        setGrants(roles)
-        setDraft(EMPTY)
-      }
-      setNotice({ error: false, message: 'เพิ่มบทบาทเรียบร้อยแล้ว' })
-    } catch (error) {
-      // Kept inside the panel rather than raised to the screen's banner: the
-      // refusal is about the grant being attempted, and it belongs next to the
-      // pickers that attempted it.
-      if (!error.expired) setNotice({ error: true, message: error.message })
+      if (onScreen.current === asked) setGrants(roles)
+      setNotice({ error: false, message: 'เพิ่มสิทธิ์เรียบร้อยแล้ว' })
     } finally {
       setBusy(false)
     }
@@ -160,8 +190,8 @@ export default function GrantsPanel({ user, onError }) {
   /**
    * Whether the account this panel is about is the reader's own - #130.
    *
-   * Read from the shell's profile and not from the prop, which is the row the
-   * list handed over and carries no mark saying who is looking at it. `profile`
+   * Read from the shell's profile and not from the prop, which is the account
+   * the page read and carries no mark saying who is looking at it. `profile`
    * is null until `/api/me` answers, and a null id matches no account, so the
    * buttons are live for that moment - the same way round as `Users.js` chose
    * for #84: a button wrongly live is refused by the server, where a button
@@ -183,8 +213,12 @@ export default function GrantsPanel({ user, onError }) {
       // sentence-after-a-move: `add`'s decision, for `add`'s reason - the
       // notice is about the grant the reader revoked. (#133, re-read by #202)
       if (onScreen.current === asked) setGrants(roles)
-      setNotice({ error: false, message: 'ยกเลิกบทบาทเรียบร้อยแล้ว' })
+      setRevoking(null)
+      setNotice({ error: false, message: 'ยกเลิกสิทธิ์เรียบร้อยแล้ว' })
     } catch (error) {
+      // The question goes whatever the answer was, as the status switch's
+      // does (#179), and the refusal is said on the tab, where the card is.
+      setRevoking(null)
       if (!error.expired) setNotice({ error: true, message: error.message })
     } finally {
       setBusy(false)
@@ -192,35 +226,19 @@ export default function GrantsPanel({ user, onError }) {
   }
 
   return (
-    <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-1 text-lg font-medium text-primary">บทบาทที่ได้รับ</h2>
-      <p className="mb-4 text-sm text-gray-500">
-        หนึ่งบัญชีถือได้หลายบทบาทพร้อมกัน แต่ละบทบาทผูกกับคณะ ภาควิชา
-        หรือหลักสูตรหนึ่งแห่ง
-      </p>
-
+    <ContentMotionDIV>
       {/*
         The component the other six screens got - #121.
 
         This was a copy of `components/Notice.js`, near enough byte for byte,
         and #55 missed it: that ticket said *six screens had this block byte for
         byte* and fixed six. This was the seventh, so the panel drew a refusal
-        and never scrolled it into view - on a panel whose controls all sit
-        below the banner, the revoke buttons in the table and the add picker
-        below that. The measurements are in `mutation/121-grants-notice.py`
-        rather than repeated here.
+        and never scrolled it into view. The measurements are in
+        `mutation/121-grants-notice.py` rather than repeated here.
 
         The wrapper carries the `mb-4` this panel spaces its children with and
         `Notice` does not have. It is inside the `notice &&` guard so it costs
-        no gap when there is nothing to say; the header of `Notice` says why it
-        is here rather than a prop on the component.
-
-        **Two things came with the swap that this ticket did not ask for**, and
-        both are wanted: #111's `role`, which the copy already had, and
-        `ContentMotionDIV`'s 180ms fade, which the copy did not - the banner now
-        arrives the way every other screen's does, which is the consistency the
-        swap was for. `grantsstaysilent` went the other way, deleted with the
-        copy it was anchored to.
+        no gap when there is nothing to say.
       */}
       {notice && (
         <div className="mb-4">
@@ -228,78 +246,78 @@ export default function GrantsPanel({ user, onError }) {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="px-4 py-2">บทบาท</th>
-              <th className="px-4 py-2">ขอบเขต</th>
-              <th className="px-4 py-2">ผู้กำหนด</th>
-              <th className="px-4 py-2">เมื่อ</th>
-              <th className="px-4 py-2 text-center">ดำเนินการ</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {grants.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-6 text-center text-slate-500"
-                >
-                  บัญชีนี้ยังไม่ได้รับบทบาทใด
-                </td>
-              </tr>
-            )}
-            {grants.map(grant => (
-              <tr key={`${grant.role_id}-${grant.scope_id}`}>
-                <td className="px-4 py-2">{roleName(grant.role_id)}</td>
-                {/*
-                  #215 - the same words the picker below this table uses. This
-                  column is where an administrator checks that a grant went
-                  where it was meant to, and `05` and `0501` are one digit
-                  apart here and one level of authority apart in the guard.
-                  Since #294 the name and kind arrive on the grant itself, a
-                  grant outside the picker's list included, and the code is
-                  not drawn; `grantScope` says what a grant with no name
-                  reads as.
-                */}
-                <td className="px-4 py-2">
-                  {grantScope(grantable.scopes, grant)}
-                </td>
-                <td className="px-4 py-2">{grant.assigned_by ?? '—'}</td>
-                <td className="px-4 py-2">{madeOn(grant.assigned_at)}</td>
-                <td className="px-4 py-2">
-                  <RowActions>
-                    <RowAction
-                      kind="remove"
-                      label="ยกเลิกบทบาท"
-                      onClick={() => remove(grant)}
-                      disabled={busy || isSelf}
-                      title={isSelf ? CANNOT_REVOKE_SELF : undefined}
-                    />
-                  </RowActions>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {grants.length === 0 ? (
+        <p className="px-4 py-6 text-center text-slate-500">บัญชีนี้ยังไม่ได้รับสิทธิ์ใด</p>
+      ) : (
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {grants.map(grant => (
+            <li
+              key={`${grant.role_id}-${grant.scope_id}`}
+              className="rounded-lg border border-gray-200 bg-white p-5 shadow"
+            >
+              <div className="mb-2 flex items-center justify-between gap-2 text-lg font-semibold text-secondary">
+                <span>{roleName(grant.role_id)}</span>
+                <RowAction
+                  kind="remove"
+                  label="ยกเลิกสิทธิ์"
+                  onClick={() => {
+                    setNotice(null)
+                    setRevoking(grant)
+                  }}
+                  disabled={busy || isSelf}
+                  title={isSelf ? CANNOT_REVOKE_SELF : undefined}
+                />
+              </div>
+              {/* The dot before each label is the delivered `EditRoleAssign`'s
+                  (rule 8), put back after the review of 23 November 2569. */}
+              <dl className="space-y-3 text-gray-700">
+                <div>
+                  <dt className="inline-flex items-center font-semibold">
+                    <span aria-hidden="true" className="me-2 flex h-2 w-2 rounded-full bg-secondary" />
+                    สิทธิ์ :
+                  </dt>
+                  <dd className="ms-5">{roleName(grant.role_id)}</dd>
+                </div>
+                {/* #215 - the scope by name, the code not drawn since #294;
+                    the word for its kind is the card's own label since #303. */}
+                <div>
+                  <dt className="inline-flex items-center font-semibold">
+                    <span aria-hidden="true" className="me-2 flex h-2 w-2 rounded-full bg-secondary" />
+                    {kindOf(grant)} :
+                  </dt>
+                  <dd className="ms-5">{scopeOf(grantable.scopes, grant)}</dd>
+                </div>
+              </dl>
+              {/* Who granted it and when - #12's record, which the delivered
+                  cards never showed (the owner's answer of 22 November 2569). */}
+              <p className="mt-4 text-xs text-gray-500">
+                <span>{grant.assigned_by ?? '—'}</span> ·{' '}
+                <span>{madeOn(grant.assigned_at)}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <form onSubmit={add} className="mt-4 grid items-end gap-4 md:grid-cols-3">
-        <GrantPicker
+      {adding && (
+        <GrantDialog
           grantable={grantable}
-          value={draft}
-          onChange={setDraft}
-          disabled={busy}
+          name={personName(user)}
+          onSubmit={add}
+          onCancel={() => onAddClosed?.()}
+          onLateRefusal={setNotice}
         />
-        <button
-          type="submit"
-          disabled={busy || !draft.role_id || !draft.scope_id}
-          className="rounded-lg bg-secondary px-5 py-2.5 text-sm font-medium text-white hover:bg-secondary_hover disabled:opacity-60"
-        >
-          เพิ่มบทบาท
-        </button>
-      </form>
+      )}
+
+      <ConfirmDialog
+        open={Boolean(revoking)}
+        title="ยืนยันการยกเลิกสิทธิ์"
+        message={revoking ? asksToRevoke(grantable.scopes, revoking, user) : ''}
+        confirmLabel="ยกเลิกสิทธิ์"
+        busy={busy}
+        onConfirm={() => remove(revoking)}
+        onCancel={() => setRevoking(null)}
+      />
     </ContentMotionDIV>
   )
 }

@@ -84,7 +84,7 @@ const REFUSALS = {
   // down, where a grant that is not held answers `roleNotHeld`.
   //
   // Two sentences rather than one covering both, because each names the
-  // action the person just pressed - *ระงับ* on one screen, *ยกเลิกบทบาท* on
+  // action the person just pressed - *ระงับ* on one screen, *ยกเลิกสิทธิ์* on
   // the other - and a merged sentence would name neither. Unlike #89's pair
   // they do not differ in what to do next: there is nothing to wait for and
   // nothing to ask for, which is why both are a bare fact and neither offers
@@ -98,7 +98,11 @@ const REFUSALS = {
   // *เปิดใช้งาน* on itself. The first draft named the route instead, and
   // `/code-review` caught it disagreeing with the paragraph above.
   selfStatus: 'ระงับบัญชีของตัวเองไม่ได้',
-  selfRevoke: 'ยกเลิกบทบาทของตัวเองไม่ได้',
+  // *สิทธิ์* and not *บทบาท* since #303: the button it names is *ยกเลิกสิทธิ์*
+  // on the edit page's *สิทธิ์ของระบบ* tab, and the owner answered on
+  // 23 November 2569 that this sentence moves with it (the other refusals here
+  // that say บทบาท are about a role and stay).
+  selfRevoke: 'ยกเลิกสิทธิ์ของตัวเองไม่ได้',
 
   // The shell - #10, and #12's revoke. These three do name what went wrong,
   // and may: they are about a choice the caller made - their own acting role,

@@ -277,54 +277,20 @@ test.describe('ข้อมูลผู้ใช้งาน (Users.js)', () => 
   });
 
   /**
-   * The other handler, because a guard written for one caller is a claim about
-   * every caller (#68, #133). `save` reads its loader's answer exactly as
-   * `confirmSwitch` does, and a save reaches the same situation by a different
-   * road: an edit cannot add a row, but it can move one **out** of the list it
-   * was read from - here an address out of the search term the screen is
-   * filtered by - and the page that row was the last of then stops existing.
+   * **Withdrawn by #303 (23 November 2569), and kept here as the record of what
+   * it held (#54).** A second row stood here: *a save that moves a row out of
+   * the filter hands the page on too*, which edited the last account on page
+   * two out of the search term and read the page the list was handed to. Its
+   * reason was that an edit cannot add a row but can move one **out** of the
+   * list it was read from.
    *
-   * Held at the route for the same reason as the row above: what a hand-over
-   * buys over a sentence said on a truthy answer is the window, not the end of
-   * it.
+   * Since #303 the list's `save` is the add alone - an account is edited on its
+   * own page (`pages/EditUser.js`), which reads the account back and not this
+   * list - and an add cannot shorten the list it is saved over. So the save's
+   * hand-over in `Users.js` is reached by nobody acting alone, and the mutant
+   * this row killed, `239:savesaysitovertheoldpage`, is left with no row: the
+   * sweep of #303 asked it again, and `mutation/303-the-account-on-its-own-page.py`
+   * records what it returned. It would be reachable again by a second actor
+   * removing rows while an add is out, which no row here builds.
    */
-  test('a save that moves a row out of the filter hands the page on too', async ({ page }) => {
-    const { table, last } = await elevenActiveAccounts(page, 'e2e.p239c', '92392');
-    const address = addressOf('e2e.p239c', Number(last.slice(-2)));
-
-    await users.userRow(page, address).getByRole('button', { name: 'แก้ไข' }).click();
-    await page.getByLabel('อีเมล').fill('e2e.moved239c@kmitl.ac.th');
-
-    const handed = await gate(
-      page,
-      new RegExp(`^${users.API}$`),
-      request => isGet(request) && pageOf(request) === '1',
-    );
-    const [written] = await Promise.all([
-      page.waitForResponse(
-        reply =>
-          new URL(reply.url()).pathname === `${users.API}/${last}` &&
-          reply.request().method() === 'PUT',
-      ),
-      page.getByRole('button', { name: 'บันทึก' }).click(),
-    ]);
-    expect(written.status()).toBe(200);
-    await handed.sent;
-
-    await expect(
-      page.getByText(SAVED),
-      'nothing is said over the page being replaced',
-    ).toHaveCount(0);
-
-    handed.open();
-    await handed.answered;
-
-    await expect
-      .poll(() => reading(page, table), { message: 'the page they were handed' })
-      .toEqual({ total: COUNT - 1, shown: 1, pages: 1 });
-    await expect(
-      page.getByText(SAVED),
-      'the sentence, on the page the read was handed to',
-    ).toBeVisible();
-  });
 });

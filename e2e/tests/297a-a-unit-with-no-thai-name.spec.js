@@ -5,7 +5,13 @@ const { DEPARTMENTS } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { openUsers, search, listTable, userRow } = require('../support/users-screen');
-const { ROLE_NAMES, openEditor, grantsTable } = require('../support/grants-panel');
+const {
+  ROLE_NAMES,
+  openEditor,
+  openGrantDialog,
+  scopeStatement,
+  saysScope,
+} = require('../support/grants-panel');
 const { actingButton } = require('../support/shell');
 const { createPool } = require('../../db/pool');
 const { E2E_SCHEMA } = require('../support/env');
@@ -111,14 +117,13 @@ test('row 2: the held-roles table says the same', async ({ page }) => {
     // same column), so the cell is drawn from the picker's list - the second of
     // the two ways into `scopeLabel`. Found by the role, which is one grant on
     // this account, and asserted to be (#51).
-    const rows = grantsTable(page)
-      .getByRole('row')
-      .filter({ has: page.getByRole('cell', { name: ROLE_NAMES.TEACHER, exact: true }) });
-    await expect(rows, 'teacher.one holds one teacher grant').toHaveCount(1);
-    const headers = await grantsTable(page).getByRole('columnheader').allTextContents();
-    const column = headers.indexOf('ขอบเขต');
-    expect(column, 'the held-roles table has no ขอบเขต column').toBeGreaterThanOrEqual(0);
-    await expect(rows.getByRole('cell').nth(column)).toHaveText(NAMELESS);
+    // A card since #303: the kind is the statement's word, and the name under
+    // it is the kind word and the code (`GrantsPanel.js`'s `scopeOf`).
+    await saysScope(
+      await scopeStatement(page, ROLE_NAMES.TEACHER),
+      KIND_DEPARTMENT,
+      NAMELESS,
+    );
   });
 });
 
@@ -179,17 +184,18 @@ test('row 5: the held-roles table says the same, from the grant and not the list
     // The mechanism (#226): the list has landed and holds the administrator's
     // own department, and holds nothing for 01 - so what the cell says below
     // did not come from it.
+    // The pickers are in the เพิ่มสิทธิ์ dialog since #303.
+    await openGrantDialog(page);
     await expect(scopePicker(page).locator(`option[value="${DEPARTMENT.id}"]`)).toHaveCount(1);
     await expect(scopePicker(page).locator(`option[value="${DEPARTMENT_01.id}"]`)).toHaveCount(0);
 
-    const rows = grantsTable(page)
-      .getByRole('row')
-      .filter({ has: page.getByRole('cell', { name: ROLE_NAMES.TEACHER, exact: true }) });
-    await expect(rows, 'cross.scope holds one teacher grant').toHaveCount(1);
-    const headers = await grantsTable(page).getByRole('columnheader').allTextContents();
-    const column = headers.indexOf('ขอบเขต');
-    expect(column, 'the held-roles table has no ขอบเขต column').toBeGreaterThanOrEqual(0);
-    await expect(rows.getByRole('cell').nth(column)).toHaveText(OUT_OF_REACH);
+    // A card since #303: the kind is the statement's word, and the name under
+    // it is the kind word and the code (`GrantsPanel.js`'s `scopeOf`).
+    await saysScope(
+      await scopeStatement(page, ROLE_NAMES.TEACHER),
+      KIND_DEPARTMENT,
+      OUT_OF_REACH,
+    );
   });
 });
 

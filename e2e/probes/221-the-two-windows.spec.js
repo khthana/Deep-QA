@@ -344,6 +344,15 @@ test('Users.js สถานะ: the write answers, then ถัดไป while th
 
 // ── Users.js · บันทึก ────────────────────────────────────────────────────────
 
+// **Expired by #303 (23 November 2569) and kept as the record of what they
+// measured (#54).** An account is edited on its own page since then
+// (`pages/EditUser.js`), whose save reads the account back and not the list,
+// so the window these three arms hold - the list's reload after an edit's
+// save, with ถัดไป or the search box pressed inside it - is not on any screen.
+// They no longer run as written: แก้ไข navigates and no บันทึก is drawn on the
+// list. The list's one save left is the add (เพิ่มผู้ใช้งาน), whose reload is
+// the same shape and has not been measured by this probe.
+
 test('Users.js บันทึก: the twin that presses nothing', async ({ page }) => {
   const table = await openUsers(page);
   const watch = await watchForTheSentence(page, SAVED_USER);

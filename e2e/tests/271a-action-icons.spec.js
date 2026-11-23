@@ -8,7 +8,7 @@ const { openPrograms } = require('../support/programs-screen');
 const { openSubjects } = require('../support/subjects-screen');
 const { openProgramSubjects } = require('../support/program-subjects-screen');
 const { openUsers } = require('../support/users-screen');
-const { openEditor: openGrants, grantsTable } = require('../support/grants-panel');
+const { openEditor: openGrants, grantsList } = require('../support/grants-panel');
 const { openOfferings } = require('../support/offerings-screen');
 const { openPlos } = require('../support/plos-screen');
 const { openRubrics, table: rubricsTable } = require('../support/rubrics-screen');
@@ -40,7 +40,7 @@ const { openEnrolment, mySectionIds, listTable } = require('../support/enrolment
  * header's wording and its alignment. Those are the sheet's walked rows.
  *
  * Where a button is disabled for the person's own account (ระงับ on their own
- * row, ยกเลิกบทบาท on their own grant) the tooltip carries the reason instead
+ * row, ยกเลิกสิทธิ์ on their own grant - ยกเลิกบทบาท until #303) the tooltip carries the reason instead
  * of the word, by design; every row below presses past those by asking for an
  * enabled button.
  */
@@ -92,11 +92,11 @@ test('row 4: รายวิชาในหลักสูตร - แก้ไ�
 // more. Its claims are `302a`'s rows 4 and 6. The number is left unused rather
 // than reused, so the sheet's citations of rows 6-11 still mean what they did.
 
-test('row 6: the grants table - ยกเลิกบทบาท', async ({ page }) => {
+test('row 6: the grants cards - ยกเลิกสิทธิ์', async ({ page }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);
   await openUsers(page);
   await openGrants(page, ACCOUNTS.teacherOne);
-  await isAnIcon(named(grantsTable(page), 'ยกเลิกบทบาท'), 'ยกเลิกบทบาท');
+  await isAnIcon(named(grantsList(page), 'ยกเลิกสิทธิ์'), 'ยกเลิกสิทธิ์');
 });
 
 test('row 7: รายวิชาที่เปิดสอน - กลุ่มเรียนและผู้สอน and ยกเลิกการเปิด', async ({ page }) => {

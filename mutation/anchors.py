@@ -1113,7 +1113,18 @@ MARK_NAMES = {WALKED: "walked", HALF: "half", NOT_WALKED: "not walked",
 
 
 def _mark_column(row):
-    """Which cell of this header row holds the mark, or None."""
+    """Which cell of this header row holds the mark, or None.
+
+    A cell that *is* a mark head wins over one that contains it - #303, 23
+    November 2569: `ผล` is inside `ผลที่ต้องเห็น`, the expected-result column
+    that sits before it, so the first containing cell read every mark of a
+    `| ... | ผลที่ต้องเห็น | ผล |` table out of the wrong column, and those
+    tables counted none. Measured over the store that day: one sheet moved,
+    `11-user-accounts.md` from 103 marks to 152, the total from 1693 to 1742.
+    """
+    for position, cell in enumerate(row):
+        if cell.strip() in MARK_HEADS:
+            return position
     for position, cell in enumerate(row):
         if any(head in cell for head in MARK_HEADS):
             return position

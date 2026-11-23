@@ -5,7 +5,13 @@ const { REFUSALS } = require('../../backend/auth/refusals');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { openUsers } = require('../support/users-screen');
-const { ROLE_NAMES, openEditor, grantRow, revoke } = require('../support/grants-panel');
+const {
+  ROLE_NAMES,
+  openEditor,
+  grantRow,
+  grantCell,
+  revoke,
+} = require('../support/grants-panel');
 
 /**
  * The seventh screen with #55's defect — ticket #121.
@@ -50,13 +56,26 @@ const { ROLE_NAMES, openEditor, grantRow, revoke } = require('../support/grants-
  * thing scroll, not by making the data bigger.** The threshold above is the
  * number to act on; the viewport below is only how it is reached cheaply.
  *
+ * **Since #303** the panel is the *สิทธิ์ของระบบ* tab of the account's own page,
+ * and its controls are cards: the banner is drawn under the tab bar and above
+ * the cards, the trash can sits on each card, and *เพิ่มสิทธิ์* is on the tab
+ * bar and not below the list. So the row works from the bottom of the one
+ * card - its small *ผู้กำหนด · เมื่อ* line - and its assumption is that the tab
+ * bar, which the banner is drawn just below, has left the viewport. The window
+ * is the one the table version used; re-measured on 23 November 2569, the
+ * page's header, tab bar and one card overflow it.
+ *
  * The assumption assertion before the click is `55a`'s and is load-bearing for
  * its reason: if the pane never scrolled, the banner was in view from the start
  * and `toBeInViewport()` would pass for the wrong reason.
  */
 
 // Short enough that the panel alone overflows the pane - see the header.
-test.use({ viewport: { width: 900, height: 300 } });
+// 1100 wide since #303, 900 until then: below Tailwind's lg (1024) the side
+// menu is drawn open over the content, and the tab this row has to press sits
+// under it, where the table's buttons sat to its right. The row is about the
+// height; the width only has to leave the content pressable.
+test.use({ viewport: { width: 1100, height: 300 } });
 
 test('#121: the grants panel brings its refusal into view', async ({ page }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);
@@ -66,17 +85,13 @@ test('#121: the grants panel brings its refusal into view', async ({ page }) => 
   const theirs = grantRow(page, ROLE_NAMES.TEACHER, '01');
   await expect(theirs).toHaveCount(1);
 
-  // Work from the bottom of the panel, which is where the add picker is and
-  // where somebody managing roles ends up.
-  await page
-    .getByRole('button', { name: 'เพิ่มบทบาท' })
-    .scrollIntoViewIfNeeded();
+  // Work from the bottom of the card, which is where somebody reading a
+  // grant ends up - #303.
+  await grantCell(page, ROLE_NAMES.TEACHER, '01', 'เมื่อ').scrollIntoViewIfNeeded();
 
-  // The assumption: the pane really did scroll past the top of the panel, so
+  // The assumption: the pane really did scroll past the top of the tab, so
   // the banner has somewhere to be brought back from.
-  await expect(
-    page.getByRole('heading', { name: 'บทบาทที่ได้รับ' }),
-  ).not.toBeInViewport();
+  await expect(page.getByRole('tab', { name: 'สิทธิ์ของระบบ' })).not.toBeInViewport();
 
   // A grant this administrator reaches the holder of but not the scope of,
   // refused at the server - the one refusal this panel can be given without

@@ -6,7 +6,13 @@ const { ACCOUNTS, IDS, PASSWORD } = require('../support/accounts');
 const { signIn } = require('../support/auth');
 const { BACKEND_URL } = require('../support/env');
 const { hold } = require('../support/hold');
-const { openUsers, userRow } = require('../support/users-screen');
+const {
+  openUsers,
+  userRow,
+  openDetails,
+  saveDetails,
+  backToList,
+} = require('../support/users-screen');
 const {
   ROLE_NAMES,
   openEditor,
@@ -97,17 +103,19 @@ async function reachProgramSubjects(page) {
 test('row 1: editing personal details leaves the grants alone', async ({ page }) => {
   await signIn(page, ACCOUNTS.departmentAdmin05);
   await openUsers(page);
-  await openEditor(page, ACCOUNTS.teacherOne);
+  // The details on their own tab since #303, opened by แก้ไขข้อมูล.
+  await openDetails(page, ACCOUNTS.teacherOne);
 
   const surname = 'สอนดีเปลี่ยนแล้ว';
   await page.getByLabel('นามสกุล (ไทย)').fill(surname);
-  await page.getByRole('button', { name: 'บันทึก' }).click();
+  await saveDetails(page).click();
   await expect(page.getByText('บันทึกข้อมูลเรียบร้อยแล้ว')).toBeVisible();
 
   // The banner is not the row: a screen that announced a save it never sent
   // would show exactly this and leave the table as it was. The list is the one
   // the save re-read, still filtered to this person by the search the editor
   // was opened through.
+  await backToList(page);
   await expect(userRow(page, ACCOUNTS.teacherOne)).toContainText(surname);
 
   // The second half of the criterion, and the one worth a spec: the details
@@ -118,8 +126,9 @@ test('row 1: editing personal details leaves the grants alone', async ({ page })
 
   // Put the seeded surname back, so this file leaves the account as it found
   // it and can be run twice.
+  await openDetails(page, ACCOUNTS.teacherOne);
   await page.getByLabel('นามสกุล (ไทย)').fill('สอนดี');
-  await page.getByRole('button', { name: 'บันทึก' }).click();
+  await saveDetails(page).click();
   await expect(page.getByText('บันทึกข้อมูลเรียบร้อยแล้ว')).toBeVisible();
 });
 
@@ -130,7 +139,7 @@ test('rows 2 and 7: a second grant is recorded with who made it and when', async
 
   const response = await addGrant(page, { role: 'PROG_MANAGER', scope: PROGRAM });
   expect(response.status()).toBe(201);
-  await expect(page.getByText('เพิ่มบทบาทเรียบร้อยแล้ว')).toBeVisible();
+  await expect(page.getByText('เพิ่มสิทธิ์เรียบร้อยแล้ว')).toBeVisible();
   await expect(grantRow(page, COMMITTEE, PROGRAM)).toHaveCount(1);
 
   // Criterion 7. `assigned_by` is the account that pressed the button, taken
@@ -195,7 +204,7 @@ test('rows 2 and 3: the grantee gains and loses the access on their next request
   // still acting as the committee.
   const removed = await revoke(page, COMMITTEE, PROGRAM);
   expect(removed.status()).toBe(200);
-  await expect(page.getByText('ยกเลิกบทบาทเรียบร้อยแล้ว')).toBeVisible();
+  await expect(page.getByText('ยกเลิกสิทธิ์เรียบร้อยแล้ว')).toBeVisible();
   await expect(grantRow(page, COMMITTEE, PROGRAM)).toHaveCount(0);
 
   // The next request, on the cookie they already had. Refused - not honoured
@@ -227,7 +236,7 @@ test('row 6: the button on your own grant is dead, and says why', async ({
   // the control itself. The title is a copy of the server's sentence that
   // `create-react-app` will not let the screen import, so this assertion is
   // where the two part company.
-  const button = own.getByRole('button', { name: 'ยกเลิกบทบาท' });
+  const button = own.getByRole('button', { name: 'ยกเลิกสิทธิ์' });
   await expect(button).toBeVisible();
   await expect(button).toBeDisabled();
   await expect(button).toHaveAttribute('title', REFUSALS.selfRevoke);
@@ -244,7 +253,7 @@ test('row 6: another account keeps the buttons it always had', async ({ page }) 
   // which is `111a` and `121a`'s subject and not this row's: what is asserted
   // here is that the control is offered.
   const button = grantRow(page, ROLE_NAMES.TEACHER, '01').getByRole('button', {
-    name: 'ยกเลิกบทบาท',
+    name: 'ยกเลิกสิทธิ์',
   });
   await expect(button).toBeEnabled();
   await expect(button).not.toHaveAttribute('title', REFUSALS.selfRevoke);

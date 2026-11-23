@@ -292,6 +292,9 @@ async function widened(userId, role, [from, to], body) {
 
 const USER_FILTERS = ['q', 'role', 'status'];
 
+/** One account per row: `hold()` puts the file's writes back only at its end. */
+let created = 0;
+
 async function openUsersScreen(page) {
   await signIn(page, ACCOUNTS.systemAdmin);
   await users.openUsers(page);
@@ -303,10 +306,16 @@ async function openUsersScreen(page) {
     filters: USER_FILTERS,
     rows: 'users',
     key: (user) => user.user_id,
-    // `Users.save` closes the form before it reloads.
+    // `Users.save` closes the form before it reloads. The add since #303 (23
+    // November 2569), the one save the list has left: an edit is made on the
+    // account's own page and reads the account back, not the list.
     press: async () => {
-      const row = users.userRow(page, 'dept.admin.01@kmitl.ac.th');
-      await users.editButton(row).click();
+      created += 1;
+      await users.fillNewAccount(page, {
+        id: `z144a${created}`,
+        email: `z144a${created}@kmitl.ac.th`,
+        first: 'หนึ่งสี่สี่',
+      });
       await page.getByRole('button', { name: 'บันทึก', exact: true }).click();
     },
   };
