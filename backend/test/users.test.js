@@ -562,7 +562,9 @@ test('an external assessor with a validity period', async (t) => {
   // an account created `active` that cannot sign in (`auth/accounts.js:168`)
   // and, this file having no delete route, cannot be removed either. `readDate`
   // is strict about the *shape* of a date and says so in its own docstring;
-  // a guard about format cannot see a mistake about meaning.
+  // a guard about format cannot see a mistake about meaning. (*No delete
+  // route* is #125's day; since #306, 24 November 2569, an account nothing
+  // refers to can be deleted - `routes/users.js` `readDate` says the rest.)
 
   await t.test('refuses a Buddhist-era year, and says what to type instead', async () => {
     const admin = await signInAs('U_ADMIN');
@@ -895,6 +897,8 @@ test('the import template', async (t) => {
     // be taken out again. This file has GET, POST, two PUTs and the import,
     // and no delete route at all: the account can be deactivated and not
     // removed, which is why an inert template is the fix rather than a cleanup.
+    // (That was the route list on the day; #306 added `DELETE` on 24 November
+    // 2569 for an account nothing refers to, and the template stays inert.)
     const admin = await signInAs('U_ADMIN');
 
     const template = await request(api.app).get('/api/users/import-template').set('Cookie', admin);
@@ -1457,7 +1461,9 @@ test('an import writes a line per account, each naming it — #58', async () => 
     assert.deepEqual(written[0].time_stamp, written[1].time_stamp);
   } finally {
     // There is no delete route for an account, so this file takes back what it
-    // wrote through the pool, by the two identifiers it wrote — #134.
+    // wrote through the pool, by the two identifiers it wrote — #134. Since
+    // #306 (24 November 2569) there is one, and the cleanup still goes below
+    // the seam: the route writes a `DELETE_USER` line of its own (#181).
     await api.pool.query(`DELETE FROM users WHERE user_id = ANY($1)`, [['LOG_ONE', 'LOG_TWO']]);
   }
 });

@@ -670,6 +670,10 @@ citation.
 - A `mode: 'serial'` spec reports the first dying row and skips the rest, so measure each row on
   its own; a top-level `node --test` test reads like a suite header in `not ok` lines, so read
   the names — including in a ticket's evidence, where it read as a second red row. (#67, #48, #187)
+- **And a spec that is not `serial` hands the row after a red one a rebuilt world** — Playwright
+  replaces the worker after a failure, so `afterAll` and `beforeAll` run again, and a kill predicted
+  at a later row because the red row left state behind does not happen. Predict from what a row
+  is handed, which is what it would be handed on a clean run. (#306)
 - A fixture that restores itself only when its row passes inflates the next mutant's kill count —
   put it back in `finally` or `afterAll`. (#89, #52)
 - **But a cleanup can speak over the claim two ways** — a throwing `finally` *replaces* the body's

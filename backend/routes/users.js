@@ -99,6 +99,12 @@ const IMPORT_COLUMNS = [
  * this file holding no delete route, cannot be removed either. So the year is
  * read as well as the string, and a refusal here carries its own sentence
  * rather than a key, because the sentence names the year that was typed.
+ *
+ * *No delete route* was true when #125 wrote it. Since #306 (24 November
+ * 2569) `DELETE /users/:userId` removes an account nothing refers to, which a
+ * fresh account with a window five centuries out usually is - so the price
+ * this paragraph names is smaller today, and the guard stays because a
+ * window nobody can sign in through is still wrong on the day it is typed.
  */
 function readDate(value) {
   const text = blankToNull(value);
@@ -404,7 +410,9 @@ function userRoutes(pool) {
     // `66010001` into the register; this import refuses a key it already
     // holds, so nothing was overwritten, but this file has no delete route and
     // the row could only be deactivated. `students.js` says the rest of the
-    // reasoning and reached the same answer from the other defect.
+    // reasoning and reached the same answer from the other defect. (Since #306,
+    // 24 November 2569, such a row can be deleted while nothing refers to it;
+    // the template stays inert, because a register should not need a cleanup.)
     //
     // What the example row was carrying was never the column names - the
     // header still has all fifteen - but the four rules a header cannot state:
