@@ -10,7 +10,7 @@ import Pager from '../components/Pager'
 import { FaUserEdit } from 'react-icons/fa'
 import SearchBox from '../components/SearchBox'
 import StatusSwitch from '../components/users/StatusSwitch'
-import UserForm from '../components/users/UserForm'
+import AddUserDialog from '../components/users/AddUserDialog'
 import { personName } from '../components/users/personName'
 import { editAddress, fromQuery, listQuery } from '../components/users/listAddress'
 import { grantScope } from '../components/users/scopeLabel'
@@ -606,9 +606,13 @@ export default function Users() {
    * Whether a form is drawn in place of the list, readable after an await -
    * #246, 29 ตุลาคม 2569.
    *
-   * The return below draws the form **or** the table and never both, so a read
-   * that lands while one is open has drawn nothing a waiting sentence is about,
-   * and the sentence waits for a list to be true of. `load` cannot read
+   * The return below drew the form **or** the table and never both until #304,
+   * so a read that landed while one was open had drawn nothing a waiting
+   * sentence is about, and the sentence waited for a list to be true of. Since
+   * #304 (24 November 2569) the add is a dialog and the table is drawn behind
+   * it, but under a modal cover nobody can read it through, so the sentence
+   * waits for the same thing - the list the person can see - and this ref is
+   * unchanged. `load` cannot read
    * `editing` itself: in its dependency list it would rebuild the loader at
    * every press of the opener and the effect above would fetch the list again
    * for each one, and out of the list the closure would see the first render's
@@ -629,8 +633,11 @@ export default function Users() {
    * `load` applies above (#205). That clause is **structurally unreachable**
    * here on 29 ตุลาคม 2569 and is written for the day it is not: the pager
    * and the filters are drawn in the branch the form replaces, so nothing can
-   * move the key while a form is open. A control drawn outside that branch
-   * would move it, and that is the condition that re-dates this.
+   * move the key while a form is open. Re-dated by #304 (24 November 2569):
+   * they are drawn now, under the add dialog's cover, which takes the pointer
+   * and keeps focus inside the box (`useModalFocus`) - still unreachable, by
+   * the cover rather than by the branch. A control the cover does not hold
+   * would move the key, and that is the condition that re-dates this.
    *
    * The clearing here is the whole of it, the `finally` in `load` having stopped
    * clearing a held one: a sentence nothing clears is not a sentence that is
@@ -833,28 +840,33 @@ export default function Users() {
 
   return (
     <div className="space-y-6">
-      <Notice notice={notice} />
+      {/* #304: while the add dialog is open this is behind its cover, so the
+          dialog draws the notice instead and this one is not drawn twice. */}
+      {!editing && <Notice notice={notice} />}
 
-      {editing ? (
-        <>
-          {/* Only the add since #303 - an existing account's details, grants
-              and the rest are on its own page (`pages/EditUser.js`), and its
-              history is on the history page alone (`docs/users-screen.md`
-              rule 9). #304 moves this form into a dialog. */}
-          <UserForm
-            user={null}
-            onSubmit={save}
-            onCancel={() => {
-              // ยกเลิก does not write this: a form closing is nobody taking the
-              // screen, and a save still out is owed its sentence (#146).
-              setNotice(null)
-              setEditing(null)
-            }}
-            busy={busy}
-          />
-        </>
-      ) : (
-        <>
+      {/* Only the add since #303 - an existing account's details, grants and
+          the rest are on its own page (`pages/EditUser.js`), and its history is
+          on the history page alone (`docs/users-screen.md` rule 9). Since #304
+          (24 November 2569) it is a dialog over the list, as the delivered
+          `AddUserDialog.js` was (rule 10), and no longer drawn in its place. */}
+      {editing && (
+        <AddUserDialog
+          notice={notice}
+          onSubmit={save}
+          onCancel={() => {
+            // ยกเลิก and Escape do not write this: a form closing is nobody
+            // taking the screen, and a save still out is owed its sentence (#146).
+            setNotice(null)
+            setEditing(null)
+          }}
+          busy={busy}
+        />
+      )}
+
+      {/* #304: the list is drawn under the dialog now, not instead of it; the
+          fragment and its indentation are kept so the mutants quoting this
+          block still find it (#189). */}
+      <>
           <PageHeader
             importLabel="นำเข้าผู้ใช้งาน"
             onImport={() => setImporting(true)}
@@ -1062,8 +1074,7 @@ export default function Users() {
             perPage={PAGE_SIZE}
             onPage={setPage}
           />
-        </>
-      )}
+      </>
 
       {/*
         Outside the ternary, like the nine removals: a form opened from under

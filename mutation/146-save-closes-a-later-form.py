@@ -377,14 +377,16 @@ MUTANTS = {
         '            setNotice(null)\n'
         '            setEditing(null)\n'
         '          }}\n'),
+    # Re-aimed by #304 (24 November 2569): the add moved into AddUserDialog's
+    # onCancel, two levels shallower; the mistake is the same line.
     'userscancelclears': ('users',
-        '              setNotice(null)\n'
-        '              setEditing(null)\n'
-        '            }}\n',
-        '              showing.current = null\n'
-        '              setNotice(null)\n'
-        '              setEditing(null)\n'
-        '            }}\n'),
+        '            setNotice(null)\n'
+        '            setEditing(null)\n'
+        '          }}\n',
+        '            showing.current = null\n'
+        '            setNotice(null)\n'
+        '            setEditing(null)\n'
+        '          }}\n'),
     'studentscancelclears': ('students',
         '            setNotice(null)\n'
         '            setAdding(false)\n'

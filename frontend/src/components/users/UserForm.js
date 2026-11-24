@@ -82,7 +82,11 @@ import useGrantable from './useGrantable'
  * The four that cannot are this form, `students/StudentForm.js` and
  * `offerings/OfferingForm.js`, drawn in the half of a ternary whose **other half
  * is the list and its filters** - so while the form is open there is no แก้ไข
- * on the screen to press and closing it unmounts the component - and
+ * on the screen to press and closing it unmounts the component (this one
+ * re-dated twice: since #303 a record is handed to it only on the edit page,
+ * which draws one account, and since #304 the add is a dialog drawn only while
+ * open, over a list its cover keeps out of reach - so it still cannot, by the
+ * mount rather than by the ternary) - and
  * `evidence/EvidenceForm.js`, which has a `key` per file, the same answer by a
  * different mechanism (#147). The two add-only forms say so at their own
  * effects, which are keyed by identity and would put the flag down early
@@ -221,11 +225,33 @@ const field =
   'block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100'
 const labelling = 'mb-1 block text-sm text-gray-500'
 
-function Field({ label, children }) {
+/**
+ * The layout of `docs/ui-form-layout.md` - #304.
+ *
+ * The form is one grid of three columns from `md` up: a short one for the
+ * identifier and the two titles (rule 2, `8rem`, which is `md:w-32`), and two wide ones. Each
+ * person's name is a line of its own, Thai above English (rule 1), and the two
+ * unit dropdowns span the whole width because they show names (rule 4). One
+ * grid rather than a row of `flex` per line, as the other forms of #290 write
+ * it, so every control stays at the depth the mutants of #88, #249 and #296
+ * quote it at (#189) - what the grid does to the screen is the same.
+ *
+ * `span` is the field's columns; `width` narrows the control alone and leaves
+ * the label wrapping it whole, because the label is its accessible name (rule
+ * 3, #180).
+ */
+const CHOICE = 'md:w-40'
+const WIDE = 'md:col-span-2'
+const WHOLE = 'md:col-span-3'
+// A password is typed, not stored to be read: as wide as #290's widest code
+// field (rule 5), which is this implementer's choice and not the owner's.
+const SHORT_PASSWORD = 'md:w-48'
+
+function Field({ label, children, span = '', width }) {
   return (
-    <label className="block">
+    <label className={`block ${span}`}>
       <span className={labelling}>{label}</span>
-      {children}
+      {width ? <span className={`block ${width}`}>{children}</span> : children}
     </label>
   )
 }
@@ -237,7 +263,7 @@ function Field({ label, children }) {
  * of its own: the page's *บันทึกข้อมูล* submits it through `id`, and the page
  * says whether it is open - `readOnly` is the delivered view mode, every field
  * closed until *แก้ไขข้อมูล* is pressed (`docs/users-screen.md` rule 7). The add
- * keeps both until #304 moves it into a dialog.
+ * keeps its buttons; its box and heading are `AddUserDialog.js`' since #304.
  */
 export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly = false }) {
   const editing = Boolean(user)
@@ -306,23 +332,26 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
     // the panel's - they are added and revoked one at a time against their own
     // routes - and a role smuggled into an edit body would be one the server
     // has to decide whether to ignore.
+    //
+    // The password goes only with a role that is offered one (#304): the field
+    // is drawn for those two alone, so a value typed before the role was
+    // changed would otherwise be sent from a field nobody can see.
     onSubmit(
       editing
         ? details
-        : { ...details, password, role: { role_id, scope_id } }
+        : {
+            ...details,
+            ...(needsPassword && { password }),
+            role: { role_id, scope_id },
+          }
     ).finally(() => setSending(false))
   }
 
   return (
-    <ContentMotionDIV
-      className={editing ? '' : 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm'}
-    >
-      {!editing && (
-        <h2 className="mb-4 text-lg font-medium text-primary">เพิ่มผู้ใช้งาน</h2>
-      )}
-
+    <ContentMotionDIV>
+      {/* The add's box and heading are `AddUserDialog.js`' since #304. */}
       <form id={id} onSubmit={submit} className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-[8rem_minmax(0,1fr)_minmax(0,1fr)]">
           <Field label="รหัสผู้ใช้">
             <input
               className={field}
@@ -332,7 +361,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
               required
             />
           </Field>
-          <Field label="อีเมล">
+          <Field label="อีเมล" span={WIDE}>
             <input
               className={field}
               type="email"
@@ -351,15 +380,6 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
               disabled={closed(sending)}
             />
           </Field>
-          <Field label="คำนำหน้า (อังกฤษ)">
-            <input
-              className={field}
-              value={draft.title_en}
-              onChange={set('title_en')}
-              disabled={closed(sending)}
-            />
-          </Field>
-
           <Field label="ชื่อ (ไทย)">
             <input
               className={field}
@@ -373,6 +393,15 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
               className={field}
               value={draft.last_name_th}
               onChange={set('last_name_th')}
+              disabled={closed(sending)}
+            />
+          </Field>
+
+          <Field label="คำนำหน้า (อังกฤษ)">
+            <input
+              className={field}
+              value={draft.title_en}
+              onChange={set('title_en')}
               disabled={closed(sending)}
             />
           </Field>
@@ -394,7 +423,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
             />
           </Field>
 
-          <Field label="ภาควิชา">
+          <Field label="ภาควิชา" span={WHOLE}>
             <select
               className={field}
               value={draft.department_id}
@@ -414,7 +443,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
               )}
             </select>
           </Field>
-          <Field label="หลักสูตร">
+          <Field label="หลักสูตร" span={WHOLE}>
             <select
               className={field}
               value={draft.program_id}
@@ -454,8 +483,8 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
           <legend className="px-2 text-sm text-gray-500">
             ช่วงเวลาใช้งาน (เว้นว่างได้ ใช้กับบัญชีผู้ประเมินภายนอก)
           </legend>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="เริ่มใช้งานได้">
+          <div className="flex flex-col gap-4 md:flex-row">
+            <Field label="เริ่มใช้งานได้" width={CHOICE}>
               <input
                 className={field}
                 type="date"
@@ -465,7 +494,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
                 max={draft.valid_until || undefined}
               />
             </Field>
-            <Field label="ใช้งานได้ถึง">
+            <Field label="ใช้งานได้ถึง" width={CHOICE}>
               <input
                 className={field}
                 type="date"
@@ -479,7 +508,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
         </fieldset>
 
         {!editing && (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="space-y-4">
             <GrantPicker
               grantable={grantable}
               value={{ role_id: draft.role_id, scope_id: draft.scope_id }}
@@ -488,23 +517,22 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
               }
               disabled={closed(sending)}
             />
-            <Field
-              label={
-                needsPassword
-                  ? 'รหัสผ่าน (บทบาทนี้ต้องกำหนด)'
-                  : 'รหัสผ่าน (ถ้าไม่ได้เข้าผ่าน Google)'
-              }
-            >
-              <input
-                className={field}
-                type="password"
-                value={draft.password}
-                onChange={set('password')}
-                disabled={closed(sending)}
-                autoComplete="new-password"
-                required={needsPassword}
-              />
-            </Field>
+            {/* Only for the two roles that sign in with a password (#304,
+                rule 10); everybody else goes to Google, and a field they
+                could fill would be a password nobody signs in with. */}
+            {needsPassword && (
+              <Field label="รหัสผ่าน (บทบาทนี้ต้องกำหนด)" width={SHORT_PASSWORD}>
+                <input
+                  className={field}
+                  type="password"
+                  value={draft.password}
+                  onChange={set('password')}
+                  disabled={closed(sending)}
+                  autoComplete="new-password"
+                  required
+                />
+              </Field>
+            )}
           </div>
         )}
 
