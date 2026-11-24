@@ -465,6 +465,13 @@ export default function Users() {
    * read landing late must not put a write's flag down; this screen's แก้ไข
    * reads nothing - the row it opens is already in `data`. (Measured 16 October
    * 2569.)
+   *
+   * *Both writes* is that day's count. Since #306 (24 November 2569) there are
+   * three holders - save, switch and removal - and two dialogs, `switching`'s
+   * and `removing`'s. The measurement still holds for the third: the removal
+   * question is also opened only from the table, the two dialogs are never open
+   * together (each covers the table the other is opened from), and its
+   * ลบผู้ใช้งาน is behind this flag through `ConfirmDialog`'s `busy`.
    */
   const [busy, setBusy] = useState(false)
 
@@ -1140,7 +1147,7 @@ export default function Users() {
                           <button
                             type="button"
                             aria-label={`ลบ ${personName(user)}`}
-                            title={isSelf(user) ? CANNOT_DELETE_SELF : `ลบ ${personName(user)}`}
+                            title={isSelf(user) ? CANNOT_DELETE_SELF : 'ลบผู้ใช้'}
                             onClick={() => startRemoval(user)}
                             disabled={isSelf(user)}
                             className="rounded p-1 text-gray-400 transition hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400"

@@ -297,7 +297,7 @@ const IDENTIFIER = /^[a-z_][a-z0-9_]*$/;
  * therefore asked about the day it lands, and refuses until somebody decides
  * otherwise in `OWN_ROWS`.
  */
-async function referenceOf(client, userId) {
+async function isReferenced(client, userId) {
   const { rows: columns } = await client.query(
     `SELECT t.relname AS tbl, a.attname AS col, cardinality(con.conkey) AS width
        FROM pg_constraint con
@@ -612,7 +612,7 @@ function userRoutes(pool) {
         await client.query('ROLLBACK');
         return res.status(404).json({ message: REFUSALS.userNotFound });
       }
-      if (await referenceOf(client, existing.user_id)) {
+      if (await isReferenced(client, existing.user_id)) {
         await client.query('ROLLBACK');
         return res.status(409).json({ message: REFUSALS.userInUse });
       }

@@ -93,8 +93,8 @@ MUTANTS = {
         "\n"
         "      await client.query('BEGIN');\n"),
     "s306nocheck": ("routes",
-        "      if (await referenceOf(client, existing.user_id)) {\n",
-        "      if (false && referenceOf) {\n"),
+        "      if (await isReferenced(client, existing.user_id)) {\n",
+        "      if (false && isReferenced) {\n"),
     "s306nolog": ("routes",
         "  exists.push(\n"
         "    `EXISTS (SELECT 1 FROM user_log WHERE user_id = $1 AND activity <> ALL($2::text[]))`,\n"

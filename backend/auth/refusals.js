@@ -112,7 +112,7 @@ const REFUSALS = {
   // shape. The way out it names is the switch in the same row (#60, #178),
   // which is why it says ระงับการใช้งาน and not ปิดการใช้งาน: that is the word
   // the switch's own question and banner use. Which references count is
-  // `routes/users.js`' `referenceOf`, read from the catalogue.
+  // `routes/users.js`' `isReferenced`, read from the catalogue.
   userInUse:
     'บัญชีนี้มีข้อมูลอื่นอ้างอิงอยู่ จึงลบไม่ได้ หากต้องการเลิกใช้งานให้ระงับการใช้งานที่สวิตช์สถานะแทน',
 
