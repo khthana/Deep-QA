@@ -103,6 +103,18 @@ const REFUSALS = {
   // 23 November 2569 that this sentence moves with it (the other refusals here
   // that say บทบาท are about a role and stay).
   selfRevoke: 'ยกเลิกสิทธิ์ของตัวเองไม่ได้',
+  // #306 - the owner's words of 24 November 2569. Disabled on the person's own
+  // row as the switch is, so the server's sentence is what a request that goes
+  // round the screen reads.
+  selfDelete: 'ลบบัญชีของตัวเองไม่ได้',
+  // #306 - one sentence for every reference, the owner's choice of
+  // 24 November 2569 over one sentence per reason, in `departmentInUse`'s
+  // shape. The way out it names is the switch in the same row (#60, #178),
+  // which is why it says ระงับการใช้งาน and not ปิดการใช้งาน: that is the word
+  // the switch's own question and banner use. Which references count is
+  // `routes/users.js`' `referenceOf`, read from the catalogue.
+  userInUse:
+    'บัญชีนี้มีข้อมูลอื่นอ้างอิงอยู่ จึงลบไม่ได้ หากต้องการเลิกใช้งานให้ระงับการใช้งานที่สวิตช์สถานะแทน',
 
   // The shell - #10, and #12's revoke. These three do name what went wrong,
   // and may: they are about a choice the caller made - their own acting role,

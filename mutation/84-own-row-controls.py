@@ -85,13 +85,21 @@ FILES = {"users": "frontend/src/pages/Users.js"}
 
 MUTANTS = {
     # ตัวข้อบกพร่องเอง ปุ่มกลับมากดได้ทุกแถว รวมแถวของตัวเอง
+    # #306 (24 พ.ย. 2569) - ถังขยะเขียน `disabled={isSelf(user)}` ด้วย ซึ่งมีจุดยึดเดิมเป็นสตริงย่อย
+    # จึงยึดคู่กับ `onClick` ของสวิตช์บรรทัดก่อนหน้า ตัวที่แก้ยังเป็นบรรทัดเดิม (#202)
     "alwaysenabled": ("users",
+        "                          onClick={() => startSwitch(user)}\n"
         "                          disabled={isSelf(user)}\n",
+        "                          onClick={() => startSwitch(user)}\n"
         "                          disabled={false}\n"),
     # ปิดทั้งคอลัมน์แทนที่จะปิดทีละแถว ซึ่งเป็นวิธีที่ง่ายกว่าและผิด แถวคุมของ `84a`
     # มีไว้ล้มตัวนี้ - ถ้าไม่มีมัน การปิดทุกปุ่มจะผ่านทุกข้ออ้างของตั๋วนี้
+    # #306 (24 พ.ย. 2569) - ถังขยะเขียน `disabled={isSelf(user)}` ด้วย ซึ่งมีจุดยึดเดิมเป็นสตริงย่อย
+    # จึงยึดคู่กับ `onClick` ของสวิตช์บรรทัดก่อนหน้า ตัวที่แก้ยังเป็นบรรทัดเดิม (#202)
     "everyrowisdead": ("users",
+        "                          onClick={() => startSwitch(user)}\n"
         "                          disabled={isSelf(user)}\n",
+        "                          onClick={() => startSwitch(user)}\n"
         "                          disabled={true}\n"),
     # สำเนาที่เลื่อนออกจากต้นฉบับ ซึ่งเป็นสิ่งเดียวที่สำเนาทำได้และไม่มีใครเห็น
     "titledrifts": ("users",

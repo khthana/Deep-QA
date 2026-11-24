@@ -34,6 +34,7 @@ export const ACTIONS = {
   CREATE_USER: 'เพิ่มบัญชีผู้ใช้',
   UPDATE_USER: 'แก้ไขข้อมูลผู้ใช้',
   SET_USER_STATUS: 'เปลี่ยนสถานะบัญชี',
+  DELETE_USER: 'ลบบัญชีผู้ใช้',
   IMPORT_USERS: 'นำเข้าบัญชีผู้ใช้',
   GRANT_ROLE: 'ให้บทบาท',
   REVOKE_ROLE: 'ยกเลิกบทบาท',
@@ -66,6 +67,11 @@ export const ACTIONS = {
  * suspension. Every other code is drawn in the delivered table's own fallback,
  * `BADGE_OTHERWISE` - the implementer's choice, written on the sheet, because
  * nineteen more colours would be nineteen decisions nobody asked for.
+ *
+ * Since #306 (24 November 2569) the system writes a sixth of the delivered
+ * eight, `DELETE_USER`, and it takes the delivered rose. Its word is in
+ * `ACTIONS`' own register (*ลบภาควิชา*), not the delivered *ลบผู้ใช้งาน*, as
+ * #305's owner's answer kept #13's words.
  */
 const BADGES = {
   LOGIN: 'bg-emerald-100 text-emerald-700',
@@ -74,6 +80,7 @@ const BADGES = {
   CHANGE_PASSWORD: 'bg-fuchsia-100 text-fuchsia-700',
   UPDATE_USER: 'bg-indigo-100 text-indigo-700',
   SET_USER_STATUS: 'bg-orange-100 text-orange-700',
+  DELETE_USER: 'bg-rose-100 text-rose-700',
 }
 
 const BADGE_OTHERWISE = 'bg-slate-100 text-slate-600'

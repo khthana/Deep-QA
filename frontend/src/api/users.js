@@ -30,6 +30,13 @@ export const setUserStatus = (userId, status) =>
   put(`/api/users/${userId}/status`, { status })
 
 /**
+ * Delete an account - #306. The server decides whether it may: an account
+ * anything refers to is refused with the way round it (`userInUse`), so the
+ * screen asks nothing first beyond *are you sure*.
+ */
+export const deleteUser = userId => del(`/api/users/${encodeURIComponent(userId)}`)
+
+/**
  * The grant calls — #12.
  *
  * `listGrantable` is what the administrator may offer: the roles no more

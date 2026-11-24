@@ -106,6 +106,7 @@ const ACTIONS = {
   GRANT_ROLE: 'ให้บทบาท',
   REVOKE_ROLE: 'ยกเลิกบทบาท',
   CREATE_PROGRAM: 'เพิ่มหลักสูตร',
+  DELETE_USER: 'ลบบัญชีผู้ใช้',
 };
 
 module.exports = {

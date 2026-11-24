@@ -8,6 +8,7 @@ import Notice from '../components/Notice'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import { FaUserEdit } from 'react-icons/fa'
+import { RiDeleteBin6Line } from 'react-icons/ri'
 import { LuHistory } from 'react-icons/lu'
 import SearchBox from '../components/SearchBox'
 import StatusSwitch from '../components/users/StatusSwitch'
@@ -21,6 +22,7 @@ import { useAuth } from '../context/AuthContext'
 import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
   createUser,
+  deleteUser,
   importTemplate,
   importUsers,
   listUsers,
@@ -118,6 +120,26 @@ const control =
  * not two accounts of one rule.
  */
 const CANNOT_SUSPEND_SELF = 'ระงับบัญชีของตัวเองไม่ได้'
+
+/**
+ * A copy of `REFUSALS.selfDelete` - #306, for the same reason as the one
+ * above, and held the same way: `306a` asserts this attribute equals that
+ * constant. The trash can on the reader's own row is disabled as its switch
+ * is, the owner's answer of 24 November 2569; every other row's is live and
+ * the server decides (`docs/users-screen.md` rule 4).
+ */
+const CANNOT_DELETE_SELF = 'ลบบัญชีของตัวเองไม่ได้'
+
+/**
+ * What the removal question asks - #306, the owner's wording of
+ * 24 November 2569: the shape the other removals of this system ask in, and
+ * not the delivered *คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลของ*. The account is named
+ * by its code and its name, as `asks` names it, for `asks`' reason. The second
+ * sentence says before the press what the server will say after it, so a
+ * refusal is not news.
+ */
+const asksRemoval = user =>
+  `ต้องการลบบัญชี ${user.user_id} ${personName(user)} ใช่หรือไม่ หากบัญชีนี้มีข้อมูลอ้างอิงอยู่ ระบบจะไม่ลบ ให้ระงับการใช้งานแทน`
 
 /**
  * The window as a person reads it, or a dash for an account that has none.
@@ -423,6 +445,9 @@ export default function Users() {
   const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
   const [switching, setSwitching] = useState(null)
+  // #306 - the account the removal question is about. Exclusive with
+  // `switching`: both are opened from the table, and each box covers it.
+  const [removing, setRemoving] = useState(null)
   /**
    * One flag for both writes, and that is a measurement rather than an
    * oversight - #142 asks every screen which holders can start while it is up.
@@ -830,6 +855,42 @@ export default function Users() {
     }
   }
 
+  /**
+   * The trash can - #306, `docs/users-screen.md` rule 4: on every row, asking
+   * first, and the server deciding. As the switch does, a sentence about what
+   * just happened does not stand over a question about what is going to.
+   */
+  const startRemoval = user => {
+    setNotice(null)
+    setRemoving(user)
+  }
+
+  /**
+   * `confirmSwitch`'s shape, for `confirmSwitch`'s reasons: the box goes
+   * whatever the answer was, a refusal is said wherever the person now is
+   * (#179), and the sentence of a deletion is handed to the read that draws
+   * the page it leaves - which can be the page before, the deleted row having
+   * been the last one on its page (#239's hand-on, in `load`).
+   */
+  const confirmRemoval = async () => {
+    const user = removing
+    const sent = showing.current
+    setBusy(true)
+    try {
+      await deleteUser(user.user_id)
+      setRemoving(null)
+      const said = { error: false, message: 'ลบบัญชีเรียบร้อยแล้ว' }
+      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }
+      const drawing = onScreen.current
+      await drawing(() => onScreen.current === drawing)
+    } catch (error) {
+      setRemoving(null)
+      report(error)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   // A filter changing has to send the reader back to the first page: staying
   // on page four of a result that now has one page shows an empty table and
   // reads as "no such user".
@@ -1060,8 +1121,9 @@ export default function Users() {
                         {/* #302 - the delivered grey icon with no word beside it
                             (`docs/users-screen.md` rule 3). Its name says whose
                             account it opens, which a column of identical
-                            pencils does not otherwise say; #306's trash can goes
-                            beside it. */}
+                            pencils does not otherwise say. #306's trash can is
+                            beside it, named the same way, and disabled on the
+                            reader's own row as the switch is. */}
                         <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"
@@ -1074,6 +1136,16 @@ export default function Users() {
                             className="rounded p-1 text-gray-600 transition hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <FaUserEdit aria-hidden="true" className="text-2xl" />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`ลบ ${personName(user)}`}
+                            title={isSelf(user) ? CANNOT_DELETE_SELF : `ลบ ${personName(user)}`}
+                            onClick={() => startRemoval(user)}
+                            disabled={isSelf(user)}
+                            className="rounded p-1 text-gray-400 transition hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400"
+                          >
+                            <RiDeleteBin6Line aria-hidden="true" className="text-2xl" />
                           </button>
                         </div>
                       </td>
@@ -1108,6 +1180,21 @@ export default function Users() {
         onCancel={() => {
           setNotice(null)
           setSwitching(null)
+        }}
+      />
+
+      {/* #306 - outside the ternary for the same reason. The heading and the
+          button are the owner's words of 24 November 2569. */}
+      <ConfirmDialog
+        open={Boolean(removing)}
+        title="ยืนยันการลบผู้ใช้งาน"
+        message={removing ? asksRemoval(removing) : ''}
+        confirmLabel="ลบผู้ใช้งาน"
+        busy={busy}
+        onConfirm={confirmRemoval}
+        onCancel={() => {
+          setNotice(null)
+          setRemoving(null)
         }}
       />
     </div>

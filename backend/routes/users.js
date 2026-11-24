@@ -258,6 +258,67 @@ async function insertAccount(client, values, role, actorId) {
   }
 }
 
+/**
+ * The references an account's deletion takes with it, and so does not ask
+ * about - #306. Its own grants, its own picture and its own activity log, all
+ * three `ON DELETE CASCADE` onto the account. Every *other* column that
+ * references `users` is a reason to refuse, whatever its `ON DELETE` says.
+ */
+const OWN_ROWS = new Set(['user_roles.user_id', 'user_image.user_id', 'user_log.user_id']);
+
+/**
+ * The activity log lines that are about the account itself - signing in by
+ * either way, signing out, switching the acting grant, changing its password.
+ * An **allow-list** (`docs/users-screen.md` §การลบบัญชี): an activity added
+ * later is about somebody else's data until somebody adds it here, so it
+ * refuses the deletion rather than being deleted with the account. The codes
+ * are the ones `routes/auth.js` and `routes/me.js` write; #306's ticket named
+ * four and missed `GOOGLE_LOGIN`, which is the same act by the other door.
+ */
+const SELF_ACTIVITIES = ['LOGIN', 'GOOGLE_LOGIN', 'LOGOUT', 'SWITCH_ROLE', 'CHANGE_PASSWORD'];
+
+/** An identifier read from the catalogue, before it is spliced into SQL. */
+const IDENTIFIER = /^[a-z_][a-z0-9_]*$/;
+
+/**
+ * Whether anything other than the account's own rows refers to it - #306.
+ *
+ * The columns are read from the catalogue at the moment of asking, not from a
+ * list written here, because the list is what goes stale: nineteen of the
+ * twenty-three references are `ON DELETE SET NULL`, which the database lets a
+ * deletion through, so a column forgotten in a list is an author's name taken
+ * off a record with nothing raised. A migration that adds a reference is
+ * therefore asked about the day it lands, and refuses until somebody decides
+ * otherwise in `OWN_ROWS`.
+ */
+async function referenceOf(client, userId) {
+  const { rows: columns } = await client.query(
+    `SELECT t.relname AS tbl, a.attname AS col, cardinality(con.conkey) AS width
+       FROM pg_constraint con
+       JOIN pg_class t ON t.oid = con.conrelid
+       JOIN pg_attribute a ON a.attrelid = con.conrelid AND a.attnum = con.conkey[1]
+      WHERE con.contype = 'f' AND con.confrelid = to_regclass('users')
+      ORDER BY 1, 2`,
+  );
+
+  const asked = columns.filter((c) => !OWN_ROWS.has(`${c.tbl}.${c.col}`));
+  for (const c of asked) {
+    if (c.width !== 1 || !IDENTIFIER.test(c.tbl) || !IDENTIFIER.test(c.col)) {
+      throw new Error(`Cannot ask about the reference ${c.tbl}.${c.col} to users`);
+    }
+  }
+
+  const exists = asked.map((c) => `EXISTS (SELECT 1 FROM ${c.tbl} WHERE ${c.col} = $1)`);
+  exists.push(
+    `EXISTS (SELECT 1 FROM user_log WHERE user_id = $1 AND activity <> ALL($2::text[]))`,
+  );
+  const { rows } = await client.query(`SELECT ${exists.join(' OR ')} AS referenced`, [
+    userId,
+    SELF_ACTIVITIES,
+  ]);
+  return rows[0].referenced;
+}
+
 function userRoutes(pool) {
   const router = express.Router();
   const { reachOf, reachable, assignable, placeAllowed, placeRefusal } = administration(pool);
@@ -502,6 +563,60 @@ function userRoutes(pool) {
       return res.status(200).json({ user: rows[0] });
     } catch (error) {
       return next(error);
+    }
+  });
+
+  /**
+   * Delete an account nothing refers to - #306, the owner's answer of
+   * 22 November 2569 (`docs/users-screen.md` §การลบบัญชี).
+   *
+   * Whoever may edit the account may delete it (`reachable`, ADR-0002), and
+   * nobody may delete their own, as nobody may suspend it. Anything else that
+   * refers to the account refuses with the way round it, which is the switch.
+   *
+   * The question and the deletion are one transaction, and the account's row
+   * is locked `FOR UPDATE` before the question is asked: a write that would
+   * add a reference takes `FOR KEY SHARE` on the same row, so it either
+   * committed before the question saw it, or waits and then fails its foreign
+   * key against an account that is gone. Without the lock an account that
+   * wrote a line between the two would be deleted with that line (#306's
+   * *สิ่งที่ต้องระวัง*).
+   *
+   * The deleter's own `DELETE_USER` line stays and names the account by text
+   * (CONTEXT.md *Activity log entry*), and it is a line about somebody else, so
+   * it makes the deleter undeletable in turn - as it should.
+   */
+  router.delete('/users/:userId', requireRole(...ADMIN_ROLES), async (req, res, next) => {
+    if (req.params.userId === req.auth.userId) {
+      return res.status(403).json({ message: REFUSALS.selfDelete });
+    }
+    const client = await pool.connect();
+    try {
+      const existing = await reachable(req, req.params.userId);
+      if (!existing) return res.status(404).json({ message: REFUSALS.userNotFound });
+
+      await client.query('BEGIN');
+      const locked = await client.query(
+        'SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE',
+        [existing.user_id],
+      );
+      if (locked.rowCount === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ message: REFUSALS.userNotFound });
+      }
+      if (await referenceOf(client, existing.user_id)) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({ message: REFUSALS.userInUse });
+      }
+      await client.query('DELETE FROM users WHERE user_id = $1', [existing.user_id]);
+      await recordActivity(client, req.auth.userId, 'DELETE_USER', onUser(existing.user_id));
+      await client.query('COMMIT');
+      return res.status(204).send();
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      return next(error);
+    } finally {
+      client.release();
     }
   });
 
