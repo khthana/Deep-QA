@@ -52,6 +52,15 @@
 | `294:o294historyunnamed` | `294a` แถว 3 ที่ `ทำกับข้อมูล` ของบรรทัด 0 · `305a` แถว 3 ที่ `ทำกับข้อมูล` |
 | `294:o294historykindblind` | รอดทั้งสี่แฟ้ม ตามใบของมัน — ข้ออ้างของมันอยู่ที่ HTTP seam |
 
+## มัตแตนต์ที่รีวิวเพิ่ม — คำทำนาย (24 พ.ย. 2569, หลังรีวิวและก่อนรัน)
+
+รีวิวชี้ว่าแถว 305.3 อ้างสี่อย่าง และไม่มีมัตแตนต์ตัวใดตายที่ข้ออ้าง *ตารางเดียวถือบรรทัดของหลายบัญชี* (`305a:135`–`137`,
+บรรทัด 1 ของอาจารย์) — ⚙ ทั้งแถวจึงเกินจริง (#66) · ตัวนี้คือข้อบกพร่องนั้นทำให้รัน: ตารางที่ถือแค่บรรทัดของผู้ที่กำลังอ่าน
+
+| ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่ทำนายว่ามันฆ่า |
+|---|---|---|
+| `s305oneaccount` | เส้นทางใหม่อ่านแค่บรรทัดของบัญชีที่ลงชื่ออยู่ (`l.user_id = req.auth.userId`) | **2** — `305a` แถว 3 ที่ `รหัสผู้ใช้งาน` ของบรรทัด 1 (`305a:135`: บรรทัด 1 เป็นบรรทัดถัดไปของ `admin01` แทน `teach01`) · `13a` แถว 3 ที่ `SIGNED_IN` ของ `teach01` toBeVisible (`13a:149`) แล้วแฟ้มหยุด · แถว 1, 2, 4 ของ `13a` ผ่านเพราะบรรทัดที่อ่านเป็นของ `admin01` ผู้อ่าน · `305a` แถว 4 ผ่านด้วยเหตุเดียวกัน · `294a` แถว 3 ผ่าน (บรรทัดของผู้ดูแลที่อ่าน) · `272c` ผ่าน (`total` เป็น 0 อยู่แล้ว) |
+
 ## บันทึกการกวาด (24 พ.ย. 2569, คอมมิต `abc6e57`, ทีละตัว `_local/sweep305.ps1` ประตูที่ถามต้นไม้ว่ามัตแตนต์ถูกใส่จริง และ `restore` ไม่เหลือ diff)
 
 ยี่สิบห้ารอบ ใส่ได้ทุกรอบ คืนสะอาดทุกรอบ
@@ -96,6 +105,10 @@ MUTANTS = {
     's305scopegone': ('route',
         '         WHERE ($1::text[] IS NULL OR ${OWN_SCOPE} = ANY($1))\n           AND COALESCE(${SENIORITY}, 99) >= $2\n           AND ($3::text IS NULL\n',
         '         WHERE ($1::text[] IS NULL OR TRUE)\n           AND COALESCE(${SENIORITY}, 99) >= $2\n           AND ($3::text IS NULL\n'),
+    # A table of the reader's own lines - the per-account screen, at the server.
+    's305oneaccount': ('route',
+        '           AND COALESCE(${SENIORITY}, 99) >= $2\n           AND ($3::text IS NULL\n',
+        "           AND COALESCE(${SENIORITY}, 99) >= $2\n           AND l.user_id = '${req.auth.userId}'\n           AND ($3::text IS NULL\n"),
     's305order': ('route', 'ORDER BY l.time_stamp DESC, l.id DESC LIMIT $4 OFFSET $5',
                   'ORDER BY l.time_stamp ASC, l.id ASC LIMIT $4 OFFSET $5'),
     's305nottarget': ('route', "                OR l.target_id ILIKE '%' || $3 || '%'\n", ''),

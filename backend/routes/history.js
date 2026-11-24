@@ -3,6 +3,14 @@
 /**
  * User activity history — ticket #13.
  *
+ * **Since #305 (24 November 2569) this header describes the first route only.**
+ * The screen no longer opens a person: it reads `GET /history`, one table of
+ * every account's lines, and no screen asks the per-account route below any
+ * more. That route's scope is `reachable`'s, as written here; the new route
+ * cannot ask `reachable` - there is no one account to ask about - so it puts
+ * `GET /users`' own scope fragments in its `WHERE`, which its docblock says
+ * why. Read the paragraphs below as #13's, dated (#54).
+ *
  * An administrator opens a person and reads what that account has done, so
  * that "who saw or changed this" has an answer. The rows are already being
  * written: every ticket from #8 onwards calls `recordActivity` at the point it

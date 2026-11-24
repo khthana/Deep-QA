@@ -191,7 +191,7 @@ One line in `user_log`: an account, what it did, which record it did it to, and 
 lines, newest first, searchable by the acting account or the record acted on, holding only the lines of accounts the
 administrator reaches (#305). The account named by the line is always the one who **acted**: an edit to
 someone else's record sits in the editor's history and names the edited record in `target_kind` / `target_id`, so
-"what did this person do" is a read and "who touched this record" is a search. The target is text and not a reference,
+"what did this person do" and "who touched this record" are both a search of the one table, by the account's id. The target is text and not a reference,
 because an audit line has to outlive the record it names. Reads are not logged, by decision — only sign-in, sign-out
 and change. Deliberately keyless: a log line has no natural key, so ADR-0001's tiers do not apply to it.
 _Avoid_: activity — an **Activity** is a piece of assessed work within a Section and is a different thing entirely;
