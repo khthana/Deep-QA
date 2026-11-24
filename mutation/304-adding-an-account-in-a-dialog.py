@@ -10,10 +10,11 @@
 **การจัดวางไม่มีมัตแตนต์** — `docs/ui-form-layout.md` §การพิสูจน์: การจัดวางเป็นรูปลักษณ์ จึงเป็นแถวเดินมือ และ spec ที่ผ่าน
 ทั้งหมดพิสูจน์ว่าการจัดวางไม่ได้พังพฤติกรรม ไม่ใช่ว่าการจัดวางถูก
 
-**ครึ่งหลังของแถว 5 — *การเปิดครั้งหน้าเริ่มว่าง* — ไม่มีมัตแตนต์** มันถูกถือโดยการ mount: `Users.js` วาด `AddUserDialog`
-เฉพาะตอน `editing` ฉะนั้นการเปิดทุกครั้งคือ `UserForm` ใหม่ (#167) และมัตแตนต์ที่ทำให้ค่าค้างต้องเปลี่ยนภาชนะทั้งอัน
-ซึ่งเป็นมัตแตนต์ของการออกแบบอื่น ไม่ใช่ของบรรทัด · ข้ออ้างจึงเป็นตาข่าย และเงื่อนไขที่จะทำให้มันอ่านได้คือวันที่หน้าต่างถูกวาด
-ค้างไว้แล้วซ่อน (#203)
+**ครึ่งหลังของแถว 5 — *การเปิดครั้งหน้าเริ่มว่าง* — ถูกถือสองชั้น** โดยการ mount (`Users.js` วาด `AddUserDialog` เฉพาะตอน
+`editing` การเปิดทุกครั้งจึงเป็น `UserForm` ใหม่, #167) และโดย effect ของ `UserForm` ที่ตั้ง `EMPTY` เมื่อไม่มี `user` ·
+ร่างแรกของใบนี้เขียนว่าไม่มีมัตแตนต์ เพราะคิดว่าต้องเปลี่ยนภาชนะทั้งอัน และติดเครื่องหมาย ⚙ ทั้งแถว ซึ่งรีวิวของ 24 พ.ย. 2569
+ชี้ว่าเกินจริง (#66) · `draftoutlivesmount` คือข้อบกพร่องนั้นทำให้รัน: ร่างที่อยู่นอกคอมโพเนนต์ และ effect ที่ไม่ล้างมัน —
+สามบรรทัด ไม่ใช่ภาชนะใหม่ · แถวในใบรับงานแยกเป็นสองแถว
 
 **`role="dialog"` ไม่มีมัตแตนต์** เพราะทุกแถวหาหน้าต่างด้วยบทบาทนั้น — attribute ที่ตัวหาสร้างบนมันเป็นข้อตั้งของแถว
 ไม่ใช่ข้ออ้าง (#85, #111) · สิ่งที่แถว 1 อ้างคือ `aria-modal` รายการที่ยังวาดอยู่ข้างหลัง และโฟกัส
@@ -32,6 +33,7 @@
 | `noticebehind` | คำปฏิเสธวาดที่ประกาศของหน้า ซึ่งอยู่หลังฉากทึบ ไม่วาดในหน้าต่าง | **1** — `304a` แถว 4 ที่ alert ในหน้าต่าง toHaveText |
 | `noticetwice` | วาดคำปฏิเสธทั้งในหน้าต่างและที่ประกาศของหน้าหลังฉาก | **1** — `304a` แถว 4 ที่ `alerts on the page` toBe(1) |
 | `nomaxheight` | หน้าต่างไม่มีเพดานความสูง | **1** — `304a` แถว 6 ที่ `the box against 90% of 480` |
+| `draftoutlivesmount` | ร่างอยู่นอกคอมโพเนนต์ และ effect ไม่ล้างมันเมื่อเพิ่ม — หน้าต่างที่จำสิ่งที่พิมพ์ข้ามการเปิด (#167) · เขียนหลังรีวิว 24 พ.ย. 2569 ก่อนรัน | **1** — `304a` แถว 5 ที่ `รหัสผู้ใช้` toHaveValue('') หลังเปิดใหม่ · ไม่ใช่แถวอื่น เพราะทุกแถวอื่นเปิดหน้าต่างครั้งเดียวต่อหน้า |
 | `noscroll` | หน้าต่างมีเพดานแต่ไม่เลื่อนภายใน | **1** — `304a` แถว 6 ที่ `save` toBeInViewport · ไม่ใช่ที่ `the box scrolls inside` เพราะ `scrollHeight` ของกล่องที่ `overflow: visible` ยังนับส่วนที่ล้น |
 
 ## มัตแตนต์ของใบอื่นที่ #304 เล็งใหม่ — คำทำนาย (24 พ.ย. 2569, ก่อนรัน)
@@ -105,6 +107,15 @@ MUTANTS = {
         ('page', '      </>\n', '      </>}\n'),
     ],
     'notmodal': ('dialog', '        aria-modal="true"\n', ''),
+    # The draft kept outside the component and not cleared for an add: a
+    # dialog that remembers what was typed across openings (#167).
+    'draftoutlivesmount': [
+        ('form', '  const [draft, setDraft] = useState(EMPTY)\n',
+                 '  const [draft, setDraft] = useState(() => window.kept304 || EMPTY)\n'),
+        ('form', '    if (!user) return setDraft(EMPTY)\n', '    if (!user) return\n'),
+        ('form', '    setDraft(current => ({ ...current, [key]: event.target.value }))\n',
+                 '    setDraft(current => (window.kept304 = { ...current, [key]: event.target.value }))\n'),
+    ],
     'focusstaysout': ('dialog', '  useModalFocus(box, true, onCancel)\n',
                       '  useModalFocus(box, false, onCancel)\n'),
     'escapeignored': ('dialog', '  useModalFocus(box, true, onCancel)\n',

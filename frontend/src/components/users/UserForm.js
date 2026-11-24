@@ -240,7 +240,10 @@ const labelling = 'mb-1 block text-sm text-gray-500'
  * the label wrapping it whole, because the label is its accessible name (rule
  * 3, #180).
  */
-const CHOICE = 'md:w-40'
+// The two dates: a date is a fixed-width value, so the field is as narrow as
+// rule 4's fixed-set dropdowns (`md:w-40`) - the implementer's reading, since
+// the rules name no width for a date.
+const DATE = 'md:w-40'
 const WIDE = 'md:col-span-2'
 const WHOLE = 'md:col-span-3'
 // A password is typed, not stored to be read: as wide as #290's widest code
@@ -484,7 +487,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
             ช่วงเวลาใช้งาน (เว้นว่างได้ ใช้กับบัญชีผู้ประเมินภายนอก)
           </legend>
           <div className="flex flex-col gap-4 md:flex-row">
-            <Field label="เริ่มใช้งานได้" width={CHOICE}>
+            <Field label="เริ่มใช้งานได้" width={DATE}>
               <input
                 className={field}
                 type="date"
@@ -494,7 +497,7 @@ export default function UserForm({ user, onSubmit, onCancel, busy, id, readOnly 
                 max={draft.valid_until || undefined}
               />
             </Field>
-            <Field label="ใช้งานได้ถึง" width={CHOICE}>
+            <Field label="ใช้งานได้ถึง" width={DATE}>
               <input
                 className={field}
                 type="date"
