@@ -367,7 +367,7 @@ export default function CourseOutcomes() {
 }
 
 /**
- * When it was last changed, in Bangkok time — `HistoryPanel`'s reason.
+ * When it was last changed, in Bangkok time — `users/historyEntry`'s reason (#13).
  *
  * The server sends the instant; the zone is named rather than left to the
  * browser, so that two ผู้สอน editing one set do not read the same edit as

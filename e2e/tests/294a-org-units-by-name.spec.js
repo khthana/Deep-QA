@@ -10,7 +10,7 @@ const { E2E_SCHEMA } = require('../support/env');
 const { openOfferings, filterToTerm, openSections } = require('../support/offerings-screen');
 const { openMapping, exportPdf } = require('../support/plo-mapping-screen');
 const { isReadable, linesOf } = require('../support/pdf-text');
-const { openHistory, pick, entryCell } = require('../support/history-panel');
+const { openHistory, entryCell } = require('../support/history-panel');
 
 /**
  * #294 - an organisation unit is read by its name, not its code.
@@ -82,8 +82,9 @@ test('row 2: the exported mapping is headed by the curriculum\'s name, and its f
 test('row 3: the history names a curriculum, and keeps the code of one that is gone', async ({
   page,
 }) => {
-  // In the future, so they are the two newest lines of the reader's own
-  // history whatever the files before this one wrote (#132).
+  // In the future, so they are the two newest lines of the table whatever the
+  // files before this one wrote (#132) - since #305 one table of every
+  // account's lines, which the Central Admin reaches whole.
   const { rows } = await db.query(
     `INSERT INTO user_log (user_id, activity, target_kind, target_id, time_stamp) VALUES
        ($1, 'CREATE_PROGRAM', 'PROGRAM', $2, now() + interval '1 day 1 second'),
@@ -95,7 +96,6 @@ test('row 3: the history names a curriculum, and keeps the code of one that is g
 
   await signIn(page, ACCOUNTS.systemAdmin);
   await openHistory(page);
-  await pick(page, { userId: IDS.systemAdmin, q: ACCOUNTS.systemAdmin });
 
   await expect(entryCell(page, 0, 'ทำกับข้อมูล')).toHaveText(`หลักสูตร${PROGRAM.th}`);
   // A programme that no longer exists has no name to find, and the code is the

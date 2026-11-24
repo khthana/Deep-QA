@@ -1,52 +1,64 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { FaUserGroup } from 'react-icons/fa6'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
+import Pager from '../components/Pager'
 import SearchBox from '../components/SearchBox'
-import HistoryPanel from '../components/users/HistoryPanel'
+import {
+  actedOn,
+  activityOf,
+  badgeOf,
+  dayOf,
+  timeOf,
+} from '../components/users/historyEntry'
 import { personName } from '../components/users/personName'
-import { listUsers } from '../api/users'
+import { listAllHistory } from '../api/users'
 
 /**
- * ประวัติการใช้งาน — #13.
+ * ประวัติการใช้งาน — #13, given back its delivered table by #305.
  *
- * The screen docs/05 A13 names at `/main/users/user-history`, and the third
- * criterion's "filterable by user": an administrator arrives with a question
- * about a person rather than about an account record, picks the person here,
- * and reads what they did. The same history is also on the account's edit form,
- * where the administrator already has somebody open - the two entry points are
- * the same panel, so they cannot disagree.
+ * `docs/users-screen.md` rule 11, the owner's answer of 22 November 2569: one
+ * table of every account's entries, as `DEEP-QA-FRONTEND/.../userLogs.js` drew
+ * it - ผู้ใช้งาน · กิจกรรม in a coloured badge · วันที่ · เวลา · รหัสผู้ใช้งาน -
+ * with a search box over it and แสดงรายชื่อผู้ใช้งาน to go back, reached from
+ * the แสดงประวัติการใช้งาน button on ข้อมูลผู้ใช้งาน and no longer from the
+ * menu. The last column, ทำกับข้อมูล, is #13's and was kept by that answer,
+ * because a table of everybody's lines that does not say whom a line was about
+ * cannot answer *who suspended whom*. Until #305 the page was a picker over one
+ * account's history at a time.
  *
- * The picker is fed by `GET /api/users`, which arrives already narrowed to the
- * accounts the acting grant reaches. So the list cannot offer a person this
- * administrator may not read, and the history route refuses them a second time
- * anyway if they ask for one directly (ADR-0002). Neither refusal is drawn
- * here.
+ * The rows are the server's (`GET /api/history`): newest first, a page at a
+ * time, and narrowed to the accounts the acting grant reaches **in the read**,
+ * so a department administrator's pages count only the lines they are shown
+ * (ADR-0002). The delivered table fetched the whole log and paged and searched
+ * it in the browser, which is the shape a log - the one table nothing deletes
+ * from - cannot keep.
  *
- * The search box narrows the picker rather than the history. A `<select>` is
- * unusable at university scale, so it holds one server page of matches and says
- * how many matched in total when there are more than fit.
- *
- * Since #272 (the owner's answer of 13 November 2569) the box is the shared
- * `SearchBox` - the magnifier, a pause before the read, and `%` `_` read as
- * themselves by `GET /api/users` - and it still narrows the picker: a second box
- * over the history, and the delivered page's one table of every account's
- * entries (`userLogs.js`), were the options not taken.
+ * The search box is #272's shared `SearchBox`, and since #305 it narrows the
+ * lines rather than a picker: by the acting account's id, email or names, or by
+ * the id of the record a line was about, so an account's id finds what was
+ * done to it as well as what it did. The activity's Thai wording is this
+ * screen's and the server does not hold it, so a search by activity is not
+ * offered - the implementer's choice, written on the sheet.
  */
 
-const PICKER_SIZE = 100
+const PAGE_SIZE = 10
 
-const control =
-  'rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
-
-/** The account as the picker lists it: the name, then the id that is stored. */
-const pickerLabel = user => `${personName(user)} (${user.user_id})`
-
+// pager-last-page: the rule the owner settled on 19 ตุลาคม 2569 (#209) is not
+// here, because this screen writes nothing and the list it draws is a log,
+// which only ever gains entries: no press of its own can take away the page it
+// is standing on. Its one filter, the search box, puts the reader back on page
+// one as it changes. Measured for the panel this replaces on 28 ตุลาคม 2569
+// (#239) and again for this table on 24 พฤศจิกายน 2569 (#305). A second actor
+// is a different question and this marker says nothing about it (#222).
 export default function UserHistory() {
+  const navigate = useNavigate()
   const [q, setQ] = useState('')
-  const [found, setFound] = useState({ users: [], total: 0 })
+  const [page, setPage] = useState(1)
+  const [history, setHistory] = useState({ entries: [], total: 0 })
   const [loading, setLoading] = useState(true)
-  const [chosen, setChosen] = useState(null)
   const [notice, setNotice] = useState(null)
 
   // This screen keeps its notice as a bare string, and every one of them is a
@@ -56,12 +68,6 @@ export default function UserHistory() {
     () => (notice ? { error: true, message: notice } : null),
     [notice],
   )
-
-  const report = useCallback(error => {
-    // A 401 already raises the shell's dialog; saying it again here would put a
-    // banner behind that dialog.
-    if (!error.expired) setNotice(error.message)
-  }, [])
 
   /**
    * #68 - the answer that is drawn is the answer to the request the screen is
@@ -73,14 +79,16 @@ export default function UserHistory() {
   const load = useCallback(async isCurrent => {
     setLoading(true)
     try {
-      const answer = await listUsers({ q, page: 1, per_page: PICKER_SIZE })
-      if (isCurrent()) setFound(answer)
+      const answer = await listAllHistory({ q, page, per_page: PAGE_SIZE })
+      if (isCurrent()) setHistory(answer)
     } catch (error) {
-      if (isCurrent()) report(error)
+      // A 401 already raises the shell's dialog; saying it again here would put
+      // a banner behind that dialog.
+      if (isCurrent() && !error.expired) setNotice(error.message)
     } finally {
       if (isCurrent()) setLoading(false)
     }
-  }, [q, report])
+  }, [q, page])
 
   useEffect(() => {
     let current = true
@@ -90,70 +98,96 @@ export default function UserHistory() {
     }
   }, [load])
 
-  // The chosen account has to survive the search box being retyped, so it is
-  // held whole rather than looked up in a list that is about to change. It is
-  // dropped only when the search no longer offers it, because a history left on
-  // screen under a filter that excludes its owner reads as a filter that did
-  // nothing.
-  useEffect(() => {
-    if (loading || !chosen) return
-    if (!found.users.some(user => user.user_id === chosen.user_id)) setChosen(null)
-  }, [found, loading, chosen])
-
   return (
-    <div className="space-y-6">
+    <ContentMotionDIV className="space-y-6 rounded-xl border bg-white p-6 shadow">
+      <div className="flex flex-row items-center justify-between gap-4">
+        <h1 className="text-2xl font-medium text-secondary">ประวัติการใช้งาน</h1>
+        <button
+          type="button"
+          onClick={() => navigate('/main/users')}
+          className="flex max-h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-800 hover:shadow-sm active:scale-95"
+        >
+          <FaUserGroup aria-hidden="true" className="h-4 w-4" />
+          แสดงรายชื่อผู้ใช้งาน
+        </button>
+      </div>
+
       <Notice notice={banner} />
 
-      <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-1 text-lg font-medium text-primary">เลือกผู้ใช้งาน</h2>
-        <p className="mb-4 text-sm text-gray-500">
-          เลือกได้เฉพาะบัญชีที่อยู่ในขอบเขตสิทธิ์ของบทบาทที่ใช้งานอยู่
-        </p>
+      <SearchBox
+        label="ค้นหาประวัติการใช้งาน"
+        value={q}
+        onSearch={term => {
+          setPage(1)
+          setQ(term)
+        }}
+      />
 
-        <div className="flex flex-wrap gap-3">
-          <SearchBox label="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้" value={q} onSearch={setQ} />
-          <select
-            className={`${control} w-80`}
-            value={chosen?.user_id ?? ''}
-            onChange={event =>
-              setChosen(
-                found.users.find(user => user.user_id === event.target.value) ?? null
-              )
-            }
-            disabled={loading}
-          >
-            <option value="">— เลือกผู้ใช้งาน —</option>
-            {found.users.map(user => (
-              <option key={user.user_id} value={user.user_id}>
-                {pickerLabel(user)}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="border border-gray-200 bg-slate-100">
+            <tr>
+              <th className="border px-2 py-2 font-bold text-gray-700">ผู้ใช้งาน</th>
+              <th className="border px-2 py-2 text-center font-bold text-gray-700">กิจกรรม</th>
+              <th className="border px-2 py-2 font-bold text-gray-700">วันที่</th>
+              <th className="border px-2 py-2 font-bold text-gray-700">เวลา</th>
+              <th className="border px-2 py-2 text-center font-bold text-gray-700">
+                รหัสผู้ใช้งาน
+              </th>
+              <th className="border px-2 py-2 font-bold text-gray-700">ทำกับข้อมูล</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {loading && (
+              <tr>
+                <td colSpan={6} className="py-5 text-center text-slate-500">
+                  กำลังโหลด…
+                </td>
+              </tr>
+            )}
+            {!loading && history.entries.length === 0 && (
+              <tr>
+                <td colSpan={6} className="py-5 text-center text-gray-400">
+                  ไม่พบข้อมูลประวัติการใช้งาน
+                </td>
+              </tr>
+            )}
+            {!loading &&
+              history.entries.map(entry => (
+                <tr key={entry.id} className="group transition-colors hover:bg-blue-50/30">
+                  <td className="border px-2 py-1 text-gray-800">{personName(entry)}</td>
+                  <td className="border px-2 py-1 text-center">
+                    <span
+                      className={`inline-flex w-full items-center justify-center rounded-md px-2.5 py-1 text-center text-[10px] ${badgeOf(entry)}`}
+                    >
+                      {activityOf(entry)}
+                    </span>
+                  </td>
+                  <td className="border px-2 py-1 font-medium text-gray-600">
+                    {dayOf(entry.time_stamp)}
+                  </td>
+                  <td className="border px-2 py-1 font-medium text-gray-600">
+                    {timeOf(entry.time_stamp)}
+                  </td>
+                  <td className="border px-2 py-1 text-center">
+                    <code className="rounded bg-gray-100 px-2 py-1 font-mono text-[11px] text-gray-500 group-hover:bg-white group-hover:shadow-sm">
+                      {entry.user_id}
+                    </code>
+                  </td>
+                  <td className="border px-2 py-1 text-slate-600">{actedOn(entry)}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
 
-        <p className="mt-3 text-sm text-slate-500">
-          {loading && 'กำลังโหลดรายชื่อ…'}
-          {!loading && found.total === 0 && 'ไม่พบผู้ใช้งานตามคำค้นนี้'}
-          {!loading && found.total > PICKER_SIZE && (
-            <>
-              พบ {found.total} บัญชี แสดงให้เลือก {PICKER_SIZE} บัญชีแรก —
-              พิมพ์คำค้นเพื่อให้แคบลง
-            </>
-          )}
-        </p>
-      </ContentMotionDIV>
-
-      {chosen ? (
-        // Keyed by the account: the picker can swap it, and page four of the
-        // last person's history is not page four of this one's - on a shorter
-        // history it is nothing at all, which reads as "this person did
-        // nothing". A fresh panel starts on page one before it asks anything.
-        <HistoryPanel key={chosen.user_id} user={chosen} onError={report} />
-      ) : (
-        <ContentMotionDIV className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-slate-500">
-          เลือกผู้ใช้งานเพื่อดูประวัติการใช้งานของบัญชีนั้น
-        </ContentMotionDIV>
-      )}
-    </div>
+      <Pager
+        page={page}
+        shown={history.page}
+        total={history.total}
+        perPage={PAGE_SIZE}
+        onPage={setPage}
+      />
+    </ContentMotionDIV>
   )
 }

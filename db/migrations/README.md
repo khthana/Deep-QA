@@ -15,6 +15,7 @@ Numbered SQL files, applied in filename order by `../migrate.js` and recorded in
 | `0008_users_acting_epoch.sql` | How many times an account has switched the grant it is acting as: the one fact a token renewal needs from outside the cookie. |
 | `0009_program_revision_year.sql` | Which year `programs.year` meant: the Buddhist-era year the curriculum was revised, renamed `revision_year` so the one bare `year` in the schema says what the other five do. |
 | `0010_no_summer_term.sql` | No ภาคฤดูร้อน: an Offering's semester is 1 or 2, by the owner's answer of 17 พ.ย. 2569 (#279). |
+| `0011_user_log_newest_first.sql` | The activity log indexed newest first across every account, for the one table of everybody's lines (#305). |
 
 - `NNNN_short_description.sql`, four digits, zero-padded, no gaps.
 - Never edit a file that has been applied anywhere but a local machine; add

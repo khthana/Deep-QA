@@ -60,15 +60,18 @@ export const revokeGrant = (userId, roleId, scopeId) =>
   del(`/api/users/${userId}/roles/${roleId}/${scopeId}`)
 
 /**
- * One page of an account's activity, newest first — #13.
+ * One page of every account's activity, newest first — #305.
  *
- * The account is named in the path and nothing else narrows the answer: the
- * server decides whether this administrator reaches that person, and answers
- * the same 404 for an account out of their scope as for one that does not
- * exist (ADR-0002).
+ * It replaced `listHistory`, #13's read of one account's history, whose only
+ * callers were the retired picker and panel; the route that read,
+ * `GET /api/users/:userId/history`, is still the server's and no screen asks it.
+ *
+ * `q` narrows the lines by the acting account's id, email or names, or by the
+ * record a line was written about; the server narrows them first to the
+ * accounts this administrator reaches, in the same read, so the pages count
+ * only the lines that are drawn (ADR-0002).
  */
-export const listHistory = (userId, params = {}) =>
-  get(`/api/users/${userId}/history${query(params)}`)
+export const listAllHistory = (params = {}) => get(`/api/history${query(params)}`)
 
 /** The template, as its text, so the screen can hand it to the browser. */
 export const importTemplate = () =>

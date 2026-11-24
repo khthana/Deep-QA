@@ -42,13 +42,21 @@
 
 const express = require('express');
 
-const { ADMIN_ROLES, administration } = require('../auth/administration');
+const { ADMIN_ROLES, OWN_SCOPE, SENIORITY, administration } = require('../auth/administration');
 const { requireRole } = require('../auth/authorise');
 const { REFUSALS } = require('../auth/refusals');
 const { pageOf } = require('../lib/paging');
+const { searchOf } = require('../lib/search');
 
 /** What an entry is, as this file reads it out - actor, action, object, when. */
 const ENTRY = 'l.id, l.user_id, l.activity, l.target_kind, l.target_id, l.time_stamp';
+
+/**
+ * Who acted, by name - #305's table names the account where #13's panel had one
+ * open. The English names too, because the screen reads a person by
+ * `personName`, whose fallback for an account with no Thai name is them.
+ */
+const ACTOR = 'u.title_th, u.first_name_th, u.last_name_th, u.first_name_en, u.last_name_en';
 
 /**
  * The name of the record an entry is about, where that record is a department
@@ -78,7 +86,7 @@ const TARGET_JOINS = `LEFT JOIN departments td ON td.department_id = l.target_id
 
 function historyRoutes(pool) {
   const router = express.Router();
-  const { reachable } = administration(pool);
+  const { reachOf, reachable } = administration(pool);
 
   /**
    * One account's history, newest first, a page at a time.
@@ -121,6 +129,73 @@ function historyRoutes(pool) {
         page,
         per_page: perPage,
       });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  /**
+   * Every account's history in one table, newest first - #305.
+   *
+   * The owner's answer of 22 November 2569 (`docs/users-screen.md` rule 11)
+   * put back the delivered screen's one table of everybody's lines
+   * (`userLogs.js`), with the record each line was about kept from #13 - so
+   * the table can say who suspended whom. The delivered route read the whole
+   * log and filtered and paged it in the browser; this one does both here.
+   *
+   * **The scope is `reachable`'s rule, written into the query** - the acting
+   * account's own place against what the grant covers, and its seniority
+   * against the grant's - because a line is readable exactly when its account
+   * is (ADR-0002), and because it has to be decided **before** the page is
+   * taken: filtered afterwards, `total` would count lines nobody is shown and
+   * the pager would offer pages of them. The two clauses are `GET /users`'
+   * own, copied from `administration.js`' fragments rather than restated.
+   *
+   * **The search** is the accounts list's - the acting account's id, email and
+   * two names, `%` and `_` read as themselves (`searchOf`, #272) - plus the
+   * record's own id, so typing an account's id finds what was done *to* it as
+   * well as what it did, which is the question the ทำกับข้อมูล column is kept
+   * for. The activity's Thai wording is the screen's (`historyEntry.js`) and
+   * the server does not know it, so a search by activity is not offered: the
+   * implementer's choice, written on the sheet.
+   */
+  router.get('/history', requireRole(...ADMIN_ROLES), async (req, res, next) => {
+    try {
+      const { scopes, priority } = await reachOf(req);
+      const { page, perPage, offset } = pageOf(req);
+      const search = searchOf(req);
+
+      const where = `
+         WHERE ($1::text[] IS NULL OR ${OWN_SCOPE} = ANY($1))
+           AND COALESCE(${SENIORITY}, 99) >= $2
+           AND ($3::text IS NULL
+                OR u.email ILIKE '%' || $3 || '%'
+                OR u.user_id ILIKE '%' || $3 || '%'
+                OR l.target_id ILIKE '%' || $3 || '%'
+                OR COALESCE(u.first_name_th, '') || ' ' || COALESCE(u.last_name_th, '')
+                     ILIKE '%' || $3 || '%'
+                OR COALESCE(u.first_name_en, '') || ' ' || COALESCE(u.last_name_en, '')
+                     ILIKE '%' || $3 || '%')`;
+      const params = [scopes, priority, search];
+
+      const counted = await pool.query(
+        `SELECT count(*)::int AS total
+           FROM user_log l JOIN users u ON u.user_id = l.user_id ${where}`,
+        params,
+      );
+
+      // Newest first, `id` breaking the tie for the per-account route's reason
+      // above, and the same order so the two tables never disagree about it.
+      const { rows } = await pool.query(
+        `SELECT ${ENTRY}, ${ACTOR}, ${TARGET_NAME}
+           FROM user_log l JOIN users u ON u.user_id = l.user_id
+           ${TARGET_JOINS} ${where}
+          ORDER BY l.time_stamp DESC, l.id DESC LIMIT $4 OFFSET $5`,
+        [...params, perPage, offset],
+      );
+
+      const { total } = counted.rows[0];
+      return res.status(200).json({ entries: rows, total, page, per_page: perPage });
     } catch (error) {
       return next(error);
     }

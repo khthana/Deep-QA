@@ -27,7 +27,7 @@ import Pager from '../Pager'
  * rename would have recorded, every earlier line already carries.
  */
 
-/** When it happened, in Bangkok time — `users/HistoryPanel`'s reason, verbatim. */
+/** When it happened, in Bangkok time — the reason in `users/historyEntry`, verbatim (#13). */
 const happenedAt = value =>
   value
     ? new Date(value).toLocaleString('th-TH', {
@@ -69,7 +69,7 @@ const readsAs = entry => {
 }
 
 // pager-last-page: the rule the owner settled on 19 ตุลาคม 2569 (#209) is not
-// here either, and for the same reason as `users/HistoryPanel`: this panel
+// here either, and for the same reason as `pages/UserHistory`: this panel
 // writes nothing, and a group's log gains an entry for every move and every
 // removal without ever losing one - an entry naming a group that has since
 // been deleted stays and reads *กลุ่มที่ถูกลบแล้ว* rather than going away. So

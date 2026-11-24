@@ -37,7 +37,9 @@ FILES = {
     'history': 'backend/routes/history.js',
     'users': 'backend/routes/users.js',
     'auth': 'backend/routes/auth.js',
-    'panel': 'frontend/src/components/users/HistoryPanel.js',
+    # #305 retired the panel; what it knew about an entry moved, line for line,
+    # to `historyEntry.js`, so N3 and N4 quote the same lines in a new file.
+    'panel': 'frontend/src/components/users/historyEntry.js',
     'userhistory': 'frontend/src/pages/UserHistory.js',
 }
 
@@ -52,15 +54,17 @@ FILES = {
 # here rather than only in a comment: an anchor that has gone stale on purpose
 # and one that has gone stale by accident look identical to a checker, and the
 # difference is a decision somebody made.
-SUPERSEDED = {'N6'}
+SUPERSEDED = {'N6', 'N9'}
 
 MUTANTS = {
  # newest-last: the top line is no longer what just happened
  'N1': [('history',
    # Re-aimed at #294, which aliased the table `l` to join the record's name:
-   # the same order reversed on the same columns (#203).
-   "ORDER BY l.time_stamp DESC, l.id DESC",
-   "ORDER BY l.time_stamp ASC, l.id ASC")],
+   # the same order reversed on the same columns (#203). Re-aimed again at
+   # #305, whose route across accounts reads the same order: the per-account
+   # route's own placeholders are what keep the anchor on its line.
+   "ORDER BY l.time_stamp DESC, l.id DESC LIMIT $2 OFFSET $3",
+   "ORDER BY l.time_stamp ASC, l.id ASC LIMIT $2 OFFSET $3")],
  # the line filed under the subject instead of the actor
  'N2': [('users',
    "await recordActivity(pool, req.auth.userId, 'SET_USER_STATUS', onUser(existing.user_id));",
@@ -83,9 +87,11 @@ MUTANTS = {
    "  if (!entry.target_id) return '—'\n",
    "  if (!entry.target_id) return entry.user_id\n")],
  # the browser's own clock left to decide the hour
+ # Re-aimed at #305, whose two columns (วันที่, เวลา) share one zone object:
+ # the zone emptied there is the same mistake in both (#203).
  'N5': [('panel',
-   "        timeZone: 'Asia/Bangkok',\n",
-   "")],
+   "const IN_BANGKOK = { timeZone: 'Asia/Bangkok' }\n",
+   "const IN_BANGKOK = {}\n")],
  # the page number left behind when the person underneath changes.
  #
  # Kept as it was written, against the shape the code had then: an effect that
@@ -122,6 +128,11 @@ MUTANTS = {
  'N8': [('users',
    "WHERE ($1::text[] IS NULL OR ${OWN_SCOPE} = ANY($1))",
    "WHERE ($1::text[] IS NULL OR TRUE)")],
+ # SUPERSEDED at #305 (24 November 2569), kept as a record: the picker that
+ # swapped the account under the panel, and the panel, are gone - the page is
+ # one table of every account's lines, whose page number belongs to the table
+ # and its search box. There is no account to swap and nothing to key on.
+ #
  # the page number owned by the panel again rather than by the account: the
  # `key` gone from the call site and the corrective effect back. This is the
  # exact shape the code had before the fix, and the only thing that tells it

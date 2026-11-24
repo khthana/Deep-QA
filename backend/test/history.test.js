@@ -331,3 +331,163 @@ test('an entry about an organisation unit carries its name', async (t) => {
   });
 
 });
+
+// --- #305: every account's history in one table ------------------------------
+
+const everyone = (cookie, query = '') =>
+  request(api.app).get(`/api/history${query}`).set('Cookie', cookie);
+
+const allLines = async () =>
+  (await api.pool.query('SELECT count(*)::int AS n FROM user_log')).rows[0].n;
+
+/**
+ * How many lines an administrator may read, asked of the database through the
+ * accounts list rather than through the route under test - `GET /users`
+ * applies `reachable`'s rule to every account (`backend/auth/administration.js`).
+ * The rows below compare the route's `total` with this, which is what a scope
+ * applied after the page was read would get wrong: it would count lines it then
+ * does not show (#305, *สิ่งที่ต้องระวัง*).
+ */
+async function linesReachableBy(cookie) {
+  const listed = await request(api.app).get('/api/users?per_page=100').set('Cookie', cookie);
+  assert.equal(listed.status, 200, listed.body.message);
+  assert.ok(listed.body.total <= 100, 'more accounts than one page; the count below would be short');
+  const reached = listed.body.users.map((user) => user.user_id);
+  const { rows } = await api.pool.query(
+    'SELECT count(*)::int AS n FROM user_log WHERE user_id = ANY($1)',
+    [reached],
+  );
+  return { reached: new Set(reached), count: rows[0].n };
+}
+
+test("every account's history is one list, newest first (#305)", async (t) => {
+  const admin = await signInAs('U_ADMIN');
+  // A second account's lines, so *one list of everybody* is not satisfied by
+  // the administrator's own sign-in alone.
+  await signOut(await signInAs('U_TEACH'));
+
+  const response = await everyone(admin, '?per_page=100');
+  assert.equal(response.status, 200, response.body.message);
+  const { entries } = response.body;
+
+  await t.test("it holds more than one account's lines", () => {
+    const actors = new Set(entries.map((entry) => entry.user_id));
+    assert.ok(actors.has(account('U_ADMIN').id), 'the administrator is missing');
+    assert.ok(actors.has(account('U_TEACH').id), 'the teacher is missing');
+  });
+
+  await t.test('newest first across accounts, the id breaking a tie', () => {
+    for (let index = 1; index < entries.length; index += 1) {
+      const [newer, older] = [entries[index - 1], entries[index]];
+      const [a, b] = [new Date(newer.time_stamp).getTime(), new Date(older.time_stamp).getTime()];
+      assert.ok(a > b || (a === b && Number(newer.id) > Number(older.id)),
+        `${newer.id} drawn above ${older.id}`);
+    }
+  });
+
+  await t.test('each line carries who acted, by name', () => {
+    const teacher = account('U_TEACH');
+    const line = entries.find((entry) => entry.user_id === teacher.id);
+    assert.equal(line.title_th, teacher.th[0]);
+    assert.equal(line.first_name_th, teacher.th[1]);
+    assert.equal(line.last_name_th, teacher.th[2]);
+  });
+
+  await t.test('and the record it was about, as the per-account route does (#294)', () => {
+    for (const key of ['target_kind', 'target_id', 'target_name']) {
+      assert.ok(key in entries[0], `no ${key} on the line`);
+    }
+  });
+
+  await t.test('paged the way every list is: a total beside the page', async () => {
+    const first = await everyone(admin, '?per_page=2');
+    assert.deepEqual(
+      { page: first.body.page, per_page: first.body.per_page, rows: first.body.entries.length },
+      { page: 1, per_page: 2, rows: 2 },
+    );
+    assert.equal(first.body.total, response.body.total);
+    const second = await everyone(admin, '?per_page=2&page=2');
+    assert.deepEqual(
+      second.body.entries.map((entry) => entry.id),
+      entries.slice(2, 4).map((entry) => entry.id),
+    );
+  });
+});
+
+test('an administrator reads only the lines of accounts they reach (#305)', async (t) => {
+  await t.test('the Central Admin reads every line', async () => {
+    const response = await everyone(await signInAs('U_ADMIN'));
+    assert.equal(response.status, 200, response.body.message);
+    assert.equal(response.body.total, await allLines());
+  });
+
+  await t.test("a Department Admin reads their department's, and counts no other", async () => {
+    const dept = await signInAs('U_DEPT');
+    const { reached, count } = await linesReachableBy(dept);
+    assert.ok(count < (await allLines()), 'the department reaches every line, so this row proves nothing');
+
+    const response = await everyone(dept, '?per_page=100');
+    assert.equal(response.status, 200, response.body.message);
+    // The count is the claim: a scope applied after the page was read would
+    // still show only reachable lines and count every line in the log.
+    assert.equal(response.body.total, count);
+    assert.ok(response.body.entries.length > 0, 'no line to read the scope of');
+    for (const entry of response.body.entries) {
+      assert.ok(reached.has(entry.user_id), `${entry.user_id} is outside the department`);
+    }
+  });
+
+  await t.test('a teacher may not read it', async () => {
+    const response = await everyone(await signInAs('U_TEACH'));
+    assert.equal(response.status, 403);
+  });
+
+  await t.test('and an anonymous caller may not read at all', async () => {
+    const response = await request(api.app).get('/api/history');
+    assert.equal(response.status, 401);
+  });
+});
+
+test('the search box narrows the lines on the server (#305)', async (t) => {
+  const admin = await signInAs('U_ADMIN');
+  const teacher = account('U_TEACH2');
+  await signOut(await signInAs('U_TEACH2'));
+  // A line *about* the teacher written by somebody else, which is what the
+  // ทำกับข้อมูล column is kept for: who suspended whom (rule 11).
+  await api.pool.query(
+    `INSERT INTO user_log (user_id, activity, target_kind, target_id)
+     VALUES ($1, 'T305_ABOUT', 'USER', $2)`,
+    [account('U_ADMIN').id, teacher.id],
+  );
+  t.after(() => api.pool.query("DELETE FROM user_log WHERE activity = 'T305_ABOUT'"));
+
+  await t.test("by the acting account's name", async () => {
+    const response = await everyone(admin, `?per_page=100&q=${encodeURIComponent(teacher.th[1])}`);
+    assert.equal(response.status, 200, response.body.message);
+    assert.ok(response.body.entries.some((entry) => entry.user_id === teacher.id));
+    for (const entry of response.body.entries) assert.equal(entry.user_id, teacher.id);
+  });
+
+  await t.test('by an account id, which finds what it did and what was done to it', async () => {
+    const response = await everyone(admin, `?per_page=100&q=${teacher.id}`);
+    assert.equal(response.status, 200, response.body.message);
+    const mine = response.body.entries.filter((entry) => entry.user_id === teacher.id);
+    const about = response.body.entries.filter((entry) => entry.activity === 'T305_ABOUT');
+    assert.ok(mine.length > 0, 'nothing the teacher did');
+    assert.equal(about.length, 1, 'nothing done to the teacher');
+    assert.equal(mine.length + about.length, response.body.entries.length);
+    assert.equal(response.body.total, response.body.entries.length);
+  });
+
+  await t.test('by email', async () => {
+    const response = await everyone(admin, `?per_page=100&q=${encodeURIComponent(teacher.email)}`);
+    assert.ok(response.body.entries.length > 0);
+    for (const entry of response.body.entries) assert.equal(entry.user_id, teacher.id);
+  });
+
+  await t.test('and `%` is a character, as on every other search box (#272)', async () => {
+    const response = await everyone(admin, '?q=%25');
+    assert.equal(response.status, 200, response.body.message);
+    assert.equal(response.body.total, 0);
+  });
+});

@@ -180,7 +180,8 @@ FILES = {
     'sections': 'frontend/src/components/offerings/SectionsPanel.js',
     'removal': 'frontend/src/pages/ProgramSubjects.js',
     'pdf': 'frontend/src/components/ploMapping/exportPdf.js',
-    'entries': 'frontend/src/components/users/HistoryPanel.js',
+    # #305 moved `actedOn` out of the retired panel, line for line.
+    'entries': 'frontend/src/components/users/historyEntry.js',
 }
 
 # The anchor is the code the mutant breaks and never the comment beside it

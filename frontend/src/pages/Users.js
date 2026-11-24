@@ -8,6 +8,7 @@ import Notice from '../components/Notice'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import { FaUserEdit } from 'react-icons/fa'
+import { LuHistory } from 'react-icons/lu'
 import SearchBox from '../components/SearchBox'
 import StatusSwitch from '../components/users/StatusSwitch'
 import AddUserDialog from '../components/users/AddUserDialog'
@@ -868,6 +869,21 @@ export default function Users() {
           block still find it (#189). */}
       <>
           <PageHeader
+            heading={
+              // #305, `docs/users-screen.md` rule 5: the history is reached
+              // from here, top right, as the delivered `UserTable.js` drew it,
+              // and no longer from the menu.
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate('/main/users/user-history')}
+                  className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-800 hover:shadow-sm active:scale-95"
+                >
+                  <LuHistory aria-hidden="true" className="h-4 w-4" />
+                  แสดงประวัติการใช้งาน
+                </button>
+              </div>
+            }
             importLabel="นำเข้าผู้ใช้งาน"
             onImport={() => setImporting(true)}
             addLabel="เพิ่มผู้ใช้งาน"

@@ -150,11 +150,14 @@ export default function Students() {
    * forgets the flag throws rather than quietly drawing a list nobody is on -
    * *a guard written for one caller is a claim about every caller* (#68).
    *
-   * Fourteen other panels carry the same guard. Eleven read a list: `Users`,
-   * `Departments`, `Programs`, `Subjects`, `ProgramSubjects`, `Rubrics`,
-   * `Offerings`, `SubjectStudents`, `users/HistoryPanel`, `groups/GroupHistory`
-   * and `UserHistory` - the last of those a search picker rather than a pager,
-   * where what supersedes a request is the next keystroke. Three are reports
+   * Fourteen other panels carried the same guard when this was written. Eleven
+   * read a list: `Users`, `Departments`, `Programs`, `Subjects`,
+   * `ProgramSubjects`, `Rubrics`, `Offerings`, `SubjectStudents`,
+   * `users/HistoryPanel`, `groups/GroupHistory` and `UserHistory` - the last of
+   * those then a search picker rather than a pager, where what superseded a
+   * request was the next keystroke. Since #305 (24 November 2569) the panel is
+   * gone and `UserHistory` is a paged table with a search box, so the lists are
+   * ten and the count thirteen. Three are reports
    * driven by `CohortPickers`: `ProgramLevelByIntake`, `ProgramLevelIndividual`
    * and `ProgramLevelAllStudents`, which #68's own comment measured and left
    * unmeasured, and which take `ProgramLevelCompare`'s spelling of this guard

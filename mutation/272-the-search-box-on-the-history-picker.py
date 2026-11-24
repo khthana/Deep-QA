@@ -50,14 +50,31 @@ FILES = {
     'userhistory': 'frontend/src/pages/UserHistory.js',
 }
 
-BOX = '          <SearchBox label="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้" value={q} onSearch={setQ} />\n'
+# Re-aimed at #305 (24 November 2569): the box narrows the history's lines now
+# rather than a picker, and is drawn with #305's label and page reset. The
+# mistake kept is the one this mutant was written for - a bare input with no
+# magnifier that asks on every keystroke - with the page reset kept, so the
+# mutant is the box and nothing else (#203).
+BOX = (
+    '      <SearchBox\n'
+    '        label="ค้นหาประวัติการใช้งาน"\n'
+    '        value={q}\n'
+    '        onSearch={term => {\n'
+    '          setPage(1)\n'
+    '          setQ(term)\n'
+    '        }}\n'
+    '      />\n'
+)
 INPUT = (
-    '          <input\n'
-    '            className={`${control} w-64`}\n'
-    '            value={q}\n'
-    '            onChange={event => setQ(event.target.value)}\n'
-    '            placeholder="ค้นหาชื่อ อีเมล หรือรหัสผู้ใช้"\n'
-    '          />\n'
+    '      <input\n'
+    '        className="w-64 rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900"\n'
+    '        value={q}\n'
+    '        onChange={event => {\n'
+    '          setPage(1)\n'
+    '          setQ(event.target.value)\n'
+    '        }}\n'
+    '        placeholder="ค้นหาประวัติการใช้งาน"\n'
+    '      />\n'
 )
 
 MUTANTS = {

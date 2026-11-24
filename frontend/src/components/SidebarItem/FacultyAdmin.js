@@ -2,7 +2,6 @@ import {
   HiOutlineSquaresPlus, // ข้อมูลหลัก
   HiOutlineBuildingOffice2, // ข้อมูลภาควิชา
   HiOutlineUsers, // ข้อมูลผู้ใช้งาน
-  HiOutlineClock, // ประวัติการใช้งาน
 } from 'react-icons/hi2'
 
 // ข้อมูลหลักสูตร was in the ข้อมูลหลัก group until #282 (18 พ.ย. 2569): the owner
@@ -28,10 +27,7 @@ export const FACULTY_ADMIN = [
     path: '/main/users',
     icon: <HiOutlineUsers />,
   },
-  {
-    key: 'ประวัติการใช้งาน',
-    label: 'ประวัติการใช้งาน',
-    path: '/main/users/user-history',
-    icon: <HiOutlineClock />,
-  },
+  // No ประวัติการใช้งาน entry since #305 (docs/users-screen.md rule 11, the
+  // owner's answer of 22 November 2569): the history is reached by the
+  // แสดงประวัติการใช้งาน button on ข้อมูลผู้ใช้งาน, as the delivered menu had it.
 ]
