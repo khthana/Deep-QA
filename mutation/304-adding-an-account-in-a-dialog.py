@@ -40,6 +40,26 @@
 |---|---|
 | `146:userscancelclears` | เล็งใหม่เพราะ *ยกเลิก* ของการเพิ่มย้ายไปอยู่ใน `onCancel` ของ `AddUserDialog` ตื้นขึ้นสองระดับ ความผิดเดิมบรรทัดเดิม · ตายที่แถวเดิมของ `146a` ซึ่งใบรับงาน `11-user-accounts.md` อ้าง |
 
+## มัตแตนต์ที่กวาดซ้ำเพราะแถวที่ฆ่ามันกดเข้าหน้าต่างนี้ — คำทำนาย (24 พ.ย. 2569, ก่อนรัน)
+
+นับด้วยกลไก (#199, #221): มัตแตนต์ที่แก้ `Users.js` หรือ `UserForm.js` (`census304.py` ใน scratchpad อ่าน `FILES` ของทุกแฟ้ม ได้ 92 ตัว
+ใน 23 แฟ้ม) **และ**แถวที่ฆ่ามันเปิดฟอร์มเพิ่มบัญชี · ตัวที่เหลือเป็นมัตแตนต์ของตาราง สวิตช์ การนำเข้า และตัวกรอง ซึ่งแถวไม่ผ่าน
+หน้าต่างนี้ · ที่มาไม่เปลี่ยน ฉะนั้นคำทำนายของทุกตัวคือ **ตายที่แถวเดิมที่ใบของมันอ้าง** และสิ่งที่การกวาดถามคือ
+การมาถึงผ่านหน้าต่างยังถึงข้ออ้างนั้นไหม (#198) · สามสิบหกตัว รันกับ spec ของใบตัวเองทั้งแฟ้ม
+
+| แฟ้ม | มัตแตนต์ | spec |
+|---|---|---|
+| `140` | `userssavestalewins` | `140a` |
+| `144` | `usersqnotfollowed` `usersrolenotfollowed` `usersstatusnotfollowed` | `144a` |
+| `146` | `usersclosewins` `usersrefusalwins` `userscancelclears` | `146a` |
+| `202` | `userssaysanyway` | `202a` |
+| `203` | `userssaveanyway` | `203a` |
+| `238` | `userssaysanyread` `usersneversays` | `238a` |
+| `247` | `usersalwayssays` `usersroleblind` `usersstatusblind` `userssearchblind` `userssearchuntrimmed` | `247b` |
+| `249` | `useremaillive` `usernamelive` `usernamepage` | `249a` |
+| `296` | สิบเอ็ดตัวของ `UserForm.js` | `296a` |
+| `88` | หกตัวของ `UserForm.js` | `88a` |
+
 ## วิธีรัน
 
 พอร์ต: ย่อหน้า **Ports** ของ `e2e/README.md`
