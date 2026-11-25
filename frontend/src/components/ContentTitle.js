@@ -12,8 +12,10 @@
  * (the delivered one was a `span` in a `div`), and the icon is hidden from
  * that reader, which would otherwise read nothing useful before the words.
  *
- * Each screen's icon is the one the delivered screen used, held in that
- * screen's own `TITLE_ICON`. Four screens the delivered system did not have
+ * Each screen's icon is the one the delivered screen used - held in that
+ * screen's own `TITLE_ICON` on thirty-three of them, handed straight in on the
+ * history page, and absent on the edit page, whose delivered title had none.
+ * Four screens the delivered system did not have
  * borrow their parent's: the CLO's criteria and behaviours `CourseOutcomes`',
  * a rubric's criteria `Rubrics`', and a section's page `TeacherDashboard`'s.
  */

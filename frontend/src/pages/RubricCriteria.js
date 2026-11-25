@@ -235,7 +235,7 @@ export default function RubricCriteria() {
 
   if (refusal) {
     return (
-      <div className="space-y-6">
+      <div className={`space-y-6 ${CARD}`}>
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <p className="text-sm text-slate-600">{refusal}</p>
           <Link

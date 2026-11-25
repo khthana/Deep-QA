@@ -143,7 +143,7 @@ export default function SectionResults() {
 
   if (!data) {
     return (
-      <ContentMotionDIV className="space-y-4 px-6 py-6">
+      <ContentMotionDIV className={`space-y-4 ${CARD}`}>
         <Notice notice={notice} />
         {loading && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
       </ContentMotionDIV>

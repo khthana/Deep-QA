@@ -48,3 +48,45 @@ test('a marker run over several // lines is read whole (#233)', () => {
 test('a marker with no ticket is not ok', () => {
   assert.equal(examine('// content-title: not a screen\nconst S = () => null').marker.ok, false)
 })
+
+test('an import of CARD is not a card', () => {
+  const found = examine(
+    "import { CARD } from '../components/ContentTitle'\nconst S = () => <div className=\"space-y-6\" />"
+  )
+  assert.equal(found.carded, false)
+})
+
+test('a return of the screen outside the card is reported by its line', () => {
+  const found = examine(
+    [
+      'export default function S({ data }) {',
+      '  if (!data) {',
+      '    return <div className="space-y-4 px-6 py-6">loading</div>',
+      '  }',
+      '  return <div className={CARD}><ContentTitle>x</ContentTitle></div>',
+      '}',
+    ].join('\n')
+  )
+  assert.deepEqual(found.bare, [3])
+})
+
+test('a return inside a nested function is not the screen\'s', () => {
+  const found = examine(
+    'export default function S() {\n  const row = () => { return <tr /> }\n  return <div className={CARD} />\n}'
+  )
+  assert.deepEqual(found.bare, [])
+})
+
+test('a screen that only draws another component of the file is asked of that one', () => {
+  const found = examine(
+    [
+      'function Account() {',
+      '  return <div className="space-y-6" />',
+      '}',
+      'export default function EditUser() {',
+      '  return <Account key={1} />',
+      '}',
+    ].join('\n')
+  )
+  assert.deepEqual(found.bare, [2])
+})
