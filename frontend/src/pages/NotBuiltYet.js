@@ -20,3 +20,6 @@ export default function NotBuiltYet({ ticket }) {
     </ContentMotionDIV>
   )
 }
+
+// content-title: a placeholder for a route not built yet, which the delivered
+// system did not have (#309).

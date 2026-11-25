@@ -6,6 +6,7 @@ import { IoSettings } from 'react-icons/io5'
 import { MdAssignmentAdd } from 'react-icons/md'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
+import ContentTitle from '../components/ContentTitle'
 import GrantsPanel from '../components/users/GrantsPanel'
 import Notice from '../components/Notice'
 import UserForm from '../components/users/UserForm'
@@ -178,7 +179,7 @@ function Account({ userId }) {
     <ContentMotionDIV className="space-y-6 rounded-xl border bg-white p-6 shadow">
       <div className="flex flex-row items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-medium text-secondary">แก้ไขข้อมูลผู้ใช้งานระบบ</h1>
+          <ContentTitle>แก้ไขข้อมูลผู้ใช้งานระบบ</ContentTitle>
           {name && <p className="text-sm text-gray-700">{name}</p>}
         </div>
         <button

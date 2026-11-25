@@ -22,6 +22,11 @@ import {
   listStudents,
 } from '../api/students'
 import { departmentNamed, programNamed } from '../lib/unitNamed'
+import { PiStudentBold } from 'react-icons/pi'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = PiStudentBold
 
 /**
  * ข้อมูลนักศึกษากลาง — ticket #17.
@@ -442,7 +447,7 @@ export default function Students() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       {adding ? (
@@ -461,7 +466,7 @@ export default function Students() {
       ) : (
         <>
           <PageHeader
-            heading={<h1 className="text-lg font-medium text-primary">ข้อมูลนักศึกษากลาง</h1>}
+            heading={<ContentTitle icon={TITLE_ICON}>ข้อมูลนักศึกษากลาง</ContentTitle>}
             importLabel="นำเข้านักศึกษา"
             onImport={() => setImporting(true)}
             addLabel="เพิ่มนักศึกษา"

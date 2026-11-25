@@ -10,6 +10,11 @@ import {
   getImprovementPlan,
   saveEntry,
 } from '../api/improvementPlan'
+import { GrPlan } from 'react-icons/gr'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = GrPlan
 
 /**
  * แผนการปรับปรุงอย่างต่อเนื่อง — ticket #41.
@@ -272,7 +277,7 @@ export default function ContinuousImprovement() {
   }
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -283,9 +288,9 @@ export default function ContinuousImprovement() {
             <p className="text-xs font-medium text-slate-400">
               {data.offering.subject_id}
             </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">
+            <ContentTitle icon={TITLE_ICON}>
               แผนการปรับปรุงอย่างต่อเนื่อง
-            </h1>
+            </ContentTitle>
             {/* The line break falls before และ, where a space belongs: JSX
                 joins two lines with one space, and Thai does not space inside
                 a word. */}

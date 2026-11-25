@@ -6,6 +6,11 @@ import Notice from '../components/Notice'
 import { BANDS, FLAG, score } from '../lib/bands'
 import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/results/CohortPickers'
 import { getStudentHeatmap } from '../api/programResults'
+import { IoDocumentTextOutline } from 'react-icons/io5'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = IoDocumentTextOutline
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตรของนักศึกษาทุกคน — #43.
@@ -136,13 +141,13 @@ export default function ProgramLevelAllStudents() {
   )
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       <div>
-        <h1 className="text-xl font-semibold text-primary">
+        <ContentTitle icon={TITLE_ICON}>
           ผลการเรียนรู้ระดับหลักสูตรของนักศึกษาทุกคน
-        </h1>
+        </ContentTitle>
         <p className="mt-2 text-sm text-slate-500">
           นักศึกษาทุกคนของรุ่นที่เลือก เทียบกับผลการเรียนรู้ระดับหลักสูตรทุกข้อ
           หน้านี้ตอบคำถามที่ค่าเฉลี่ยตอบไม่ได้ — หลักสูตรผ่านเกณฑ์ข้อหนึ่งได้ ทั้งที่นักศึกษาส่วนหนึ่งไม่เคยถึงเส้นเลย

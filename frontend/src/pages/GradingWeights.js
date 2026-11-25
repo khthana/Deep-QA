@@ -13,6 +13,11 @@ import {
   importWeights,
 } from '../api/weights'
 import RowAction from '../components/RowAction'
+import { FaWeight } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaWeight
 
 /**
  * สัดส่วนคะแนน — ticket #30.
@@ -190,7 +195,7 @@ export default function GradingWeights() {
   }
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && (
@@ -210,9 +215,9 @@ export default function GradingWeights() {
                 <p className="text-xs font-medium text-slate-400">
                   {data.offering.subject_id}
                 </p>
-                <h1 className="mt-1 text-xl font-semibold text-primary">
+                <ContentTitle icon={TITLE_ICON}>
                   สัดส่วนคะแนน
-                </h1>
+                </ContentTitle>
                 {/*
                   The grain, in words — the line break falls before และ, where a
                   space belongs, for CourseOutcomes' reason: JSX joins two lines

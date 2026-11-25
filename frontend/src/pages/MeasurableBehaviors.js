@@ -14,6 +14,11 @@ import {
   updateBehavior,
 } from '../api/behaviors'
 import RowAction from '../components/RowAction'
+import { FaBookOpen } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBookOpen
 
 /**
  * พฤติกรรมที่วัดผลได้ตาม CLO — ticket #28.
@@ -169,7 +174,7 @@ export default function MeasurableBehaviors() {
   }
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -187,9 +192,9 @@ export default function MeasurableBehaviors() {
             <p className="mt-3 text-xs font-medium text-slate-400">
               {data.offering.subject_id}
             </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">
+            <ContentTitle icon={TITLE_ICON}>
               พฤติกรรมบ่งชี้ของ {data.clo.clo_number}
-            </h1>
+            </ContentTitle>
             <p className="mt-1 text-sm text-slate-600">{data.clo.clo_detail}</p>
             {/*
               The grain, in words — the line break falls before และ, where a

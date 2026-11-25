@@ -9,6 +9,11 @@ import { OUTCOME_TYPES } from '../lib/outcomes'
 import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/results/CohortPickers'
 import { getEvidenceFile, showPdf } from '../api/evidence'
 import { getStudentContributions, getStudentResults, listRoll } from '../api/programResults'
+import { IoDocumentTextOutline } from 'react-icons/io5'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = IoDocumentTextOutline
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตรรายบุคคล — #45.
@@ -243,13 +248,13 @@ export default function ProgramLevelIndividual() {
   }
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       <div>
-        <h1 className="text-xl font-semibold text-primary">
+        <ContentTitle icon={TITLE_ICON}>
           ผลการเรียนรู้ระดับหลักสูตรรายบุคคล
-        </h1>
+        </ContentTitle>
         <p className="mt-2 text-sm text-slate-500">
           นักศึกษาหนึ่งคน เทียบกับผลการเรียนรู้ระดับหลักสูตรทุกข้อที่หลักสูตรสัญญาไว้
           เลือกข้อใดข้อหนึ่งเพื่อดูรายวิชา กิจกรรม และหลักฐานที่เป็นที่มาของคะแนนข้อนั้นของคนคนนี้

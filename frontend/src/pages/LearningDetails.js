@@ -5,6 +5,11 @@ import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import { BANDS, FLAG, figure, rangeOf, score } from '../lib/bands'
 import { getLearningDetails } from '../api/learningDetails'
+import { HiOutlineDocumentReport } from 'react-icons/hi'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = HiOutlineDocumentReport
 
 /**
  * รายละเอียดผลการเรียนรู้ — #38.
@@ -107,7 +112,7 @@ export default function LearningDetails() {
   const unassessed = data ? data.clos.filter((clo) => clo.passed === null) : []
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -120,7 +125,7 @@ export default function LearningDetails() {
                   that says which section is being read (#93) */}
               {data.section.subject_id} {data.section.subject_name_en}
             </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">รายละเอียดผลการเรียนรู้</h1>
+            <ContentTitle icon={TITLE_ICON}>รายละเอียดผลการเรียนรู้</ContentTitle>
             <p className="mt-2 text-sm text-slate-500">
               กลุ่มเรียน {data.section.section_number} · ปีการศึกษา {data.section.academic_year} ·{' '}
               {data.clos.length} ผลการเรียนรู้

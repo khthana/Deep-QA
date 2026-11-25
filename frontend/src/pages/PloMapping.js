@@ -4,6 +4,11 @@ import Notice from '../components/Notice'
 import { listReachablePrograms, readGrid, saveCell } from '../api/ploMapping'
 import { LEVELS, keyOf, mark } from '../components/ploMapping/levels'
 import { programNamed } from '../lib/unitNamed'
+import { FaBookBookmark } from 'react-icons/fa6'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBookBookmark
 
 /**
  * การเชื่อมโยงผลการเรียนรู้กับรายวิชา — ticket #20.
@@ -226,13 +231,13 @@ export default function PloMapping() {
     grid.subjects.length > 0
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-lg font-medium text-primary">
+        <ContentTitle icon={TITLE_ICON}>
           การเชื่อมโยงผลการเรียนรู้กับรายวิชา
-        </h1>
+        </ContentTitle>
         <div className="flex flex-wrap items-center gap-3">
           {/* A picker when there is a choice to make, and a statement of where
               one is when there is not — ผลการเรียนรู้ระดับหลักสูตร's control,

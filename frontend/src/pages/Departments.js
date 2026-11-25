@@ -20,6 +20,11 @@ import {
 } from '../api/departments'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import { outsideSearch } from '../lib/outsideTheSearch'
+import { FaBuilding } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBuilding
 
 /**
  * ข้อมูลภาควิชา — ticket #14.
@@ -708,7 +713,7 @@ export default function Departments() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       {editing ? (
@@ -726,7 +731,7 @@ export default function Departments() {
       ) : (
         <>
           <PageHeader
-            heading={<h1 className="text-lg font-medium text-primary">ข้อมูลภาควิชา</h1>}
+            heading={<ContentTitle icon={TITLE_ICON}>ข้อมูลภาควิชา</ContentTitle>}
             importLabel="นำเข้าภาควิชา"
             onImport={() => setImporting(true)}
             addLabel="เพิ่มภาควิชา"

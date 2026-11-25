@@ -15,6 +15,11 @@ import {
   uploadEvidence,
 } from '../api/evidence'
 import RowAction from '../components/RowAction'
+import { GrScorecard } from 'react-icons/gr'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = GrScorecard
 
 /**
  * หลักฐานการประเมิน — ticket #35.
@@ -193,7 +198,7 @@ export default function ActivityEvidence() {
     data?.evidence_types.find(entry => entry.evidence_type === code)?.label_th ?? code
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -209,9 +214,9 @@ export default function ActivityEvidence() {
               กิจกรรมการเรียนรู้ในรายวิชา
             </Link>
             <p className="mt-3 text-xs font-medium text-slate-400">{data.section.subject_id}</p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">
+            <ContentTitle icon={TITLE_ICON}>
               หลักฐานการประเมินของ {data.activity.activity_name}
-            </h1>
+            </ContentTitle>
             <p className="mt-2 text-sm text-slate-500">
               โจทย์ที่ใช้ และตัวอย่างผลงานของนักศึกษาในแต่ละระดับ เก็บไว้เป็นหลักฐานว่ากิจกรรมนี้ถูกประเมินอย่างไร
               ไฟล์เหล่านี้เปิดได้เฉพาะผู้ที่มีสิทธิ์เท่านั้น

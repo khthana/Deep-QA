@@ -20,6 +20,11 @@ import {
 } from '../api/programs'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import { outsideSearch } from '../lib/outsideTheSearch'
+import { IoDocument } from 'react-icons/io5'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = IoDocument
 
 /**
  * ข้อมูลหลักสูตร — ticket #15.
@@ -406,7 +411,7 @@ export default function Programs() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       {editing ? (
@@ -424,7 +429,7 @@ export default function Programs() {
       ) : (
         <>
           <PageHeader
-            heading={<h1 className="text-lg font-medium text-primary">ข้อมูลหลักสูตร</h1>}
+            heading={<ContentTitle icon={TITLE_ICON}>ข้อมูลหลักสูตร</ContentTitle>}
             importLabel="นำเข้าหลักสูตร"
             onImport={() => setImporting(true)}
             addLabel="เพิ่มหลักสูตร"

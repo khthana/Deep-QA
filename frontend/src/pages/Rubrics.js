@@ -15,6 +15,11 @@ import {
   updateRubric,
 } from '../api/rubrics'
 import { programNamed } from '../lib/unitNamed'
+import { FaBook } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBook
 
 /**
  * ข้อมูล Rubric กลาง — ticket #21.
@@ -518,11 +523,11 @@ export default function Rubrics() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-lg font-medium text-primary">ข้อมูล Rubric กลาง</h1>
+        <ContentTitle icon={TITLE_ICON}>ข้อมูล Rubric กลาง</ContentTitle>
         <div className="flex flex-wrap items-center gap-3">
           {/* A picker when there is a choice to make, and nothing when
               there is not. A กรรมการหลักสูตร reaches one curriculum, and the

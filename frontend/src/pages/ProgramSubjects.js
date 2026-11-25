@@ -24,6 +24,11 @@ import {
   updateProgramSubject,
 } from '../api/programSubjects'
 import { programNamed } from '../lib/unitNamed'
+import { FaBook } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBook
 
 /**
  * รายวิชาในหลักสูตร — ticket #18.
@@ -460,7 +465,7 @@ export default function ProgramSubjects() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       {editing ? (
@@ -478,7 +483,7 @@ export default function ProgramSubjects() {
       ) : (
         <>
           <PageHeader
-            heading={<h1 className="text-lg font-medium text-primary">รายวิชาในหลักสูตร</h1>}
+            heading={<ContentTitle icon={TITLE_ICON}>รายวิชาในหลักสูตร</ContentTitle>}
             importLabel="นำเข้ารายวิชา"
             onImport={() => setImporting(true)}
             addLabel="เพิ่มรายวิชา"

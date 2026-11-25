@@ -12,6 +12,11 @@ import {
   listCriteria,
   updateCriterion,
 } from '../api/rubricCriteria'
+import { FaBook } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBook
 
 /**
  * เกณฑ์การให้คะแนนของ Rubric — ticket #22.
@@ -245,7 +250,7 @@ export default function RubricCriteria() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       {editing ? (
@@ -263,9 +268,9 @@ export default function RubricCriteria() {
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-lg font-medium text-primary">
+              <ContentTitle icon={TITLE_ICON}>
                 เกณฑ์การให้คะแนนของ Rubric {data.rubric?.rubric_code}
-              </h1>
+              </ContentTitle>
               <p className="text-sm text-slate-500">
                 {data.rubric?.rubric_name_th}
                 {data.rubric?.rubric_name_en ? ` · ${data.rubric.rubric_name_en}` : ''}

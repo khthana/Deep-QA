@@ -7,6 +7,11 @@ import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import { getActivities } from '../api/activities'
 import { getScores, importScores, saveScores, scoresTemplate } from '../api/activityScores'
+import { GrScorecard } from 'react-icons/gr'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = GrScorecard
 
 /**
  * คะแนนกิจกรรมการเรียนรู้ — #34.
@@ -401,7 +406,7 @@ export default function ActivityScores() {
   )
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !list && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -416,7 +421,7 @@ export default function ActivityScores() {
                       that says which section is being read (#93) */}
                   {list.section.subject_id} {list.section.subject_name_en}
                 </p>
-                <h1 className="mt-1 text-xl font-semibold text-primary">คะแนนกิจกรรมการเรียนรู้</h1>
+                <ContentTitle icon={TITLE_ICON}>คะแนนกิจกรรมการเรียนรู้</ContentTitle>
                 <p className="mt-2 text-sm text-slate-500">
                   กลุ่มเรียน {list.section.section_number} · ปีการศึกษา {list.section.academic_year} ·{' '}
                   {list.activities.length} กิจกรรม

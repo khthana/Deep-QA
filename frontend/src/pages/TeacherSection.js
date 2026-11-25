@@ -5,6 +5,11 @@ import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import { getMySection } from '../api/teaching'
 import { semesterLabel } from '../components/offerings/terms'
+import { PiBooksFill } from 'react-icons/pi'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = PiBooksFill
 
 /**
  * กลุ่มเรียนที่เปิดอยู่ — ticket #24, the Section in context.
@@ -71,7 +76,7 @@ export default function TeacherSection() {
   }, [load])
 
   return (
-    <ContentMotionDIV className="px-6 py-6">
+    <ContentMotionDIV className={CARD}>
       <Notice notice={notice} />
 
       {loading && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -89,9 +94,9 @@ export default function TeacherSection() {
       {!loading && section && (
         <div>
           <p className="text-xs font-medium text-slate-400">{section.subject_id}</p>
-          <h1 className="mt-1 text-xl font-semibold text-primary">
+          <ContentTitle icon={TITLE_ICON}>
             {section.subject_name_th}
-          </h1>
+          </ContentTitle>
           <p className="text-sm text-slate-400">{section.subject_name_en}</p>
           <p className="mt-3 text-sm text-slate-500">
             กลุ่มเรียน {section.section_number} · {semesterLabel(section.semester)}{' '}

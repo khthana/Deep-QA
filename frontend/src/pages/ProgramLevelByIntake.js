@@ -10,6 +10,11 @@ import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/re
 import { getEvidenceFile, showPdf } from '../api/evidence'
 import { getOutcomeContributions, getResultsByIntake } from '../api/programResults'
 import { useScreenGeneration } from '../context/ScreenGeneration'
+import { IoDocumentTextOutline } from 'react-icons/io5'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = IoDocumentTextOutline
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า — #42.
@@ -216,11 +221,11 @@ export default function ProgramLevelByIntake() {
   }
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       <div>
-        <h1 className="text-xl font-semibold text-primary">ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า</h1>
+        <ContentTitle icon={TITLE_ICON}>ผลการเรียนรู้ระดับหลักสูตรตามปีรับเข้า</ContentTitle>
         <p className="mt-2 text-sm text-slate-500">
           ผลการเรียนรู้ระดับหลักสูตรของนักศึกษารุ่นหนึ่ง รวบยอดจากคะแนนผลการเรียนรู้รายวิชาทุกวิชาที่รุ่นนั้นเรียนมา
           เลือกข้อใดข้อหนึ่งเพื่อดูรายวิชาและกิจกรรมที่เป็นที่มาของตัวเลข

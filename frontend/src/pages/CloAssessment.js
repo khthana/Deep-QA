@@ -7,6 +7,11 @@ import Notice from '../components/Notice'
 import { exportAssessmentToPdf } from '../components/results/assessmentPdf'
 import { criterionLines, figure, score, verdictLabel } from '../lib/bands'
 import { getCloAssessment } from '../api/cloAssessment'
+import { IoDocumentTextOutline } from 'react-icons/io5'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = IoDocumentTextOutline
 
 /**
  * การประเมินผลการเรียนรู้ — #40.
@@ -94,7 +99,7 @@ export default function CloAssessment() {
   const failing = data ? data.clos.filter(clo => clo.passed === false) : []
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && (
@@ -110,9 +115,9 @@ export default function CloAssessment() {
                     says which offering is being read (#93) */}
                 {data.subject.subject_id} {data.subject.subject_name_th}
               </p>
-              <h1 className="mt-1 text-xl font-semibold text-primary">
+              <ContentTitle icon={TITLE_ICON}>
                 การประเมินผลการเรียนรู้
-              </h1>
+              </ContentTitle>
               <p className="mt-2 text-sm text-slate-500">
                 กลุ่มเรียน {data.section.section_number} · ภาคการศึกษา{' '}
                 {data.section.semester} · ปีการศึกษา{' '}

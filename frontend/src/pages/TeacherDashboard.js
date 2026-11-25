@@ -8,6 +8,11 @@ import { listMySections } from '../api/teaching'
 import { outsideSearch } from '../lib/outsideTheSearch'
 import { semesterLabel } from '../components/offerings/terms'
 import { useScreenGeneration } from '../context/ScreenGeneration'
+import { PiBooksFill } from 'react-icons/pi'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = PiBooksFill
 
 /**
  * What the search box holds a card to - #272, the owner's answer of
@@ -124,12 +129,12 @@ export default function TeacherDashboard() {
     : ''
 
   return (
-    <ContentMotionDIV className="px-6 py-6">
+    <ContentMotionDIV className={CARD}>
       <Notice notice={notice} />
 
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-primary">รายวิชาที่สอน</h1>
+          <ContentTitle icon={TITLE_ICON}>รายวิชาที่สอน</ContentTitle>
           {term && (
             <p className="mt-1 text-sm text-slate-500">{termLabel}</p>
           )}

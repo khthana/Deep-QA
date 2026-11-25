@@ -79,3 +79,6 @@ const NotFoundPage = () => {
 }
 
 export default NotFoundPage
+
+// content-title: the 404 is drawn over the whole window, outside the shell
+// (#309).

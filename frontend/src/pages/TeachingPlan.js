@@ -7,6 +7,11 @@ import Notice from '../components/Notice'
 import WeekForm from '../components/plan/WeekForm'
 import { createWeek, deleteWeek, getPlan, updateWeek } from '../api/teachingPlan'
 import RowAction from '../components/RowAction'
+import { GrPlan } from 'react-icons/gr'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = GrPlan
 
 /**
  * แผนการสอน — ticket #31.
@@ -170,7 +175,7 @@ export default function TeachingPlan() {
   }
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -181,7 +186,7 @@ export default function TeachingPlan() {
             <p className="text-xs font-medium text-slate-400">
               {data.section.subject_id}
             </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">แผนการสอน</h1>
+            <ContentTitle icon={TITLE_ICON}>แผนการสอน</ContentTitle>
             {/*
               The grain, in words — and here the words are the OTHER ones.
               Every sibling screen says ทุกกลุ่มเรียน…ใช้ชุดเดียวกัน; this one

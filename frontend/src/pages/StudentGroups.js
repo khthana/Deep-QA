@@ -29,6 +29,11 @@ import {
   renameGroup,
 } from '../api/workGroups'
 import RowAction from '../components/RowAction'
+import { FaUserFriends } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaUserFriends
 
 /**
  * What the search box holds a group to - #272, the owner's answer of
@@ -375,7 +380,7 @@ export default function StudentGroups() {
   const placed = (data?.students.length ?? 0) - ungrouped.length
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -390,7 +395,7 @@ export default function StudentGroups() {
                       that says which section is being read (#93) */}
                   {data.section.subject_id} {data.section.subject_name_en}
                 </p>
-                <h1 className="mt-1 text-xl font-semibold text-primary">กลุ่มงานนักศึกษา</h1>
+                <ContentTitle icon={TITLE_ICON}>กลุ่มงานนักศึกษา</ContentTitle>
                 <p className="mt-2 text-sm text-slate-500">
                   กลุ่มเรียน {data.section.section_number} · ปีการศึกษา{' '}
                   {data.section.academic_year} · {data.groups.length} กลุ่ม · จัดกลุ่มแล้ว{' '}

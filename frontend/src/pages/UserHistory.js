@@ -4,6 +4,7 @@ import { FaUserGroup } from 'react-icons/fa6'
 import { LuHistory } from 'react-icons/lu'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
+import ContentTitle from '../components/ContentTitle'
 import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import SearchBox from '../components/SearchBox'
@@ -102,10 +103,7 @@ export default function UserHistory() {
   return (
     <ContentMotionDIV className="space-y-6 rounded-xl border bg-white p-6 shadow">
       <div className="flex flex-row items-center justify-between gap-4">
-        <h1 className="inline-flex items-center text-2xl font-medium text-secondary">
-          <LuHistory aria-hidden="true" className="me-2 h-6 w-6 text-secondary" />
-          ประวัติการใช้งาน
-        </h1>
+        <ContentTitle icon={LuHistory}>ประวัติการใช้งาน</ContentTitle>
         <button
           type="button"
           onClick={() => navigate('/main/users')}

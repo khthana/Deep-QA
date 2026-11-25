@@ -28,6 +28,11 @@ import {
   listUsers,
   setUserStatus,
 } from '../api/users'
+import { FaUserGroup } from 'react-icons/fa6'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaUserGroup
 
 /**
  * ข้อมูลผู้ใช้งาน — tickets #11, #12 and #13.
@@ -934,7 +939,7 @@ export default function Users() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       {/* #304: while the add dialog is open this is behind its cover, so the
           dialog draws the notice instead and this one is not drawn twice.
           Since #307 (25 November 2569) the dialog draws only its own save's
@@ -970,8 +975,10 @@ export default function Users() {
             heading={
               // #305, `docs/users-screen.md` rule 5: the history is reached
               // from here, top right, as the delivered `UserTable.js` drew it,
-              // and no longer from the menu.
-              <div className="flex justify-end">
+              // and no longer from the menu. #309: on the title's own row, as
+              // the delivered card drew the two.
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <ContentTitle icon={TITLE_ICON}>ผู้ใช้งานระบบ</ContentTitle>
                 <button
                   type="button"
                   onClick={() => navigate('/main/users/user-history')}

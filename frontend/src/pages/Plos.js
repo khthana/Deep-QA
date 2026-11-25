@@ -15,6 +15,11 @@ import {
   updatePlo,
 } from '../api/plos'
 import { programNamed } from '../lib/unitNamed'
+import { FaBookBookmark } from 'react-icons/fa6'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBookBookmark
 
 /**
  * ผลการเรียนรู้ระดับหลักสูตร (PLO) — ticket #19.
@@ -544,7 +549,7 @@ export default function Plos() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       {editing ? (
@@ -569,7 +574,7 @@ export default function Plos() {
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-lg font-medium text-primary">ผลการเรียนรู้ระดับหลักสูตร</h1>
+            <ContentTitle icon={TITLE_ICON}>ผลการเรียนรู้ระดับหลักสูตร</ContentTitle>
             <div className="flex flex-wrap items-center gap-3">
               {/* A picker when there is a choice to make, and a statement of
                   where one is when there is not — รายวิชาในหลักสูตร's control,

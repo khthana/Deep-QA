@@ -12,6 +12,11 @@ import {
   useCohortPickers,
 } from '../components/results/CohortPickers'
 import { getResultsAcrossIntakes } from '../api/programResults'
+import { IoDocumentTextOutline } from 'react-icons/io5'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = IoDocumentTextOutline
 
 /**
  * เปรียบเทียบผลการเรียนรู้ระดับหลักสูตรข้ามรุ่นปีรับเข้า — #44.
@@ -219,13 +224,13 @@ export default function ProgramLevelCompare() {
   }, [load])
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       <div>
-        <h1 className="text-xl font-semibold text-primary">
+        <ContentTitle icon={TITLE_ICON}>
           เปรียบเทียบผลการเรียนรู้ระดับหลักสูตรข้ามรุ่น
-        </h1>
+        </ContentTitle>
         <p className="mt-2 text-sm text-slate-500">
           ผลการเรียนรู้ระดับหลักสูตรของหลายรุ่นปีรับเข้าวางเรียงกัน
           เพื่อให้เห็นผลของการปรับปรุงหลักสูตรเป็นแนวโน้ม ไม่ใช่ภาพของรุ่นเดียว

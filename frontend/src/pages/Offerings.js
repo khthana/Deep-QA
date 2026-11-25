@@ -23,6 +23,11 @@ import {
   updateSection,
 } from '../api/offerings'
 import { programNamed } from '../lib/unitNamed'
+import { FaBookOpen } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBookOpen
 
 /**
  * การเปิดรายวิชาในภาคการศึกษา — ticket #23.
@@ -846,7 +851,7 @@ export default function Offerings() {
 
   if (viewing) {
     return (
-      <div className="space-y-6">
+      <div className={`space-y-6 ${CARD}`}>
         <Notice notice={notice} />
         <SectionsPanel
           offering={viewing}
@@ -912,7 +917,7 @@ export default function Offerings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       {opening ? (
@@ -932,7 +937,7 @@ export default function Offerings() {
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-lg font-medium text-primary">การเปิดรายวิชาในภาคการศึกษา</h1>
+            <ContentTitle icon={TITLE_ICON}>การเปิดรายวิชาในภาคการศึกษา</ContentTitle>
             <div className="flex flex-wrap items-center gap-3">
               {/* A picker when there is a choice to make, and a statement of
                   where one is when there is not — ข้อมูลรายวิชา's control, for

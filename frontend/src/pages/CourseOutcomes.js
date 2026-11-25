@@ -12,6 +12,11 @@ import {
   updateCourseOutcome,
 } from '../api/clos'
 import RowAction from '../components/RowAction'
+import { FaBookOpen } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaBookOpen
 
 /**
  * ผลการเรียนรู้รายวิชา — ticket #27.
@@ -202,7 +207,7 @@ export default function CourseOutcomes() {
   }
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -213,9 +218,9 @@ export default function CourseOutcomes() {
             <p className="text-xs font-medium text-slate-400">
               {data.offering.subject_id}
             </p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">
+            <ContentTitle icon={TITLE_ICON}>
               ผลการเรียนรู้รายวิชา
-            </h1>
+            </ContentTitle>
             {/*
               The grain, in words. ADR-0003 in a sentence a ผู้สอน can act on.
 

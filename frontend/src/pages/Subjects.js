@@ -19,6 +19,11 @@ import {
   listSubjects,
   updateSubject,
 } from '../api/subjects'
+import { IoDocumentText } from 'react-icons/io5'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = IoDocumentText
 
 /**
  * ข้อมูลรายวิชา — ticket #16.
@@ -409,7 +414,7 @@ export default function Subjects() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
       {editing ? (
@@ -427,7 +432,7 @@ export default function Subjects() {
       ) : (
         <>
           <PageHeader
-            heading={<h1 className="text-lg font-medium text-primary">ข้อมูลรายวิชา</h1>}
+            heading={<ContentTitle icon={TITLE_ICON}>ข้อมูลรายวิชา</ContentTitle>}
             importLabel="นำเข้ารายวิชา"
             onImport={() => setImporting(true)}
             addLabel="เพิ่มรายวิชา"

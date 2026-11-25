@@ -7,6 +7,11 @@ import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
 import { createActivity, deleteActivity, getActivities, updateActivity } from '../api/activities'
 import RowAction from '../components/RowAction'
+import { RxActivityLog } from 'react-icons/rx'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = RxActivityLog
 
 /**
  * กิจกรรมการเรียนรู้ในรายวิชา — ticket #32.
@@ -185,7 +190,7 @@ export default function LearningActivities() {
   const groups = data ? groupsOf(data) : []
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && <p className="text-sm text-slate-500">กำลังโหลดข้อมูล…</p>}
@@ -194,7 +199,7 @@ export default function LearningActivities() {
         <>
           <div>
             <p className="text-xs font-medium text-slate-400">{data.section.subject_id}</p>
-            <h1 className="mt-1 text-xl font-semibold text-primary">กิจกรรมการเรียนรู้</h1>
+            <ContentTitle icon={TITLE_ICON}>กิจกรรมการเรียนรู้</ContentTitle>
             {/*
               The grain, in words — both halves of it, because this screen is
               where they meet. The line break falls before และ, where a space

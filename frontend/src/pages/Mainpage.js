@@ -479,3 +479,6 @@ export default function MainPage() {
     </ContentMotionDIV>
   )
 }
+
+// content-title: the shell that every screen is drawn inside, not a screen
+// (#309).

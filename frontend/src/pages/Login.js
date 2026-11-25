@@ -328,3 +328,6 @@ export default function Login() {
     </ContentMotionDIV>
   )
 }
+
+// content-title: the sign-in page is not a screen inside the shell; the
+// delivered one had no card either (#309).

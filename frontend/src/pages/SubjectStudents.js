@@ -18,6 +18,11 @@ import {
   listEnrolled,
   removeEnrolment,
 } from '../api/enrolment'
+import { FaUserGraduate } from 'react-icons/fa'
+import ContentTitle, { CARD } from '../components/ContentTitle'
+
+/** The delivered screen's title icon (#309). */
+const TITLE_ICON = FaUserGraduate
 
 /**
  * รายชื่อนักศึกษาของรายวิชา — ticket #25.
@@ -415,7 +420,7 @@ export default function SubjectStudents() {
   }
 
   return (
-    <ContentMotionDIV className="space-y-4 px-6 py-6">
+    <ContentMotionDIV className={`space-y-4 ${CARD}`}>
       <Notice notice={notice} />
 
       {loading && !data && (
@@ -432,9 +437,9 @@ export default function SubjectStudents() {
                       that says which section is being read (#93) */}
                   {data.section.subject_id} {data.section.subject_name_en}
                 </p>
-                <h1 className="mt-1 text-xl font-semibold text-primary">
+                <ContentTitle icon={TITLE_ICON}>
                   รายชื่อนักศึกษาของรายวิชา
-                </h1>
+                </ContentTitle>
                 <p className="mt-2 text-sm text-slate-500">
                   กลุ่มเรียน {data.section.section_number} · ปีการศึกษา{' '}
                   {data.section.academic_year} · นักศึกษา{' '}

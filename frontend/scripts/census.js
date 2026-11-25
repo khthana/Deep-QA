@@ -45,6 +45,11 @@ const CENSUSES = [
   // reason: #298 fixed the sixteen bare sites and marked the two that stay in
   // the same change, and its first run over the tree was `problems 0`.
   'nameless-units.js',
+  // Wired in on the day it landed, 25 พฤศจิกายน 2569, for org-codes.js's
+  // reason: #309 put the card and the title on all thirty-five screens in the
+  // same change (112 problems at the commit before it), and its first run over
+  // the tree was `problems 0`.
+  'content-titles.js',
 ]
 
 let worst = 0
