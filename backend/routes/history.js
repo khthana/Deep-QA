@@ -11,6 +11,15 @@
  * `GET /users`' own scope fragments in its `WHERE`, which its docblock says
  * why. Read the paragraphs below as #13's, dated (#54).
  *
+ * **The per-account route is kept by the owner's answer to #308 (25 November
+ * 2569)**, with no screen calling it. Nothing outside `frontend/` calls it
+ * either - no script, no probe - and what it still carries is proof rather
+ * than a caller: `history.test.js` reads #13's recorded objects and #294's
+ * unit names through it, and its row *and a page past the end is empty rather
+ * than an error* is the one backend row #240's decision is held by, both of
+ * `mutation/240-the-page-past-the-last-one.py`'s mutants editing this route.
+ * Retiring it means moving those rows to `GET /history` first.
+ *
  * An administrator opens a person and reads what that account has done, so
  * that "who saw or changed this" has an answer. The rows are already being
  * written: every ticket from #8 onwards calls `recordActivity` at the point it
