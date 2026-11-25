@@ -593,7 +593,19 @@ export default function Users() {
     } catch (error) {
       // A 401 already raises the shell's dialog; saying it again here would
       // put a banner behind that dialog.
-      if (isCurrent() && !error.expired) setNotice({ error: true, message: error.message })
+      if (isCurrent() && !error.expired) {
+        const said = { error: true, message: error.message }
+        // #307, the owner's answer ข. of 25 November 2569 - while the add
+        // dialog is open it draws the page's notice (#304), so a refusal of
+        // this read would stand under *เพิ่มผู้ใช้งาน* and read as the save
+        // being refused. It is held for the dialog to close instead, keyed for
+        // this read, and the effect beside `formShown` says it then - #246's
+        // held sentence, here for a refusal. A save that succeeds meanwhile
+        // replaces it with its own sentence, which is right: the read that
+        // save sends is the one the refusal was about.
+        if (formShown.current) waiting.current = { of: key, said, held: true }
+        else setNotice(said)
+      }
       return false
     } finally {
       if (isCurrent()) {
