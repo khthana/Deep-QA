@@ -244,6 +244,9 @@ CLOSED_ADDING_ANY = '      if (showing.current !== null) setAdding(false)\n'
 # คำปฏิเสธของจอที่ส่งผ่าน `report`
 REPORTED = '      if (showing.current === sent) report(error)\n'
 REPORTED_ANY = '      if (showing.current !== null) report(error)\n'
+# #307 (25 พ.ย. 2569) เล็งใหม่: `catch` ของ `save` เรียก `refuse` แทน `report` — ความผิดคงเดิม เปลี่ยนแค่ชื่อที่เรียก
+USERS_REPORTED = '      if (showing.current === sent) refuse(error)\n'
+USERS_REPORTED_ANY = '      if (showing.current !== null) refuse(error)\n'
 
 # จอที่พูดหลังการโหลดใหม่: คำตอบถูกถือข้าม await ไว้ใน `mine`
 MINE = '      const mine = showing.current === sent\n'
@@ -306,7 +309,7 @@ MUTANTS = {
         '      await drawing(() => onScreen.current === drawing)\n'),
     # ผู้ใช้งาน
     'usersclosewins': ('users', CLOSED, CLOSED_ANY),
-    'usersrefusalwins': ('users', REPORTED, REPORTED_ANY),
+    'usersrefusalwins': ('users', USERS_REPORTED, USERS_REPORTED_ANY),
     # การเปิดรายวิชา: ฟอร์มที่เปิดขึ้นใหม่ถูกปิด และแผงของรายวิชาที่เพิ่งสร้างแย่งหน้าจอไป
     'offeringsclosewins': ('offerings', MINE, MINE_ANY),
     'offeringsrefusalwins': ('offerings', REPORTED, REPORTED_ANY),
@@ -379,14 +382,15 @@ MUTANTS = {
         '          }}\n'),
     # Re-aimed by #304 (24 November 2569): the add moved into AddUserDialog's
     # onCancel, two levels shallower; the mistake is the same line.
+    # #307 (25 พ.ย. 2569) เล็งใหม่: `ยกเลิก` ไม่ล้างประกาศของหน้าแล้ว จึงยึดกับ `busy` ที่ตามมาแทน
     'userscancelclears': ('users',
-        '            setNotice(null)\n'
         '            setEditing(null)\n'
-        '          }}\n',
+        '          }}\n'
+        '          busy={busy}\n',
         '            showing.current = null\n'
-        '            setNotice(null)\n'
         '            setEditing(null)\n'
-        '          }}\n'),
+        '          }}\n'
+        '          busy={busy}\n'),
     'studentscancelclears': ('students',
         '            setNotice(null)\n'
         '            setAdding(false)\n'

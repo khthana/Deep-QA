@@ -78,17 +78,18 @@ SWITCH_SAYS_IT = """      const drawing = onScreen.current
       setSwitching(null)
 """
 
+# #307 (25 พ.ย. 2569) เล็งใหม่: `catch` ของ `save` เรียก `refuse` แทน `report` — ความผิดคงเดิม เปลี่ยนแค่ชื่อที่เรียก
 SAVE_HANDS_IT_OVER = """      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
     } catch (error) {
-      if (showing.current === sent) report(error)
+      if (showing.current === sent) refuse(error)
 """
 SAVE_SAYS_IT = """      const drawing = onScreen.current
       const reloaded = await drawing(() => onScreen.current === drawing)
       if (reloaded && showing.current === sent) setNotice(said)
     } catch (error) {
-      if (showing.current === sent) report(error)
+      if (showing.current === sent) refuse(error)
 """
 
 MUTANTS = {

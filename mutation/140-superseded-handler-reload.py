@@ -187,15 +187,16 @@ MUTANTS = {
     # อีกแล้ว มันส่งประโยคต่อก่อนการอ่าน ฉะนั้นข้อที่มัตแตนต์นี้ถืออยู่เหลือสามบรรทัด และ
     # ความผิดคงเดิมคือยามของการอ่าน (`isCurrent` จริงตลอด) · ส่วน `catch` ยังเป็นสิ่งที่
     # แยกจุดนี้ออกจากสวิตช์สถานะ (#202)
+    # #307 (25 พ.ย. 2569) เล็งใหม่: `catch` ของ `save` เรียก `refuse` แทน `report` — ความผิดคงเดิม เปลี่ยนแค่ชื่อที่เรียก
     'userssavestalewins': ('users',
         '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
         '      const drawing = onScreen.current\n      await drawing(() => onScreen.current === drawing)\n'
         '    } catch (error) {\n'
-        '      if (showing.current === sent) report(error)\n',
+        '      if (showing.current === sent) refuse(error)\n',
         '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n'
         '      const drawing = onScreen.current\n      await drawing(() => true)\n'
         '    } catch (error) {\n'
-        '      if (showing.current === sent) report(error)\n'),
+        '      if (showing.current === sent) refuse(error)\n'),
     # ข้อมูลผู้ใช้งาน: ระงับ
     # #202 wrapped this handler's sentence in a guard, so the line above the
     # reload is now the guard's `}` and `save` carries the same pair. The tail

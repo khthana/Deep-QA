@@ -182,8 +182,9 @@ PLOS_REMOVAL_ANYWAY = (
 
 # `Users.js` มีสองจุดที่หน้าตาเหมือนกันทั้งบรรทัด - `save` กับสวิตช์สถานะ สิ่งที่แยกสองจุดนี้
 # คือ `catch` ของมันเอง (#202: ของ `toggle` ไม่ได้ถาม `showing`)
-USERS_SAVE_READS = SAVE_READS + "    } catch (error) {\n      if (showing.current === sent) report(error)\n"
-USERS_SAVE_ANYWAY = SAVE_ANYWAY + "    } catch (error) {\n      if (showing.current === sent) report(error)\n"
+# #307 (25 พ.ย. 2569) เล็งใหม่: `catch` ของ `save` เรียก `refuse` แทน `report` — ความผิดคงเดิม เปลี่ยนแค่ชื่อที่เรียก
+USERS_SAVE_READS = SAVE_READS + "    } catch (error) {\n      if (showing.current === sent) refuse(error)\n"
+USERS_SAVE_ANYWAY = SAVE_ANYWAY + "    } catch (error) {\n      if (showing.current === sent) refuse(error)\n"
 USERS_TOGGLE_READS = SAVE_READS + "    } catch (error) {\n      setSwitching(null)\n      report(error)\n"
 USERS_TOGGLE_ANYWAY = SAVE_ANYWAY + "    } catch (error) {\n      setSwitching(null)\n      report(error)\n"
 

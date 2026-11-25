@@ -24,6 +24,10 @@ import UserForm from './UserForm'
  * `notice` is the page's own. While this is open the page's `Notice` is behind
  * the cover, so `Users.js` hands it here and stops drawing its own - a refusal
  * of this save is read where the person is, and drawn once.
+ *
+ * Since #307 (25 November 2569) `notice` is this save's own refusal and no
+ * longer the page's whole notice - a refusal of anything else drawn here read
+ * as this save being refused. The page keeps those until this closes.
  */
 export default function AddUserDialog({ notice, onSubmit, onCancel, busy }) {
   const box = useRef(null)

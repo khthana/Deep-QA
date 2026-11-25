@@ -132,14 +132,21 @@ MUTANTS = {
     'sendshidden': ('form', '            ...(needsPassword && { password }),\n',
                     '            ...((true || needsPassword) && { password }),\n'),
     # The page's notice where it stood, and nothing handed to the dialog.
+    # #307 (25 November 2569) re-aimed: the dialog's refusal is its own state
+    # now, so *at the page's notice* is `refuse` handing it to `report`.
     'noticebehind': [
         ('page', '      {!editing && <Notice notice={notice} />}\n',
                  '      <Notice notice={notice} />\n'),
-        ('page', '          notice={notice}\n          onSubmit={save}\n',
-                 '          notice={null}\n          onSubmit={save}\n'),
+        ('page', '    if (!formShown.current) return report(error)\n',
+                 '    return report(error)\n'),
     ],
-    'noticetwice': ('page', '      {!editing && <Notice notice={notice} />}\n',
-                    '      {(true || !editing) && <Notice notice={notice} />}\n'),
+    # #307 re-aimed the same way: drawn twice needs the refusal in both states.
+    'noticetwice': [
+        ('page', '      {!editing && <Notice notice={notice} />}\n',
+                 '      {(true || !editing) && <Notice notice={notice} />}\n'),
+        ('page', '    if (!formShown.current) return report(error)\n',
+                 '    report(error)\n'),
+    ],
     'nomaxheight': ('dialog', 'className="max-h-[90vh] w-full', 'className="w-full'),
     'noscroll': ('dialog', 'w-full max-w-2xl overflow-y-auto rounded-xl', 'w-full max-w-2xl rounded-xl'),
 }

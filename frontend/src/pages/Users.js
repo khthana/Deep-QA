@@ -444,6 +444,22 @@ export default function Users() {
   // The import window, opened by นำเข้า… in the bar (#270).
   const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
+  /**
+   * The add dialog's own refusal - #307, the owner's answer ข. of 25 November
+   * 2569.
+   *
+   * From #304 until this the dialog drew the page's `notice` whole, so any
+   * refusal that landed while it was open stood under *เพิ่มผู้ใช้งาน* and read as
+   * the save being refused: a list read sent before the dialog opened, and a
+   * switch or a removal whose question was put away with Escape while its write
+   * was out (`ConfirmDialog` lets it go while `busy`, #204). The answer is that
+   * the dialog draws only its own save's refusal, which is this state; every
+   * other sentence goes to `notice`, which is not drawn while the dialog is
+   * open, and is read on the page once it closes - nothing clears it on the way
+   * out any more. Cleared whenever the dialog goes, by the effect beside
+   * `formShown`, so the next opening starts without it.
+   */
+  const [refused, setRefused] = useState(null)
   const [switching, setSwitching] = useState(null)
   // #306 - the account the removal question is about. Exclusive with
   // `switching`: both are opened from the table, and each box covers it.
@@ -593,19 +609,7 @@ export default function Users() {
     } catch (error) {
       // A 401 already raises the shell's dialog; saying it again here would
       // put a banner behind that dialog.
-      if (isCurrent() && !error.expired) {
-        const said = { error: true, message: error.message }
-        // #307, the owner's answer ข. of 25 November 2569 - while the add
-        // dialog is open it draws the page's notice (#304), so a refusal of
-        // this read would stand under *เพิ่มผู้ใช้งาน* and read as the save
-        // being refused. It is held for the dialog to close instead, keyed for
-        // this read, and the effect beside `formShown` says it then - #246's
-        // held sentence, here for a refusal. A save that succeeds meanwhile
-        // replaces it with its own sentence, which is right: the read that
-        // save sends is the one the refusal was about.
-        if (formShown.current) waiting.current = { of: key, said, held: true }
-        else setNotice(said)
-      }
+      if (isCurrent() && !error.expired) setNotice({ error: true, message: error.message })
       return false
     } finally {
       if (isCurrent()) {
@@ -668,6 +672,8 @@ export default function Users() {
   const formShown = useRef(false)
   useEffect(() => {
     formShown.current = Boolean(editing)
+    // #307 - the dialog's own refusal goes with the dialog.
+    if (!editing) setRefused(null)
   }, [editing])
 
   /**
@@ -703,6 +709,14 @@ export default function Users() {
   const report = useCallback(error => {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
+
+  // The save's refusal, said in the dialog while it is open and on the page
+  // once it has gone - a refusal that arrives after ยกเลิก is still owed to the
+  // person (#146), and the dialog is no longer there to say it - #307.
+  const refuse = error => {
+    if (!formShown.current) return report(error)
+    if (!error.expired) setRefused({ error: true, message: error.message })
+  }
 
   /**
    * The last thing that opened on this screen - #146. เพิ่มผู้ใช้งาน and แก้ไข write
@@ -758,7 +772,7 @@ export default function Users() {
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
     } catch (error) {
-      if (showing.current === sent) report(error)
+      if (showing.current === sent) refuse(error)
     } finally {
       setBusy(false)
     }
@@ -922,7 +936,10 @@ export default function Users() {
   return (
     <div className="space-y-6">
       {/* #304: while the add dialog is open this is behind its cover, so the
-          dialog draws the notice instead and this one is not drawn twice. */}
+          dialog draws the notice instead and this one is not drawn twice.
+          Since #307 (25 November 2569) the dialog draws only its own save's
+          refusal, `refused`, and what lands here meanwhile waits for it to
+          close. */}
       {!editing && <Notice notice={notice} />}
 
       {/* Only the add since #303 - an existing account's details, grants and
@@ -932,12 +949,13 @@ export default function Users() {
           `AddUserDialog.js` was (rule 10), and no longer drawn in its place. */}
       {editing && (
         <AddUserDialog
-          notice={notice}
+          notice={refused}
           onSubmit={save}
           onCancel={() => {
             // ยกเลิก and Escape do not write this: a form closing is nobody
             // taking the screen, and a save still out is owed its sentence (#146).
-            setNotice(null)
+            // #307 - nor clear the page's notice: what is in it landed while the
+            // dialog was open and was never drawn, and is read now.
             setEditing(null)
           }}
           busy={busy}
