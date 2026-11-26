@@ -9,7 +9,7 @@ import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
 import { FaUserEdit } from 'react-icons/fa'
 import { RiDeleteBin6Line } from 'react-icons/ri'
-import { LuHistory } from 'react-icons/lu'
+import { LuHistory, LuHourglass } from 'react-icons/lu'
 import SearchBox from '../components/SearchBox'
 import StatusSwitch from '../components/users/StatusSwitch'
 import AddUserDialog from '../components/users/AddUserDialog'
@@ -244,19 +244,61 @@ const HEADERS = [
   'ชื่อ สกุล (อังกฤษ)',
   'อีเมล',
   'บทบาท',
-  'ช่วงเวลาใช้งาน',
+  'วันใช้งาน',
   'สถานะ',
   'ดำเนินการ',
 ]
 
-/** The three narrow columns, centred under their headers as the delivered ones were. */
-const CENTRED = new Set(['ลำดับ', 'สถานะ', 'ดำเนินการ'])
+/**
+ * The narrow columns, centred under their headers as the delivered ones were -
+ * and #311's hourglass, centred as an icon alone in its column.
+ */
+const CENTRED = new Set(['ลำดับ', 'วันใช้งาน', 'สถานะ', 'ดำเนินการ'])
 
+/**
+ * A date-only `YYYY-MM-DD` as a person reads it - `27 ต.ค. 2569`. The route
+ * sends the column as text (`valid_from::text`), which `Date` reads as UTC
+ * midnight, so it is drawn in UTC and cannot move a day.
+ */
+const thaiDay = value =>
+  new Date(value).toLocaleDateString('th-TH', {
+    timeZone: 'UTC',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
+/** The validity window in words, or null for an account that has none. */
 const windowOf = user => {
-  if (!user.valid_from && !user.valid_until) return '—'
-  if (!user.valid_until) return `ตั้งแต่ ${user.valid_from}`
-  if (!user.valid_from) return `ถึง ${user.valid_until}`
-  return `${user.valid_from} ถึง ${user.valid_until}`
+  if (!user.valid_from && !user.valid_until) return null
+  if (!user.valid_until) return `ตั้งแต่ ${thaiDay(user.valid_from)}`
+  if (!user.valid_from) return `ถึง ${thaiDay(user.valid_until)}`
+  return `${thaiDay(user.valid_from)} ถึง ${thaiDay(user.valid_until)}`
+}
+
+/**
+ * The วันใช้งาน column - #311, by the owner's answers of 26 November 2569: few
+ * accounts carry a window, so the column is an hourglass, one icon in one
+ * colour whatever the window's state, with the window in Thai dates in its
+ * `title`; an account with no window has an empty cell. The `title` is also
+ * the accessible name, an `img` with no label being named by it, so it is
+ * written once (#97). The tooltip opens with a mouse only, as #310's does (the
+ * owner's answer of the same day).
+ */
+function WindowCell({ user }) {
+  const words = windowOf(user)
+  if (!words) return <td className="px-2 py-2" />
+  return (
+    <td className="px-2 py-2 text-center">
+      <span
+        title={words}
+        role="img"
+        className="inline-flex align-middle"
+      >
+        <LuHourglass aria-hidden="true" />
+      </span>
+    </td>
+  )
 }
 
 /**
@@ -1173,7 +1215,7 @@ export default function Users() {
                       <td className="px-2 py-2">{nameIn(user, 'en')}</td>
                       <td className="px-2 py-2">{user.email}</td>
                       <RolesCell user={user} scopes={grantable.scopes} />
-                      <td className="px-2 py-2">{windowOf(user)}</td>
+                      <WindowCell user={user} />
                       <td className="px-2 py-2 text-center">
                         <StatusSwitch
                           checked={suspends(user)}

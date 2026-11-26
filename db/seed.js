@@ -387,9 +387,12 @@ const ACCOUNTS = [
   // to be able to sign in - two suites give it a job that needs it - and a
   // `valid_until` of null is the shape migration 0005 says both columns
   // support ("until somebody says otherwise") which nothing in the seed was.
-  // `Users.js` has rendered `<the date> ถึง …` for that shape since #11 and no
-  // row, walked or automated, has ever made it draw it. The date is 45 days
-  // before whenever the seed was run, so do not write today's answer down.
+  // `Users.js` rendered `<the date> ถึง …` for that shape from #11 and no
+  // row, walked or automated, had ever made it draw it (that was the wording
+  // until 24 September 2569; since then it read `ตั้งแต่ <the date>`, and
+  // since #311 on 26 November 2569 it is the tooltip of an hourglass, in
+  // Thai dates). The date is 45 days before whenever the seed was run, so do
+  // not write today's answer down.
   //
   // -45 is chosen, not inherited (#45): it shares an edge with neither `U_EXT`
   // (-30) nor `U_EXT_CLOSED` (-60/-30), so a test that moves one window cannot
