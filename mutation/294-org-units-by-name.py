@@ -225,12 +225,11 @@ MUTANTS = {
     'o294panelfromlist': ('panel',
         '  grant.scope_name ||\n',
         '  scopes.find(entry => entry.scope_id === grant.scope_id)?.label ||\n'),
-    # Re-aimed at #310 (26 Nov 2569): the call now builds the `abbr` title.
+    # Re-aimed at #310 (26 Nov 2569): the call now builds `RolesCell`'s words,
+    # the `abbr` title and the cell's accessible name.
     'o294listfromlist': ('users',
-        '                                    grant,\n'
-        '                                  )})`}\n',
-        '                                    { scope_id: grant.scope_id },\n'
-        '                                  )})`}\n'),
+        '    words: `${roleName(grant.role_id)} (${grantScope(scopes, grant)})`,\n',
+        '    words: `${roleName(grant.role_id)} (${grantScope(scopes, { scope_id: grant.scope_id })})`,\n'),
     # The three sites that drew a bare code, as they drew it (#115).
     'o294sectionscode': ('sections',
         '            {programName ?? ` ${offering.program_id}`}\n',

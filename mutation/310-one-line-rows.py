@@ -12,12 +12,12 @@
 
 | มัตแตนต์ | ทำนาย | บรรทัดที่ตาย |
 |---|---|---|
-| `s310today` | ฆ่า 3 — `310a` แถว 1, 3, 4 | `lines per row at 1920` (`:80`) · `lines per row at 1440` (`:99`) · `the cell is abbreviations and commas` (`:111`) |
+| `s310wrapandwords` | ฆ่า 3 — `310a` แถว 1, 3, 4 | `lines per row at 1920` (`:80`) · `lines per row at 1440` (`:99`) · `the cell is abbreviations and commas` (`:111`) |
 | `s310wrap` | ฆ่า 1 — `310a` แถว 3 | `lines per row at 1440` (`:99`) |
 | `s310words` | ฆ่า 2 — `310a` แถว 2, 4 | `ดำเนินการ in view at 1920` (`:88`) · `the cell is abbreviations and commas` (`:111`) |
 | `s310notitle` | ฆ่า 6 — `310a` แถว 5 · `215a` แถว 2, 3, 5 · `297a` แถว 3, 4 | `the tooltip` (`:122`) และ `grantTitles` ของแต่ละแถว |
 
-`s310today` คือตารางก่อน #310 ที่ช่องยังเป็น `px-2` (ข้อเสนอที่ตั๋ววินิจฉัย ทำให้วิ่ง — #115): ตัดบรรทัดได้และวาดคำเต็มในช่อง ·
+`s310wrapandwords` (ชื่อเดิม `s310today` ซึ่งรีวิวพบว่าไม่ใช่ตารางก่อน #310 — ดูข้างล่าง) คือตัดบรรทัดได้และวาดคำเต็มในช่อง ·
 `abbr` และ `title` ยังอยู่ จึงทำนายว่าแถว 4 ผ่านการนับ (`:110`) แล้วตายที่ข้อความ (`:111`) และแถว 5 ไม่ตาย · `s310wrap` คือถอด
 `whitespace-nowrap` อย่างเดียว — ที่ 1920 ตัวย่อทำให้ทุกแถวบรรทัดเดียวอยู่แล้ว (หัววัด `ข+ค+ย` 10/10) แถว 1 จึงรอด ซึ่งคือเหตุที่แถว 3
 วัดที่ 1440 · `s310words` คือห้ามตัดแต่วาดคำเต็ม (หัววัด `ก+ข+ย` ที่ 1920 เกินกรอบ 18 px คอลัมน์ดำเนินการหลุดขวา) — แถว 1 และ 3
@@ -39,7 +39,7 @@
 
 ทั้งเจ็ดตรงคำทำนายทั้งจำนวนและบรรทัด กวาดกับ `310a` `215a` `297a` `302a` (23 แถว):
 
-- `s310today` ล้ม 3 ผ่าน 20 ที่ `310a:80` `310a:99` `310a:111`
+- `s310wrapandwords` ล้ม 3 ผ่าน 20 ที่ `310a:80` `310a:99` `310a:111`
 - `s310wrap` ล้ม 1 ผ่าน 22 ที่ `310a:99`
 - `s310words` ล้ม 2 ผ่าน 21 ที่ `310a:88` `310a:111`
 - `s310notitle` ล้ม 6 ผ่าน 17 ที่ `310a:122` · `215a:149` `215a:182` `215a:241` · `297a:142` `297a:168`
@@ -49,6 +49,40 @@
 
 ทุกตัวตายที่ข้ออ้างของแถว ไม่ใช่ที่การจัดฉาก (#266) · `215a` และ `297a` ตายที่ `grantTitles` ซึ่งรายงานบรรทัดถัดจาก `await expect`
 เพราะ `.poll` ขึ้นบรรทัดใหม่ · หลังกวาด `git status` ของ `frontend/` เหลือแค่สองแฟ้มของการแก้
+
+## รีวิวของ #310 — ตารางทำนาย เขียนก่อนการกวาด (26 พ.ย. 2569)
+
+รีวิวพบสี่เรื่องที่เปลี่ยนแฟ้มนี้: `s310today` ไม่ใช่ตารางก่อน #310 แต่เป็นสองข้อผิดรวมกัน (ช่องยัง `px-2` และ `abbr` ยังอยู่ — #105)
+จึงเปลี่ยนชื่อเป็น `s310wrapandwords` ทุกที่ในแฟ้มนี้ รวมทั้งบันทึกข้างบน · แถว 4 เดิมมีสองข้ออ้าง และครึ่งที่นับตัวย่อไม่มีมัตแตนต์ฆ่า
+จึงแยกเป็นแถว 6 (#66) กับ `s310onemark` · `abbr title` อ่านได้แค่ด้วยเมาส์ ช่องจึงได้ `aria-label` เป็นคำเต็ม แถว 7 กับ `s310noname` ·
+ช่องบทบาทย้ายไปเป็น `RolesCell` ซึ่งคิดคำเต็มครั้งเดียวให้ทั้ง `title` และ `aria-label` สมอทุกตัวจึงเล็งใหม่ เก็บข้อผิดเดิม (#203) ·
+`215a` แถว 2 อ่านสองสิทธิ์ใน poll เดียว (#88) · เลขบรรทัดคือของ `310a` ณ วันนี้
+
+| มัตแตนต์ | ทำนาย | ที่ตาย |
+|---|---|---|
+| `s310wrapandwords` | ฆ่า 3 — `310a` แถว 1, 3, 4 | `lines per row at 1920` (`:80`) · `lines per row at 1440` (`:99`) · `the cell is abbreviations and commas` (`:110`) |
+| `s310wrap` | ฆ่า 1 — `310a` แถว 3 | `lines per row at 1440` (`:99`) |
+| `s310words` | ฆ่า 2 — `310a` แถว 2, 4 | `ดำเนินการ in view at 1920` (`:88`) · `the cell is abbreviations and commas` (`:110`) |
+| `s310notitle` | ฆ่า 6 — `310a` แถว 5 · `215a` แถว 2, 3, 5 · `297a` แถว 3, 4 | `the tooltip` (`:121`) และ `grantTitles` ของแต่ละแถว · แถว 7 รอด เพราะ `aria-label` ไม่ได้แตะ |
+| `s310onemark` | ฆ่า 2 — `310a` แถว 6 · `215a` แถว 2 | `one abbreviation per grant` (`:134`) · `grantTitles` ของ `215a` แถว 2 ซึ่ง `multi.role@` มีสองสิทธิ์ · แถว 4 รอด เพราะตัวย่อตัวเดียวก็ตรงแบบ · `297a` แถว 3, 4 รอด เพราะบัญชีของมันมีสิทธิ์เดียว · แถว 7 รอด เพราะ `aria-label` ยังนับทุกสิทธิ์ |
+| `s310noname` | ฆ่า 1 — `310a` แถว 7 | `the cell read aloud` (`:145`) — ชื่อของช่องกลับเป็นข้อความในช่อง คือ `SA` |
+| `215:userscode` | ฆ่า 7 — `310a` แถว 5, 7 · `215a` แถว 2, 3, 5 · `297a` แถว 3, 4 | `the tooltip` (`:121`) · `the cell read aloud` (`:145`) · `grantTitles` ของแต่ละแถว — แถว 7 ใหม่กว่าบันทึกของมัน (#257) |
+| `294:o294listfromlist` | ฆ่า 2 — `215a` แถว 3 · `297a` แถว 4 | `grantTitles` · `310a` แถว 5 กับ 7 รอด เพราะขอบเขตที่ไม่ถูกจำกัดไม่ได้ไปที่รายการ |
+
+## บันทึกการกวาดหลังรีวิว — 26 พ.ย. 2569
+
+ทั้งแปดตรงคำทำนายทั้งจำนวนและบรรทัด กวาดกับ `310a` `215a` `297a` `302a` (25 แถว):
+
+- `s310wrapandwords` ล้ม 3 ผ่าน 22 ที่ `310a:80` `310a:99` `310a:110`
+- `s310wrap` ล้ม 1 ผ่าน 24 ที่ `310a:99`
+- `s310words` ล้ม 2 ผ่าน 23 ที่ `310a:88` `310a:110`
+- `s310notitle` ล้ม 6 ผ่าน 19 ที่ `310a:121` · `215a:151` `215a:186` `215a:245` · `297a:142` `297a:168`
+- `s310onemark` ล้ม 2 ผ่าน 23 ที่ `310a:134` · `215a:151`
+- `s310noname` ล้ม 1 ผ่าน 24 ที่ `310a:145`
+- `215:userscode` ล้ม 7 ผ่าน 18 ที่บรรทัดของ `s310notitle` ทุกบรรทัด และ `310a:145`
+- `294:o294listfromlist` ล้ม 2 ผ่าน 23 ที่ `215a:186` `297a:168`
+
+ทุกตัวตายที่ข้ออ้างของแถว ไม่ใช่ที่การจัดฉาก (#266) · หลังกวาด `git status` ของ `frontend/` เหลือแค่สองแฟ้มของการแก้
 
 ## สิ่งที่ไม่มีมัตแตนต์
 
@@ -64,22 +98,24 @@ FILES = {
 # สมอยึดกับโค้ดที่มัตแตนต์ทำให้พัง ไม่ใช่คอมเมนต์ข้างมัน (#121)
 TABLE = '            <table className="w-full whitespace-nowrap text-left text-sm">\n'
 UNWRAPPED = '            <table className="w-full text-left text-sm">\n'
-ABBREVIATION = '                                  {roleAbbreviation(grant.role_id)}\n'
-WORDS = ('                                  {`${roleName(grant.role_id)} (${grantScope(grantable.scopes, grant)})`}\n')
-TITLE = ('                                  title={`${roleName(grant.role_id)} (${grantScope(\n'
-         '                                    grantable.scopes,\n'
-         '                                    grant,\n'
-         '                                  )})`}\n')
+MARK = '          <abbr title={grant.words}>{grant.short}</abbr>\n'
+MARK_WORDS = '          <abbr title={grant.words}>{grant.words}</abbr>\n'
+EACH = '      {grants.map((grant, at) => (\n'
+NAMED = "    <td className=\"px-2 py-2\" aria-label={grants.map(grant => grant.words).join(', ')}>\n"
 
 MUTANTS = {
-    # ตารางก่อน #310: ตัดบรรทัดได้ และช่องบทบาทวาดคำเต็ม
-    's310today': [('users', TABLE, UNWRAPPED), ('users', ABBREVIATION, WORDS)],
+    # ตัดบรรทัดได้ และช่องบทบาทวาดคำเต็ม — สองข้อผิดรวมกัน ไม่ใช่ตารางก่อน #310 (#105)
+    's310wrapandwords': [('users', TABLE, UNWRAPPED), ('users', MARK, MARK_WORDS)],
     # ถอดการห้ามตัดบรรทัดอย่างเดียว
     's310wrap': ('users', TABLE, UNWRAPPED),
     # ห้ามตัด แต่ช่องบทบาทวาดคำเต็มแทนตัวย่อ
-    's310words': ('users', ABBREVIATION, WORDS),
+    's310words': ('users', MARK, MARK_WORDS),
     # tooltip บอกแค่ชื่อบทบาท ไม่บอกขอบเขต
-    's310notitle': ('users', TITLE, '                                  title={roleName(grant.role_id)}\n'),
+    's310notitle': ('users', MARK, "          <abbr title={grant.words.split(' (')[0]}>{grant.short}</abbr>\n"),
+    # วาดแค่สิทธิ์แรก (รีวิวของ #310)
+    's310onemark': ('users', EACH, '      {grants.slice(0, 1).map((grant, at) => (\n'),
+    # ช่องไม่มีชื่อที่เข้าถึงได้ — โปรแกรมอ่านจออ่านตัวย่อ (รีวิวของ #310)
+    's310noname': ('users', NAMED, '    <td className="px-2 py-2">\n'),
 }
 
 main(FILES, MUTANTS)

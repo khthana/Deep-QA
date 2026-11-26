@@ -35,6 +35,32 @@ import ContentTitle, { CARD } from '../components/ContentTitle'
 const TITLE_ICON = FaUserGroup
 
 /**
+ * The role column - #310, by the owner's answer of 26 November 2569: each
+ * grant drawn as an abbreviation, its role and scope in full in the `title`
+ * and in the cell's accessible name. The `title` is for a mouse; the
+ * `aria-label` is so a screen reader reads the words and not the letters.
+ * A keyboard still cannot open the tooltip - that is the limit #310 left.
+ */
+function RolesCell({ user, scopes }) {
+  const grants = (user.roles ?? []).map(grant => ({
+    key: `${grant.role_id}:${grant.scope_id}`,
+    short: roleAbbreviation(grant.role_id),
+    words: `${roleName(grant.role_id)} (${grantScope(scopes, grant)})`,
+  }))
+  if (grants.length === 0) return <td className="px-2 py-2">—</td>
+  return (
+    <td className="px-2 py-2" aria-label={grants.map(grant => grant.words).join(', ')}>
+      {grants.map((grant, at) => (
+        <Fragment key={grant.key}>
+          {at > 0 && ', '}
+          <abbr title={grant.words}>{grant.short}</abbr>
+        </Fragment>
+      ))}
+    </td>
+  )
+}
+
+/**
  * ข้อมูลผู้ใช้งาน — tickets #11, #12 and #13.
  *
  * Who exists, who may be added, whose account is switched off, for how long an
@@ -1146,23 +1172,7 @@ export default function Users() {
                       <td className="px-2 py-2">{nameIn(user, 'th')}</td>
                       <td className="px-2 py-2">{nameIn(user, 'en')}</td>
                       <td className="px-2 py-2">{user.email}</td>
-                      <td className="px-2 py-2">
-                        {(user.roles ?? []).length === 0
-                          ? '—'
-                          : user.roles.map((grant, at) => (
-                              <Fragment key={`${grant.role_id}:${grant.scope_id}`}>
-                                {at > 0 && ', '}
-                                <abbr
-                                  title={`${roleName(grant.role_id)} (${grantScope(
-                                    grantable.scopes,
-                                    grant,
-                                  )})`}
-                                >
-                                  {roleAbbreviation(grant.role_id)}
-                                </abbr>
-                              </Fragment>
-                            ))}
-                      </td>
+                      <RolesCell user={user} scopes={grantable.scopes} />
                       <td className="px-2 py-2">{windowOf(user)}</td>
                       <td className="px-2 py-2 text-center">
                         <StatusSwitch

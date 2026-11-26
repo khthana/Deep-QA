@@ -107,7 +107,6 @@ test('row 4: the role column draws an abbreviation per grant, not the Thai name'
   await search(page, ACCOUNTS.multiRole);
 
   const cell = await roleCell(page, ACCOUNTS.multiRole);
-  await expect(cell.locator('abbr'), 'one abbreviation per grant').toHaveCount(2);
   await expect(cell, 'the cell is abbreviations and commas').toHaveText(/^[A-Z]+(, [A-Z]+)*$/);
 });
 
@@ -122,4 +121,28 @@ test('row 5: each abbreviation says its role and scope in full in its tooltip', 
   await expect.poll(() => grantTitles(cell), 'the tooltip').toEqual([
     `${ROLE_NAMES.FULL_ADMIN} (ทั้งมหาวิทยาลัย)`,
   ]);
+});
+
+// Row 4's other half, a row of its own (#66): a cell of letters and commas
+// passes whether it draws every grant or only the first.
+test('row 6: the role column draws one abbreviation for each grant', async ({ page }) => {
+  await signIn(page, ACCOUNTS.systemAdmin);
+  await openUsers(page);
+  await search(page, ACCOUNTS.multiRole);
+
+  const cell = await roleCell(page, ACCOUNTS.multiRole);
+  await expect(cell.locator('abbr'), 'one abbreviation per grant').toHaveCount(2);
+});
+
+// The tooltip is for a mouse; the words a screen reader reads are the cell's
+// accessible name, the same words as the tooltips (#310's review).
+test('row 7: the role cell is named by its grants in full', async ({ page }) => {
+  await signIn(page, ACCOUNTS.systemAdmin);
+  await openUsers(page);
+  await search(page, ACCOUNTS.systemAdmin);
+
+  const cell = await roleCell(page, ACCOUNTS.systemAdmin);
+  await expect(cell, 'the cell read aloud').toHaveAccessibleName(
+    `${ROLE_NAMES.FULL_ADMIN} (ทั้งมหาวิทยาลัย)`,
+  );
 });

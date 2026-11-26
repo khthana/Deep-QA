@@ -98,14 +98,16 @@ MUTANTS = {
         '    : grantScope(scopes, grant))\n',
         '  grant.scope_id\n'),
     'userscode': [
-        # Re-aimed at #310 (26 Nov 2569): the words moved into each grant's
-        # `abbr` title; the mistake is the same bare code there.
+        # Re-aimed at #310 (26 Nov 2569): the words moved into `RolesCell`,
+        # which draws them as each grant's `abbr` title and the cell's
+        # accessible name; the mistake is the same bare code there, and the
+        # call site stops handing over the list the hook read.
         ('list',
-        '                                  title={`${roleName(grant.role_id)} (${grantScope(\n'
-        '                                    grantable.scopes,\n'
-        '                                    grant,\n'
-        '                                  )})`}\n',
-        '                                  title={`${roleName(grant.role_id)} (${grant.scope_id})`}\n'),
+        '    words: `${roleName(grant.role_id)} (${grantScope(scopes, grant)})`,\n',
+        '    words: `${roleName(grant.role_id)} (${grant.scope_id})`,\n'),
+        ('list',
+        '                      <RolesCell user={user} scopes={grantable.scopes} />\n',
+        '                      <RolesCell user={user} />\n'),
         ('list', "import { grantScope } from '../components/users/scopeLabel'\n", ''),
         ('list', "import useGrantable from '../components/users/useGrantable'\n", ''),
         ('list',

@@ -38,7 +38,11 @@ const roleAbbreviations = {
   EXT_ASSESSOR: 'EA',
 }
 
-/** The abbreviation for a role code, or the code itself if it is unknown. */
+/**
+ * The abbreviation for a role code, or the code itself if it is unknown - as
+ * `roleName` does, so a role added to the server and not here reads as its
+ * code (long, and in capitals) rather than as nothing.
+ */
 export function roleAbbreviation(roleId) {
   return roleAbbreviations[roleId] ?? roleId
 }

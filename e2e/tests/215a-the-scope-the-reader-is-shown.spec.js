@@ -144,12 +144,16 @@ test('row 2: the accounts list says it the same way in its role column', async (
   await search(page, ACCOUNTS.multiRole);
 
   const roles = await roleCell(page, ACCOUNTS.multiRole);
+  // One read of both grants, in no particular order: two `toContain` polls
+  // would leave the second claim below the first one's kill line (#88).
   await expect
-    .poll(() => grantTitles(roles))
-    .toContain(`${ROLE_NAMES.TEACHER} (${asDrawn(KIND.department, DEPARTMENT)})`);
-  await expect
-    .poll(() => grantTitles(roles))
-    .toContain(`${ROLE_NAMES.PROG_MANAGER} (${asDrawn(KIND.program, PROGRAM)})`);
+    .poll(async () => (await grantTitles(roles)).sort())
+    .toEqual(
+      [
+        `${ROLE_NAMES.TEACHER} (${asDrawn(KIND.department, DEPARTMENT)})`,
+        `${ROLE_NAMES.PROG_MANAGER} (${asDrawn(KIND.program, PROGRAM)})`,
+      ].sort(),
+    );
 });
 
 /**
