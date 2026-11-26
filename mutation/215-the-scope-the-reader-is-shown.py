@@ -98,15 +98,14 @@ MUTANTS = {
         '    : grantScope(scopes, grant))\n',
         '  grant.scope_id\n'),
     'userscode': [
+        # Re-aimed at #310 (26 Nov 2569): the words moved into each grant's
+        # `abbr` title; the mistake is the same bare code there.
         ('list',
-        '                          .map(\n'
-        '                            grant =>\n'
-        '                              `${roleName(grant.role_id)} (${grantScope(\n'
-        '                                grantable.scopes,\n'
-        '                                grant,\n'
-        '                              )})`,\n'
-        '                          )\n',
-        '                          .map(grant => `${roleName(grant.role_id)} (${grant.scope_id})`)\n'),
+        '                                  title={`${roleName(grant.role_id)} (${grantScope(\n'
+        '                                    grantable.scopes,\n'
+        '                                    grant,\n'
+        '                                  )})`}\n',
+        '                                  title={`${roleName(grant.role_id)} (${grant.scope_id})`}\n'),
         ('list', "import { grantScope } from '../components/users/scopeLabel'\n", ''),
         ('list', "import useGrantable from '../components/users/useGrantable'\n", ''),
         ('list',

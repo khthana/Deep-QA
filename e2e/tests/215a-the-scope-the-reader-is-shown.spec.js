@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { DEPARTMENTS, PROGRAMS } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { openUsers, search, listTable, userRow } = require('../support/users-screen');
+const { openUsers, search, roleCell, grantTitles } = require('../support/users-screen');
 const {
   ROLE_NAMES,
   openEditor,
@@ -110,19 +110,9 @@ function theNameIsSharedByTwoKinds() {
   expect(PROGRAM.id).not.toBe(DEPARTMENT.id);
 }
 
-/**
- * The role column of one account's row, found through the header above it.
- *
- * By header rather than by a number, because the column's position is not what
- * the claim is about and a number here would expire the day the table gains a
- * column (#173).
- */
-async function roleCell(page, email) {
-  const headers = await listTable(page).getByRole('columnheader').allTextContents();
-  const column = headers.indexOf('บทบาท');
-  expect(column, 'the accounts table has no บทบาท column').toBeGreaterThanOrEqual(0);
-  return userRow(page, email).getByRole('cell').nth(column);
-}
+// The role column is found by its header (`roleCell`, #173), and since #310
+// each grant in it is an abbreviation whose tooltip carries the role and the
+// scope in the words these rows are about - so they read `grantTitles`.
 
 /**
  * The scope statement of the one card a role is held on - `grantRow` is not
@@ -154,12 +144,12 @@ test('row 2: the accounts list says it the same way in its role column', async (
   await search(page, ACCOUNTS.multiRole);
 
   const roles = await roleCell(page, ACCOUNTS.multiRole);
-  await expect(roles).toContainText(
-    `${ROLE_NAMES.TEACHER} (${asDrawn(KIND.department, DEPARTMENT)})`,
-  );
-  await expect(roles).toContainText(
-    `${ROLE_NAMES.PROG_MANAGER} (${asDrawn(KIND.program, PROGRAM)})`,
-  );
+  await expect
+    .poll(() => grantTitles(roles))
+    .toContain(`${ROLE_NAMES.TEACHER} (${asDrawn(KIND.department, DEPARTMENT)})`);
+  await expect
+    .poll(() => grantTitles(roles))
+    .toContain(`${ROLE_NAMES.PROG_MANAGER} (${asDrawn(KIND.program, PROGRAM)})`);
 });
 
 /**
@@ -186,9 +176,10 @@ test('row 3 (#294): the accounts list names a scope out of reach as well', async
   // `grantable` is owed - a read of the whole cell fails with the code in it.
   // The mechanism is row 4's, which has the picker to ask.
   await search(page, ACCOUNTS.crossScope);
-  await expect(await roleCell(page, ACCOUNTS.crossScope)).toHaveText(
-    `${ROLE_NAMES.TEACHER} (${asDrawn(KIND.department, outOfReach)})`,
-  );
+  const roles = await roleCell(page, ACCOUNTS.crossScope);
+  await expect
+    .poll(() => grantTitles(roles))
+    .toEqual([`${ROLE_NAMES.TEACHER} (${asDrawn(KIND.department, outOfReach)})`]);
 });
 
 test('row 4 (#294): the held-roles table names it, and the picker says from where', async ({
@@ -246,9 +237,8 @@ test('row 5: the scope whose code is not a code says itself and nothing else', a
   await openUsers(page);
   await search(page, ACCOUNTS.systemAdmin);
 
-  await expect(await roleCell(page, ACCOUNTS.systemAdmin)).toHaveText(
-    `${ROLE_NAMES.FULL_ADMIN} (${UNCONFINED})`,
-  );
+  const roles = await roleCell(page, ACCOUNTS.systemAdmin);
+  await expect.poll(() => grantTitles(roles)).toEqual([`${ROLE_NAMES.FULL_ADMIN} (${UNCONFINED})`]);
 });
 
 /**

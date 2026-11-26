@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -17,7 +17,7 @@ import { personName } from '../components/users/personName'
 import { editAddress, fromQuery, listQuery } from '../components/users/listAddress'
 import { grantScope } from '../components/users/scopeLabel'
 import useGrantable from '../components/users/useGrantable'
-import { roleName } from '../components/MapRole'
+import { roleAbbreviation, roleName } from '../components/MapRole'
 import { useAuth } from '../context/AuthContext'
 import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
@@ -1096,14 +1096,20 @@ export default function Users() {
             onError={report}
           />
 
+          {/* #310 - the rows one line high, as the delivered table's were (the
+              owner's answer of 26 November 2569): nothing wraps, the cells
+              have the delivered `px-2`, and the role column draws each grant
+              as an abbreviation whose tooltip holds its role and scope. At
+              1920 with the side bar open the table fits; narrower, it scrolls
+              in this box and the page does not (#98). */}
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="w-full text-left text-sm">
+            <table className="w-full whitespace-nowrap text-left text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
                   {HEADERS.map(header => (
                     <th
                       key={header}
-                      className={`px-4 py-2 ${CENTRED.has(header) ? 'text-center' : ''}`}
+                      className={`px-2 py-2 ${CENTRED.has(header) ? 'text-center' : ''}`}
                     >
                       {header}
                     </th>
@@ -1133,26 +1139,32 @@ export default function Users() {
                           which runs ahead of what is drawn while a read is out.
                           The delivered screen counted from 1 on every page; the
                           owner's answer of 23 November 2569 was to run on. */}
-                      <td className="px-4 py-2 text-center">
+                      <td className="px-2 py-2 text-center">
                         {((data.page || 1) - 1) * (data.per_page || PAGE_SIZE) + index + 1}
                       </td>
-                      <td className="px-4 py-2">{user.user_id}</td>
-                      <td className="px-4 py-2">{nameIn(user, 'th')}</td>
-                      <td className="px-4 py-2">{nameIn(user, 'en')}</td>
-                      <td className="px-4 py-2">{user.email}</td>
-                      <td className="px-4 py-2">
-                        {(user.roles ?? [])
-                          .map(
-                            grant =>
-                              `${roleName(grant.role_id)} (${grantScope(
-                                grantable.scopes,
-                                grant,
-                              )})`,
-                          )
-                          .join(', ') || '—'}
+                      <td className="px-2 py-2">{user.user_id}</td>
+                      <td className="px-2 py-2">{nameIn(user, 'th')}</td>
+                      <td className="px-2 py-2">{nameIn(user, 'en')}</td>
+                      <td className="px-2 py-2">{user.email}</td>
+                      <td className="px-2 py-2">
+                        {(user.roles ?? []).length === 0
+                          ? '—'
+                          : user.roles.map((grant, at) => (
+                              <Fragment key={`${grant.role_id}:${grant.scope_id}`}>
+                                {at > 0 && ', '}
+                                <abbr
+                                  title={`${roleName(grant.role_id)} (${grantScope(
+                                    grantable.scopes,
+                                    grant,
+                                  )})`}
+                                >
+                                  {roleAbbreviation(grant.role_id)}
+                                </abbr>
+                              </Fragment>
+                            ))}
                       </td>
-                      <td className="px-4 py-2">{windowOf(user)}</td>
-                      <td className="px-4 py-2 text-center">
+                      <td className="px-2 py-2">{windowOf(user)}</td>
+                      <td className="px-2 py-2 text-center">
                         <StatusSwitch
                           checked={suspends(user)}
                           label={`สถานะ ${personName(user)}`}
@@ -1161,7 +1173,7 @@ export default function Users() {
                           title={isSelf(user) ? CANNOT_SUSPEND_SELF : undefined}
                         />
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2">
+                      <td className="px-2 py-2">
                         {/* #302 - the delivered grey icon with no word beside it
                             (`docs/users-screen.md` rule 3). Its name says whose
                             account it opens, which a column of identical

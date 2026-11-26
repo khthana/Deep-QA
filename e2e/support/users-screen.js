@@ -88,6 +88,28 @@ const userRow = (page, email) =>
 const listTable = page =>
   page.locator('xpath=//table[not(ancestor::*[@role="dialog"])]').first();
 
+/**
+ * The role column of one account's row, found through the header above it -
+ * by header rather than by a number, which would expire the day the table
+ * gains a column (#173).
+ */
+async function roleCell(page, email) {
+  const headers = await listTable(page).getByRole('columnheader').allTextContents();
+  const column = headers.indexOf('บทบาท');
+  expect(column, 'the accounts table has no บทบาท column').toBeGreaterThanOrEqual(0);
+  return userRow(page, email).getByRole('cell').nth(column);
+}
+
+/**
+ * What each grant in a role cell says in full. Since #310 (the owner's answer
+ * of 26 November 2569) the cell draws one abbreviation per grant and the role's
+ * name with its scope is the abbreviation's `title`, which is where the words
+ * of `docs/users-screen.md` rule 1 now live. Read once - callers that need a
+ * retrying read wrap it in `expect.poll`.
+ */
+const grantTitles = cell =>
+  cell.locator('abbr').evaluateAll(marks => marks.map(mark => mark.getAttribute('title')));
+
 /** The route one row's switch writes to, which is also where it is held. */
 const statusPath = userId => `${API}/${userId}/status`;
 
@@ -312,6 +334,8 @@ module.exports = {
   importUsers,
   userRow,
   listTable,
+  roleCell,
+  grantTitles,
   statusPath,
   statusButton,
   statusSwitch,

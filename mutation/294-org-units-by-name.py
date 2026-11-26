@@ -225,11 +225,12 @@ MUTANTS = {
     'o294panelfromlist': ('panel',
         '  grant.scope_name ||\n',
         '  scopes.find(entry => entry.scope_id === grant.scope_id)?.label ||\n'),
+    # Re-aimed at #310 (26 Nov 2569): the call now builds the `abbr` title.
     'o294listfromlist': ('users',
-        '                                grant,\n'
-        '                              )})`,\n',
-        '                                { scope_id: grant.scope_id },\n'
-        '                              )})`,\n'),
+        '                                    grant,\n'
+        '                                  )})`}\n',
+        '                                    { scope_id: grant.scope_id },\n'
+        '                                  )})`}\n'),
     # The three sites that drew a bare code, as they drew it (#115).
     'o294sectionscode': ('sections',
         '            {programName ?? ` ${offering.program_id}`}\n',

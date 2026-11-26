@@ -102,9 +102,10 @@ MUTANTS = {
         "    ? [user[`title_${lang}`], user[`first_name_${lang}`], user[`last_name_${lang}`]]\n",
         "    ? [user[`first_name_${lang}`], user[`last_name_${lang}`]]\n"),
     # คอลัมน์อังกฤษวาดชื่อไทย
+    # Re-aimed at #310 (26 Nov 2569): the cells' padding went back to `px-2`.
     'englishcolumnthai': ('users',
-        "                      <td className=\"px-4 py-2\">{nameIn(user, 'en')}</td>\n",
-        "                      <td className=\"px-4 py-2\">{nameIn(user, 'th')}</td>\n"),
+        "                      <td className=\"px-2 py-2\">{nameIn(user, 'en')}</td>\n",
+        "                      <td className=\"px-2 py-2\">{nameIn(user, 'th')}</td>\n"),
     # ทางที่เจ้าของงานไม่เลือก: คำข้างสวิตช์
     'switchsaysaword': ('users',
         "                          title={isSelf(user) ? CANNOT_SUSPEND_SELF : undefined}\n"

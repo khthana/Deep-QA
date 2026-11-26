@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { DEPARTMENTS } = require('../../db/seed');
 const { ACCOUNTS } = require('../support/accounts');
 const { signIn } = require('../support/auth');
-const { openUsers, search, listTable, userRow } = require('../support/users-screen');
+const { openUsers, search, roleCell, grantTitles } = require('../support/users-screen');
 const {
   ROLE_NAMES,
   openEditor,
@@ -133,14 +133,13 @@ test('row 3: the accounts list says the same in its role column', async ({ page 
     await openUsers(page);
     await search(page, ACCOUNTS.teacherOne);
 
-    const headers = await listTable(page).getByRole('columnheader').allTextContents();
-    const column = headers.indexOf('บทบาท');
-    expect(column, 'the accounts table has no บทบาท column').toBeGreaterThanOrEqual(0);
     // A retrying read: the column is drawn first from the bare code and again
     // once the picker's list lands, which is the moment the unfixed screen threw.
-    await expect(userRow(page, ACCOUNTS.teacherOne).getByRole('cell').nth(column)).toHaveText(
-      `${ROLE_NAMES.TEACHER} (${NAMELESS})`,
-    );
+    // Since #310 the words are the abbreviation's tooltip.
+    const roles = await roleCell(page, ACCOUNTS.teacherOne);
+    await expect
+      .poll(() => grantTitles(roles))
+      .toEqual([`${ROLE_NAMES.TEACHER} (${NAMELESS})`]);
   });
 });
 
@@ -163,12 +162,10 @@ test('row 4: the accounts list names a nameless unit out of reach by its kind an
     await openUsers(page);
     await search(page, ACCOUNTS.crossScope);
 
-    const headers = await listTable(page).getByRole('columnheader').allTextContents();
-    const column = headers.indexOf('บทบาท');
-    expect(column, 'the accounts table has no บทบาท column').toBeGreaterThanOrEqual(0);
-    await expect(userRow(page, ACCOUNTS.crossScope).getByRole('cell').nth(column)).toHaveText(
-      `${ROLE_NAMES.TEACHER} (${OUT_OF_REACH})`,
-    );
+    const roles = await roleCell(page, ACCOUNTS.crossScope);
+    await expect
+      .poll(() => grantTitles(roles))
+      .toEqual([`${ROLE_NAMES.TEACHER} (${OUT_OF_REACH})`]);
   });
 });
 
