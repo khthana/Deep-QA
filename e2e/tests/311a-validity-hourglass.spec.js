@@ -115,3 +115,22 @@ test.describe('west of UTC', () => {
     await expect(cell.getByRole('img')).toHaveAttribute('title', '27 ต.ค. 2569 ถึง 26 ธ.ค. 2569');
   });
 });
+
+// Appended below the rows rather than above them, so that the line numbers
+// `mutation/311-validity-hourglass.py` cites stay where its sweep found them
+// (#97, #85). Both are file-scoped whatever their position.
+//
+// Rows 1-4 in Bangkok whatever the machine's zone, so that `s311localzone`
+// survives them by construction and not because of where the suite runs
+// (#187: the clock must not pick which claim runs). Row 5's describe overrides it.
+test.use({ timezoneId: 'Asia/Bangkok' });
+
+// Row 4 reads `teach01` as an account with no window; the seed says so today,
+// and this says it on the row's behalf rather than leaving it to memory (#129).
+test.beforeAll(async () => {
+  const { rows } = await db.query(
+    `SELECT valid_from, valid_until FROM users WHERE user_id = $1`,
+    [IDS.teacherOne],
+  );
+  expect(rows, 'teach01 carries no window').toEqual([{ valid_from: null, valid_until: null }]);
+});
