@@ -14,6 +14,7 @@ import { getLearningDetails } from '../api/learningDetails'
 import { HiOutlineDocumentReport } from 'react-icons/hi'
 import ContentTitle, { CARD } from '../components/ContentTitle'
 import { TABLE_HEAD } from '../lib/tableHead'
+import { SearchField } from '../components/SearchBox'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = HiOutlineDocumentReport
@@ -246,15 +247,18 @@ export default function StudentResults() {
               เลือกได้ครั้งละไม่เกิน {MAX_STUDENTS} คน
               เพื่อให้แต่ละเส้นยังแยกออกจากกันได้
             </p>
-            <input
-              value={term}
-              onChange={event => setTerm(event.target.value)}
+            {/* #316 - drawn as every search box is, and still filtering the
+                roll in hand on every keystroke at the panel's full width. */}
+            <SearchField
               // Labelled as well as prompted. A placeholder is the accessible
               // name only until somebody types, at which point the field goes
               // nameless for a screen reader. Found by review.
-              aria-label="ค้นหานักศึกษาด้วยรหัสหรือชื่อ"
+              label="ค้นหานักศึกษาด้วยรหัสหรือชื่อ"
               placeholder="ค้นหาด้วยรหัสหรือชื่อ"
-              className="mt-3 w-full rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
+              value={term}
+              onChange={event => setTerm(event.target.value)}
+              wide
+              className="mt-3"
             />
 
             <div className="mt-3 max-h-96 space-y-1 overflow-y-auto">

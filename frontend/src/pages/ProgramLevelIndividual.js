@@ -12,6 +12,7 @@ import { getStudentContributions, getStudentResults, listRoll } from '../api/pro
 import { IoDocumentTextOutline } from 'react-icons/io5'
 import ContentTitle, { CARD } from '../components/ContentTitle'
 import { TABLE_HEAD } from '../lib/tableHead'
+import { SearchField } from '../components/SearchBox'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = IoDocumentTextOutline
@@ -284,14 +285,17 @@ export default function ProgramLevelIndividual() {
             <p className="mt-1 text-xs text-slate-400">
               ทะเบียนรุ่น {intake} ทั้งหมด {roll.length} คน
             </p>
-            <input
-              value={term}
-              onChange={event => setTerm(event.target.value)}
+            {/* #316 - drawn as every search box is, and still filtering the
+                roll in hand on every keystroke at the panel's full width. */}
+            <SearchField
               // Labelled as well as prompted: a placeholder stops being the
               // accessible name the moment somebody types. #37's lesson.
-              aria-label="ค้นหานักศึกษาด้วยรหัสหรือชื่อ"
+              label="ค้นหานักศึกษาด้วยรหัสหรือชื่อ"
               placeholder="ค้นหาด้วยรหัสหรือชื่อ"
-              className="mt-3 w-full rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
+              value={term}
+              onChange={event => setTerm(event.target.value)}
+              wide
+              className="mt-3"
             />
 
             {offered.length === 0 ? (

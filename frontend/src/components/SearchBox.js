@@ -44,24 +44,49 @@ export default function SearchBox({ label, value, onSearch }) {
   useEffect(() => () => clearTimeout(timer.current), [])
 
   return (
-    <div className="relative">
+    <SearchField
+      label={label}
+      value={typed}
+      onChange={event => {
+        const next = event.target.value
+        setTyped(next)
+        clearTimeout(timer.current)
+        timer.current = setTimeout(() => {
+          if (next.trim() !== String(value ?? '').trim()) onSearch(next)
+        }, SEARCH_DELAY)
+      }}
+    />
+  )
+}
+
+/**
+ * What a search box looks like, without what it does - #316, the owner's
+ * answer of 27 November 2569 (`docs/ui-consistency.md` rule 7).
+ *
+ * The magnifier, the grey ground and the blue ring on focus are `SearchBox`'s
+ * and live here once, so the two student filters in the side panels of
+ * *ผลการเรียนของนักศึกษา* and *ผลระดับหลักสูตรรายบุคคล* look like every other
+ * search while keeping what they do: they filter the roll already in hand on
+ * every keystroke, with no delay and no read, and they fill their panel
+ * (`wide`) where the screens' boxes are `w-64`.
+ *
+ * `label` is the accessible name and `placeholder` the prompt; the two are the
+ * same unless the caller says otherwise, which the filters do, because the
+ * placeholder stops naming the field the moment somebody types (#37).
+ */
+export function SearchField({ label, placeholder = label, value, onChange, wide = false, className = '' }) {
+  return (
+    <div className={className ? `relative ${className}` : 'relative'}>
       <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3">
         <FaSearch aria-hidden="true" className="text-gray-500" />
       </div>
       <input
         type="search"
         aria-label={label}
-        placeholder={label}
-        value={typed}
-        onChange={event => {
-          const next = event.target.value
-          setTyped(next)
-          clearTimeout(timer.current)
-          timer.current = setTimeout(() => {
-            if (next.trim() !== String(value ?? '').trim()) onSearch(next)
-          }, SEARCH_DELAY)
-        }}
-        className="block w-64 rounded-lg border border-gray-300 bg-gray-50 p-2 ps-10 text-sm text-gray-900 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={`block ${wide ? 'w-full' : 'w-64'} rounded-lg border border-gray-300 bg-gray-50 p-2 ps-10 text-sm text-gray-900 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500`}
       />
     </div>
   )
