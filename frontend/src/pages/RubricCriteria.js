@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import ConfirmDialog from '../components/ConfirmDialog'
+import { BackArrow, BACK_BUTTON } from '../components/BackButton'
 import Notice from '../components/Notice'
 import PageHeader from '../components/PageHeader'
 import RowAction, { RowActions } from '../components/RowAction'
@@ -242,8 +243,9 @@ export default function RubricCriteria() {
           <p className="text-sm text-slate-600">{refusal}</p>
           <Link
             to="/main/rubrics"
-            className="mt-4 inline-block rounded-lg px-3 py-1.5 text-sm text-primary hover:bg-blue-50"
+            className={`mt-4 ${BACK_BUTTON}`}
           >
+            <BackArrow />
             กลับไปหน้าข้อมูล Rubric กลาง
           </Link>
         </div>
@@ -290,8 +292,9 @@ export default function RubricCriteria() {
           >
             <Link
               to="/main/rubrics"
-              className="rounded-lg px-3 py-1.5 text-sm text-primary hover:bg-blue-50"
+              className={BACK_BUTTON}
             >
+              <BackArrow />
               กลับไปหน้าข้อมูล Rubric กลาง
             </Link>
           </PageHeader>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
+import { BackArrow, BACK_BUTTON } from '../BackButton'
 import RowAction, { RowActions } from '../RowAction'
 import TeacherPicker from './TeacherPicker'
 import { termLabel } from './terms'
@@ -95,8 +96,9 @@ export default function SectionsPanel({
         <button
           type="button"
           onClick={onBack}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          className={BACK_BUTTON}
         >
+          <BackArrow />
           กลับไปหน้ารายการ
         </button>
       </div>

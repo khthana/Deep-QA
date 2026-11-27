@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import ContentMotionDIV from '../components/ContentMotionDIV'
+import { BackArrow, BACK_BUTTON } from '../components/BackButton'
 import Notice from '../components/Notice'
 import { getMySection } from '../api/teaching'
 import { semesterLabel } from '../components/offerings/terms'
@@ -85,8 +86,9 @@ export default function TeacherSection() {
         <button
           type="button"
           onClick={() => navigate('/teacher/teacherDashboard')}
-          className="text-sm font-medium text-blue-600 hover:underline focus:outline-none"
+          className={BACK_BUTTON}
         >
+          <BackArrow />
           กลับไปที่รายวิชาที่สอน
         </button>
       )}
