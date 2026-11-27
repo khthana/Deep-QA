@@ -223,6 +223,20 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `programsrefusalwins` | `146a` | 1 ล้ม 47 ผ่าน | `146a` *a save refused after the screen moved on says nothing over the new for* บรรทัด 377 |
 | `programscancelclears` | `146a` | 1 ล้ม 47 ผ่าน | `146a` *a save that nothing took the place of says what it did* บรรทัด 404 |
 | `programssavesaysanyway` | `146a` | 3 ล้ม 45 ผ่าน | `146a` *a save that lands after แก้ไข leaves the form it found open* บรรทัด 325 · `146a` *a save that lands after เพิ่ม leaves what was typed where it was* บรรทัด 355 · `146a` *a save that lands while the next row is being read says nothing* บรรทัด 463 · เหมือนตัวข้างบน — 2 ก่อนต่อท้ายแถวที่สาม 3 หลัง |
+
+### จอผู้ใช้งานใน `146a` (28 พ.ย. 2569)
+
+`Users.js` เป็นหน้าต่างลอยมาตั้งแต่ #304 จึงได้ `dialog: true` ใน #336 เหมือนสองจอของ #319 และ #320 · สามแถวของจอนี้ผ่านสะอาด
+และกวาดสามตัวของจอนี้ด้วย `-g ผู้ใช้งาน`:
+
+| ชื่อ | ผล | ตายที่ |
+|---|---|---|
+| `usersclosewins` | 1 ล้ม 2 ผ่าน | *a save that lands after เพิ่ม…* บรรทัด 349 (ฟอร์มถูกปิด) |
+| `usersrefusalwins` | 1 ล้ม 2 ผ่าน | *a save refused after the screen moved on…* บรรทัด 381 — บรรทัดเดิม ไม่ใช่บรรทัดที่ต่อท้าย เพราะคำปฏิเสธลงในหน้าต่างที่ยังเปิดอยู่ |
+| `userscancelclears` | 1 ล้ม 2 ผ่าน | *a save that nothing took the place of…* บรรทัด 408 |
+
+ไม่มีมัตแตนต์ของจอนี้ที่ตายที่บรรทัดที่ต่อท้าย (*…with the form put away*) — ไฟล์นี้ไม่มีตัว `userssavesaysanyway` ·
+บรรทัดเหล่านั้นจึงเป็นตาข่ายบนจอนี้ ไม่ใช่ข้ออ้างที่พิสูจน์แล้ว
 """
 from harness import main
 
