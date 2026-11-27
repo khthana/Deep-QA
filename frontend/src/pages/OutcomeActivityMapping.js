@@ -10,6 +10,7 @@ import { marks, score } from '../lib/bands'
 import { getOutcomeActivityMap } from '../api/outcomeActivityMap'
 import { HiOutlineDocumentReport } from 'react-icons/hi'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = HiOutlineDocumentReport
@@ -230,16 +231,16 @@ export default function OutcomeActivityMapping() {
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[36rem] text-left text-sm">
-                    <thead className="border-b border-gray-200 text-xs text-slate-500">
+                    <thead className={TABLE_HEAD}>
                       <tr>
-                        <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
-                        <th className="px-4 py-2 text-center font-medium">
+                        <th className="px-4 py-2">ผลการเรียนรู้</th>
+                        <th className="px-4 py-2 text-center">
                           คะแนนเฉลี่ย (เต็ม 5)
                         </th>
-                        <th className="px-4 py-2 text-center font-medium">
+                        <th className="px-4 py-2 text-center">
                           กิจกรรมที่วัด
                         </th>
-                        <th className="px-4 py-2 text-center font-medium">
+                        <th className="px-4 py-2 text-center">
                           คะแนนที่ผูกไว้
                         </th>
                       </tr>
@@ -303,15 +304,15 @@ export default function OutcomeActivityMapping() {
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[40rem] text-left text-sm">
-                    <thead className="border-b border-gray-200 text-xs text-slate-500">
+                    <thead className={TABLE_HEAD}>
                       <tr>
-                        <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
-                        <th className="px-4 py-2 font-medium">กิจกรรม</th>
-                        <th className="px-4 py-2 font-medium">หมวดคะแนน</th>
-                        <th className="px-4 py-2 text-center font-medium">
+                        <th className="px-4 py-2">ผลการเรียนรู้</th>
+                        <th className="px-4 py-2">กิจกรรม</th>
+                        <th className="px-4 py-2">หมวดคะแนน</th>
+                        <th className="px-4 py-2 text-center">
                           น้ำหนัก
                         </th>
-                        <th className="px-4 py-2 text-center font-medium">
+                        <th className="px-4 py-2 text-center">
                           คะแนน
                         </th>
                       </tr>

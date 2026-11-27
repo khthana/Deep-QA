@@ -20,6 +20,7 @@ import {
 } from '../api/enrolment'
 import { FaUserGraduate } from 'react-icons/fa'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = FaUserGraduate
@@ -531,12 +532,12 @@ export default function SubjectStudents() {
                   goes out of reach when it does not. */}
             <div className="overflow-x-auto">
               <table className="w-full min-w-[36rem] text-left text-sm">
-                <thead className="border-b border-gray-200 text-xs text-slate-500">
+                <thead className={TABLE_HEAD}>
                   <tr>
-                    <th className="px-4 py-2 font-medium">รหัสนักศึกษา</th>
-                    <th className="px-4 py-2 font-medium">ชื่อ - นามสกุล</th>
-                    <th className="px-4 py-2 font-medium">หลักสูตร</th>
-                    <th className="px-4 py-2 text-center font-medium">ดำเนินการ</th>
+                    <th className="px-4 py-2">รหัสนักศึกษา</th>
+                    <th className="px-4 py-2">ชื่อ - นามสกุล</th>
+                    <th className="px-4 py-2">หลักสูตร</th>
+                    <th className="px-4 py-2 text-center">ดำเนินการ</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import Pager from '../Pager'
+import { TABLE_HEAD } from '../../lib/tableHead'
 
 /**
  * ประวัติการเปลี่ยนแปลงกลุ่มงาน — #26's sixth criterion.
@@ -124,11 +125,11 @@ export default function GroupHistory({ fetchPage, onError }) {
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[36rem] text-left text-sm">
-          <thead className="border-b border-gray-200 text-xs text-slate-500">
+          <thead className={TABLE_HEAD}>
             <tr>
-              <th className="px-4 py-2 font-medium">เมื่อ</th>
-              <th className="px-4 py-2 font-medium">สิ่งที่เกิดขึ้น</th>
-              <th className="px-4 py-2 font-medium">โดย</th>
+              <th className="px-4 py-2">เมื่อ</th>
+              <th className="px-4 py-2">สิ่งที่เกิดขึ้น</th>
+              <th className="px-4 py-2">โดย</th>
             </tr>
           </thead>
           <tbody>

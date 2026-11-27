@@ -17,6 +17,7 @@ import {
 } from '../components/users/historyEntry'
 import { personName } from '../components/users/personName'
 import { listAllHistory } from '../api/users'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /**
  * ประวัติการใช้งาน — #13, given back its delivered table by #305.
@@ -127,16 +128,16 @@ export default function UserHistory() {
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border border-gray-200 bg-slate-100">
+          <thead className={TABLE_HEAD}>
             <tr>
-              <th className="border px-2 py-2 font-bold text-gray-700">ผู้ใช้งาน</th>
-              <th className="border px-2 py-2 text-center font-bold text-gray-700">กิจกรรม</th>
-              <th className="border px-2 py-2 font-bold text-gray-700">วันที่</th>
-              <th className="border px-2 py-2 font-bold text-gray-700">เวลา</th>
-              <th className="border px-2 py-2 text-center font-bold text-gray-700">
+              <th className="border px-2 py-2">ผู้ใช้งาน</th>
+              <th className="border px-2 py-2 text-center">กิจกรรม</th>
+              <th className="border px-2 py-2">วันที่</th>
+              <th className="border px-2 py-2">เวลา</th>
+              <th className="border px-2 py-2 text-center">
                 รหัสผู้ใช้งาน
               </th>
-              <th className="border px-2 py-2 font-bold text-gray-700">ทำกับข้อมูล</th>
+              <th className="border px-2 py-2">ทำกับข้อมูล</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">

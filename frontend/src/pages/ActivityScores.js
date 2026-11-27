@@ -9,6 +9,7 @@ import { getActivities } from '../api/activities'
 import { getScores, importScores, saveScores, scoresTemplate } from '../api/activityScores'
 import { GrScorecard } from 'react-icons/gr'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = GrScorecard
@@ -533,17 +534,17 @@ export default function ActivityScores() {
                */}
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[36rem] text-left text-sm">
-                  <thead className="border-b border-gray-200 text-xs text-slate-500">
+                  <thead className={TABLE_HEAD}>
                     <tr>
-                      <th className="px-4 py-2 font-medium">
+                      <th className="px-4 py-2">
                         {entry === 'group' ? 'กลุ่ม' : 'รหัสนักศึกษา'}
                       </th>
-                      <th className="px-4 py-2 font-medium">
+                      <th className="px-4 py-2">
                         {entry === 'group' ? 'จำนวนสมาชิก' : 'ชื่อ'}
                       </th>
                       {mode === 'clo' ? (
                         data.clo_rows.map(row => (
-                          <th key={row.clo_id} className="px-4 py-2 font-medium">
+                          <th key={row.clo_id} className="px-4 py-2">
                             {row.clo_number}
                             <span className="ml-1 font-normal text-slate-400">
                               (เต็ม {Number(row.score)})
@@ -551,7 +552,7 @@ export default function ActivityScores() {
                           </th>
                         ))
                       ) : (
-                        <th className="px-4 py-2 font-medium">คะแนน</th>
+                        <th className="px-4 py-2">คะแนน</th>
                       )}
                     </tr>
                   </thead>

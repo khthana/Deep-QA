@@ -26,6 +26,7 @@ import {
 import { programNamed } from '../lib/unitNamed'
 import { FaBook } from 'react-icons/fa'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = FaBook
@@ -571,7 +572,7 @@ export default function ProgramSubjects() {
 
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className={TABLE_HEAD}>
                 <tr>
                   <th className="px-4 py-2">รหัสวิชา</th>
                   <th className="px-4 py-2">ชื่อวิชา</th>

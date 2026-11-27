@@ -7,6 +7,7 @@ import { BANDS, FLAG, figure, rangeOf, score } from '../lib/bands'
 import { getLearningDetails } from '../api/learningDetails'
 import { HiOutlineDocumentReport } from 'react-icons/hi'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = HiOutlineDocumentReport
@@ -176,12 +177,12 @@ export default function LearningDetails() {
                 {/* The table scrolls in its own frame so the page never does — #98. */}
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[42rem] text-left text-sm">
-                    <thead className="border-b border-gray-200 text-xs text-slate-500">
+                    <thead className={TABLE_HEAD}>
                       <tr>
-                        <th className="px-4 py-2 font-medium">รหัสนักศึกษา</th>
-                        <th className="px-4 py-2 font-medium">ชื่อ</th>
+                        <th className="px-4 py-2">รหัสนักศึกษา</th>
+                        <th className="px-4 py-2">ชื่อ</th>
                         {data.clos.map((clo) => (
-                          <th key={clo.clo_id} className="px-4 py-2 text-center font-medium">
+                          <th key={clo.clo_id} className="px-4 py-2 text-center">
                             {clo.clo_number}
                           </th>
                         ))}

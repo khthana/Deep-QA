@@ -29,6 +29,7 @@ import {
 } from '../api/users'
 import { FaUserGroup } from 'react-icons/fa6'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = FaUserGroup
@@ -1171,7 +1172,7 @@ export default function Users() {
               in this box and the page does not (#98). */}
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full whitespace-nowrap text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className={TABLE_HEAD}>
                 <tr>
                   {HEADERS.map(header => (
                     <th

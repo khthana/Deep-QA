@@ -14,6 +14,7 @@ import {
 import { getResultsAcrossIntakes } from '../api/programResults'
 import { IoDocumentTextOutline } from 'react-icons/io5'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = IoDocumentTextOutline
@@ -309,16 +310,16 @@ export default function ProgramLevelCompare() {
                 className="w-full table-fixed text-left text-sm"
                 style={{ minWidth: `${20 + data.years.length * 7}rem` }}
               >
-                <thead className="border-b border-gray-200 text-xs text-slate-500">
+                <thead className={TABLE_HEAD}>
                   <tr>
-                    <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
-                    <th className="w-24 px-4 py-2 text-center font-medium">
+                    <th className="px-4 py-2">ผลการเรียนรู้</th>
+                    <th className="w-24 px-4 py-2 text-center">
                       ประเภท
                     </th>
                     {data.years.map(year => (
                       <th
                         key={year.admission_year}
-                        className="w-28 px-4 py-2 text-center font-medium"
+                        className="w-28 px-4 py-2 text-center"
                       >
                         <span className="block text-sm text-slate-600">
                           {year.admission_year}

@@ -6,6 +6,7 @@ import { LEVELS, keyOf, mark } from '../components/ploMapping/levels'
 import { programNamed } from '../lib/unitNamed'
 import { FaBookBookmark } from 'react-icons/fa6'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = FaBookBookmark
@@ -298,11 +299,15 @@ export default function PloMapping() {
           inside it so a row stays attributable at the right-hand edge. */}
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className={TABLE_HEAD}>
             <tr>
               <th className="sticky left-0 z-10 min-w-[16rem] bg-gray-50 px-4 py-2">
                 รายวิชา
               </th>
+              {/* table-head: one narrow column per PLO code, smaller and darker
+                  than the head around it - this screen drew them so while its
+                  head was already the one rule 5 chose as the model, so #314
+                  carried them over rather than widening the matrix (#314) */}
               {grid.outcomes.map(outcome => (
                 <th
                   key={outcome.outcome_id}

@@ -24,6 +24,7 @@ import {
 import { departmentNamed, programNamed } from '../lib/unitNamed'
 import { PiStudentBold } from 'react-icons/pi'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = PiStudentBold
@@ -561,7 +562,7 @@ export default function Students() {
 
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className={TABLE_HEAD}>
                 <tr>
                   <th className="px-4 py-2">รหัสนักศึกษา</th>
                   <th className="px-4 py-2">ชื่อ - นามสกุล</th>

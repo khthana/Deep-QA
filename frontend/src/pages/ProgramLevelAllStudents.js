@@ -8,6 +8,7 @@ import { CohortPickers, NoStudentsYet, useCohortPickers } from '../components/re
 import { getStudentHeatmap } from '../api/programResults'
 import { IoDocumentTextOutline } from 'react-icons/io5'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = IoDocumentTextOutline
@@ -214,16 +215,16 @@ export default function ProgramLevelAllStudents() {
                   wider than the screen it is read on. */}
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left text-sm">
-                  <thead className="border-b border-gray-200 text-xs text-slate-500">
+                  <thead className={TABLE_HEAD}>
                     <tr>
-                      <th className="px-4 py-2 font-medium">รหัสนักศึกษา</th>
-                      <th className="px-4 py-2 font-medium">ชื่อ – นามสกุล</th>
-                      <th className="px-4 py-2 text-center font-medium">ต่ำกว่าเกณฑ์</th>
+                      <th className="px-4 py-2">รหัสนักศึกษา</th>
+                      <th className="px-4 py-2">ชื่อ – นามสกุล</th>
+                      <th className="px-4 py-2 text-center">ต่ำกว่าเกณฑ์</th>
                       {data.plos.map(plo => (
                         <th
                           key={plo.outcome_id}
                           title={plo.outcome_title}
-                          className="px-2 py-2 text-center font-medium"
+                          className="px-2 py-2 text-center"
                         >
                           {plo.outcome_code}
                         </th>

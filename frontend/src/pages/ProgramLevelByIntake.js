@@ -12,6 +12,7 @@ import { getOutcomeContributions, getResultsByIntake } from '../api/programResul
 import { useScreenGeneration } from '../context/ScreenGeneration'
 import { IoDocumentTextOutline } from 'react-icons/io5'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = IoDocumentTextOutline
@@ -277,15 +278,15 @@ export default function ProgramLevelByIntake() {
               {/* The table scrolls in its own frame so the page never does — #98. */}
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[48rem] text-left text-sm">
-                  <thead className="border-b border-gray-200 text-xs text-slate-500">
+                  <thead className={TABLE_HEAD}>
                     <tr>
-                      <th className="px-4 py-2 font-medium">ผลการเรียนรู้</th>
-                      <th className="px-4 py-2 text-center font-medium">ประเภท</th>
-                      <th className="px-4 py-2 text-center font-medium">จำนวนที่วัดได้</th>
-                      <th className="px-4 py-2 text-center font-medium">คะแนนเฉลี่ย</th>
-                      <th className="px-4 py-2 text-center font-medium">อัตราผ่านเกณฑ์</th>
-                      <th className="px-4 py-2 text-center font-medium">ผ่าน</th>
-                      <th className="px-4 py-2 text-center font-medium">ที่มา</th>
+                      <th className="px-4 py-2">ผลการเรียนรู้</th>
+                      <th className="px-4 py-2 text-center">ประเภท</th>
+                      <th className="px-4 py-2 text-center">จำนวนที่วัดได้</th>
+                      <th className="px-4 py-2 text-center">คะแนนเฉลี่ย</th>
+                      <th className="px-4 py-2 text-center">อัตราผ่านเกณฑ์</th>
+                      <th className="px-4 py-2 text-center">ผ่าน</th>
+                      <th className="px-4 py-2 text-center">ที่มา</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">

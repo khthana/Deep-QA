@@ -9,6 +9,7 @@ import { criterionLines, figure, score, verdictLabel } from '../lib/bands'
 import { getCloAssessment } from '../api/cloAssessment'
 import { IoDocumentTextOutline } from 'react-icons/io5'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = IoDocumentTextOutline
@@ -188,24 +189,24 @@ export default function CloAssessment() {
 
               <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
                 <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200 text-xs text-slate-400">
-                      <th className="px-4 py-2 text-left font-medium">
+                  <thead className={TABLE_HEAD}>
+                    <tr>
+                      <th className="px-4 py-2 text-left">
                         ผลการเรียนรู้
                       </th>
-                      <th className="px-4 py-2 text-left font-medium">
+                      <th className="px-4 py-2 text-left">
                         เกณฑ์การบรรลุ
                       </th>
-                      <th className="px-4 py-2 text-right font-medium">
+                      <th className="px-4 py-2 text-right">
                         ผ่าน / ผู้มีคะแนน
                       </th>
-                      <th className="px-4 py-2 text-right font-medium">
+                      <th className="px-4 py-2 text-right">
                         ร้อยละ
                       </th>
-                      <th className="px-4 py-2 text-right font-medium">
+                      <th className="px-4 py-2 text-right">
                         คะแนนเฉลี่ย (เต็ม {data.rule.scale})
                       </th>
-                      <th className="px-4 py-2 text-center font-medium">
+                      <th className="px-4 py-2 text-center">
                         ผลการประเมิน
                       </th>
                     </tr>

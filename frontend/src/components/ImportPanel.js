@@ -4,6 +4,7 @@ import { FaDownload } from 'react-icons/fa'
 import ContentMotionDIV from './ContentMotionDIV'
 import useModalFocus from './useModalFocus'
 import { saveAsFile } from '../api/client'
+import { TABLE_HEAD } from '../lib/tableHead'
 
 /**
  * Importing a spreadsheet — the pattern every import screen in this system
@@ -402,7 +403,7 @@ export default function ImportPanel({
               ไม่ได้บันทึกรายการใด กรุณาแก้ไขแถวต่อไปนี้แล้วอัปโหลดใหม่
             </p>
             <table className="mt-2 w-full text-left text-sm text-red-800">
-              <thead>
+              <thead className={TABLE_HEAD}>
                 <tr>
                   <th className="w-24 py-1">บรรทัดที่</th>
                   <th className="py-1">สาเหตุ</th>

@@ -50,6 +50,11 @@ const CENSUSES = [
   // same change (112 problems at the commit before it), and its first run over
   // the tree was `problems 0`.
   'content-titles.js',
+  // Wired in on the day it landed, 27 พฤศจิกายน 2569, for org-codes.js's
+  // reason: #314 put `TABLE_HEAD` on all twenty-six heads in the same change
+  // (87 problems at the commit before it), and its first run over the tree was
+  // `problems 0`.
+  'table-heads.js',
 ]
 
 let worst = 0
