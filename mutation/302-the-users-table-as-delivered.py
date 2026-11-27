@@ -118,18 +118,27 @@ MUTANTS = {
         "                          label={`สถานะ ${personName(user)}`}\n",
         "                          label={`สถานะ ${user.user_id}`}\n"),
     # ไอคอนแก้ไขถูกตั้งชื่อด้วยรหัส - ยังขึ้นต้นด้วยคำกริยา ตัวหาจึงยังเจอ
+    # Re-aimed at #312 (27 Nov 2569): the pencil is a RowAction, its name a `label`.
     'editnamedbycode': ('users',
-        "                            aria-label={`แก้ไข ${personName(user)}`}\n",
-        "                            aria-label={`แก้ไข ${user.user_id}`}\n"),
+        "                            label={`แก้ไข ${personName(user)}`}\n",
+        "                            label={`แก้ไข ${user.user_id}`}\n"),
     # tooltip เป็นคำกริยาเปล่า
+    # Re-aimed at #312: RowAction's tooltip is its label unless handed a `title`,
+    # so the mistake is now a `title` handed beside the label.
     'edittitleisword': ('users',
-        "                            title={`แก้ไข ${personName(user)}`}\n",
+        "                            label={`แก้ไข ${personName(user)}`}\n",
+        "                            label={`แก้ไข ${personName(user)}`}\n"
         "                            title=\"แก้ไข\"\n"),
     # คำถูกวาดข้างไอคอน
+    # Re-aimed at #312: the word drawn in the cell beside the pencil's square.
     'editwordsdrawn': ('users',
-        "                            <FaUserEdit aria-hidden=\"true\" className=\"text-2xl\" />\n",
-        "                            <FaUserEdit aria-hidden=\"true\" className=\"text-2xl\" />\n"
-        "                            แก้ไข\n"),
+        "                        <RowActions>\n"
+        "                          <RowAction\n"
+        "                            kind=\"edit\"\n",
+        "                        <RowActions>\n"
+        "                          <span>แก้ไข</span>\n"
+        "                          <RowAction\n"
+        "                            kind=\"edit\"\n"),
 }
 
 main(FILES, MUTANTS)

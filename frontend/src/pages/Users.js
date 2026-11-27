@@ -7,8 +7,7 @@ import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
 import { alsoOutside, SOME_IMPORTED_OUTSIDE } from '../lib/outsideTheFilter'
 import Pager from '../components/Pager'
-import { FaUserEdit } from 'react-icons/fa'
-import { RiDeleteBin6Line } from 'react-icons/ri'
+import RowAction, { RowActions } from '../components/RowAction'
 import { LuHistory, LuHourglass } from 'react-icons/lu'
 import SearchBox from '../components/SearchBox'
 import StatusSwitch from '../components/users/StatusSwitch'
@@ -1226,36 +1225,31 @@ export default function Users() {
                         />
                       </td>
                       <td className="px-2 py-2">
-                        {/* #302 - the delivered grey icon with no word beside it
-                            (`docs/users-screen.md` rule 3). Its name says whose
+                        {/* #312 - the same bordered squares as every other
+                            screen (`docs/ui-consistency.md` rule 1, the
+                            owner's answer of 27 November 2569, over #302's
+                            delivered grey icons). The name still says whose
                             account it opens, which a column of identical
-                            pencils does not otherwise say. #306's trash can is
-                            beside it, named the same way, and disabled on the
-                            reader's own row as the switch is. */}
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            aria-label={`แก้ไข ${personName(user)}`}
-                            title={`แก้ไข ${personName(user)}`}
+                            pencils does not otherwise say; #306's trash can
+                            is named the same way and disabled on the reader's
+                            own row as the switch is. */}
+                        <RowActions>
+                          <RowAction
+                            kind="edit"
+                            label={`แก้ไข ${personName(user)}`}
                             // #303 - the account's own page, carrying the page
                             // and filter this list is on, which is where its
                             // way back goes (`docs/users-screen.md` rule 6).
                             onClick={() => navigate(editAddress(user.user_id, page, filters))}
-                            className="rounded p-1 text-gray-600 transition hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <FaUserEdit aria-hidden="true" className="text-2xl" />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label={`ลบ ${personName(user)}`}
+                          />
+                          <RowAction
+                            kind="remove"
+                            label={`ลบ ${personName(user)}`}
                             title={isSelf(user) ? CANNOT_DELETE_SELF : 'ลบผู้ใช้'}
                             onClick={() => startRemoval(user)}
                             disabled={isSelf(user)}
-                            className="rounded p-1 text-gray-400 transition hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400"
-                          >
-                            <RiDeleteBin6Line aria-hidden="true" className="text-2xl" />
-                          </button>
-                        </div>
+                          />
+                        </RowActions>
                       </td>
                     </tr>
                   ))}
