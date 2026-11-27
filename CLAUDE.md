@@ -1405,6 +1405,7 @@ the new assertion — that one, not an earlier one — failing when the code it 
 | `docs/06-implementation-plan.md` | The spec the rebuild implements. |
 | `docs/acceptance/` | One checklist per screen ticket, and the record of how each row was proved. A ticket closes on it. |
 | `docs/ui-form-layout.md` | The owner's rules for how wide a form field is and where it sits (#290, 19 November 2569). Read before laying out a form. |
+| `docs/ui-consistency.md` | The owner's ten rules for making every screen do the same thing the same way — row actions, table heads, the add button, forms as dialogs, back buttons, empty boxes (27 November 2569). Read before drawing any of those. |
 | `docs/org-unit-names.md` | The owner's rules for naming a faculty, department or programme on a screen — by name, not by code, outside the two screens that manage them (#294, 20 November 2569). Read before drawing an organisation unit. |
 | `docs/users-screen.md` | The owner's rules for the users screen — table, edit page, add dialog, history and when an account may be deleted — back to the delivered UI (22 November 2569). Tickets #302–#306. Read before touching `/main/users`. |
 | `docs/lessons.md` | What the rebuild has learned, ticket by ticket. `CLAUDE.md`'s lessons section is its index. |
