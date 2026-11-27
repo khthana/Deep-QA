@@ -160,6 +160,9 @@ const LIST_SCREENS = [
   {
     name: 'ข้อมูลภาควิชา',
     file: 'Departments.js',
+    // #319 / #320: the form is a dialog over the list, with the page's banner
+    // behind its cover - the removal row reads it with the form put away.
+    dialog: true,
     account: ACCOUNTS.facultyAdmin,
     open: (page) => openDepartments(page),
     detail: /^\/api\/departments\/\d+$/,
@@ -171,6 +174,9 @@ const LIST_SCREENS = [
   {
     name: 'ข้อมูลหลักสูตร',
     file: 'Programs.js',
+    // #319 / #320: the form is a dialog over the list, with the page's banner
+    // behind its cover - the removal row reads it with the form put away.
+    dialog: true,
     account: ACCOUNTS.departmentAdmin05,
     open: (page) => openPrograms(page),
     detail: /^\/api\/programs\/\d+$/,
@@ -301,13 +307,20 @@ for (const screen of LIST_SCREENS) {
       expect(await save.isDisabled(), 'บันทึก while the removal is out').toBe(true);
 
       write.open();
-      await expect(save).toBeEnabled();
-      // #319 and #320 (27 November 2569): the removal's refusal goes to the
-      // page's banner, which is not drawn while the form dialog is open, so it
-      // is read once the form is put away. On a screen whose form still
-      // replaces the list, putting it away draws the same banner.
-      await button(page, 'ยกเลิก').click();
-      await expect(page.getByText(REFUSED)).toBeVisible();
+      if (screen.dialog) {
+        // #319 and #320 (27 November 2569): the removal's refusal goes to the
+        // page's banner, which is not drawn while the form dialog is open, so
+        // it is read once the form is put away - ยกเลิก on a dialog leaves the
+        // banner alone (#307's shape). On a screen whose form still replaces
+        // the list ยกเลิก clears the banner, so there it is read with the form
+        // open, as before - the first run of #336 measured that, five reds.
+        await expect(save).toBeEnabled();
+        await button(page, 'ยกเลิก').click();
+        await expect(page.getByText(REFUSED)).toBeVisible();
+      } else {
+        await expect(page.getByText(REFUSED)).toBeVisible();
+        await expect(save).toBeEnabled();
+      }
     });
 
     test(`a read that ${screen.remove} took the place of still frees the confirmation when it lands`, async ({
