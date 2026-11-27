@@ -23,7 +23,7 @@
 
 ## ตารางคำทำนาย (เขียนก่อนกวาด 27 พ.ย. 2569 และ commit ก่อนการรัน)
 
-ยังไม่ได้รัน — รอรอบ e2e รวม #336 ตามที่เจ้าของงานขอ
+กวาดแล้วใน #336 — ผลอยู่ใต้ตาราง และ**ไม่มีตัวไหนผิดคำทำนาย** ทั้งจำนวนและข้อยืนยันที่ตาย
 
 | มัตแตนต์ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
 |---|---|---|---|
@@ -31,6 +31,17 @@
 | `s319escapewhilesaving` | `319a` *row 3* | `await expect(dialog(page, EDIT).getByLabel('รหัสภาควิชา')).toHaveValue('05')` — Escape ปิดหน้าต่างระหว่างการบันทึก ช่องหายไป | `319a` row 1 กด Escape ตอนไม่มีการบันทึก จึงปิดเหมือนเดิม · row 2 และ row 4 ไม่กด Escape |
 | `s319nofocusback` | `319a` *row 1* · *row 2* | row 1 ที่ `await expect(opener, 'the focus is back where the dialog came from').toBeFocused()` · row 2 ที่ `'the focus is back on the row that was edited'` | `319a` row 3 และ row 4 ไม่อ่านโฟกัสหลังปิด · `14c` ไม่อ่านโฟกัส |
 | `s319refusalonpage` | `319a` *row 4* · *row 3* | row 4 ที่ `await expect(dialog(page, ADD).getByRole('alert')).toHaveText(REFUSED)` · row 3 ที่ `await expect(dialog(page, EDIT).getByRole('alert')).toHaveText(REFUSED)` — คำปฏิเสธไปอยู่ในแบนเนอร์ของหน้าที่ไม่ถูกวาดระหว่างหน้าต่างเปิด | `319a` row 1 และ row 2 ไม่บันทึก · `14c` แถว 1: คำปฏิเสธไม่อยู่ในหน้าต่าง จึง `toBeVisible()` แรกของแถวตาย — **ทำนายว่าตายด้วย** ที่ `await expect(page.getByText(REFUSALS.duplicateDepartmentId)).toBeVisible()` |
+
+## การกวาด — บันทึกผล (#336 · 27–28 พ.ย. 2569)
+
+ทีละตัวด้วย `scratchpad/sweep.py` ของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* ก่อนรัน (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` (1152 ผ่าน และเจ็ดแถวของ `142a` ที่แก้แล้วผ่าน 7/7)
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `s319listreplaced` | `319a` `14c` | 2 ล้ม 5 ผ่าน | `319a` row 1 บรรทัด 74 · row 2 บรรทัด 92 — `listTable(page)).toBeVisible()` ทั้งคู่ |
+| `s319escapewhilesaving` | `319a` `320a` `14c` | 2 ล้ม 8 ผ่าน | `319a` row 3 บรรทัด 115 · `320a` row 3 บรรทัด 104 — `toHaveValue` หลัง Escape · สองจอ สองข้ออ้างเรื่องการไปถึง (#191) |
+| `s319nofocusback` | `319a` `320a` `14c` | 4 ล้ม 6 ผ่าน | row 1 และ row 2 ของทั้ง `319a` และ `320a` ที่ `toBeFocused()` ของแถวเอง |
+| `s319refusalonpage` | `319a` `14c` | 3 ล้ม 4 ผ่าน | `319a` row 4 บรรทัด 138 · row 3 บรรทัด 120 · `14c` แถว *a refusal does not outlive…* บรรทัด 56 — ตรงคำทำนายที่บอกว่า `14c` ตายด้วย |
 """
 
 from harness import main

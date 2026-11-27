@@ -68,6 +68,15 @@
 ทิ้ง worker นั้นแล้วเปิดใหม่ `afterAll` จึงคืน `hold()` และ `beforeAll` ของ worker ใหม่ถือใหม่และใส่สองบัญชีกลับ แถว 5
 จึงได้บัญชีที่สร้างใหม่ · ไม่ใช่ข้อบกพร่อง — แถวหลังแถวที่ตายไม่รับมรดกจากมัน ซึ่งเป็นสิ่งที่ `hold()` ใน `beforeAll` ควรให้
 · คำทำนายผิดที่กลไกของ runner ไม่ใช่ที่โค้ดหรือข้ออ้าง
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `s306trashenabled` | `306a` | 1 ล้ม 4 ผ่าน | `306a` *row 1: every row has a trash can named for its account, and the reader* บรรทัด 100 |
+| `s306trashdead` | `306a` | 5 ล้ม 0 ผ่าน | `306a` *row 1: every row has a trash can named for its account, and the reader* บรรทัด 93 · `306a` *row 2: the question is asked first, and ลบผู้ใช้งาน deletes the accoun* บรรทัด 113 · `306a` *row 3: an account something refers to is refused with the way round it* บรรทัด 147 · `306a` *row 4: ยกเลิก sends nothing and leaves the account where it was* บรรทัด 170 · `306a` *row 5: the deletion is a line in the history, in this system's words* บรรทัด 185 |
 """
 from harness import main
 

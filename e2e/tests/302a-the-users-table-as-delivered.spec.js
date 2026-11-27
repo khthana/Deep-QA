@@ -177,6 +177,14 @@ test('row 6: แก้ไข is an icon named for the account, with the name as 
   await expect(pencil).toHaveAccessibleName(`แก้ไข ${THAI}`);
   await expect(pencil, 'its tooltip').toHaveAttribute('title', `แก้ไข ${THAI}`);
   expect((await pencil.textContent()).trim(), 'no word drawn beside it').toBe('');
+  // #336 (28 November 2569): and none beside it in the actions cell either -
+  // since #312 the icon is a `RowAction`, so a word drawn next to it is the
+  // button's sibling, which the button's own text cannot see. The sweep found
+  // `302:editwordsdrawn` passing the line above for that reason.
+  expect(
+    (await pencil.locator('..').textContent()).trim(),
+    'no word drawn in the actions cell',
+  ).toBe('');
   await expect(pencil.locator('svg'), 'it holds one icon').toHaveCount(1);
 
   // Since #303 the press opens the account's own page rather than a form.

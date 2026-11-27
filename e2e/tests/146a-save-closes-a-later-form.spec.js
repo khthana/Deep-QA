@@ -449,6 +449,19 @@ for (const screen of SCREENS) {
         await page.waitForTimeout(SETTLE_MS);
 
         expect(await page.getByText(screen.saved).count(), "the first save's banner").toBe(0);
+        // #336 (28 November 2569): the read above is taken with the edit form
+        // open, which on a dialog screen hides the page's banner, so it is read
+        // again with the form put away - the sweep found `savesaysanyway`
+        // passing this row on both dialog screens until it was.
+        if (screen.dialog) {
+          await button(page, 'ยกเลิก').click();
+          await expect(heading(page, screen.edit)).toBeHidden();
+          await page.waitForTimeout(SETTLE_MS);
+          expect(
+            await page.getByText(screen.saved).count(),
+            "the first save's banner with the form put away",
+          ).toBe(0);
+        }
       });
     }
   });

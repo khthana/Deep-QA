@@ -210,6 +210,19 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `departmentsshowingatthelanding` | The ref written where the read lands, as it was until ยกเลิก stopped writing it: the window between pressing แก้ไข and the form it opens. · บล็อกที่ถูกแทน ท้ายของมัน `if (asked.current === ask) setEditing(current)` → `}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands while the next row is being read says nothing* · ที่มา `docs/acceptance/14-departments.md:489` |
 | `programsshowingatthelanding` | `programs` — บล็อกที่ถูกแทน ท้ายของมัน `if (asked.current === ask) setEditing(current)` → `}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands while the next row is being read says nothing* · ที่มา `docs/acceptance/15-programs.md:547` |
 | `subjectsshowingatthelanding` | `subjects` — บล็อกที่ถูกแทน ท้ายของมัน `if (asked.current === ask) setEditing(current)` → `}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands while the next row is being read says nothing* · ที่มา `docs/acceptance/16-subjects.md:440` |
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `departmentsrefusalwins` | `146a` | 1 ล้ม 47 ผ่าน | `146a` *a save refused after the screen moved on says nothing over the new for* บรรทัด 377 |
+| `departmentscancelclears` | `146a` | 2 ล้ม 46 ผ่าน | `146a` *a save that nothing took the place of says what it did* บรรทัด 404 · `146a` *a refusal that nothing took the place of is still said* บรรทัด 420 |
+| `departmentssavesaysanyway` | `146a` | 2 ล้ม 46 ผ่าน | `146a` *a save that lands after แก้ไข leaves the form it found open* บรรทัด 325 · `146a` *a save that lands after เพิ่ม leaves what was typed where it was* บรรทัด 355 · รอบแรกของ #336 ได้ **2** (แถวที่สาม *…while the next row is being read* อ่านแบนเนอร์ขณะฟอร์มเปิด ซึ่งอยู่หลังผ้าคลุม จึงผ่านได้ทุกกรณี) · แถวนั้นต่อท้ายให้อ่านอีกครั้งหลังปิดฟอร์ม แล้วกวาดซ้ำได้ **3** เท่าบันทึกเดิม |
+| `programsrefusalwins` | `146a` | 1 ล้ม 47 ผ่าน | `146a` *a save refused after the screen moved on says nothing over the new for* บรรทัด 377 |
+| `programscancelclears` | `146a` | 1 ล้ม 47 ผ่าน | `146a` *a save that nothing took the place of says what it did* บรรทัด 404 |
+| `programssavesaysanyway` | `146a` | 3 ล้ม 45 ผ่าน | `146a` *a save that lands after แก้ไข leaves the form it found open* บรรทัด 325 · `146a` *a save that lands after เพิ่ม leaves what was typed where it was* บรรทัด 355 · `146a` *a save that lands while the next row is being read says nothing* บรรทัด 463 · เหมือนตัวข้างบน — 2 ก่อนต่อท้ายแถวที่สาม 3 หลัง |
 """
 from harness import main
 

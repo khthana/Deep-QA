@@ -200,6 +200,17 @@ Offering แรกเปิดขึ้น และคำถามกลาย�
 | `offeringsbackkeepsask` | Offering: กลับไปหน้ารายการ leaves the panel asked for — `asked.current = null setNotice(null) setViewing(null)` → `setNotice(null) setViewing(null)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *กลับไปหน้ารายการ while a section write is read back does not reopen the panel* · ที่มา `docs/acceptance/23-offerings.md:384` |
 | `offeringssamerowmatches` | Offering: the ask is the Offering, so a second press on it matches the first — `const ask = {} asked.current = ask setNotice(null)` → `const ask = offering.id asked.current = ask setNotice(null)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *ตอนเรียนและผู้สอน pressed again on the same row draws the later reading* · ที่มา `docs/acceptance/23-offerings.md:385` |
 | `offeringscreatedasksnothing` | **ทำอะไร** รายวิชาที่เพิ่งเปิดไม่ใช่แผงที่ถูกขอ แผงจึงไม่เปิดเลย — ตัด `asked.current = ask` ท้าย `setOpening(false)` ออก | **ฆ่าที่** แถว 1 ของ `23a` ที่ `toBeVisible` ของปุ่ม *กลับไปหน้ารายการ* — 1 ล้ม 12 ผ่าน 5 ไม่ได้รัน (`23a` เป็น `serial`) มันไม่ค้ำแถวไหนของ `139a` เลย · ที่มา บันทึกการกวาดของใบนี้เอง |
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `rubricsaddkeepsask` | `139a` | 1 ล้ม 45 ผ่าน | `139a` *เพิ่ม pressed while a แก้ไข is out stays the add form* บรรทัด 496 |
+| `criteriaaddkeepsask` | `139a` | 1 ล้ม 45 ผ่าน | `139a` *เพิ่ม pressed while a แก้ไข is out stays the add form* บรรทัด 496 |
+| `plosaddkeepsask` | `139a` | 1 ล้ม 45 ผ่าน | `139a` *เพิ่ม pressed while a แก้ไข is out stays the add form* บรรทัด 496 |
+| `offeringsformkeepsask` | `139a` | 1 ล้ม 45 ผ่าน | `139a` *เปิดรายวิชา pressed while a panel is out stays the form* บรรทัด 745 |
 """
 from harness import main
 

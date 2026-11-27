@@ -22,6 +22,15 @@ the walk found it are two different call sites, not one.
 | `keepcancelled` | เอา `setNotice(null)` ออกจาก `onCancel` ของฟอร์ม — คำปฏิเสธอยู่เกินฟอร์มที่ทำให้เกิดมันอีกครั้ง · **เล็งใหม่ #319 (27 พ.ย. 2569):** ฟอร์มเป็นหน้าต่างลอย คำปฏิเสธของการบันทึกเป็น `refused` ของหน้าต่าง และยกเลิกเลิกล้างแบนเนอร์ (คำตอบ #307) — มัตแตนต์เอาการล้าง `refused` ข้าง `formShown` ออกแทน และแถวของ `14c` เปิดฟอร์มอีกครั้งเพื่ออ่าน · ยังไม่กวาดซ้ำ รอ #336 | **แถว *a refusal does not outlive the form that caused it* ของ `14c`** อีกสองแถวยังผ่าน |
 | `keepsaved` | เอา `setNotice(null)` ออกจากปุ่ม *เพิ่มภาควิชา* — ประโยคสำเร็จอยู่เกินการกระทำที่มันรายงานอีกครั้ง | **แถว *a success does not outlive the action it reports*** อีกสองแถวยังผ่าน |
 | `keepbeforeupload` | ปิด `onStart?.()` ใน `ImportPanel.js` — การอัปโหลดเลิกล้างสิ่งที่อยู่บนจอก่อนมัน คือจุดที่การแก้รอบแรกของ #91 เดินผ่าน และการรีวิวเป็นผู้เจอ | **แถว *an upload clears the banner from whatever came before it*** อีกสองแถวยังผ่าน |
+
+## กวาดซ้ำใน #336 (27 พ.ย. 2569) — หลังเล็งใหม่ของ #319
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `keepcancelled` (เล็งใหม่) | `14c` | 1 ล้ม 2 ผ่าน | *a refusal does not outlive the form that caused it* บรรทัด 71 — `toHaveCount(0)` หลังเปิดฟอร์มอีกครั้ง ซึ่งเป็นบรรทัดที่ #319 ต่อท้าย |
+| `keepsaved` | `14c` | 1 ล้ม 2 ผ่าน | *a success does not outlive the action it reports* บรรทัด 103 — หลังยกเลิกและหน้าต่างไปแล้ว ซึ่งเป็นบรรทัดที่ #319 ต่อท้าย |
+
+ทั้งสองตายที่บรรทัดที่ต่อท้าย ไม่ใช่ที่บรรทัดเดิม — บรรทัดเดิมอ่านแบนเนอร์ที่อยู่หลังผ้าคลุม จึงผ่านได้ทุกกรณี
 """
 
 from harness import main

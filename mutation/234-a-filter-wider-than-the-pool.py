@@ -87,6 +87,14 @@
     python mutation/234-a-filter-wider-than-the-pool.py restore
     cd e2e && npx playwright test tests/234a
     # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `rubricfilterhidestheretired` | `234a` | 1 ล้ม 3 ผ่าน | `234a` *the rubric list still offers the retired curriculum, and lists its rub* บรรทัด 207 |
 """
 from harness import main
 

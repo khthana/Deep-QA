@@ -60,6 +60,14 @@
 `203-the-refusal-wins-on-the-admin-screens.py`, `211-the-loader-a-coordinate-ref-cannot-hold.py` หรือแฟ้มอื่นที่
 `FILES` ถือ `frontend/src/pages/Plos.js`** — เส้นทางที่ซ้ำคือสิ่งที่ทำให้การกวาดเสีย เทียบ
 `FILES` ไม่ใช่หัวเรื่อง (#85, #87, #125)
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `dropsitwhentheformopens` | `246a` | 1 ล้ม 1 ผ่าน | `246a` *a removal says nothing over a form that replaced the list, and says it* บรรทัด 185 |
 """
 from harness import main
 

@@ -115,6 +115,16 @@ about confirmation specifically.
 ผลการกวาด: `statesprogram` (16 พ.ย. 2569) 1 ล้ม ที่ข้อยืนยันที่ทำนายไว้ · `alwaysadropdown` (17 พ.ย. 2569) 1 ล้มที่
 `page.getByRole('combobox')).toHaveCount(0)` ของแถวแรก แล้วสเปคเป็น serial อีก 16 แถวจึงไม่ได้รัน (#67) — แถวของ
 #101 รันเดี่ยวด้วย `--grep "reaching one curriculum is given no filter"` ได้ 1 ล้มที่ `programFilter(page)).toHaveCount(0)`
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `statesprogram` | `19a` | 1 ล้ม 0 ผ่าน | `19a` *a committee member is not asked which curriculum, and sees its own PLO* บรรทัด 104 |
+| `alwaysadropdown` | `19a` | 1 ล้ม 0 ผ่าน | `19a` *a committee member is not asked which curriculum, and sees its own PLO* บรรทัด 103 |
+| `alwaysallprograms` | `19a` | 1 ล้ม 12 ผ่าน | `19a` *the curriculum filter offers the curricula in reach and nothing wider* บรรทัด 342 |
 """
 
 import os

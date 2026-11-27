@@ -97,6 +97,19 @@
 มัตแตนต์สองตัวในแฟ้มอื่นที่ #279 (ก) ย้ายสมอ: `250:rowswhileloading` ควรฆ่า `250a` เหมือนเดิม และ `279a` แถว 9 เพิ่ม
 เพราะแถวของมันถูกวาดทุกครั้งที่ไม่มีการปฏิเสธ รวมถึงตอนที่ภาคยังค้าง ส่วน `210:offeringsnobusy` ควรฆ่า `210a`
 แถวเดิมของมันเท่านั้น
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `s279optionyearfirst` | `279a` `247c` | 1 ล้ม 12 ผ่าน | `279a` *row 1: the term picker offers the terms this curriculum ran, the curre* บรรทัด 129 |
+| `s279everytermback` | `279a` `247c` | 2 ล้ม 11 ผ่าน | `279a` *row 1: the term picker offers the terms this curriculum ran, the curre* บรรทัด 129 · `279a` *row 2: no picker offers every curriculum or every term* บรรทัด 162 |
+| `s279everyprogramback` | `279a` `247c` | 3 ล้ม 10 ผ่าน | `279a` *row 2: no picker offers every curriculum or every term* บรรทัด 158 · `279a` *row 9: while the terms of the curriculum moved to are out, the list sa* ที่ timeout · `279a` *row 10: where the terms of the curriculum moved to are refused, the re* ที่ timeout · ตารางทำนาย 1 ได้ **3** — สองแถวที่เกิน (9 และ 10) ตายที่ timeout ของการจัดฉาก ไม่ใช่ที่ข้ออ้าง: `openOnShown` เลือกตัวเลือกแรกที่ไม่ใช่หลักสูตรปัจจุบัน ซึ่งกลายเป็น *ทุกหลักสูตร* ที่ไม่ขอภาค การรอคำขอที่ถูกกักจึงไม่จบ (#139 · #266) · **ไม่ใช่การพิสูจน์ของสองแถวนั้น** |
+| `s279pickerbeforeterm` | `279a` `247c` | 1 ล้ม 12 ผ่าน | `279a` *row 8: before the terms are known nothing that needs a term can be pre* บรรทัด 305 |
+| `s279copybeforeterm` | `279a` `247c` | 1 ล้ม 12 ผ่าน | `279a` *row 8: before the terms are known nothing that needs a term can be pre* บรรทัด 309 |
+| `s279openbeforeterm` | `279a` `247c` | 1 ล้ม 12 ผ่าน | `279a` *row 8: before the terms are known nothing that needs a term can be pre* บรรทัด 313 |
 """
 from harness import main
 

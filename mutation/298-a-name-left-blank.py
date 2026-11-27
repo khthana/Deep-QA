@@ -25,6 +25,15 @@
 | `plosprogramcodealone` | ตัวเลือกนั้นตกกลับเป็นรหัสเปล่า คือทางเลือกที่เจ้าของงานไม่เลือก (#48) | `298a` 5 | `toHaveText('หลักสูตร 0501')` | `298a` 1–4 |
 
 **บันทึกผลกวาด (21 พ.ย. 2569, คอมมิต `08ca6aa`, `298a` ทีละตัว):** ทั้งหกตัวตายที่แถวและบรรทัดที่ทำนาย และแถวอื่นทั้งสี่ผ่านทุกครั้ง · `programseedednull` `departmentseedednull` ที่ `toBeHidden()` ของแถว 1 และ 2 · `departmentquestionnull` `programquestionnull` ที่ `toContain('ต้องการลบ…')` ของแถว 3 และ 4 · `plosbarename` และ `plosprogramcodealone` ที่ `toHaveText('หลักสูตร 0501')` ของแถว 5
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `plosbarename` | `298a` | 1 ล้ม 4 ผ่าน | `298a` *row 5: a programme with no Thai name is offered by its kind and code* บรรทัด 181 |
+| `plosprogramcodealone` | `298a` | 1 ล้ม 4 ผ่าน | `298a` *row 5: a programme with no Thai name is offered by its kind and code* บรรทัด 181 |
 """
 from harness import main
 

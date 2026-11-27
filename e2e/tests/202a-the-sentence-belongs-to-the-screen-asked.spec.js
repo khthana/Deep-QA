@@ -279,6 +279,19 @@ test.describe('ผลการเรียนรู้ระดับหลั�
       await heading(page, 'เพิ่มผลการเรียนรู้ของหลักสูตร').isVisible(),
       'the form that took its place',
     ).toBe(true);
+
+    // #336 (28 November 2569): since #246 this screen *holds* a sentence while a
+    // form is drawn in place of the list and says it when the list comes back,
+    // so the read above is taken while the sentence would be held and cannot
+    // fail - the sweep found `202:plosnorefatadd` passing it (#303's rule). It is
+    // read again with the form put away, which is when a held one is said.
+    await button(page, 'ยกเลิก').click();
+    await expect(heading(page, 'เพิ่มผลการเรียนรู้ของหลักสูตร')).toBeHidden();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(
+      await page.getByText('ลบผลการเรียนรู้เรียบร้อยแล้ว').count(),
+      "the removal's sentence with the form put away",
+    ).toBe(0);
   });
 
   test('says what it did when nothing took the screen', async ({ page }) => {

@@ -25,6 +25,14 @@ re-aim วันเดียวกัน) · ตัวนี้เอามั�
 | มัตแตนต์ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
 |---|---|---|---|
 | `s315nodisabled` | `21a` *the add row is not offered while another curriculum is read, and starts from that one* · `279a` *row 8: before the terms are known nothing that needs a term can be pressed* | `21a` ที่ `await expect(add).toBeDisabled()` · `279a` ที่ *the form, which opens a subject in the term shown* — ตัวเลือกภาคและปุ่มคัดลอกไม่ได้วาดผ่าน `PageHeader` จึงผ่านสองบรรทัดก่อน | แถวอื่นของ `21a` และ `279a` ทั้งหมด — กดปุ่มเพิ่มหลังรายการวาดแล้วหรือหลังรู้ภาคแล้ว ซึ่งปุ่มเปิดอยู่ทั้งก่อนและหลังมัตแตนต์ |
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `s315nodisabled` | `21a` `279a` | 2 ล้ม 23 ผ่าน | `21a` *the add row is not offered while another curriculum is read, and start* บรรทัด 477 · `279a` *row 8: before the terms are known nothing that needs a term can be pre* บรรทัด 313 |
 """
 
 from harness import main

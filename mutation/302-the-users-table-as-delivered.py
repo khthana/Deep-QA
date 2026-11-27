@@ -81,6 +81,16 @@
     python mutation/302-the-users-table-as-delivered.py restore
     cd e2e && npx playwright test tests/302a-the-users-table-as-delivered.spec.js
     # พอร์ต: ย่อหน้า Ports ของ e2e/README.md — ตั้ง E2E_BACKEND_PORT หรือ E2E_FRONTEND_PORT เฉพาะเมื่อพอร์ตของชุดนี้ตกในช่วงที่ Hyper-V จอง
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `editnamedbycode` | `302a` | 1 ล้ม 5 ผ่าน | `302a` *row 6: แก้ไข is an icon named for the account, with the name as its to* บรรทัด 177 |
+| `edittitleisword` | `302a` | 1 ล้ม 5 ผ่าน | `302a` *row 6: แก้ไข is an icon named for the account, with the name as its to* บรรทัด 178 |
+| `editwordsdrawn` | `302a` | 1 ล้ม 5 ผ่าน | `302a` *row 6: แก้ไข is an icon named for the account, with the name as its to* บรรทัด 187 · **รอดในรอบแรก (0 ล้ม)** — การเล็งใหม่ของ #312 วาดคำเป็นพี่น้องของปุ่ม ซึ่ง `textContent` ของปุ่มมองไม่เห็น · `302a` แถว 6 ได้ข้อยืนยันที่อ่านทั้งช่อง (`pencil.locator('..')`) แล้วกวาดซ้ำ ตายที่บรรทัดนั้น |
 """
 from harness import main
 

@@ -97,6 +97,17 @@ to.
 | ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันจะฆ่า (คำทำนาย) |
 |---|---|---|
 | `statesprogram` | **ทำอะไรพัง** บัญชีหลักสูตรเดียวเห็นข้อความ *หลักสูตร วิศวกรรมคอมพิวเตอร์* อีกครั้ง | **แถวที่ตาย** *a committee member is not asked which curriculum, and sees its rubrics* ที่ `statedLabel(page, 'หลักสูตร', 'วิศวกรรมคอมพิวเตอร์')).toHaveCount(0)` · ข้อยืนยันเหนือมันอ่านแถวกับ combobox ซึ่งมัตแตนต์ไม่แตะ · แถวอื่นไม่อ่านข้อความนี้ จึงไม่ตาย |
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `alwaysadropdown` | `21a` | 1 ล้ม 0 ผ่าน | `21a` *a committee member is not asked which curriculum, and sees its rubrics* บรรทัด 117 |
+| `statesprogram` | `21a` | 1 ล้ม 0 ผ่าน | `21a` *a committee member is not asked which curriculum, and sees its rubrics* บรรทัด 118 |
+| `addduringload` | `21a` | 1 ล้ม 13 ผ่าน | `21a` *the add row is not offered while another curriculum is read, and start* บรรทัด 477 |
+| `addorderkept` | `21a` | 1 ล้ม 15 ผ่าน | `21a` *an add row kept open across a switch of curriculum keeps what was type* บรรทัด 553 |
 """
 
 import os

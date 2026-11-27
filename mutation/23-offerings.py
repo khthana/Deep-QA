@@ -89,6 +89,14 @@ three that everybody forgets to write.
 - รอบ 1 `nosectioncatch`: `backend/test/offerings.test.js` ผ่าน 26 ล้ม 0 · `23a` ผ่าน 6 — รอดทั้งสองแฟ้ม ข้ออ้างของตั๋วจริง
 - รอบ 2 `nosectioncatch`: ล้ม 1 ผ่าน 26 ที่แถวใหม่ *the enrolment protects the section* `500 !== 409` ซึ่งเป็นข้อยืนยันของแถวเอง (#266)
 - รอบ 2 `nosyllabus`: แถวใหม่ผ่าน ล้ม 1 ผ่าน 26 ที่ *a weekly plan protects the section it belongs to, and the Offering above it* `204 !== 409` ที่เดิม
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `statesprogram` | `23a` `23b` | 1 ล้ม 11 ผ่าน | `23b` *row 9: the committee of another curriculum sees none of this one* บรรทัด 85 |
 """
 
 from harness import main

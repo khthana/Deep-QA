@@ -116,6 +116,14 @@ guard จึงเป็นเท็จตลอด ฆ่าแถวบวก�
 | `userssaysanyway` | ผู้ใช้งาน: สวิตช์สถานะ ซึ่งไม่ถามอะไรก่อน รายการจึงยังมีชีวิตอยู่ทั้งเวลา — `if (showing.current === sent) waiting.current = { of: readOf(page, filters), said } const …` → `if (showing.current !== null) waiting.current = { of: readOf(page, filters), said } const …` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says nothing over the form that was opened while it was out* · *says what it did when nothing took the screen* · ที่มา `docs/acceptance/11-user-accounts.md:1469` `docs/acceptance/11-user-accounts.md:1470` `docs/acceptance/14-departments.md:1817` |
 | `enrolmentaddsaysanyway` | รายชื่อนักศึกษาของรายวิชา: การเพิ่ม - โค้ดก่อนครึ่งหลังของตั๋วนี้เป๊ะ ๆ — บล็อกที่ถูกแทน ท้ายของมัน `if (reloaded && onScreen.current === sent) setNotice(said)` → `if (reloaded) setNotice(said)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says nothing over the Section the jump moved to while the enrolment was out* · *says what it enrolled when the pager stayed where it was* · ที่มา `docs/acceptance/14-departments.md:1817` `docs/acceptance/25-section-enrolment.md:475` `docs/acceptance/25-section-enrolment.md:476` |
 | `enrolmentremovekeyedelsewhere` | แถวบวกของจุดเดียวกัน: *การนำออกที่ไม่มีใครย้ายหน้า ยังบอกว่ามันนำใครออก* เคยถูกค้ำด้วย — `waiting.current = { of: readOf(sectionId, onPage.current), said }` → `waiting.current = { of: readOf(sectionId, onPage.current + 1), said }` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *says what it removed when the pager stayed where it was* · ที่มา `docs/acceptance/25-section-enrolment.md:478` |
+
+## กวาดซ้ำใน #336 (27–28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของรอบนั้น ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป · baseline คือชุดเต็มที่ `3d4b95e` · ตัวที่ตารางของแฟ้มนี้ทำนายไว้ ตายที่ข้อยืนยันที่ทำนาย เว้นที่เขียนกำกับ
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `plosnorefatadd` | `202a` | 0 ล้ม 10 ผ่าน | — · **รอดในรอบแรก (0 ล้ม)** — ไม่ใช่เพราะ #315: ตั้งแต่ #246 จอนี้*ขัง*ประโยคไว้ขณะฟอร์มแทนรายการ แถวจึงอ่าน *ไม่ได้พูด* ขณะที่ประโยคถูกขังอยู่ ซึ่งล้มไม่ได้ (#303) · แถวต่อท้ายให้ปิดฟอร์มแล้วอ่านอีกครั้ง แล้วกวาดซ้ำ ตายที่บรรทัดนั้น |
 """
 from harness import main
 
