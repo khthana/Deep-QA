@@ -166,7 +166,7 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
 |---|---|---|
 | `departmentsclosewins` | ภาควิชา: ฟอร์มที่เปิดทีหลังถูกปิดโดยคำตอบของการบันทึกครั้งก่อน — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/14-departments.md:484` `docs/acceptance/14-departments.md:485` |
-| `departmentsrefusalwins` | ภาควิชา: คำปฏิเสธของการบันทึกที่ถูกแซง มาขึ้นเหนือฟอร์มใหม่ — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/14-departments.md:486` |
+| `departmentsrefusalwins` | ภาควิชา: คำปฏิเสธของการบันทึกที่ถูกแซง มาขึ้นเหนือฟอร์มใหม่ — เติมท้าย `REPORTED` ด้วย `_ANY` · **เล็งใหม่ #319 (27 พ.ย. 2569)** ไปที่ `USERS_REPORTED` เพราะ `catch` เรียก `refuse` แล้ว — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/14-departments.md:486` |
 | `departmentssavesaysanyway` | **ทำอะไร** `if (reloaded && showing.current === sent) setNotice(said)` เป็น `if (reloaded) setNotice(said)` คือลืม clause ที่สองของ guard ไม่ใช่ถอดเงื่อนไขทิ้งทั้งอัน (#102) — เขียนขึ้นที่ #203 เพราะการแยก `if` ของประโยคทำให้ `departmentsclosewins` เลิกค้ำแถวที่สาม | **ฆ่าที่** **ล้ม 3 ผ่าน 46** (12 ต.ค. 2569 · baseline 49 ผ่านทั้ง 49) — *a save that lands after แก้ไข leaves the form it found open* · *…after เพิ่ม leaves what was typed where it was* · *a save that lands while the next row is being read says nothing* สองแถวแรกล้มที่ assertion ของ**แบนเนอร์** ไม่ใช่ของฟอร์ม (#201) แถวที่สามล้มที่ข้ออ้างของตัวเอง ซึ่งไม่มีอะไรค้ำอยู่ก่อนมัตแตนต์ตัวนี้ · ที่มา `docs/acceptance/14-departments.md:886` |
 | `programsclosewins` | หลักสูตร — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/15-programs.md:543` `docs/acceptance/15-programs.md:544` |
 | `programsrefusalwins` | `programs` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/15-programs.md:545` |
@@ -195,7 +195,7 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `studentsclosewins` | ข้อมูลนักศึกษากลาง: ฟอร์มเดียว ไม่มี แก้ไข ทางเข้าคือ ยกเลิก แล้ว เพิ่มนักศึกษา อีกครั้ง — เติมท้าย `CLOSED_ADDING` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after the form was opened again leaves what was typed where it was* · ที่มา `docs/acceptance/17-students.md:360` |
 | `studentsrefusalwins` | `students` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/17-students.md:361` |
 | `improvementpickerkeepsshowing` | แผนพัฒนาต่อเนื่อง: ตัวเลือกผลการเรียนรู้ปิดฟอร์มโดยไม่ได้เป็นตัวควบคุมของฟอร์ม ถ้ามันไม่เขียน ref ประโยคของหัวข้อที่เพิ่งเขียนไป จะมาขึ้นใต้ผลการเรียนรู้ที่ไม่มีใครเขียนถึงเลย `closewins` วัดแถวนี้ไม่ได้ เพราะตอนนั้น `showing.current` เป็น `null` อยู่แล้ว · `showing.current = {} setCloId(event.target.value)` → `setCloId(event.target.value)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after the outcome picker moved says nothing about the one now shown* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:378` |
-| `departmentscancelclears` | ยกเลิก writes `null` again: a save nothing overtook goes quiet, which is what the code said before the advisor answered the question #146 parked. · `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · *a refusal that nothing took the place of is still said* · ที่มา `docs/acceptance/14-departments.md:487` `docs/acceptance/14-departments.md:488` |
+| `departmentscancelclears` | ยกเลิก writes `null` again: a save nothing overtook goes quiet, which is what the code said before the advisor answered the question #146 parked. · `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` · **เล็งใหม่ #319 (27 พ.ย. 2569)** ยกเลิกไม่มี `setNotice(null)` แล้ว ยึด `setEditing(null) }} />` แทน — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · *a refusal that nothing took the place of is still said* · ที่มา `docs/acceptance/14-departments.md:487` `docs/acceptance/14-departments.md:488` |
 | `programscancelclears` | `programs` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/15-programs.md:546` |
 | `subjectscancelclears` | `subjects` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/16-subjects.md:439` |
 | `userscancelclears` | `users` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/11-user-accounts.md:1240` |
@@ -272,7 +272,9 @@ MUTANTS = {
     # ภาควิชา: ฟอร์มที่เปิดทีหลังถูกปิดโดยคำตอบของการบันทึกครั้งก่อน
     'departmentsclosewins': ('departments', CLOSED, CLOSED_ANY),
     # ภาควิชา: คำปฏิเสธของการบันทึกที่ถูกแซง มาขึ้นเหนือฟอร์มใหม่
-    'departmentsrefusalwins': ('departments', REPORTED, REPORTED_ANY),
+    # #319 (27 พ.ย. 2569) เล็งใหม่: ฟอร์มเป็นหน้าต่างลอย และ `catch` ของ `save` เรียก `refuse`
+    # แทน `report` อย่างจอผู้ใช้งานหลัง #307 — ความผิดคงเดิม เปลี่ยนแค่ชื่อที่เรียก
+    'departmentsrefusalwins': ('departments', USERS_REPORTED, USERS_REPORTED_ANY),
     # ภาควิชา: ประโยคของการบันทึกขึ้นทับฟอร์มที่แถวถัดไปกำลังถูกอ่านเพื่อเปิด
     'departmentssavesaysanyway': ('departments',
         '      if (showing.current === sent) {\n'
@@ -356,14 +358,17 @@ MUTANTS = {
     # in a different file, so the catalogue sees two mutants and not one
     # cited twice (#185). This comment stays as the record of why this file
     # holds twelve and not thirteen (#54).
+    # #319 (27 พ.ย. 2569) เล็งใหม่: ยกเลิกเลิกล้างแบนเนอร์ (คำตอบ #307 ของจอผู้ใช้งาน) จึงไม่มี
+    # `setNotice(null)` ให้ยึด - ความผิดคงเดิม คือยกเลิกเขียน `null` อีกครั้ง ยึดท้าย `onCancel`
+    # ของฟอร์มด้วย `/>` ซึ่ง `onCancel` บรรทัดเดียวของ `FormDialog` ไม่มี
     'departmentscancelclears': ('departments',
-        '            setNotice(null)\n'
         '            setEditing(null)\n'
-        '          }}\n',
+        '          }}\n'
+        '        />\n',
         '            showing.current = null\n'
-        '            setNotice(null)\n'
         '            setEditing(null)\n'
-        '          }}\n'),
+        '          }}\n'
+        '        />\n'),
     'programscancelclears': ('programs',
         '            setNotice(null)\n'
         '            setEditing(null)\n'

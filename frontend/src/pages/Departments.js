@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import DepartmentForm from '../components/departments/DepartmentForm'
+import FormDialog from '../components/FormDialog'
 import ImportPanel from '../components/ImportPanel'
 import PageHeader from '../components/PageHeader'
 import Notice from '../components/Notice'
@@ -127,6 +128,20 @@ export default function Departments() {
   const [data, setData] = useState({ departments: [], total: 0 })
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  /**
+   * The form dialog's own refusal - #319, carrying #307's answer of 25
+   * November 2569 from `pages/Users.js`, which is the same shape: a form in a
+   * dialog over a list, and the page's `Notice` behind its cover.
+   *
+   * The dialog draws only this, its own save's refusal. Every other sentence
+   * that lands while it is open - a list read sent before it opened, a removal
+   * whose question was put away with Escape while its write was out - goes to
+   * `notice`, which is not drawn until the dialog closes and is then read on
+   * the page. Cleared whenever the dialog goes, by the effect beside
+   * `formShown`, so the next opening starts without it (#91's *a refusal does
+   * not outlive the form that caused it*, by another mechanism).
+   */
+  const [refused, setRefused] = useState(null)
   // The import window, opened by นำเข้า… in the bar (#270).
   const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -333,10 +348,17 @@ export default function Departments() {
    * value (#201). So it is mirrored into a ref the way `onScreen` mirrors
    * `load` just above. `frontend/src/pages/Plos.js` carries the measurement the
    * owner's answer rests on and what this ref is *of* (#185, #207).
+   *
+   * #319 (27 November 2569): the form is a dialog over the list now, so the
+   * list *is* drawn while it is open - but under a modal cover nobody can read
+   * it through, so the sentence waits for the same thing, the list the person
+   * can see, and this ref is unchanged. That is #304's reading on `Users.js`.
    */
   const formShown = useRef(false)
   useEffect(() => {
     formShown.current = Boolean(editing)
+    // #319 - the dialog's own refusal goes with the dialog (#307's shape).
+    if (!editing) setRefused(null)
   }, [editing])
 
   /**
@@ -349,6 +371,12 @@ export default function Departments() {
    * and the filters are drawn in the branch the form replaces, so nothing can
    * move the key while a form is open. A control drawn outside that branch
    * would move it, and that is the condition that re-dates this.
+   * Re-dated by #319 (27 November 2569), as #304 re-dated `Users.js`': the
+   * pager and the search box are drawn now, under the form dialog's cover,
+   * which takes the pointer and keeps the focus inside the box
+   * (`useModalFocus`) - still unreachable, by the cover rather than by the
+   * branch. A control the cover does not hold would move the key, and that is
+   * the condition that re-dates this now.
    *
    * The clearing here is the whole of it, the `finally` in `load` having stopped
    * clearing a held one: a sentence nothing clears is not a sentence that is
@@ -425,6 +453,15 @@ export default function Departments() {
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
 
+  // The save's refusal, said in the dialog while it is open and on the page
+  // once it has gone - a refusal that arrives after ยกเลิก is still owed to the
+  // person (#146), and the dialog is no longer there to say it. #319, by
+  // #307's shape on `Users.js`.
+  const refuse = error => {
+    if (!formShown.current) return report(error)
+    if (!error.expired) setRefused({ error: true, message: error.message })
+  }
+
 /**
  * The banner, and when it goes - ticket #91.
  *
@@ -458,6 +495,14 @@ export default function Departments() {
  * entirely, which is the whole of #91. If it turns out people need the words
  * while they are in the form, they belong *in* the form rather than in a
  * banner that outlives it.
+ *
+ * Re-dated by #319 (27 November 2569): ยกเลิก no longer clears the banner. The
+ * form is a dialog with the banner behind its cover, so what is in the banner
+ * when ยกเลิก is pressed landed while the dialog was open and nobody has read
+ * it yet - clearing it there would lose it unread, which is the reason #307
+ * gave on `Users.js`. The save's own refusal is the dialog's (`refused`) and
+ * goes with it, so *a refusal does not outlive the form that caused it* still
+ * holds, by the effect beside `formShown` rather than by ยกเลิก.
  */
 
   /**
@@ -615,7 +660,7 @@ export default function Departments() {
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
     } catch (error) {
-      if (showing.current === sent) report(error)
+      if (showing.current === sent) refuse(error)
     } finally {
       setWriting(false)
     }
@@ -715,9 +760,21 @@ export default function Departments() {
 
   return (
     <div className={`space-y-6 ${CARD}`}>
-      <Notice notice={notice} />
+      {/* #319: while the form's dialog is open this is behind its cover, so
+          the dialog draws its own save's refusal instead and what lands here
+          meanwhile is read once it closes - #307's answer on `Users.js`. */}
+      {!editing && <Notice notice={notice} />}
 
-      {editing ? (
+      {/* #319, `docs/ui-consistency.md` rule 8 (27 November 2569): the form is
+          a dialog over the list, as the delivered `AddEditSubjectDialog` and
+          #304's add-an-account are, and no longer drawn in its place. */}
+      {editing && (
+        <FormDialog
+          title={editing.department_id ? 'แก้ไขภาควิชา' : 'เพิ่มภาควิชา'}
+          notice={refused}
+          saving={writing}
+          onCancel={() => setEditing(null)}
+        >
         <DepartmentForm
           value={editing}
           busy={busy}
@@ -725,12 +782,20 @@ export default function Departments() {
           onCancel={() => {
             // ยกเลิก does not write this: a form closing is nobody taking the
             // screen, and a save still out is owed its sentence (#146).
-            setNotice(null)
+            // #319 - nor clear the page's notice, which is #307's answer on
+            // `Users.js` carried here: what is in it landed while the dialog
+            // was open and was never drawn, and is read now. The save's own
+            // refusal is `refused`, which goes with the dialog.
             setEditing(null)
           }}
         />
-      ) : (
-        <>
+        </FormDialog>
+      )}
+
+      {/* #319: the list is drawn under the dialog now, not instead of it; the
+          fragment and its indentation are kept so the mutants quoting this
+          block still find it (#189). */}
+      <>
           <PageHeader
             heading={<ContentTitle icon={TITLE_ICON}>ข้อมูลภาควิชา</ContentTitle>}
             importLabel="นำเข้าภาควิชา"
@@ -877,8 +942,7 @@ export default function Departments() {
             onPage={setPage}
             busy={busy}
           />
-        </>
-      )}
+      </>
 
       <ConfirmDialog
         open={Boolean(removing)}

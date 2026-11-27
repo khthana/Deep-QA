@@ -158,11 +158,10 @@ export default function DepartmentForm({ value, busy, onSave, onCancel }) {
   }
 
   return (
-    <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-medium text-primary">
-        {editing ? 'แก้ไขภาควิชา' : 'เพิ่มภาควิชา'}
-      </h2>
-
+    <ContentMotionDIV>
+      {/* The box and the heading are `components/FormDialog.js`' since #319
+          (27 November 2569): the form is a dialog over the list, and
+          `Departments.js` names it with the words this heading carried. */}
       <form onSubmit={submit} className="space-y-4">
         {/* One name to a line (#290): a name is up to 200 characters, and a
             third of the card cut it off while it was being edited. */}

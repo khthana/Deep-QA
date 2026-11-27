@@ -74,7 +74,7 @@ about confirmation specifically.
 
     python mutation/19-plos.py save
     python mutation/19-plos.py codeorder
-    cd e2e && npx playwright test 19a        # expect exactly the named failure
+    cd e2e && npx playwright test tests/19a-plos.spec.js        # expect exactly the named failure
     python mutation/19-plos.py restore
 
 ## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)

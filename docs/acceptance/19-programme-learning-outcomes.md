@@ -541,7 +541,7 @@ baseline **10 ผ่านทั้ง 10** (ตัวเลข **ล้ม 2 �
 - `202:plossaysanyway` **ล้ม 2 ผ่าน 8**
 
 ตัวเลขของ `202:plossaysanyway` ข้างบนเป็นของชุด `202a` ไฟล์เดียว · กวาดด้วยเจ็ดไฟล์ที่ไปถึง
-จอนี้ได้เมื่อ 15 ต.ค. 2569 มันฆ่าแถวที่สามด้วย คือ `19a:232` — เหตุผลอยู่ใน §#211 ท้ายใบ
+จอนี้ได้เมื่อ 15 ต.ค. 2569 มันฆ่าแถวที่สามด้วย คือ `19a-plos.spec.js:232` — เหตุผลอยู่ใน §#211 ท้ายใบ
   - *ผลการเรียนรู้ระดับหลักสูตร — the screen that had no ref at all › says nothing over the form that was opened while it*
   - *ผลการเรียนรู้ระดับหลักสูตร — the screen that had no ref at all › says what it did when nothing took the screen*
 
@@ -668,7 +668,7 @@ handler ทำ: มันอ่านรายการซ้ำเมื่อ�
 - `203:plossaveanyway` **ล้ม 1 ผ่าน 130** ที่แถวของจุดของตัวเอง
 - `203:plosremovalanyway` **ล้ม 1 ผ่าน 130** ที่แถวของจุดของตัวเอง
 
-**ตัวที่สามของ `202:plossaysanyway` เป็นของใหม่ และไม่ใช่การเล็งใหม่ที่พามา** มันคือ `19a:232`
+**ตัวที่สามของ `202:plossaysanyway` เป็นของใหม่ และไม่ใช่การเล็งใหม่ที่พามา** มันคือ `19a-plos.spec.js:232`
 *an outcome a subject maps onto is switched off rather than deleted* ซึ่งเป็นทางธรรมดา: ไม่มีกล่องใดมาเอาจอไป
 `showing.current` กับ `sent` จึงเป็น `null` ทั้งคู่ ยามจริงผ่านด้วย `null === null` ส่วนมัตแตนต์ที่ถาม
 `!== null` ตอบเท่า แล้วเก็บประโยค *ปิดการใช้งานแทนการลบ* ไว้ มันจึงผิดสองทาง:

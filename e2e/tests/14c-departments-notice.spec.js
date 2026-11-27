@@ -61,6 +61,14 @@ test('#91: a refusal does not outlive the form that caused it', async ({ page })
   await expect(page.getByText(REFUSALS.duplicateDepartmentId)).toHaveCount(0);
   // Back on the list rather than merely banner-less.
   await expect(departmentRow(page, '05')).toHaveCount(1);
+
+  // #319 (27 November 2569): the form is a dialog and its save's refusal is
+  // drawn inside it and nowhere else, so the read above holds whether or not
+  // the refusal was cleared - the page never draws it. What says it went with
+  // the form is the next opening, which must start without it.
+  await page.getByRole('button', { name: 'เพิ่มภาควิชา' }).click();
+  await expect(page.getByLabel('รหัสภาควิชา')).toHaveValue('');
+  await expect(page.getByText(REFUSALS.duplicateDepartmentId)).toHaveCount(0);
 });
 
 test('#91: a success does not outlive the action it reports', async ({ page }) => {
@@ -82,6 +90,17 @@ test('#91: a success does not outlive the action it reports', async ({ page }) =
   // The form really is open and empty, so the assertion above is about the
   // banner rather than about a click that did nothing.
   await expect(page.getByLabel('รหัสภาควิชา')).toHaveValue('');
+
+  // #319 (27 November 2569): the form is a dialog, and the page's banner is
+  // not drawn while it is open, so the read above holds whether or not the
+  // press cleared it. ยกเลิก no longer clears the banner either (#307's
+  // answer, carried to this screen), so what was left in it comes back now -
+  // which is where a success the press failed to clear would be read.
+  await page.getByRole('button', { name: 'ยกเลิก' }).click();
+  // The settle point is the dialog going, which is the commit the banner would
+  // come back in - not the list, which was drawn under the dialog all along.
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByText('บันทึกข้อมูลเรียบร้อยแล้ว')).toHaveCount(0);
 });
 
 test('#91: an upload clears the banner from whatever came before it', async ({ page }) => {

@@ -19,7 +19,7 @@ the walk found it are two different call sites, not one.
 
 | ชื่อ | สิ่งที่มันทำ | ข้อยืนยันที่มันฆ่า (บันทึกย้อนหลัง) |
 |---|---|---|
-| `keepcancelled` | เอา `setNotice(null)` ออกจาก `onCancel` ของฟอร์ม — คำปฏิเสธอยู่เกินฟอร์มที่ทำให้เกิดมันอีกครั้ง | **แถว *a refusal does not outlive the form that caused it* ของ `14c`** อีกสองแถวยังผ่าน |
+| `keepcancelled` | เอา `setNotice(null)` ออกจาก `onCancel` ของฟอร์ม — คำปฏิเสธอยู่เกินฟอร์มที่ทำให้เกิดมันอีกครั้ง · **เล็งใหม่ #319 (27 พ.ย. 2569):** ฟอร์มเป็นหน้าต่างลอย คำปฏิเสธของการบันทึกเป็น `refused` ของหน้าต่าง และยกเลิกเลิกล้างแบนเนอร์ (คำตอบ #307) — มัตแตนต์เอาการล้าง `refused` ข้าง `formShown` ออกแทน และแถวของ `14c` เปิดฟอร์มอีกครั้งเพื่ออ่าน · ยังไม่กวาดซ้ำ รอ #336 | **แถว *a refusal does not outlive the form that caused it* ของ `14c`** อีกสองแถวยังผ่าน |
 | `keepsaved` | เอา `setNotice(null)` ออกจากปุ่ม *เพิ่มภาควิชา* — ประโยคสำเร็จอยู่เกินการกระทำที่มันรายงานอีกครั้ง | **แถว *a success does not outlive the action it reports*** อีกสองแถวยังผ่าน |
 | `keepbeforeupload` | ปิด `onStart?.()` ใน `ImportPanel.js` — การอัปโหลดเลิกล้างสิ่งที่อยู่บนจอก่อนมัน คือจุดที่การแก้รอบแรกของ #91 เดินผ่าน และการรีวิวเป็นผู้เจอ | **แถว *an upload clears the banner from whatever came before it*** อีกสองแถวยังผ่าน |
 """
@@ -33,12 +33,14 @@ FILES = {
 
 MUTANTS = {
     # The refusal outlives the form again: cancelling stops clearing.
+    # #319 (27 พ.ย. 2569): the form is a dialog and its save's refusal is the
+    # dialog's own `refused`, cleared by the effect beside `formShown` when the
+    # dialog goes - ยกเลิก no longer clears the page's banner (#307's answer).
+    # The same mistake, at the line that now does the clearing; `14c`'s row
+    # reopens the form to read it, because the page never draws `refused`.
     "keepcancelled": ("departments",
-                      "            setNotice(null)\n"
-                      "            setEditing(null)\n"
-                      "          }}",
-                      "            setEditing(null)\n"
-                      "          }}"),
+                      "    if (!editing) setRefused(null)\n",
+                      ""),
     # The success outlives its action again: opening a new form stops clearing.
     # #270 (12 พ.ย. 2569): the body is `<PageHeader onAdd>`'s now, two spaces
     # shallower; the line taken out is the same one.
