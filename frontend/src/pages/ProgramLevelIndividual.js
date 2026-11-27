@@ -13,6 +13,7 @@ import { IoDocumentTextOutline } from 'react-icons/io5'
 import ContentTitle, { CARD } from '../components/ContentTitle'
 import { TABLE_HEAD } from '../lib/tableHead'
 import { SearchField } from '../components/SearchBox'
+import { EMPTY_BOX } from '../lib/emptyBox'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = IoDocumentTextOutline
@@ -349,7 +350,7 @@ export default function ProgramLevelIndividual() {
 
           <div className="space-y-4">
             {!chosen && (
-              <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center">
+              <div className={EMPTY_BOX}>
                 <p className="text-sm text-slate-500">
                   เลือกนักศึกษาหนึ่งคนจากรายชื่อ เพื่อดูผลการเรียนรู้ระดับหลักสูตรของคนนั้น
                 </p>

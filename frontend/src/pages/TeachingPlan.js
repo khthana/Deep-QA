@@ -10,6 +10,7 @@ import { createWeek, deleteWeek, getPlan, updateWeek } from '../api/teachingPlan
 import RowAction from '../components/RowAction'
 import { GrPlan } from 'react-icons/gr'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { EMPTY_BOX } from '../lib/emptyBox'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = GrPlan
@@ -228,7 +229,7 @@ export default function TeachingPlan() {
           )}
 
           {data.weeks.length === 0 && (
-            <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
+            <p className={EMPTY_BOX}>
               ยังไม่มีแผนการสอนของกลุ่มเรียนนี้
             </p>
           )}

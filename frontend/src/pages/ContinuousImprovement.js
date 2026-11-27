@@ -12,6 +12,7 @@ import {
 } from '../api/improvementPlan'
 import { GrPlan } from 'react-icons/gr'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { EMPTY_BOX } from '../lib/emptyBox'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = GrPlan
@@ -304,7 +305,7 @@ export default function ContinuousImprovement() {
           {data.clos.length === 0 ? (
             <div
               role="status"
-              className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center"
+              className={EMPTY_BOX}
             >
               <p className="text-sm font-medium text-slate-600">
                 รายวิชานี้ยังไม่ได้กำหนดผลการเรียนรู้ จึงยังไม่มีอะไรให้ปรับปรุง

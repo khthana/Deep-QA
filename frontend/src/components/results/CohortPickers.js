@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { listIntakes, listResultPrograms } from '../../api/programResults'
 import { useScreenGeneration } from '../../context/ScreenGeneration'
 import { programNamed } from '../../lib/unitNamed'
+import { EMPTY_BOX } from '../../lib/emptyBox'
 
 /**
  * The curriculum and the intake, for every screen that reports on a cohort.
@@ -216,7 +217,7 @@ export function CohortPickers({ programs, program, setProgram, intakes, intake, 
 /** What a curriculum with nobody on its register says instead of a report. */
 export function NoStudentsYet() {
   return (
-    <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center">
+    <div className={EMPTY_BOX}>
       <p className="text-sm text-slate-500">หลักสูตรนี้ยังไม่มีนักศึกษาในทะเบียน</p>
     </div>
   )

@@ -10,6 +10,7 @@ import { getCloAssessment } from '../api/cloAssessment'
 import { IoDocumentTextOutline } from 'react-icons/io5'
 import ContentTitle, { CARD } from '../components/ContentTitle'
 import { TABLE_HEAD } from '../lib/tableHead'
+import { EMPTY_BOX } from '../lib/emptyBox'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = IoDocumentTextOutline
@@ -152,7 +153,7 @@ export default function CloAssessment() {
           {data.no_outcomes ? (
             <div
               role="status"
-              className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center"
+              className={EMPTY_BOX}
             >
               <p className="text-sm font-medium text-slate-600">
                 รายวิชานี้ยังไม่ได้กำหนดผลการเรียนรู้ จึงยังไม่มีอะไรให้ประเมิน
@@ -164,7 +165,7 @@ export default function CloAssessment() {
           ) : data.empty ? (
             <div
               role="status"
-              className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center"
+              className={EMPTY_BOX}
             >
               <p className="text-sm font-medium text-slate-600">
                 กลุ่มเรียนนี้ยังไม่มีคะแนน จึงยังประเมินผลการเรียนรู้ไม่ได้

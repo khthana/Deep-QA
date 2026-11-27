@@ -10,6 +10,7 @@ import { createActivity, deleteActivity, getActivities, updateActivity } from '.
 import RowAction from '../components/RowAction'
 import { RxActivityLog } from 'react-icons/rx'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { EMPTY_BOX } from '../lib/emptyBox'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = RxActivityLog
@@ -242,7 +243,7 @@ export default function LearningActivities() {
           )}
 
           {data.activities.length === 0 && (
-            <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
+            <p className={EMPTY_BOX}>
               ยังไม่มีกิจกรรมการเรียนรู้ของกลุ่มเรียนนี้
             </p>
           )}

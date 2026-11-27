@@ -5,6 +5,7 @@ import { BackArrow, BACK_BUTTON } from '../BackButton'
 import RowAction, { RowActions } from '../RowAction'
 import TeacherPicker from './TeacherPicker'
 import { termLabel } from './terms'
+import { EMPTY_BOX } from '../../lib/emptyBox'
 
 /**
  * The กลุ่มเรียน of one Offering — #23's second, third and fourth criteria.
@@ -136,7 +137,7 @@ export default function SectionsPanel({
       </form>
 
       {sections.length === 0 && (
-        <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
+        <p className={EMPTY_BOX}>
           ยังไม่มีกลุ่มเรียนในรายวิชาที่เปิดสอนนี้
         </p>
       )}

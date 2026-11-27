@@ -18,6 +18,7 @@ import {
 import RowAction from '../components/RowAction'
 import { GrScorecard } from 'react-icons/gr'
 import ContentTitle, { CARD } from '../components/ContentTitle'
+import { EMPTY_BOX } from '../lib/emptyBox'
 
 /** The delivered screen's title icon (#309). */
 const TITLE_ICON = GrScorecard
@@ -259,7 +260,7 @@ export default function ActivityEvidence() {
           )}
 
           {data.evidence.length === 0 && (
-            <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-slate-500">
+            <p className={EMPTY_BOX}>
               ยังไม่มีหลักฐานแนบกับกิจกรรมนี้
             </p>
           )}
