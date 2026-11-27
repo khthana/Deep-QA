@@ -79,11 +79,13 @@ HELD_OR_SAID = (
 
 # ปุ่มเปิดฟอร์ม `เพิ่มผลการเรียนรู้` — ยึดด้วยสามบรรทัดที่ `ลบ` ไม่มี (`showing.current`)
 # เพราะ `ลบ` เขียน `asked.current = null` กับ `setNotice(null)` เหมือนกัน
+# Four spaces in since #315 moved the add into `PageHeader`'s `onAdd`
+# (27 พ.ย. 2569) - the handler's body, unchanged.
 OPENS_THE_FORM = (
-    '                  asked.current = null\n'
-    '                  showing.current = {}\n'
-    '                  setNotice(null)\n'
-    '                  setEditing({})\n'
+    '              asked.current = null\n'
+    '              showing.current = {}\n'
+    '              setNotice(null)\n'
+    '              setEditing({})\n'
 )
 
 # `finally` ของ `load` — เงื่อนไขที่ตั๋วนี้เพิ่ม
@@ -95,11 +97,11 @@ MUTANTS = {
         '          setNotice(waiting.current.said)\n'),
     # ข้อ ข: ทิ้งประโยคที่ค้างอยู่ตอนเปิดฟอร์ม คนจึงไม่ได้อ่านคำยืนยันของการลบเลย
     'dropsitwhentheformopens': ('plos', OPENS_THE_FORM,
-        '                  asked.current = null\n'
-        '                  showing.current = {}\n'
-        '                  setNotice(null)\n'
-        '                  waiting.current = null\n'
-        '                  setEditing({})\n'),
+        '              asked.current = null\n'
+        '              showing.current = {}\n'
+        '              setNotice(null)\n'
+        '              waiting.current = null\n'
+        '              setEditing({})\n'),
     # ครึ่งใน: `finally` ล้างทุกครั้งอย่างเดิม จึงไม่มีอะไรเหลือให้พูดตอนฟอร์มปิด
     'clearsaheldsentence': ('plos', KEEPS_A_HELD_ONE,
         '        waiting.current = null\n'),

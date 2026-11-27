@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import Notice from '../components/Notice'
+import PageHeader from '../components/PageHeader'
 import RowAction, { RowActions } from '../components/RowAction'
 import CriterionForm, { BANDS } from '../components/rubrics/CriterionForm'
 import {
@@ -267,37 +268,33 @@ export default function RubricCriteria() {
         />
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <ContentTitle icon={TITLE_ICON}>
-                เกณฑ์การให้คะแนนของ Rubric {data.rubric?.rubric_code}
-              </ContentTitle>
-              <p className="text-sm text-slate-500">
-                {data.rubric?.rubric_name_th}
-                {data.rubric?.rubric_name_en ? ` · ${data.rubric.rubric_name_en}` : ''}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                to="/main/rubrics"
-                className="rounded-lg px-3 py-1.5 text-sm text-primary hover:bg-blue-50"
-              >
-                กลับไปหน้าข้อมูล Rubric กลาง
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  asked.current = null
-                  showing.current = {}
-                  setNotice(null)
-                  setEditing({})
-                }}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
-              >
-                เพิ่มเกณฑ์
-              </button>
-            </div>
-          </div>
+          <PageHeader
+            heading={
+              <div>
+                <ContentTitle icon={TITLE_ICON}>
+                  เกณฑ์การให้คะแนนของ Rubric {data.rubric?.rubric_code}
+                </ContentTitle>
+                <p className="text-sm text-slate-500">
+                  {data.rubric?.rubric_name_th}
+                  {data.rubric?.rubric_name_en ? ` · ${data.rubric.rubric_name_en}` : ''}
+                </p>
+              </div>
+            }
+            addLabel="เพิ่มเกณฑ์"
+            onAdd={() => {
+              asked.current = null
+              showing.current = {}
+              setNotice(null)
+              setEditing({})
+            }}
+          >
+            <Link
+              to="/main/rubrics"
+              className="rounded-lg px-3 py-1.5 text-sm text-primary hover:bg-blue-50"
+            >
+              กลับไปหน้าข้อมูล Rubric กลาง
+            </Link>
+          </PageHeader>
 
           <p className="text-sm text-slate-500">
             Rubric นี้มีเกณฑ์การให้คะแนน {data.total} ข้อ

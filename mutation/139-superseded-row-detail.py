@@ -323,8 +323,13 @@ MUTANTS = {
     # (#276), when the add press moved out a level and began opening the row
     # at the order the server says comes next; the mistake is the same one.
     'rubricsaddkeepsask': ('rubrics',
-        '              asked.current = null\n              showing.current = {}\n              setNotice(null)\n              setEditing({ display_order: data.next_order ?? 1 })\n',
-        '              showing.current = {}\n              setNotice(null)\n              setEditing({ display_order: data.next_order ?? 1 })\n'),
+        '          asked.current = null\n'
+        '          showing.current = {}\n'
+        '          setNotice(null)\n'
+        '          setEditing({ display_order: data.next_order ?? 1 })\n',
+        '          showing.current = {}\n'
+        '          setNotice(null)\n'
+        '          setEditing({ display_order: data.next_order ?? 1 })\n'),
     # Rubric: ลบ leaves the last แก้ไข standing. Re-aimed by #276 for the
     # indentation alone.
     'rubricsremovekeepsask': ('rubrics',
@@ -344,8 +349,13 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # เกณฑ์: เพิ่ม leaves the last แก้ไข standing
     'criteriaaddkeepsask': ('criteria',
-        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
+        '              asked.current = null\n'
+        '              showing.current = {}\n'
+        '              setNotice(null)\n'
+        '              setEditing({})\n',
+        '              showing.current = {}\n'
+        '              setNotice(null)\n'
+        '              setEditing({})\n'),
     # เกณฑ์: ลบ leaves the last แก้ไข standing
     'criteriaremovekeepsask': ('criteria',
         '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(criterion)\n',
@@ -364,8 +374,13 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # PLO: เพิ่ม leaves the last แก้ไข standing
     'plosaddkeepsask': ('plos',
-        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n'),
+        '              asked.current = null\n'
+        '              showing.current = {}\n'
+        '              setNotice(null)\n'
+        '              setEditing({})\n',
+        '              showing.current = {}\n'
+        '              setNotice(null)\n'
+        '              setEditing({})\n'),
     # PLO: ลบ leaves the last แก้ไข standing
     'plosremovekeepsask': ('plos',
         '                              asked.current = null\n                              setNotice(null)\n                              setRemoving(plo)\n',
@@ -388,8 +403,13 @@ MUTANTS = {
         '      if (asked.current !== null) report(error)\n'),
     # Offering: เปิดรายวิชา leaves the last panel standing
     'offeringsformkeepsask': ('offerings',
-        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setOpening(true)\n',
-        '                  showing.current = {}\n                  setNotice(null)\n                  setOpening(true)\n'),
+        '              asked.current = null\n'
+        '              showing.current = {}\n'
+        '              setNotice(null)\n'
+        '              setOpening(true)\n',
+        '              showing.current = {}\n'
+        '              setNotice(null)\n'
+        '              setOpening(true)\n'),
     # Offering: ยกเลิกการเปิด leaves the last panel standing
     'offeringscancelkeepsask': ('offerings',
         "                              asked.current = null\n                              setNotice(null)\n                              setRemoving({ kind: 'offering', offering })\n",

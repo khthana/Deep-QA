@@ -7,6 +7,7 @@ import { cognitiveLevelName, learningActivityName } from '../components/behavior
 import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import Notice from '../components/Notice'
+import PageHeader from '../components/PageHeader'
 import {
   createBehavior,
   deleteBehavior,
@@ -207,7 +208,19 @@ export default function MeasurableBehaviors() {
             </p>
           </div>
 
-          {editing ? (
+          {/* Not drawn while a form is open (#315): the form opens where the
+              button used to be, and the dialog tickets (#319-#334) revisit it. */}
+          {!editing && (
+            <PageHeader
+              addLabel="เพิ่มพฤติกรรมบ่งชี้"
+              onAdd={() => {
+                showing.current = {}
+                setEditing('new')
+              }}
+            />
+          )}
+
+          {editing && (
             <BehaviorForm
               behavior={editing === 'new' ? null : editing}
               busy={busy}
@@ -218,17 +231,6 @@ export default function MeasurableBehaviors() {
                 setEditing(null)
               }}
             />
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                showing.current = {}
-                setEditing('new')
-              }}
-              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
-            >
-              เพิ่มพฤติกรรมบ่งชี้
-            </button>
           )}
 
           {data.behaviors.length === 0 && (

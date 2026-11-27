@@ -133,21 +133,19 @@ FILES = {
 MUTANTS = {
     # The owner's answer of 16 พ.ย. 2569: one curriculum in reach is not
     # stated. The statement the answer took away comes back (#48).
-    "statesprogram": (
-        "page",
-        "                </label>\n"
-        "              )}\n",
-        "                </label>\n"
-        "              )}\n"
-        "              {programs.length === 1 && (\n"
-        "                <span className=\"flex items-center gap-2 text-sm text-slate-600\">\n"
-        "                  หลักสูตร\n"
-        "                  <span className=\"rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900\">\n"
-        "                    {programs[0].program_name_th}\n"
-        "                  </span>\n"
-        "                </span>\n"
-        "              )}\n",
-    ),
+    "statesprogram": ('page',
+        '              </label>\n'
+        '            )}\n',
+        '              </label>\n'
+        '            )}\n'
+        '            {programs.length === 1 && (\n'
+        '              <span className="flex items-center gap-2 text-sm text-slate-600">\n'
+        '                หลักสูตร\n'
+        '                <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">\n'
+        '                  {programs[0].program_name_th}\n'
+        '                </span>\n'
+        '              </span>\n'
+        '            )}\n'),
     # Row 3 — the list is in the stated order, not in the order of the codes.
     "codeorder": (
         "route",
@@ -252,11 +250,9 @@ MUTANTS = {
     # holding one curriculum from no dropdown at all. Written against `0501`
     # alone — which is how it was first written — row 16 passed under this
     # mutant, and a row that cannot fail is not evidence.
-    "alwaysadropdown": (
-        "page",
-        "              {programs.length > 1 && (",
-        "              {programs.length > 0 && (",
-    ),
+    "alwaysadropdown": ('page',
+        '            {programs.length > 1 && (',
+        '            {programs.length > 0 && ('),
     # #101, row 13 — the filter offers the curricula in reach and nothing
     # wider. The option as it stood, put back. It is `ทุกหลักสูตร` and not
     # some other label because a label the screen never had would prove the row
@@ -270,12 +266,10 @@ MUTANTS = {
     # Thai is the most reflow-prone line on the screen - a reworded note or a
     # formatter would move it and this mutant would answer MISS, which is
     # #123's whole subject. `/code-review` asked for the code line instead.
-    "alwaysallprograms": (
-        "page",
-        """                    {programs.map(entry => (""",
-        """                    <option value="">ทุกหลักสูตร</option>
-                    {programs.map(entry => (""",
-    ),
+    "alwaysallprograms": ('page',
+        '                  {programs.map(entry => (',
+        '                  <option value="">ทุกหลักสูตร</option>\n'
+        '                  {programs.map(entry => ('),
     # #101, row 14 — the screen lands on the *first* curriculum in reach.
     #
     # The last rather than none, deliberately. Choosing none leaves `program`

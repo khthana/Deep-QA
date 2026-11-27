@@ -112,18 +112,18 @@ MUTANTS = {
         '(termsRead ? termsOf?.current : null)',
         '(termsRead ? terms[0] : null)'),
     's279optionyearfirst': ('screen',
-        '                    <option key={termLabel(entry)} value={termLabel(entry)}>\n'
-        '                      {termLabel(entry)}\n',
-        '                    <option key={termLabel(entry)} value={termLabel(entry)}>\n'
-        '                      {`${entry.academic_year}/${entry.semester}`}\n'),
+        '                  <option key={termLabel(entry)} value={termLabel(entry)}>\n'
+        '                    {termLabel(entry)}\n',
+        '                  <option key={termLabel(entry)} value={termLabel(entry)}>\n'
+        '                    {`${entry.academic_year}/${entry.semester}`}\n'),
     's279everytermback': ('screen',
-        '                  {terms.map(entry => (\n',
-        '                  <option value="">ทุกภาค</option>\n'
-        '                  {terms.map(entry => (\n'),
+        '                {terms.map(entry => (\n',
+        '                <option value="">ทุกภาค</option>\n'
+        '                {terms.map(entry => (\n'),
     's279everyprogramback': ('screen',
-        '                    {programs.map(entry => (\n',
-        '                    <option value="">ทุกหลักสูตร</option>\n'
-        '                    {programs.map(entry => (\n'),
+        '                  {programs.map(entry => (\n',
+        '                  <option value="">ทุกหลักสูตร</option>\n'
+        '                  {programs.map(entry => (\n'),
     's279programcolumnback': ('screen',
         '                  <th className="px-4 py-2">กลุ่มเรียน</th>\n',
         '                  <th className="px-4 py-2">หลักสูตร</th>\n'
@@ -151,23 +151,25 @@ MUTANTS = {
         '    if (!busy) onClose()\n',
         '    onClose()\n'),
     's279pickerbeforeterm': ('screen',
-        '                    setChosenTerm(event.target.value)\n'
-        '                  }}\n'
-        '                  disabled={!term}\n',
-        '                    setChosenTerm(event.target.value)\n'
-        '                  }}\n'),
-    's279copybeforeterm': ('screen',
-        '                  setCopyOpen(true)\n'
+        '                  setChosenTerm(event.target.value)\n'
         '                }}\n'
         '                disabled={!term}\n',
-        '                  setCopyOpen(true)\n'
+        '                  setChosenTerm(event.target.value)\n'
         '                }}\n'),
+    's279copybeforeterm': ('screen',
+        '                setCopyOpen(true)\n'
+        '              }}\n'
+        '              disabled={!term}\n',
+        '                setCopyOpen(true)\n'
+        '              }}\n'),
     # Anchored on the attribute and the class after it, not on the comment
-    # between the handler and the attribute (#121, #123).
+    # between the handler and the attribute (#121, #123). Re-aimed 27 พ.ย. 2569
+    # by #315, when the button moved into `PageHeader`: the attribute is
+    # `addDisabled` there and unique in the file, so it is the anchor alone -
+    # the same mistake, the attribute taken away.
     's279openbeforeterm': ('screen',
-        '                disabled={!term}\n'
-        '                className="rounded-lg bg-primary px-5',
-        '                className="rounded-lg bg-primary px-5'),
+        '            addDisabled={!term}\n',
+        ''),
     's279copytargetnotshown': ('copy',
         '                academic_year: target.academic_year,\n',
         '                academic_year: String(Number(target.academic_year) + 1),\n'),

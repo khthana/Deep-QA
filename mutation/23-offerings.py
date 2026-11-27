@@ -102,21 +102,19 @@ FILES = {
 MUTANTS = {
     # The owner's answer of 16 พ.ย. 2569: one curriculum in reach is not
     # stated. The statement the answer took away comes back (#48).
-    "statesprogram": (
-        "page",
-        "                </label>\n"
-        "              )}\n",
-        "                </label>\n"
-        "              )}\n"
-        "              {programs.length === 1 && (\n"
-        "                <span className=\"flex items-center gap-2 text-sm text-slate-600\">\n"
-        "                  หลักสูตร\n"
-        "                  <span className=\"rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900\">\n"
-        "                    {programs[0].program_name_th}\n"
-        "                  </span>\n"
-        "                </span>\n"
-        "              )}\n",
-    ),
+    "statesprogram": ('page',
+        '              </label>\n'
+        '            )}\n',
+        '              </label>\n'
+        '            )}\n'
+        '            {programs.length === 1 && (\n'
+        '              <span className="flex items-center gap-2 text-sm text-slate-600">\n'
+        '                หลักสูตร\n'
+        '                <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">\n'
+        '                  {programs[0].program_name_th}\n'
+        '                </span>\n'
+        '              </span>\n'
+        '            )}\n'),
     # The inherited constraint: a section number unique across the whole
     # system. Kills the half of criterion three that says the same number may
     # exist under two different subjects, and leaves the half everybody thinks

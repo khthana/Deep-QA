@@ -25,6 +25,17 @@ import { LuImport } from 'react-icons/lu'
  * which has no add at all - pass no `onAdd`, which is the ticket's *มีแค่ปุ่ม
  * นำเข้า*.
  *
+ * **Every screen's main add is drawn here** (#315, the owner's answer of 27
+ * November 2569, `docs/ui-consistency.md` rule 6), not only the six that
+ * import - ten more since that day. The screens in the paragraph above whose
+ * add is a form that is always open are still not among them, which is #335's
+ * question to the owner. `addDisabled` draws the button dead where a screen cannot add yet -
+ * Rubrics while the list drawn is another curriculum's, Offerings before a term
+ * is known - and a screen whose add has become a form passes no `onAdd` while
+ * the form is open, so the button is hidden rather than left beside a form it
+ * already opened (#315's answer for all of them: the dialog tickets #319-#334
+ * revisit it).
+ *
  * The labels are the screen's, not built here from a noun, so that a grep for
  * `เพิ่มภาควิชา` finds the screen that says it (#111, #124) - the delivered
  * component's `'เพิ่ม' + textAddBT` is a string no grep for the words can find.
@@ -35,6 +46,7 @@ export default function PageHeader({
   onImport,
   addLabel,
   onAdd,
+  addDisabled = false,
   children,
 }) {
   return (
@@ -57,7 +69,8 @@ export default function PageHeader({
             <button
               type="button"
               onClick={onAdd}
-              className="flex items-center justify-center rounded-lg bg-secondary px-5 py-2.5 font-medium text-white transition-all hover:bg-secondary_hover active:scale-95"
+              disabled={addDisabled}
+              className="flex items-center justify-center rounded-lg bg-secondary px-5 py-2.5 font-medium text-white transition-all hover:bg-secondary_hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-secondary disabled:active:scale-100"
             >
               <IoMdAdd aria-hidden="true" className="me-2 h-5 w-5" />
               {addLabel}

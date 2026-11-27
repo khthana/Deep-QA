@@ -122,6 +122,15 @@ USABLE_FILTER_OPTIONS = """                {programs
                   .map(entry => (
 """
 
+# The screen's own copy, two spaces in since #315 moved its picker into
+# `PageHeader` (27 พ.ย. 2569) - the same mistake, re-indented.
+SCREEN_FILTER_OPTIONS = """              {programs.map(entry => (
+"""
+SCREEN_USABLE_FILTER_OPTIONS = """              {programs
+                .filter(entry => entry.is_active !== false)
+                .map(entry => (
+"""
+
 POOL_CLAUSE = """  const filtered = usable.some(program => program.program_id === defaultProgram)
   const starting = (filtered ? defaultProgram : onlyOne?.program_id) || ''
 """
@@ -163,7 +172,7 @@ MUTANTS = {
     # It is aimed at the screen and not at a form, because what option 2 would
     # take away is the reading, not the writing.
     'rubricfilterhidestheretired': [
-        ('screen', FILTER_OPTIONS, USABLE_FILTER_OPTIONS),
+        ('screen', SCREEN_FILTER_OPTIONS, SCREEN_USABLE_FILTER_OPTIONS),
     ],
 }
 

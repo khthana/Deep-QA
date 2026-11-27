@@ -153,8 +153,13 @@ MUTANTS = {
     # ผลการเรียนรู้ระดับหลักสูตร: ref มีอยู่ แต่ปุ่มเพิ่มไม่เขียนมัน guard จึงเทียบ
     # `null === null` แล้วพูดทับฟอร์มที่เพิ่งเปิด
     'plosnorefatadd': ('plos',
-        '                  asked.current = null\n                  showing.current = {}\n                  setNotice(null)\n                  setEditing({})\n',
-        '                  asked.current = null\n                  setNotice(null)\n                  setEditing({})\n'),
+        '              asked.current = null\n'
+        '              showing.current = {}\n'
+        '              setNotice(null)\n'
+        '              setEditing({})\n',
+        '              asked.current = null\n'
+        '              setNotice(null)\n'
+        '              setEditing({})\n'),
     # ผู้ใช้งาน: สวิตช์สถานะ ซึ่งไม่ถามอะไรก่อน รายการจึงยังมีชีวิตอยู่ทั้งเวลา
     # #239 - three lines since 28 ต.ค. 2569, and the comparison this mutant
     # is about is now written twice in the handler, so it is wrong in both: the

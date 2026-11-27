@@ -49,12 +49,12 @@ MUTANTS = {
         "${removing.program_id}${removing.program_name_th ? ` ${removing.program_name_th}` : ''}",
         '${removing.program_id} ${removing.program_name_th}'),
     'plosbarename': ('plos',
-        '                        {programNamed(entry)}\n',
-        '                        {programNamed && entry.program_name_th}\n'),
+        '                      {programNamed(entry)}\n',
+        '                      {programNamed && entry.program_name_th}\n'),
     # The option the owner did not take, made to run (#48).
     'plosprogramcodealone': ('plos',
-        '                        {programNamed(entry)}\n',
-        '                        {programNamed && (entry.program_name_th || entry.program_id)}\n'),
+        '                      {programNamed(entry)}\n',
+        '                      {programNamed && (entry.program_name_th || entry.program_id)}\n'),
 }
 
 main(FILES, MUTANTS)

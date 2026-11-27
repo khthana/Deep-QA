@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import ConfirmDialog from '../components/ConfirmDialog'
 import Notice from '../components/Notice'
+import PageHeader from '../components/PageHeader'
 import RowAction, { RowActions } from '../components/RowAction'
 import Pager from '../components/Pager'
 import RubricRow from '../components/rubrics/RubricRow'
@@ -527,57 +528,51 @@ export default function Rubrics() {
     <div className={`space-y-6 ${CARD}`}>
       <Notice notice={notice} />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <ContentTitle icon={TITLE_ICON}>ข้อมูล Rubric กลาง</ContentTitle>
-        <div className="flex flex-wrap items-center gap-3">
-          {/* A picker when there is a choice to make, and nothing when
-              there is not. A กรรมการหลักสูตร reaches one curriculum, and the
-              statement of which - ผลการเรียนรู้ระดับหลักสูตร's control - went
-              on 16 พ.ย. 2569 by the owner's answer: the work is done one
-              department at a time, so the name told nobody anything. No
-              *ทุกหลักสูตร* since #276: the list is one curriculum's. */}
-          {programs.length > 1 && (
-            <label className="flex items-center gap-2 text-sm text-slate-600">
-              หลักสูตร
-              <select
-                value={program}
-                onChange={event => {
-                  // Back to the first page: page 2 of one curriculum's
-                  // rubrics is rarely page 2 of another's.
-                  setPage(1)
-                  setChosen(event.target.value)
-                }}
-                className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-              >
-                {programs.map(entry => (
-                  <option key={entry.program_id} value={entry.program_id}>
-                    {programNamed(entry)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <button
-            type="button"
-            onClick={() => {
-              asked.current = null
-              showing.current = {}
-              setNotice(null)
-              setEditing({ display_order: data.next_order ?? 1 })
-              addOrderOf.current = data.of
-            }}
-            // Not while the drawn list is another curriculum's: `next_order`
-            // is that list's, and after a switch of curriculum it is the one
-            // before it - the review of 14 พ.ย. 2569 (#276). A re-read of the
-            // same curriculum leaves the button live, which is #242's claim
-            // (a form opened while the list is being re-read is live).
-            disabled={data.of !== program}
-            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            เพิ่ม Rubric
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        heading={<ContentTitle icon={TITLE_ICON}>ข้อมูล Rubric กลาง</ContentTitle>}
+        addLabel="เพิ่ม Rubric"
+        onAdd={() => {
+          asked.current = null
+          showing.current = {}
+          setNotice(null)
+          setEditing({ display_order: data.next_order ?? 1 })
+          addOrderOf.current = data.of
+        }}
+        // Not while the drawn list is another curriculum's: `next_order`
+        // is that list's, and after a switch of curriculum it is the one
+        // before it - the review of 14 พ.ย. 2569 (#276). A re-read of the
+        // same curriculum leaves the button live, which is #242's claim
+        // (a form opened while the list is being re-read is live).
+        addDisabled={data.of !== program}
+      >
+        {/* A picker when there is a choice to make, and nothing when
+            there is not. A กรรมการหลักสูตร reaches one curriculum, and the
+            statement of which - ผลการเรียนรู้ระดับหลักสูตร's control - went
+            on 16 พ.ย. 2569 by the owner's answer: the work is done one
+            department at a time, so the name told nobody anything. No
+            *ทุกหลักสูตร* since #276: the list is one curriculum's. */}
+        {programs.length > 1 && (
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            หลักสูตร
+            <select
+              value={program}
+              onChange={event => {
+                // Back to the first page: page 2 of one curriculum's
+                // rubrics is rarely page 2 of another's.
+                setPage(1)
+                setChosen(event.target.value)
+              }}
+              className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
+            >
+              {programs.map(entry => (
+                <option key={entry.program_id} value={entry.program_id}>
+                  {programNamed(entry)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </PageHeader>
 
       <p className="text-sm text-slate-500">
         รหัส Rubric ห้ามซ้ำกันทั้งระบบ ต่างจากรหัสผลการเรียนรู้ระดับหลักสูตรที่ซ้ำข้ามหลักสูตรได้

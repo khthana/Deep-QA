@@ -124,26 +124,24 @@ MUTANTS = {
     # became `&&` with the statement gone: the same mistake.
     "alwaysadropdown": (
         "page",
-        "          {programs.length > 1 && (",
-        "          {programs.length > 0 && (",
+        "        {programs.length > 1 && (",
+        "        {programs.length > 0 && (",
     ),
     # Row 1, since the owner's answer of 16 พ.ย. 2569 — one curriculum in reach
     # is not stated. The statement the answer took away comes back (#48).
-    "statesprogram": (
-        "page",
-        "            </label>\n"
-        "          )}\n",
-        "            </label>\n"
-        "          )}\n"
-        "          {programs.length === 1 && (\n"
-        "            <span className=\"flex items-center gap-2 text-sm text-slate-600\">\n"
-        "              หลักสูตร\n"
-        "              <span className=\"rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900\">\n"
-        "                {programs[0].program_name_th}\n"
-        "              </span>\n"
-        "            </span>\n"
-        "          )}\n",
-    ),
+    "statesprogram": ('page',
+        '          </label>\n'
+        '        )}\n',
+        '          </label>\n'
+        '        )}\n'
+        '        {programs.length === 1 && (\n'
+        '          <span className="flex items-center gap-2 text-sm text-slate-600">\n'
+        '            หลักสูตร\n'
+        '            <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-900">\n'
+        '              {programs[0].program_name_th}\n'
+        '            </span>\n'
+        '          </span>\n'
+        '        )}\n'),
     # Row 2 — the list is in the stated order, not in the order of the codes.
     "codeorder": (
         "route",
@@ -313,10 +311,12 @@ MUTANTS = {
         "    : programs[programs.length - 1]?.program_id ?? ''",
     ),
     # The review of 14 พ.ย. 2569 (#276) - the add button live while the drawn
-    # list is another curriculum's.
+    # list is another curriculum's. Re-aimed 27 พ.ย. 2569 by #315, when the
+    # button moved into `PageHeader` and the attribute became `addDisabled`:
+    # the same mistake, the attribute taken away.
     "addduringload": (
         "page",
-        "            disabled={data.of !== program}\n",
+        "        addDisabled={data.of !== program}\n",
         "",
     ),
     # The same review - the row's own flag, which the row drawn anew does not
@@ -324,11 +324,9 @@ MUTANTS = {
     # #276's third owner's answer (ก, 14 พ.ย. 2569), with the option that kept
     # today's behaviour made to run (#48): the add row is never told which
     # curriculum its order came from, so the switch leaves the old order in it.
-    "addorderkept": (
-        "page",
-        "              addOrderOf.current = data.of\n",
-        "",
-    ),
+    "addorderkept": ('page',
+        '          addOrderOf.current = data.of\n',
+        ''),
     "rowownsitsflag": [
         ("row",
          "import { FaSave } from 'react-icons/fa'\n",

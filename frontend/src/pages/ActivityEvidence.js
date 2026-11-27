@@ -6,6 +6,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ContentMotionDIV from '../components/ContentMotionDIV'
 import EvidenceForm from '../components/evidence/EvidenceForm'
 import Notice from '../components/Notice'
+import PageHeader from '../components/PageHeader'
 import {
   deleteEvidence,
   getEvidence,
@@ -223,7 +224,19 @@ export default function ActivityEvidence() {
             </p>
           </div>
 
-          {editing ? (
+          {/* Not drawn while a form is open (#315): the form opens where the
+              button used to be, and the dialog tickets (#319-#334) revisit it. */}
+          {!editing && (
+            <PageHeader
+              addLabel="แนบหลักฐาน"
+              onAdd={() => {
+                showing.current = {}
+                setEditing('new')
+              }}
+            />
+          )}
+
+          {editing && (
             // One form per file. The form seeds its boxes when it mounts, and
             // without the key another file's pencil handed it a new file and
             // left the first one's values standing - บันทึก then wrote them
@@ -243,17 +256,6 @@ export default function ActivityEvidence() {
                 setEditing(null)
               }}
             />
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                showing.current = {}
-                setEditing('new')
-              }}
-              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
-            >
-              แนบหลักฐาน
-            </button>
           )}
 
           {data.evidence.length === 0 && (

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import CopyTermPanel from '../components/offerings/CopyTermPanel'
 import Notice from '../components/Notice'
+import PageHeader from '../components/PageHeader'
 import RowAction, { RowActions } from '../components/RowAction'
 import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import OfferingForm from '../components/offerings/OfferingForm'
@@ -937,88 +938,81 @@ export default function Offerings() {
         />
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <ContentTitle icon={TITLE_ICON}>การเปิดรายวิชาในภาคการศึกษา</ContentTitle>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* A picker when there is a choice to make, and a statement of
-                  where one is when there is not — ข้อมูลรายวิชา's control, for
-                  ข้อมูลรายวิชา's reasons. A กรรมการหลักสูตร reaches one
-                  programme and is shown which.
-                  Since 16 พ.ย. 2569 an account reaching one curriculum is shown
-                  nothing - the owner's answer: the work is done one department at
-                  a time, so the name told nobody anything (Rubrics.js, the same day).
-                  Since 17 พ.ย. 2569 there is no ทุกหลักสูตร (#279). */}
-              {programs.length > 1 && (
-                <label className="flex items-center gap-2 text-sm text-slate-600">
-                  หลักสูตร
-                  <select
-                    value={program}
-                    onChange={event => {
-                      setPage(1)
-                      setChosen(event.target.value)
-                    }}
-                    className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-                  >
-                    {programs.map(entry => (
-                      <option key={entry.program_id} value={entry.program_id}>
-                        {programNamed(entry)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-
+          <PageHeader
+            heading={<ContentTitle icon={TITLE_ICON}>การเปิดรายวิชาในภาคการศึกษา</ContentTitle>}
+            addLabel="เปิดรายวิชา"
+            onAdd={() => {
+              asked.current = null
+              showing.current = {}
+              setNotice(null)
+              setOpening(true)
+            }}
+            // #279: the form opens a subject in the term the list shows, so
+            // it waits for that term as the picker and the copy do.
+            addDisabled={!term}
+          >
+            {/* A picker when there is a choice to make, and a statement of
+                where one is when there is not — ข้อมูลรายวิชา's control, for
+                ข้อมูลรายวิชา's reasons. A กรรมการหลักสูตร reaches one
+                programme and is shown which.
+                Since 16 พ.ย. 2569 an account reaching one curriculum is shown
+                nothing - the owner's answer: the work is done one department at
+                a time, so the name told nobody anything (Rubrics.js, the same day).
+                Since 17 พ.ย. 2569 there is no ทุกหลักสูตร (#279). */}
+            {programs.length > 1 && (
               <label className="flex items-center gap-2 text-sm text-slate-600">
-                ภาคการศึกษา
+                หลักสูตร
                 <select
-                  value={term ? termLabel(term) : ''}
+                  value={program}
                   onChange={event => {
                     setPage(1)
-                    setChosenTerm(event.target.value)
+                    setChosen(event.target.value)
                   }}
-                  disabled={!term}
                   className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
                 >
-                  {terms.map(entry => (
-                    <option key={termLabel(entry)} value={termLabel(entry)}>
-                      {termLabel(entry)}
+                  {programs.map(entry => (
+                    <option key={entry.program_id} value={entry.program_id}>
+                      {programNamed(entry)}
                     </option>
                   ))}
                 </select>
               </label>
+            )}
 
-              {/* #279, 17 พ.ย. 2569: a button on the top bar that opens the copy as a
-                  popup, where it used to be a panel under the list. */}
-              <button
-                type="button"
-                onClick={() => {
-                  setNotice(null)
-                  setCopied(null)
-                  setCopyOpen(true)
+            <label className="flex items-center gap-2 text-sm text-slate-600">
+              ภาคการศึกษา
+              <select
+                value={term ? termLabel(term) : ''}
+                onChange={event => {
+                  setPage(1)
+                  setChosenTerm(event.target.value)
                 }}
                 disabled={!term}
-                className="rounded-lg border border-primary px-5 py-2.5 text-sm font-medium text-primary hover:bg-blue-50 disabled:opacity-60"
+                className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
               >
-                คัดลอกจากภาคการศึกษาก่อน
-              </button>
+                {terms.map(entry => (
+                  <option key={termLabel(entry)} value={termLabel(entry)}>
+                    {termLabel(entry)}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-              <button
-                type="button"
-                onClick={() => {
-                  asked.current = null
-                  showing.current = {}
-                  setNotice(null)
-                  setOpening(true)
-                }}
-                // #279: the form opens a subject in the term the list shows, so
-                // it waits for that term as the picker and the copy do.
-                disabled={!term}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover disabled:opacity-60"
-              >
-                เปิดรายวิชา
-              </button>
-            </div>
-          </div>
+            {/* #279, 17 พ.ย. 2569: a button on the top bar that opens the copy as a
+                popup, where it used to be a panel under the list. */}
+            <button
+              type="button"
+              onClick={() => {
+                setNotice(null)
+                setCopied(null)
+                setCopyOpen(true)
+              }}
+              disabled={!term}
+              className="rounded-lg border border-primary px-5 py-2.5 text-sm font-medium text-primary hover:bg-blue-50 disabled:opacity-60"
+            >
+              คัดลอกจากภาคการศึกษาก่อน
+            </button>
+          </PageHeader>
 
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">

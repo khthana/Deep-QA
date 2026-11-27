@@ -4,6 +4,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import { OUTCOME_TYPES } from '../lib/outcomes'
 import { alsoOutside, outsideFilter } from '../lib/outsideTheFilter'
 import Notice from '../components/Notice'
+import PageHeader from '../components/PageHeader'
 import RowAction, { RowActions } from '../components/RowAction'
 import PloForm from '../components/plos/PloForm'
 import {
@@ -574,50 +575,44 @@ export default function Plos() {
         />
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <ContentTitle icon={TITLE_ICON}>ผลการเรียนรู้ระดับหลักสูตร</ContentTitle>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* A picker when there is a choice to make, and a statement of
-                  where one is when there is not — รายวิชาในหลักสูตร's control,
-                  for its reasons. A กรรมการหลักสูตร reaches one curriculum and
-                  is shown which.
-                  Since 16 พ.ย. 2569 an account reaching one curriculum is shown
-                  nothing - the owner's answer: the work is done one department at
-                  a time, so the name told nobody anything (Rubrics.js, the same day). */}
-              {programs.length > 1 && (
-                <label className="flex items-center gap-2 text-sm text-slate-600">
-                  หลักสูตร
-                  <select
-                    value={program}
-                    onChange={event => setProgram(event.target.value)}
-                    className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
-                  >
-                    {/* No ทุกหลักสูตร — #101. A set of outcomes belongs to
-                        one curriculum, so a list of two is not a view of
-                        anything anybody maintains, and #20's grid had already
-                        settled the same question for the same reason. */}
-                    {programs.map(entry => (
-                      <option key={entry.program_id} value={entry.program_id}>
-                        {programNamed(entry)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  asked.current = null
-                  showing.current = {}
-                  setNotice(null)
-                  setEditing({})
-                }}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary_hover"
-              >
-                เพิ่มผลการเรียนรู้
-              </button>
-            </div>
-          </div>
+          <PageHeader
+            heading={<ContentTitle icon={TITLE_ICON}>ผลการเรียนรู้ระดับหลักสูตร</ContentTitle>}
+            addLabel="เพิ่มผลการเรียนรู้"
+            onAdd={() => {
+              asked.current = null
+              showing.current = {}
+              setNotice(null)
+              setEditing({})
+            }}
+          >
+            {/* A picker when there is a choice to make, and a statement of
+                where one is when there is not — รายวิชาในหลักสูตร's control,
+                for its reasons. A กรรมการหลักสูตร reaches one curriculum and
+                is shown which.
+                Since 16 พ.ย. 2569 an account reaching one curriculum is shown
+                nothing - the owner's answer: the work is done one department at
+                a time, so the name told nobody anything (Rubrics.js, the same day). */}
+            {programs.length > 1 && (
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                หลักสูตร
+                <select
+                  value={program}
+                  onChange={event => setProgram(event.target.value)}
+                  className="rounded-lg border border-gray-300 p-2 text-sm text-gray-900"
+                >
+                  {/* No ทุกหลักสูตร — #101. A set of outcomes belongs to
+                      one curriculum, so a list of two is not a view of
+                      anything anybody maintains, and #20's grid had already
+                      settled the same question for the same reason. */}
+                  {programs.map(entry => (
+                    <option key={entry.program_id} value={entry.program_id}>
+                      {programNamed(entry)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </PageHeader>
 
           <p className="text-sm text-slate-500">
             รหัสผลการเรียนรู้เป็นของหลักสูตรใดหลักสูตรหนึ่ง หลักสูตรอื่นจึงใช้รหัสเดียวกันได้
