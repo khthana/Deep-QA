@@ -9,7 +9,13 @@ const { openSubjects } = require('../support/subjects-screen');
 const { openProgramSubjects } = require('../support/program-subjects-screen');
 const { openUsers } = require('../support/users-screen');
 const { openEditor: openGrants, grantsList } = require('../support/grants-panel');
-const { openOfferings } = require('../support/offerings-screen');
+const {
+  openOfferings,
+  filterToTerm,
+  openSections,
+  sectionCard,
+} = require('../support/offerings-screen');
+const { CURRENT_YEAR, SEMESTER } = require('../../db/seed');
 const { openPlos } = require('../support/plos-screen');
 const { openRubrics, table: rubricsTable } = require('../support/rubrics-screen');
 const { openCriteriaVia } = require('../support/rubric-criteria-screen');
@@ -135,4 +141,21 @@ test('row 11: นักศึกษาในกลุ่มเรียน - น
   const button = listTable(page).getByRole('button', { name: /^นำ .+ ออกจากกลุ่มเรียน$/ }).first();
   const word = await button.getAttribute('aria-label');
   await isAnIcon(button, word);
+});
+
+/**
+ * #313 - the sections panel's three buttons were words until 27 November
+ * 2569 (`docs/ui-consistency.md` rule 4). Their names are the words they
+ * drew, unchanged, and the card is what tells two sections apart. The seeded Offering in the current
+ * term is the one `23a` row 6 opens; reading it writes nothing.
+ */
+test('row 17: กลุ่มเรียน of an Offering - แก้ไขเลข, กำหนดผู้สอน and ลบ', async ({ page }) => {
+  await signIn(page, ACCOUNTS.committee0501);
+  await openOfferings(page);
+  await filterToTerm(page, CURRENT_YEAR, SEMESTER);
+  await openSections(page, '01076105');
+  const card = sectionCard(page, '1');
+  for (const words of ['แก้ไขเลขกลุ่มเรียน', 'กำหนดผู้สอน', 'ลบกลุ่มเรียน']) {
+    await isAnIcon(card.getByRole('button', { name: words, exact: true }), words);
+  }
 });

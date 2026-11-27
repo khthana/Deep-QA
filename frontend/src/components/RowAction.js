@@ -1,6 +1,6 @@
 import { MdBlock, MdOutlineCheckCircle, MdOutlineRemoveRedEye } from 'react-icons/md'
 import { Link } from 'react-router-dom'
-import { RiDeleteBin6Line, RiEdit2Line } from 'react-icons/ri'
+import { RiDeleteBin6Line, RiEdit2Line, RiUserAddLine } from 'react-icons/ri'
 
 /**
  * One action in a list's ดำเนินการ column, drawn as an icon - #271.
@@ -12,6 +12,13 @@ import { RiDeleteBin6Line, RiEdit2Line } from 'react-icons/ri'
  * the delivered system never had because it drew the account status as a
  * switch in its own column - `suspend` and `restore`, for ข้อมูลผู้ใช้งาน,
  * answered the same day.
+ *
+ * **`assign` is the sixth** (#313, the owner's answer of 27 November 2569,
+ * `docs/ui-consistency.md` rule 4): a person with a plus, blue, for
+ * กำหนดผู้สอน on the sections panel. It changes data, so it cannot be the
+ * eye (rule 2), and it sits beside that panel's own pencil, so it cannot be
+ * a second pencil either. It shares the eye's blue on purpose, as the
+ * owner's answer said; the glyph is what tells the two apart.
  *
  * **The word is still the button's name.** `label` becomes `aria-label`, so a
  * screen reader hears แก้ไข or นำออก where a sighted person sees a pencil or a
@@ -54,6 +61,10 @@ const KINDS = {
   restore: {
     Icon: MdOutlineCheckCircle,
     tone: 'border-green-600 text-green-600 hover:bg-green-200',
+  },
+  assign: {
+    Icon: RiUserAddLine,
+    tone: 'border-blue-700 text-blue-700 hover:bg-blue-200',
   },
 }
 

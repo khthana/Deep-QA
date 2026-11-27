@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import ContentMotionDIV from '../ContentMotionDIV'
+import RowAction, { RowActions } from '../RowAction'
 import TeacherPicker from './TeacherPicker'
 import { termLabel } from './terms'
 
@@ -202,36 +203,36 @@ export default function SectionsPanel({
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-1">
-                <button
-                  type="button"
+              {/* #313 - the same squares as every row action
+                  (`docs/ui-consistency.md` rule 4), not the words they were.
+                  The words stay the names and so the tooltips, unchanged:
+                  the owner's rule moved the icon, not the wording (docs/06
+                  §Out of Scope). The card's own `aria-label` is what tells
+                  two cards' buttons apart. */}
+              <RowActions>
+                <RowAction
+                  kind="edit"
+                  label="แก้ไขเลขกลุ่มเรียน"
                   onClick={() => {
                     setRenamed(section.section_number)
                     setRenaming(section.section_id)
                   }}
-                  className="rounded-lg px-3 py-1.5 text-sm text-primary hover:bg-blue-50"
-                >
-                  แก้ไขเลขกลุ่มเรียน
-                </button>
-                <button
-                  type="button"
+                />
+                <RowAction
+                  kind="assign"
+                  label="กำหนดผู้สอน"
                   onClick={() =>
                     setStaffing(current =>
                       current === section.section_id ? null : section.section_id
                     )
                   }
-                  className="rounded-lg px-3 py-1.5 text-sm text-primary hover:bg-blue-50"
-                >
-                  กำหนดผู้สอน
-                </button>
-                <button
-                  type="button"
+                />
+                <RowAction
+                  kind="remove"
+                  label="ลบกลุ่มเรียน"
                   onClick={() => onRemoveSection(section)}
-                  className="rounded-lg px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
-                >
-                  ลบกลุ่มเรียน
-                </button>
-              </div>
+                />
+              </RowActions>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">

@@ -4,7 +4,6 @@ import {
   HiOutlineArrowRightCircle,
   HiOutlineClock,
   HiOutlinePlusCircle,
-  HiOutlineXMark,
 } from 'react-icons/hi2'
 
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -586,15 +585,17 @@ export default function StudentGroups() {
                     >
                       <span className="text-sm text-gray-800">{member.student_id}</span>
                       <span className="text-sm text-slate-600">{member.full_name_th}</span>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => takeOut(group, member)}
-                        aria-label={`นำ ${member.student_id} ออกจาก ${group.group_name}`}
-                        className="ml-auto rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-60"
-                      >
-                        <HiOutlineXMark className="h-4 w-4" />
-                      </button>
+                      {/* #313 - the trash can every removal from a list
+                          carries (`docs/ui-consistency.md` rules 3-4), in
+                          place of a bare grey cross. */}
+                      <span className="ml-auto">
+                        <RowAction
+                          kind="remove"
+                          label={`นำ ${member.student_id} ออกจาก ${group.group_name}`}
+                          onClick={() => takeOut(group, member)}
+                          disabled={busy}
+                        />
+                      </span>
                     </li>
                   ))}
                 </ul>

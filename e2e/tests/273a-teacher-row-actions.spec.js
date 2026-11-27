@@ -178,3 +178,13 @@ test('row 10: การปรับปรุงอย่างต่อเนื
     await clearEntry(page, sectionId, entry.entry_id);
   }
 });
+
+/**
+ * #313 - taking a student out of a group was a bare grey cross until 27
+ * November 2569 (`docs/ui-consistency.md` rules 3-4). The first seeded member
+ * of the first card is read; nothing is pressed.
+ */
+test('row 15: กลุ่มงานนักศึกษา - นำ … ออกจาก a group', async ({ page }) => {
+  await openGroups(page, sectionId);
+  await isARowAction(starting(page, 'นำ [0-9]{8} ออกจาก '));
+});
