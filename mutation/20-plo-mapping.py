@@ -18,7 +18,7 @@ have.
 
 Killing them:
 
-    cd e2e && npx playwright test 20a
+    cd e2e && npx playwright test tests/20a-plo-mapping.spec.js
 
 Two of these touch the backend rather than the screen, and that works because
 `playwright.config.js` sets `reuseExistingServer: false`: every run starts its

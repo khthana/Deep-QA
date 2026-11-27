@@ -169,8 +169,8 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `departmentsrefusalwins` | ภาควิชา: คำปฏิเสธของการบันทึกที่ถูกแซง มาขึ้นเหนือฟอร์มใหม่ — เติมท้าย `REPORTED` ด้วย `_ANY` · **เล็งใหม่ #319 (27 พ.ย. 2569)** ไปที่ `USERS_REPORTED` เพราะ `catch` เรียก `refuse` แล้ว — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/14-departments.md:486` |
 | `departmentssavesaysanyway` | **ทำอะไร** `if (reloaded && showing.current === sent) setNotice(said)` เป็น `if (reloaded) setNotice(said)` คือลืม clause ที่สองของ guard ไม่ใช่ถอดเงื่อนไขทิ้งทั้งอัน (#102) — เขียนขึ้นที่ #203 เพราะการแยก `if` ของประโยคทำให้ `departmentsclosewins` เลิกค้ำแถวที่สาม | **ฆ่าที่** **ล้ม 3 ผ่าน 46** (12 ต.ค. 2569 · baseline 49 ผ่านทั้ง 49) — *a save that lands after แก้ไข leaves the form it found open* · *…after เพิ่ม leaves what was typed where it was* · *a save that lands while the next row is being read says nothing* สองแถวแรกล้มที่ assertion ของ**แบนเนอร์** ไม่ใช่ของฟอร์ม (#201) แถวที่สามล้มที่ข้ออ้างของตัวเอง ซึ่งไม่มีอะไรค้ำอยู่ก่อนมัตแตนต์ตัวนี้ · ที่มา `docs/acceptance/14-departments.md:886` |
 | `programsclosewins` | หลักสูตร — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/15-programs.md:543` `docs/acceptance/15-programs.md:544` |
-| `programsrefusalwins` | `programs` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/15-programs.md:545` |
-| `programssavesaysanyway` | **ทำอะไร** จอหลักสูตร เรื่องเดียวกับตัวข้างบน — ลืม clause ที่สองของ guard ของประโยค (สมอกินบรรทัด `const reloaded = await load(...)` ข้างบนด้วย เพราะย่อหน้าหกช่องเป็น substring ของแปดช่อง) | **ฆ่าที่** **ล้ม 3 ผ่าน 46** (12 ต.ค. 2569 · baseline 49 ผ่านทั้ง 49) — สามแถวของ *ข้อมูลหลักสูตร (Programs.js)* ชุดเดียวกับจอภาควิชา · ที่มา `docs/acceptance/15-programs.md:854` `docs/acceptance/15-programs.md:845` |
+| `programsrefusalwins` | `programs` — เติมท้าย `REPORTED` ด้วย `_ANY` · **เล็งใหม่ #320 (27 พ.ย. 2569)** ไปที่ `USERS_REPORTED` — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/15-programs.md:545` |
+| `programssavesaysanyway` | **ทำอะไร** จอหลักสูตร เรื่องเดียวกับตัวข้างบน — ลืม clause ที่สองของ guard ของประโยค (สมอกินบรรทัด `const reloaded = await load(...)` ข้างบนด้วย เพราะย่อหน้าหกช่องเป็น substring ของแปดช่อง) | **ฆ่าที่** **ล้ม 3 ผ่าน 46** (12 ต.ค. 2569 · baseline 49 ผ่านทั้ง 49) — สามแถวของ *ข้อมูลหลักสูตร (Programs.js)* ชุดเดียวกับจอภาควิชา · ที่มา `docs/acceptance/15-programs.md:854` `docs/acceptance/15-programs.md:845` · **#320 (27 พ.ย. 2569):** สามแถวนั้นอ่านแบนเนอร์ขณะฟอร์มเปิด ซึ่งตอนนี้อยู่หลังผ้าคลุมและไม่ถูกวาด จึงฆ่าไม่ได้แล้ว · แถวต่อท้ายให้อ่านอีกครั้งหลังปิดฟอร์ม (`screen.dialog`) · ตัวเลขนี้ต้องกวาดซ้ำ รอ #336 |
 | `subjectsclosewins` | รายวิชา — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/16-subjects.md:436` `docs/acceptance/16-subjects.md:437` |
 | `subjectsrefusalwins` | `subjects` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/16-subjects.md:438` |
 | `subjectssavesaysanyway` | **ทำอะไร** จอรายวิชา เรื่องเดียวกัน — ลืม clause ที่สองของ guard ของประโยค โดยที่ `readOf` ของจอนี้ถือภาควิชาไว้ด้วย | **ฆ่าที่** **ล้ม 3 ผ่าน 46** (12 ต.ค. 2569 · baseline 49 ผ่านทั้ง 49) — สามแถวของ *ข้อมูลรายวิชา* ชุดเดียวกับจอภาควิชา · ที่มา `docs/acceptance/16-subjects.md:646` `docs/acceptance/16-subjects.md:637` |
@@ -196,7 +196,7 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `studentsrefusalwins` | `students` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/17-students.md:361` |
 | `improvementpickerkeepsshowing` | แผนพัฒนาต่อเนื่อง: ตัวเลือกผลการเรียนรู้ปิดฟอร์มโดยไม่ได้เป็นตัวควบคุมของฟอร์ม ถ้ามันไม่เขียน ref ประโยคของหัวข้อที่เพิ่งเขียนไป จะมาขึ้นใต้ผลการเรียนรู้ที่ไม่มีใครเขียนถึงเลย `closewins` วัดแถวนี้ไม่ได้ เพราะตอนนั้น `showing.current` เป็น `null` อยู่แล้ว · `showing.current = {} setCloId(event.target.value)` → `setCloId(event.target.value)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after the outcome picker moved says nothing about the one now shown* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:378` |
 | `departmentscancelclears` | ยกเลิก writes `null` again: a save nothing overtook goes quiet, which is what the code said before the advisor answered the question #146 parked. · `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` · **เล็งใหม่ #319 (27 พ.ย. 2569)** ยกเลิกไม่มี `setNotice(null)` แล้ว ยึด `setEditing(null) }} />` แทน — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · *a refusal that nothing took the place of is still said* · ที่มา `docs/acceptance/14-departments.md:487` `docs/acceptance/14-departments.md:488` |
-| `programscancelclears` | `programs` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/15-programs.md:546` |
+| `programscancelclears` | `programs` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` · **เล็งใหม่ #320 (27 พ.ย. 2569)** ยึด `setEditing(null) }} />` — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/15-programs.md:546` |
 | `subjectscancelclears` | `subjects` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/16-subjects.md:439` |
 | `userscancelclears` | `users` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/11-user-accounts.md:1240` |
 | `studentscancelclears` | `students` — `setNotice(null) setAdding(false) }}` → `showing.current = null setNotice(null) setAdding(false) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/17-students.md:362` |
@@ -287,7 +287,8 @@ MUTANTS = {
         '      await drawing(() => onScreen.current === drawing)\n'),
     # หลักสูตร
     'programsclosewins': ('programs', CLOSED, CLOSED_ANY),
-    'programsrefusalwins': ('programs', REPORTED, REPORTED_ANY),
+    # #320 (27 พ.ย. 2569) เล็งใหม่: ฟอร์มเป็นหน้าต่างลอย `catch` เรียก `refuse` (รูปของ #319)
+    'programsrefusalwins': ('programs', USERS_REPORTED, USERS_REPORTED_ANY),
     'programssavesaysanyway': ('programs',
         '      if (showing.current === sent) {\n'
         '        waiting.current = { of: readOf(onPage.current, q), said }\n'
@@ -369,14 +370,15 @@ MUTANTS = {
         '            setEditing(null)\n'
         '          }}\n'
         '        />\n'),
+    # #320 (27 พ.ย. 2569) เล็งใหม่ อย่าง `departmentscancelclears` ของ #319
     'programscancelclears': ('programs',
-        '            setNotice(null)\n'
         '            setEditing(null)\n'
-        '          }}\n',
+        '          }}\n'
+        '        />\n',
         '            showing.current = null\n'
-        '            setNotice(null)\n'
         '            setEditing(null)\n'
-        '          }}\n'),
+        '          }}\n'
+        '        />\n'),
     'subjectscancelclears': ('subjects',
         '            setNotice(null)\n'
         '            setEditing(null)\n'

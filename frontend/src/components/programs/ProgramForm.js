@@ -122,10 +122,9 @@ export default function ProgramForm({ value, busy, onSave, onCancel }) {
   }
 
   return (
-    <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-medium text-primary">
-        {editing ? 'แก้ไขหลักสูตร' : 'เพิ่มหลักสูตร'}
-      </h2>
+    <ContentMotionDIV>
+      {/* The box and the heading are `components/FormDialog.js`' since #320
+          (27 November 2569): the form is a dialog over the list. */}
 
       <form onSubmit={submit} className="space-y-4">
         {/* The two short fields that say which programme this is share the top

@@ -182,6 +182,11 @@ const SCREENS = [
   {
     name: 'ข้อมูลภาควิชา',
     file: 'Departments.js',
+    // #319 and #320 (27 November 2569): the form is a dialog over the list, and the
+    // page's banner is not drawn while it is open (#319's shape), so a read
+    // of the banner with the form open passes whatever the code does. The
+    // rows below read it again once the form is put away.
+    dialog: true,
     account: ACCOUNTS.facultyAdmin,
     open: (page) => openDepartments(page),
     detail: /^\/api\/departments\/\d+$/,
@@ -196,6 +201,11 @@ const SCREENS = [
   {
     name: 'ข้อมูลหลักสูตร',
     file: 'Programs.js',
+    // #320 (27 November 2569): the form is a dialog over the list, and the
+    // page's banner is not drawn while it is open (#319's shape), so a read
+    // of the banner with the form open passes whatever the code does. The
+    // rows below read it again once the form is put away.
+    dialog: true,
     account: ACCOUNTS.departmentAdmin05,
     open: (page) => openPrograms(page),
     detail: /^\/api\/programs\/\d+$/,
@@ -305,6 +315,15 @@ for (const screen of SCREENS) {
       expect(await form.isVisible(), 'the second form after the save answered').toBe(true);
       expect(await page.getByLabel(screen.named).inputValue()).toBe(shown);
       expect(await page.getByText(screen.saved).count(), "the first save's banner").toBe(0);
+      // #320: the banner is behind the dialog's cover while the form is open, so
+      // it is read again with the form put away - a sentence held for the list
+      // (#246) is said then, and this is where it would be seen.
+      if (screen.dialog) {
+        await button(page, 'ยกเลิก').click();
+        await expect(form).toBeHidden();
+        await page.waitForTimeout(SETTLE_MS);
+        expect(await page.getByText(screen.saved).count(), "the first save's banner with the form put away").toBe(0);
+      }
     });
 
     test('a save that lands after เพิ่ม leaves what was typed where it was', async ({ page }) => {
@@ -326,6 +345,15 @@ for (const screen of SCREENS) {
       expect(await form.isVisible(), 'the add form after the save answered').toBe(true);
       expect(await page.getByLabel(screen.named).inputValue()).toBe(TYPED);
       expect(await page.getByText(screen.saved).count(), "the first save's banner").toBe(0);
+      // #320: the banner is behind the dialog's cover while the form is open, so
+      // it is read again with the form put away - a sentence held for the list
+      // (#246) is said then, and this is where it would be seen.
+      if (screen.dialog) {
+        await button(page, 'ยกเลิก').click();
+        await expect(form).toBeHidden();
+        await page.waitForTimeout(SETTLE_MS);
+        expect(await page.getByText(screen.saved).count(), "the first save's banner with the form put away").toBe(0);
+      }
     });
 
     test('a save refused after the screen moved on says nothing over the new form', async ({
@@ -348,6 +376,15 @@ for (const screen of SCREENS) {
 
       expect(await page.getByText(REFUSED).count(), 'the overtaken refusal').toBe(0);
       expect(await form.isVisible(), 'the second form after the refusal').toBe(true);
+      // #320: the banner is behind the dialog's cover while the form is open, so
+      // it is read again with the form put away - a sentence held for the list
+      // (#246) is said then, and this is where it would be seen.
+      if (screen.dialog) {
+        await button(page, 'ยกเลิก').click();
+        await expect(form).toBeHidden();
+        await page.waitForTimeout(SETTLE_MS);
+        expect(await page.getByText(REFUSED).count(), 'the overtaken refusal with the form put away').toBe(0);
+      }
     });
 
     test('a save that nothing took the place of says what it did', async ({ page }) => {

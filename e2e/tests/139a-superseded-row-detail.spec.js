@@ -195,6 +195,11 @@ const LIST_SCREENS = [
   {
     name: 'ข้อมูลภาควิชา',
     file: 'Departments.js',
+    // #319 and #320 (27 November 2569): the form is a dialog over the list, and the
+    // page's banner is not drawn while it is open (#319's shape), so a read
+    // of the banner with the form open passes whatever the code does. The
+    // rows below read it again once the form is put away.
+    dialog: true,
     account: ACCOUNTS.facultyAdmin,
     open: (page) => openDepartments(page),
     detail: /^\/api\/departments\/\d+$/,
@@ -209,6 +214,11 @@ const LIST_SCREENS = [
   {
     name: 'ข้อมูลหลักสูตร',
     file: 'Programs.js',
+    // #320 (27 November 2569): the form is a dialog over the list, and the
+    // page's banner is not drawn while it is open (#319's shape), so a read
+    // of the banner with the form open passes whatever the code does. The
+    // rows below read it again once the form is put away.
+    dialog: true,
     account: ACCOUNTS.departmentAdmin05,
     open: (page) => openPrograms(page),
     detail: /^\/api\/programs\/\d+$/,
@@ -456,6 +466,14 @@ for (const screen of LIST_SCREENS) {
           shows: screen.of(answer),
           refused: 0,
         });
+        // #320: the banner is behind the dialog's cover while the form is open,
+        // so the refusal is read again with the form put away.
+        if (screen.dialog) {
+          await page.getByRole('button', { name: 'ยกเลิก', exact: true }).click();
+          await expect(editForm(page, screen)).toBeHidden();
+          await page.waitForTimeout(SETTLE_MS);
+          expect(await page.getByText(REFUSED).count(), 'the refusal with the form put away').toBe(0);
+        }
       } finally {
         await held.release();
       }

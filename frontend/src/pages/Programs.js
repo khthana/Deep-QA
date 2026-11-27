@@ -7,6 +7,7 @@ import Notice from '../components/Notice'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
 import SearchBox from '../components/SearchBox'
+import FormDialog from '../components/FormDialog'
 import ProgramForm from '../components/programs/ProgramForm'
 import { useScreenGeneration } from '../context/ScreenGeneration'
 import {
@@ -89,6 +90,10 @@ export default function Programs() {
   const [data, setData] = useState({ programs: [], total: 0 })
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The form dialog's own refusal - #320, #319's shape (`Departments.js`
+  // carries the reasons, and #307's answer on `Users.js` is where it comes
+  // from). Cleared by the effect beside `formShown` when the dialog goes.
+  const [refused, setRefused] = useState(null)
   // The import window, opened by นำเข้า… in the bar (#270).
   const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -106,6 +111,13 @@ export default function Programs() {
     // banner behind that dialog.
     if (!error.expired) setNotice({ error: true, message: error.message })
   }, [])
+
+  // The save's refusal, in the dialog while it is open and on the page once it
+  // has gone - #320, #319's shape (`Departments.js`).
+  const refuse = error => {
+    if (!formShown.current) return report(error)
+    if (!error.expired) setRefused({ error: true, message: error.message })
+  }
 
   /**
    * A sentence waiting for the read that will draw what it is about - #152.
@@ -230,9 +242,16 @@ export default function Programs() {
    * `load` just above. `frontend/src/pages/Plos.js` carries the measurement the
    * owner's answer rests on and what this ref is *of* (#185, #207).
    */
+  // #320 (27 November 2569): the docblock above was written while the form was
+  // drawn in place of the list. The list is drawn under the form dialog now,
+  // behind a cover nobody can read through, so *a form is shown* still means
+  // *the list the sentence is about is not in front of anybody* - the same
+  // reason by another mechanism, as #319 dated it in `Departments.js`.
   const formShown = useRef(false)
   useEffect(() => {
     formShown.current = Boolean(editing)
+    // #320 - the dialog's own refusal goes with the dialog (#307's shape).
+    if (!editing) setRefused(null)
   }, [editing])
 
   /**
@@ -245,6 +264,10 @@ export default function Programs() {
    * and the filters are drawn in the branch the form replaces, so nothing can
    * move the key while a form is open. A control drawn outside that branch
    * would move it, and that is the condition that re-dates this.
+   * Re-dated by #320 (27 November 2569), as #319 re-dated `Departments.js`':
+   * the pager and the filters are drawn now, under the form dialog's cover,
+   * which takes the pointer and keeps the focus inside the box - still
+   * unreachable, by the cover rather than by the branch.
    *
    * The clearing here is the whole of it, the `finally` in `load` having stopped
    * clearing a held one: a sentence nothing clears is not a sentence that is
@@ -358,7 +381,7 @@ export default function Programs() {
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
     } catch (error) {
-      if (showing.current === sent) report(error)
+      if (showing.current === sent) refuse(error)
     } finally {
       setWriting(false)
     }
@@ -413,9 +436,20 @@ export default function Programs() {
 
   return (
     <div className={`space-y-6 ${CARD}`}>
-      <Notice notice={notice} />
+      {/* #320: behind the form dialog's cover while it is open, so the
+          dialog draws its own save's refusal and what lands here meanwhile
+          is read once it closes - #319's shape. */}
+      {!editing && <Notice notice={notice} />}
 
-      {editing ? (
+      {/* #320, `docs/ui-consistency.md` rule 8 (27 November 2569): the form is
+          a dialog over the list, no longer drawn in its place. */}
+      {editing && (
+        <FormDialog
+          title={editing.program_id ? 'แก้ไขหลักสูตร' : 'เพิ่มหลักสูตร'}
+          notice={refused}
+          saving={writing}
+          onCancel={() => setEditing(null)}
+        >
         <ProgramForm
           value={editing}
           busy={busy}
@@ -423,12 +457,18 @@ export default function Programs() {
           onCancel={() => {
             // ยกเลิก does not write this: a form closing is nobody taking the
             // screen, and a save still out is owed its sentence (#146).
-            setNotice(null)
+            // #320 - nor clear the page's notice (#307's answer, #319's shape):
+            // what is in it landed while the dialog was open and is read now.
             setEditing(null)
           }}
         />
-      ) : (
-        <>
+        </FormDialog>
+      )}
+
+      {/* #320: the list is drawn under the dialog now, not instead of it; the
+          fragment and its indentation are kept so the mutants quoting this
+          block still find it (#189). */}
+      <>
           <PageHeader
             heading={<ContentTitle icon={TITLE_ICON}>ข้อมูลหลักสูตร</ContentTitle>}
             importLabel="นำเข้าหลักสูตร"
@@ -578,8 +618,7 @@ export default function Programs() {
             onPage={setPage}
             busy={busy}
           />
-        </>
-      )}
+      </>
 
       <ConfirmDialog
         open={Boolean(removing)}
