@@ -122,7 +122,8 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 * `<จอรายการที่อ่านกลับ>closewins` (ภาควิชา หลักสูตร รายวิชา) ฆ่า **สาม** ไม่ใช่สอง - แถวที่สาม
   คือหน้าต่างการอ่านที่คำตอบเพิ่งทำให้ไปถึงได้
 * `usersclosewins` ฆ่าสอง - ผู้ใช้งานเปิดฟอร์มด้วย `setEditing(user)` จากแถวที่ถืออยู่
-  ไม่มีการอ่านกลับ จึงไม่มีหน้าต่างให้เป็นแถวที่สาม
+  ไม่มีการอ่านกลับ จึงไม่มีหน้าต่างให้เป็นแถวที่สาม · **28 พ.ย. 2569 (#336): ฆ่า *หนึ่ง*** - ตั้งแต่ #303
+  บัญชีถูกแก้ที่หน้าของมันเอง แถว *แก้ไข* จึงไม่รันบนจอนี้แล้ว (บันทึกใต้ตาราง *จอผู้ใช้งานใน `146a`*)
 * `<จอ>cancelclears` สิบสองตัว ใส่ `showing.current = null` กลับเข้าไปใน ยกเลิก ซึ่งคือร่างแรก
   ก่อนคำตอบ - ตัวละหนึ่งแถว ยกเว้นสามจอที่ถือแถวคำปฏิเสธของทรงตัวเองไว้ด้วย (ภาควิชา
   ผลการเรียนรู้รายวิชา แผนพัฒนาต่อเนื่อง) ซึ่งฆ่าสอง
@@ -174,7 +175,7 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `subjectsclosewins` | รายวิชา — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/16-subjects.md:436` `docs/acceptance/16-subjects.md:437` |
 | `subjectsrefusalwins` | `subjects` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/16-subjects.md:438` |
 | `subjectssavesaysanyway` | **ทำอะไร** จอรายวิชา เรื่องเดียวกัน — ลืม clause ที่สองของ guard ของประโยค โดยที่ `readOf` ของจอนี้ถือภาควิชาไว้ด้วย | **ฆ่าที่** **ล้ม 3 ผ่าน 46** (12 ต.ค. 2569 · baseline 49 ผ่านทั้ง 49) — สามแถวของ *ข้อมูลรายวิชา* ชุดเดียวกับจอภาควิชา · ที่มา `docs/acceptance/16-subjects.md:646` `docs/acceptance/16-subjects.md:637` |
-| `usersclosewins` | ผู้ใช้งาน — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/11-user-accounts.md:1237` `docs/acceptance/11-user-accounts.md:1238` |
+| `usersclosewins` | ผู้ใช้งาน — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/11-user-accounts.md:1237` `docs/acceptance/11-user-accounts.md:1238` · **28 พ.ย. 2569 (#336): แถว *แก้ไข* ไม่รันบนจอนี้ตั้งแต่ #303 การกวาดของ #336 ได้ 1** |
 | `usersrefusalwins` | `users` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/11-user-accounts.md:1239` |
 | `offeringsclosewins` | การเปิดรายวิชา: ฟอร์มที่เปิดขึ้นใหม่ถูกปิด และแผงของรายวิชาที่เพิ่งสร้างแย่งหน้าจอไป — เติมท้าย `MINE` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after the form was opened again leaves what was typed where it was* · ที่มา `docs/acceptance/23-offerings.md:613` |
 | `offeringsrefusalwins` | `offerings` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/23-offerings.md:614` |
@@ -227,7 +228,8 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 ### จอผู้ใช้งานใน `146a` (28 พ.ย. 2569)
 
 `Users.js` เป็นหน้าต่างลอยมาตั้งแต่ #304 จึงได้ `dialog: true` ใน #336 เหมือนสองจอของ #319 และ #320 · สามแถวของจอนี้ผ่านสะอาด
-และกวาดสามตัวของจอนี้ด้วย `-g ผู้ใช้งาน`:
+และกวาดสามตัวของจอนี้ด้วย `-g ผู้ใช้งาน` · **ตารางนี้เป็นบันทึกย้อนหลัง** เขียนหลังการกวาด อ่านจากผลของรันใน #336 (สคริปต์กวาด
+ในหน้าต่างทำงานของรอบนั้น ไม่ได้เก็บในคลัง) ไม่ใช่คำทำนาย (#259):
 
 | ชื่อ | ผล | ตายที่ |
 |---|---|---|
@@ -237,6 +239,15 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 
 ไม่มีมัตแตนต์ของจอนี้ที่ตายที่บรรทัดที่ต่อท้าย (*…with the form put away*) — ไฟล์นี้ไม่มีตัว `userssavesaysanyway` ·
 บรรทัดเหล่านั้นจึงเป็นตาข่ายบนจอนี้ ไม่ใช่ข้ออ้างที่พิสูจน์แล้ว
+
+**รีวิวของ 28 พ.ย. 2569 ชี้ช่องนั้น จึงเขียน `userssavesaysanyway`** — ลืม clause `showing.current === sent` ของ guard ของประโยค
+ใน `save` ของ `Users.js` เหมือนสองตัวของภาควิชาและหลักสูตร · คำทำนาย (เขียนก่อนรัน):
+
+| มัตแตนต์ | แถวที่ควรตาย | ตายที่ | แถวที่ควรรอด |
+|---|---|---|---|
+| `userssavesaysanyway` | `146a` ข้อมูลผู้ใช้งาน *a save that lands after เพิ่ม leaves what was typed where it was* | `"the first save's banner with the form put away"` — การบันทึกที่ถูกแซงฝากประโยคไว้ `load` พูดมันขณะฟอร์มเพิ่มเปิด แบนเนอร์ไม่ถูกวาด แล้วโผล่เมื่อปิดฟอร์ม | *a save refused after the screen moved on…*: ถูกปฏิเสธจึงไม่ฝากอะไร · *a save that nothing took the place of…*: ไม่มีอะไรแซง clause จึงจริงอยู่แล้ว |
+
+แถว *refused* และ *nothing took the place of* ไม่มีมัตแตนต์ใดของจอนี้ฆ่าที่บรรทัดที่ต่อท้าย บรรทัดนั้นของสองแถวนี้จึงยังเป็นตาข่าย
 """
 from harness import main
 
@@ -340,6 +351,12 @@ MUTANTS = {
     # ผู้ใช้งาน
     'usersclosewins': ('users', CLOSED, CLOSED_ANY),
     'usersrefusalwins': ('users', USERS_REPORTED, USERS_REPORTED_ANY),
+    # #336 (28 พ.ย. 2569) จากรีวิว: ลืม clause ที่สองของ guard ของประโยค
+    'userssavesaysanyway': ('users',
+        '      // hands to, so the hand-on above needs nothing here.\n'
+        '      if (showing.current === sent) waiting.current = { of: readOf(page, filters), said }\n',
+        '      // hands to, so the hand-on above needs nothing here.\n'
+        '      waiting.current = { of: readOf(page, filters), said }\n'),
     # การเปิดรายวิชา: ฟอร์มที่เปิดขึ้นใหม่ถูกปิด และแผงของรายวิชาที่เพิ่งสร้างแย่งหน้าจอไป
     'offeringsclosewins': ('offerings', MINE, MINE_ANY),
     'offeringsrefusalwins': ('offerings', REPORTED, REPORTED_ANY),

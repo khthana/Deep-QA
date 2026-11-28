@@ -32,6 +32,11 @@ import useModalFocus from './useModalFocus'
  *   *when no save is out*. ยกเลิก inside the form is a different control and
  *   keeps what #228 and #249 decided for it - free on this screen - so the two
  *   ways out differ while a save is out, and that difference is the ticket's.
+ *   **`saving` is this form's own save and not the page's** - the owner's
+ *   answer of 28 November 2569 (#336). A save left out behind ยกเลิก, or a
+ *   removal held at the route, is another write's; the page hands this the
+ *   save of the opening it is drawing (`savingOf` in `Departments.js`), and
+ *   every screen that mounts this from #321 on does the same.
  * - **Focus goes back to what opened it** when this goes, if that is still in
  *   the document: the add button, or the row's แก้ไข. `useModalFocus` is left
  *   alone because `ConfirmDialog` and the import window share it and neither

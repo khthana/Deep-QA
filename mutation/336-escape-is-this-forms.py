@@ -29,6 +29,21 @@
 | `s336departmentsnevercleared` | `319a` *row 3* | `'Escape once it has answered'` | `319a` row 5: กุญแจค้างอยู่ที่การเปิดแก้ไข ส่วนฟอร์มเพิ่มเป็นการเปิดใหม่ (`showing.current = {}`) จึงกด Escape ได้ · row 1 ไม่บันทึก |
 | `s336programspagewide` | `320a` *row 4* | `'Escape in a form whose own save is not out'` | `320a` row 3 เหตุผลเดียวกับ `319a` row 3 · row 1 · row 2 |
 | `s336programsnevercleared` | `320a` *row 3* | `'Escape once it has answered'` — บรรทัดที่ #336 เปลี่ยนจาก ยกเลิก เป็น Escape เพราะก่อนหน้านั้นไม่มีแถวไหนของ `320a` กด Escape หลังการบันทึกตอบ (ทำนายได้ 0) | `320a` row 4 เหตุผลเดียวกับ `319a` row 5 · row 1 · row 2 |
+
+## การกวาด — บันทึกผล (28 พ.ย. 2569)
+
+ทีละตัวด้วยสคริปต์กวาดของ #336 ทุกตัวผ่านด่าน *ต้นไม้เปลี่ยนหลังใส่* (#268) และ `restore` ก่อนตัวถัดไป ·
+ตารางข้างบน commit ก่อนการรันใน `3f2a290` · **ไม่มีตัวไหนผิดคำทำนาย** ทั้งจำนวนและข้อยืนยันที่ตาย
+
+| ชื่อ | spec | ผล | ตายที่ |
+|---|---|---|---|
+| `s336departmentspagewide` | `319a` | 1 ล้ม 4 ผ่าน | row 5 บรรทัด 166 — `'Escape in a form whose own save is not out'` |
+| `s336departmentsnevercleared` | `319a` | 1 ล้ม 4 ผ่าน | row 3 บรรทัด 125 — `'Escape once it has answered'` |
+| `s336programspagewide` | `320a` | 1 ล้ม 3 ผ่าน | row 4 บรรทัด 143 — `'Escape in a form whose own save is not out'` |
+| `s336programsnevercleared` | `320a` | 1 ล้ม 3 ผ่าน | row 3 บรรทัด 120 — `'Escape once it has answered'` |
+
+`319:s319escapewhilesaving` ไม่ได้เล็งใหม่ — บรรทัดที่มันแก้อยู่ใน `FormDialog.js` ซึ่งการแก้นี้ไม่แตะ
+`saving` ยังเป็นค่าที่ส่งเข้ามา เปลี่ยนแค่ว่าหน้าส่งอะไร
 """
 
 from harness import main

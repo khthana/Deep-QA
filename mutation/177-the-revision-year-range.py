@@ -161,6 +161,13 @@ the list. Run `mutation/anchors.py` before believing any of it.
 
 **2 ล้ม 0 ผ่าน** บน `177a` — แถวแรกบรรทัด 87 (`getByRole('alert')).toHaveText`) และแถวที่สองที่หัว *เพิ่มหลักสูตร* หายไป ·
 ตรงคำทำนายของ #320 ว่าแถวแรกตายด้วยแล้ว เพราะคำปฏิเสธอยู่ในหน้าต่าง และหน้าต่างไปพร้อมกับมัน
+
+## เล็งใหม่ใน #336 (28 พ.ย. 2569) — `formclosesonarefusal`
+
+การแก้ Escape ของ #336 เพิ่มบรรทัด `setSavingOf(of => (of === sent ? null : of))` ใน `finally` ของ `save` ใน
+`Programs.js` ซึ่งอยู่ในบล็อกที่มัตแตนต์นี้ยกมาทั้งก้อน `anchors.py` จึงบอกว่า 0 ตำแหน่ง · เล็งใหม่โดยใส่บรรทัดนั้น
+ทั้งใน FROM และ TO คงความผิดเดิมไว้ คือ `setEditing(null)` ในทางที่ถูกปฏิเสธ (#203) · กวาดซ้ำ **2 ล้ม 0 ผ่าน** บน `177a`
+แถวแรกบรรทัด 87 และแถวที่สอง เท่ากับบันทึกของ 27 พ.ย. ข้างบน
 """
 
 from harness import main
@@ -220,6 +227,7 @@ MUTANTS = {
         "      if (showing.current === sent) refuse(error)\n"
         "    } finally {\n"
         "      setWriting(false)\n"
+        "      setSavingOf(of => (of === sent ? null : of))\n"
         "    }\n"
         "  }\n",
         "      const drawing = onScreen.current\n"
@@ -229,6 +237,7 @@ MUTANTS = {
         "      if (showing.current === sent) setEditing(null)\n"
         "    } finally {\n"
         "      setWriting(false)\n"
+        "      setSavingOf(of => (of === sent ? null : of))\n"
         "    }\n"
         "  }\n"),
     # and the same on the edit route, which is the site a correction goes

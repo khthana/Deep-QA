@@ -233,7 +233,7 @@ const SCREENS = [
     name: 'ข้อมูลผู้ใช้งาน',
     file: 'Users.js',
     // #336 (28 November 2569): the add has been a dialog over the list since
-    // #304, with the page's banner behind its cover (#307), so the rows read it
+    // #304, and the page's banner is not drawn while it is open (#307), so the rows read it
     // again with the form put away, as on the two screens #319 and #320 made so.
     dialog: true,
     account: ACCOUNTS.facultyAdmin,
