@@ -585,12 +585,13 @@ export default function StudentGroups() {
                     >
                       <span className="text-sm text-gray-800">{member.student_id}</span>
                       <span className="text-sm text-slate-600">{member.full_name_th}</span>
-                      {/* #313 - the trash can every removal from a list
-                          carries (`docs/ui-consistency.md` rules 3-4), in
-                          place of a bare grey cross. */}
+                      {/* #313 - a RowAction in place of a bare grey cross;
+                          a person with a cross rather than the trash can
+                          ลบกลุ่ม carries (the owner's answer of 28 November
+                          2569, `docs/ui-consistency.md` rules 3-4). */}
                       <span className="ml-auto">
                         <RowAction
-                          kind="remove"
+                          kind="takeOut"
                           label={`นำ ${member.student_id} ออกจาก ${group.group_name}`}
                           onClick={() => takeOut(group, member)}
                           disabled={busy}

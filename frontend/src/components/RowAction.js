@@ -1,6 +1,11 @@
 import { MdBlock, MdOutlineCheckCircle, MdOutlineRemoveRedEye } from 'react-icons/md'
 import { Link } from 'react-router-dom'
-import { RiDeleteBin6Line, RiEdit2Line, RiUserAddLine } from 'react-icons/ri'
+import {
+  RiDeleteBin6Line,
+  RiEdit2Line,
+  RiUserAddLine,
+  RiUserUnfollowLine,
+} from 'react-icons/ri'
 
 /**
  * One action in a list's ดำเนินการ column, drawn as an icon - #271.
@@ -20,11 +25,22 @@ import { RiDeleteBin6Line, RiEdit2Line, RiUserAddLine } from 'react-icons/ri'
  * a second pencil either. It shares the eye's blue on purpose, as the
  * owner's answer said; the glyph is what tells the two apart.
  *
+ * **`takeOut` is the seventh** (the owner's answer of 28 November 2569, on
+ * the #336 walk, `docs/ui-consistency.md` rules 3-4): a person with a cross,
+ * in the trash can's red, for taking a student out of a work group. The
+ * walker read the member's trash can beside ลบกลุ่ม's and found the same
+ * glyph for two acts confusing; the delivered system had the trash can there
+ * too (`StudentGroups.js`), so this is a decision and not a restoration.
+ * Taking a student out of a section keeps the trash can - the owner, shown
+ * the glyph there the same day, answered that a section is not a work group.
+ *
  * **The word is still the button's name.** `label` becomes `aria-label`, so a
  * screen reader hears แก้ไข or นำออก where a sighted person sees a pencil or a
  * trash can, and every spec that presses by name presses the same button it
  * did. Four different actions share the trash can - ลบ, นำออก, ยกเลิกการเปิด,
- * ยกเลิกบทบาท - and the name is the only thing that tells them apart.
+ * ยกเลิกบทบาท - and the name is the only thing that tells them apart; a
+ * member taken out of a work group has had its own glyph since 28 November
+ * 2569.
  *
  * **The word is also the tooltip**, unless the caller hands a `title` of its
  * own. Two callers do, and only while the button is disabled: the reason a
@@ -65,6 +81,10 @@ const KINDS = {
   assign: {
     Icon: RiUserAddLine,
     tone: 'border-blue-700 text-blue-700 hover:bg-blue-200',
+  },
+  takeOut: {
+    Icon: RiUserUnfollowLine,
+    tone: 'border-rose-700 text-rose-700 hover:bg-red-200',
   },
 }
 
