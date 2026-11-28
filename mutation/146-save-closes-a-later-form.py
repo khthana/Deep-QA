@@ -173,7 +173,7 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `programsrefusalwins` | `programs` — เติมท้าย `REPORTED` ด้วย `_ANY` · **เล็งใหม่ #320 (27 พ.ย. 2569)** ไปที่ `USERS_REPORTED` — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/15-programs.md:545` |
 | `programssavesaysanyway` | **ทำอะไร** จอหลักสูตร เรื่องเดียวกับตัวข้างบน — ลืม clause ที่สองของ guard ของประโยค (สมอกินบรรทัด `const reloaded = await load(...)` ข้างบนด้วย เพราะย่อหน้าหกช่องเป็น substring ของแปดช่อง) | **ฆ่าที่** **ล้ม 3 ผ่าน 46** (12 ต.ค. 2569 · baseline 49 ผ่านทั้ง 49) — สามแถวของ *ข้อมูลหลักสูตร (Programs.js)* ชุดเดียวกับจอภาควิชา · ที่มา `docs/acceptance/15-programs.md:854` `docs/acceptance/15-programs.md:845` · **#320 (27 พ.ย. 2569):** สามแถวนั้นอ่านแบนเนอร์ขณะฟอร์มเปิด ซึ่งตอนนี้อยู่หลังผ้าคลุมและไม่ถูกวาด จึงฆ่าไม่ได้แล้ว · แถวต่อท้ายให้อ่านอีกครั้งหลังปิดฟอร์ม (`screen.dialog`) · ตัวเลขนี้ต้องกวาดซ้ำ รอ #336 |
 | `subjectsclosewins` | รายวิชา — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/16-subjects.md:436` `docs/acceptance/16-subjects.md:437` |
-| `subjectsrefusalwins` | `subjects` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/16-subjects.md:438` |
+| `subjectsrefusalwins` | `subjects` — เติมท้าย `REPORTED` ด้วย `_ANY` · **เล็งใหม่ #321 (28 พ.ย. 2569)** ไปที่ `USERS_REPORTED` — ความผิดเดิม กวาดซ้ำใน #321 ได้ 1 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/16-subjects.md:438` |
 | `subjectssavesaysanyway` | **ทำอะไร** จอรายวิชา เรื่องเดียวกัน — ลืม clause ที่สองของ guard ของประโยค โดยที่ `readOf` ของจอนี้ถือภาควิชาไว้ด้วย | **ฆ่าที่** **ล้ม 3 ผ่าน 46** (12 ต.ค. 2569 · baseline 49 ผ่านทั้ง 49) — สามแถวของ *ข้อมูลรายวิชา* ชุดเดียวกับจอภาควิชา · ที่มา `docs/acceptance/16-subjects.md:646` `docs/acceptance/16-subjects.md:637` |
 | `usersclosewins` | ผู้ใช้งาน — เติมท้าย `CLOSED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after แก้ไข leaves the form it found open* · *a save that lands after เพิ่ม leaves what was typed where it was* · ที่มา `docs/acceptance/11-user-accounts.md:1237` `docs/acceptance/11-user-accounts.md:1238` · **28 พ.ย. 2569 (#336): แถว *แก้ไข* ไม่รันบนจอนี้ตั้งแต่ #303 การกวาดของ #336 ได้ 1** |
 | `usersrefusalwins` | `users` — เติมท้าย `REPORTED` ด้วย `_ANY` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save refused after the screen moved on says nothing over the new form* · ที่มา `docs/acceptance/11-user-accounts.md:1239` |
@@ -198,7 +198,7 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `improvementpickerkeepsshowing` | แผนพัฒนาต่อเนื่อง: ตัวเลือกผลการเรียนรู้ปิดฟอร์มโดยไม่ได้เป็นตัวควบคุมของฟอร์ม ถ้ามันไม่เขียน ref ประโยคของหัวข้อที่เพิ่งเขียนไป จะมาขึ้นใต้ผลการเรียนรู้ที่ไม่มีใครเขียนถึงเลย `closewins` วัดแถวนี้ไม่ได้ เพราะตอนนั้น `showing.current` เป็น `null` อยู่แล้ว · `showing.current = {} setCloId(event.target.value)` → `setCloId(event.target.value)` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that lands after the outcome picker moved says nothing about the one now shown* · ที่มา `docs/acceptance/41-continuous-improvement-plan.md:378` |
 | `departmentscancelclears` | ยกเลิก writes `null` again: a save nothing overtook goes quiet, which is what the code said before the advisor answered the question #146 parked. · `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` · **เล็งใหม่ #319 (27 พ.ย. 2569)** ยกเลิกไม่มี `setNotice(null)` แล้ว ยึด `setEditing(null) }} />` แทน — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · *a refusal that nothing took the place of is still said* · ที่มา `docs/acceptance/14-departments.md:487` `docs/acceptance/14-departments.md:488` |
 | `programscancelclears` | `programs` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` · **เล็งใหม่ #320 (27 พ.ย. 2569)** ยึด `setEditing(null) }} />` — ความผิดเดิม ยังไม่กวาดซ้ำ รอ #336 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/15-programs.md:546` |
-| `subjectscancelclears` | `subjects` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/16-subjects.md:439` |
+| `subjectscancelclears` | `subjects` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` · **เล็งใหม่ #321 (28 พ.ย. 2569)** ยึด `setEditing(null) }} />` — ความผิดเดิม กวาดซ้ำใน #321 ได้ 1 | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/16-subjects.md:439` |
 | `userscancelclears` | `users` — `setNotice(null) setEditing(null) }}` → `showing.current = null setNotice(null) setEditing(null) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/11-user-accounts.md:1240` |
 | `studentscancelclears` | `students` — `setNotice(null) setAdding(false) }}` → `showing.current = null setNotice(null) setAdding(false) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/17-students.md:362` |
 | `offeringscancelclears` | `offerings` — `setNotice(null) setOpening(false) }}` → `showing.current = null setNotice(null) setOpening(false) }}` | แถวที่ใบรับงานบอกว่ามันค้ำไว้ *a save that nothing took the place of says what it did* · ที่มา `docs/acceptance/23-offerings.md:615` |
@@ -224,6 +224,17 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `programsrefusalwins` | `146a` | 1 ล้ม 47 ผ่าน | `146a` *a save refused after the screen moved on says nothing over the new for* บรรทัด 377 |
 | `programscancelclears` | `146a` | 1 ล้ม 47 ผ่าน | `146a` *a save that nothing took the place of says what it did* บรรทัด 404 |
 | `programssavesaysanyway` | `146a` | 3 ล้ม 45 ผ่าน | `146a` *a save that lands after แก้ไข leaves the form it found open* บรรทัด 325 · `146a` *a save that lands after เพิ่ม leaves what was typed where it was* บรรทัด 355 · `146a` *a save that lands while the next row is being read says nothing* บรรทัด 463 · เหมือนตัวข้างบน — 2 ก่อนต่อท้ายแถวที่สาม 3 หลัง |
+
+### จอรายวิชาใน `146a` (#321 · 28 พ.ย. 2569)
+
+`Subjects.js` เป็นหน้าต่างลอยตั้งแต่ #321 จึงได้ `dialog: true` เหมือนสองจอของ #319 และ #320 · กวาดด้วย `-g Subjects.js` ทีละตัว
+ผ่านด่านเดียวกัน · baseline ห้าแถวของจอนี้ผ่านสะอาดวันเดียวกัน · คำทำนายเขียนในแฟ้ม `321` ก่อนกวาด และตรงทั้งสามตัว:
+
+| ชื่อ | ผล | ตายที่ |
+|---|---|---|
+| `subjectsrefusalwins` | 1 ล้ม 4 ผ่าน | *a save refused after the screen moved on…* บรรทัด 386 — `'the overtaken refusal'` |
+| `subjectscancelclears` | 1 ล้ม 4 ผ่าน | *a save that nothing took the place of…* บรรทัด 413 |
+| `subjectssavesaysanyway` | 3 ล้ม 2 ผ่าน | *…after แก้ไข…* บรรทัด 334 · *…after เพิ่ม…* บรรทัด 364 · *…while the next row is being read…* บรรทัด 472 — ทั้งสามที่ข้อยืนยัน *with the form put away* ที่ธงเปิดให้ · เท่าบันทึกเดิม (*ล้ม 3*) |
 
 ### จอผู้ใช้งานใน `146a` (28 พ.ย. 2569)
 
@@ -340,7 +351,7 @@ MUTANTS = {
         '      await drawing(() => onScreen.current === drawing)\n'),
     # รายวิชา
     'subjectsclosewins': ('subjects', CLOSED, CLOSED_ANY),
-    'subjectsrefusalwins': ('subjects', REPORTED, REPORTED_ANY),
+    'subjectsrefusalwins': ('subjects', USERS_REPORTED, USERS_REPORTED_ANY),
     'subjectssavesaysanyway': ('subjects',
         '      if (showing.current === sent) {\n'
         '        waiting.current = { of: readOf(onPage.current, q), said }\n'
@@ -425,14 +436,15 @@ MUTANTS = {
         '            setEditing(null)\n'
         '          }}\n'
         '        />\n'),
+    # #321 (28 พ.ย. 2569) เล็งใหม่ อย่าง `departmentscancelclears` ของ #319
     'subjectscancelclears': ('subjects',
-        '            setNotice(null)\n'
         '            setEditing(null)\n'
-        '          }}\n',
+        '          }}\n'
+        '        />\n',
         '            showing.current = null\n'
-        '            setNotice(null)\n'
         '            setEditing(null)\n'
-        '          }}\n'),
+        '          }}\n'
+        '        />\n'),
     # Re-aimed by #304 (24 November 2569): the add moved into AddUserDialog's
     # onCancel, two levels shallower; the mistake is the same line.
     # #307 (25 พ.ย. 2569) เล็งใหม่: `ยกเลิก` ไม่ล้างประกาศของหน้าแล้ว จึงยึดกับ `busy` ที่ตามมาแทน

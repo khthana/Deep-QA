@@ -188,6 +188,9 @@ const LIST_SCREENS = [
   {
     name: 'ข้อมูลรายวิชา',
     file: 'Subjects.js',
+    // #321: the form is a dialog over the list, with the page's banner
+    // behind its cover - the removal row reads it with the form put away.
+    dialog: true,
     account: ACCOUNTS.departmentAdmin05,
     open: (page) => openSubjects(page),
     detail: /^\/api\/subjects\/\d+$/,

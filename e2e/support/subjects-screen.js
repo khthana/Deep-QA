@@ -48,6 +48,22 @@ const subjectRow = (page, subjectId) =>
     .getByRole('row')
     .filter({ has: page.getByRole('cell', { name: subjectId, exact: true }) });
 
+/**
+ * Presses a row's แก้ไข and waits for the record it reads afresh - the form
+ * opens on that answer, not on the row the table holds. `programs-screen.js`'
+ * `openEditor` for this screen, written for `321a` (#321).
+ */
+async function openEditor(page, subjectId) {
+  await Promise.all([
+    page.waitForResponse(
+      answer =>
+        new URL(answer.url()).pathname === `${API}/${subjectId}` &&
+        answer.request().method() === 'GET',
+    ),
+    subjectRow(page, subjectId).getByRole('button', { name: 'แก้ไข' }).click(),
+  ]);
+}
+
 /*
  * `departmentPicker`, the form's department combobox, stood here until #284
  * (19 พ.ย. 2569): the owner took the field off the form, and a subject is
@@ -125,6 +141,7 @@ module.exports = {
   openSubjects,
   importSubjects,
   subjectRow,
+  openEditor,
   statusField,
   fillNewSubject,
   save,

@@ -219,6 +219,11 @@ const SCREENS = [
   {
     name: 'ข้อมูลรายวิชา',
     file: 'Subjects.js',
+    // #321 (28 November 2569): the form is a dialog over the list, and the
+    // page's banner is not drawn while it is open (#319's shape), so a read
+    // of the banner with the form open passes whatever the code does. The
+    // rows below read it again once the form is put away.
+    dialog: true,
     account: ACCOUNTS.departmentAdmin05,
     open: (page) => openSubjects(page),
     detail: /^\/api\/subjects\/\d+$/,

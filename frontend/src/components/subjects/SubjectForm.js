@@ -125,10 +125,9 @@ export default function SubjectForm({ value, busy, onSave, onCancel }) {
   }
 
   return (
-    <ContentMotionDIV className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-medium text-primary">
-        {editing ? 'แก้ไขรายวิชา' : 'เพิ่มรายวิชา'}
-      </h2>
+    <ContentMotionDIV>
+      {/* The box and the heading are `components/FormDialog.js`' since #321
+          (28 November 2569): the form is a dialog over the list. */}
 
       <form onSubmit={submit} className="space-y-4">
         {/* The code and the credits share the top row, and each name has a

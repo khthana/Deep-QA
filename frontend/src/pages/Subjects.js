@@ -9,6 +9,7 @@ import { outsideSearch } from '../lib/outsideTheSearch'
 import Pager from '../components/Pager'
 import RowAction, { RowActions } from '../components/RowAction'
 import SearchBox from '../components/SearchBox'
+import FormDialog from '../components/FormDialog'
 import SubjectForm from '../components/subjects/SubjectForm'
 import {
   createSubject,
@@ -92,6 +93,10 @@ export default function Subjects() {
   const [data, setData] = useState({ subjects: [], total: 0 })
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState(null)
+  // The form dialog's own refusal - #321, #319's shape (`Departments.js`
+  // carries the reasons, and #307's answer on `Users.js` is where it comes
+  // from). Cleared by the effect beside `formShown` when the dialog goes.
+  const [refused, setRefused] = useState(null)
   // The import window, opened by นำเข้า… in the bar (#270).
   const [importing, setImporting] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -103,6 +108,13 @@ export default function Subjects() {
   const [writing, setWriting] = useState(false)
   const [reading, setReading] = useState(false)
   const busy = writing || reading
+  /**
+   * Which opening of the form has its own save out - the owner's answer of
+   * 28 November 2569 (#336), which `FormDialog` asks every screen from #321
+   * on to hand it: Escape is inert only while *this* dialog's save is out.
+   * `Departments.js` carries the reasons.
+   */
+  const [savingOf, setSavingOf] = useState(null)
 
   const report = useCallback(error => {
     // A 401 already raises the shell's dialog; saying it again here would put a
@@ -152,11 +164,17 @@ export default function Subjects() {
           return HANDED_ON
         }
         setData(answer)
+        // #337 - the refusal wins, as #203's rule, which the owner gave to the
+        // dialog screens of #319-#334 (#321): a refusal that landed while the
+        // form dialog covered the banner has been read by nobody. The sentence
+        // is read out of the ref before the updater, because the `finally`
+        // below clears the ref before React runs it.
         if (waiting.current && waiting.current.of === key) {
           if (formShown.current) {
             waiting.current = { ...waiting.current, held: true }
           } else {
-            setNotice(waiting.current.said)
+            const said = waiting.current.said
+            setNotice(shown => (shown?.error ? shown : said))
           }
         }
       }
@@ -221,10 +239,24 @@ export default function Subjects() {
    * `load` just above. `frontend/src/pages/Plos.js` carries the measurement the
    * owner's answer rests on and what this ref is *of* (#185, #207).
    */
+  // #321 (28 November 2569): the docblock above was written while the form was
+  // drawn in place of the list. The list is drawn under the form dialog now,
+  // behind a cover nobody can read through, so *a form is shown* still means
+  // *the list the sentence is about is not in front of anybody* - the same
+  // reason by another mechanism, as #319 dated it in `Departments.js`.
   const formShown = useRef(false)
   useEffect(() => {
     formShown.current = Boolean(editing)
+    // #321 - the dialog's own refusal goes with the dialog (#307's shape).
+    if (!editing) setRefused(null)
   }, [editing])
+
+  // The save's refusal, in the dialog while it is open and on the page once it
+  // has gone - #321, #319's shape (`Departments.js`).
+  const refuse = error => {
+    if (!formShown.current) return report(error)
+    if (!error.expired) setRefused({ error: true, message: error.message })
+  }
 
   /**
    * The held sentence, said when the list comes back - #246.
@@ -236,6 +268,10 @@ export default function Subjects() {
    * and the filters are drawn in the branch the form replaces, so nothing can
    * move the key while a form is open. A control drawn outside that branch
    * would move it, and that is the condition that re-dates this.
+   * Re-dated by #321 (28 November 2569), as #319 re-dated `Departments.js`':
+   * the pager and the search are drawn now, under the form dialog's cover,
+   * which takes the pointer and keeps the focus inside the box - still
+   * unreachable, by the cover rather than by the branch.
    *
    * The clearing here is the whole of it, the `finally` in `load` having stopped
    * clearing a held one: a sentence nothing clears is not a sentence that is
@@ -245,7 +281,16 @@ export default function Subjects() {
     if (editing) return
     const held = waiting.current
     if (!held?.held) return
-    if (held.of === readOf(page, q)) setNotice(held.said)
+    // #337 - the refusal wins here too, for the same reason as in `load`.
+    // Untested, 28 November 2569 (#339): no row of `321a` comes this way. A
+    // refusal and a held sentence would both have to land inside one opening
+    // of the form; `writing` is page-wide and a save hands its sentence over
+    // only for the opening that sent it, but `importing` is a flag of its own
+    // and whether an import can be the other half was not measured. Not
+    // shown unreachable, so the clause stays.
+    if (held.of === readOf(page, q)) {
+      setNotice(shown => (shown?.error ? shown : held.said))
+    }
     waiting.current = null
   }, [editing, page, q])
 
@@ -328,6 +373,7 @@ export default function Subjects() {
   const save = async draft => {
     const sent = showing.current
     setWriting(true)
+    setSavingOf(sent)
     try {
       if (editing?.subject_id) {
         await updateSubject(editing.subject_id, draft)
@@ -351,9 +397,10 @@ export default function Subjects() {
       const drawing = onScreen.current
       await drawing(() => onScreen.current === drawing)
     } catch (error) {
-      if (showing.current === sent) report(error)
+      if (showing.current === sent) refuse(error)
     } finally {
       setWriting(false)
+      setSavingOf(of => (of === sent ? null : of))
     }
   }
 
@@ -416,9 +463,20 @@ export default function Subjects() {
 
   return (
     <div className={`space-y-6 ${CARD}`}>
-      <Notice notice={notice} />
+      {/* #321: behind the form dialog's cover while it is open, so the
+          dialog draws its own save's refusal and what lands here meanwhile
+          is read once it closes - #319's shape. */}
+      {!editing && <Notice notice={notice} />}
 
-      {editing ? (
+      {/* #321, `docs/ui-consistency.md` rule 8 (27 November 2569): the form is
+          a dialog over the list, no longer drawn in its place. */}
+      {editing && (
+        <FormDialog
+          title={editing.subject_id ? 'แก้ไขรายวิชา' : 'เพิ่มรายวิชา'}
+          notice={refused}
+          saving={savingOf !== null && savingOf === showing.current}
+          onCancel={() => setEditing(null)}
+        >
         <SubjectForm
           value={editing}
           busy={busy}
@@ -426,12 +484,18 @@ export default function Subjects() {
           onCancel={() => {
             // ยกเลิก does not write this: a form closing is nobody taking the
             // screen, and a save still out is owed its sentence (#146).
-            setNotice(null)
+            // #321 - nor clear the page's notice (#307's answer, #319's shape):
+            // what is in it landed while the dialog was open and is read now.
             setEditing(null)
           }}
         />
-      ) : (
-        <>
+        </FormDialog>
+      )}
+
+      {/* #321: the list is drawn under the dialog now, not instead of it; the
+          fragment and its indentation are kept so the mutants quoting this
+          block still find it (#189). */}
+      <>
           <PageHeader
             heading={<ContentTitle icon={TITLE_ICON}>ข้อมูลรายวิชา</ContentTitle>}
             importLabel="นำเข้ารายวิชา"
@@ -576,8 +640,7 @@ export default function Subjects() {
             onPage={setPage}
             busy={busy}
           />
-        </>
-      )}
+      </>
 
       <ConfirmDialog
         open={Boolean(removing)}
