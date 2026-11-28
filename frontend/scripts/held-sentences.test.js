@@ -219,3 +219,61 @@ test('a say reached through a helper is not read, which is the population limit'
     }
   `)
 })
+
+/** #337's say: the refusal wins, so the sentence goes through an updater. */
+const HELD_BY_UPDATER = `
+          if (waiting.current && waiting.current.of === key) {
+            if (formShown.current) {
+              waiting.current = { ...waiting.current, held: true }
+            } else {
+              const said = waiting.current.said
+              setNotice(shown => (shown?.error ? shown : said))
+            }
+          }
+`
+
+const LATER_BY_UPDATER = `
+    useEffect(() => {
+      if (editing) return
+      const held = waiting.current
+      if (!held?.held) return
+      if (held.of === readOf(page)) {
+        setNotice(shown => (shown?.error ? shown : held.said))
+      }
+      waiting.current = null
+    }, [editing, page])
+`
+
+test("a say through an updater is still a say of the ref it was read out of (#337)", () => {
+  // The population is found by the mechanism, so the owner's answer to #337
+  // moving every say of three screens into an updater must not take them out
+  // of it - which it did, 8 to 5, before this case was read (#208).
+  const verdict = one(whole(HELD_BY_UPDATER, KEEPS, LATER_BY_UPDATER))
+  assert.equal(verdict.kind, 'held')
+  assert.equal(verdict.ref, 'waiting')
+  assert.equal(verdict.by, 'formShown')
+})
+
+test('an updater with no deferral around it is bare, as the direct say is', () => {
+  const verdict = one(
+    screen(`
+          if (waiting.current && waiting.current.of === key) {
+            const said = waiting.current.said
+            setNotice(shown => (shown?.error ? shown : said))
+          }
+`)
+  )
+  assert.equal(verdict.kind, 'bare')
+})
+
+test('an updater that says nothing handed to a read is outside the population', () => {
+  none(`
+    const Screen = () => {
+      const save = async () => {
+        await writeRow()
+        setNotice(shown => (shown?.error ? shown : { message: 'saved' }))
+      }
+      return <button onClick={save}>บันทึก</button>
+    }
+  `)
+})

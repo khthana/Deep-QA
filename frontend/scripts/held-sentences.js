@@ -90,6 +90,18 @@
  *   accident, and this script would be as silent about it as it was here.
  * - **whether a marker's reason is still true**, which is #93's rule and the
  *   reason each reason carries a ticket number.
+ * - **which ref an updater's sentence really came from.** #337 (28 พฤศจิกายน
+ *   2569) said the sentence through `setNotice(shown => ...)`, and on that
+ *   day this script read held 8 as held 5 with nothing red - another ticket's
+ *   fix blinding a census (#208). It now accepts an updater whose body reads
+ *   any `<x>.said`, or a name some `const <name> = <ref>.current.said` in the
+ *   same file declared. Both are loose: the names are kept per file and not
+ *   per function, so a second function declaring the same name over another
+ *   ref credits the say to whichever declaration came last, and an updater
+ *   that reads a `.said` for some other reason is counted as a say. Nothing
+ *   in `src/` does either on that date. And the script accepts both shapes;
+ *   it does not ask that a screen say through the updater, so a dialog screen
+ *   copied from a pre-#337 file would stay green here.
  *
  * Run: `npm run census` in `frontend/`. Its own fixtures: `npm run census:test`.
  * Its own fixtures are written from the rule, so they are silent about the two
@@ -178,12 +190,44 @@ function refOf(node) {
   return nameOf(node.object)
 }
 
+/**
+ * The locals a file reads a handed sentence into - `const said =
+ * <ref>.current.said` - by name, each to the `<ref>.current` it was read out of.
+ * Filled by `examine` for the file it is reading, because the updater below
+ * names the local and not the ref (#337).
+ */
+let saidLocals = new Map()
+
+const functionNode = node =>
+  node && (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression')
+
+/**
+ * What an updater handed to `setNotice` says, if it says a handed sentence:
+ * a `<x>.said` read in its body, or a local `saidLocals` knows - #337, whose
+ * owner's answer (the refusal wins) is written `setNotice(shown =>
+ * (shown?.error ? shown : said))`. The local is read out of the ref *before*
+ * the updater, because the `finally` clears the ref before React runs it.
+ */
+function saidByUpdater(fn) {
+  let from = null
+  walk(fn.body, one => {
+    if (from) return
+    if (member(one) && nameOf(one.property) === SAID) from = one.object
+    else if (one.type === 'Identifier' && saidLocals.has(one.name)) from = saidLocals.get(one.name)
+  })
+  return from
+}
+
 /** A `setNotice(<x>.said)`, with what the sentence was read out of. */
 function sayIn(node) {
   if (node.type !== 'CallExpression') return null
   if (nameOf(node.callee) !== SAYS) return null
   if (node.arguments.length !== 1) return null
   const argument = node.arguments[0]
+  if (functionNode(argument)) {
+    const from = saidByUpdater(argument)
+    return from ? { line: node.loc.start.line, from } : null
+  }
   if (!member(argument) || nameOf(argument.property) !== SAID) return null
   return { line: node.loc.start.line, from: argument.object }
 }
@@ -326,6 +370,13 @@ function examine(code) {
     sourceType: 'module',
     plugins: ['jsx', 'classProperties', 'optionalChaining', 'nullishCoalescingOperator'],
     attachComment: true,
+  })
+  saidLocals = new Map()
+  walk(ast, node => {
+    if (node.type !== 'VariableDeclarator' || !nameOf(node.id)) return
+    const init = node.init
+    if (!member(init) || nameOf(init.property) !== SAID || !refOf(init.object)) return
+    saidLocals.set(node.id.name, init.object)
   })
   const says = saysIn(ast)
   const unreadable = unreadableSaysIn(ast)

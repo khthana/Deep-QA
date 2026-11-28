@@ -656,11 +656,17 @@ export default function Users() {
         setData(answer)
         // A sentence handed over by the read this one replaced, now that the
         // list it is about is on the screen - #205.
+        // #337 - the refusal wins, as #203's rule: a refusal that landed while
+        // the form dialog covered the banner has been read by nobody, and the
+        // saved row is in the list for anyone to see. The sentence is read out
+        // of the ref before the updater, because the `finally` below clears
+        // the ref before React runs it.
         if (waiting.current && waiting.current.of === key) {
           if (formShown.current) {
             waiting.current = { ...waiting.current, held: true }
           } else {
-            setNotice(waiting.current.said)
+            const said = waiting.current.said
+            setNotice(shown => (shown?.error ? shown : said))
           }
         }
       }
@@ -771,7 +777,16 @@ export default function Users() {
     if (editing) return
     const held = waiting.current
     if (!held?.held) return
-    if (held.of === readOf(page, filters)) setNotice(held.said)
+    // #337 - the refusal wins here too, for the same reason as in `load`.
+    // Untested, 28 November 2569 (#339): no row of `337a` comes this way. A
+    // refusal and a held sentence would both have to land inside one opening
+    // of the form; `writing` is page-wide and a save hands its sentence over
+    // only for the opening that sent it, but `importing` is a flag of its own
+    // and whether an import can be the other half was not measured. Not
+    // shown unreachable, so the clause stays.
+    if (held.of === readOf(page, filters)) {
+      setNotice(shown => (shown?.error ? shown : held.said))
+    }
     waiting.current = null
   }, [editing, page, filters])
 

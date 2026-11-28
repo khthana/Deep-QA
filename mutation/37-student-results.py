@@ -18,7 +18,7 @@ drawing - and this file is the proof that `37a` would notice if either broke.
 
 Killing them:
 
-    cd e2e && npx playwright test 37a
+    cd e2e && npx playwright test 37a-student-results.spec.js
 
 ## ตารางมัตแตนต์ — บันทึกย้อนหลัง ไม่ใช่คำทำนาย (#259 · 1 พ.ย. 2569)
 

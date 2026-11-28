@@ -63,7 +63,8 @@ USERS_SAYS_ITS_OWN = (
     '          if (formShown.current) {\n'
     '            waiting.current = { ...waiting.current, held: true }\n'
     '          } else {\n'
-    '            setNotice(waiting.current.said)\n'
+    '            const said = waiting.current.said\n'
+    '            setNotice(shown => (shown?.error ? shown : said))\n'
     '          }\n'
     '        }\n'
 )
@@ -82,12 +83,15 @@ PLOS_SAYS_ITS_OWN = (
 )
 
 MUTANTS = {
+    # #337, 28 พ.ย. 2569 - เล็งใหม่ทั้งสองตัวของ Users เพราะคำตอบของเจ้าของงาน (คำปฏิเสธชนะ)
+    # พูดประโยคผ่าน updater · ความผิดเดิมคงไว้: ตัวนี้ยังทิ้งการเทียบกุญแจ ตัวถัดไปยังถอดทั้งบล็อก
     'userssaysanyread': ('users', USERS_SAYS_ITS_OWN,
         '        if (waiting.current) {\n'
         '          if (formShown.current) {\n'
         '            waiting.current = { ...waiting.current, held: true }\n'
         '          } else {\n'
-        '            setNotice(waiting.current.said)\n'
+        '            const said = waiting.current.said\n'
+        '            setNotice(shown => (shown?.error ? shown : said))\n'
         '          }\n'
         '        }\n'),
     'usersneversays': ('users', USERS_SAYS_ITS_OWN, ''),
