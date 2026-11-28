@@ -34,6 +34,8 @@ const {
  *    being #228's and #249's and free on this screen;
  * 4. a refusal of the save is drawn inside the dialog, once, over what was
  *    typed.
+ * 5. Escape puts away a form whose own save is not out while another
+ *    opening's save still is - the owner's answer of 28 November 2569 (#336).
  *
  * ## What this file does not say (#123)
  *
@@ -140,4 +142,29 @@ test('row 4: a refusal is drawn inside the dialog, once, over what was typed', a
   // and a second copy there would be a sentence nobody can read.
   expect(await page.getByRole('alert').count(), 'alerts on the page').toBe(1);
   await expect(dialog(page, ADD).getByLabel('รหัสภาควิชา')).toHaveValue('Z9');
+});
+
+test("row 5: Escape puts away a form whose own save is not out, while another opening's save still is", async ({
+  page,
+}) => {
+  // The owner's answer of 28 November 2569 (#336): Escape is inert only while
+  // *this* dialog's save is out. A save left out behind ยกเลิก - free while it
+  // is out, #228 and #249 - is another opening's, and the add form opened
+  // after it has sent nothing.
+  const REFUSED = 'ปฏิเสธเพื่อแถว 5 ของ #319';
+  await openEditor(page, '05');
+
+  const write = await gate(page, WRITE, isWrite, { refusal: REFUSED });
+  await dialog(page, EDIT).getByRole('button', { name: 'บันทึก', exact: true }).click();
+  await write.sent;
+  await dialog(page, EDIT).getByRole('button', { name: 'ยกเลิก', exact: true }).click();
+  await expect(dialog(page, EDIT)).toHaveCount(0);
+
+  await page.getByRole('button', { name: ADD, exact: true }).click();
+  await expect(dialog(page, ADD).getByLabel('รหัสภาควิชา', { exact: true })).toHaveValue('');
+  await page.keyboard.press('Escape');
+  await expect(dialog(page, ADD), 'Escape in a form whose own save is not out').toHaveCount(0);
+
+  write.open();
+  await write.answered;
 });

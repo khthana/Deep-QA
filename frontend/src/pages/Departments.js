@@ -173,6 +173,15 @@ export default function Departments() {
   const [writing, setWriting] = useState(false)
   const [reading, setReading] = useState(false)
   const busy = writing || reading
+  /**
+   * Which opening of the form has its own save out - the owner's answer of
+   * 28 November 2569 (#336): Escape is inert only while *this* dialog's save
+   * is out. `writing` is page-wide, and a save left out behind a ยกเลิก (which
+   * is free, #228, #249) or a removal held at the route would otherwise make
+   * Escape do nothing in a form that has sent nothing. Holds the `showing`
+   * opening the save was sent from, so it is a key and not a flag (#185, #249).
+   */
+  const [savingOf, setSavingOf] = useState(null)
 
   /**
    * A sentence waiting for the read that will draw what it is about - #152.
@@ -620,6 +629,7 @@ export default function Departments() {
   const save = async draft => {
     const sent = showing.current
     setWriting(true)
+    setSavingOf(sent)
     try {
       if (editing?.department_id) {
         await updateDepartment(editing.department_id, draft)
@@ -663,6 +673,7 @@ export default function Departments() {
       if (showing.current === sent) refuse(error)
     } finally {
       setWriting(false)
+      setSavingOf(of => (of === sent ? null : of))
     }
   }
 
@@ -772,7 +783,7 @@ export default function Departments() {
         <FormDialog
           title={editing.department_id ? 'แก้ไขภาควิชา' : 'เพิ่มภาควิชา'}
           notice={refused}
-          saving={writing}
+          saving={savingOf !== null && savingOf === showing.current}
           onCancel={() => setEditing(null)}
         >
         <DepartmentForm

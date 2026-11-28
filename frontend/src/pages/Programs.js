@@ -105,6 +105,15 @@ export default function Programs() {
   const [writing, setWriting] = useState(false)
   const [reading, setReading] = useState(false)
   const busy = writing || reading
+  /**
+   * Which opening of the form has its own save out - the owner's answer of
+   * 28 November 2569 (#336): Escape is inert only while *this* dialog's save
+   * is out. `writing` is page-wide, and a save left out behind a ยกเลิก (which
+   * is free, #228, #249) or a removal held at the route would otherwise make
+   * Escape do nothing in a form that has sent nothing. Holds the `showing`
+   * opening the save was sent from, so it is a key and not a flag (#185, #249).
+   */
+  const [savingOf, setSavingOf] = useState(null)
 
   const report = useCallback(error => {
     // A 401 already raises the shell's dialog; saying it again here would put a
@@ -359,6 +368,7 @@ export default function Programs() {
   const save = async draft => {
     const sent = showing.current
     setWriting(true)
+    setSavingOf(sent)
     try {
       if (editing?.program_id) {
         await updateProgram(editing.program_id, draft)
@@ -384,6 +394,7 @@ export default function Programs() {
       if (showing.current === sent) refuse(error)
     } finally {
       setWriting(false)
+      setSavingOf(of => (of === sent ? null : of))
     }
   }
 
@@ -447,7 +458,7 @@ export default function Programs() {
         <FormDialog
           title={editing.program_id ? 'แก้ไขหลักสูตร' : 'เพิ่มหลักสูตร'}
           notice={refused}
-          saving={writing}
+          saving={savingOf !== null && savingOf === showing.current}
           onCancel={() => setEditing(null)}
         >
         <ProgramForm

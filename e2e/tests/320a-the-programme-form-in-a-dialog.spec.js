@@ -33,6 +33,8 @@ const {
  *    that row's แก้ไข;
  * 3. Escape does nothing while the save is out, and the save's refusal is drawn
  *    inside the dialog, once.
+ * 4. Escape puts away a form whose own save is not out while another
+ *    opening's save still is - the owner's answer of 28 November 2569 (#336).
  *
  * ## What this file does not say (#123)
  *
@@ -111,7 +113,35 @@ test('row 3: Escape does nothing while the save is out, and the refusal is drawn
 
   // Once: the page's banner is not drawn while the dialog is open, so a copy
   // written there too would only show once the dialog goes - read it then.
+  // Put away with Escape rather than ยกเลิก since #336: once the save has
+  // answered Escape is the way out again, which is the half `319a` row 3 reads
+  // on the other screen (the code is copied, not shared - #83).
+  await page.keyboard.press('Escape');
+  await expect(dialog(page, EDIT), 'Escape once it has answered').toHaveCount(0);
+  expect(await page.getByText(REFUSED).count(), 'the refusal on the page once the dialog has gone').toBe(0);
+});
+
+test("row 4: Escape puts away a form whose own save is not out, while another opening's save still is", async ({
+  page,
+}) => {
+  // The owner's answer of 28 November 2569 (#336): Escape is inert only while
+  // *this* dialog's save is out. A save left out behind ยกเลิก - free while it
+  // is out, #228 and #249 - is another opening's, and the add form opened
+  // after it has sent nothing.
+  const REFUSED = 'ปฏิเสธเพื่อแถว 4 ของ #320';
+  await openEditor(page, PROGRAM);
+
+  const write = await gate(page, WRITE, isWrite, { refusal: REFUSED });
+  await dialog(page, EDIT).getByRole('button', { name: 'บันทึก', exact: true }).click();
+  await write.sent;
   await dialog(page, EDIT).getByRole('button', { name: 'ยกเลิก', exact: true }).click();
   await expect(dialog(page, EDIT)).toHaveCount(0);
-  expect(await page.getByText(REFUSED).count(), 'the refusal on the page once the dialog has gone').toBe(0);
+
+  await page.getByRole('button', { name: ADD, exact: true }).click();
+  await expect(dialog(page, ADD).getByLabel('รหัสหลักสูตร', { exact: true })).toHaveValue('');
+  await page.keyboard.press('Escape');
+  await expect(dialog(page, ADD), 'Escape in a form whose own save is not out').toHaveCount(0);
+
+  write.open();
+  await write.answered;
 });
