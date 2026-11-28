@@ -248,6 +248,8 @@ closure ของ handler เอง ไม่ใช่จาก state ประ�
 | `userssavesaysanyway` | `146a` ข้อมูลผู้ใช้งาน *a save that lands after เพิ่ม leaves what was typed where it was* | `"the first save's banner with the form put away"` — การบันทึกที่ถูกแซงฝากประโยคไว้ `load` พูดมันขณะฟอร์มเพิ่มเปิด แบนเนอร์ไม่ถูกวาด แล้วโผล่เมื่อปิดฟอร์ม | *a save refused after the screen moved on…*: ถูกปฏิเสธจึงไม่ฝากอะไร · *a save that nothing took the place of…*: ไม่มีอะไรแซง clause จึงจริงอยู่แล้ว |
 
 แถว *refused* และ *nothing took the place of* ไม่มีมัตแตนต์ใดของจอนี้ฆ่าที่บรรทัดที่ต่อท้าย บรรทัดนั้นของสองแถวนี้จึงยังเป็นตาข่าย
+
+กวาดแล้ว 28 พ.ย. 2569 หลัง commit คำทำนาย (`db406e9`) ด้วย `-g ผู้ใช้งาน`: **1 ล้ม 2 ผ่าน** — *a save that lands after เพิ่ม…* บรรทัด 359 `"the first save's banner with the form put away"` ตรงคำทำนาย
 """
 from harness import main
 
